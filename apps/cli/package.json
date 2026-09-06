@@ -1,0 +1,19 @@
+{
+  "name": "@apiproof/cli",
+  "version": "0.7.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "apiproof": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@apiproof/analyzers": "workspace:*",
+    "@apiproof/core": "workspace:*",
+    "@apiproof/providers": "workspace:*",
+    "@apiproof/shared": "workspace:*"
+  }
+}

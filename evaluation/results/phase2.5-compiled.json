@@ -1,0 +1,4167 @@
+{
+  "schemaVersion": "1.1",
+  "corpusId": "stripe-integrations-v1",
+  "labelDigest": "6736e12e38f24f3ac871af75a04bdb97f589c2c53a24f2bd787da3cc9ebfe2b0",
+  "provenance": "authored-integration-examples",
+  "repositories": 55,
+  "changeRecords": 9,
+  "groundTruthCases": 78,
+  "metrics": {
+    "truePositives": 43,
+    "falsePositives": 0,
+    "trueNegatives": 29,
+    "falseNegatives": 6,
+    "precision": 1,
+    "recall": 0.8775510204081632,
+    "f1": 0.9347826086956522
+  },
+  "usageMetrics": {
+    "truePositives": 46,
+    "falsePositives": 0,
+    "falseNegatives": 6,
+    "precision": 1,
+    "recall": 0.8846153846153846,
+    "f1": 0.9387755102040817
+  },
+  "inconclusiveCases": 9,
+  "failedCases": 0,
+  "scoredCases": 78,
+  "byChangeCategory": [
+    {
+      "name": "method-removed",
+      "cases": 25,
+      "metrics": {
+        "truePositives": 15,
+        "falsePositives": 0,
+        "trueNegatives": 7,
+        "falseNegatives": 3,
+        "precision": 1,
+        "recall": 0.8333333333333334,
+        "f1": 0.9090909090909091
+      },
+      "usageMetrics": {
+        "truePositives": 17,
+        "falsePositives": 0,
+        "falseNegatives": 3,
+        "precision": 1,
+        "recall": 0.85,
+        "f1": 0.918918918918919
+      },
+      "inconclusiveCases": 4,
+      "failedCases": 0
+    },
+    {
+      "name": "parameter-changed",
+      "cases": 3,
+      "metrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "trueNegatives": 2,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "parameter-removed",
+      "cases": 21,
+      "metrics": {
+        "truePositives": 11,
+        "falsePositives": 0,
+        "trueNegatives": 9,
+        "falseNegatives": 1,
+        "precision": 1,
+        "recall": 0.9166666666666666,
+        "f1": 0.9565217391304348
+      },
+      "usageMetrics": {
+        "truePositives": 11,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": 1,
+        "recall": 0.9166666666666666,
+        "f1": 0.9565217391304348
+      },
+      "inconclusiveCases": 2,
+      "failedCases": 0
+    },
+    {
+      "name": "parameter-renamed",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "resource-removed",
+      "cases": 3,
+      "metrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "response-field-changed",
+      "cases": 19,
+      "metrics": {
+        "truePositives": 10,
+        "falsePositives": 0,
+        "trueNegatives": 7,
+        "falseNegatives": 2,
+        "precision": 1,
+        "recall": 0.8333333333333334,
+        "f1": 0.9090909090909091
+      },
+      "usageMetrics": {
+        "truePositives": 11,
+        "falsePositives": 0,
+        "falseNegatives": 2,
+        "precision": 1,
+        "recall": 0.8461538461538461,
+        "f1": 0.9166666666666666
+      },
+      "inconclusiveCases": 3,
+      "failedCases": 0
+    },
+    {
+      "name": "symbol-deprecated",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "type-changed",
+      "cases": 3,
+      "metrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    }
+  ],
+  "byEvidencePattern": [
+    {
+      "name": "capability-check",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 2,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "class-client",
+      "cases": 4,
+      "metrics": {
+        "truePositives": 3,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "client-alias",
+      "cases": 3,
+      "metrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "computed-method",
+      "cases": 3,
+      "metrics": {
+        "truePositives": 3,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "conditional-builder",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "deep-builder",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "deep-dataflow",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "direct-method-call",
+      "cases": 10,
+      "metrics": {
+        "truePositives": 6,
+        "falsePositives": 0,
+        "trueNegatives": 4,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 7,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "direct-parameter",
+      "cases": 14,
+      "metrics": {
+        "truePositives": 6,
+        "falsePositives": 0,
+        "trueNegatives": 8,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 6,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "dynamic-import",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "factory-abstraction",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "installed-unused",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "multi-file",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "optional-invocation",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "parameter-builder",
+      "cases": 4,
+      "metrics": {
+        "truePositives": 4,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 4,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "path-alias",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "polymorphic-wrapper",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "promise-callback",
+      "cases": 4,
+      "metrics": {
+        "truePositives": 4,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 5,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "promise-collision",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 1,
+      "failedCases": 0
+    },
+    {
+      "name": "response-field",
+      "cases": 8,
+      "metrics": {
+        "truePositives": 6,
+        "falsePositives": 0,
+        "trueNegatives": 2,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 6,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "runtime-api-version",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "runtime-computed",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 1,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      "inconclusiveCases": 2,
+      "failedCases": 0
+    },
+    {
+      "name": "type-collision",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 2,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "type-reference",
+      "cases": 3,
+      "metrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "trueNegatives": 1,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 2,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "unconnected-helper",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 2,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "unknown-version",
+      "cases": 1,
+      "metrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "trueNegatives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "usageMetrics": {
+        "truePositives": 1,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    },
+    {
+      "name": "unrelated-binding",
+      "cases": 2,
+      "metrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "trueNegatives": 2,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "usageMetrics": {
+        "truePositives": 0,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "inconclusiveCases": 0,
+      "failedCases": 0
+    }
+  ],
+  "cases": [
+    {
+      "id": "cancel-legacy-subscriptions-del-removed",
+      "repository": "corpus/cancel-legacy",
+      "changeId": "stripe-subscriptions-del-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The invoked del helper is removed when upgrading this integration to SDK 13.",
+      "diagnostics": [],
+      "inputDigest": "369d1bdf4acf083c6ba8bd9a00fe0b12a6463371436ddca44257fadc60b13168",
+      "changeDigest": "347c9f4773496af74c02ba77ba90caf6c0f6a2bf1544cd467125ec4ff99674b8"
+    },
+    {
+      "id": "cancel-legacy-subscriptions-del-deprecated",
+      "repository": "corpus/cancel-legacy",
+      "changeId": "stripe-subscriptions-del-deprecated",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "symbol-deprecated",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The integration still calls the deprecated helper rather than cancel.",
+      "diagnostics": [],
+      "inputDigest": "369d1bdf4acf083c6ba8bd9a00fe0b12a6463371436ddca44257fadc60b13168",
+      "changeDigest": "7ff36791ee9f8dc6712c9cf04bdefe6530af59cd005f6fc069b4dd42d912552d"
+    },
+    {
+      "id": "cancel-supported-subscriptions-del-removed",
+      "repository": "corpus/cancel-supported",
+      "changeId": "stripe-subscriptions-del-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The replacement cancel method is already used.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "9bd2794a83c2f05caa0512937eed297e12576a51feaac0b00b6fb3177c6e9e8e",
+      "changeDigest": "347c9f4773496af74c02ba77ba90caf6c0f6a2bf1544cd467125ec4ff99674b8"
+    },
+    {
+      "id": "cancel-supported-subscriptions-del-deprecated",
+      "repository": "corpus/cancel-supported",
+      "changeId": "stripe-subscriptions-del-deprecated",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "symbol-deprecated",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "No deprecated helper is referenced.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "9bd2794a83c2f05caa0512937eed297e12576a51feaac0b00b6fb3177c6e9e8e",
+      "changeDigest": "7ff36791ee9f8dc6712c9cf04bdefe6530af59cd005f6fc069b4dd42d912552d"
+    },
+    {
+      "id": "billing-alias-invoice-upcoming-removed",
+      "repository": "corpus/billing-alias",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "client-alias",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A local client alias invokes the removed upcoming invoice helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "eeabad0f864f4f63b6b7be04febbdf80f07f6db95877e30a1b0d6aa55b5a9334",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "billing-alias-subscription-coupon-removed",
+      "repository": "corpus/billing-alias",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "client-alias",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 9,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 9,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The const params object passes a singular coupon to subscription creation.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "eeabad0f864f4f63b6b7be04febbdf80f07f6db95877e30a1b0d6aa55b5a9334",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "billing-class-invoice-upcoming-removed",
+      "repository": "corpus/billing-class",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "class-client",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 11,
+          "column": 12
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 11,
+          "column": 12
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The class member is initialized with Stripe and invokes retrieveUpcoming.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "ea9b82dcaf2c7041773cca239244a9169a86dfd5cc755adb5697dc9ac7ff32a3",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "billing-class-subscription-coupon-removed",
+      "repository": "corpus/billing-class",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "class-client",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Payment creation and invoice preview do not use singular subscription discounts.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "ea9b82dcaf2c7041773cca239244a9169a86dfd5cc755adb5697dc9ac7ff32a3",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "discounts-modern-subscription-coupon-removed",
+      "repository": "corpus/discounts-modern",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Nested discounts coupon entries are the supported replacement, not the removed top-level coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "a911d65ad19eab1530309f560ce8e554fd4a180010ddc103cbe4c5f69b56e79f",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "discounts-spread-subscription-coupon-removed",
+      "repository": "corpus/discounts-spread",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A known const spread supplies the removed top-level coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "b642b51d884d11e5b011d40a3a8d048f6044ab1060d4f54180504a37b419c3b2",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "metadata-lookalike-subscription-coupon-removed",
+      "repository": "corpus/metadata-lookalike",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A metadata key named coupon is user metadata and is unrelated to the removed request parameter.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "2402b754a35c0d49b989d707928092eb138d38c78e8c0513151edc81a8ce3cce",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "discounts-update-subscription-coupon-removed",
+      "repository": "corpus/discounts-update",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.update",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.update",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The second argument to subscription update contains the removed coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "e601e686d559cad447aefcc340768e42873e6d31af0cdc73672073ac415390d8",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "discounts-builder-subscription-coupon-removed",
+      "repository": "corpus/discounts-builder",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "parameter-builder",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "regressionId": "false-negative-parameter-builder",
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 7,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 7,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The parameter builder returns a singular coupon; arbitrary function-return inference is deliberately outside analyzer scope.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "d9ee86a8fa77b7cfae0db628e53b34658503ae2750749d98033c0d4fc93d4a6e",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "period-await-subscription-period-fields",
+      "repository": "corpus/period-await",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An awaited subscription response is read using the removed top-level period field.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "232d1da7a2d3c9aab981888842587407f744f15031670cf0e75c081ec03c2775",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "period-destructure-subscription-period-fields",
+      "repository": "corpus/period-destructure",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 11
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 11
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Destructuring reads the removed subscription period property.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "e3e12687be6709586575e4b382d1375c0411479c7340e24a0585ac657836369d",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "period-typed-subscription-period-fields",
+      "repository": "corpus/period-typed",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The explicit Subscription type identifies the response property as subscription-level.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "487a39c5194a4af36ac5fbd71ff0feb355384bbc10f6924a6a376763aa082393",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "period-promise-subscription-period-fields",
+      "repository": "corpus/period-promise",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "promise-callback",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "regressionId": "false-negative-promise-field",
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 65
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 65
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The Promise callback receives the subscription and reads its removed period field; callback inference is unsupported.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "ac985e6dfb68bb54f98893eea3618b0e4eaf6fdcc2db0168cac8a581777cb454",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "period-lookalike-subscription-period-fields",
+      "repository": "corpus/period-lookalike",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The local Membership interface is unrelated to Stripe response types.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "71fa07e7ff7a9b4730e67cd73557faa60a6fdf872a9942fe43e063df517c2235",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "period-item-subscription-period-fields",
+      "repository": "corpus/period-item",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The period belongs to SubscriptionItem, where the field remains valid.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "3e6a5b1186fb23b02451b3fcd0636cb88041052058eca8bc1432f5df0b1a7a0f",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "context-type-old-context-type-renamed",
+      "repository": "corpus/context-type-old",
+      "changeId": "stripe-context-type-renamed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "type-changed",
+      "evidencePattern": "type-reference",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "StripeContext",
+          "line": 2,
+          "column": 36
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "StripeContext",
+          "line": 2,
+          "column": 36
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The namespace type annotation must use StripeContextType in SDK 22.",
+      "diagnostics": [],
+      "inputDigest": "af5f80dc01ba76e8ef4d0b696cb19522e8a216a423d32333b404666bbb1c6cd0",
+      "changeDigest": "3e94f01ac9ce096d816cbab48592c6c9faf126037f1aa472dd67d721fdf2524c"
+    },
+    {
+      "id": "context-type-new-context-type-renamed",
+      "repository": "corpus/context-type-new",
+      "changeId": "stripe-context-type-renamed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "type-changed",
+      "evidencePattern": "type-reference",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The replacement type annotation is already used.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "b285666781d7d9cf485107b8d15130d643ab622c57079b489025026e4ab4e1af",
+      "changeDigest": "3e94f01ac9ce096d816cbab48592c6c9faf126037f1aa472dd67d721fdf2524c"
+    },
+    {
+      "id": "checkout-shipping-old-checkout-shipping-rates-renamed",
+      "repository": "corpus/checkout-shipping-old",
+      "changeId": "stripe-checkout-shipping-rates-renamed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-renamed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "checkout.sessions.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "checkout.sessions.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Checkout creation provides the replaced shipping_rates parameter.",
+      "diagnostics": [],
+      "inputDigest": "8ae399f104735e6baf009ed9ab75d23883c3ffecab2ab0e27d6602fb4a2da0c4",
+      "changeDigest": "78e87bfcf20212dc540ea08939443448218a0383822d0a42b822150a3a7108ca"
+    },
+    {
+      "id": "checkout-shipping-new-checkout-shipping-rates-renamed",
+      "repository": "corpus/checkout-shipping-new",
+      "changeId": "stripe-checkout-shipping-rates-renamed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-renamed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The request uses shipping_options rather than shipping_rates.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "f000682c90db460deb00ed3f4b62e80acf57f96d72426ad3aecc23d068a7a141",
+      "changeDigest": "78e87bfcf20212dc540ea08939443448218a0383822d0a42b822150a3a7108ca"
+    },
+    {
+      "id": "account-link-old-account-link-type-changed",
+      "repository": "corpus/account-link-old",
+      "changeId": "stripe-account-link-type-changed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-changed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "accountLinks.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "accountLinks.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Account-link creation passes an enum value removed from SDK 13 typings.",
+      "diagnostics": [],
+      "inputDigest": "80d67c0d7b1fbae86618f98c99aa7f09209ed9c11c4350bf31b62d8d6ac87309",
+      "changeDigest": "05fb674e4afd26714c088f5f8e5707e53c1abbd2a2bfa2028215367492324023"
+    },
+    {
+      "id": "account-link-supported-account-link-type-changed",
+      "repository": "corpus/account-link-supported",
+      "changeId": "stripe-account-link-type-changed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-changed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The supported account_onboarding enum value is unaffected.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "e5ce28b67d68c8f2211f56972b71bd4764c303cdea2042bbee20114b65b84d87",
+      "changeDigest": "05fb674e4afd26714c088f5f8e5707e53c1abbd2a2bfa2028215367492324023"
+    },
+    {
+      "id": "metering-legacy-legacy-usage-methods",
+      "repository": "corpus/metering-legacy",
+      "changeId": "stripe-legacy-usage-methods",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "resource-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptionItems.createUsageRecord",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptionItems.createUsageRecord",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The request invokes the removed legacy usage-record helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "430ba22767f92fc247968b30535802880d4869003c969bd72d6bdfa916eafc16",
+      "changeDigest": "1b7a4a216212958a8e478e0611a0dfcb1a6bcf5cce67f8b6b0baa4e123616156"
+    },
+    {
+      "id": "metering-current-legacy-usage-methods",
+      "repository": "corpus/metering-current",
+      "changeId": "stripe-legacy-usage-methods",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "resource-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Billing meter events are the replacement workflow, not legacy usage-record methods.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "3ff3cec0955223ebdb98ff49f9150db45c1364a9884e0bdb7a7d8bd7a694e31a",
+      "changeDigest": "1b7a4a216212958a8e478e0611a0dfcb1a6bcf5cce67f8b6b0baa4e123616156"
+    },
+    {
+      "id": "multiple-clients-invoice-upcoming-removed",
+      "repository": "corpus/multiple-clients",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 21
+        },
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 6,
+          "column": 21
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 21
+        },
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 6,
+          "column": 21
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Both independently constructed clients invoke the removed helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "53c51d86cd5ccd83838bac85dde2f5b7c096704aef0ba6ad08ea79c86a842345",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "dynamic-member-invoice-upcoming-removed",
+      "repository": "corpus/dynamic-member",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "computed-method",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "regressionId": "false-negative-computed-method",
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The computed member resolves at runtime to retrieveUpcoming; computed identifier evaluation is outside supported scope.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "2fb4173fa1c4b4ea5cd5d2c986148e17a06707bb54d9776a68c44195f60dd9c6",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "unrelated-object-invoice-upcoming-removed",
+      "repository": "corpus/unrelated-object",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An injected local InvoiceStore uses a lookalike method name but has no Stripe binding.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "2eb39a2b4158913ca94049538038db2e7937b333a0091c2995c28cc8f6fc9d8c",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "post-upgrade-subscription-coupon-removed",
+      "repository": "corpus/post-upgrade",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "SDK 18 with the migrated discounts parameter is outside the scoped source-version range.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "1d14074951891d8605a756771d575a967a5f9b3432a0794d08914498fb86f90f",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "retained-reference-invoice-upcoming-removed",
+      "repository": "corpus/retained-reference",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "capability-check",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "regressionId": "false-positive-capability-check",
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "This diagnostic capability check remains valid when the property is absent; conservative member-reference matching may over-report it.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "ee299364c71248e2ec2d660fca27ab21055a5ed5aa57bcc15f537de847478465",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "cross-file-client-invoice-upcoming-removed",
+      "repository": "corpus/cross-file-client",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "multi-file",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A relative import aliases the exported Stripe client used to preview invoices.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a699a5437dc5c3dcec5899ac13f400ec7d15c6f75e55af4a53e03b885ebba9fb",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "unknown-version-invoice-upcoming-removed",
+      "repository": "corpus/unknown-version",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "unknown-version",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The declared major-17 range and legacy call need migration review even though no exact installation is available.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "b84dfba4fce261da0e261316420adc0a0be17c8e23bfb68022210b451f0359f0",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "period-await-subscription-coupon-removed",
+      "repository": "corpus/period-await",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Retrieving a subscription response does not send coupon parameters.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "232d1da7a2d3c9aab981888842587407f744f15031670cf0e75c081ec03c2775",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "billing-alias-subscription-period-fields",
+      "repository": "corpus/billing-alias",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "client-alias",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "This example invokes billing methods but never reads subscription period fields.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "eeabad0f864f4f63b6b7be04febbdf80f07f6db95877e30a1b0d6aa55b5a9334",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "multiple-clients-subscription-coupon-removed",
+      "repository": "corpus/multiple-clients",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Neither client submits subscription discount parameters.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "53c51d86cd5ccd83838bac85dde2f5b7c096704aef0ba6ad08ea79c86a842345",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "checkout-shipping-old-account-link-type-changed",
+      "repository": "corpus/checkout-shipping-old",
+      "changeId": "stripe-account-link-type-changed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-changed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Checkout session parameters are unrelated to account-link enum changes.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "8ae399f104735e6baf009ed9ab75d23883c3ffecab2ab0e27d6602fb4a2da0c4",
+      "changeDigest": "05fb674e4afd26714c088f5f8e5707e53c1abbd2a2bfa2028215367492324023"
+    },
+    {
+      "id": "builder-arrow-subscription-coupon-removed",
+      "repository": "corpus/builder-arrow",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "parameter-builder",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 42
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 42
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An arrow builder supplies the removed top-level coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "2caa55555f4a8d79b82a5a5d28d78419c2f0c701a8908e722fa802549e8f6fc1",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "builder-arrow-subscription-period-fields",
+      "repository": "corpus/builder-arrow",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "promise-callback",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 91
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 91
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The fulfillment callback reads the removed subscription period.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "2caa55555f4a8d79b82a5a5d28d78419c2f0c701a8908e722fa802549e8f6fc1",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "builder-local-alias-subscription-coupon-removed",
+      "repository": "corpus/builder-local-alias",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "parameter-builder",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.update",
+          "line": 4,
+          "column": 45
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.update",
+          "line": 4,
+          "column": 45
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The helper returns a shallow immutable alias containing coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "b9abf273cbeeab9eb2abfa3334cbc3d13c0fc52e5d9876c7fa921d405a7c9a29",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "builder-local-alias-invoice-upcoming-removed",
+      "repository": "corpus/builder-local-alias",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 34
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 34
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The same billing integration also invokes the removed invoice helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "b9abf273cbeeab9eb2abfa3334cbc3d13c0fc52e5d9876c7fa921d405a7c9a29",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "builder-relative-import-subscription-coupon-removed",
+      "repository": "corpus/builder-relative-import",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "parameter-builder",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 53
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 53
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A repository-local imported builder supplies coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "3d5dc0eab90e76b3d15f28de34f5a6e1a9581310e1a0d41c8c76acf584038cca",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "builder-relative-import-subscription-period-fields",
+      "repository": "corpus/builder-relative-import",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_start",
+          "line": 4,
+          "column": 98
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_start",
+          "line": 4,
+          "column": 98
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The awaited created subscription supplies the removed period field.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "3d5dc0eab90e76b3d15f28de34f5a6e1a9581310e1a0d41c8c76acf584038cca",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "constructor-injection-invoice-upcoming-removed",
+      "repository": "corpus/constructor-injection",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "class-client",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 22
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 22
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An explicitly typed constructor parameter binds the instance client.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a5286afb2801ea5831d85324b19b32c075cbc0596b903f7ce3a1b6d301080265",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "constructor-injection-subscription-coupon-removed",
+      "repository": "corpus/constructor-injection",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "class-client",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 6,
+          "column": 24
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 6,
+          "column": 24
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The injected client submits a removed subscription parameter.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a5286afb2801ea5831d85324b19b32c075cbc0596b903f7ce3a1b6d301080265",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "constructor-injection-subscription-period-fields",
+      "repository": "corpus/constructor-injection",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 7,
+          "column": 90
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 7,
+          "column": 90
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An awaited injected client result exposes the removed period.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a5286afb2801ea5831d85324b19b32c075cbc0596b903f7ce3a1b6d301080265",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "promise-block-subscription-coupon-removed",
+      "repository": "corpus/promise-block",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Creation submits the removed promotion code parameter.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "81bd37998a6976f82319b076e405399a6719d1fe6f46ea66b09d97cdb4a272c3",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "promise-block-subscription-period-fields",
+      "repository": "corpus/promise-block",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "promise-callback",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_start",
+          "line": 5,
+          "column": 13
+        },
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 6,
+          "column": 12
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_start",
+          "line": 5,
+          "column": 13
+        },
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 6,
+          "column": 12
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Block callbacks and destructuring both consume removed period fields.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "81bd37998a6976f82319b076e405399a6719d1fe6f46ea66b09d97cdb4a272c3",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "promise-alias-subscription-period-fields",
+      "repository": "corpus/promise-alias",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "promise-callback",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 6,
+          "column": 53
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 6,
+          "column": 53
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A const Promise alias retains fulfillment provenance through a function callback.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "452c76c61c1d0a3d4ad2021729b4b211cd06b13baffb8844b1db2f1d6280e6b4",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "promise-alias-invoice-upcoming-removed",
+      "repository": "corpus/promise-alias",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "direct-method-call",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 8,
+          "column": 28
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 8,
+          "column": 28
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The neighboring quote path still invokes the removed method.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "452c76c61c1d0a3d4ad2021729b4b211cd06b13baffb8844b1db2f1d6280e6b4",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "computed-const-alias-invoice-upcoming-removed",
+      "repository": "corpus/computed-const-alias",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "computed-method",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 28
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 28
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Immutable literal aliases prove the invoice operation.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "c242b4865e6de0850a357845ce16994eb0c8c99cd68cdfa537398f283234715c",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "computed-const-alias-subscription-coupon-removed",
+      "repository": "corpus/computed-const-alias",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "computed-method",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 7,
+          "column": 32
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 7,
+          "column": 32
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The computed subscription create operation has an affected argument.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "c242b4865e6de0850a357845ce16994eb0c8c99cd68cdfa537398f283234715c",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "multi-file-billing-invoice-upcoming-removed",
+      "repository": "corpus/multi-file-billing",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "multi-file",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 28
+        },
+        {
+          "file": "src/renewal.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 33
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 28
+        },
+        {
+          "file": "src/renewal.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 33
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Two independent source files invoke the removed preview method.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "0f9e8e9cebdf21e877ccd2322a7da53dba112b44673cb609252b4738c7b8236e",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "multi-file-billing-subscription-coupon-removed",
+      "repository": "corpus/multi-file-billing",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "direct-parameter",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 32
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 4,
+          "column": 32
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The subscription creation path supplies coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "0f9e8e9cebdf21e877ccd2322a7da53dba112b44673cb609252b4738c7b8236e",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "multi-file-billing-subscription-period-fields",
+      "repository": "corpus/multi-file-billing",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "response-field",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/renewal.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 102
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/renewal.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 102
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A second file reads an awaited subscription period.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "0f9e8e9cebdf21e877ccd2322a7da53dba112b44673cb609252b4738c7b8236e",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "imported-type-alias-context-type-renamed",
+      "repository": "corpus/imported-type-alias",
+      "changeId": "stripe-context-type-renamed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "type-changed",
+      "evidencePattern": "type-reference",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "StripeContext",
+          "line": 4,
+          "column": 29
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "StripeContext",
+          "line": 4,
+          "column": 29
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The imported old context type alias needs the SDK22 name.",
+      "diagnostics": [],
+      "inputDigest": "e0ac9dc81a48c6153c396d893cdc7dd9ed106a8712d890f1f638f2078923dcd8",
+      "changeDigest": "3e94f01ac9ce096d816cbab48592c6c9faf126037f1aa472dd67d721fdf2524c"
+    },
+    {
+      "id": "imported-type-alias-subscription-period-fields",
+      "repository": "corpus/imported-type-alias",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "type-collision",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A subscription item period is not the removed subscription-level field.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "e0ac9dc81a48c6153c396d893cdc7dd9ed106a8712d890f1f638f2078923dcd8",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "mock-client-collisions-invoice-upcoming-removed",
+      "repository": "corpus/mock-client-collisions",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "unrelated-binding",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Mocks, interfaces, comments and strings have no bound provider invocation.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "06cc03ea4ca63a0fac48b69642779dbdf7eaa3f6a4bd5b4c63c9140ff82c3c47",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "mock-client-collisions-subscription-coupon-removed",
+      "repository": "corpus/mock-client-collisions",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "unrelated-binding",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A lookalike method and comment submit no Stripe parameter.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "06cc03ea4ca63a0fac48b69642779dbdf7eaa3f6a4bd5b4c63c9140ff82c3c47",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "mock-client-collisions-subscription-period-fields",
+      "repository": "corpus/mock-client-collisions",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "type-collision",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The similarly named property belongs to a local structural object.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "06cc03ea4ca63a0fac48b69642779dbdf7eaa3f6a4bd5b4c63c9140ff82c3c47",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "capability-guards-invoice-upcoming-removed",
+      "repository": "corpus/capability-guards",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "capability-check",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Optional-member guards and typeof/null probes tolerate an absent method.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "85df2d2f302eae2d78b68e339053598a8651261c5c5885e2e7aa0ba10e487782",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "unconnected-helpers-subscription-coupon-removed",
+      "repository": "corpus/unconnected-helpers",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "unconnected-helper",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The coupon builder is never passed to a provider call.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "ca249ad17bdf9f8d0f6ed734f9b121ff1fb63159c70a217b35b73d8d91d85cd5",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "unconnected-helpers-subscription-period-fields",
+      "repository": "corpus/unconnected-helpers",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "unconnected-helper",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The local period helper has no Stripe response provenance.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "ca249ad17bdf9f8d0f6ed734f9b121ff1fb63159c70a217b35b73d8d91d85cd5",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "installed-unused-invoice-upcoming-removed",
+      "repository": "corpus/installed-unused",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "installed-unused",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Installed package metadata and construction alone do not invoke invoice behavior.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "b465f310ff70ce035790732489030f3aacf6fe10eba25c5ac25457506a5b6f0f",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "runtime-computed-invoice-upcoming-removed",
+      "repository": "corpus/runtime-computed",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "runtime-computed",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 83
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 83
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "The runtime parameter selects the removed method; parameter-to-member propagation is deliberately unsupported.",
+      "diagnostics": [
+        "DYNAMIC_MEMBER",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "42d30cdab5e5597b5ea4af4302fe1208317d049966908820232a425918d14e0a",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "dynamic-import-client-invoice-upcoming-removed",
+      "repository": "corpus/dynamic-import-client",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "dynamic-import",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 130
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 130
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "The dynamic import produces a real Stripe client but is outside binding resolution.",
+      "diagnostics": [
+        "DYNAMIC_IMPORT",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "9387d76e04bb392d719139d563984fa3a4702298f13920b0b4f74762ffac35bd",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "factory-abstraction-invoice-upcoming-removed",
+      "repository": "corpus/factory-abstraction",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "factory-abstraction",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 63
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 63
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A factory returns a Stripe client behind an object, beyond supported client return inference.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "504f7667c37039cc9d41e7cc3d18f13219a83b991d4e02b03dc50704fc4c9761",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "deep-builders-subscription-coupon-removed",
+      "repository": "corpus/deep-builders",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "deep-builder",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 8,
+          "column": 32
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 8,
+          "column": 32
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "Five helper calls exceed the three-builder evidence budget; coupon is still ground truth.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "INSUFFICIENT_STATIC_EVIDENCE",
+        "INSUFFICIENT_STATIC_EVIDENCE"
+      ],
+      "inputDigest": "526d734c671eaf5816d9cbad7830509db6569bc59839b7da85d010ac3bf6cc1d",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "unresolved-path-alias-invoice-upcoming-removed",
+      "repository": "corpus/unresolved-path-alias",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "path-alias",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 30
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 30
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "The configured path resolves to a real client, but customer tsconfig interpretation remains unsupported.",
+      "diagnostics": [
+        "UNRESOLVED_IMPORT_ALIAS",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "a4e452d56d337579ebbbfd4c87496f9349bb27713075c921b0d4b7b4229c928d",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "deep-response-flow-subscription-period-fields",
+      "repository": "corpus/deep-response-flow",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "deep-dataflow",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 122
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 122
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "Nested generic wrappers preserve the actual subscription but exceed local response inference.",
+      "diagnostics": [
+        "UNRESOLVED_RESPONSE_FLOW",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "1f81bd07c147f4edaf04f801e3d9bceae484154d6441ba996dd386dc6074ef6c",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "runtime-api-version-invoice-upcoming-removed",
+      "repository": "corpus/runtime-api-version",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "runtime-api-version",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 135
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 135
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The SDK method is affected by the target upgrade while runtime API applicability remains unverified.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "75541117d20231e2cbad05347327a0496da201c29c57f75b9852c3edf76bcc02",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "polymorphic-response-subscription-period-fields",
+      "repository": "corpus/polymorphic-response",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "polymorphic-wrapper",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 117
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 117
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "A transformed Promise chain returns the subscription through a generic helper; no unproven propagation is allowed.",
+      "diagnostics": [
+        "UNRESOLVED_PROMISE_CALLBACK",
+        "UNRESOLVED_RESPONSE_FLOW",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "9b73d4d186626050699c72bd17bb256700da161d339a25dfe0629ee08736c415",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "promise-field-collision-subscription-period-fields",
+      "repository": "corpus/promise-field-collision",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "response-field-changed",
+      "evidencePattern": "promise-collision",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "inconclusive",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Neither a local Promise value nor a subscription item is a subscription-level period.",
+      "diagnostics": [
+        "UNRESOLVED_PROMISE_CALLBACK",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "b84ece21e5201ebaf5f5e2b718e8ff86365c49cef65b088b419936056509904c",
+      "changeDigest": "e5374143c0b013d339b31affccb2110f26fe835bcd3c6a46c9c2e99fc6e89dcb"
+    },
+    {
+      "id": "computed-factory-modern-invoice-upcoming-removed",
+      "repository": "corpus/computed-factory-modern",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "method-removed",
+      "evidencePattern": "runtime-computed",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "inconclusive",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "This factory returns the replacement method; unresolved method selection must not be guessed as legacy.",
+      "diagnostics": [
+        "DYNAMIC_MEMBER",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "58e2b27504c2b88a736ea6886771bedec73e77d8e668d81fff8ca1de5117c0c5",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "conditional-modern-builder-subscription-coupon-removed",
+      "repository": "corpus/conditional-modern-builder",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "changeCategory": "parameter-removed",
+      "evidencePattern": "conditional-builder",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TN",
+      "status": "inconclusive",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Both branches avoid removed parameters; the conditional shape remains uncertain to the analyzer.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "INSUFFICIENT_STATIC_EVIDENCE",
+        "INSUFFICIENT_STATIC_EVIDENCE"
+      ],
+      "inputDigest": "b17a8a6065e780a5794a8a1b1babb82454c3eb57d1b4959864259c9872fdf6e5",
+      "changeDigest": "a93d1e3b0c26ad316f3289fa88368a100f395f0babfde5641e54def8639973b0"
+    },
+    {
+      "id": "optional-invocations-invoice-upcoming-removed",
+      "repository": "corpus/optional-invocations",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "method-removed",
+      "evidencePattern": "optional-invocation",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 30
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 30
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Optional invocation executes the removed method when present and still needs migration.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a8eab9c58ab3ef5b3a0c8eb0afc9ba2dae14a5b7f7966e28c0ea4211b21920e6",
+      "changeDigest": "896a8959e2080a585e2fdcaffa63a113b30fd852e381bf28a0d0b27ec3630d0b"
+    },
+    {
+      "id": "optional-invocations-legacy-usage-methods",
+      "repository": "corpus/optional-invocations",
+      "changeId": "stripe-legacy-usage-methods",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "changeCategory": "resource-removed",
+      "evidencePattern": "optional-invocation",
+      "provenance": {
+        "authoredBy": {
+          "name": "Codex development author",
+          "kind": "agent"
+        },
+        "reviewedBy": null,
+        "reviewStatus": "authored",
+        "createdAt": "2026-09-06",
+        "sourceBasis": "Authored integration semantics scoped to the cited Stripe registry record; expected anchors selected without analyzer predictions.",
+        "origin": "synthetic",
+        "notes": "Agent-authored development case; no independent human review or production validation."
+      },
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptionItems.createUsageRecord",
+          "line": 4,
+          "column": 38
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptionItems.createUsageRecord",
+          "line": 4,
+          "column": 38
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An optional usage-record invocation consumes the removed resource helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a8eab9c58ab3ef5b3a0c8eb0afc9ba2dae14a5b7f7966e28c0ea4211b21920e6",
+      "changeDigest": "1b7a4a216212958a8e478e0611a0dfcb1a6bcf5cce67f8b6b0baa4e123616156"
+    }
+  ]
+}

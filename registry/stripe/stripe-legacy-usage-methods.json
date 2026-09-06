@@ -1,0 +1,74 @@
+{
+  "provider": "stripe",
+  "id": "stripe-legacy-usage-methods",
+  "title": "Legacy usage reporting removed",
+  "description": "Basil removes legacy usage-based billing. This record covers the legacy subscription-item reporting helpers only. Scoped to migration from SDK >=17.0.0 <18.0.0 to 18.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "subscriptionItems.createUsageRecord",
+      "kind": "method",
+      "match": "exact"
+    },
+    {
+      "symbol": "subscriptionItems.listUsageRecordSummaries",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "Legacy metered subscriptions accepted usage records.",
+  "newBehavior": "The target SDK removes the legacy helpers. Migrate to billing meters, or separately review the documented RawRequest transition with a pinned pre-Basil API version.",
+  "migrationInstructions": [
+    "Plan the meter migration and historical-usage transition before replacing reporting calls.",
+    "If deferring the meter migration, review Stripe's documented SDK-upgrade transition using RawRequest and a pre-Basil API version; this analyzer does not verify or implement that path."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=17.0.0 <18.0.0",
+  "targetSdkVersion": "18.0.0",
+  "apiVersion": "2025-03-31.basil",
+  "effectiveDate": "2025-03-31",
+  "provenance": "official",
+  "sourceUrl": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-legacy-usage-based-billing",
+  "changeType": "resource-removed",
+  "resources": [
+    "subscriptionItems"
+  ],
+  "rules": [
+    {
+      "kind": "method",
+      "symbol": "subscriptionItems.createUsageRecord",
+      "match": "exact"
+    },
+    {
+      "kind": "method",
+      "symbol": "subscriptionItems.listUsageRecordSummaries",
+      "match": "exact"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-legacy-usage-based-billing",
+      "summary": "Basil removes legacy usage-based billing. This record covers the legacy subscription-item reporting helpers only.",
+      "accessedAt": "2026-09-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.0.0/CHANGELOG.md",
+      "summary": "The tagged v18 changelog pins Basil and identifies the removed SDK helpers, subscription parameters and period fields.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "api-and-sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=17.0.0 <18.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The target API version is 2025-03-31.basil; account, webhook and request overrides remain unverified. SDK removal and API availability are assessed separately.",
+    "RawRequest with a pinned pre-Basil API version is a documented transitional path; absence of SDK helpers does not mean every historical usage-record request is unavailable."
+  ]
+}

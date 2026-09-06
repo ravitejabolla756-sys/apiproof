@@ -1,0 +1,1 @@
+{"name":"plan-invoice-review","private":true,"dependencies":{"stripe":"17.7.0"}}

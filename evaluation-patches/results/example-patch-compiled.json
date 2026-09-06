@@ -1,0 +1,131 @@
+{
+  "patchId": "patch-1cf46a29-f135-4458-ba0c-2c27b55d319a",
+  "changeId": "stripe-subscription-coupon-removed",
+  "repositoryId": "coupon-basic",
+  "status": "PATCH_READY_FOR_VALIDATION",
+  "files": [
+    {
+      "path": "src/billing.ts",
+      "originalDigest": "4ae4984c4f76a95c6b8f485d18d61a160a45dc31329560ab90bae4985528106a",
+      "patchedDigest": "ee2b8eff1900680c49140a32b72c5d183011660be38607c4fd0226fb20b9bcd4",
+      "edits": [
+        {
+          "targetId": "target-0-c2f50fd8590f4e6396b05c85",
+          "operation": "replace-range",
+          "start": 90,
+          "end": 106,
+          "expected": "coupon: 'launch'",
+          "replacement": "discounts: [{ coupon: 'launch' }]",
+          "evidenceIds": [
+            "impact:c2f50fd8590f4e6396b05c85",
+            "change:stripe-subscription-coupon-removed"
+          ]
+        }
+      ],
+      "unifiedDiff": "--- a/src/billing.ts\n+++ b/src/billing.ts\n@@ -1,3 +1,3 @@\n import Stripe from 'stripe';\n const client = new Stripe('');\n-client.subscriptions.create({ coupon: 'launch' });\n+client.subscriptions.create({ discounts: [{ coupon: 'launch' }] });\n"
+    }
+  ],
+  "evidenceReferences": [
+    "change:stripe-subscription-coupon-removed",
+    "impact:c2f50fd8590f4e6396b05c85",
+    "impact:c2f50fd8590f4e6396b05c85:0",
+    "impact:c2f50fd8590f4e6396b05c85:1",
+    "impact:c2f50fd8590f4e6396b05c85:2",
+    "impact:c2f50fd8590f4e6396b05c85:3",
+    "impact:c2f50fd8590f4e6396b05c85:4",
+    "impact:c2f50fd8590f4e6396b05c85:5"
+  ],
+  "planReferences": [
+    "fb4b08690b93eb9292ef6940440d1dd52e378b93bf761dfcd0b710a6f37e3a32"
+  ],
+  "warnings": [
+    "NOT EXECUTED. NOT VERIFIED. NOT COMMITTED. Human review required."
+  ],
+  "validation": [
+    {
+      "stage": "schema",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "provenance",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "source-provenance",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "evidence",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "path",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "allowed-files",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "digest-context",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "diff-size",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "secret-output",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "dangerous-patterns",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "semantic-scope",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "workspace-snapshot",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "apply",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "syntax",
+      "passed": true,
+      "code": "OK"
+    }
+  ],
+  "generatedBy": {
+    "implementation": "deterministic",
+    "version": "0.4.0",
+    "model": null,
+    "aiUsed": false,
+    "changeDigest": "b85060e287734e81c6efc1f73c2fc2e3e54cc081c26aa55460f879482e7ea1b3",
+    "rulesDigest": "4b4b7341f78e9eb7352c9ce629ce1eec4019af7fbdcec34839570c71633561c8",
+    "planDigest": "fb4b08690b93eb9292ef6940440d1dd52e378b93bf761dfcd0b710a6f37e3a32",
+    "sourceDigests": {
+      "src/billing.ts": "4ae4984c4f76a95c6b8f485d18d61a160a45dc31329560ab90bae4985528106a"
+    },
+    "runId": "1cf46a29-f135-4458-ba0c-2c27b55d319a",
+    "workspace": "C:\\YC\\.tmp\\patch-runs\\1cf46a29-f135-4458-ba0c-2c27b55d319a\\repository"
+  },
+  "requiresHumanReview": true
+}

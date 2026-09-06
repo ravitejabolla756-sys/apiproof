@@ -1,0 +1,55 @@
+{
+  "provider": "stripe",
+  "id": "stripe-subscriptions-del-deprecated",
+  "title": "Deprecated subscription helper",
+  "description": "The guide identifies del as deprecated before its v13 removal. Scoped to migration from SDK >=9.14.0 <13.0.0 to 13.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "subscriptions.del",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "Integrations may still reference del.",
+  "newBehavior": "cancel is the supported alternative.",
+  "migrationInstructions": [
+    "Plan replacement of the deprecated helper."
+  ],
+  "severity": "medium",
+  "affectedSdkVersions": ">=9.14.0 <13.0.0",
+  "targetSdkVersion": "13.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+  "changeType": "symbol-deprecated",
+  "resources": [
+    "subscriptions"
+  ],
+  "rules": [
+    {
+      "kind": "method",
+      "symbol": "subscriptions.del",
+      "match": "exact"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+      "summary": "The guide identifies del as deprecated before its v13 removal.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=9.14.0 <13.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The v13 guide describes del as already deprecated; the 9.14 lower bound selects the cohort with cancel available and is not asserted to be the exact deprecation date."
+  ]
+}

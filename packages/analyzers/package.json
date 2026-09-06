@@ -1,0 +1,24 @@
+{
+  "name": "@apiproof/analyzers",
+  "version": "0.7.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "apiproof-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@apiproof/core": "workspace:*",
+    "@apiproof/shared": "workspace:*",
+    "semver": "^7.7.3",
+    "ts-morph": "^28.0.0",
+    "yaml": "^2.9.0"
+  }
+}

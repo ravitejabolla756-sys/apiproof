@@ -1,0 +1,7 @@
+{
+  "name": "apiproof-corpus-computed-factory-modern",
+  "private": true,
+  "dependencies": {
+    "stripe": "17.7.0"
+  }
+}

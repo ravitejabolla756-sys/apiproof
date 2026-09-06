@@ -1,0 +1,68 @@
+{
+  "provider": "stripe",
+  "id": "stripe-account-link-type-changed",
+  "title": "Account link enum values removed",
+  "description": "Two custom_account type values lose SDK support in v13. Scoped to migration from SDK >=12.0.0 <13.0.0 to 13.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "accountLinks.create",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "Legacy custom_account enum values appeared in typings.",
+  "newBehavior": "Use account_update or account_onboarding as appropriate.",
+  "migrationInstructions": [
+    "Choose the supported account link purpose."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=12.0.0 <13.0.0",
+  "targetSdkVersion": "13.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+  "changeType": "parameter-changed",
+  "resources": [
+    "accountLinks"
+  ],
+  "rules": [
+    {
+      "kind": "parameter",
+      "symbol": "accountLinks.create",
+      "match": "exact",
+      "argumentIndex": 0,
+      "path": "type",
+      "condition": "equals",
+      "value": "custom_account_update"
+    },
+    {
+      "kind": "parameter",
+      "symbol": "accountLinks.create",
+      "match": "exact",
+      "argumentIndex": 0,
+      "path": "type",
+      "condition": "equals",
+      "value": "custom_account_verification"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+      "summary": "Two custom_account type values lose SDK support in v13.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=12.0.0 <13.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The v13 guide supports an SDK parameter/type change; this record makes no independent claim about all older raw API behaviors."
+  ]
+}

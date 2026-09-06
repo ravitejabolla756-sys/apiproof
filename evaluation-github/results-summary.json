@@ -1,0 +1,1 @@
+{"schemaVersion":"1.0","scenarios":20,"correctStatuses":20,"validBranchCreations":1,"validCommitCreations":1,"validPrCreations":1,"defaultBranchWritesAccepted":0,"mergeOperationsAccepted":0,"forcePushesAccepted":0,"unauthorizedRepositoryWrites":0,"staleBaseRejections":2,"duplicateProposalsPrevented":1,"tokenLeakage":0,"secretLeakage":0}

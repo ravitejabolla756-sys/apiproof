@@ -1,0 +1,21 @@
+{
+  "name": "@apiproof/core",
+  "version": "0.7.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "apiproof-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@apiproof/shared": "workspace:*",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "provenance": "authored-synthetic-verification-cases",
+  "cases": [
+    { "id": "pass-coupon", "fixtureId": "coupon-basic", "mode": "pass", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "pass-method", "fixtureId": "method-rename", "mode": "pass", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "pass-type", "fixtureId": "type-rename", "mode": "pass", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "install-failure", "fixtureId": "coupon-basic", "mode": "install-failure", "expectedStatus": "VERIFICATION_INSTALL_FAILED", "expectedFailingStage": "INSTALL", "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "build-failure", "fixtureId": "coupon-basic", "mode": "build-failure", "expectedStatus": "VERIFICATION_BUILD_FAILED", "expectedFailingStage": "BUILD", "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "typecheck-failure", "fixtureId": "coupon-basic", "mode": "typecheck-failure", "expectedStatus": "VERIFICATION_TYPECHECK_FAILED", "expectedFailingStage": "TYPECHECK", "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "test-failure", "fixtureId": "coupon-basic", "mode": "test-failure", "expectedStatus": "VERIFICATION_TEST_FAILED", "expectedFailingStage": "TEST", "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "timeout", "fixtureId": "coupon-basic", "mode": "timeout", "expectedStatus": "VERIFICATION_TIMED_OUT", "expectedFailingStage": "BUILD", "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "output-flood", "fixtureId": "coupon-basic", "mode": "output-flood", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "env-probe", "fixtureId": "coupon-basic", "mode": "env-probe", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "filesystem-probe", "fixtureId": "coupon-basic", "mode": "filesystem-probe", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "network-probe", "fixtureId": "coupon-basic", "mode": "network-probe", "expectedStatus": "VERIFICATION_PASSED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "command-injection", "fixtureId": "coupon-basic", "mode": "command-injection", "expectedStatus": "VERIFICATION_POLICY_REJECTED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "not-allowed", "fixtureId": "unauthorized-fixture", "mode": "not-allowed", "expectedStatus": "VERIFICATION_NOT_ALLOWED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" },
+    { "id": "malformed-patch", "fixtureId": "coupon-basic", "mode": "malformed-patch", "expectedStatus": "VERIFICATION_POLICY_REJECTED", "expectedFailingStage": null, "expectedNetworkPolicy": "NETWORK_DISABLED" }
+  ]
+}

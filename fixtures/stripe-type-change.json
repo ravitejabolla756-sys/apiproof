@@ -1,0 +1,13 @@
+{
+  "provider": "stripe",
+  "id": "synthetic-payment-intent-type-v1",
+  "title": "Synthetic PaymentIntent type exercise",
+  "description": "Fictional type-only change for validating imported Stripe type detection.",
+  "packageName": "stripe",
+  "affectedSymbols": [{ "symbol": "PaymentIntent", "match": "exact", "kind": "type" }],
+  "oldBehavior": "Fictional previous PaymentIntent type contract.",
+  "newBehavior": "Fictional revised PaymentIntent type contract.",
+  "migrationInstructions": ["Inspect matched type references; this fixture is not a real migration advisory."],
+  "severity": "medium",
+  "provenance": "synthetic"
+}

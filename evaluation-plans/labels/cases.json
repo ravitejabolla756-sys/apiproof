@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0",
+  "id": "stripe-migration-plans-v1",
+  "provenance": "authored-planning-examples",
+  "cases": [
+    {
+      "id": "coupon-direct-ready",
+      "repository": "corpus/coupon-direct",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedStatus": "PLAN_READY",
+      "expectedLocations": [{ "file": "src/index.ts", "line": 3, "column": 1, "symbol": "subscriptions.create" }],
+      "requiredWarningFragments": ["No source code has been modified", "Human review is required"],
+      "explanation": "A structured coupon removal rule has a deterministic discounts replacement."
+    },
+    {
+      "id": "del-direct-ready",
+      "repository": "corpus/del-direct",
+      "changeId": "stripe-subscriptions-del-removed",
+      "expectedStatus": "PLAN_READY",
+      "expectedLocations": [{ "file": "src/index.ts", "line": 3, "column": 1, "symbol": "subscriptions.del" }],
+      "requiredWarningFragments": ["No source code has been modified"],
+      "explanation": "A removed method has a structured replacement symbol and an exact deterministic location."
+    },
+    {
+      "id": "coupon-multiple-locations",
+      "repository": "corpus/coupon-multiple",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedStatus": "PLAN_READY",
+      "expectedLocations": [
+        { "file": "src/index.ts", "line": 3, "column": 1, "symbol": "subscriptions.create" },
+        { "file": "src/index.ts", "line": 4, "column": 1, "symbol": "subscriptions.update" }
+      ],
+      "requiredWarningFragments": ["Plan has not been executed"],
+      "explanation": "Every affected location must be retained when one file contains two operations."
+    },
+    {
+      "id": "invoice-review-needed",
+      "repository": "corpus/invoice-review",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedStatus": "PLAN_NEEDS_REVIEW",
+      "expectedLocations": [{ "file": "src/index.ts", "line": 3, "column": 1, "symbol": "invoices.retrieveUpcoming" }],
+      "requiredWarningFragments": ["No source code has been modified", "Human review is required"],
+      "explanation": "The registry identifies a removed operation but does not encode an exact replacement symbol."
+    },
+    {
+      "id": "runtime-computed-insufficient",
+      "repository": "corpus/runtime-computed",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedStatus": "PLAN_INSUFFICIENT_EVIDENCE",
+      "expectedLocations": [],
+      "requiredWarningFragments": ["Impact status is inconclusive"],
+      "explanation": "Runtime method selection is intentionally not repaired by planning."
+    },
+    {
+      "id": "dynamic-import-insufficient",
+      "repository": "corpus/dynamic-import",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedStatus": "PLAN_INSUFFICIENT_EVIDENCE",
+      "expectedLocations": [],
+      "requiredWarningFragments": ["Impact status is inconclusive"],
+      "explanation": "Dynamic imports remain an analyzer coverage gap and cannot be invented by a planner."
+    }
+  ]
+}

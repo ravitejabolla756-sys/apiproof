@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "provenance": "fake-sandbox-evaluation-2026-09-06",
+  "cases": 15,
+  "correctStatuses": "15/15",
+  "correctFailingStages": "15/15",
+  "timeoutEnforced": "1/1",
+  "outputLimitPasses": "15/15",
+  "environmentIsolationPasses": "15/15",
+  "filesystemIsolationPasses": "15/15",
+  "networkIsolationPasses": "15/15",
+  "commandInjectionRejections": "1/1",
+  "unauthorizedFixtureRejections": "1/1",
+  "sandboxEscapes": 0,
+  "hostSecretLeakage": 0,
+  "docker": "NOT_EXECUTED: Docker daemon unavailable on Windows host",
+  "fixtureCodeExecuted": false,
+  "requiresHumanReview": true
+}

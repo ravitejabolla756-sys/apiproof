@@ -1,0 +1,9 @@
+{
+  "patchId": "patch-contract-fixture",
+  "changeId": "stripe-subscription-coupon-removed",
+  "repositoryId": "coupon-basic",
+  "status": "PATCH_READY_FOR_VALIDATION",
+  "files": [], "evidenceReferences": [], "planReferences": ["0000000000000000000000000000000000000000000000000000000000000000"], "warnings": [], "validation": [],
+  "generatedBy": { "implementation": "contract-fixture", "version": "0.6.0", "model": null, "aiUsed": false, "changeDigest": "0000000000000000000000000000000000000000000000000000000000000000", "rulesDigest": "0000000000000000000000000000000000000000000000000000000000000000", "planDigest": "0000000000000000000000000000000000000000000000000000000000000000", "sourceDigests": {}, "runId": "contract-fixture", "workspace": "C:/apiproof/contract-fixture" },
+  "requiresHumanReview": true
+}

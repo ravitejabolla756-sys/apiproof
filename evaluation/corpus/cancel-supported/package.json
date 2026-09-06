@@ -1,0 +1,8 @@
+{
+  "name": "evaluation-cancel-supported",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "stripe": "12.18.0"
+  }
+}

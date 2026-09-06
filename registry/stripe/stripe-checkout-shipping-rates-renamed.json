@@ -1,0 +1,59 @@
+{
+  "provider": "stripe",
+  "id": "stripe-checkout-shipping-rates-renamed",
+  "title": "Checkout shipping parameter replacement",
+  "description": "The v13 guide replaces shipping_rates with shipping_options. Scoped to migration from SDK >=12.0.0 <13.0.0 to 13.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "checkout.sessions.create",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "Checkout create accepted shipping_rates.",
+  "newBehavior": "Use shipping_options with the documented object shape.",
+  "migrationInstructions": [
+    "Map shipping rates into shipping_options; do not merely rename the key."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=12.0.0 <13.0.0",
+  "targetSdkVersion": "13.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+  "changeType": "parameter-renamed",
+  "resources": [
+    "checkout.sessions"
+  ],
+  "rules": [
+    {
+      "kind": "parameter",
+      "symbol": "checkout.sessions.create",
+      "match": "exact",
+      "argumentIndex": 0,
+      "path": "shipping_rates",
+      "condition": "present"
+      ,"replacementPath": "shipping_options"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+      "summary": "The v13 guide replaces shipping_rates with shipping_options.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=12.0.0 <13.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The v13 guide supports an SDK parameter/type change; this record makes no independent claim about all older raw API behaviors."
+  ]
+}

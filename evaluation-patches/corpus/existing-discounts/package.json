@@ -1,0 +1,1 @@
+{"name":"patch-existing-discounts","private":true,"dependencies":{"stripe":"17.7.0"},"scripts":{"test":"node MUST_NOT_RUN.cjs","build":"node MUST_NOT_RUN.cjs"}}

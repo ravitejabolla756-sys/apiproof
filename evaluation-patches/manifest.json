@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "fixtures": {
+    "coupon-basic": {
+      "src/billing.ts": "4ae4984c4f76a95c6b8f485d18d61a160a45dc31329560ab90bae4985528106a",
+      "package.json": "6c84bb3351ba0b3de0ebc4071ba6d14783465d4c6cc0fc77bb85136f02c2f570",
+      "package-lock.json": "3241388a8760ffc64117f57812f8394da3eaeea0d0c0d6c300eb68645a6a3d4e"
+    },
+    "coupon-update": {
+      "src/billing.ts": "b3bad0e051cf8b13711d16b376e1b7ddeed7482afe2f37f75a428074dd5d2a78",
+      "package.json": "d89fc7329ff885d0b2bd32965d53711b11b40ce281072eb61bcba7207e671b69",
+      "package-lock.json": "60c2342a1cf03b837140e3d127d5e12193238391187f67d267e3b4a99c838360"
+    },
+    "promotion-code": {
+      "src/billing.ts": "ac13b1de846ad45b7a4d69fd96752dba45388dee4d165fa6f88188bb7ad138d7",
+      "package.json": "826a534eb3c3a805a5705d94cd49aa9ffd18750298e45db74fe3e78d669601af",
+      "package-lock.json": "f12f4b9a75a2a4e6befe0a8cdc598531d121241e05ff1b84a981c4940babfef6"
+    },
+    "two-calls": {
+      "src/billing.ts": "1796c30434b671d6c2da955c21bd15bc9ff500824ae183642cc786ce8e0c92b9",
+      "package.json": "bbbc6013487d1ecb18dc9e878d1e0c77c747b36f36f7a9f9fe05c44feaf71274",
+      "package-lock.json": "fa3124b0e2feb3cb9cecdea618add468f123f11b8888a81156d23cbdd5592d78"
+    },
+    "two-files": {
+      "src/billing.ts": "744076954c7a2cbbce5107721f3912226fd143a7f420918533f0a0678034e5a3",
+      "src/renewal.ts": "91ca5470fbd113d5d68ba18f8f2e27d714307905c79ffa5f67b3d0006a651531",
+      "package.json": "1731ce11c27100d64f47d11e514c5e24efc7076933b173d72729e6753d05157e",
+      "package-lock.json": "a088eee8122906bcae1334bb30ae917571aa1ea7208029311b221d45935435fa"
+    },
+    "method-rename": {
+      "src/billing.ts": "04e9c94c10d9ecb78cac4d6f5dc10f86e4a52acfeeaee3c1651a4171cc074da0",
+      "package.json": "a64ed83e222df051eab90f35605c29d3945b1d0f0834e9fe9d3ca70a088397d4",
+      "package-lock.json": "92caa95295699ce2a0a5a5e41df92edff3bdf4fbb3d88b5216cb8ee679b1d3e1"
+    },
+    "type-rename": {
+      "src/billing.ts": "dd88f2fbd196ce8128bebf9bbde07260127944134631fcfb55e9ea10892451d1",
+      "package.json": "2f883947cd0ba0e081d0fb76711632b51c602949b5c4bdadbe988beb771d8bc5",
+      "package-lock.json": "edf6a21376a1fc357b00f4f94816fb26247faf913cb2b46d424bcf6f999d753d"
+    },
+    "response-field": {
+      "src/billing.ts": "f33905ca0496329784fa9ba333991205b79e52a864707a6c980be012f95913f0",
+      "package.json": "9bccb5442920ad0f061f791d5afd00f94751381eb9dfa093824018b1a32cd8e1",
+      "package-lock.json": "2b9ee3677d97d87ac4f9018fdd7e1c304fed11d8a551f285728f19c2eaeecf2c"
+    },
+    "wrapper": {
+      "src/billing.ts": "71632212c001c9f63472292269a3fe2812256884d5f7978dd64c55c9a172f8a6",
+      "package.json": "9da32ab144f7a78f618108a7fb9a0647461c2c269e5f24b95e1d09dfc1021ee8",
+      "package-lock.json": "dd6381c35e1c677cf472148f347dfd477c0925734a710ffc07f699451e06e2b1"
+    },
+    "missing-transformation": {
+      "src/billing.ts": "48f6510767cb3ab1b90174f064d054564f5c83decdfb25617f59b97bbb3e135b",
+      "package.json": "d9773338e25576539aba9390869656caa27fcee453b7ad2ab8cc9a15571b977a",
+      "package-lock.json": "31ca43bf451a2355005c072b13c8dbb70fca9a10ee3537288d1abb9bee9612c5"
+    },
+    "existing-discounts": {
+      "src/billing.ts": "78e8e0f4a866d7bd0e4d0a5ca0db6216dcc77e4c0db424f99b459422a4151462",
+      "package.json": "19e9ac36b922ed7bc04e6f1950a6b131be4186837d420ea264ba019f4602d8b0",
+      "package-lock.json": "c223cfe8c34c73b06f888fbb14de270b50c78e3cdd1f0ce1a55218f09b53097a"
+    },
+    "empty-coupon": {
+      "src/billing.ts": "3f8528c5d08102ef3bdd2eef5f314eac21e305dee319a72644d5e85db5cfb450",
+      "package.json": "6a71f20904ac1dfe668f7f086d8816fa17030a7bf84ecc71ad7ac69bd2f4538b",
+      "package-lock.json": "eca673ac8029bd77dee407f1812b199895d6965d7b6f2107d6a6f5e7b7740d83"
+    }
+  }
+}

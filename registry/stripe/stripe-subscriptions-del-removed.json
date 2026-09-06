@@ -1,0 +1,55 @@
+{
+  "provider": "stripe",
+  "id": "stripe-subscriptions-del-removed",
+  "title": "Subscription deletion helper removed",
+  "description": "Version 13 removes subscriptions.del; cancel is the replacement. Scoped to migration from SDK >=9.14.0 <13.0.0 to 13.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "subscriptions.del",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "The legacy del helper was available.",
+  "newBehavior": "Use subscriptions.cancel.",
+  "migrationInstructions": [
+    "Replace del calls with cancel and review cancellation options."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=9.14.0 <13.0.0",
+  "targetSdkVersion": "13.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+  "changeType": "method-removed",
+  "resources": [
+    "subscriptions"
+  ],
+  "rules": [
+    {
+      "kind": "method",
+      "symbol": "subscriptions.del",
+      "match": "exact",
+      "replacementSymbol": "subscriptions.cancel"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13",
+      "summary": "Version 13 removes subscriptions.del; cancel is the replacement.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=9.14.0 <13.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success."
+  ]
+}

@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Customer projects are never installed. Dependency lifecycle scripts for this
+# tool are disabled as well; esbuild uses its platform optional package.
+onlyBuiltDependencies: []

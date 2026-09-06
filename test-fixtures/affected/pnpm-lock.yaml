@@ -1,0 +1,7 @@
+lockfileVersion: '9.0'
+importers:
+  .:
+    dependencies:
+      stripe:
+        specifier: ^16.0.0
+        version: 16.12.0(@types/node@22.0.0)

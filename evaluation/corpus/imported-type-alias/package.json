@@ -1,0 +1,7 @@
+{
+  "name": "apiproof-corpus-imported-type-alias",
+  "private": true,
+  "dependencies": {
+    "stripe": "21.0.0"
+  }
+}

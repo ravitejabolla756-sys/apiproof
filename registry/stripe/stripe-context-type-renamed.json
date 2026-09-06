@@ -1,0 +1,56 @@
+{
+  "provider": "stripe",
+  "id": "stripe-context-type-renamed",
+  "title": "StripeContext instance type renamed",
+  "description": "The v22 migration guide changes Stripe.StripeContext type references to Stripe.StripeContextType while retaining the constructor. Scoped to migration from SDK >=21.0.0 <22.0.0 to 22.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "StripeContext",
+      "kind": "type",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "The namespace exposed StripeContext as an instance type.",
+  "newBehavior": "Use StripeContextType in type positions.",
+  "migrationInstructions": [
+    "Change affected annotations to Stripe.StripeContextType; keep constructor expressions separate."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=21.0.0 <22.0.0",
+  "targetSdkVersion": "22.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v22",
+  "changeType": "type-changed",
+  "resources": [
+    "StripeContext"
+  ],
+  "rules": [
+    {
+      "kind": "type",
+      "symbol": "StripeContext",
+      "match": "exact",
+      "replacementSymbol": "StripeContextType"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v22",
+      "summary": "The v22 migration guide changes Stripe.StripeContext type references to Stripe.StripeContextType while retaining the constructor.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=21.0.0 <22.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The type name changes while the Stripe.StripeContext constructor remains available."
+  ]
+}

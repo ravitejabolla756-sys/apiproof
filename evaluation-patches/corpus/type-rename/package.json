@@ -1,0 +1,1 @@
+{"name":"patch-type-rename","private":true,"dependencies":{"stripe":"21.0.0"},"scripts":{"test":"node MUST_NOT_RUN.cjs","build":"node MUST_NOT_RUN.cjs"}}

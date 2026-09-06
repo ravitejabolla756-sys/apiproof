@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "scenarios": 24,
+  "correctStatuses": 24,
+  "behaviorRegressionsRejected": 6,
+  "unsupportedRefusals": 2,
+  "harnessFailures": 0,
+  "externalNetworkAttempts": 0,
+  "secretLeakage": 0,
+  "unexpectedExecutions": 0
+}

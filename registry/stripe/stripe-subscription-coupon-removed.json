@@ -1,0 +1,99 @@
+{
+  "provider": "stripe",
+  "id": "stripe-subscription-coupon-removed",
+  "title": "Singular subscription discounts removed",
+  "description": "Basil removes singular coupon and promotion_code parameters in favor of discounts. Scoped to migration from SDK >=17.0.0 <18.0.0 to 18.0.0.",
+  "packageName": "stripe",
+  "affectedSymbols": [
+    {
+      "symbol": "subscriptions.create",
+      "kind": "method",
+      "match": "exact"
+    },
+    {
+      "symbol": "subscriptions.update",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "Subscription create/update accepted singular discount parameters.",
+  "newBehavior": "Use the discounts collection.",
+  "migrationInstructions": [
+    "Build discounts entries and review interactions with existing discounts."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=17.0.0 <18.0.0",
+  "targetSdkVersion": "18.0.0",
+  "apiVersion": "2025-03-31.basil",
+  "effectiveDate": "2025-03-31",
+  "provenance": "official",
+  "sourceUrl": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code",
+  "changeType": "parameter-removed",
+  "resources": [
+    "subscriptions"
+  ],
+  "rules": [
+    {
+      "kind": "parameter",
+      "symbol": "subscriptions.create",
+      "match": "exact",
+      "argumentIndex": 0,
+      "path": "coupon",
+      "condition": "present",
+      "replacementPath": "discounts"
+    },
+    {
+      "kind": "parameter",
+      "symbol": "subscriptions.create",
+      "match": "exact",
+      "argumentIndex": 0,
+      "path": "promotion_code",
+      "condition": "present",
+      "replacementPath": "discounts"
+    },
+    {
+      "kind": "parameter",
+      "symbol": "subscriptions.update",
+      "match": "exact",
+      "argumentIndex": 1,
+      "path": "coupon",
+      "condition": "present",
+      "replacementPath": "discounts"
+    },
+    {
+      "kind": "parameter",
+      "symbol": "subscriptions.update",
+      "match": "exact",
+      "argumentIndex": 1,
+      "path": "promotion_code",
+      "condition": "present",
+      "replacementPath": "discounts"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code",
+      "summary": "Basil removes singular coupon and promotion_code parameters in favor of discounts.",
+      "accessedAt": "2026-09-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.0.0/CHANGELOG.md",
+      "summary": "The tagged v18 changelog pins Basil and identifies the removed SDK helpers, subscription parameters and period fields.",
+      "accessedAt": "2026-09-06"
+    }
+  ],
+  "versionScope": "api-and-sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-06",
+    "notes": "Phase 2.5: manually inspected the cited official pages and checked rule scope, selectors and version assumptions. Agent source review only; no independent human approval or runtime verification."
+  },
+  "assumptions": [
+    "The source SDK range >=17.0.0 <18.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The target API version is 2025-03-31.basil; account, webhook and request overrides remain unverified. SDK removal and API availability are assessed separately.",
+    "Only top-level coupon and promotion_code on subscription create/update are covered; other affected endpoints in the advisory are outside this record."
+  ]
+}

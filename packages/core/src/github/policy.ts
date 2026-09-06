@@ -1,0 +1,6 @@
+import type { GitHubOperation } from './types.js';
+export const ALLOWED_GITHUB_OPERATIONS: readonly GitHubOperation[] = ['READ_REPOSITORY','READ_FILE','READ_TREE','CREATE_APIPROOF_BRANCH','WRITE_AUTHORIZED_FILES','CREATE_APIPROOF_COMMIT','CREATE_PULL_REQUEST','READ_OWN_PULL_REQUEST'];
+export const FORBIDDEN_GITHUB_OPERATIONS: readonly GitHubOperation[] = ['MERGE_PULL_REQUEST','ENABLE_AUTO_MERGE','PUSH_DEFAULT_BRANCH','FORCE_PUSH','EDIT_REPOSITORY_SETTINGS','EDIT_BRANCH_PROTECTION','EDIT_SECRETS','EDIT_ACTIONS','CREATE_RELEASE','CREATE_DEPLOYMENT'];
+export function operationAllowed(operation: GitHubOperation) { return ALLOWED_GITHUB_OPERATIONS.includes(operation); }
+export function branchName(changeId: string, shortRunId: string) { return `apiproof/stripe/${changeId}/${shortRunId}`; }
+export function identityMatches(expected: { installationId:string; repositoryId:string; owner:string; repository:string; defaultBranch:string }, actual: typeof expected) { return expected.installationId === actual.installationId && expected.repositoryId === actual.repositoryId && expected.owner === actual.owner && expected.repository === actual.repository && expected.defaultBranch === actual.defaultBranch; }

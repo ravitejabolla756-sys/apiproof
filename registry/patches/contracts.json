@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "provenance": "reviewed-structured-contract-semantics",
+  "rules": {
+    "stripe-subscription-coupon-removed": {
+      "operation": "subscriptions.create",
+      "request": { "mustNotContain": ["coupon"], "mustContainPath": ["discounts[0].coupon"], "preservePaths": ["metadata"] },
+      "limitations": ["Direct synthetic subscription create only; this does not model all Stripe endpoints or business behavior."]
+    },
+    "stripe-subscriptions-del-removed": {
+      "operation": "subscriptions.cancel",
+      "request": { "method": "POST", "preservePaths": [] },
+      "limitations": ["Synthetic method contract only; cancellation options require human review."]
+    },
+    "stripe-context-type-renamed": {
+      "operation": "context.create",
+      "request": { "method": "POST", "preservePaths": [] },
+      "limitations": ["Type-only change has no independent runtime assertion beyond the fixture entrypoint."]
+    }
+  }
+}

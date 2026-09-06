@@ -1,0 +1,33 @@
+{
+  "name": "apiproof",
+  "version": "0.7.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=22.14.0",
+    "pnpm": ">=10 <11"
+  },
+  "scripts": {
+    "apiproof": "tsx --conditions=apiproof-source apps/cli/src/index.ts",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck && tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "devDependencies": {
+    "@apiproof/analyzers": "workspace:*",
+    "@apiproof/core": "workspace:*",
+    "@apiproof/providers": "workspace:*",
+    "@apiproof/shared": "workspace:*",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.18.0",
+    "@types/semver": "^7.7.1",
+    "eslint": "^10.10.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.0.18"
+  }
+}

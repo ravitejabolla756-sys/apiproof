@@ -1,0 +1,9 @@
+export const GithubStatusSchema = ['GITHUB_ANALYSIS_READY','GITHUB_PROPOSAL_READY','GITHUB_PROPOSAL_NOT_ELIGIBLE','GITHUB_REPOSITORY_NOT_APPROVED','GITHUB_OBSERVE_ONLY','GITHUB_BASE_CHANGED','GITHUB_BRANCH_CREATED','GITHUB_COMMIT_CREATED','GITHUB_PR_CREATED','GITHUB_PROPOSAL_ALREADY_EXISTS','GITHUB_PERMISSION_DENIED','GITHUB_INSTALLATION_SUSPENDED','GITHUB_RATE_LIMITED','GITHUB_OPERATION_REJECTED','GITHUB_WRITE_FAILED','REPOSITORY_TOO_LARGE','LIVE_GITHUB_TEST_NOT_EXECUTED'] as const;
+export type GithubStatus = typeof GithubStatusSchema[number];
+export type ProofLevel = 'ANALYSIS_ONLY'|'PLAN_ONLY'|'STATIC_VERIFIED'|'EXECUTION_VERIFIED'|'CONTRACT_VERIFIED';
+export type RepositoryMode = 'OBSERVE'|'PROPOSE'|'DISABLED';
+export interface RepositoryIdentity { installationId: string; repositoryId: string; owner: string; repository: string; defaultBranch: string }
+export interface RepositoryPolicy extends RepositoryIdentity { mode: RepositoryMode; enabled: boolean }
+export type GitHubOperation = 'READ_REPOSITORY'|'READ_FILE'|'READ_TREE'|'CREATE_APIPROOF_BRANCH'|'WRITE_AUTHORIZED_FILES'|'CREATE_APIPROOF_COMMIT'|'CREATE_PULL_REQUEST'|'READ_OWN_PULL_REQUEST'|'MERGE_PULL_REQUEST'|'ENABLE_AUTO_MERGE'|'PUSH_DEFAULT_BRANCH'|'FORCE_PUSH'|'EDIT_REPOSITORY_SETTINGS'|'EDIT_BRANCH_PROTECTION'|'EDIT_SECRETS'|'EDIT_ACTIONS'|'CREATE_RELEASE'|'CREATE_DEPLOYMENT';
+export interface GithubProposalInput { policy: RepositoryPolicy; baseCommitSha: string; currentDefaultHead: string; changeId: string; shortRunId: string; proofLevel: ProofLevel; authorizedFiles: string[]; contractPassed: boolean; executionPassed: boolean; planAccepted: boolean; patchAccepted: boolean; impactAffected: boolean; evidenceSufficient: boolean; }
+export interface PullRequestProof { title: string; body: string; branch: string; commitSha: string; status: GithubStatus; prNumber?: number; }

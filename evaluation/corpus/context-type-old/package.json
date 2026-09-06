@@ -1,0 +1,8 @@
+{
+  "name": "evaluation-context-type-old",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "stripe": "21.0.0"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "rules": {
+    "stripe-subscription-coupon-removed": {
+      "changeDigest": "b85060e287734e81c6efc1f73c2fc2e3e54cc081c26aa55460f879482e7ea1b3",
+      "transformation": {
+        "kind": "singleton-discount",
+        "paths": [
+          "coupon",
+          "promotion_code"
+        ],
+        "destination": "discounts",
+        "valuePolicy": "nonempty-string-or-identifier",
+        "rejectSiblings": [
+          "discounts",
+          "coupon",
+          "promotion_code"
+        ]
+      },
+      "sources": [
+        "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code",
+        "https://raw.githubusercontent.com/stripe/stripe-node/v18.0.0/types/SubscriptionsResource.d.ts"
+      ],
+      "limitations": [
+        "Agent-authored rule; independent human review and runtime verification remain required.",
+        "Inline identifier-named properties only. Refuse spreads, duplicate or conflicting discount properties, empty-string clearing, computed keys and effectful values."
+      ]
+    },
+    "stripe-subscriptions-del-removed": {
+      "changeDigest": "bfa24595010a203db927be4c45066ed193ed132762b364d76d07c1c4f4497d04",
+      "transformation": {
+        "kind": "member-rename",
+        "from": "del",
+        "to": "cancel",
+        "receiver": "subscriptions",
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v13"
+      ],
+      "limitations": [
+        "Agent-authored rule; independent human review and runtime verification remain required.",
+        "Direct evidence-linked AST member or qualified type positions only. Preserve surrounding arguments and behavior for review."
+      ]
+    },
+    "stripe-context-type-renamed": {
+      "changeDigest": "b33c15a4f95f65c25654fb19e0b3679de8265b49c0e45ea75735e3cbd9518695",
+      "transformation": {
+        "kind": "qualified-type-rename",
+        "from": "StripeContext",
+        "to": "StripeContextType",
+        "preserveTypeArguments": true
+      },
+      "sources": [
+        "https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v22"
+      ],
+      "limitations": [
+        "Agent-authored rule; independent human review and runtime verification remain required.",
+        "Direct evidence-linked AST member or qualified type positions only. Preserve surrounding arguments and behavior for review."
+      ]
+    }
+  }
+}

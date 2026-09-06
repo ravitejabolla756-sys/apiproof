@@ -1,0 +1,7 @@
+{
+  "name": "apiproof-corpus-promise-alias",
+  "private": true,
+  "dependencies": {
+    "stripe": "17.7.0"
+  }
+}

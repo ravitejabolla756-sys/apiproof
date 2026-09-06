@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "provenance": "apiproof-owned-verification-fixtures",
+  "fixtures": [
+    { "id": "coupon-basic", "patchFixtureId": "coupon-basic", "executionAllowed": true, "packageManager": "pnpm", "commands": { "install": ["pnpm", "install", "--offline", "--ignore-scripts"], "build": ["pnpm", "exec", "tsc", "--noEmit"], "typecheck": ["pnpm", "exec", "tsc", "--noEmit"], "test": ["pnpm", "exec", "vitest", "run"] } },
+    { "id": "method-rename", "patchFixtureId": "method-rename", "executionAllowed": true, "packageManager": "pnpm", "commands": { "install": ["pnpm", "install", "--offline", "--ignore-scripts"], "build": ["pnpm", "exec", "tsc", "--noEmit"], "typecheck": ["pnpm", "exec", "tsc", "--noEmit"], "test": ["pnpm", "exec", "vitest", "run"] } },
+    { "id": "type-rename", "patchFixtureId": "type-rename", "executionAllowed": true, "packageManager": "pnpm", "commands": { "install": ["pnpm", "install", "--offline", "--ignore-scripts"], "build": ["pnpm", "exec", "tsc", "--noEmit"], "typecheck": ["pnpm", "exec", "tsc", "--noEmit"], "test": ["pnpm", "exec", "vitest", "run"] } },
+    { "id": "unauthorized-fixture", "patchFixtureId": "coupon-basic", "executionAllowed": false, "packageManager": "pnpm", "commands": { "install": [], "build": [], "typecheck": [], "test": [] } }
+  ]
+}

@@ -1,0 +1,298 @@
+{
+  "changeId": "stripe-subscription-coupon-removed",
+  "provider": "stripe",
+  "repository": "evaluation-plans/corpus/coupon-direct",
+  "status": "PLAN_READY",
+  "affectedLocations": [
+    {
+      "file": "src/index.ts",
+      "line": 3,
+      "column": 1,
+      "symbol": "subscriptions.create"
+    }
+  ],
+  "facts": [
+    {
+      "id": "fact:change:stripe-subscription-coupon-removed",
+      "kind": "change",
+      "statement": "Change record stripe-subscription-coupon-removed is reviewed and official.",
+      "evidenceIds": [
+        "change:stripe-subscription-coupon-removed"
+      ]
+    },
+    {
+      "id": "fact:package:package.json",
+      "kind": "package",
+      "statement": "Package stripe resolves to 17.7.0 (lockfile).",
+      "evidenceIds": [
+        "change:stripe-subscription-coupon-removed"
+      ]
+    },
+    {
+      "id": "fact:operation:8236e2c35db29774293a297f",
+      "kind": "operation",
+      "statement": "Affected operation or response symbol: subscriptions.create.",
+      "evidenceIds": [
+        "impact:8236e2c35db29774293a297f"
+      ],
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 1
+        },
+        "end": {
+          "line": 3,
+          "column": 28
+        }
+      },
+      "symbol": "subscriptions.create"
+    },
+    {
+      "id": "fact:location:8236e2c35db29774293a297f",
+      "kind": "location",
+      "statement": "Affected source location: src/index.ts:3:1.",
+      "evidenceIds": [
+        "impact:8236e2c35db29774293a297f"
+      ],
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 1
+        },
+        "end": {
+          "line": 3,
+          "column": 28
+        }
+      },
+      "symbol": "subscriptions.create"
+    },
+    {
+      "id": "fact:parameter:8236e2c35db29774293a297f:1",
+      "kind": "parameter",
+      "statement": "Affected parameter: coupon.",
+      "evidenceIds": [
+        "impact:8236e2c35db29774293a297f:1"
+      ],
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 31
+        },
+        "end": {
+          "line": 3,
+          "column": 37
+        }
+      },
+      "symbol": "subscriptions.create"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "recommendation-1",
+      "text": "Replace coupon with the structured replacement discounts; exact syntax and surrounding business behavior require human review.",
+      "supportedBy": [
+        "impact:8236e2c35db29774293a297f",
+        "change:stripe-subscription-coupon-removed"
+      ],
+      "unsupportedSpeculation": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "step-1",
+      "kind": "transform",
+      "description": "Update subscriptions.create at src/index.ts:3 by replacing coupon with discounts.",
+      "location": {
+        "file": "src/index.ts",
+        "line": 3,
+        "column": 1,
+        "symbol": "subscriptions.create"
+      },
+      "supportedBy": [
+        "impact:8236e2c35db29774293a297f"
+      ],
+      "currentField": "coupon",
+      "suggestedField": "discounts"
+    }
+  ],
+  "assumptions": [
+    "The source SDK range >=17.0.0 <18.0.0 is a selected upgrade cohort, not the earliest historical affected version or an exhaustive affected range.",
+    "A static reference indicates potential migration work; it does not prove execution, deployment impact or migration success.",
+    "The target API version is 2025-03-31.basil; account, webhook and request overrides remain unverified. SDK removal and API availability are assessed separately.",
+    "Only top-level coupon and promotion_code on subscription create/update are covered; other affected endpoints in the advisory are outside this record."
+  ],
+  "warnings": [
+    "API_VERSION_UNVERIFIED: Runtime API versions remain unverified; findings concern migration to the supplied change.",
+    "Plan has not been executed.",
+    "No source code has been modified.",
+    "Human review is required; this plan is not proof of a safe migration."
+  ],
+  "unresolvedQuestions": [],
+  "evidence": [
+    {
+      "id": "change:stripe-subscription-coupon-removed",
+      "kind": "change",
+      "label": "Reviewed change record stripe-subscription-coupon-removed.",
+      "changeId": "stripe-subscription-coupon-removed"
+    },
+    {
+      "id": "source:stripe-subscription-coupon-removed:0",
+      "kind": "official-source",
+      "label": "Basil removes singular coupon and promotion_code parameters in favor of discounts.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "url": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code"
+    },
+    {
+      "id": "source:stripe-subscription-coupon-removed:1",
+      "kind": "official-source",
+      "label": "The tagged v18 changelog pins Basil and identifies the removed SDK helpers, subscription parameters and period fields.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.0.0/CHANGELOG.md"
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f",
+      "kind": "impact",
+      "label": "subscriptions.create is potentially affected at src/index.ts:3:1.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create",
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 1
+        },
+        "end": {
+          "line": 3,
+          "column": 28
+        }
+      }
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f:0",
+      "kind": "impact",
+      "label": "subscriptions.create",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create",
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 1
+        },
+        "end": {
+          "line": 3,
+          "column": 28
+        }
+      }
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f:1",
+      "kind": "impact",
+      "label": "Argument 0; present predicate.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create",
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 31
+        },
+        "end": {
+          "line": 3,
+          "column": 37
+        }
+      }
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f:2",
+      "kind": "impact",
+      "label": "import-binding",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create",
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 1,
+          "column": 8
+        },
+        "end": {
+          "line": 1,
+          "column": 14
+        }
+      }
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f:3",
+      "kind": "impact",
+      "label": "SDK 17.7.0 from lockfile satisfies >=17.0.0 <18.0.0.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create"
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f:4",
+      "kind": "impact",
+      "label": "Basil removes singular coupon and promotion_code parameters in favor of discounts.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create"
+    },
+    {
+      "id": "impact:8236e2c35db29774293a297f:5",
+      "kind": "impact",
+      "label": "The tagged v18 changelog pins Basil and identifies the removed SDK helpers, subscription parameters and period fields.",
+      "changeId": "stripe-subscription-coupon-removed",
+      "symbol": "subscriptions.create"
+    },
+    {
+      "id": "snippet:src/index.ts:3",
+      "kind": "snippet",
+      "label": "Bounded redacted context for src/index.ts:3.",
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 3,
+          "column": 1
+        },
+        "end": {
+          "line": 3,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "confidence": {
+    "analysisConfidence": 0.7,
+    "planningConfidence": 0.9,
+    "evidenceCoverage": 1,
+    "basis": [
+      "Structured registry replacement metadata is present.",
+      "All recommendations link to deterministic evidence."
+    ]
+  },
+  "generatedBy": {
+    "planner": "deterministic",
+    "version": "0.3.0",
+    "model": null,
+    "generatedAt": "2026-09-06T13:02:53.000Z",
+    "evidenceIds": [
+      "change:stripe-subscription-coupon-removed",
+      "source:stripe-subscription-coupon-removed:0",
+      "source:stripe-subscription-coupon-removed:1",
+      "impact:8236e2c35db29774293a297f",
+      "impact:8236e2c35db29774293a297f:0",
+      "impact:8236e2c35db29774293a297f:1",
+      "impact:8236e2c35db29774293a297f:2",
+      "impact:8236e2c35db29774293a297f:3",
+      "impact:8236e2c35db29774293a297f:4",
+      "impact:8236e2c35db29774293a297f:5",
+      "snippet:src/index.ts:3"
+    ],
+    "changeDigest": "b85060e287734e81c6efc1f73c2fc2e3e54cc081c26aa55460f879482e7ea1b3",
+    "analysisDigest": "d4a9b0b75686f2e25b5c0de11178e13949bcc142eb77c7c40da8b037fb3e57cc",
+    "modelReasoningUsed": false,
+    "validationStatus": "validated"
+  },
+  "requiresHumanReview": true
+}

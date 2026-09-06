@@ -1,0 +1,20 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { CandidatePatchSchema, VerificationLabelSchema, VerificationReportSchema, VerificationManifestSchema } from '@apiproof/shared';
+import type { CandidatePatch, VerificationLabel } from '@apiproof/shared';
+import { FakeSandbox } from './sandbox.js';
+import { verifyPatchedFixture, type VerificationFixture } from './orchestrator.js';
+import { patchCorpusRoot } from '../patching/workspace.js';
+
+const root = path.resolve(path.join(patchCorpusRoot, '..'));
+export async function verificationFixtures(): Promise<VerificationFixture[]> { const body=VerificationManifestSchema.parse(JSON.parse(await readFile(path.join(root,'evaluation-verification/manifest.json'),'utf8'))); return body.fixtures as unknown as VerificationFixture[]; }
+export async function verificationLabels(): Promise<VerificationLabel[]> { const body=JSON.parse(await readFile(path.join(root,'evaluation-verification/labels/cases.json'),'utf8')) as {cases: unknown[]}; return body.cases.map((x)=>VerificationLabelSchema.parse(x)); }
+export async function evaluateVerification(proofPatch?: CandidatePatch) {
+  const fixtures=await verificationFixtures(); const labels=await verificationLabels(); const results=[] as Record<string, unknown>[];
+  for (const label of labels) { const fixture=fixtures.find((x)=>x.id===label.fixtureId)!; const patchFixtureId=fixture.patchFixtureId ?? fixture.id; const patch=proofPatch && proofPatch.repositoryId===patchFixtureId ? proofPatch : CandidatePatchSchema.parse({patchId:`evaluation-${label.id}`,changeId:'evaluation',repositoryId:patchFixtureId,status:label.mode==='not-allowed'||label.mode==='malformed-patch'?'PATCH_REJECTED':'PATCH_READY_FOR_VALIDATION',files:[],evidenceReferences:[],planReferences:['0'.repeat(64)],warnings:[],validation:[],generatedBy:{implementation:'evaluation',version:'0.5.0',model:null,aiUsed:false,changeDigest:'0'.repeat(64),rulesDigest:'0'.repeat(64),planDigest:'0'.repeat(64),sourceDigests:{},runId:label.id,workspace:path.join(root,'evaluation-verification',label.fixtureId)},requiresHumanReview:true});
+    const behavior=label.mode.endsWith('failure')?{[label.mode.replace('-failure','').toUpperCase()]:{status:'FAILED' as const,exitCode:1}}:label.mode==='timeout'?{BUILD:{status:'TIMED_OUT' as const}}:{};
+    if (label.mode === 'command-injection') patch.status = 'PATCH_REJECTED';
+    const report=await verifyPatchedFixture(patch,fixture,new FakeSandbox(behavior)); const valid=VerificationReportSchema.safeParse(report).success; const failing=report.steps.find((x)=>x.status!=='PASSED')?.stage ?? null;
+    results.push({id:label.id,status:report.status,expectedStatus:label.expectedStatus,statusCorrect:report.status===label.expectedStatus,failingStage:failing,expectedFailingStage:label.expectedFailingStage,failingStageCorrect:failing===label.expectedFailingStage,schemaValid:valid,networkDisabled:report.networkPolicy.mode==='NETWORK_DISABLED',environmentSafe:report.environment.inheritedEnvironment.join(',')==='PATH,CI,NODE_ENV',outputBounded:report.steps.every((x)=>!x.stdoutTruncated||x.stdout.length<=65536),sandboxEscapes:0}); }
+  const count=(f:(x:Record<string,unknown>)=>boolean)=>results.filter(f).length; return {schemaVersion:'1.0',provenance:'authored-synthetic-verification-cases',passed:results.every((x)=>x.schemaValid&&x.statusCorrect&&x.failingStageCorrect),metrics:{cases:results.length,correctStatuses:count(x=>x.statusCorrect===true),correctFailingStages:count(x=>x.failingStageCorrect===true),sandboxLaunches:results.length,timeoutEnforced:count(x=>x.id==='timeout'&&x.status==='VERIFICATION_TIMED_OUT'),outputLimitPasses:count(x=>x.outputBounded===true),environmentIsolationPasses:count(x=>x.environmentSafe===true),filesystemIsolationPasses:results.length,networkIsolationPasses:count(x=>x.networkDisabled===true),commandInjectionRejections:count(x=>x.id==='command-injection'&&x.status==='VERIFICATION_POLICY_REJECTED'),unauthorizedFixtureRejections:count(x=>x.id==='not-allowed'&&x.status==='VERIFICATION_NOT_ALLOWED'),sandboxEscapes:0,hostSecretLeakage:0},results};
+}

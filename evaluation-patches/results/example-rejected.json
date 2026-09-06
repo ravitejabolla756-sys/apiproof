@@ -1,0 +1,111 @@
+{
+  "patchId": "patch-6511d5ba-b715-4308-83df-42f6160b5db1",
+  "changeId": "stripe-subscription-coupon-removed",
+  "repositoryId": "coupon-basic",
+  "status": "PATCH_REJECTED",
+  "files": [
+    {
+      "path": "src/billing.ts",
+      "originalDigest": "4ae4984c4f76a95c6b8f485d18d61a160a45dc31329560ab90bae4985528106a",
+      "patchedDigest": null,
+      "edits": [
+        {
+          "targetId": "target-0-c2f50fd8590f4e6396b05c85",
+          "operation": "replace-range",
+          "start": 90,
+          "end": 106,
+          "expected": "coupon: 'launch'",
+          "replacement": "discounts: child_process.exec('unsafe')",
+          "evidenceIds": [
+            "impact:c2f50fd8590f4e6396b05c85",
+            "change:stripe-subscription-coupon-removed"
+          ]
+        }
+      ],
+      "unifiedDiff": ""
+    }
+  ],
+  "evidenceReferences": [
+    "change:stripe-subscription-coupon-removed",
+    "impact:c2f50fd8590f4e6396b05c85",
+    "impact:c2f50fd8590f4e6396b05c85:0",
+    "impact:c2f50fd8590f4e6396b05c85:1",
+    "impact:c2f50fd8590f4e6396b05c85:2",
+    "impact:c2f50fd8590f4e6396b05c85:3",
+    "impact:c2f50fd8590f4e6396b05c85:4",
+    "impact:c2f50fd8590f4e6396b05c85:5"
+  ],
+  "planReferences": [
+    "77065ba534129e832499494fbd8e3799c3fc6272b2487ee9efffd016fb73ba7e"
+  ],
+  "warnings": [
+    "NOT EXECUTED. NOT VERIFIED. NOT COMMITTED. Human review required."
+  ],
+  "validation": [
+    {
+      "stage": "schema",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "provenance",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "source-provenance",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "evidence",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "path",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "allowed-files",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "digest-context",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "diff-size",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "secret-output",
+      "passed": true,
+      "code": "OK"
+    },
+    {
+      "stage": "dangerous-patterns",
+      "passed": false,
+      "code": "DANGEROUS_ADDITION"
+    }
+  ],
+  "generatedBy": {
+    "implementation": "structured-model",
+    "version": "0.4.0",
+    "model": "fake-structured-patch-v1",
+    "aiUsed": false,
+    "changeDigest": "b85060e287734e81c6efc1f73c2fc2e3e54cc081c26aa55460f879482e7ea1b3",
+    "rulesDigest": "4b4b7341f78e9eb7352c9ce629ce1eec4019af7fbdcec34839570c71633561c8",
+    "planDigest": "77065ba534129e832499494fbd8e3799c3fc6272b2487ee9efffd016fb73ba7e",
+    "sourceDigests": {
+      "src/billing.ts": "4ae4984c4f76a95c6b8f485d18d61a160a45dc31329560ab90bae4985528106a"
+    },
+    "runId": "6511d5ba-b715-4308-83df-42f6160b5db1",
+    "workspace": "C:\\YC\\.tmp\\patch-runs\\6511d5ba-b715-4308-83df-42f6160b5db1\\repository"
+  },
+  "requiresHumanReview": true
+}

@@ -1,0 +1,1065 @@
+{
+  "schemaVersion": "1.0",
+  "corpusId": "stripe-integrations-v1",
+  "labelDigest": "582cff095b085c45658fbd95df52e2fbfb6a434ea30020981d7f23aff3c9226d",
+  "provenance": "authored-integration-examples",
+  "repositories": 30,
+  "changeRecords": 9,
+  "groundTruthCases": 38,
+  "metrics": {
+    "truePositives": 17,
+    "falsePositives": 1,
+    "trueNegatives": 17,
+    "falseNegatives": 3,
+    "precision": 0.9444444444444444,
+    "recall": 0.85,
+    "f1": 0.8947368421052632
+  },
+  "usageMetrics": {
+    "truePositives": 18,
+    "falsePositives": 1,
+    "falseNegatives": 3,
+    "precision": 0.9473684210526315,
+    "recall": 0.8571428571428571,
+    "f1": 0.9
+  },
+  "inconclusiveCases": 2,
+  "failedCases": 0,
+  "scoredCases": 38,
+  "cases": [
+    {
+      "id": "cancel-legacy-subscriptions-del-removed",
+      "repository": "corpus/cancel-legacy",
+      "changeId": "stripe-subscriptions-del-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The invoked del helper is removed when upgrading this integration to SDK 13.",
+      "diagnostics": [],
+      "inputDigest": "369d1bdf4acf083c6ba8bd9a00fe0b12a6463371436ddca44257fadc60b13168",
+      "changeDigest": "06eafa3595b1cd362d9749046c1e87b0db2ebf957d1adddb37cdc081305f616b"
+    },
+    {
+      "id": "cancel-legacy-subscriptions-del-deprecated",
+      "repository": "corpus/cancel-legacy",
+      "changeId": "stripe-subscriptions-del-deprecated",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.del",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The integration still calls the deprecated helper rather than cancel.",
+      "diagnostics": [],
+      "inputDigest": "369d1bdf4acf083c6ba8bd9a00fe0b12a6463371436ddca44257fadc60b13168",
+      "changeDigest": "7d89cf46c97f8aff2f5abff4946d562ea6a9be30f176cdab282f9308d37ebfa0"
+    },
+    {
+      "id": "cancel-supported-subscriptions-del-removed",
+      "repository": "corpus/cancel-supported",
+      "changeId": "stripe-subscriptions-del-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The replacement cancel method is already used.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "9bd2794a83c2f05caa0512937eed297e12576a51feaac0b00b6fb3177c6e9e8e",
+      "changeDigest": "06eafa3595b1cd362d9749046c1e87b0db2ebf957d1adddb37cdc081305f616b"
+    },
+    {
+      "id": "cancel-supported-subscriptions-del-deprecated",
+      "repository": "corpus/cancel-supported",
+      "changeId": "stripe-subscriptions-del-deprecated",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "No deprecated helper is referenced.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "9bd2794a83c2f05caa0512937eed297e12576a51feaac0b00b6fb3177c6e9e8e",
+      "changeDigest": "7d89cf46c97f8aff2f5abff4946d562ea6a9be30f176cdab282f9308d37ebfa0"
+    },
+    {
+      "id": "billing-alias-invoice-upcoming-removed",
+      "repository": "corpus/billing-alias",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A local client alias invokes the removed upcoming invoice helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "eeabad0f864f4f63b6b7be04febbdf80f07f6db95877e30a1b0d6aa55b5a9334",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "billing-alias-subscription-coupon-removed",
+      "repository": "corpus/billing-alias",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 9,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 9,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The const params object passes a singular coupon to subscription creation.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "eeabad0f864f4f63b6b7be04febbdf80f07f6db95877e30a1b0d6aa55b5a9334",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "billing-class-invoice-upcoming-removed",
+      "repository": "corpus/billing-class",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 11,
+          "column": 12
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 11,
+          "column": 12
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The class member is initialized with Stripe and invokes retrieveUpcoming.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "ea9b82dcaf2c7041773cca239244a9169a86dfd5cc755adb5697dc9ac7ff32a3",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "billing-class-subscription-coupon-removed",
+      "repository": "corpus/billing-class",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Payment creation and invoice preview do not use singular subscription discounts.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "ea9b82dcaf2c7041773cca239244a9169a86dfd5cc755adb5697dc9ac7ff32a3",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "discounts-modern-subscription-coupon-removed",
+      "repository": "corpus/discounts-modern",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Nested discounts coupon entries are the supported replacement, not the removed top-level coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "a911d65ad19eab1530309f560ce8e554fd4a180010ddc103cbe4c5f69b56e79f",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "discounts-spread-subscription-coupon-removed",
+      "repository": "corpus/discounts-spread",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A known const spread supplies the removed top-level coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "b642b51d884d11e5b011d40a3a8d048f6044ab1060d4f54180504a37b419c3b2",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "metadata-lookalike-subscription-coupon-removed",
+      "repository": "corpus/metadata-lookalike",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A metadata key named coupon is user metadata and is unrelated to the removed request parameter.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "2402b754a35c0d49b989d707928092eb138d38c78e8c0513151edc81a8ce3cce",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "discounts-update-subscription-coupon-removed",
+      "repository": "corpus/discounts-update",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.update",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.update",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The second argument to subscription update contains the removed coupon.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "e601e686d559cad447aefcc340768e42873e6d31af0cdc73672073ac415390d8",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "discounts-builder-subscription-coupon-removed",
+      "repository": "corpus/discounts-builder",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 7,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptions.create",
+          "line": 7,
+          "column": 10
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "The parameter builder returns a singular coupon; arbitrary function-return inference is deliberately outside analyzer scope.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "INSUFFICIENT_STATIC_EVIDENCE",
+        "INSUFFICIENT_STATIC_EVIDENCE"
+      ],
+      "inputDigest": "d9ee86a8fa77b7cfae0db628e53b34658503ae2750749d98033c0d4fc93d4a6e",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "period-await-subscription-period-fields",
+      "repository": "corpus/period-await",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An awaited subscription response is read using the removed top-level period field.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "232d1da7a2d3c9aab981888842587407f744f15031670cf0e75c081ec03c2775",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "period-destructure-subscription-period-fields",
+      "repository": "corpus/period-destructure",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 11
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 11
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Destructuring reads the removed subscription period property.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "e3e12687be6709586575e4b382d1375c0411479c7340e24a0585ac657836369d",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "period-typed-subscription-period-fields",
+      "repository": "corpus/period-typed",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The explicit Subscription type identifies the response property as subscription-level.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "487a39c5194a4af36ac5fbd71ff0feb355384bbc10f6924a6a376763aa082393",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "period-promise-subscription-period-fields",
+      "repository": "corpus/period-promise",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "outcome": "FN",
+      "status": "no-matched-usage",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 65
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "current_period_end",
+          "line": 4,
+          "column": 65
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "The Promise callback receives the subscription and reads its removed period field; callback inference is unsupported.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "ac985e6dfb68bb54f98893eea3618b0e4eaf6fdcc2db0168cac8a581777cb454",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "period-lookalike-subscription-period-fields",
+      "repository": "corpus/period-lookalike",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The local Membership interface is unrelated to Stripe response types.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "71fa07e7ff7a9b4730e67cd73557faa60a6fdf872a9942fe43e063df517c2235",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "period-item-subscription-period-fields",
+      "repository": "corpus/period-item",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The period belongs to SubscriptionItem, where the field remains valid.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "3e6a5b1186fb23b02451b3fcd0636cb88041052058eca8bc1432f5df0b1a7a0f",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "context-type-old-context-type-renamed",
+      "repository": "corpus/context-type-old",
+      "changeId": "stripe-context-type-renamed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "StripeContext",
+          "line": 2,
+          "column": 36
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "StripeContext",
+          "line": 2,
+          "column": 36
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The namespace type annotation must use StripeContextType in SDK 22.",
+      "diagnostics": [],
+      "inputDigest": "af5f80dc01ba76e8ef4d0b696cb19522e8a216a423d32333b404666bbb1c6cd0",
+      "changeDigest": "bef2d2ee4ddfed0a902a8e045f89e02cabe5219e60e2b5c335152bb5ae191d88"
+    },
+    {
+      "id": "context-type-new-context-type-renamed",
+      "repository": "corpus/context-type-new",
+      "changeId": "stripe-context-type-renamed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The replacement type annotation is already used.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "b285666781d7d9cf485107b8d15130d643ab622c57079b489025026e4ab4e1af",
+      "changeDigest": "bef2d2ee4ddfed0a902a8e045f89e02cabe5219e60e2b5c335152bb5ae191d88"
+    },
+    {
+      "id": "checkout-shipping-old-checkout-shipping-rates-renamed",
+      "repository": "corpus/checkout-shipping-old",
+      "changeId": "stripe-checkout-shipping-rates-renamed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "checkout.sessions.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "checkout.sessions.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Checkout creation provides the replaced shipping_rates parameter.",
+      "diagnostics": [],
+      "inputDigest": "8ae399f104735e6baf009ed9ab75d23883c3ffecab2ab0e27d6602fb4a2da0c4",
+      "changeDigest": "63c8166d108c043b75606e94fbc62a04e268eab63517f02b376656ca86873f42"
+    },
+    {
+      "id": "checkout-shipping-new-checkout-shipping-rates-renamed",
+      "repository": "corpus/checkout-shipping-new",
+      "changeId": "stripe-checkout-shipping-rates-renamed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The request uses shipping_options rather than shipping_rates.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "f000682c90db460deb00ed3f4b62e80acf57f96d72426ad3aecc23d068a7a141",
+      "changeDigest": "63c8166d108c043b75606e94fbc62a04e268eab63517f02b376656ca86873f42"
+    },
+    {
+      "id": "account-link-old-account-link-type-changed",
+      "repository": "corpus/account-link-old",
+      "changeId": "stripe-account-link-type-changed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "accountLinks.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "accountLinks.create",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Account-link creation passes an enum value removed from SDK 13 typings.",
+      "diagnostics": [],
+      "inputDigest": "80d67c0d7b1fbae86618f98c99aa7f09209ed9c11c4350bf31b62d8d6ac87309",
+      "changeDigest": "9d74e479d8c2c1d925fb1a747b1ef14820a7040b8c9d57dad6efcd2b43ee20c0"
+    },
+    {
+      "id": "account-link-supported-account-link-type-changed",
+      "repository": "corpus/account-link-supported",
+      "changeId": "stripe-account-link-type-changed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The supported account_onboarding enum value is unaffected.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "e5ce28b67d68c8f2211f56972b71bd4764c303cdea2042bbee20114b65b84d87",
+      "changeDigest": "9d74e479d8c2c1d925fb1a747b1ef14820a7040b8c9d57dad6efcd2b43ee20c0"
+    },
+    {
+      "id": "metering-legacy-legacy-usage-methods",
+      "repository": "corpus/metering-legacy",
+      "changeId": "stripe-legacy-usage-methods",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptionItems.createUsageRecord",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "subscriptionItems.createUsageRecord",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The request invokes the removed legacy usage-record helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "430ba22767f92fc247968b30535802880d4869003c969bd72d6bdfa916eafc16",
+      "changeDigest": "4003aa0dcba250b9b6ccdfa4598f399390556308cf37b6c6ab6660989aa8d66b"
+    },
+    {
+      "id": "metering-current-legacy-usage-methods",
+      "repository": "corpus/metering-current",
+      "changeId": "stripe-legacy-usage-methods",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Billing meter events are the replacement workflow, not legacy usage-record methods.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "3ff3cec0955223ebdb98ff49f9150db45c1364a9884e0bdb7a7d8bd7a694e31a",
+      "changeDigest": "4003aa0dcba250b9b6ccdfa4598f399390556308cf37b6c6ab6660989aa8d66b"
+    },
+    {
+      "id": "multiple-clients-invoice-upcoming-removed",
+      "repository": "corpus/multiple-clients",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 21
+        },
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 6,
+          "column": 21
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 21
+        },
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 6,
+          "column": 21
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Both independently constructed clients invoke the removed helper.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "53c51d86cd5ccd83838bac85dde2f5b7c096704aef0ba6ad08ea79c86a842345",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "dynamic-member-invoice-upcoming-removed",
+      "repository": "corpus/dynamic-member",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": false,
+      "outcome": "FN",
+      "status": "inconclusive",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [],
+      "missedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 5,
+          "column": 10
+        }
+      ],
+      "unexpectedUsages": [],
+      "explanation": "The computed member resolves at runtime to retrieveUpcoming; computed identifier evaluation is outside supported scope.",
+      "diagnostics": [
+        "DYNAMIC_MEMBER",
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "2fb4173fa1c4b4ea5cd5d2c986148e17a06707bb54d9776a68c44195f60dd9c6",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "unrelated-object-invoice-upcoming-removed",
+      "repository": "corpus/unrelated-object",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "An injected local InvoiceStore uses a lookalike method name but has no Stripe binding.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "2eb39a2b4158913ca94049538038db2e7937b333a0091c2995c28cc8f6fc9d8c",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "post-upgrade-subscription-coupon-removed",
+      "repository": "corpus/post-upgrade",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "SDK 18 with the migrated discounts parameter is outside the scoped source-version range.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "8c32c5f4b5056082fcc99ee1c56483a08dbf709293894b73e78fcf9386869f98",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "retained-reference-invoice-upcoming-removed",
+      "repository": "corpus/retained-reference",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": false,
+      "predictedAffected": true,
+      "outcome": "FP",
+      "status": "potentially-affected",
+      "expectedUsages": [],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 29
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 29
+        }
+      ],
+      "explanation": "This diagnostic capability check remains valid when the property is absent; conservative member-reference matching may over-report it.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "ee299364c71248e2ec2d660fca27ab21055a5ed5aa57bcc15f537de847478465",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "cross-file-client-invoice-upcoming-removed",
+      "repository": "corpus/cross-file-client",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 3,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "A relative import aliases the exported Stripe client used to preview invoices.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "a699a5437dc5c3dcec5899ac13f400ec7d15c6f75e55af4a53e03b885ebba9fb",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "unknown-version-invoice-upcoming-removed",
+      "repository": "corpus/unknown-version",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "expectedAffected": true,
+      "predictedAffected": true,
+      "outcome": "TP",
+      "status": "potentially-affected",
+      "expectedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "predictedUsages": [
+        {
+          "file": "src/index.ts",
+          "symbol": "invoices.retrieveUpcoming",
+          "line": 4,
+          "column": 10
+        }
+      ],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "The declared major-17 range and legacy call need migration review even though no exact installation is available.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED"
+      ],
+      "inputDigest": "b84dfba4fce261da0e261316420adc0a0be17c8e23bfb68022210b451f0359f0",
+      "changeDigest": "452c1b3ce71beb94278acb33db08cfe1c9d7b45a2e2010aa2640b5c8d9b07516"
+    },
+    {
+      "id": "period-await-subscription-coupon-removed",
+      "repository": "corpus/period-await",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Retrieving a subscription response does not send coupon parameters.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "232d1da7a2d3c9aab981888842587407f744f15031670cf0e75c081ec03c2775",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "billing-alias-subscription-period-fields",
+      "repository": "corpus/billing-alias",
+      "changeId": "stripe-subscription-period-fields",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "This example invokes billing methods but never reads subscription period fields.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "eeabad0f864f4f63b6b7be04febbdf80f07f6db95877e30a1b0d6aa55b5a9334",
+      "changeDigest": "33eb7d9df4dcfc8b2f32ea83fc072a08d6cf16d8f2090417eb9a555af9ef99ca"
+    },
+    {
+      "id": "multiple-clients-subscription-coupon-removed",
+      "repository": "corpus/multiple-clients",
+      "changeId": "stripe-subscription-coupon-removed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Neither client submits subscription discount parameters.",
+      "diagnostics": [
+        "API_VERSION_UNVERIFIED",
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "53c51d86cd5ccd83838bac85dde2f5b7c096704aef0ba6ad08ea79c86a842345",
+      "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d"
+    },
+    {
+      "id": "checkout-shipping-old-account-link-type-changed",
+      "repository": "corpus/checkout-shipping-old",
+      "changeId": "stripe-account-link-type-changed",
+      "expectedAffected": false,
+      "predictedAffected": false,
+      "outcome": "TN",
+      "status": "no-matched-usage",
+      "expectedUsages": [],
+      "predictedUsages": [],
+      "missedUsages": [],
+      "unexpectedUsages": [],
+      "explanation": "Checkout session parameters are unrelated to account-link enum changes.",
+      "diagnostics": [
+        "SYMBOL_NOT_FOUND"
+      ],
+      "inputDigest": "8ae399f104735e6baf009ed9ab75d23883c3ffecab2ab0e27d6602fb4a2da0c4",
+      "changeDigest": "9d74e479d8c2c1d925fb1a747b1ef14820a7040b8c9d57dad6efcd2b43ee20c0"
+    }
+  ]
+}

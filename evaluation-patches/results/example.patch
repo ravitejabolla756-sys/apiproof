@@ -1,0 +1,7 @@
+--- a/src/billing.ts
++++ b/src/billing.ts
+@@ -1,3 +1,3 @@
+ import Stripe from 'stripe';
+ const client = new Stripe('');
+-client.subscriptions.create({ coupon: 'launch' });
++client.subscriptions.create({ discounts: [{ coupon: 'launch' }] });

@@ -1,0 +1,378 @@
+{
+  "schemaVersion": "1.1",
+  "analysisMode": "reviewed-registry",
+  "change": {
+    "provider": "stripe",
+    "id": "stripe-subscription-coupon-removed",
+    "title": "Singular subscription discounts removed",
+    "description": "Basil removes singular coupon and promotion_code parameters in favor of discounts. Scoped to migration from SDK >=17.0.0 <18.0.0 to 18.0.0.",
+    "packageName": "stripe",
+    "affectedSymbols": [
+      {
+        "symbol": "subscriptions.create",
+        "match": "exact",
+        "kind": "method"
+      },
+      {
+        "symbol": "subscriptions.update",
+        "match": "exact",
+        "kind": "method"
+      }
+    ],
+    "oldBehavior": "Subscription create/update accepted singular discount parameters.",
+    "newBehavior": "Use the discounts collection.",
+    "migrationInstructions": [
+      "Build discounts entries and review interactions with existing discounts."
+    ],
+    "sourceUrl": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code",
+    "severity": "high",
+    "affectedSdkVersions": ">=17.0.0 <18.0.0",
+    "targetSdkVersion": "18.0.0",
+    "apiVersion": "2025-03-31.basil",
+    "effectiveDate": "2025-03-31",
+    "provenance": "official",
+    "changeType": "parameter-removed",
+    "resources": [
+      "subscriptions"
+    ],
+    "rules": [
+      {
+        "kind": "parameter",
+        "symbol": "subscriptions.create",
+        "match": "exact",
+        "argumentIndex": 0,
+        "path": "coupon",
+        "condition": "present"
+      },
+      {
+        "kind": "parameter",
+        "symbol": "subscriptions.create",
+        "match": "exact",
+        "argumentIndex": 0,
+        "path": "promotion_code",
+        "condition": "present"
+      },
+      {
+        "kind": "parameter",
+        "symbol": "subscriptions.update",
+        "match": "exact",
+        "argumentIndex": 1,
+        "path": "coupon",
+        "condition": "present"
+      },
+      {
+        "kind": "parameter",
+        "symbol": "subscriptions.update",
+        "match": "exact",
+        "argumentIndex": 1,
+        "path": "promotion_code",
+        "condition": "present"
+      }
+    ],
+    "evidenceSources": [
+      {
+        "url": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code",
+        "summary": "Basil removes singular coupon and promotion_code parameters in favor of discounts.",
+        "accessedAt": "2026-09-06"
+      },
+      {
+        "url": "https://github.com/stripe/stripe-node/blob/v18.0.0/CHANGELOG.md",
+        "summary": "The v18 release pins Basil and lists removed invoice and usage reporting helpers.",
+        "accessedAt": "2026-09-06"
+      }
+    ],
+    "review": {
+      "status": "reviewed",
+      "reviewer": "Codex development source review",
+      "reviewerKind": "agent",
+      "reviewedAt": "2026-09-06",
+      "notes": "Individually checked against the cited official material. Scope-limited source review, not independent human approval or runtime verification."
+    },
+    "versionScope": "api-and-sdk"
+  },
+  "changeDigest": "046c7d63772f6983dd07b0a8496e1692781d63d5363b8da97318dffa2ce3279d",
+  "status": "potentially-affected",
+  "scan": {
+    "schemaVersion": "1.1",
+    "provider": "stripe",
+    "language": "typescript",
+    "providerUsed": true,
+    "dependencies": [
+      {
+        "manifest": "package.json",
+        "packageName": "stripe",
+        "declarations": [
+          {
+            "section": "dependencies",
+            "range": "17.7.0"
+          }
+        ],
+        "installedVersion": null,
+        "lockedVersion": "17.7.0",
+        "lockfile": "package-lock.json",
+        "versionResolution": {
+          "version": "17.7.0",
+          "source": "lockfile",
+          "certainty": "locked"
+        }
+      }
+    ],
+    "usages": [
+      {
+        "id": "b466e30712ee5855f85af068",
+        "provider": "stripe",
+        "kind": "import",
+        "symbol": "stripe",
+        "location": {
+          "file": "src/index.ts",
+          "start": {
+            "line": 1,
+            "column": 20
+          },
+          "end": {
+            "line": 1,
+            "column": 28
+          }
+        },
+        "context": {
+          "function": null,
+          "class": null
+        },
+        "evidence": {
+          "binding": {
+            "file": "src/index.ts",
+            "start": {
+              "line": 1,
+              "column": 20
+            },
+            "end": {
+              "line": 1,
+              "column": 28
+            }
+          },
+          "basis": "import-binding"
+        },
+        "confidence": 0.95
+      },
+      {
+        "id": "d90edf518370bf3b5921d87d",
+        "provider": "stripe",
+        "kind": "construction",
+        "symbol": "Stripe",
+        "location": {
+          "file": "src/index.ts",
+          "start": {
+            "line": 2,
+            "column": 20
+          },
+          "end": {
+            "line": 2,
+            "column": 26
+          }
+        },
+        "context": {
+          "function": null,
+          "class": null
+        },
+        "evidence": {
+          "binding": {
+            "file": "src/index.ts",
+            "start": {
+              "line": 1,
+              "column": 8
+            },
+            "end": {
+              "line": 1,
+              "column": 14
+            }
+          },
+          "basis": "import-binding"
+        },
+        "confidence": 0.95
+      },
+      {
+        "id": "f5512d3ba11600de34a44bb5",
+        "provider": "stripe",
+        "kind": "method",
+        "symbol": "subscriptions.update",
+        "location": {
+          "file": "src/index.ts",
+          "start": {
+            "line": 4,
+            "column": 10
+          },
+          "end": {
+            "line": 4,
+            "column": 37
+          }
+        },
+        "context": {
+          "function": "discount",
+          "class": null
+        },
+        "evidence": {
+          "binding": {
+            "file": "src/index.ts",
+            "start": {
+              "line": 1,
+              "column": 8
+            },
+            "end": {
+              "line": 1,
+              "column": 14
+            }
+          },
+          "basis": "import-binding"
+        },
+        "confidence": 0.95,
+        "arguments": [
+          {
+            "index": 0,
+            "complete": false,
+            "properties": []
+          },
+          {
+            "index": 1,
+            "complete": true,
+            "properties": [
+              {
+                "path": "coupon",
+                "location": {
+                  "file": "src/index.ts",
+                  "start": {
+                    "line": 4,
+                    "column": 44
+                  },
+                  "end": {
+                    "line": 4,
+                    "column": 50
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "diagnostics": [],
+    "coverage": {
+      "scope": "supported-static-patterns",
+      "filesAnalyzed": 1,
+      "filesSkipped": 0,
+      "complete": true,
+      "limitations": [
+        "Only .ts, .tsx, .mts and .cts files outside hidden, dependency and build directories are analyzed.",
+        "No tsconfig path aliases, dynamic module resolution, arbitrary function-return inference, or whole-program dataflow.",
+        "No semantic compilation, runtime API-version verification, or API behavior verification.",
+        "Local imports resolve within the source snapshot; package exports maps and project references are not interpreted."
+      ]
+    },
+    "audit": {
+      "toolVersion": "0.2.0",
+      "inputDigest": "e601e686d559cad447aefcc340768e42873e6d31af0cdc73672073ac415390d8",
+      "mode": "static-read-only"
+    }
+  },
+  "impacts": [
+    {
+      "usageId": "f5512d3ba11600de34a44bb5",
+      "changeId": "stripe-subscription-coupon-removed",
+      "location": {
+        "file": "src/index.ts",
+        "start": {
+          "line": 4,
+          "column": 10
+        },
+        "end": {
+          "line": 4,
+          "column": 37
+        }
+      },
+      "symbol": "subscriptions.update",
+      "reason": "AST binding resolves to stripe.subscriptions.update; parameter:exact:subscriptions.update:1:coupon:present matches. SDK 17.7.0 from lockfile satisfies >=17.0.0 <18.0.0.",
+      "confidence": 0.7,
+      "versionAssessment": "in-range",
+      "matchedRule": "parameter:exact:subscriptions.update:1:coupon:present",
+      "matchedRuleIndex": 2,
+      "affected": true,
+      "reasonCodes": [
+        "AFFECTED_PARAMETER_PRESENT",
+        "VERSION_IN_AFFECTED_RANGE",
+        "API_VERSION_UNVERIFIED"
+      ],
+      "evidence": [
+        {
+          "kind": "method-call",
+          "symbol": "subscriptions.update",
+          "location": {
+            "file": "src/index.ts",
+            "start": {
+              "line": 4,
+              "column": 10
+            },
+            "end": {
+              "line": 4,
+              "column": 37
+            }
+          }
+        },
+        {
+          "kind": "parameter",
+          "name": "coupon",
+          "location": {
+            "file": "src/index.ts",
+            "start": {
+              "line": 4,
+              "column": 44
+            },
+            "end": {
+              "line": 4,
+              "column": 50
+            }
+          },
+          "detail": "Argument 1; present predicate."
+        },
+        {
+          "kind": "binding",
+          "location": {
+            "file": "src/index.ts",
+            "start": {
+              "line": 1,
+              "column": 8
+            },
+            "end": {
+              "line": 1,
+              "column": 14
+            }
+          },
+          "detail": "import-binding"
+        },
+        {
+          "kind": "version",
+          "detail": "SDK 17.7.0 from lockfile satisfies >=17.0.0 <18.0.0."
+        },
+        {
+          "kind": "official-source",
+          "detail": "Basil removes singular coupon and promotion_code parameters in favor of discounts.",
+          "url": "https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-singular-coupon-promotion-code"
+        },
+        {
+          "kind": "official-source",
+          "detail": "The v18 release pins Basil and lists removed invoice and usage reporting helpers.",
+          "url": "https://github.com/stripe/stripe-node/blob/v18.0.0/CHANGELOG.md"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "API_VERSION_UNVERIFIED",
+      "message": "Runtime API versions remain unverified; findings concern migration to the supplied change.",
+      "reasonCode": "API_VERSION_UNVERIFIED"
+    }
+  ],
+  "verification": {
+    "status": "not-run",
+    "reason": "Static analysis only; no code or API behavior was executed."
+  }
+}

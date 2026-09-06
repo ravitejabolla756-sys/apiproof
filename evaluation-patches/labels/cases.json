@@ -1,0 +1,420 @@
+{
+  "schemaVersion": "1.0",
+  "provenance": "authored-synthetic-patch-cases",
+  "cases": [
+    {
+      "id": "coupon-basic",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        "discounts: [{"
+      ],
+      "mustRemove": [
+        ".create({ coupon:",
+        ".update('sub_1', { coupon:"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "coupon-update",
+      "repository": "coupon-update",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        "discounts: [{"
+      ],
+      "mustRemove": [
+        ".create({ coupon:",
+        ".update('sub_1', { coupon:"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "promotion-code",
+      "repository": "promotion-code",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        "discounts: [{"
+      ],
+      "mustRemove": [
+        ".create({ promotion_code:"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "two-calls",
+      "repository": "two-calls",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        "discounts: [{"
+      ],
+      "mustRemove": [
+        ".create({ coupon:",
+        ".update('sub_1', { coupon:"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "two-files",
+      "repository": "two-files",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts",
+        "src/renewal.ts"
+      ],
+      "mustContain": [
+        "discounts: [{"
+      ],
+      "mustRemove": [
+        ".create({ coupon:",
+        ".update('sub_1', { coupon:"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "method-rename",
+      "repository": "method-rename",
+      "changeId": "stripe-subscriptions-del-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        ".cancel("
+      ],
+      "mustRemove": [
+        ".del("
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "type-rename",
+      "repository": "type-rename",
+      "changeId": "stripe-context-type-renamed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        ": Stripe.StripeContextType"
+      ],
+      "mustRemove": [
+        ": Stripe.StripeContext;"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "response-field",
+      "repository": "response-field",
+      "changeId": "stripe-subscription-period-fields",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_INSUFFICIENT_EVIDENCE",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "No safe exact transformation for this source pattern."
+    },
+    {
+      "id": "wrapper",
+      "repository": "wrapper",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_INSUFFICIENT_EVIDENCE",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "No safe exact transformation for this source pattern."
+    },
+    {
+      "id": "missing-transformation",
+      "repository": "missing-transformation",
+      "changeId": "stripe-invoice-upcoming-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_INSUFFICIENT_EVIDENCE",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "No safe exact transformation for this source pattern."
+    },
+    {
+      "id": "existing-discounts",
+      "repository": "existing-discounts",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_INSUFFICIENT_EVIDENCE",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "No safe exact transformation for this source pattern."
+    },
+    {
+      "id": "empty-coupon",
+      "repository": "empty-coupon",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "deterministic",
+      "expectedStatus": "PATCH_INSUFFICIENT_EVIDENCE",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "No safe exact transformation for this source pattern."
+    },
+    {
+      "id": "fake-model-valid",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "fake-valid",
+      "expectedStatus": "PATCH_READY_FOR_VALIDATION",
+      "expectedFiles": [
+        "src/billing.ts"
+      ],
+      "mustContain": [
+        "discounts: [{"
+      ],
+      "mustRemove": [
+        ".create({ coupon:",
+        ".update('sub_1', { coupon:"
+      ],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Explicit AST transformation with preserved surrounding source."
+    },
+    {
+      "id": "malicious-traversal",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "traversal",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial traversal without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-env",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "env",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial env without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-dependency-file",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "dependency-file",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial dependency-file without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-unauthorized-file",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "unauthorized-file",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial unauthorized-file without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-dangerous",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "dangerous",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial dangerous without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-whole-file",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "whole-file",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial whole-file without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-evidence",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "evidence",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial evidence without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-stale-digest",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "stale-digest",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial stale-digest without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-oversized",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "oversized",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial oversized without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-new-dependency",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "new-dependency",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial new-dependency without modifying the disposable snapshot."
+    },
+    {
+      "id": "malicious-syntax",
+      "repository": "coupon-basic",
+      "changeId": "stripe-subscription-coupon-removed",
+      "mode": "syntax",
+      "expectedStatus": "PATCH_REJECTED",
+      "expectedFiles": [],
+      "mustContain": [],
+      "mustRemove": [],
+      "mustNotTouch": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "explanation": "Reject adversarial syntax without modifying the disposable snapshot."
+    }
+  ]
+}

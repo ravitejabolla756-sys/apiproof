@@ -1,0 +1,15 @@
+{
+  "provider": "stripe",
+  "id": "synthetic-customer-retrieve-v1",
+  "title": "Synthetic customer retrieval migration exercise",
+  "description": "A deliberately fictional breaking change used to test deterministic matching. This is not an actual Stripe advisory.",
+  "packageName": "stripe",
+  "affectedSymbols": [{ "symbol": "customers.retrieve", "match": "exact", "kind": "method" }],
+  "oldBehavior": "In this fictional scenario, customer retrieval returns the customer directly.",
+  "newBehavior": "In this fictional scenario, customer retrieval returns a customer inside a result wrapper.",
+  "migrationInstructions": ["Review each matched retrieval call and its consumers against the fictional wrapper contract.", "Do not apply this fictional migration to a real Stripe integration."],
+  "severity": "high",
+  "affectedSdkVersions": ">=14.0.0 <17.0.0",
+  "targetSdkVersion": "17.0.0",
+  "provenance": "synthetic"
+}

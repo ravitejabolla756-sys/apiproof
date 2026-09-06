@@ -1,0 +1,14 @@
+{
+  "release": "0.4.0",
+  "sourceCompiledEvaluationParity": true,
+  "sourceCompiledPatchParity": true,
+  "unifiedDiffReverseCheck": true,
+  "arbitraryRepositoryRefusedSourceAndCompiled": true,
+  "unconfiguredModelRefusedSourceAndCompiled": true,
+  "originalImpactCorpusUnchanged": true,
+  "originalPlanningCorpusUnchanged": true,
+  "patchFixtureManifestUnchanged": true,
+  "maliciousPatchRejected": true,
+  "targetScriptsExecuted": false,
+  "liveModelCalls": 0
+}
