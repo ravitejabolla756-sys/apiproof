@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub } from '@apiproof/core';
+import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig } from '@apiproof/core';
 import { TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
 import { StripeProvider, loadStripeRegistry } from '@apiproof/providers';
 import { AnalysisError, readJsonFile, TOOL_VERSION } from '@apiproof/shared';
@@ -31,6 +31,7 @@ Usage:
   apiproof verify-patch <registered-patch-run-id> [--json]
   apiproof evaluate-github [--json]
   apiproof github-smoke-test [--json]
+  apiproof github-observe [--json]
 
 Options:
   --json        Emit one JSON object (including errors)
@@ -84,6 +85,12 @@ async function main(): Promise<void> {
     if (command === 'github-smoke-test') {
       if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('INVALID_ARGUMENTS', 'GitHub smoke test uses only --json.');
       process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_TEST_NOT_EXECUTED', reason: 'Explicit allowlisted credentials and repository configuration are unavailable.' })}\n`); return;
+    }
+    if (command === 'github-observe') {
+      if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('INVALID_ARGUMENTS', 'GitHub observe uses only --json.');
+      const config = loadGitHubAppConfig();
+      if (!config.enabled) { process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_OBSERVE_NOT_EXECUTED', mode: 'OBSERVE', repository: 'ravitejabolla756-sys/apiproof-github-fixture', reason: 'APIPROOF_ENABLE_LIVE_GITHUB is not true.' })}\n`); return; }
+      process.stdout.write(`${JSON.stringify({ status: 'GITHUB_OBSERVE_CONFIGURED', mode: config.mode, repository: `${config.owner}/${config.repository}`, writes: 'BLOCKED' })}\n`); return;
     }
     if (command === 'verify-contract') {
       if (parsed.positionals.length !== 2 || !repository || !/^[0-9a-f-]{36}$/.test(repository) || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('CONTRACT_NOT_ALLOWED', 'Contract verification requires a registered UUID patch run.');
