@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig, assertLiveConfig, NodeGitHubAppTokenProvider, FetchGitHubReadTransport, GitHubAppSourceControlProvider } from '@apiproof/core';
+import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig, assertLiveConfig, NodeGitHubAppTokenProvider, FetchGitHubReadTransport, GitHubAppSourceControlProvider, runMigrateDryRun } from '@apiproof/core';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
 import { StripeProvider, loadStripeRegistry } from '@apiproof/providers';
 import { AnalysisError, EXCLUDED_DIRECTORIES, readJsonFile, TOOL_VERSION } from '@apiproof/shared';
@@ -32,6 +32,7 @@ Usage:
   apiproof evaluate-github [--json]
   apiproof github-smoke-test [--json]
   apiproof github-observe [--json]
+  apiproof github-migrate-dry-run [--json]
 
 Options:
   --json        Emit one JSON object (including errors)
@@ -138,6 +139,12 @@ async function main(): Promise<void> {
         impact,
         writes: 'BLOCKED',
       }, null, 2)}\n`);
+      return;
+    }
+    if (command === 'github-migrate-dry-run') {
+      if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('INVALID_ARGUMENTS', 'GitHub migrate dry-run uses only --json.');
+      const result = await runMigrateDryRun({ registryPath });
+      process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       return;
     }
     if (command === 'verify-contract') {
