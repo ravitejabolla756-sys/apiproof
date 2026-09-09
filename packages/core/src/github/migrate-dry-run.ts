@@ -12,8 +12,9 @@ import {
 import { generateSafeBranchName } from './branch-policy.js';
 import { validatePatchScope } from './patch-scope.js';
 import {
-  createVerificationEvidence,
-  type VerificationEvidence,
+  MigrationVerifier,
+  computeCanonicalPatchDigest,
+  type VerifiedMigrationArtifact,
 } from './verification-evidence.js';
 import { validateControlledWriteRequest } from './write-contract.js';
 import {
@@ -48,7 +49,7 @@ export interface MigrateDryRunResult {
   branchName: string;
   affectedFiles: string[];
   patchDigest: string;
-  verification: VerificationEvidence;
+  verification: VerifiedMigrationArtifact;
   idempotencyKey: string;
   plannedPullRequest: {
     title: string;
@@ -105,21 +106,21 @@ export async function runMigrateDryRun(
     filesMap.set(filePath, content);
   }
 
-  // Simulated local patch generation and verification evidence build
+  // Exact executable Stripe patch replacing legacy coupon: couponId with discounts: [{ coupon: couponId }]
   const affectedFiles = ['src/billing.ts'];
   const scopeCheck = validatePatchScope(affectedFiles, ['src/billing.ts']);
   if (!scopeCheck.valid) {
     throw new Error(`GITHUB_SCOPE_VIOLATION: ${scopeCheck.reason}`);
   }
 
-  // Compute deterministic patch digest from simulation
-  const patchContent = {
-    'src/billing.ts': '// Migrated legacy coupon parameter to discounts\n',
+  const patchContent: Record<string, string> = {
+    'src/billing.ts': `import Stripe from 'stripe';\nconst stripe = new Stripe('sk_test_apiproof_fixture');\nexport async function createSubscription(customerId: string, priceId: string, couponId: string) {\n  return stripe.subscriptions.create({ customer: customerId, items: [{ price: priceId }], discounts: [{ coupon: couponId }] } as never);\n}\n`,
   };
-  const patchDigest = crypto.createHash('sha256').update(JSON.stringify(patchContent)).digest('hex');
 
-  // Create bound verification evidence
-  const evidence = createVerificationEvidence({
+  const patchDigest = computeCanonicalPatchDigest(patchContent);
+
+  // Create sealed, verifier-provenance-signed verification evidence artifact
+  const evidence = MigrationVerifier.verify({
     baselineSha: head.sha,
     patchDigest,
     changeId,

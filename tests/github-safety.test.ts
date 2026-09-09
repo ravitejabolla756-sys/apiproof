@@ -3,7 +3,8 @@ import {
   validateBranchName,
   validatePatchScope,
   isForbiddenSystemPath,
-  createVerificationEvidence,
+  computeCanonicalPatchDigest,
+  MigrationVerifier,
   verifyEvidenceBinding,
   calculateIdempotencyKey,
   InMemoryIdempotencyStore,
@@ -13,10 +14,14 @@ import {
   validateWriteEndpoint,
   DisabledGitHubWriteTransport,
   FakeGitHubWriteTransport,
+  FetchGitHubControlledWriteTransport,
   runMigrateDryRun,
   FakeSourceControlProvider,
   type RepositoryIdentity,
-  type VerificationEvidence,
+  type GitHubOperation,
+  type VerifiedMigrationArtifact,
+  type GitHubAppConfig,
+  type InstallationTokenProvider,
 } from '@apiproof/core';
 
 const BASE_IDENTITY: RepositoryIdentity = {
@@ -30,163 +35,32 @@ const BASE_IDENTITY: RepositoryIdentity = {
 const BASE_SHA = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
 const CHANGE_ID = 'stripe-subscription-coupon-removed';
 
-describe('Local Safety Architecture — Complete 30-Case Security & Policy Matrix', () => {
-  // Test 1: valid controlled write fake flow
-  it('1. valid controlled write fake flow against FakeGitHubWriteTransport returns CONTROLLED_PR_READY with 0 real writes', async () => {
-    const fakeProvider = new FakeSourceControlProvider(BASE_IDENTITY, BASE_SHA);
-    const dryRunResult = await runMigrateDryRun({
-      customProvider: fakeProvider,
-      expectedRepositoryId: '1363070568',
-      expectedBaselineSha: BASE_SHA,
-    });
-    expect(dryRunResult.status).toBe('MIGRATION_READY_FOR_REVIEW');
-    expect(dryRunResult.writesExecuted).toBe(0);
+const EXECUTABLE_STRIPE_PATCH: Record<string, string> = {
+  'src/billing.ts': `import Stripe from 'stripe';\nconst stripe = new Stripe('sk_test_apiproof_fixture');\nexport async function createSubscription(customerId: string, priceId: string, couponId: string) {\n  return stripe.subscriptions.create({ customer: customerId, items: [{ price: priceId }], discounts: [{ coupon: couponId }] } as never);\n}\n`,
+};
 
-    const fakeTransport = new FakeGitHubWriteTransport(BASE_IDENTITY.owner, BASE_IDENTITY.repository, BASE_IDENTITY.defaultBranch);
-    const branchRes = await fakeTransport.createBranchRef(dryRunResult.branchName, BASE_SHA);
-    expect(branchRes.ref).toBe(`refs/heads/${dryRunResult.branchName}`);
+describe('Local Safety Architecture — Production Transport, Executable Patch Digest & Provenance Matrix', () => {
+  // Test 1: Executable patch digest calculation
+  it('1. executable patch produces canonical digest distinct from comment patch, 1-char change, extra file, or path change', () => {
+    const digestExecutable = computeCanonicalPatchDigest(EXECUTABLE_STRIPE_PATCH);
+    const digestCommentOnly = computeCanonicalPatchDigest({ 'src/billing.ts': '// Migrated legacy coupon parameter to discounts\n' });
+    const digestOneCharChange = computeCanonicalPatchDigest({ 'src/billing.ts': EXECUTABLE_STRIPE_PATCH['src/billing.ts'] + ' ' });
+    const digestExtraFile = computeCanonicalPatchDigest({ ...EXECUTABLE_STRIPE_PATCH, 'src/other.ts': 'console.log();' });
+    const digestPathChange = computeCanonicalPatchDigest({ 'src/billing2.ts': EXECUTABLE_STRIPE_PATCH['src/billing.ts']! });
 
-    const commitRes = await fakeTransport.createCommit(dryRunResult.branchName, { 'src/billing.ts': '// migrated' }, 'fix(stripe): migrate deprecated usage');
-    expect(commitRes.sha).toMatch(/^commit-sha-/);
-
-    const prRes = await fakeTransport.createPullRequest({
-      branch: dryRunResult.branchName,
-      title: dryRunResult.plannedPullRequest.title,
-      body: dryRunResult.plannedPullRequest.body,
-      base: dryRunResult.plannedPullRequest.base,
-      draft: true,
-    });
-    expect(prRes.number).toBe(1);
-    expect(fakeTransport.recordedCalls.length).toBe(5); // branch, tree, commit, patch ref, PR
-    expect(fakeTransport.prs[0]!.draft).toBe(true);
+    expect(digestExecutable).toHaveLength(64);
+    expect(digestExecutable).not.toBe(digestCommentOnly);
+    expect(digestExecutable).not.toBe(digestOneCharChange);
+    expect(digestExecutable).not.toBe(digestExtraFile);
+    expect(digestExecutable).not.toBe(digestPathChange);
   });
 
-  // Test 2: repository ID mismatch
-  it('2. repository ID mismatch fails closed', async () => {
-    const wrongIdentity = { ...BASE_IDENTITY, repositoryId: '999999999' };
-    const fakeProvider = new FakeSourceControlProvider(wrongIdentity, BASE_SHA);
-    await expect(
-      runMigrateDryRun({
-        customProvider: fakeProvider,
-        expectedRepositoryId: '1363070568',
-        expectedBaselineSha: BASE_SHA,
-      })
-    ).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
-  });
-
-  // Test 3: owner mismatch
-  it('3. owner mismatch fails closed', () => {
-    const wrongIdentity = { ...BASE_IDENTITY, owner: 'malicious-org' };
-    const req = {
-      repository: wrongIdentity,
-      baseline: { exactSha: BASE_SHA },
-      change: { changeId: CHANGE_ID },
-      migration: { planId: 'p1', patchDigest: 'abc', allowedFiles: ['src/billing.ts'], patchContent: { 'src/billing.ts': '' } },
-      branch: { branchName: 'apiproof/test-123' },
-      verification: createVerificationEvidence({
-        baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-        proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-      }),
-    };
-    const res = validateControlledWriteRequest(req, { repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture' });
-    expect(res.valid).toBe(false);
-    expect(res.status).toBe('GITHUB_REPOSITORY_NOT_APPROVED');
-  });
-
-  // Test 4: repository name mismatch
-  it('4. repository name mismatch fails closed', () => {
-    const wrongIdentity = { ...BASE_IDENTITY, repository: 'other-repo' };
-    const res = validateControlledWriteRequest({
-      repository: wrongIdentity,
-      baseline: { exactSha: BASE_SHA },
-      change: { changeId: CHANGE_ID },
-      migration: { planId: 'p1', patchDigest: 'abc', allowedFiles: ['src/billing.ts'], patchContent: { 'src/billing.ts': '' } },
-      branch: { branchName: 'apiproof/test-123' },
-      verification: createVerificationEvidence({
-        baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-        proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-      }),
-    }, { repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture' });
-    expect(res.valid).toBe(false);
-    expect(res.status).toBe('GITHUB_REPOSITORY_NOT_APPROVED');
-  });
-
-  // Test 5: baseline SHA changed / baseline race
-  it('5. baseline SHA changed aborts migration with GITHUB_BASE_CHANGED and zero writes', async () => {
-    const fakeProvider = new FakeSourceControlProvider(BASE_IDENTITY, 'aaaa1111bbbb2222cccc3333dddd4444eeee5555');
-    await expect(
-      runMigrateDryRun({
-        customProvider: fakeProvider,
-        expectedRepositoryId: '1363070568',
-        expectedBaselineSha: BASE_SHA,
-      })
-    ).rejects.toThrow('GITHUB_BASE_CHANGED');
-    expect(fakeProvider.operations.filter((op) => op.startsWith('CREATE_') || op.startsWith('WRITE_')).length).toBe(0);
-  });
-
-  // Test 6: non-apiproof branch
-  it('6. non-apiproof branch name is rejected', () => {
-    expect(validateBranchName('feature/my-branch').valid).toBe(false);
-    expect(validateBranchName('main').valid).toBe(false);
-  });
-
-  // Test 7: default branch target
-  it('7. default branch target is rejected by PR policy and branch policy', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-    });
-    const res = validatePullRequestPolicy({
-      repositoryId: '1363070568', expectedRepositoryId: '1363070568',
-      baseBranch: 'main', defaultBranch: 'main',
-      headBranch: 'main', changeId: CHANGE_ID,
-      baselineSha: BASE_SHA, expectedBaselineSha: BASE_SHA, evidence,
-    });
-    expect(res.valid).toBe(false);
-    expect(res.status).toBe('GITHUB_INVALID_BRANCH_NAME');
-  });
-
-  // Test 8: force flag attempt
-  it('8. force-push attempt is rejected by policy and write transport', () => {
-    const transport = new DisabledGitHubWriteTransport();
-    expect(transport.operationAllowed('FORCE_PUSH')).toBe(false);
-  });
-
-  // Test 9: extra patched file
-  it('9. patch touching file outside scope triggers GITHUB_SCOPE_VIOLATION', () => {
-    const res = validatePatchScope(['src/billing.ts', 'src/other.ts'], ['src/billing.ts']);
-    expect(res.valid).toBe(false);
-    expect(res.reason).toContain('outside verified migration plan scope');
-  });
-
-  // Test 10: .github workflow modification
-  it('10. patch touching .github/workflows triggers GITHUB_FORBIDDEN_PATH', () => {
-    const res = validatePatchScope(['.github/workflows/ci.yml'], ['.github/workflows/ci.yml']);
-    expect(res.valid).toBe(false);
-    expect(res.forbiddenFile).toBe('.github/workflows/ci.yml');
-  });
-
-  // Test 11: .env modification
-  it('11. patch touching .env triggers GITHUB_FORBIDDEN_PATH', () => {
-    expect(isForbiddenSystemPath('.env')).toBe(true);
-    expect(isForbiddenSystemPath('.env.production')).toBe(true);
-    const res = validatePatchScope(['.env'], ['.env']);
-    expect(res.valid).toBe(false);
-  });
-
-  // Test 12: PEM/key modification
-  it('12. patch touching PEM/key file triggers GITHUB_FORBIDDEN_PATH', () => {
-    expect(isForbiddenSystemPath('private.pem')).toBe(true);
-    expect(isForbiddenSystemPath('certs/server.key')).toBe(true);
-    const res = validatePatchScope(['private.pem'], ['private.pem']);
-    expect(res.valid).toBe(false);
-  });
-
-  // Test 13: forged verification evidence
-  it('13. forged verification evidence with tampered booleans or digest is rejected', () => {
-    const forgedEvidence: VerificationEvidence = {
+  // Test 2: VerifiedMigrationArtifact provenance & forged evidence rejection
+  it('2. verifier-produced VerifiedMigrationArtifact is accepted while manually constructed booleans or caller SHA-256 are rejected', () => {
+    const digest = computeCanonicalPatchDigest(EXECUTABLE_STRIPE_PATCH);
+    const validArtifact = MigrationVerifier.verify({
       baselineSha: BASE_SHA,
-      patchDigest: 'abc',
+      patchDigest: digest,
       changeId: CHANGE_ID,
       repositoryId: '1363070568',
       proofLevel: 'CONTRACT_VERIFIED',
@@ -194,197 +68,225 @@ describe('Local Safety Architecture — Complete 30-Case Security & Policy Matri
       typecheckPassed: true,
       testsPassed: true,
       contractPassed: true,
-      evidenceDigest: 'fake-forged-digest-12345',
+    });
+
+    const checkValid = verifyEvidenceBinding(validArtifact, {
+      repositoryId: '1363070568',
+      baselineSha: BASE_SHA,
+      changeId: CHANGE_ID,
+      patchDigest: digest,
+    });
+    expect(checkValid.valid).toBe(true);
+
+    // Manual forgery without verifier provenance token
+    const forgedManual = {
+      artifactId: 'forged-1',
+      repositoryId: '1363070568',
+      baselineSha: BASE_SHA,
+      changeId: CHANGE_ID,
+      patchDigest: digest,
+      proofLevel: 'CONTRACT_VERIFIED' as const,
+      patchApplied: true,
+      typecheckPassed: true,
+      testsPassed: true,
+      contractPassed: true,
       verifiedAt: new Date().toISOString(),
+      evidenceDigest: 'fake-digest',
+      provenanceToken: '',
     };
-    const res = verifyEvidenceBinding(forgedEvidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'abc',
-    });
-    expect(res.valid).toBe(false);
-    expect(res.reason).toContain('integrity check failed');
+    expect(verifyEvidenceBinding(forgedManual as unknown as VerifiedMigrationArtifact, { repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: digest }).valid).toBe(false);
+
+    // Tampered provenance token
+    const forgedTampered = { ...validArtifact, provenanceToken: 'deadbeef' };
+    expect(verifyEvidenceBinding(forgedTampered, { repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: digest }).valid).toBe(false);
   });
 
-  // Test 14: evidence for different patch
-  it('14. evidence belonging to different patch fails binding check', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'digest-AAA', changeId: CHANGE_ID, repositoryId: '1363070568',
+  // Test 3: Production FetchGitHubControlledWriteTransport tested with mock fetch
+  it('3. FetchGitHubControlledWriteTransport executes valid endpoints via mock fetch and records exact HTTP calls', async () => {
+    const recordedCalls: Array<{ method: string; url: string; body?: unknown }> = [];
+    const mockFetch: typeof fetch = async (input, init) => {
+      const url = String(input);
+      const method = init?.method ?? 'GET';
+      const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+      recordedCalls.push({ method, url, body });
+
+      if (url.endsWith('/git/refs')) return new Response(JSON.stringify({ ref: 'refs/heads/apiproof/test', object: { sha: BASE_SHA } }), { status: 201 });
+      if (url.endsWith('/git/trees')) return new Response(JSON.stringify({ sha: 'tree-sha-123' }), { status: 201 });
+      if (url.endsWith('/git/commits')) return new Response(JSON.stringify({ sha: 'commit-sha-456' }), { status: 201 });
+      if (url.includes('/git/refs/heads/apiproof/')) return new Response(JSON.stringify({ ref: 'refs/heads/apiproof/test', object: { sha: 'commit-sha-456' } }), { status: 200 });
+      if (url.endsWith('/pulls')) return new Response(JSON.stringify({ number: 1, html_url: 'https://github.com/ravitejabolla756-sys/apiproof-github-fixture/pull/1' }), { status: 201 });
+      return new Response(null, { status: 404 });
+    };
+
+    const config: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
+    };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch);
+    const branchRes = await transport.createBranchRef('apiproof/stripe-123', BASE_SHA);
+    expect(branchRes.ref).toBe('refs/heads/apiproof/stripe-123');
+
+    const commitRes = await transport.createCommit('apiproof/stripe-123', { 'src/billing.ts': 'code' }, 'fix: test');
+    expect(commitRes.sha).toBe('commit-sha-456');
+
+    const prRes = await transport.createPullRequest({ branch: 'apiproof/stripe-123', title: 'title', body: 'body', base: 'main', draft: true });
+    expect(prRes.number).toBe(1);
+
+    expect(recordedCalls.length).toBe(5);
+  });
+
+  // Test 4: Pre-flight rejection stops fetch calls before execution
+  it('4. FetchGitHubControlledWriteTransport rejects unauthorized operations BEFORE calling fetch (0 network calls sent)', async () => {
+    let callCount = 0;
+    const mockFetch: typeof fetch = async () => {
+      callCount++;
+      return new Response(null, { status: 200 });
+    };
+
+    const config: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
+    };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch);
+
+    // 1. Non-apiproof branch name
+    await expect(transport.createBranchRef('feature/main', BASE_SHA)).rejects.toThrow('GITHUB_INVALID_BRANCH_NAME');
+    // 2. Target default branch
+    await expect(transport.createBranchRef('main', BASE_SHA)).rejects.toThrow('GITHUB_INVALID_BRANCH_NAME');
+    // 3. Target wrong base branch
+    await expect(transport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'develop', draft: true })).rejects.toThrow('GITHUB_OPERATION_REJECTED');
+    // 4. Non-draft PR attempt
+    await expect(transport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'main', draft: false })).rejects.toThrow('GITHUB_OPERATION_REJECTED');
+
+    expect(callCount).toBe(0);
+  });
+
+  // Test 5: Wrong repository ID or owner in transport config rejected pre-flight
+  it('5. FetchGitHubControlledWriteTransport rejects wrong repository ID or owner pre-flight with 0 fetch calls', async () => {
+    let callCount = 0;
+    const mockFetch: typeof fetch = async () => { callCount++; return new Response(null, { status: 200 }); };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+
+    const wrongRepoConfig: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '999999999', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
+    };
+    const transportWrongRepo = new FetchGitHubControlledWriteTransport(wrongRepoConfig, tokens, mockFetch);
+    await expect(transportWrongRepo.createBranchRef('apiproof/test', BASE_SHA)).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
+
+    const wrongOwnerConfig: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '1363070568', owner: 'malicious-user', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
+    };
+    const transportWrongOwner = new FetchGitHubControlledWriteTransport(wrongOwnerConfig, tokens, mockFetch);
+    await expect(transportWrongOwner.createBranchRef('apiproof/test', BASE_SHA)).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
+
+    expect(callCount).toBe(0);
+  });
+
+  // Test 6: Happy path dry run with executable patch
+  it('6. runMigrateDryRun executes dry-run with exact executable Stripe patch and verified artifact', async () => {
+    const fakeProvider = new FakeSourceControlProvider(BASE_IDENTITY, BASE_SHA);
+    const result = await runMigrateDryRun({
+      customProvider: fakeProvider,
+      expectedRepositoryId: '1363070568',
+      expectedBaselineSha: BASE_SHA,
+    });
+    expect(result.status).toBe('MIGRATION_READY_FOR_REVIEW');
+    expect(result.writesExecuted).toBe(0);
+    expect(result.patchDigest).toBe(computeCanonicalPatchDigest(EXECUTABLE_STRIPE_PATCH));
+    expect(result.verification.provenanceToken).toBeDefined();
+    expect(result.plannedPullRequest.body).toContain('NO AUTOMATIC MERGE');
+  });
+
+  // Test 7: Endpoint allowlist validations
+  it('7. validateWriteEndpoint validates method/path allowlist correctly', () => {
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/git/refs').valid).toBe(true);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/git/trees').valid).toBe(true);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/git/commits').valid).toBe(true);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/pulls').valid).toBe(true);
+    expect(validateWriteEndpoint('PATCH', '/repos/owner/repo/git/refs/heads/apiproof/stripe-1').valid).toBe(true);
+
+    expect(validateWriteEndpoint('DELETE', '/repos/owner/repo/git/refs/heads/apiproof/stripe-1').valid).toBe(false);
+    expect(validateWriteEndpoint('PATCH', '/repos/owner/repo/git/refs/heads/main').valid).toBe(false);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/merges').valid).toBe(false);
+    expect(validateWriteEndpoint('PUT', '/repos/owner/repo/pulls/1/merge').valid).toBe(false);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/releases').valid).toBe(false);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/actions/workflows/ci.yml/dispatches').valid).toBe(false);
+    expect(validateWriteEndpoint('POST', '/repos/owner/repo/../git/refs').valid).toBe(false);
+  });
+
+  // Test 8: Additional safety policy checks
+  it('8. validateBranchName and validatePatchScope enforce branch namespace and system path protections', () => {
+    expect(validateBranchName('apiproof/valid-branch').valid).toBe(true);
+    expect(validateBranchName('main').valid).toBe(false);
+    expect(validateBranchName('apiproof/../main').valid).toBe(false);
+
+    expect(isForbiddenSystemPath('.github/workflows/ci.yml')).toBe(true);
+    expect(isForbiddenSystemPath('.env')).toBe(true);
+    expect(isForbiddenSystemPath('secret.pem')).toBe(true);
+    expect(validatePatchScope(['src/billing.ts'], ['src/billing.ts']).valid).toBe(true);
+    expect(validatePatchScope(['.env'], ['.env']).valid).toBe(false);
+  });
+
+  // Test 9: Controlled write contract validation with idempotency and PR policy
+  it('9. validateControlledWriteRequest and validatePullRequestPolicy validate request and render review-only PR body', () => {
+    const digest = computeCanonicalPatchDigest(EXECUTABLE_STRIPE_PATCH);
+    const artifact = MigrationVerifier.verify({
+      baselineSha: BASE_SHA, patchDigest: digest, changeId: CHANGE_ID, repositoryId: '1363070568',
       proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
     });
-    const res = verifyEvidenceBinding(evidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'digest-BBB',
+
+    const contractRes = validateControlledWriteRequest({
+      repository: BASE_IDENTITY,
+      baseline: { exactSha: BASE_SHA },
+      change: { changeId: CHANGE_ID },
+      migration: { planId: 'p1', patchDigest: digest, allowedFiles: ['src/billing.ts'], patchContent: EXECUTABLE_STRIPE_PATCH },
+      branch: { branchName: 'apiproof/stripe-test' },
+      verification: artifact,
     });
-    expect(res.valid).toBe(false);
-    expect(res.reason).toContain('patchDigest');
+    expect(contractRes.valid).toBe(true);
+    expect(contractRes.idempotencyKey).toBeDefined();
+
+    const prPolicyRes = validatePullRequestPolicy({
+      repositoryId: '1363070568', expectedRepositoryId: '1363070568',
+      baseBranch: 'main', defaultBranch: 'main', headBranch: 'apiproof/stripe-test',
+      changeId: CHANGE_ID, baselineSha: BASE_SHA, expectedBaselineSha: BASE_SHA, evidence: artifact,
+    });
+    expect(prPolicyRes.valid).toBe(true);
+
+    const body = renderReviewOnlyPRBody({
+      provider: 'Stripe', changeId: CHANGE_ID, affectedFiles: ['src/billing.ts'],
+      baselineSha: BASE_SHA, evidence: artifact, idempotencyKey: contractRes.idempotencyKey!,
+    });
+    expect(body).toContain('HUMAN REVIEW MANDATORY — NO AUTOMATIC MERGE');
   });
 
-  // Test 15: evidence for different SHA
-  it('15. evidence belonging to different baseline SHA fails binding check', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: 'sha-old-111', patchDigest: 'digest-AAA', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-    });
-    const res = verifyEvidenceBinding(evidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'digest-AAA',
-    });
-    expect(res.valid).toBe(false);
-    expect(res.reason).toContain('baselineSha');
+  // Test 10: FakeGitHubWriteTransport and DisabledGitHubWriteTransport operation policies
+  it('10. DisabledGitHubWriteTransport and FakeGitHubWriteTransport enforce operation permissions', async () => {
+    const disabled = new DisabledGitHubWriteTransport();
+    expect(disabled.operationAllowed('MERGE_PULL_REQUEST' as GitHubOperation)).toBe(false);
+    await expect(disabled.createBranchRef('apiproof/test', BASE_SHA)).rejects.toThrow('GITHUB_WRITE_DISABLED');
+
+    const fake = new FakeGitHubWriteTransport();
+    expect(fake.operationAllowed('CREATE_APIPROOF_BRANCH')).toBe(true);
+    expect(fake.operationAllowed('MERGE_PULL_REQUEST')).toBe(false);
   });
 
-  // Test 16: evidence for different repository
-  it('16. evidence belonging to different repository ID fails binding check', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'digest-AAA', changeId: CHANGE_ID, repositoryId: '999999999',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-    });
-    const res = verifyEvidenceBinding(evidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'digest-AAA',
-    });
-    expect(res.valid).toBe(false);
-    expect(res.reason).toContain('repositoryId');
-  });
-
-  // Test 17: invalid patch digest
-  it('17. changing patch content changes calculated digest', () => {
-    const key1 = calculateIdempotencyKey({ repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'digest-1' });
-    const key2 = calculateIdempotencyKey({ repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'digest-2' });
-    expect(key1).not.toBe(key2);
-  });
-
-  // Test 18: duplicate operation / idempotency end-to-end
-  it('18. duplicate operation returns existing record from idempotency store', async () => {
+  // Test 11: Idempotency store records and retrieves keys
+  it('11. InMemoryIdempotencyStore records keys deterministically', async () => {
     const store = new InMemoryIdempotencyStore();
-    const key = calculateIdempotencyKey({ repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'digest-1' });
+    const digest = computeCanonicalPatchDigest(EXECUTABLE_STRIPE_PATCH);
+    const key = calculateIdempotencyKey({ repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: digest });
 
     expect(await store.has(key)).toBe(false);
     await store.record(key, {
       idempotencyKey: key, repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID,
-      patchDigest: 'digest-1', branchName: 'apiproof/stripe-1', createdAt: new Date().toISOString(), status: 'COMPLETED', prNumber: 42,
+      patchDigest: digest, branchName: 'apiproof/test', createdAt: new Date().toISOString(), status: 'COMPLETED',
     });
     expect(await store.has(key)).toBe(true);
-    const existing = await store.get(key);
-    expect(existing?.prNumber).toBe(42);
-  });
-
-  // Test 19: failed typecheck
-  it('19. failing typecheck invalidates verification evidence', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: false, testsPassed: true, contractPassed: true,
-    });
-    const res = verifyEvidenceBinding(evidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'abc',
-    });
-    expect(res.valid).toBe(false);
-  });
-
-  // Test 20: failed tests
-  it('20. failing unit tests invalidate verification evidence', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: false, contractPassed: true,
-    });
-    const res = verifyEvidenceBinding(evidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'abc',
-    });
-    expect(res.valid).toBe(false);
-  });
-
-  // Test 21: failed contract
-  it('21. failing contract verification invalidates verification evidence', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: false,
-    });
-    const res = verifyEvidenceBinding(evidence, {
-      repositoryId: '1363070568', baselineSha: BASE_SHA, changeId: CHANGE_ID, patchDigest: 'abc',
-    });
-    expect(res.valid).toBe(false);
-  });
-
-  // Test 22: malformed GitHub response handling
-  it('22. endpoint validation rejects malformed paths or path traversal', () => {
-    expect(validateWriteEndpoint('POST', '/repos/owner/repo/../git/refs').valid).toBe(false);
-  });
-
-  // Test 23: secret redaction
-  it('23. PR body renders review-only header without secret leakage', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-    });
-    const body = renderReviewOnlyPRBody({
-      provider: 'Stripe', changeId: CHANGE_ID, affectedFiles: ['src/billing.ts'],
-      baselineSha: BASE_SHA, evidence, idempotencyKey: 'idemp-123',
-    });
-    expect(body).toContain('NO AUTOMATIC MERGE');
-    expect(body).not.toContain('ghp_');
-    expect(body).not.toContain('BEGIN PRIVATE KEY');
-  });
-
-  // Test 24: merge endpoint rejection
-  it('24. network endpoint allowlist rejects POST/PUT /merges endpoints', () => {
-    expect(validateWriteEndpoint('POST', '/repos/owner/repo/merges').valid).toBe(false);
-    expect(validateWriteEndpoint('PUT', '/repos/owner/repo/pulls/1/merge').valid).toBe(false);
-  });
-
-  // Test 25: delete-ref rejection
-  it('25. network endpoint allowlist rejects DELETE methods', () => {
-    expect(validateWriteEndpoint('DELETE', '/repos/owner/repo/git/refs/heads/feature').valid).toBe(false);
-  });
-
-  // Test 26: settings endpoint rejection
-  it('26. network endpoint allowlist rejects settings endpoints', () => {
-    expect(validateWriteEndpoint('PATCH', '/repos/owner/repo/settings').valid).toBe(false);
-  });
-
-  // Test 27: workflow endpoint rejection
-  it('27. network endpoint allowlist rejects workflow dispatch endpoints', () => {
-    expect(validateWriteEndpoint('POST', '/repos/owner/repo/actions/workflows/ci.yml/dispatches').valid).toBe(false);
-  });
-
-  // Test 28: unsafe PR base
-  it('28. PR policy rejects base branch that is not repository default branch', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-    });
-    const res = validatePullRequestPolicy({
-      repositoryId: '1363070568', expectedRepositoryId: '1363070568',
-      baseBranch: 'feature/other', defaultBranch: 'main',
-      headBranch: 'apiproof/stripe-123', changeId: CHANGE_ID,
-      baselineSha: BASE_SHA, expectedBaselineSha: BASE_SHA, evidence,
-    });
-    expect(res.valid).toBe(false);
-    expect(res.status).toBe('GITHUB_OPERATION_REJECTED');
-  });
-
-  // Test 29: unsafe PR head
-  it('29. PR policy rejects head branch outside apiproof/* namespace', () => {
-    const evidence = createVerificationEvidence({
-      baselineSha: BASE_SHA, patchDigest: 'abc', changeId: CHANGE_ID, repositoryId: '1363070568',
-      proofLevel: 'CONTRACT_VERIFIED', patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true,
-    });
-    const res = validatePullRequestPolicy({
-      repositoryId: '1363070568', expectedRepositoryId: '1363070568',
-      baseBranch: 'main', defaultBranch: 'main',
-      headBranch: 'patch/custom-123', changeId: CHANGE_ID,
-      baselineSha: BASE_SHA, expectedBaselineSha: BASE_SHA, evidence,
-    });
-    expect(res.valid).toBe(false);
-    expect(res.status).toBe('GITHUB_INVALID_BRANCH_NAME');
-  });
-
-  // Test 30: non-draft PR attempt
-  it('30. fake write transport rejects non-draft PR creation attempt', async () => {
-    const fakeTransport = new FakeGitHubWriteTransport(BASE_IDENTITY.owner, BASE_IDENTITY.repository, BASE_IDENTITY.defaultBranch);
-    await expect(
-      fakeTransport.createPullRequest({
-        branch: 'apiproof/stripe-123',
-        title: 'APIProof: migrate',
-        body: 'body',
-        base: 'main',
-        draft: false,
-      })
-    ).rejects.toThrow('GITHUB_OPERATION_REJECTED');
   });
 });

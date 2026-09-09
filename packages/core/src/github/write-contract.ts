@@ -1,6 +1,10 @@
 import { validateBranchName } from './branch-policy.js';
 import { validatePatchScope } from './patch-scope.js';
-import { verifyEvidenceBinding, type VerificationEvidence } from './verification-evidence.js';
+import {
+  verifyEvidenceBinding,
+  computeCanonicalPatchDigest,
+  type VerifiedMigrationArtifact,
+} from './verification-evidence.js';
 import { calculateIdempotencyKey } from './idempotency.js';
 
 export interface ControlledWriteRequest {
@@ -25,7 +29,7 @@ export interface ControlledWriteRequest {
   branch: {
     branchName: string;
   };
-  verification: VerificationEvidence;
+  verification: VerifiedMigrationArtifact;
 }
 
 export interface ControlledWriteValidationResult {
@@ -87,6 +91,11 @@ export function validateControlledWriteRequest(
   if (!scopeValidation.valid) {
     const status = scopeValidation.forbiddenFile ? 'GITHUB_FORBIDDEN_PATH' : 'GITHUB_SCOPE_VIOLATION';
     return { valid: false, status, reason: scopeValidation.reason ?? 'Scope violation.' };
+  }
+
+  const computedDigest = computeCanonicalPatchDigest(request.migration.patchContent);
+  if (request.migration.patchDigest !== computedDigest) {
+    return { valid: false, status: 'GITHUB_EVIDENCE_MISMATCH', reason: `Patch digest mismatch: request.patchDigest (${request.migration.patchDigest}) !== computed canonical digest (${computedDigest}).` };
   }
 
   // Verification evidence binding check
