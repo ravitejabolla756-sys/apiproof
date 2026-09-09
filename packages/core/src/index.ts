@@ -14,11 +14,11 @@ export * from './github/index.js';
 export class ApiProof {
   constructor(private readonly analyzer: RepositoryAnalyzer, private readonly provider: ApiProvider) {}
 
-  async scan(repositoryPath: string): Promise<ScanResult> {
+  async scan(repositoryPath: string | unknown): Promise<ScanResult> {
     return ScanResultSchema.parse(await this.analyzer.analyze(repositoryPath, this.provider.descriptor));
   }
 
-  async impact(repositoryPath: string, input: unknown): Promise<ImpactResult> {
+  async impact(repositoryPath: string | unknown, input: unknown): Promise<ImpactResult> {
     const change = this.provider.validateChange(input);
     const scan = await this.scan(repositoryPath);
     const { impacts, diagnostics } = this.provider.matchImpact(scan, change);

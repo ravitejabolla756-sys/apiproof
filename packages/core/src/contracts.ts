@@ -18,5 +18,5 @@ export interface ApiProvider {
 
 export interface RepositoryAnalyzer {
   readonly language: 'typescript';
-  analyze(repositoryPath: string, provider: ProviderDescriptor): Promise<ScanResult>;
+  analyze(repositoryPath: string | unknown, provider: ProviderDescriptor): Promise<ScanResult>;
 }

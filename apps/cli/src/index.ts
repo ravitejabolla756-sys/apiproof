@@ -2,10 +2,10 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig } from '@apiproof/core';
-import { TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
+import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig, assertLiveConfig, NodeGitHubAppTokenProvider, FetchGitHubReadTransport, GitHubAppSourceControlProvider } from '@apiproof/core';
+import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
 import { StripeProvider, loadStripeRegistry } from '@apiproof/providers';
-import { AnalysisError, readJsonFile, TOOL_VERSION } from '@apiproof/shared';
+import { AnalysisError, EXCLUDED_DIRECTORIES, readJsonFile, TOOL_VERSION } from '@apiproof/shared';
 import { formatImpact, formatScan } from './format.js';
 import { formatEvaluation } from './evaluation-format.js';
 import { formatPlan, formatPlanningEvaluation } from './plan-format.js';
@@ -84,13 +84,61 @@ async function main(): Promise<void> {
     }
     if (command === 'github-smoke-test') {
       if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('INVALID_ARGUMENTS', 'GitHub smoke test uses only --json.');
-      process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_TEST_NOT_EXECUTED', reason: 'Explicit allowlisted credentials and repository configuration are unavailable.' })}\n`); return;
+      const config = loadGitHubAppConfig();
+      if (!config.enabled) {
+        process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_TEST_NOT_EXECUTED', reason: 'Explicit allowlisted credentials and repository configuration are unavailable.' })}\n`);
+        return;
+      }
+      assertLiveConfig(config);
+      const tokenProvider = new NodeGitHubAppTokenProvider(config);
+      const transport = new FetchGitHubReadTransport();
+      const provider = new GitHubAppSourceControlProvider(config, tokenProvider, transport);
+      const identity = await provider.getRepository();
+      const head = await provider.getDefaultBranch();
+      process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_TEST_PASSED', mode: config.mode, repository: `${identity.owner}/${identity.repository}`, repositoryId: identity.repositoryId, defaultBranch: head.name, sha: head.sha })}\n`);
+      return;
     }
     if (command === 'github-observe') {
       if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('INVALID_ARGUMENTS', 'GitHub observe uses only --json.');
       const config = loadGitHubAppConfig();
-      if (!config.enabled) { process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_OBSERVE_NOT_EXECUTED', mode: 'OBSERVE', repository: 'ravitejabolla756-sys/apiproof-github-fixture', reason: 'APIPROOF_ENABLE_LIVE_GITHUB is not true.' })}\n`); return; }
-      process.stdout.write(`${JSON.stringify({ status: 'GITHUB_OBSERVE_CONFIGURED', mode: config.mode, repository: `${config.owner}/${config.repository}`, writes: 'BLOCKED' })}\n`); return;
+      if (!config.enabled) {
+        const repoStr = config.owner && config.repository ? `${config.owner}/${config.repository}` : 'unconfigured';
+        process.stdout.write(`${JSON.stringify({ status: 'LIVE_GITHUB_OBSERVE_NOT_EXECUTED', mode: 'OBSERVE', repository: repoStr, reason: 'APIPROOF_ENABLE_LIVE_GITHUB is not true.' })}\n`);
+        return;
+      }
+      assertLiveConfig(config);
+      const tokenProvider = new NodeGitHubAppTokenProvider(config);
+      const transport = new FetchGitHubReadTransport();
+      const provider = new GitHubAppSourceControlProvider(config, tokenProvider, transport);
+      const identity = await provider.getRepository();
+      const head = await provider.getDefaultBranch();
+      const tree = await provider.readTree(head.sha);
+
+      const filesMap = new Map<string, string>();
+      const filesToFetch = tree.filter((file) =>
+        file === 'package.json' || (/\.(?:ts|tsx|mts|cts)$/i.test(file) && !file.split('/').some((p) => EXCLUDED_DIRECTORIES.has(p) || p.startsWith('.')))
+      );
+      for (const filePath of filesToFetch) {
+        const content = await provider.readFile(filePath, head.sha);
+        filesMap.set(filePath, content);
+      }
+      const remoteSnapshot = RepositorySnapshot.fromMemory(path.join(toolRoot, '.tmp/remote-repo'), filesMap);
+      const registry = await loadStripeRegistry(registryPath);
+      const changeId = parsed.values['change-id'] ?? 'stripe-subscription-coupon-removed';
+      const change = registry.find((item) => item.id === changeId) ?? registry[0];
+      const impact = await proof.impact(remoteSnapshot, change);
+
+      process.stdout.write(`${JSON.stringify({
+        status: 'GITHUB_OBSERVE_COMPLETED',
+        mode: config.mode,
+        repository: `${identity.owner}/${identity.repository}`,
+        repositoryId: identity.repositoryId,
+        defaultBranch: head.name,
+        sha: head.sha,
+        impact,
+        writes: 'BLOCKED',
+      }, null, 2)}\n`);
+      return;
     }
     if (command === 'verify-contract') {
       if (parsed.positionals.length !== 2 || !repository || !/^[0-9a-f-]{36}$/.test(repository) || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('CONTRACT_NOT_ALLOWED', 'Contract verification requires a registered UUID patch run.');

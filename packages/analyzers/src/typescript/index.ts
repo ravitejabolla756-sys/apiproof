@@ -9,8 +9,8 @@ import { detectUsages } from './usages.js';
 export class TypeScriptRepositoryAnalyzer implements RepositoryAnalyzer {
   readonly language = 'typescript' as const;
 
-  async analyze(repositoryPath: string, provider: ProviderDescriptor): Promise<ScanResult> {
-    const snapshot = await RepositorySnapshot.load(repositoryPath);
+  async analyze(repositoryPath: string | RepositorySnapshot, provider: ProviderDescriptor): Promise<ScanResult> {
+    const snapshot = typeof repositoryPath === 'string' ? await RepositorySnapshot.load(repositoryPath) : repositoryPath;
     const dependencies = await detectDependencies(snapshot, provider.packageName);
     const project = new Project({ useInMemoryFileSystem: true, skipAddingFilesFromTsConfig: true,
       skipFileDependencyResolution: true, skipLoadingLibFiles: true,

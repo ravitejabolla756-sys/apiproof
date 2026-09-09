@@ -25,6 +25,22 @@ export class RepositorySnapshot {
 
   private constructor(readonly root: string) {}
 
+  static fromMemory(root: string, files: Map<string, string>): RepositorySnapshot {
+    const snapshot = new RepositorySnapshot(root);
+    for (const [relativePath, content] of files) {
+      const norm = portable(relativePath);
+      if (norm === 'package.json' || norm.endsWith('/package.json')) snapshot.manifests.push(norm);
+      if (sourceExtension.test(norm)) {
+        snapshot.sources.set(norm, content);
+        snapshot.hashes.set(norm, createHash('sha256').update(content).digest('hex'));
+      }
+    }
+    if (!snapshot.manifests.includes('package.json')) {
+      snapshot.manifests.push('package.json');
+    }
+    return snapshot;
+  }
+
   static async load(repositoryPath: string): Promise<RepositorySnapshot> {
     let root: string;
     try { root = await realpath(path.resolve(repositoryPath)); }
