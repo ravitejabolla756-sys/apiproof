@@ -188,6 +188,40 @@ export class GitHubAppSourceControlProvider implements Pick<SourceControlProvide
     return Buffer.from(content, 'base64').toString('utf8');
   }
 
+  async getBranchRef(branchName: string): Promise<{ ref: string; sha: string } | null> {
+    const repository = await this.getRepository();
+    const cleanBranch = branchName.replace(/^refs\/heads\//, '').replace(/^apiproof\//, 'apiproof/');
+    const result = await this.read(`/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.repository)}/git/ref/heads/${encodeURIComponent(cleanBranch.replace(/^apiproof\//, 'apiproof/'))}`);
+    if (result.status === 404) return null;
+    if (result.status !== 200 || typeof result.body !== 'object' || result.body === null) return null;
+    const body = result.body as Record<string, unknown>;
+    const objectObj = typeof body.object === 'object' && body.object !== null ? (body.object as Record<string, unknown>) : {};
+    const sha = String(objectObj.sha ?? '');
+    return sha ? { ref: `refs/heads/${cleanBranch}`, sha } : null;
+  }
+
+  async getPullRequests(options: { head?: string; base?: string; state?: string } = {}): Promise<Array<{ number: number; url: string; head: string; base: string; draft: boolean }>> {
+    const repository = await this.getRepository();
+    const query = new URLSearchParams();
+    query.set('state', options.state ?? 'open');
+    if (options.base) query.set('base', options.base);
+    if (options.head) query.set('head', `${repository.owner}:${options.head}`);
+    const queryStr = `?${query.toString()}`;
+    const result = await this.read(`/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.repository)}/pulls${queryStr}`);
+    if (result.status !== 200 || !Array.isArray(result.body)) return [];
+    return (result.body as Array<Record<string, unknown>>).map((pr) => {
+      const headObj = typeof pr.head === 'object' && pr.head !== null ? (pr.head as Record<string, unknown>) : {};
+      const baseObj = typeof pr.base === 'object' && pr.base !== null ? (pr.base as Record<string, unknown>) : {};
+      return {
+        number: Number(pr.number ?? 0),
+        url: String(pr.html_url ?? ''),
+        head: String(headObj.ref ?? ''),
+        base: String(baseObj.ref ?? ''),
+        draft: Boolean(pr.draft ?? false),
+      };
+    });
+  }
+
   async hasActiveProposal(): Promise<boolean> {
     return false;
   }

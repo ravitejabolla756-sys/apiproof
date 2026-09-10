@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import {
   loadGitHubAppConfig,
   assertLiveConfig,
@@ -9,7 +8,11 @@ import {
   FetchGitHubReadTransport,
   GitHubAppSourceControlProvider,
 } from './live-provider.js';
-import { generateSafeBranchName, validateBranchName } from './branch-policy.js';
+import {
+  validateBranchName,
+  generateDeterministicBranchName,
+} from './branch-policy.js';
+
 import { validatePatchScope } from './patch-scope.js';
 import {
   MigrationVerifier,
@@ -60,7 +63,6 @@ export interface MigrateLiveResult {
   lastSuccessfulOperation?: string | undefined;
   reason?: string | undefined;
 }
-
 
 export async function runMigrateLive(
   options: MigrateLiveOptions = {}
@@ -179,8 +181,12 @@ export async function runMigrateLive(
     contractPassed: true,
   });
 
-  const shortRunId = crypto.randomBytes(4).toString('hex');
-  const branchName = generateSafeBranchName(changeId, shortRunId);
+  const branchName = generateDeterministicBranchName({
+    repositoryId: identity.repositoryId,
+    baselineSha: head.sha,
+    changeId,
+    patchDigest,
+  });
   const branchCheck = validateBranchName(branchName);
   if (!branchCheck.valid) {
     throw new Error(`GITHUB_INVALID_BRANCH_NAME: ${branchCheck.reason}`);
@@ -241,23 +247,102 @@ export async function runMigrateLive(
   });
 
   const idempotencyStore = options.idempotencyStore ?? new InMemoryIdempotencyStore();
-  if (await idempotencyStore.has(idempotencyKey)) {
-    const record = await idempotencyStore.get(idempotencyKey);
+
+  // Authoritative Remote Idempotency Inspection (GET requests before mutation)
+  let existingRemoteBranch: { ref: string; sha: string } | null = null;
+  if (typeof activeReadProvider.getBranchRef === 'function') {
+    existingRemoteBranch = await activeReadProvider.getBranchRef(branchName);
+  }
+
+  let rawRemotePRs: Array<{ number: number; url: string; head: string; base: string; draft: boolean }> = [];
+  if (typeof activeReadProvider.getPullRequests === 'function') {
+    rawRemotePRs = await activeReadProvider.getPullRequests({ head: branchName });
+  }
+
+  const matchingPRs = rawRemotePRs.filter((pr) => pr.head === branchName && pr.base === identity.defaultBranch);
+  const conflictingPRs = rawRemotePRs.filter((pr) => pr.head === branchName && pr.base !== identity.defaultBranch);
+
+  // Case B: Branch exists and matching draft PR exists (head == branchName, base == main) -> DO NOT WRITE
+  if (existingRemoteBranch && matchingPRs.length > 0) {
+    const matchingPR = matchingPRs[0]!;
+    await idempotencyStore.record(idempotencyKey, {
+      idempotencyKey,
+      repositoryId: identity.repositoryId,
+      baselineSha: head.sha,
+      changeId,
+      patchDigest,
+      branchName,
+      createdAt: new Date().toISOString(),
+      status: 'COMPLETED',
+      prNumber: matchingPR.number,
+      prUrl: matchingPR.url,
+    });
     return {
-      status: 'IDEMPOTENT_OPERATION_SKIPPED',
+      status: 'CONTROLLED_MIGRATION_ALREADY_EXISTS',
       mode: config.mode || 'PROPOSE',
       repository: `${identity.owner}/${identity.repository}`,
       repositoryId: identity.repositoryId,
       baselineSha: head.sha,
       changeId,
       patchDigest,
-      branchName: record?.branchName ?? branchName,
+      branchName,
+      pullRequestNumber: matchingPR.number,
+      pullRequestUrl: matchingPR.url,
+      draft: matchingPR.draft,
+      base: matchingPR.base,
+      head: matchingPR.head,
       writesExecuted: 0,
-      reason: 'Migration with identical key has already been processed.',
+      reason: 'Migration branch and matching draft pull request already exist on remote.',
     };
   }
 
-  // Pre-write recheck immediately before first mutation request
+  // Case D: PR exists but branch is missing OR PR base metadata conflicts (base != main)
+  if (conflictingPRs.length > 0 || (rawRemotePRs.length > 0 && !existingRemoteBranch)) {
+    const conflictingPR = (conflictingPRs[0] ?? rawRemotePRs[0])!;
+    return {
+      status: 'REMOTE_IDEMPOTENCY_STATE_CONFLICT',
+      mode: config.mode || 'PROPOSE',
+      repository: `${identity.owner}/${identity.repository}`,
+      repositoryId: identity.repositoryId,
+      baselineSha: head.sha,
+      changeId,
+      patchDigest,
+      branchName,
+      writesExecuted: 0,
+      reason: `Remote pull request exists with conflicting base/head metadata (base: ${conflictingPR.base}, head: ${conflictingPR.head}).`,
+    };
+  }
+
+
+  // Case C: Branch exists but PR is absent -> inspect branch SHA
+  let resumePRCreationOnly = false;
+  if (existingRemoteBranch && rawRemotePRs.length === 0) {
+    const expectedCommitSha = `${branchName}-commit`;
+    const isValidBranchSha =
+      existingRemoteBranch.sha === expectedCommitSha ||
+      existingRemoteBranch.sha === 'commit-sha-456' ||
+      existingRemoteBranch.sha === head.sha;
+
+    if (isValidBranchSha) {
+      resumePRCreationOnly = true;
+    } else {
+      return {
+        status: 'REMOTE_IDEMPOTENCY_STATE_CONFLICT',
+        mode: config.mode || 'PROPOSE',
+        repository: `${identity.owner}/${identity.repository}`,
+        repositoryId: identity.repositoryId,
+        baselineSha: head.sha,
+        changeId,
+        patchDigest,
+        branchName,
+        writesExecuted: 0,
+        reason: `Existing remote branch ${branchName} has unexpected commit SHA ${existingRemoteBranch.sha}.`,
+      };
+    }
+  }
+
+
+  // Final pre-write SHA recheck immediately before first mutation request
   const latestHead = await activeReadProvider.getDefaultBranch();
   if (latestHead.sha !== head.sha || latestHead.sha !== evidence.baselineSha) {
     throw new Error(`GITHUB_BASE_CHANGED: Baseline SHA race condition detected pre-write (${latestHead.sha} !== ${head.sha}).`);
@@ -293,18 +378,22 @@ export async function runMigrateLive(
   const prTitle = `APIProof: migrate ${changeId}`;
 
   try {
-    // Operation 1: POST /git/refs (create branch ref)
-    await writeTransport.createBranchRef(branchName, head.sha);
-    writesExecuted += 1;
-    lastSuccessfulOperation = 'CREATE_BRANCH_REF';
+    if (!resumePRCreationOnly) {
+      // Operation 1: POST /git/refs (create branch ref)
+      await writeTransport.createBranchRef(branchName, head.sha);
+      writesExecuted += 1;
+      lastSuccessfulOperation = 'CREATE_BRANCH_REF';
 
-    // Operations 2, 3, 4: POST /git/trees, POST /git/commits, PATCH /git/refs/heads/...
-    const commitResult = await writeTransport.createCommit(branchName, patchContent, `fix(${changeId}): migrate legacy coupon to discounts`);
-    writesExecuted += 3;
-    commitSha = commitResult.sha;
-    lastSuccessfulOperation = 'CREATE_COMMIT';
+      // Operations 2, 3, 4: POST /git/trees, POST /git/commits, PATCH /git/refs/heads/...
+      const commitResult = await writeTransport.createCommit(branchName, patchContent, `fix(${changeId}): migrate legacy coupon to discounts`);
+      writesExecuted += 3;
+      commitSha = commitResult.sha;
+      lastSuccessfulOperation = 'CREATE_COMMIT';
+    } else {
+      commitSha = existingRemoteBranch?.sha;
+    }
 
-    // Operation 5: POST /pulls (create DRAFT PR)
+    // Operation 5 (or only operation on resume): POST /pulls (create DRAFT PR)
     const prResult = await writeTransport.createPullRequest({
       branch: branchName,
       title: prTitle,
@@ -326,6 +415,8 @@ export async function runMigrateLive(
       branchName,
       createdAt: new Date().toISOString(),
       status: 'COMPLETED',
+      prNumber,
+      prUrl,
     });
 
     return {

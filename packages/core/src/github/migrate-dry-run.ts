@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import {
   loadGitHubAppConfig,
   assertLiveConfig,
@@ -9,7 +8,8 @@ import {
   FetchGitHubReadTransport,
   GitHubAppSourceControlProvider,
 } from './live-provider.js';
-import { generateSafeBranchName } from './branch-policy.js';
+import { generateDeterministicBranchName } from './branch-policy.js';
+
 import { validatePatchScope } from './patch-scope.js';
 import {
   MigrationVerifier,
@@ -28,7 +28,10 @@ import {
 import { DisabledGitHubWriteTransport } from './write-transport.js';
 import type { SourceControlProvider } from './provider.js';
 
-export type ReadSourceControlProvider = Pick<SourceControlProvider, 'getRepository' | 'getDefaultBranch' | 'readTree' | 'readFile'>;
+export type ReadSourceControlProvider = Pick<SourceControlProvider, 'getRepository' | 'getDefaultBranch' | 'readTree' | 'readFile'> & {
+  getBranchRef?(branchName: string): Promise<{ ref: string; sha: string } | null>;
+  getPullRequests?(options?: { head?: string; base?: string; state?: string }): Promise<Array<{ number: number; url: string; head: string; base: string; draft: boolean }>>;
+};
 
 export interface MigrateDryRunOptions {
   config?: GitHubAppConfig;
@@ -92,8 +95,6 @@ export async function runMigrateDryRun(
   }
 
   const changeId = 'stripe-subscription-coupon-removed';
-  const shortRunId = crypto.randomBytes(4).toString('hex');
-  const branchName = generateSafeBranchName(changeId, shortRunId);
 
   // Read remote files required for Stripe analysis
   const tree = await activeProvider.readTree(head.sha);
@@ -118,6 +119,14 @@ export async function runMigrateDryRun(
   };
 
   const patchDigest = computeCanonicalPatchDigest(patchContent);
+
+  const branchName = generateDeterministicBranchName({
+    repositoryId: identity.repositoryId,
+    baselineSha: head.sha,
+    changeId,
+    patchDigest,
+  });
+
 
   // Create sealed, verifier-provenance-signed verification evidence artifact
   const evidence = MigrationVerifier.verify({

@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 const PROTECTED_BRANCH_NAMES = new Set([
   'main',
   'master',
@@ -60,4 +62,16 @@ export function generateSafeBranchName(changeId: string, shortRunId: string): st
     throw new Error(`GITHUB_INVALID_BRANCH_NAME: ${validation.reason}`);
   }
   return candidate;
+}
+
+export function generateDeterministicBranchName(input: {
+  repositoryId: string;
+  baselineSha: string;
+  changeId: string;
+  patchDigest: string;
+}): string {
+  const hash = crypto.createHash('sha256');
+  hash.update(`${input.repositoryId}:${input.baselineSha}:${input.changeId}:${input.patchDigest}`);
+  const shortHash = hash.digest('hex').slice(0, 8);
+  return generateSafeBranchName(input.changeId, shortHash);
 }
