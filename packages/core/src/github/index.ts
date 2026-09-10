@@ -15,3 +15,4 @@ export * from './write-transport.js';
 export * from './fake-write-transport.js';
 export * from './pr-policy.js';
 export * from './migrate-dry-run.js';
+export * from './migrate-live.js';

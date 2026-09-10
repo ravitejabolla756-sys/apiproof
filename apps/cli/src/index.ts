@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig, assertLiveConfig, NodeGitHubAppTokenProvider, FetchGitHubReadTransport, GitHubAppSourceControlProvider, runMigrateDryRun } from '@apiproof/core';
+import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig, assertLiveConfig, NodeGitHubAppTokenProvider, FetchGitHubReadTransport, GitHubAppSourceControlProvider, runMigrateDryRun, runMigrateLive } from '@apiproof/core';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
 import { StripeProvider, loadStripeRegistry } from '@apiproof/providers';
 import { AnalysisError, EXCLUDED_DIRECTORIES, readJsonFile, TOOL_VERSION } from '@apiproof/shared';
@@ -33,16 +33,18 @@ Usage:
   apiproof github-smoke-test [--json]
   apiproof github-observe [--json]
   apiproof github-migrate-dry-run [--json]
+  apiproof github-migrate-live [--confirm-controlled-write] [--json]
 
 Options:
-  --json        Emit one JSON object (including errors)
-  --change      Structured change fixture; required for impact
-  --change-id   Reviewed registry record ID; alternative to --change
-  --with-model  Reserved opt-in model path; unavailable unless a provider is configured
-  --registry    Registry directory (default: bundled registry/stripe)
-  --corpus      Evaluation directory (default: bundled evaluation)
-  --help, -h    Show this help
-  --version     Show tool version
+  --json                       Emit one JSON object (including errors)
+  --confirm-controlled-write   Explicit confirmation for one-shot controlled migration write
+  --change                     Structured change fixture; required for impact
+  --change-id                  Reviewed registry record ID; alternative to --change
+  --with-model                 Reserved opt-in model path; unavailable unless a provider is configured
+  --registry                   Registry directory (default: bundled registry/stripe)
+  --corpus                     Evaluation directory (default: bundled evaluation)
+  --help, -h                   Show this help
+  --version                    Show tool version
 
 Exit codes: 0 analysis completed (findings may exist); 1 analysis failed; 2 invalid input.
 No customer code is executed, modified, merged, or deployed.`;
@@ -59,7 +61,7 @@ async function main(): Promise<void> {
     let parsed;
     try {
       parsed = parseArgs({ args, allowPositionals: true, strict: true,
-        options: { json: { type: 'boolean' }, change: { type: 'string' }, 'change-id': { type: 'string' }, 'with-model': { type: 'boolean' },
+        options: { json: { type: 'boolean' }, 'confirm-controlled-write': { type: 'boolean' }, change: { type: 'string' }, 'change-id': { type: 'string' }, 'with-model': { type: 'boolean' },
           registry: { type: 'string' }, corpus: { type: 'string' }, help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' } } });
     } catch { throw new AnalysisError('INVALID_ARGUMENTS', 'Invalid arguments. Run apiproof --help for usage.'); }
     json = parsed.values.json ?? false;
@@ -147,6 +149,14 @@ async function main(): Promise<void> {
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       return;
     }
+    if (command === 'github-migrate-live') {
+      if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('INVALID_ARGUMENTS', 'GitHub migrate live uses only --confirm-controlled-write and --json.');
+      const confirmControlledWrite = parsed.values['confirm-controlled-write'] ?? false;
+      const result = await runMigrateLive({ registryPath, confirmControlledWrite });
+      process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+      return;
+    }
+
     if (command === 'verify-contract') {
       if (parsed.positionals.length !== 2 || !repository || !/^[0-9a-f-]{36}$/.test(repository) || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id'] || parsed.values['with-model']) throw new AnalysisError('CONTRACT_NOT_ALLOWED', 'Contract verification requires a registered UUID patch run.');
       const runRoot = path.join(toolRoot, '.tmp/patch-runs', repository); let raw;
