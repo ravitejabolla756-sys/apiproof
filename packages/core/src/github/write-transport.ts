@@ -4,7 +4,7 @@ import type { InstallationTokenProvider } from './live-provider.js';
 
 export interface GitHubControlledWriteTransport {
   createBranchRef(branchName: string, sha: string): Promise<{ ref: string; sha: string }>;
-  createCommit(branchName: string, files: Record<string, string>, message: string): Promise<{ sha: string }>;
+  createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }>;
   createPullRequest(input: { branch: string; title: string; body: string; base: string; draft?: boolean }): Promise<{ number: number; url: string }>;
   operationAllowed(operation: GitHubOperation): boolean;
 }
@@ -76,7 +76,7 @@ export class DisabledGitHubWriteTransport implements GitHubControlledWriteTransp
     throw new Error('GITHUB_WRITE_DISABLED: Remote writes are strictly disabled in this phase.');
   }
 
-  async createCommit(_branchName: string, _files: Record<string, string>, _message: string): Promise<{ sha: string }> {
+  async createCommit(_branchName: string, _files: Record<string, string>, _message: string, _parentSha?: string): Promise<{ sha: string }> {
     throw new Error('GITHUB_WRITE_DISABLED: Remote writes are strictly disabled in this phase.');
   }
 
@@ -159,7 +159,7 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     return { ref: `refs/heads/${branchName}`, sha };
   }
 
-  async createCommit(branchName: string, files: Record<string, string>, message: string): Promise<{ sha: string }> {
+  async createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }> {
     const treePath = `/repos/${this.config.owner}/${this.config.repository}/git/trees`;
     const commitPath = `/repos/${this.config.owner}/${this.config.repository}/git/commits`;
     const refPath = `/repos/${this.config.owner}/${this.config.repository}/git/refs/heads/${branchName}`;
@@ -170,20 +170,45 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
 
     const token = await this.tokens.getToken(this.config.installationId, this.config.repositoryId);
 
+    let baseTreeSha: string | undefined;
+    if (parentSha) {
+      const parentCommitPath = `/repos/${this.config.owner}/${this.config.repository}/git/commits/${parentSha}`;
+      const parentRes = await this.fetchImpl(`${this.baseUrl}${parentCommitPath}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
+      });
+      if (parentRes.ok) {
+        const parentData = (await parentRes.json()) as { tree?: { sha?: string } };
+        baseTreeSha = parentData.tree?.sha;
+      }
+    }
+
+    const treeBody: Record<string, unknown> = {
+      tree: Object.entries(files).map(([p, c]) => ({ path: p, mode: '100644', type: 'blob', content: c })),
+    };
+    if (baseTreeSha) {
+      treeBody.base_tree = baseTreeSha;
+    }
+
     // Create tree
     const treeRes = await this.fetchImpl(`${this.baseUrl}${treePath}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
-      body: JSON.stringify({ tree: Object.entries(files).map(([p, c]) => ({ path: p, mode: '100644', type: 'blob', content: c })) }),
+      body: JSON.stringify(treeBody),
     });
     if (!treeRes.ok) throw new Error('GITHUB_WRITE_FAILED');
     const treeData = (await treeRes.json()) as { sha?: string };
 
     // Create commit
+    const commitBody: Record<string, unknown> = {
+      message,
+      tree: treeData.sha,
+      parents: parentSha ? [parentSha] : [],
+    };
     const commitRes = await this.fetchImpl(`${this.baseUrl}${commitPath}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
-      body: JSON.stringify({ message, tree: treeData.sha }),
+      body: JSON.stringify(commitBody),
     });
     if (!commitRes.ok) throw new Error('GITHUB_WRITE_FAILED');
     const commitData = (await commitRes.json()) as { sha?: string };

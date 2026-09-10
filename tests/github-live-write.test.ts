@@ -4,6 +4,7 @@ import {
   FakeSourceControlProvider,
   InMemoryIdempotencyStore,
   generateDeterministicBranchName,
+  FetchGitHubControlledWriteTransport,
   type RepositoryIdentity,
   type GitHubAppConfig,
   type GitHubControlledWriteTransport,
@@ -319,5 +320,92 @@ describe('github-migrate-live — Remote Idempotency & Deterministic Branch Prot
     expect(result.status).toBe('CONTROLLED_WRITE_PARTIAL_FAILURE');
     expect(result.reason).not.toContain('ghs_1234567890abcdef');
     expect(result.reason).toContain('[REDACTED]');
+  });
+
+  // Test 11: Partial state recovery — branch exists at baseline SHA, PR absent -> resumes tree, commit and PR creation (4 write calls)
+  it('11. partial state recovery (branch at baseline SHA, PR absent) resumes tree/commit creation with exactly 4 write calls', async () => {
+    const expectedBranch = 'apiproof/stripe-subscription-coupon-removed-9cc601a8';
+    const providerBranchAtBaseline = {
+      getRepository: async () => BASE_IDENTITY,
+      getDefaultBranch: async () => ({ name: 'main', sha: BASE_SHA }),
+      readTree: async () => ['src/billing.ts', 'package.json'],
+      readFile: async () => '',
+      getBranchRef: async (b: string) => (b === expectedBranch ? { ref: `refs/heads/${expectedBranch}`, sha: BASE_SHA } : null),
+      getPullRequests: async () => [],
+    };
+
+    let createBranchRefCalled = false;
+    let createCommitCalled = false;
+    let createPRCalled = false;
+    let writeCalls = 0;
+    const mockWriteTransport: GitHubControlledWriteTransport = {
+      operationAllowed: () => true,
+      createBranchRef: async () => { createBranchRefCalled = true; writeCalls++; return { ref: 'ref', sha: BASE_SHA }; },
+      createCommit: async (_b, _f, _m, parentSha) => {
+        createCommitCalled = true;
+        writeCalls += 3;
+        expect(parentSha).toBe(BASE_SHA);
+        return { sha: 'commit-sha-new' };
+      },
+      createPullRequest: async () => { createPRCalled = true; writeCalls++; return { number: 44, url: 'https://github.com/ravitejabolla756-sys/apiproof-github-fixture/pull/44' }; },
+    };
+
+    const res = await runMigrateLive({
+      config: TEST_CONFIG,
+      customReadProvider: providerBranchAtBaseline,
+      customWriteTransport: mockWriteTransport,
+      confirmControlledWrite: true,
+    });
+
+    expect(res.status).toBe('CONTROLLED_DRAFT_PR_CREATED');
+    expect(createBranchRefCalled).toBe(false); // NO createBranchRef call!
+    expect(createCommitCalled).toBe(true);
+    expect(createPRCalled).toBe(true);
+    expect(res.writesExecuted).toBe(4); // Exactly 4 write calls (POST tree, POST commit, PATCH ref, POST draft PR)
+    expect(writeCalls).toBe(4);
+  });
+
+  // Test 12: FetchGitHubControlledWriteTransport resolves base_tree from parent commit metadata and sets parents array
+  it('12. FetchGitHubControlledWriteTransport resolves base_tree from baseline commit metadata and sets parents array', async () => {
+    const recordedRequests: Array<{ url: string; method: string; body?: { base_tree?: string; parents?: string[] } | undefined }> = [];
+    const mockFetch = async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const urlStr = String(url);
+      const method = init?.method ?? 'GET';
+      const body = init?.body ? (JSON.parse(String(init.body)) as { base_tree?: string; parents?: string[] }) : undefined;
+      recordedRequests.push({ url: urlStr, method, body });
+
+      if (method === 'GET' && urlStr.includes('/git/commits/b1be45b401f41106ecfd489bbbb1fff71639c763')) {
+        return new Response(JSON.stringify({ sha: 'b1be45b401f41106ecfd489bbbb1fff71639c763', tree: { sha: 'baseline-tree-sha-123' } }), { status: 200 });
+      }
+      if (method === 'POST' && urlStr.endsWith('/git/trees')) {
+        return new Response(JSON.stringify({ sha: 'new-tree-sha-456' }), { status: 201 });
+      }
+      if (method === 'POST' && urlStr.endsWith('/git/commits')) {
+        return new Response(JSON.stringify({ sha: 'new-commit-sha-789' }), { status: 201 });
+      }
+      if (method === 'PATCH' && urlStr.includes('/git/refs/heads/')) {
+        return new Response(JSON.stringify({ ref: 'refs/heads/branch' }), { status: 200 });
+      }
+      return new Response(JSON.stringify({}), { status: 404 });
+    };
+
+    const tokenProvider = { getToken: async () => 'mock-token' };
+    const transport = new FetchGitHubControlledWriteTransport(TEST_CONFIG, tokenProvider as never, mockFetch as never);
+
+    const result = await transport.createCommit('apiproof/test-branch', { 'src/billing.ts': 'patched content' }, 'fix: test', 'b1be45b401f41106ecfd489bbbb1fff71639c763');
+
+    expect(result.sha).toBe('new-commit-sha-789');
+
+    const getCommitReq = recordedRequests.find(r => r.method === 'GET' && r.url.includes('/git/commits/b1be45b401f41106ecfd489bbbb1fff71639c763'));
+    expect(getCommitReq).toBeDefined();
+
+    const treeReq = recordedRequests.find(r => r.method === 'POST' && r.url.endsWith('/git/trees'));
+    expect(treeReq).toBeDefined();
+    expect(treeReq?.body?.base_tree).toBe('baseline-tree-sha-123'); // base_tree equals baseline commit's tree SHA!
+    expect(treeReq?.body?.base_tree).not.toBe('b1be45b401f41106ecfd489bbbb1fff71639c763'); // base_tree is NOT blindly the commit SHA!
+
+    const commitReq = recordedRequests.find(r => r.method === 'POST' && r.url.endsWith('/git/commits'));
+    expect(commitReq).toBeDefined();
+    expect(commitReq?.body?.parents).toEqual(['b1be45b401f41106ecfd489bbbb1fff71639c763']); // parents contains parent commit SHA!
   });
 });

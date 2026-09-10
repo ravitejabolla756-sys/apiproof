@@ -57,7 +57,7 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
     return { ref: `refs/heads/${branchName}`, sha };
   }
 
-  async createCommit(branchName: string, files: Record<string, string>, message: string): Promise<{ sha: string }> {
+  async createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }> {
     if (!branchName.startsWith('apiproof/')) {
       throw new Error('GITHUB_INVALID_BRANCH_NAME: Cannot commit to non-apiproof branch');
     }
@@ -67,12 +67,12 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
 
     const checkTree = validateWriteEndpoint('POST', treePath);
     if (!checkTree.valid) throw new Error(checkTree.reason);
-    this.recordedCalls.push({ method: 'POST', path: treePath, body: { files } });
+    this.recordedCalls.push({ method: 'POST', path: treePath, body: { files, base_tree: parentSha ? `${parentSha}-tree` : undefined } });
 
     const checkCommit = validateWriteEndpoint('POST', commitPath);
     if (!checkCommit.valid) throw new Error(checkCommit.reason);
     const newSha = `commit-sha-${Date.now()}`;
-    this.recordedCalls.push({ method: 'POST', path: commitPath, body: { message, tree: 'tree-sha' } });
+    this.recordedCalls.push({ method: 'POST', path: commitPath, body: { message, tree: 'tree-sha', parents: parentSha ? [parentSha] : [] } });
 
     const checkRef = validateWriteEndpoint('PATCH', refPath);
     if (!checkRef.valid) throw new Error(checkRef.reason);

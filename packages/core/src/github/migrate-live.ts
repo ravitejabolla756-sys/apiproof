@@ -315,15 +315,15 @@ export async function runMigrateLive(
 
 
   // Case C: Branch exists but PR is absent -> inspect branch SHA
+  let resumeFromCommitCreation = false;
   let resumePRCreationOnly = false;
   if (existingRemoteBranch && rawRemotePRs.length === 0) {
-    const expectedCommitSha = `${branchName}-commit`;
-    const isValidBranchSha =
-      existingRemoteBranch.sha === expectedCommitSha ||
-      existingRemoteBranch.sha === 'commit-sha-456' ||
-      existingRemoteBranch.sha === head.sha;
-
-    if (isValidBranchSha) {
+    if (existingRemoteBranch.sha === head.sha) {
+      resumeFromCommitCreation = true;
+    } else if (
+      existingRemoteBranch.sha === `${branchName}-commit` ||
+      existingRemoteBranch.sha === 'commit-sha-456'
+    ) {
       resumePRCreationOnly = true;
     } else {
       return {
@@ -379,13 +379,15 @@ export async function runMigrateLive(
 
   try {
     if (!resumePRCreationOnly) {
-      // Operation 1: POST /git/refs (create branch ref)
-      await writeTransport.createBranchRef(branchName, head.sha);
-      writesExecuted += 1;
-      lastSuccessfulOperation = 'CREATE_BRANCH_REF';
+      if (!resumeFromCommitCreation) {
+        // Operation 1: POST /git/refs (create branch ref)
+        await writeTransport.createBranchRef(branchName, head.sha);
+        writesExecuted += 1;
+        lastSuccessfulOperation = 'CREATE_BRANCH_REF';
+      }
 
       // Operations 2, 3, 4: POST /git/trees, POST /git/commits, PATCH /git/refs/heads/...
-      const commitResult = await writeTransport.createCommit(branchName, patchContent, `fix(${changeId}): migrate legacy coupon to discounts`);
+      const commitResult = await writeTransport.createCommit(branchName, patchContent, `fix(${changeId}): migrate legacy coupon to discounts`, head.sha);
       writesExecuted += 3;
       commitSha = commitResult.sha;
       lastSuccessfulOperation = 'CREATE_COMMIT';
