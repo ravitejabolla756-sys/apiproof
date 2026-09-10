@@ -1,0 +1,53 @@
+{
+  "provider": "twilio",
+  "id": "twilio-programmable-fax-removed",
+  "title": "Programmable Fax API end-of-life and removal",
+  "description": "Twilio Programmable Fax API was retired and client.fax methods were removed from the twilio-node SDK.",
+  "packageName": "twilio",
+  "affectedSymbols": [
+    {
+      "symbol": "fax.v1.faxes.create",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "client.fax.v1.faxes allowed creating and managing faxes.",
+  "newBehavior": "Programmable Fax is retired. Migrate to alternative messaging or third-party fax providers.",
+  "migrationInstructions": [
+    "Remove client.fax invocations."
+  ],
+  "severity": "critical",
+  "affectedSdkVersions": ">=3.0.0 <5.0.0",
+  "targetSdkVersion": "5.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/twilio/twilio-node/blob/main/CHANGES.md",
+  "changeType": "resource-removed",
+  "resources": [
+    "fax"
+  ],
+  "rules": [
+    {
+      "kind": "resource",
+      "symbol": "fax.v1.faxes.create",
+      "match": "exact"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/twilio/twilio-node/blob/main/CHANGES.md",
+      "summary": "Programmable Fax endpoints removed from twilio-node SDK following service end of life.",
+      "accessedAt": "2026-09-10"
+    }
+  ],
+  "versionScope": "api-and-sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-10",
+    "notes": "Reviewed official twilio-node release notes."
+  },
+  "assumptions": [
+    "Usage of client.fax.v1.faxes indicates retired Programmable Fax API."
+  ]
+}

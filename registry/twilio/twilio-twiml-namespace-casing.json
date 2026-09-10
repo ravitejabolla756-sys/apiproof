@@ -1,0 +1,53 @@
+{
+  "provider": "twilio",
+  "id": "twilio-twiml-namespace-casing",
+  "title": "Twiml namespace uppercase alias removed in favor of twiml",
+  "description": "In twilio-node v4.0.0+, access to TwiML builders via capitalized Twiml property was removed in favor of twiml.",
+  "packageName": "twilio",
+  "affectedSymbols": [
+    {
+      "symbol": "Twiml.VoiceResponse",
+      "kind": "method",
+      "match": "exact"
+    }
+  ],
+  "oldBehavior": "Twiml capitalized namespace supported for TwiML builders.",
+  "newBehavior": "Use lowercase twiml namespace (twilio.twiml.VoiceResponse).",
+  "migrationInstructions": [
+    "Replace twilio.Twiml with twilio.twiml."
+  ],
+  "severity": "high",
+  "affectedSdkVersions": ">=3.0.0 <4.0.0",
+  "targetSdkVersion": "4.0.0",
+  "provenance": "official",
+  "sourceUrl": "https://github.com/twilio/twilio-node/blob/main/CHANGES.md",
+  "changeType": "symbol-deprecated",
+  "resources": [
+    "twiml"
+  ],
+  "rules": [
+    {
+      "kind": "method",
+      "symbol": "Twiml.VoiceResponse",
+      "match": "exact"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://github.com/twilio/twilio-node/blob/main/CHANGES.md",
+      "summary": "Twilio Node SDK v4 migration dropped uppercase Twiml namespace alias in favor of lowercase twiml.",
+      "accessedAt": "2026-09-10"
+    }
+  ],
+  "versionScope": "api-and-sdk",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex development source review",
+    "reviewerKind": "agent",
+    "reviewedAt": "2026-09-10",
+    "notes": "Reviewed official twilio-node changes documentation."
+  },
+  "assumptions": [
+    "A static reference to Twiml indicates usage of legacy v3 namespace alias."
+  ]
+}

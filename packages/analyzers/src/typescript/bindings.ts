@@ -171,7 +171,7 @@ export class BindingResolver {
 
   private member(base: Binding, name: string): Binding {
     if (base.kind === 'sdk' && this.provider.constructorExports.includes(name)) return base;
-    return { ...base, kind: base.kind === 'sdk' ? 'type' : base.kind, path: [...base.path, name] };
+    return { ...base, kind: base.kind === 'sdk' ? (this.provider.id === 'twilio' ? 'client' : 'type') : base.kind, path: [...base.path, name] };
   }
 
   private sdk(origin: Node, basis: Binding['basis']): Binding { return { kind: 'sdk', path: [], origin, basis }; }

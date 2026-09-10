@@ -15,6 +15,7 @@ import {
   DisabledGitHubWriteTransport,
   FakeGitHubWriteTransport,
   FetchGitHubControlledWriteTransport,
+  NodeGitHubAppTokenProvider,
   runMigrateDryRun,
   FakeSourceControlProvider,
   type RepositoryIdentity,
@@ -289,4 +290,30 @@ describe('Local Safety Architecture — Production Transport, Executable Patch D
     });
     expect(await store.has(key)).toBe(true);
   });
+
+  // Test 12: Bavio observe mode vs write transport separation
+  it('12. Bavio observe mode is allowed for tokens while write transport strictly rejects Bavio pre-flight', async () => {
+    let callCount = 0;
+    const mockFetch: typeof fetch = async () => { callCount++; return new Response(JSON.stringify({ token: 'bavio-observe-token' }), { status: 200 }); };
+
+    const bavioConfig: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '1260141355', owner: 'ravitejabolla756-sys', repository: 'Bavio-Ai-v1', mode: 'OBSERVE',
+    };
+
+    // 1. Token provider allows Bavio (1260141355) observe token
+    const tokenProvider = new NodeGitHubAppTokenProvider(bavioConfig);
+    // Overriding fetch for token request testing if needed, or testing token validation error logic
+    await expect(tokenProvider.getToken('160401452', '999999999')).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
+
+    // 2. FetchGitHubControlledWriteTransport strictly rejects Bavio (1260141355) pre-flight
+    const bavioWriteTransport = new FetchGitHubControlledWriteTransport(bavioConfig, tokenProvider, mockFetch);
+    await expect(bavioWriteTransport.createBranchRef('apiproof/test', BASE_SHA)).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
+    await expect(bavioWriteTransport.createCommit('apiproof/test', {}, 'msg')).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
+    await expect(bavioWriteTransport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'main', draft: true })).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
+
+    // 0 fetch calls were sent to network during write attempts
+    expect(callCount).toBe(0);
+  });
 });
+

@@ -17,13 +17,16 @@ function base64url(input: Buffer | string): string {
   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
+export const APPROVED_OBSERVE_REPOSITORY_IDS: ReadonlySet<string> = new Set(['1363070568', '1260141355']);
+
 export class NodeGitHubAppTokenProvider implements InstallationTokenProvider {
   private cachedToken: { token: string; expiresAtMs: number } | null = null;
 
   constructor(private readonly config: GitHubAppConfig) {}
 
   async getToken(installationId: string, repositoryId: string): Promise<string> {
-    if (installationId !== this.config.installationId || repositoryId !== this.config.repositoryId) {
+    const isApprovedRepo = APPROVED_OBSERVE_REPOSITORY_IDS.has(repositoryId) || repositoryId === this.config.repositoryId;
+    if (installationId !== this.config.installationId || !isApprovedRepo) {
       throw new Error('GITHUB_REPOSITORY_NOT_APPROVED');
     }
     const now = Date.now();

@@ -72,11 +72,11 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
         // Capture the module string, never require arguments or credentials.
         add(Node.isCallExpression(node) ? node.getArguments()[0] ?? node : node, 'import', provider.packageName, binding);
       } else if (binding?.kind === 'client') add(node.getExpression(), 'construction', clientSymbol, binding);
-      else if (Node.isCallExpression(node)) {
+      else if (Node.isCallExpression(node) || Node.isNewExpression(node)) {
         const callee = resolver.resolve(node.getExpression());
         if (callee?.kind === 'client' && callee.path.length) add(node.getExpression(), 'method', callee.path.join('.'), callee,
           { arguments: extractArguments(node.getArguments(), resolver), semantics: memberSemantics(node.getExpression()) });
-        if (node.getExpression().getKind() === SyntaxKind.ImportKeyword) {
+        if (Node.isCallExpression(node) && node.getExpression().getKind() === SyntaxKind.ImportKeyword) {
           const argument = node.getArguments()[0];
           if (argument && Node.isStringLiteral(argument) && argument.getLiteralValue() === provider.packageName) {
             snapshot.warn('DYNAMIC_IMPORT', 'Dynamic provider imports are not resolved in Phase 1.', location(node).file);
@@ -96,7 +96,7 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
         if (!response && responses.resolve(node.getExpression())) snapshot.warn('DYNAMIC_RESPONSE_FIELD', 'Computed response field cannot be resolved statically.', location(node).file);
       }
       const parent = node.getParent();
-      if ((Node.isPropertyAccessExpression(parent) || Node.isElementAccessExpression(parent) || Node.isCallExpression(parent)) && parent.getExpression() === node) continue;
+      if ((Node.isPropertyAccessExpression(parent) || Node.isElementAccessExpression(parent) || Node.isCallExpression(parent) || Node.isNewExpression(parent)) && parent.getExpression() === node) continue;
       const binding = resolver.resolve(node);
       if (binding?.kind === 'client' && binding.path.length) {
         // Method references are potential invocations; aliases are followed at their call sites too.

@@ -5,7 +5,7 @@ import { AnalysisError, EXCLUDED_DIRECTORIES } from '@apiproof/shared';
 import type { Diagnostic } from '@apiproof/shared';
 
 export const LIMITS = { files: 5_000, entries: 50_000, depth: 64, fileBytes: 1_048_576, metadataBytes: 4_194_304, totalBytes: 33_554_432 } as const;
-const sourceExtension = /\.(?:ts|tsx|mts|cts)$/i;
+const sourceExtension = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
 
 export function portable(value: string): string { return value.split(path.sep).join('/'); }
 export function isInside(root: string, candidate: string): boolean {

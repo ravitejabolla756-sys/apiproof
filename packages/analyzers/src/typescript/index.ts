@@ -9,12 +9,15 @@ import { detectUsages } from './usages.js';
 export class TypeScriptRepositoryAnalyzer implements RepositoryAnalyzer {
   readonly language = 'typescript' as const;
 
-  async analyze(repositoryPath: string | RepositorySnapshot, provider: ProviderDescriptor): Promise<ScanResult> {
-    const snapshot = typeof repositoryPath === 'string' ? await RepositorySnapshot.load(repositoryPath) : repositoryPath;
+  async analyze(repositoryPath: string | RepositorySnapshot | Map<string, string> | Record<string, string>, provider: ProviderDescriptor): Promise<ScanResult> {
+    const snapshot = repositoryPath instanceof RepositorySnapshot ? repositoryPath
+      : typeof repositoryPath === 'string' ? await RepositorySnapshot.load(repositoryPath)
+      : RepositorySnapshot.fromMemory('/', repositoryPath instanceof Map ? repositoryPath : new Map(Object.entries(repositoryPath)));
     const dependencies = await detectDependencies(snapshot, provider.packageName);
+    const hasJs = [...snapshot.sources.keys()].some((file) => /\.(?:js|jsx|mjs|cjs)$/i.test(file));
     const project = new Project({ useInMemoryFileSystem: true, skipAddingFilesFromTsConfig: true,
       skipFileDependencyResolution: true, skipLoadingLibFiles: true,
-      compilerOptions: { noLib: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.NodeNext,
+      compilerOptions: { noLib: true, allowJs: hasJs, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.NodeNext,
         moduleResolution: ts.ModuleResolutionKind.NodeNext, jsx: ts.JsxEmit.Preserve, strict: true } });
     const sources = [...snapshot.sources].map(([file, content]) => project.createSourceFile(`/repository/${file}`, content));
     // Only syntactic diagnostics: dependency installation and semantic compilation are intentionally out of scope.
