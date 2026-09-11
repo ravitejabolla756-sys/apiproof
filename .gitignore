@@ -16,3 +16,5 @@ coverage/
 *.pfx
 .DS_Store
 Thumbs.db
+.next/
+
