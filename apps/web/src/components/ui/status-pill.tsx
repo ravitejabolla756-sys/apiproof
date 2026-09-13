@@ -27,32 +27,32 @@ export function StatusPill({
   className = "",
 }: StatusPillProps) {
   const styles: Record<StatusVariant, string> = {
-    healthy: "bg-emerald-950/40 text-emerald-300 border-emerald-800/50",
-    affected: "bg-rose-950/40 text-rose-300 border-rose-800/50",
-    warning: "bg-amber-950/40 text-amber-300 border-amber-800/50",
-    info: "bg-blue-950/40 text-blue-300 border-blue-800/50",
-    neutral: "bg-zinc-900 text-zinc-400 border-zinc-800",
-    reviewed: "bg-blue-950/30 text-blue-300 border-blue-800/40",
-    detected: "bg-zinc-900 text-zinc-400 border-zinc-800",
-    verified: "bg-emerald-950/40 text-emerald-300 border-emerald-800/50",
-    pr_created: "bg-blue-950/40 text-blue-300 border-blue-800/50",
+    healthy: "bg-[#EEF7F2] text-emerald-800 border-[#D1EBE0]",
+    affected: "bg-[#FDF2F2] text-rose-800 border-[#F8D7DA]",
+    warning: "bg-[#FEF8EC] text-amber-800 border-[#FDE68A]",
+    info: "bg-[#EBF3FC] text-blue-800 border-[#C6E1FA]",
+    neutral: "bg-[#F4F4F2] text-zinc-700 border-[#E8E8E5]",
+    reviewed: "bg-[#EBF3FC] text-blue-800 border-[#C6E1FA]",
+    detected: "bg-[#F4F4F2] text-zinc-600 border-[#E8E8E5]",
+    verified: "bg-[#EEF7F2] text-emerald-800 border-[#D1EBE0]",
+    pr_created: "bg-[#EBF3FC] text-blue-800 border-[#C6E1FA]",
   };
 
   const dots: Record<StatusVariant, string> = {
-    healthy: "bg-emerald-400",
-    affected: "bg-rose-400",
-    warning: "bg-amber-400",
-    info: "bg-blue-400",
-    neutral: "bg-zinc-500",
-    reviewed: "bg-blue-400",
-    detected: "bg-zinc-500",
-    verified: "bg-emerald-400",
-    pr_created: "bg-blue-400",
+    healthy: "bg-emerald-500",
+    affected: "bg-rose-500",
+    warning: "bg-amber-500",
+    info: "bg-blue-500",
+    neutral: "bg-zinc-400",
+    reviewed: "bg-blue-500",
+    detected: "bg-zinc-400",
+    verified: "bg-emerald-500",
+    pr_created: "bg-blue-500",
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-sans font-medium border transition-colors ${styles[status]} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans font-medium border transition-colors ${styles[status]} ${className}`}
     >
       <span className="relative flex h-1.5 w-1.5">
         {pulse && (
@@ -79,14 +79,14 @@ export function ProviderBadge({
   category?: string;
 }) {
   return (
-    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-sans">
-      <span className="font-medium text-zinc-200">{name}</span>
-      {category && <span className="text-[10px] text-zinc-500">({category})</span>}
+    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white border border-[#E8E8E5] text-xs font-sans shadow-2xs">
+      <span className="font-medium text-[#111111]">{name}</span>
+      {category && <span className="text-[10px] text-zinc-400">({category})</span>}
       <span
-        className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
+        className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
           status === "reviewed"
-            ? "bg-blue-950/50 text-blue-300 border border-blue-800/50"
-            : "bg-zinc-800 text-zinc-400"
+            ? "bg-[#EBF3FC] text-blue-800 border border-[#C6E1FA]"
+            : "bg-[#F4F4F2] text-zinc-600 border border-[#E8E8E5]"
         }`}
       >
         {status === "reviewed" ? "Reviewed" : "Detected"}

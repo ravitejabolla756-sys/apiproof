@@ -1,131 +1,109 @@
-import { demoData } from "@/lib/demo-data";
+"use client";
+
+import { DEMO_VERIFICATION_CHECKS, DEMO_PULL_REQUEST } from "@/lib/demo-data";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
-import { GitPullRequest, ExternalLink, FileCode } from "lucide-react";
+import { FileCheck2, CheckCircle2, GitPullRequest } from "lucide-react";
 
-export default function MigrationWorkbenchPage() {
-  const migration = demoData.migrations[0] || {
-    id: "mig-1",
-    title: "Stripe subscription coupon parameter removal",
-    providerId: "Stripe",
-    repositoryId: "apiproof-github-fixture",
-    status: "Draft PR Created",
-    verification: {
-      checks: [
-        { id: "v1", name: "Patch Application", status: "passed", detail: "Applied AST diff" },
-        { id: "v2", name: "TypeScript Build", status: "passed", detail: "tsc --noEmit clean" },
-        { id: "v3", name: "Unit Tests", status: "passed", detail: "All tests green" },
-        { id: "v4", name: "API Contract", status: "passed", detail: "Verified payload" },
-      ],
-    },
-    pullRequest: {
-      number: 1,
-      url: "https://github.com/ravitejabolla756-sys/apiproof-github-fixture/pull/1",
-    },
-  };
-
+export default function MigrationsWorkbenchPage() {
   return (
-    <div className="space-y-6 max-w-7xl font-sans text-xs">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-            Migrations
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Verified AST code transformations prepared for pull request delivery.
-          </p>
-        </div>
+    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
 
-        <StatusPill status="verified" label="Migration verified" />
+      {/* HEADER */}
+      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
+        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
+          <FileCheck2 className="w-6 h-6 text-emerald-600" />
+          Verified Migrations Workbench
+        </h1>
+        <p className="text-xs text-[#686868]">
+          AST code transformations validated against 4-gate verification pipelines before opening review-only PRs.
+        </p>
       </div>
 
-      {/* Code Review Layout: Main Diff (75%) / Right Details (25%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT / CENTER: Large Code Diff Area (9 cols) */}
-        <div className="lg:col-span-8 space-y-4">
-          <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-4 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <div className="flex items-center gap-2 font-mono text-xs">
-                <FileCode className="w-4 h-4 text-blue-400" />
-                <span className="font-semibold text-zinc-200">src/billing.ts</span>
-                <span className="text-zinc-500">·</span>
-                <span className="text-zinc-400 text-[11px]">stripe-subscription-coupon-removed</span>
-              </div>
-              <span className="text-[11px] font-mono text-zinc-500">Digest: dd6a85b5</span>
-            </div>
+      {/* MIGRATION WORKBENCH PANEL */}
+      <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs">
 
-            {/* Code Diff Display */}
-            <div className="rounded-md bg-zinc-950 p-4 border border-zinc-800/80 font-mono text-xs leading-relaxed space-y-1 overflow-x-auto">
-              <div className="text-zinc-500 text-[11px] pb-1 border-b border-zinc-800/60 mb-2">
-                @@ -14,7 +14,7 @@ export async function createSubscription(...)
-              </div>
-              <div className="text-zinc-400">  return stripe.subscriptions.create(&#123;</div>
-              <div className="text-zinc-400">    customer: customerId,</div>
-              <div className="text-zinc-400">    items: [&#123; price: priceId &#125;],</div>
-              <div className="bg-rose-950/60 text-rose-300 px-2 py-0.5 rounded border-l-2 border-rose-500">
-                -   coupon: couponId,
-              </div>
-              <div className="bg-emerald-950/60 text-emerald-300 px-2 py-0.5 rounded border-l-2 border-emerald-500">
-                +   discounts: [&#123; coupon: couponId &#125;],
-              </div>
-              <div className="text-zinc-400">  &#125;);</div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E8E5]">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-semibold text-[10px]">
+                Stripe Migration
+              </span>
+              <h2 className="text-lg font-semibold text-[#111111]">
+                stripe-subscription-coupon-removed
+              </h2>
             </div>
+            <div className="text-xs text-[#686868] mt-1 font-mono">
+              Target file: src/billing.ts · Repo: apiproof-github-fixture
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <StatusPill status="verified" label="4/4 Gates Passed" />
+            <StatusPill status="pr_created" label="Draft PR #1" />
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR: Migration Details (4 cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-4 text-xs">
-            <h2 className="text-sm font-semibold text-zinc-100">Migration details</h2>
+        {/* WORKBENCH SPLIT */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
 
-            <div className="space-y-3 font-sans">
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px] block">Change rule</span>
-                <span className="font-mono text-zinc-200 font-medium text-xs">
-                  stripe-subscription-coupon-removed
-                </span>
+          {/* CODE DIFF ON LEFT (60%) */}
+          <div className="lg:col-span-7 bg-[#F6F6F4] rounded-[24px] border border-[#E8E8E5] p-5 space-y-3 flex flex-col justify-between">
+            <div className="text-xs font-semibold text-[#111111] flex items-center justify-between">
+              <span>AST Transformation Output</span>
+              <span className="font-mono text-[11px] text-[#686868]">src/billing.ts</span>
+            </div>
+
+            <div className="rounded-2xl bg-zinc-950 p-4 font-mono text-xs text-zinc-100 space-y-2">
+              <div className="text-zinc-500 text-[11px]">// Before Refactor</div>
+              <div className="text-rose-400 bg-rose-950/60 p-2 rounded border border-rose-900/50">
+                coupon: couponId
               </div>
-
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px] block">Target repository</span>
-                <span className="font-mono text-zinc-200 font-medium text-xs">
-                  apiproof-github-fixture
-                </span>
+              <div className="text-zinc-500 text-[11px] pt-1">// After Refactor (Stripe SDK v17+)</div>
+              <div className="text-emerald-400 bg-emerald-950/60 p-2 rounded border border-emerald-900/50">
+                discounts: [{`{ coupon: couponId }`}]
               </div>
-
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px] block">Baseline SHA</span>
-                <span className="font-mono text-zinc-300 text-xs">b1be45b401f41106</span>
-              </div>
-
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px] block">Changed files</span>
-                <span className="font-mono text-zinc-200 text-xs">1 file (src/billing.ts)</span>
-              </div>
-
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px] block">Verification status</span>
-                <span className="text-emerald-400 font-medium text-xs">Passed (4/4 automated checks)</span>
-              </div>
-
-              {migration.pullRequest && (
-                <a
-                  href={migration.pullRequest.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block pt-1"
-                >
-                  <Button size="sm" className="w-full justify-center gap-1.5" icon={<GitPullRequest className="w-3.5 h-3.5" />}>
-                    View Draft PR #{migration.pullRequest.number}
-                    <ExternalLink className="w-3 h-3" />
-                  </Button>
-                </a>
-              )}
             </div>
           </div>
+
+          {/* VERIFICATION INSPECTOR ON RIGHT (40%) */}
+          <div className="lg:col-span-5 bg-[#EEF7F2] rounded-[24px] border border-[#D1EBE0] p-5 space-y-4 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Verification Inspector
+              </div>
+              <p className="text-[11px] text-emerald-800">
+                Passed all 4 AST and test suite compilation gates.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              {DEMO_VERIFICATION_CHECKS.map((chk) => (
+                <div key={chk.id} className="p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between shadow-2xs">
+                  <div>
+                    <div className="font-semibold text-[#111111]">{chk.name}</div>
+                    <div className="text-[11px] text-[#686868]">{chk.detail}</div>
+                  </div>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-[#D1EBE0] flex items-center justify-between">
+              <a href={DEMO_PULL_REQUEST.url} target="_blank" rel="noreferrer">
+                <Button size="sm" variant="primary" className="gap-1.5 text-xs font-medium">
+                  <GitPullRequest className="w-3.5 h-3.5" />
+                  <span>Review Draft PR #1</span>
+                </Button>
+              </a>
+              <span className="text-[11px] font-semibold text-emerald-900">Human Review Required</span>
+            </div>
+          </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }

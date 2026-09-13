@@ -1,120 +1,80 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { demoData } from "@/lib/demo-data";
+import { DEMO_FINDING_STRIPE } from "@/lib/demo-data";
 import { StatusPill } from "@/components/ui/status-pill";
-import { Search, CheckCircle2, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, GitPullRequest } from "lucide-react";
 
-export default function FindingsConsolePage() {
-  const [filterState, setFilterState] = useState<"all" | "open" | "migration_ready">("all");
-  const [search, setSearch] = useState("");
-
-  const filteredFindings = demoData.findings.filter((f) => {
-    const matchesFilter =
-      filterState === "all" ||
-      (filterState === "open" && f.severity === "breaking") ||
-      (filterState === "migration_ready" && f.pullRequest);
-    const matchesSearch =
-      f.id.toLowerCase().includes(search.toLowerCase()) ||
-      f.title.toLowerCase().includes(search.toLowerCase()) ||
-      f.providerId.toLowerCase().includes(search.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
-
+export default function FindingsListPage() {
   return (
-    <div className="space-y-6 max-w-7xl font-sans text-xs">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-            Findings
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Verified API change impacts requiring engineering review.
-          </p>
-        </div>
-
-        <StatusPill status="affected" label="1 finding needs review" />
+    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+      {/* HEADER */}
+      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
+        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
+          <AlertTriangle className="w-6 h-6 text-rose-600" />
+          API Compatibility Findings
+        </h1>
+        <p className="text-xs text-[#686868]">
+          Detected breaking changes matching indexed repository AST call sites.
+        </p>
       </div>
 
-      {/* Filter & Search Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search findings..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
-          />
+      {/* FINDING ROW CARD */}
+      <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs hover:border-[#111111]/30 transition-all">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-semibold">
+                Stripe
+              </span>
+              <h2 className="text-lg font-semibold text-[#111111]">
+                {DEMO_FINDING_STRIPE.title}
+              </h2>
+            </div>
+            <p className="text-xs text-[#686868] leading-relaxed">
+              {DEMO_FINDING_STRIPE.description}
+            </p>
+          </div>
+
+          <StatusPill status="verified" label="Migration Verified" />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-zinc-500 mr-1">Filter:</span>
-          {(["all", "open", "migration_ready"] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setFilterState(st)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium capitalize border transition-colors ${
-                filterState === st
-                  ? "bg-zinc-900 text-zinc-100 border-zinc-700"
-                  : "bg-transparent text-zinc-400 border-transparent hover:text-zinc-200"
-              }`}
-            >
-              {st.replace("_", " ")}
-            </button>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+            <div className="text-[10px] text-[#686868] uppercase font-semibold">Repository</div>
+            <div className="font-mono text-[#111111] font-semibold">{DEMO_FINDING_STRIPE.repositoryName}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+            <div className="text-[10px] text-[#686868] uppercase font-semibold">Affected File</div>
+            <div className="font-mono text-[#111111] font-semibold">{DEMO_FINDING_STRIPE.affectedFile}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+            <div className="text-[10px] text-[#686868] uppercase font-semibold">Matched Symbol</div>
+            <div className="font-mono text-purple-700 font-semibold">{DEMO_FINDING_STRIPE.symbol}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+            <div className="text-[10px] text-[#686868] uppercase font-semibold">Verification</div>
+            <div className="text-emerald-700 font-medium flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" /> 4/4 Passed
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-[#E8E8E5] flex items-center justify-between text-xs">
+          <span className="text-[#686868] flex items-center gap-1.5 font-medium">
+            <GitPullRequest className="w-4 h-4 text-blue-600" />
+            Draft PR #1 Created
+          </span>
+          <Link href={`/dashboard/findings/${DEMO_FINDING_STRIPE.id}`}>
+            <Button size="sm" variant="primary" className="gap-1 text-xs">
+              <span>Inspect Workbench & Diff</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Findings Table */}
-      <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-zinc-900/80 border-b border-zinc-800/80 text-zinc-400 text-[11px] font-medium">
-              <th className="py-2.5 px-4 font-medium">Severity</th>
-              <th className="py-2.5 px-4 font-medium">Provider</th>
-              <th className="py-2.5 px-4 font-medium">Finding</th>
-              <th className="py-2.5 px-4 font-medium">Repository</th>
-              <th className="py-2.5 px-4 font-medium">Affected code</th>
-              <th className="py-2.5 px-4 font-medium">Verification</th>
-              <th className="py-2.5 px-4 font-medium">Status</th>
-              <th className="py-2.5 px-4 font-medium text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800/60 text-xs">
-            {filteredFindings.map((f) => (
-              <tr key={f.id} className="hover:bg-zinc-900/50 transition-colors">
-                <td className="py-3 px-4">
-                  <StatusPill status="affected" label="Breaking" />
-                </td>
-                <td className="py-3 px-4 font-semibold text-zinc-100">{f.providerId}</td>
-                <td className="py-3 px-4 font-mono text-zinc-300 text-[11px]">{f.id}</td>
-                <td className="py-3 px-4 font-mono text-zinc-300 text-[11px]">{f.repositoryId}</td>
-                <td className="py-3 px-4 font-mono text-zinc-300 text-[11px]">
-                  {f.file}
-                </td>
-                <td className="py-3 px-4 text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> 4/4 passed
-                </td>
-                <td className="py-3 px-4">
-                  <StatusPill status="pr_created" label="Draft PR #1" />
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <Link
-                    href={`/dashboard/findings/${f.id}`}
-                    className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium"
-                  >
-                    Review <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }

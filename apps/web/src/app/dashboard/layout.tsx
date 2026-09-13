@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#090a0f] text-zinc-100 flex">
+    <div className="min-h-screen bg-[#F6F6F4] text-[#111111] flex font-sans selection:bg-[#111111] selection:text-white">
       {/* Sidebar */}
       <Sidebar />
 
@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onOpenConnectModal={() => setIsConnectModalOpen(true)}
         />
-        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1440px] w-full mx-auto space-y-6">
           {children}
         </main>
       </div>

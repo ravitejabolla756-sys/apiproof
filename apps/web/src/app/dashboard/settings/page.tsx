@@ -1,145 +1,84 @@
 "use client";
 
-import { useState } from "react";
-import { StatusPill } from "@/components/ui/status-pill";
-import { Github, ShieldCheck, Bell } from "lucide-react";
+import { Sliders, Github } from "lucide-react";
 
-export default function TabbedSettingsPage() {
-  const [activeTab, setActiveTab] = useState<"github" | "repositories" | "notifications" | "security">("github");
-
+export default function SettingsPage() {
   return (
-    <div className="space-y-6 max-w-4xl font-sans text-xs">
-      {/* Header Bar */}
-      <div className="border-b border-zinc-800/80 pb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-          Settings
+    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+      {/* HEADER */}
+      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
+        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
+          <Sliders className="w-6 h-6 text-purple-700" />
+          Workspace Settings
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">
-          Manage GitHub App connection, repository access, notifications, and security policies.
+        <p className="text-xs text-[#686868]">
+          Configure analysis preferences, security policies, and GitHub App integrations.
         </p>
       </div>
 
-      {/* Tabs Bar */}
-      <div className="flex items-center gap-1 border-b border-zinc-800/80 pb-3">
-        {(["github", "repositories", "notifications", "security"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 rounded-md font-medium text-xs capitalize transition-colors ${
-              activeTab === tab
-                ? "bg-zinc-900 text-zinc-100 border border-zinc-700"
-                : "text-zinc-400 border border-transparent hover:text-zinc-200"
-            }`}
-          >
-            {tab === "github" ? "GitHub" : tab}
-          </button>
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* SECURITY & GITHUB APP SETTINGS */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
+            <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+              <Github className="w-4 h-4 text-[#111111]" />
+              GitHub App Connection
+            </h3>
+
+            <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-xs text-[#111111]">ravitejabolla756-sys</div>
+                <div className="text-[11px] text-[#686868]">Authorized for read-only AST scans & draft PR creation</div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-[#EEF7F2] text-emerald-800 border border-[#D1EBE0] text-[11px] font-medium">
+                Connected
+              </span>
+            </div>
+
+            <div className="pt-2 border-t border-[#E8E8E5] space-y-4">
+              <h4 className="font-semibold text-xs text-[#111111]">Safety Policies</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
+                  <div>
+                    <div className="font-medium text-xs text-[#111111]">Read-only scanning mode</div>
+                    <div className="text-[11px] text-[#686868]">APIProof never writes directly to monitored default branches</div>
+                  </div>
+                  <input type="checkbox" checked disabled className="rounded text-[#111111]" />
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
+                  <div>
+                    <div className="font-medium text-xs text-[#111111]">Draft PRs only</div>
+                    <div className="text-[11px] text-[#686868]">Pull requests are created as drafts requiring human review</div>
+                  </div>
+                  <input type="checkbox" checked disabled className="rounded text-[#111111]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* WORKSPACE INFO */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
+            <h3 className="text-base font-semibold text-[#111111]">Workspace Profile</h3>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
+                <span className="text-[#686868]">Workspace:</span>
+                <span className="font-semibold text-[#111111]">Demo Workspace</span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
+                <span className="text-[#686868]">Plan:</span>
+                <span className="font-semibold text-emerald-700">Developer Preview</span>
+              </div>
+              <div className="flex justify-between py-1.5">
+                <span className="text-[#686868]">AST Engine Version:</span>
+                <span className="font-mono text-[#111111]">v2.4.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* TAB CONTENTS */}
-      {activeTab === "github" && (
-        <div className="space-y-4">
-          <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded bg-zinc-900 border border-zinc-800 text-zinc-200">
-                  <Github className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-zinc-100">GitHub App connection</h2>
-                  <p className="text-xs text-zinc-400 font-mono">Connected: ravitejabolla756-sys</p>
-                </div>
-              </div>
-              <StatusPill status="healthy" label="Connected" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px] block">Metadata</span>
-                <span className="font-mono text-zinc-200 font-medium">Read-only</span>
-              </div>
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px]">Contents</span>
-                <span className="font-mono text-zinc-200 font-medium block">Read / Write (Approved)</span>
-              </div>
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-                <span className="text-zinc-500 text-[11px]">Pull requests</span>
-                <span className="font-mono text-zinc-200 font-medium block">Read / Write (Draft PRs)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "repositories" && (
-        <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-100">Monitored repositories</h2>
-          <div className="space-y-2 text-xs font-mono text-zinc-300">
-            <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 flex justify-between items-center">
-              <span>Bavio-Ai-v1</span>
-              <span className="text-zinc-500 text-[11px]">main branch</span>
-            </div>
-            <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 flex justify-between items-center">
-              <span>apiproof-github-fixture</span>
-              <span className="text-zinc-500 text-[11px]">main branch</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "security" && (
-        <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Security policies</h2>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-              <span className="font-semibold text-zinc-200 block">Read-only analysis by default</span>
-              <p className="text-zinc-400 leading-relaxed">
-                Repository code scanning evaluates AST symbols ephemerally without persistent server storage.
-              </p>
-            </div>
-            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-              <span className="font-semibold text-zinc-200 block">Human review mandatory</span>
-              <p className="text-zinc-400 leading-relaxed">
-                Automated merging is disabled. Migrations are created as review-only Draft PRs.
-              </p>
-            </div>
-            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
-              <span className="font-semibold text-zinc-200 block">No direct main branch writes</span>
-              <p className="text-zinc-400 leading-relaxed">
-                All changes are isolated on dedicated feature branches (<code className="font-mono text-zinc-300">apiproof/*</code>).
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "notifications" && (
-        <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-3">
-          <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-zinc-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Notification channels</h2>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 flex justify-between items-center">
-              <div>
-                <span className="font-medium text-zinc-200 block">In-dashboard alerts</span>
-                <span className="text-zinc-500 text-[11px]">Console notifications for affected API changes</span>
-              </div>
-              <StatusPill status="healthy" label="Enabled" />
-            </div>
-            <div className="p-3 rounded bg-zinc-950 border border-zinc-800/60 flex justify-between items-center opacity-60">
-              <div>
-                <span className="font-medium text-zinc-400 block">Email summaries (Future)</span>
-                <span className="text-zinc-500 text-[11px]">Weekly API compatibility Digest</span>
-              </div>
-              <span className="text-[10px] text-zinc-600 border border-zinc-800 px-2 py-0.5 rounded">Disabled</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

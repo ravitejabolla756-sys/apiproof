@@ -16,7 +16,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
   const getBreadcrumbs = () => {
     const segments = pathname.split('/').filter(Boolean);
     if (segments.length === 1 && segments[0] === 'dashboard') {
-      return [{ name: 'Dashboard', href: '/dashboard' }];
+      return [{ name: 'Overview', href: '/dashboard' }];
     }
     return segments.map((seg, idx) => {
       const href = '/' + segments.slice(0, idx + 1).join('/');
@@ -31,19 +31,19 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className="h-14 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
+    <header className="h-16 bg-white/90 backdrop-blur-md border-b border-[#E8E8E5] px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-xs">
-        <Link href="/dashboard" className="text-zinc-500 hover:text-zinc-300 transition-colors font-medium">
+        <Link href="/dashboard" className="text-[#686868] hover:text-[#111111] transition-colors font-medium">
           APIProof
         </Link>
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.href} className="flex items-center gap-2">
-            <span className="text-zinc-600">/</span>
+            <span className="text-zinc-300">/</span>
             <Link
               href={crumb.href}
               className={`transition-colors ${
-                i === breadcrumbs.length - 1 ? 'text-zinc-200 font-medium' : 'text-zinc-500 hover:text-zinc-300'
+                i === breadcrumbs.length - 1 ? 'text-[#111111] font-semibold' : 'text-[#686868] hover:text-[#111111]'
               }`}
             >
               {crumb.name}
@@ -57,11 +57,11 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
         {/* Command Search Trigger */}
         <button
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-2.5 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 rounded-md px-3 py-1.5 text-xs text-zinc-400 transition-colors"
+          className="flex items-center gap-3 bg-[#F6F6F4] hover:bg-zinc-200/60 border border-[#E8E8E5] rounded-xl px-3.5 py-1.5 text-xs text-[#686868] transition-colors shadow-2xs"
         >
-          <Search className="h-3.5 w-3.5 text-zinc-400" />
-          <span>Search repos, findings, SDKs...</span>
-          <kbd className="bg-zinc-800 text-zinc-400 border border-zinc-700/60 rounded px-1.5 py-0.5 text-[10px] font-mono ml-2">
+          <Search className="h-3.5 w-3.5 text-zinc-500" />
+          <span className="hidden sm:inline">Search repos, findings, SDKs...</span>
+          <kbd className="bg-white text-zinc-600 border border-[#E8E8E5] rounded px-1.5 py-0.5 text-[10px] font-mono ml-1 shadow-2xs">
             ⌘K
           </kbd>
         </button>
@@ -71,8 +71,8 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
           variant="outline"
           size="sm"
           onClick={onOpenConnectModal}
-          icon={<Github className="h-3.5 w-3.5 text-zinc-300" />}
-          className="bg-zinc-900 border-zinc-800 text-xs"
+          icon={<Github className="h-3.5 w-3.5 text-[#111111]" />}
+          className="text-xs font-medium"
         >
           <span>Connect GitHub</span>
         </Button>

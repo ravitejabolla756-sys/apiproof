@@ -1,230 +1,91 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Terminal,
-  ShieldCheck,
-  GitBranch,
-  ArrowRight,
-  RefreshCw,
-  CheckCircle2,
-  AlertTriangle,
-  GitPullRequest,
-  Layers,
-  Zap,
-} from "lucide-react";
+import React from "react";
+import { CheckCircle2, ArrowRight, Code2, Database } from "lucide-react";
 
 export function HeroScanViz() {
-  const [activeTab, setActiveTab] = useState<"bavio" | "stripe">("bavio");
-  const [step, setStep] = useState<number>(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setStep((prev) => (prev + 1) % 4);
-    }, 3200);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
-    <div className="rounded-xl border border-zinc-800/90 bg-zinc-950/90 shadow-2xl shadow-emerald-500/5 overflow-hidden backdrop-blur-sm font-mono text-xs">
-      {/* Top Window Bar */}
-      <div className="bg-zinc-900/90 px-4 py-3 border-b border-zinc-800/80 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-          <span className="text-[11px] text-zinc-400 font-semibold ml-2 flex items-center gap-1.5">
-            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-            apiproof-engine-daemon v1.0
+    <div className="relative w-full aspect-square max-w-[540px] mx-auto flex items-center justify-center p-4 sm:p-6 select-none">
+      {/* Soft pastel ambient background glow */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-200/40 via-sky-100/60 to-emerald-100/40 blur-3xl opacity-70 pointer-events-none" />
+
+      {/* Main Glassmorphic Central Trace Container */}
+      <div className="relative w-full h-full rounded-[32px] bg-white/70 backdrop-blur-xl border border-white/80 shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden">
+        {/* Subtle decorative background grid */}
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
+
+        {/* TOP ROW: Vendor API Change Node */}
+        <div className="relative z-10 flex items-center justify-between bg-white/90 rounded-2xl p-4 border border-[#E8E8E5] shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700 font-semibold text-xs shadow-2xs">
+              Stripe
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-[#111111]">
+                subscriptions.create
+              </div>
+              <div className="text-[11px] text-amber-700 font-mono">
+                coupon parameter removed in v17+
+              </div>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-medium">
+            API Deprecation
           </span>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800/80 text-[10px]">
-          <button
-            onClick={() => {
-              setActiveTab("bavio");
-              setStep(0);
-            }}
-            className={`px-2.5 py-1 rounded transition-colors ${
-              activeTab === "bavio"
-                ? "bg-zinc-800 text-emerald-400 font-bold"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            Bavio Real Repo
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("stripe");
-              setStep(0);
-            }}
-            className={`px-2.5 py-1 rounded transition-colors ${
-              activeTab === "stripe"
-                ? "bg-zinc-800 text-amber-400 font-bold"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            Stripe Deprecation
-          </button>
+        {/* MIDDLE SECTION: Animated Trace Lines & Nodes */}
+        <div className="relative z-10 py-6 my-auto flex flex-col items-center justify-center space-y-4">
+          {/* Trace Connection Path SVG */}
+          <div className="relative w-full h-24 flex items-center justify-center">
+            <svg className="w-full h-full" viewBox="0 0 400 100" fill="none">
+              <path
+                d="M 50 10 C 150 90, 250 10, 350 90"
+                stroke="url(#traceGradient)"
+                strokeWidth="3"
+                strokeDasharray="6 6"
+                className="animate-[dash_20s_linear_infinite]"
+              />
+              <defs>
+                <linearGradient id="traceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#A855F7" />
+                  <stop offset="50%" stopColor="#3B82F6" />
+                  <stop offset="100%" stopColor="#10B981" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* Floating Glass Node 1: Symbol Trace */}
+            <div className="absolute top-2 left-6 bg-white/90 backdrop-blur-md rounded-xl px-3 py-2 border border-purple-100 shadow-md flex items-center gap-2">
+              <Code2 className="w-3.5 h-3.5 text-purple-600" />
+              <span className="text-[11px] font-mono text-zinc-800">AST Trace</span>
+            </div>
+
+            {/* Floating Glass Node 2: Source File */}
+            <div className="absolute bottom-2 right-8 bg-white/90 backdrop-blur-md rounded-xl px-3.5 py-2 border border-sky-100 shadow-md flex items-center gap-2">
+              <Database className="w-3.5 h-3.5 text-sky-600" />
+              <span className="text-[11px] font-mono text-zinc-800">src/billing.ts:42</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Interactive Canvas Content */}
-      <div className="p-5 space-y-5 bg-gradient-to-b from-zinc-950 to-zinc-900/40">
-        {activeTab === "bavio" ? (
-          <>
-            {/* Header info */}
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60">
-              <div className="flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-emerald-400" />
-                <span className="font-semibold text-zinc-100">ravitejabolla756-sys/Bavio-Ai-v1</span>
-                <span className="text-[10px] bg-zinc-900 text-zinc-400 px-2 py-0.5 rounded border border-zinc-800">
-                  main (390 files)
-                </span>
+        {/* BOTTOM ROW: Verification & Status */}
+        <div className="relative z-10 bg-[#EEF7F2] rounded-2xl p-4 border border-[#D1EBE0] shadow-xs flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-emerald-950 flex items-center gap-1.5">
+                <span>Migration Verified</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">4/4 Gates</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
-                <RefreshCw className="w-3 h-3 text-emerald-400 animate-spin" />
-                Live Tracing
+              <div className="text-[11px] text-emerald-700 font-mono">
+                Draft PR #1 ready for human review
               </div>
             </div>
-
-            {/* Tracing Pipeline Flow */}
-            <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
-              <div
-                className={`p-2.5 rounded border transition-all ${
-                  step >= 0
-                    ? "bg-zinc-900 border-emerald-500/40 text-emerald-300"
-                    : "bg-zinc-950 border-zinc-800/60 text-zinc-500"
-                }`}
-              >
-                <div className="font-bold mb-1 flex items-center justify-center gap-1">
-                  <Zap className="w-3 h-3 text-teal-400" /> 1. Vendor Event
-                </div>
-                <div>Twilio SDK v5.12+</div>
-              </div>
-
-              <div
-                className={`p-2.5 rounded border transition-all ${
-                  step >= 1
-                    ? "bg-zinc-900 border-emerald-500/40 text-emerald-300"
-                    : "bg-zinc-950 border-zinc-800/60 text-zinc-500"
-                }`}
-              >
-                <div className="font-bold mb-1 flex items-center justify-center gap-1">
-                  <Layers className="w-3 h-3 text-sky-400" /> 2. SDK Symbols
-                </div>
-                <div>27 Twilio Usages</div>
-              </div>
-
-              <div
-                className={`p-2.5 rounded border transition-all ${
-                  step >= 2
-                    ? "bg-zinc-900 border-emerald-500/40 text-emerald-300"
-                    : "bg-zinc-950 border-zinc-800/60 text-zinc-500"
-                }`}
-              >
-                <div className="font-bold mb-1 flex items-center justify-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" /> 3. AST Tracing
-                </div>
-                <div>10 Backend Files</div>
-              </div>
-
-              <div
-                className={`p-2.5 rounded border transition-all ${
-                  step >= 3
-                    ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                    : "bg-zinc-950 border-zinc-800/60 text-zinc-500"
-                }`}
-              >
-                <div className="font-bold mb-1 flex items-center justify-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" /> 4. Result
-                </div>
-                <div className="font-extrabold text-emerald-400">NOT_AFFECTED</div>
-              </div>
-            </div>
-
-            {/* Trace Evidence Snippet */}
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80 text-[11px] space-y-1.5">
-              <div className="flex justify-between text-zinc-400 border-b border-zinc-900 pb-1 text-[10px]">
-                <span>Indexed AST Usage Locations</span>
-                <span className="text-emerald-400 font-bold">0 Affected Breaking Changes</span>
-              </div>
-              <div className="text-zinc-400 space-y-1 font-mono text-[11px]">
-                <div className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span>
-                  <span>backend/providers/twilio.js</span>
-                  <span className="text-zinc-500 text-[10px] ml-auto">calls.create()</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span>
-                  <span>backend/services/twilioPhoneNumberService.js</span>
-                  <span className="text-zinc-500 text-[10px] ml-auto">incomingPhoneNumbers</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span>
-                  <span>backend/voice/providers/current/CurrentTwilioTelephony.js</span>
-                  <span className="text-zinc-500 text-[10px] ml-auto">twiml.VoiceResponse</span>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Header info */}
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60">
-              <div className="flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-amber-400" />
-                <span className="font-semibold text-zinc-100">ravitejabolla756-sys/apiproof-github-fixture</span>
-                <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20">
-                  Stripe Coupon Removal
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-[10px] text-amber-400">
-                <AlertTriangle className="w-3 h-3" />
-                1 Affected Usage
-              </div>
-            </div>
-
-            {/* Code Diff Preview */}
-            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80 space-y-2 text-[11px]">
-              <div className="flex justify-between text-zinc-400 text-[10px] border-b border-zinc-900 pb-1">
-                <span>src/billing.ts</span>
-                <span className="text-emerald-400">AST Transformation Verified</span>
-              </div>
-              <div className="space-y-1 leading-relaxed">
-                <div className="text-zinc-500">return stripe.subscriptions.create(&#123;</div>
-                <div className="text-zinc-400">  customer: customerId,</div>
-                <div className="bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded border-l-2 border-rose-500">
-                  - coupon: couponId
-                </div>
-                <div className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border-l-2 border-emerald-500">
-                  + discounts: [&#123; coupon: couponId &#125;]
-                </div>
-                <div className="text-zinc-500">&#125;);</div>
-              </div>
-            </div>
-
-            {/* Verification & PR status */}
-            <div className="flex items-center justify-between p-2.5 rounded bg-zinc-900/80 border border-zinc-800 text-[11px]">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span className="text-zinc-200">Verification Gate: 4/4 PASSED</span>
-              </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px]">
-                <GitPullRequest className="w-3 h-3" />
-                Draft PR #1
-              </span>
-            </div>
-          </>
-        )}
-
-        {/* Footer info strip */}
-        <div className="pt-2 flex items-center justify-between text-[10px] text-zinc-500 border-t border-zinc-800/60">
-          <span>Engine Status: Healthy / Read-Only</span>
-          <span className="text-zinc-400 flex items-center gap-1">
-            Human Review Required <ArrowRight className="w-3 h-3 text-emerald-400" />
-          </span>
+          </div>
+          <ArrowRight className="w-4 h-4 text-emerald-700" />
         </div>
       </div>
     </div>

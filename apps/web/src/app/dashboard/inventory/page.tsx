@@ -1,71 +1,67 @@
 "use client";
 
-import { demoData } from "@/lib/demo-data";
-import { StatusPill } from "@/components/ui/status-pill";
+import { useState } from "react";
+import { DEMO_INVENTORY } from "@/lib/demo-data";
+import { ProviderBadge } from "@/components/ui/status-pill";
+import { Search, Boxes } from "lucide-react";
 
-export default function InventoryPage() {
+export default function ApiInventoryPage() {
+  const [search, setSearch] = useState("");
+
+  const items = DEMO_INVENTORY.filter(
+    (item) =>
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.category.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6 max-w-7xl font-sans text-xs">
-      {/* Header Bar */}
-      <div className="border-b border-zinc-800/80 pb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-          API inventory
+    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+
+      {/* HEADER */}
+      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
+        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
+          <Boxes className="w-6 h-6 text-purple-700" />
+          API Inventory & Integrations
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">
-          Catalog of detected third-party API dependencies and reviewed change intelligence coverage.
+        <p className="text-xs text-[#686868]">
+          Detected third-party SDK dependencies and reviewed vendor API compatibility rule coverage.
         </p>
       </div>
 
-      {/* Single Clean Data Table */}
-      <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-zinc-900/80 border-b border-zinc-800/80 text-zinc-400 text-[11px] font-medium">
-              <th className="py-2.5 px-4 font-medium">Provider</th>
-              <th className="py-2.5 px-4 font-medium">Category</th>
-              <th className="py-2.5 px-4 font-medium">Repositories</th>
-              <th className="py-2.5 px-4 font-medium">SDK</th>
-              <th className="py-2.5 px-4 font-medium">Intelligence</th>
-              <th className="py-2.5 px-4 font-medium text-right">Usages</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800/60 text-xs">
-            {demoData.providerRegistry.map((p) => {
-              const isTwilio = p.name === "Twilio";
-              const isStripe = p.name === "Stripe";
-              const isReviewed = p.status === "REVIEWED";
-
-              return (
-                <tr key={p.id} className="hover:bg-zinc-900/50 transition-colors">
-                  <td className="py-3 px-4 font-semibold text-zinc-100">{p.name}</td>
-                  <td className="py-3 px-4 text-zinc-400">{p.category}</td>
-                  <td className="py-3 px-4 font-mono text-[11px] text-zinc-300">
-                    {isStripe ? "apiproof-github-fixture" : "Bavio-Ai-v1"}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-[11px] text-zinc-400">
-                    {isTwilio ? "^5.12.2" : "—"}
-                  </td>
-                  <td className="py-3 px-4">
-                    <StatusPill
-                      status={isReviewed ? "reviewed" : "detected"}
-                      label={isReviewed ? "Reviewed" : "Detected"}
-                    />
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono font-medium">
-                    {isTwilio ? (
-                      <span className="text-zinc-200">27 usages</span>
-                    ) : isStripe ? (
-                      <span className="text-amber-400">1 affected</span>
-                    ) : (
-                      <span className="text-zinc-500">—</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {/* SEARCH */}
+      <div className="relative w-full sm:w-80">
+        <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+        <input
+          type="text"
+          placeholder="Filter provider integrations..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
+        />
       </div>
+
+      {/* GRID OF PROVIDERS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="p-5 rounded-[24px] bg-white border border-[#E8E8E5] space-y-4 shadow-xs hover:border-[#111111]/30 transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <ProviderBadge name={item.name} status={item.status} />
+              <span className="text-[10px] text-[#686868] uppercase font-semibold">{item.category}</span>
+            </div>
+
+            <div className="pt-2 border-t border-[#E8E8E5] flex items-center justify-between text-xs">
+              <span className="text-[#686868]">Rules Status</span>
+              <span className="font-semibold text-[#111111]">
+                {item.status === "reviewed" ? `${item.rulesCount} active rules` : "Auto-detected"}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
     </div>
   );
 }

@@ -20,7 +20,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         e.preventDefault();
         if (isOpen) onClose();
         else {
-          // Open
           window.dispatchEvent(new CustomEvent('open-command-palette'));
         }
       }
@@ -57,29 +56,29 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-24 px-4 animate-in fade-in duration-150">
-      <div className="bg-[#12141c] border border-[#262b3d] w-full max-w-xl rounded-xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-24 px-4 animate-in fade-in duration-150 font-sans">
+      <div className="bg-white border border-[#E8E8E5] w-full max-w-xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col">
         {/* Search Header */}
-        <div className="flex items-center px-4 border-b border-[#1f2333] bg-[#0e1017]">
+        <div className="flex items-center px-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
           <Search className="h-4 w-4 text-zinc-400 shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command, search repositories or SDKs..."
-            className="w-full bg-transparent border-0 px-3 py-3 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none"
+            className="w-full bg-transparent border-0 px-3 py-3.5 text-xs text-[#111111] placeholder:text-zinc-400 focus:outline-none"
             autoFocus
           />
-          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-zinc-200 rounded">
+          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Results List */}
-        <div className="max-h-96 overflow-y-auto p-2 space-y-4">
+        <div className="max-h-96 overflow-y-auto p-3 space-y-4 text-xs">
           {/* Navigation Links */}
           <div>
-            <div className="px-3 py-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+            <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">
               Quick Navigation
             </div>
             <div className="space-y-0.5 mt-1">
@@ -89,13 +88,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   <button
                     key={item.href}
                     onClick={() => navigate(item.href)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-[#1c202e] hover:text-white transition-all text-left group"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className="h-4 w-4 text-zinc-400 group-hover:text-sky-400" />
+                      <Icon className="h-4 w-4 text-purple-700" />
                       <span>{item.name}</span>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-zinc-600 group-hover:text-zinc-300" />
+                    <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-[#111111]" />
                   </button>
                 );
               })}
@@ -105,7 +104,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           {/* Repositories */}
           {filteredRepos.length > 0 && (
             <div>
-              <div className="px-3 py-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+              <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">
                 Repositories ({filteredRepos.length})
               </div>
               <div className="space-y-0.5 mt-1">
@@ -113,13 +112,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   <button
                     key={repo.id}
                     onClick={() => navigate(`/dashboard/repositories/${repo.id}`)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-[#1c202e] hover:text-white transition-all text-left group"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <FolderGit2 className="h-4 w-4 text-sky-400" />
+                      <FolderGit2 className="h-4 w-4 text-purple-700" />
                       <span className="font-mono font-medium">{repo.name}</span>
                     </div>
-                    <span className="text-[11px] text-zinc-400 font-mono">{repo.statusLabel}</span>
+                    <span className="text-[11px] text-[#686868] font-mono">{repo.statusLabel}</span>
                   </button>
                 ))}
               </div>
@@ -129,7 +128,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           {/* Inventory */}
           {filteredInventory.length > 0 && (
             <div>
-              <div className="px-3 py-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+              <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">
                 API Inventory ({filteredInventory.length})
               </div>
               <div className="space-y-0.5 mt-1">
@@ -137,14 +136,14 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   <button
                     key={inv.id}
                     onClick={() => navigate('/dashboard/inventory')}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-[#1c202e] hover:text-white transition-all text-left group"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Boxes className="h-4 w-4 text-amber-400" />
+                      <Boxes className="h-4 w-4 text-purple-700" />
                       <span>{inv.name}</span>
-                      <span className="text-[10px] text-zinc-400">({inv.category})</span>
+                      <span className="text-[10px] text-[#686868]">({inv.category})</span>
                     </div>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${inv.status === 'reviewed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-400'}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${inv.status === 'reviewed' ? 'bg-[#EBF3FC] text-blue-800' : 'bg-[#F4F4F2] text-zinc-600'}`}>
                       {inv.status}
                     </span>
                   </button>
@@ -155,7 +154,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2 bg-[#0a0b10] border-t border-[#1f2333] flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+        <div className="px-4 py-2.5 bg-[#F6F6F4] border-t border-[#E8E8E5] flex items-center justify-between text-[10px] text-[#686868] font-mono">
           <span>Navigate with ↑ ↓ and Enter</span>
           <span>Esc to close</span>
         </div>

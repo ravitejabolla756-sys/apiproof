@@ -1,70 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import { demoData } from "@/lib/demo-data";
-import { EventTimeline } from "@/components/ui/event-timeline";
-import { Search } from "lucide-react";
+import { DEMO_ACTIVITIES } from "@/lib/demo-data";
+import { Activity } from "lucide-react";
 
-export default function ActivityTimelinePage() {
-  const [filterType, setFilterType] = useState<string>("all");
-  const [search, setSearch] = useState("");
-
-  const filteredEvents = demoData.activityEvents.filter((e) => {
-    const matchesType =
-      filterType === "all" || e.type.toLowerCase().includes(filterType.toLowerCase());
-    const matchesSearch =
-      e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.description.toLowerCase().includes(search.toLowerCase()) ||
-      e.repositoryId.toLowerCase().includes(search.toLowerCase());
-    return matchesType && matchesSearch;
-  });
-
+export default function ActivityPage() {
   return (
-    <div className="space-y-6 max-w-5xl font-sans text-xs">
-      {/* Header Bar */}
-      <div className="border-b border-zinc-800/80 pb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-          Activity
+    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+      {/* HEADER */}
+      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
+        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
+          <Activity className="w-6 h-6 text-purple-700" />
+          Workspace Audit Activity Log
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">
-          Engineering event log of scans, symbol checks, and draft pull request updates.
+        <p className="text-xs text-[#686868]">
+          Complete chronological record of repository scans, indexings, findings, and pull requests.
         </p>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search activity events..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
-          />
-        </div>
+      {/* ACTIVITY FEED */}
+      <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
+        <div className="divide-y divide-[#E8E8E5]">
+          {DEMO_ACTIVITIES.map((act) => (
+            <div key={act.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm text-[#111111]">{act.title}</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#F6F6F4] text-zinc-700 border border-[#E8E8E5] text-[10px] font-medium">
+                    {act.badge}
+                  </span>
+                </div>
+                <p className="text-xs text-[#686868] leading-relaxed">
+                  {act.description}
+                </p>
+              </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-zinc-500 mr-1">Event type:</span>
-          {(["all", "scan", "finding", "pr"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilterType(t)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium capitalize border transition-colors ${
-                filterType === t
-                  ? "bg-zinc-900 text-zinc-100 border-zinc-700"
-                  : "bg-transparent text-zinc-400 border-transparent hover:text-zinc-200"
-              }`}
-            >
-              {t}
-            </button>
+              <div className="text-right text-[11px] text-[#686868] font-mono shrink-0">
+                {act.timestamp}
+              </div>
+            </div>
           ))}
         </div>
-      </div>
-
-      {/* Timeline Stream */}
-      <div className="bg-zinc-900/40 p-5 rounded-lg border border-zinc-800/80">
-        <EventTimeline events={filteredEvents} />
       </div>
     </div>
   );
