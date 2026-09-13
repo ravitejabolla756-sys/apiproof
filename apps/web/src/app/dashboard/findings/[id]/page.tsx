@@ -1,17 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { demoData } from "@/lib/demo-data";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
-  ArrowLeft,
+  ChevronLeft,
   AlertTriangle,
-  FileCode,
+  FileCode2,
   GitPullRequest,
   CheckCircle2,
   ExternalLink,
   ShieldCheck,
-  Zap,
 } from "lucide-react";
 
 export default async function FindingDetailPage({
@@ -26,48 +25,38 @@ export default async function FindingDetailPage({
     notFound();
   }
 
-  const repo = demoData.repositories.find((r) => r.id === finding.repositoryId);
-
   return (
-    <div className="space-y-8 max-w-6xl">
-      {/* Back Link & Header */}
+    <div className="space-y-8 max-w-7xl font-mono text-xs">
+      {/* Back Link */}
       <div>
         <Link
           href="/dashboard/findings"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 transition-colors mb-3"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Findings
+          <ChevronLeft className="w-3.5 h-3.5" /> Back to Findings Console
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-950 p-6 rounded-xl border border-zinc-800">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="font-mono text-sm font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
-                {finding.providerId}
-              </span>
-              <h1 className="text-xl font-semibold tracking-tight text-zinc-100 font-mono">
-                {finding.id}
-              </h1>
-              <Badge variant="destructive" className="uppercase text-[10px]">
-                {finding.severity}
-              </Badge>
+              <span className="font-bold text-xl text-zinc-100">{finding.id}</span>
+              <StatusPill status="affected" label="BREAKING / RISK" />
+              <StatusPill status="reviewed" label="CONFIDENCE: HIGH (1.0)" />
             </div>
-            <p className="text-sm text-zinc-400">{finding.title}</p>
+            <p className="text-zinc-400 font-sans text-xs">{finding.title}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="success" className="h-8 px-3 text-xs">
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-              Migration Verified
-            </Badge>
+            <StatusPill status="verified" label="Migration Verified" />
             {finding.pullRequest && (
               <a
                 href={finding.pullRequest.url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-xs font-bold transition-colors"
               >
-                <GitPullRequest className="w-3.5 h-3.5 text-emerald-400" />
+                <GitPullRequest className="w-3.5 h-3.5 text-cyan-400" />
                 View PR #{finding.pullRequest.number}
                 <ExternalLink className="w-3 h-3 text-zinc-500" />
               </a>
@@ -76,182 +65,131 @@ export default async function FindingDetailPage({
         </div>
       </div>
 
-      {/* Primary Grid Details */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-xs uppercase tracking-wider text-zinc-500 font-mono flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
-              Change Intelligence Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-zinc-300 leading-relaxed font-sans">
-              {finding.description}
-            </p>
-            <div className="bg-zinc-950 p-4 rounded-md border border-zinc-800/80 space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400">
-                <span>Reviewed Intelligence ID:</span>
-                <span className="font-mono text-zinc-200">{finding.changeId}</span>
-              </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Target Deprecation / Removal:</span>
-                <span className="font-mono text-amber-400">Stripe API 2024-06-20+</span>
-              </div>
-              <div className="flex justify-between text-zinc-400">
-                <span>Classification:</span>
-                <span className="font-mono text-rose-400 font-medium">AFFECTED / BREAKING</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* THREE-COLUMN INTELLIGENCE FLOW */}
+      <div className="space-y-3">
+        <div className="text-xs uppercase text-zinc-500 font-bold tracking-wider">
+          3-Step Intelligence Traversal Chain
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xs uppercase tracking-wider text-zinc-500 font-mono">
-              Metadata
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div>
-              <span className="text-zinc-500 block mb-1">Affected Repository</span>
-              <Link
-                href={`/dashboard/repositories/${repo?.name || ""}`}
-                className="font-mono text-emerald-400 hover:underline"
-              >
-                {repo?.fullName || finding.repositoryId}
-              </Link>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* STEP 1: VENDOR CHANGE */}
+          <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold uppercase">
+              <span>1. Vendor Change</span>
+              <span>{finding.providerId} API</span>
             </div>
-            <div>
-              <span className="text-zinc-500 block mb-1">Affected File</span>
-              <div className="font-mono text-zinc-300 flex items-center gap-1.5">
-                <FileCode className="w-3.5 h-3.5 text-zinc-500" />
-                {finding.file}
-              </div>
+            <div className="font-bold text-zinc-200 text-xs flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              {finding.changeId}
             </div>
-            <div>
-              <span className="text-zinc-500 block mb-1">Detected Call Pattern</span>
-              <span className="font-mono text-amber-400 text-[11px] bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">
-                stripe.subscriptions.create&#40;&#123; coupon &#125;&#41;
-              </span>
-            </div>
-            <div>
-              <span className="text-zinc-500 block mb-1">Detected Date</span>
-              <span className="text-zinc-300">
-                {new Date(finding.detectedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Affected Evidence & Code Diff */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-sm font-medium font-mono text-zinc-200">
-              Verified Migration Diff
-            </CardTitle>
-            <p className="text-xs text-zinc-500 mt-1">
-              Exact source transformation verified against codebase typechecks and contracts
+            <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">
+              Stripe API v17+ removed top-level <code className="text-amber-300">coupon</code> parameter from subscriptions.create().
             </p>
           </div>
-          <Badge variant="outline" className="font-mono text-[11px]">
-            {finding.file}
-          </Badge>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md overflow-hidden border border-zinc-800 font-mono text-xs">
-            <div className="bg-zinc-900/80 px-4 py-2 text-zinc-400 border-b border-zinc-800 flex justify-between">
-              <span>{finding.file}</span>
-              <span className="text-zinc-500">Patch digest: dd6a85b5</span>
+
+          {/* STEP 2: AST EVIDENCE */}
+          <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="flex items-center justify-between text-[10px] text-sky-400 font-bold uppercase">
+              <span>2. AST Evidence</span>
+              <span>Symbol Invocation</span>
             </div>
-            <div className="bg-zinc-950 p-4 space-y-1 overflow-x-auto text-[13px] leading-relaxed">
-              <div className="text-zinc-500 select-none">@@ -14,7 +14,7 @@ export async function createSubscription(...)</div>
-              <div className="text-zinc-400">   return await stripe.subscriptions.create(&#123;</div>
-              <div className="text-zinc-400">     customer: customerId,</div>
-              <div className="text-zinc-400">     items: [&#123; price: priceId &#125;],</div>
-              <div className="bg-rose-500/10 text-rose-300 px-2 py-0.5 border-l-2 border-rose-500 -mx-2">
-                -    coupon: couponId,
+            <div className="font-bold text-zinc-200 text-xs font-mono text-amber-300">
+              stripe.subscriptions.create(&#123; coupon &#125;)
+            </div>
+            <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">
+              AST parser identified direct bound client invocation passing deprecated field key.
+            </p>
+          </div>
+
+          {/* STEP 3: REPOSITORY IMPACT */}
+          <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold uppercase">
+              <span>3. Repository Impact</span>
+              <span>{finding.repositoryId}</span>
+            </div>
+            <div className="font-bold text-emerald-400 text-xs font-mono flex items-center gap-1.5">
+              <FileCode2 className="w-3.5 h-3.5" />
+              {finding.file}
+            </div>
+            <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">
+              1 affected location identified in main codebase. Patch generated & verified.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* CODE DIFF WORKBENCH */}
+      <Card className="border-zinc-800 bg-zinc-950">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-800 pb-4">
+          <div>
+            <CardTitle className="text-xs uppercase text-zinc-400 font-mono">
+              Source Code Transformation Diff ({finding.file})
+            </CardTitle>
+          </div>
+          <span className="text-[10px] text-zinc-500 font-mono">Patch Digest: dd6a85b5</span>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono leading-relaxed">
+            {/* BEFORE */}
+            <div className="p-4 rounded-lg bg-rose-950/20 border border-rose-500/30 space-y-2">
+              <div className="text-rose-400 font-bold text-xs border-b border-rose-500/20 pb-1">
+                BEFORE (Deprecated Usage)
               </div>
-              <div className="bg-emerald-500/10 text-emerald-300 px-2 py-0.5 border-l-2 border-emerald-500 -mx-2">
-                +    discounts: [&#123; coupon: couponId &#125;],
+              <pre className="text-zinc-300 overflow-x-auto">
+{`return stripe.subscriptions.create({
+  customer: customerId,
+  items: [{ price: priceId }],
+`}
+                <span className="bg-rose-500/20 text-rose-300 px-1 py-0.5 rounded font-bold">
+{`  coupon: couponId`}
+                </span>
+{`
+});`}
+              </pre>
+            </div>
+
+            {/* AFTER */}
+            <div className="p-4 rounded-lg bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+              <div className="text-emerald-400 font-bold text-xs border-b border-emerald-500/20 pb-1">
+                AFTER (Verified Migration)
               </div>
-              <div className="text-zinc-400">   &#125;);</div>
+              <pre className="text-zinc-300 overflow-x-auto">
+{`return stripe.subscriptions.create({
+  customer: customerId,
+  items: [{ price: priceId }],
+`}
+                <span className="bg-emerald-500/20 text-emerald-300 px-1 py-0.5 rounded font-bold">
+{`  discounts: [{ coupon: couponId }]`}
+                </span>
+{`
+});`}
+              </pre>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Verification Matrix & Draft PR Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xs uppercase tracking-wider text-zinc-500 font-mono flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              Automated Verification Matrix
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            {finding.verification.checks.map((check) => (
-              <div
-                key={check.name}
-                className="flex items-center justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800/80"
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span className="font-mono text-zinc-200">{check.name}</span>
-                </div>
-                <span className="text-zinc-400">{check.detail}</span>
+      {/* AUTOMATED VERIFICATION CHAIN */}
+      <Card className="border-zinc-800 bg-zinc-950">
+        <CardHeader className="border-b border-zinc-800 pb-4">
+          <CardTitle className="text-xs uppercase text-zinc-400 font-mono flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            Automated Verification Gate Evidence Chain
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+          {finding.verification.checks.map((check) => (
+            <div key={check.name} className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-zinc-200">{check.name}</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xs uppercase tracking-wider text-zinc-500 font-mono flex items-center gap-2">
-              <GitPullRequest className="w-4 h-4 text-blue-400" />
-              GitHub Draft PR Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            {finding.pullRequest && (
-              <>
-                <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-zinc-200">
-                      PR #{finding.pullRequest.number}: {finding.pullRequest.title}
-                    </span>
-                    <Badge variant="outline" className="text-[10px] uppercase text-zinc-400">
-                      {finding.pullRequest.state}
-                    </Badge>
-                  </div>
-                  <div className="text-zinc-400 text-[11px] font-mono space-y-1">
-                    <div>Base branch: <span className="text-zinc-200">main</span></div>
-                    <div>Head branch: <span className="text-emerald-400">{finding.pullRequest.branch}</span></div>
-                    <div>Author: <span className="text-zinc-200">apiproof[bot]</span></div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-start gap-2">
-                  <Zap className="w-4 h-4 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="block font-medium mb-0.5">Human Review Required</strong>
-                    APIProof created a Draft PR. No automatic merge is ever executed. A developer must review and merge the PR.
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              <span className="text-emerald-400 font-bold text-[11px] block">PASSED</span>
+              <p className="text-[10px] text-zinc-500 font-sans mt-1">{check.detail}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }

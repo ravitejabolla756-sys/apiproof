@@ -1,95 +1,172 @@
-import { Boxes, ShieldCheck, CheckCircle2, Info } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DEMO_INVENTORY } from '@/lib/demo-data';
+"use client";
 
-export const metadata = {
-  title: 'API Inventory — APIProof',
-  description: 'Indexed third-party SDKs and API change intelligence status',
-};
+import { useState } from "react";
+import { demoData } from "@/lib/demo-data";
+import { StatusPill } from "@/components/ui/status-pill";
+import {
+  Boxes,
+  ShieldCheck,
+  ChevronDown,
+  ChevronRight,
+  Zap,
+} from "lucide-react";
 
 export default function InventoryPage() {
+  const [expandedProvider, setExpandedProvider] = useState<string | null>("twilio");
+
+  const reviewedProviders = demoData.providerRegistry.filter((p) => p.status === "REVIEWED");
+  const detectedProviders = demoData.providerRegistry.filter((p) => p.status === "DETECTED");
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#1f2333] pb-5">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
-            <Boxes className="h-5 w-5 text-amber-400" />
-            API & SDK Inventory
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Third-party SDK integrations detected across connected repositories.
-          </p>
+    <div className="space-y-8 max-w-7xl font-mono text-xs">
+      {/* Header Bar */}
+      <div>
+        <h1 className="text-xl font-bold tracking-tight text-zinc-100 font-mono flex items-center gap-2">
+          <Boxes className="w-5 h-5 text-emerald-400" />
+          API & SDK Inventory Intelligence
+        </h1>
+        <p className="text-xs text-zinc-400 font-sans mt-1">
+          Catalog of detected third-party API dependencies and reviewed change rules coverage
+        </p>
+      </div>
+
+      {/* SECTION 1: REVIEWED INTELLIGENCE */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-xs font-mono font-bold text-teal-300">
+          <ShieldCheck className="w-4 h-4 text-teal-400" />
+          REVIEWED CHANGE INTELLIGENCE (Active Rules Supported)
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono">
-          <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5" /> 2 Reviewed Intelligence Engines
-          </span>
+        <div className="rounded-xl border border-teal-500/30 bg-zinc-950 overflow-hidden shadow-xl">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-teal-500/10 border-b border-teal-500/20 text-teal-300 font-mono text-[11px]">
+                <th className="py-3 px-4 w-10" />
+                <th className="py-3 px-4">Provider</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Monitored Repos</th>
+                <th className="py-3 px-4 text-center">Usages</th>
+                <th className="py-3 px-4">Rule Intelligence</th>
+                <th className="py-3 px-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/80 font-mono text-xs">
+              {reviewedProviders.map((p) => {
+                const isExpanded = expandedProvider === p.id;
+
+                return (
+                  <tr key={p.id} className="hover:bg-zinc-900/30">
+                    <td colSpan={7} className="p-0">
+                      <div className="flex items-center justify-between py-3.5 px-4">
+                        <div className="w-10">
+                          <button
+                            onClick={() => setExpandedProvider(isExpanded ? null : p.id)}
+                            className="p-1 rounded text-zinc-500 hover:text-zinc-200"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-teal-400" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="w-48 font-bold text-zinc-100 flex items-center gap-2">
+                          <span>{p.name}</span>
+                          <span className="text-[10px] bg-teal-500/20 text-teal-300 px-1.5 py-0.2 rounded">
+                            {p.rulesCount} Rule
+                          </span>
+                        </div>
+
+                        <div className="w-44 text-zinc-400">{p.category}</div>
+
+                        <div className="w-40 text-zinc-300">
+                          {p.name === "Twilio" ? "Bavio-Ai-v1" : "apiproof-github-fixture"}
+                        </div>
+
+                        <div className="w-20 text-center font-bold text-emerald-400">
+                          {p.usagesCount}
+                        </div>
+
+                        <div className="w-48 text-zinc-300">
+                          {p.name === "Stripe"
+                            ? "v17.0.0 Subscription Coupon Removal"
+                            : "Twiml Uppercase Namespace Rule"}
+                        </div>
+
+                        <div className="w-32 text-right">
+                          <StatusPill status="reviewed" label="REVIEWED" />
+                        </div>
+                      </div>
+
+                      {/* Expanded Provider Drawer */}
+                      {isExpanded && (
+                        <div className="bg-zinc-900/60 p-4 border-t border-zinc-800 space-y-3 font-sans text-xs">
+                          <div className="font-mono text-xs font-bold text-teal-300 flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-teal-400" />
+                            Intelligence Detail: {p.name}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-[11px]">
+                            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
+                              <span className="text-zinc-500 block">Monitored In</span>
+                              <span className="text-zinc-200 font-bold">
+                                {p.name === "Twilio" ? "Bavio-Ai-v1 (27 Usages)" : "apiproof-github-fixture (1 Usage)"}
+                              </span>
+                            </div>
+                            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
+                              <span className="text-zinc-500 block">Active Change Intelligence</span>
+                              <span className="text-amber-400 font-bold">
+                                {p.name === "Stripe" ? "stripe-subscription-coupon-removed" : "twilio-twiml-namespace-casing"}
+                              </span>
+                            </div>
+                            <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-1">
+                              <span className="text-zinc-500 block">AST Transformation Capability</span>
+                              <span className="text-emerald-400 font-bold">Verified AST Transformer Ready</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Distinction Info Card */}
-      <div className="bg-[#121624] border border-sky-500/20 rounded-xl p-4 flex items-start gap-3 text-xs text-sky-200">
-        <Info className="h-4 w-4 text-sky-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <span className="font-bold text-zinc-100">Reviewed vs. Detected Intelligence Status</span>
-          <p className="text-zinc-300 leading-relaxed">
-            <strong className="text-emerald-400 font-mono">Reviewed:</strong> Official vendor breaking/deprecation records curated in APIProof change registry for impact matching.
-            <br />
-            <strong className="text-zinc-400 font-mono">Detected:</strong> Integration AST signatures recognized in project manifests and source files; change registry expanding.
-          </p>
+      {/* SECTION 2: DETECTED INTEGRATIONS */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-400">
+          <Boxes className="w-4 h-4 text-zinc-500" />
+          DETECTED SDK INTEGRATIONS (Recognized In Codebase)
         </div>
-      </div>
 
-      {/* Inventory Table / Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {DEMO_INVENTORY.map((item) => (
-          <Card key={item.id} className="p-5 space-y-4 hover:border-zinc-700 transition-all">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-base font-bold text-zinc-100 flex items-center gap-2">
-                  {item.name}
-                </h3>
-                <span className="text-xs text-zinc-400 font-mono">{item.category}</span>
-              </div>
-              <Badge variant={item.status === 'reviewed' ? 'healthy' : 'neutral'}>
-                {item.status === 'reviewed' ? 'Reviewed Intelligence' : 'Detected'}
-              </Badge>
-            </div>
-
-            <div className="pt-2 border-t border-[#1f2333] space-y-2 text-xs font-mono">
-              <div className="flex justify-between text-zinc-400">
-                <span>Monitoring Status</span>
-                <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 inline" /> Active Scan
-                </span>
-              </div>
-
-              <div className="flex justify-between text-zinc-400">
-                <span>Reviewed Change Rules</span>
-                <span className="text-zinc-200 font-bold">
-                  {item.rulesCount > 0 ? `${item.rulesCount} Rules` : 'In Pipeline'}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-zinc-400">
-                <span>Repositories Found</span>
-                <span className="text-zinc-200">
-                  {item.id === 'stripe' ? 'apiproof-github-fixture' : item.id === 'twilio' ? 'Bavio-Ai-v1' : 'Bavio-Ai-v1'}
-                </span>
-              </div>
-            </div>
-
-            {item.status === 'reviewed' && (
-              <div className="p-2.5 bg-[#0e121e] border border-emerald-500/20 rounded-lg text-[11px] font-mono text-emerald-300 flex items-center justify-between">
-                <span>Full Impact & Patch Engine</span>
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-              </div>
-            )}
-          </Card>
-        ))}
+        <div className="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-xl">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 font-mono text-[11px]">
+                <th className="py-3 px-4">Provider</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Detected In</th>
+                <th className="py-3 px-4">Coverage Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/80 font-mono text-xs">
+              {detectedProviders.map((p) => (
+                <tr key={p.id} className="hover:bg-zinc-900/30">
+                  <td className="py-3 px-4 font-bold text-zinc-200">{p.name}</td>
+                  <td className="py-3 px-4 text-zinc-400">{p.category}</td>
+                  <td className="py-3 px-4 text-zinc-300">Bavio-Ai-v1</td>
+                  <td className="py-3 px-4">
+                    <StatusPill status="detected" label="DETECTED SDK" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

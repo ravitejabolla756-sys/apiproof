@@ -1,88 +1,73 @@
-import { demoData } from "@/lib/demo-data";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Activity,
-  CheckCircle2,
-  AlertTriangle,
-  GitPullRequest,
-  Search,
-  Layers,
-  Terminal,
-} from "lucide-react";
+"use client";
 
-export default function ActivityPage() {
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "SCAN_COMPLETED":
-        return <Search className="w-4 h-4 text-blue-400" />;
-      case "USAGE_DETECTED":
-        return <Layers className="w-4 h-4 text-emerald-400" />;
-      case "FINDING_CREATED":
-        return <AlertTriangle className="w-4 h-4 text-amber-400" />;
-      case "MIGRATION_VERIFIED":
-        return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
-      case "PR_CREATED":
-        return <GitPullRequest className="w-4 h-4 text-blue-400" />;
-      default:
-        return <Terminal className="w-4 h-4 text-zinc-400" />;
-    }
-  };
+import { useState } from "react";
+import { demoData } from "@/lib/demo-data";
+import { EventTimeline } from "@/components/ui/event-timeline";
+import { Activity, Filter, Search } from "lucide-react";
+
+export default function ActivityTimelinePage() {
+  const [filterType, setFilterType] = useState<string>("all");
+  const [search, setSearch] = useState("");
+
+  const filteredEvents = demoData.activityEvents.filter((e) => {
+    const matchesType =
+      filterType === "all" || e.type.toLowerCase().includes(filterType.toLowerCase());
+    const matchesSearch =
+      e.title.toLowerCase().includes(search.toLowerCase()) ||
+      e.description.toLowerCase().includes(search.toLowerCase()) ||
+      e.repositoryId.toLowerCase().includes(search.toLowerCase());
+    return matchesType && matchesSearch;
+  });
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      {/* Header */}
+    <div className="space-y-8 max-w-5xl font-mono text-xs">
+      {/* Header Bar */}
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-100 font-mono flex items-center gap-2">
+        <h1 className="text-xl font-bold tracking-tight text-zinc-100 font-mono flex items-center gap-2">
           <Activity className="w-5 h-5 text-emerald-400" />
-          Activity Log
+          Engineering Event Timeline
         </h1>
-        <p className="text-sm text-zinc-400 mt-1">
-          Chronological audit timeline of engine scans, AST indexing, verification, and draft PR events
+        <p className="text-xs text-zinc-400 font-sans mt-1">
+          Chronological audit event stream of scans, AST symbol tracing, verification, and draft PR events
         </p>
       </div>
 
-      {/* Audit Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xs uppercase tracking-wider text-zinc-500 font-mono">
-            System Timeline
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-px before:bg-zinc-800">
-            {demoData.activityEvents.map((event) => (
-              <div key={event.id} className="relative flex items-start gap-4 text-xs">
-                {/* Dot / Icon */}
-                <div className="absolute -left-6 top-0.5 p-1 rounded-full bg-zinc-900 border border-zinc-700">
-                  {getIcon(event.type)}
-                </div>
+      {/* Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-500" />
+          <input
+            type="text"
+            placeholder="Search activity events..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+          />
+        </div>
 
-                <div className="flex-1 bg-zinc-950/80 p-3.5 rounded border border-zinc-800/80 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-zinc-200 font-mono">
-                        {event.title}
-                      </span>
-                      <Badge variant="outline" className="text-[10px] font-mono text-zinc-400">
-                        {event.repositoryId}
-                      </Badge>
-                    </div>
-                    <span className="text-zinc-500 text-[11px]">
-                      {new Date(event.timestamp).toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-zinc-400 font-sans text-xs">{event.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-zinc-500" />
+          <span className="text-zinc-500">Event Type:</span>
+          {(["all", "scan", "finding", "pr"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setFilterType(t)}
+              className={`px-3 py-1.5 rounded-md uppercase font-bold text-[10px] border transition-colors ${
+                filterType === t
+                  ? "bg-zinc-800 text-zinc-100 border-zinc-700"
+                  : "bg-zinc-950 text-zinc-500 border-zinc-800 hover:text-zinc-300"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Timeline Stream */}
+      <div className="bg-zinc-950 p-6 rounded-xl border border-zinc-800 shadow-xl">
+        <EventTimeline events={filteredEvents} />
+      </div>
     </div>
   );
 }

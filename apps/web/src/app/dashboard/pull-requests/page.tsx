@@ -1,104 +1,114 @@
 import { demoData } from "@/lib/demo-data";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   GitPullRequest,
   ExternalLink,
   ShieldCheck,
   Lock,
   GitBranch,
+  CheckCircle2,
 } from "lucide-react";
 
-export default function PullRequestsPage() {
+export default function PullRequestsReviewQueuePage() {
+  const pr = demoData.pullRequests[0] || {
+    id: "pr-1",
+    number: 1,
+    title: "APIProof: migrate stripe-subscription-coupon-removed",
+    repositoryId: "apiproof-github-fixture",
+    branch: "apiproof/stripe-subscription-coupon-removed-9cc601a8",
+    state: "draft",
+    url: "https://github.com/ravitejabolla756-sys/apiproof-github-fixture/pull/1",
+    createdAt: "2026-09-09 19:35 UTC",
+  };
+
   return (
-    <div className="space-y-8 max-w-6xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-100 font-mono">
-          Pull Requests
-        </h1>
-        <p className="text-sm text-zinc-400 mt-1">
-          Review-only draft pull requests created by APIProof GitHub App
-        </p>
+    <div className="space-y-8 max-w-7xl font-mono text-xs">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-100 font-mono flex items-center gap-2">
+            <GitPullRequest className="w-5 h-5 text-cyan-400" />
+            Pull Requests Review Queue
+          </h1>
+          <p className="text-xs text-zinc-400 font-sans mt-1">
+            Isolated, review-only draft pull requests created by APIProof GitHub App
+          </p>
+        </div>
+
+        <StatusPill status="pr_created" label="1 Draft PR Awaiting Review" />
       </div>
 
-      {/* PR Cards */}
+      {/* PR Cards / Queue List */}
       <div className="space-y-4">
-        {demoData.pullRequests.map((pr) => (
-          <Card key={pr.id} className="border-zinc-800 bg-zinc-900/50">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mt-0.5">
-                  <GitPullRequest className="w-5 h-5" />
+        <Card className="border-cyan-500/30 bg-zinc-950 shadow-xl">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mt-0.5">
+                <GitPullRequest className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm text-cyan-400 font-mono">
+                    #{pr.number}
+                  </span>
+                  <CardTitle className="text-base font-bold font-mono text-zinc-100">
+                    {pr.title}
+                  </CardTitle>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-semibold text-zinc-400">
-                      #{pr.number}
-                    </span>
-                    <CardTitle className="text-base font-medium font-mono text-zinc-100">
-                      {pr.title}
-                    </CardTitle>
-                  </div>
-                  <div className="text-xs text-zinc-400 mt-1 flex items-center gap-3">
-                    <span>Repository: <strong className="font-mono text-zinc-200">{pr.repositoryId}</strong></span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 font-mono text-zinc-300">
-                      <GitBranch className="w-3 h-3 text-zinc-500" />
-                      {pr.branch}
-                    </span>
-                  </div>
+                <div className="text-xs text-zinc-400 mt-1 flex items-center gap-3 font-mono">
+                  <span>Repository: <strong className="text-zinc-200">{pr.repositoryId}</strong></span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <GitBranch className="w-3.5 h-3.5" />
+                    {pr.branch}
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-xs uppercase font-mono text-zinc-300 border-zinc-700">
-                  {pr.state}
-                </Badge>
-                <a
-                  href={pr.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors"
-                >
-                  View on GitHub
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </CardHeader>
+            <div className="flex items-center gap-3">
+              <StatusPill status="pr_created" label="DRAFT PR" />
+              <a
+                href={pr.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-colors"
+              >
+                View on GitHub
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </CardHeader>
 
-            <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-800/80">
-                <span className="text-zinc-500 block mb-1">Generated By</span>
-                <span className="font-mono text-zinc-200">APIProof GitHub App</span>
-              </div>
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-800/80">
-                <span className="text-zinc-500 block mb-1">Human Review</span>
-                <span className="font-mono text-amber-400 font-medium flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Mandatory
-                </span>
-              </div>
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-800/80">
-                <span className="text-zinc-500 block mb-1">Auto-Merge</span>
-                <span className="font-mono text-rose-400 font-medium flex items-center gap-1">
-                  <Lock className="w-3.5 h-3.5" />
-                  Disabled
-                </span>
-              </div>
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-800/80">
-                <span className="text-zinc-500 block mb-1">Created At</span>
-                <span className="text-zinc-300">
-                  {new Date(pr.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+          <CardContent className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+            <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <span className="text-zinc-500 block text-[10px]">Generated By</span>
+              <span className="font-bold text-zinc-200">APIProof GitHub App</span>
+            </div>
+
+            <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <span className="text-zinc-500 block text-[10px]">Verification Chain</span>
+              <span className="font-bold text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> 4/4 Gates Passed
+              </span>
+            </div>
+
+            <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <span className="text-zinc-500 block text-[10px]">Human Review</span>
+              <span className="font-bold text-amber-400 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" /> Mandatory Policy
+              </span>
+            </div>
+
+            <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <span className="text-zinc-500 block text-[10px]">Auto-Merge</span>
+              <span className="font-bold text-rose-400 flex items-center gap-1">
+                <Lock className="w-3.5 h-3.5" /> Strictly Disabled
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
