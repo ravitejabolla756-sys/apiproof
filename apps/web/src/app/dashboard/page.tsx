@@ -1,165 +1,124 @@
 import Link from "next/link";
 import { demoData } from "@/lib/demo-data";
 import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
-import { ScanProgress } from "@/components/dashboard/scan-progress";
 import { EventTimeline } from "@/components/ui/event-timeline";
 import { StatusPill } from "@/components/ui/status-pill";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  AlertTriangle,
-  ArrowRight,
-  GitBranch,
-  Search,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 
 export default function DashboardOverviewPage() {
-
   return (
-    <div className="space-y-8 max-w-7xl">
-      {/* Command Center Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-950 p-6 rounded-xl border border-zinc-800/90 shadow-xl font-mono">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            APIProof Command Center
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-100 font-mono">
-            Continuous Change Intelligence
+    <div className="space-y-8 max-w-7xl font-sans">
+      {/* Top Section: Compact Textual Overview */}
+      <div className="space-y-2 border-b border-zinc-800/80 pb-6">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
+            Workspace overview
           </h1>
-          <p className="text-xs text-zinc-400 font-sans mt-1">
-            Monitoring AST symbol invocations against reviewed API deprecations across 2 connected repositories.
-          </p>
+          <span className="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 font-medium">
+            Demo workspace
+          </span>
         </div>
-
-        {/* High signal summary strip */}
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          <div className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 space-y-0.5">
-            <span className="text-[10px] text-zinc-500 block uppercase font-bold">Repositories</span>
-            <span className="text-base font-bold text-zinc-100">2 Monitored</span>
-          </div>
-
-          <div className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 space-y-0.5">
-            <span className="text-[10px] text-zinc-500 block uppercase font-bold">Integrations</span>
-            <span className="text-base font-bold text-zinc-100">9 Detected</span>
-          </div>
-
-          <div className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 space-y-0.5">
-            <span className="text-[10px] text-teal-400 block uppercase font-bold">Reviewed Rules</span>
-            <span className="text-base font-bold text-teal-300">11 Active</span>
-          </div>
-
-          <div className="px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/20 space-y-0.5">
-            <span className="text-[10px] text-rose-400 block uppercase font-bold">Active Risks</span>
-            <span className="text-base font-bold text-rose-300">1 Finding</span>
-          </div>
-        </div>
+        <p className="text-xs sm:text-sm text-zinc-400">
+          2 repositories monitored · 9 detected integrations · 1 finding requiring attention
+        </p>
       </div>
 
-      {/* Main Split Layout: 65% Left / 35% Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LEFT COLUMN 65% (8 cols) */}
-        <div className="lg:col-span-8 space-y-8">
-          {/* Compatibility Graph Map */}
-          <CompatibilityMap />
-
-          {/* Scan Progress Simulator */}
-          <ScanProgress />
-
-          {/* Monitored Repositories Snapshot */}
-          <Card className="border-zinc-800 bg-zinc-950">
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-zinc-800">
-              <CardTitle className="text-xs uppercase tracking-wider text-zinc-400 font-mono flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-emerald-400" />
-                Monitored Repositories Overview
-              </CardTitle>
-              <Link
-                href="/dashboard/repositories"
-                className="text-xs font-mono text-emerald-400 hover:underline flex items-center gap-1"
-              >
-                View All Repos <ArrowRight className="w-3 h-3" />
-              </Link>
-            </CardHeader>
-
-            <CardContent className="pt-4 space-y-4">
-              {demoData.repositories.map((repo) => (
-                <div
-                  key={repo.id}
-                  className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/dashboard/repositories/${repo.id}`}
-                        className="font-bold text-sm text-zinc-100 hover:text-emerald-400 transition-colors"
-                      >
-                        {repo.name}
-                      </Link>
-                      <StatusPill
-                        status={repo.status === "healthy" ? "healthy" : "pr_created"}
-                        label={repo.statusLabel}
-                      />
-                    </div>
-                    <div className="text-zinc-500 text-[11px] font-sans">
-                      {repo.fullName} • Default branch: <code className="text-zinc-300">{repo.defaultBranch}</code>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-zinc-400 text-[11px]">
-                    <div>
-                      Usages: <strong className="text-zinc-200">{repo.usagesCount}</strong>
-                    </div>
-                    <div>
-                      Providers: <strong className="text-zinc-200">{repo.providers.length}</strong>
-                    </div>
-                    <Link href={`/dashboard/repositories/${repo.id}`}>
-                      <button className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs transition-colors">
-                        Details
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+      {/* Prominent Finding Review Row (Stripe Issue) */}
+      <div className="p-4 rounded-lg bg-zinc-900/80 border border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded bg-amber-950/60 border border-amber-800/60 text-amber-400 shrink-0 mt-0.5">
+            <AlertTriangle className="w-4 h-4" />
+          </div>
+          <div className="space-y-1 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-zinc-100">1 finding requires review</span>
+              <StatusPill status="affected" label="Stripe" />
+            </div>
+            <p className="text-zinc-400">
+              Subscription coupon parameter removed in <code className="font-mono text-zinc-300">apiproof-github-fixture</code> (<span className="font-mono text-zinc-300">src/billing.ts</span>). Migration verified.
+            </p>
+          </div>
         </div>
 
-        {/* RIGHT COLUMN 35% (4 cols): Live Event Feed */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="border-zinc-800 bg-zinc-950">
-            <CardHeader className="pb-3 border-b border-zinc-800">
-              <CardTitle className="text-xs uppercase tracking-wider text-zinc-400 font-mono flex items-center gap-2">
-                <Search className="w-4 h-4 text-sky-400" />
-                Live Change Event Stream
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <EventTimeline events={demoData.activityEvents} />
-            </CardContent>
-          </Card>
+        <Link href="/dashboard/findings/stripe-subscription-coupon-removed">
+          <Button size="sm" className="bg-amber-950/80 hover:bg-amber-900 text-amber-200 border border-amber-800/60 shrink-0 text-xs">
+            Review finding <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </Link>
+      </div>
 
-          {/* Active Risk Summary Card */}
-          <Card className="border-amber-500/20 bg-amber-500/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-wider text-amber-400 font-mono flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                Action Required (Draft PR #1)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-xs font-mono">
-              <p className="text-zinc-300 font-sans text-xs">
-                Stripe <code className="text-amber-300">coupon</code> parameter removal migration is verified.
-              </p>
-              <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1 text-[11px]">
-                <div className="text-zinc-400">Target file: <span className="text-emerald-400">src/billing.ts</span></div>
-                <div className="text-zinc-400">Draft PR: <span className="text-cyan-300">#1 opened</span></div>
-              </div>
-              <Link href="/dashboard/findings/stripe-subscription-coupon-removed">
-                <button className="w-full py-2 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold transition-colors">
-                  Review Finding & Code Diff →
-                </button>
+      {/* Main Split Layout: Left 70% / Right 30% */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* LEFT COLUMN 70% (8 cols) */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Repositories Table */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-zinc-100">Monitored repositories</h2>
+              <Link href="/dashboard/repositories" className="text-xs text-blue-400 hover:text-blue-300 font-medium">
+                View all →
               </Link>
-            </CardContent>
-          </Card>
+            </div>
+
+            <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-900/80 text-zinc-400 border-b border-zinc-800/80">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Repository</th>
+                    <th className="px-4 py-3 font-medium">Providers</th>
+                    <th className="px-4 py-3 font-medium">Usages</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {demoData.repositories.map((repo) => (
+                    <tr key={repo.id} className="hover:bg-zinc-900/60 transition-colors">
+                      <td className="px-4 py-3">
+                        <Link href={`/dashboard/repositories/${repo.id}`} className="font-semibold text-zinc-200 hover:text-blue-400">
+                          {repo.name}
+                        </Link>
+                        <div className="text-[11px] text-zinc-500 font-mono">{repo.fullName}</div>
+                      </td>
+                      <td className="px-4 py-3 text-zinc-300 font-sans">
+                        {repo.providers.join(", ")}
+                      </td>
+                      <td className="px-4 py-3 text-zinc-300 font-mono">
+                        {repo.usagesCount}
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusPill
+                          status={repo.status === "healthy" ? "healthy" : "affected"}
+                          label={repo.statusLabel}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link href={`/dashboard/repositories/${repo.id}`} className="text-xs text-zinc-400 hover:text-zinc-100 font-medium">
+                          Details
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Compatibility Graph Map */}
+          <CompatibilityMap />
+        </div>
+
+        {/* RIGHT COLUMN 30% (4 cols): Recent Activity Feed */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold text-zinc-100">Recent API activity</h2>
+            <p className="text-xs text-zinc-500">System activity stream</p>
+          </div>
+
+          <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/80">
+            <EventTimeline events={demoData.activityEvents} />
+          </div>
         </div>
       </div>
     </div>

@@ -26,16 +26,16 @@ export function CompatibilityMap() {
   };
 
   return (
-    <div className="rounded-xl border border-zinc-800/90 bg-zinc-950/80 p-5 space-y-5 font-mono text-xs">
+    <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-5 space-y-5 font-sans text-xs">
       {/* Header & Repo Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
         <div>
-          <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-emerald-400" />
-            Compatibility Intelligence Graph
+          <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-blue-400" />
+            Compatibility map
           </h3>
-          <p className="text-[11px] text-zinc-500 font-sans mt-0.5">
-            Real-time mapping of repository AST symbol invocations to vendor change intelligence
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Vendor API integration graph and reviewed intelligence coverage
           </p>
         </div>
 
@@ -44,18 +44,18 @@ export function CompatibilityMap() {
             <button
               key={repo.id}
               onClick={() => setSelectedRepo(repo.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-mono transition-colors flex items-center gap-2 border ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-2 border ${
                 selectedRepo === repo.id
-                  ? "bg-zinc-900 text-zinc-100 border-zinc-700 shadow-sm"
-                  : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200"
+                  ? "bg-zinc-900 text-zinc-100 border-zinc-700"
+                  : "bg-zinc-950 text-zinc-400 border-zinc-800/80 hover:text-zinc-200"
               }`}
             >
               <GitBranch className="w-3.5 h-3.5 text-zinc-500" />
-              {repo.name}
+              <span className="font-mono text-[11px]">{repo.name}</span>
               {repo.status === "healthy" ? (
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               ) : (
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               )}
             </button>
           ))}
@@ -63,43 +63,43 @@ export function CompatibilityMap() {
       </div>
 
       {/* Dependency Network Visualizer */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-zinc-900/40 p-4 rounded-lg border border-zinc-800/80">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-zinc-950/60 p-4 rounded-lg border border-zinc-800/80">
         {/* Repo Node */}
-        <div className="p-4 rounded-lg bg-zinc-950 border border-zinc-800 space-y-3">
-          <div className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-            Connected Repository
+        <div className="p-4 rounded bg-zinc-900/60 border border-zinc-800 space-y-3">
+          <div className="text-xs font-semibold text-zinc-400">
+            Selected Repository
           </div>
           <div className="space-y-1">
             <Link
               href={`/dashboard/repositories/${currentRepo.id}`}
-              className="text-sm font-bold text-emerald-400 hover:underline flex items-center gap-1.5"
+              className="text-sm font-semibold font-mono text-zinc-100 hover:text-blue-400 flex items-center gap-1.5"
             >
               {currentRepo.name}
               <ArrowUpRight className="w-3.5 h-3.5 text-zinc-500" />
             </Link>
-            <div className="text-[11px] text-zinc-400 font-sans">{currentRepo.fullName}</div>
+            <div className="text-[11px] text-zinc-500 font-mono">{currentRepo.fullName}</div>
           </div>
 
-          <div className="pt-2 border-t border-zinc-900 space-y-1.5 text-[11px]">
+          <div className="pt-2 border-t border-zinc-800/60 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-zinc-500">Total Source Files:</span>
-              <span className="text-zinc-200 font-semibold">{currentRepo.totalFiles}</span>
+              <span className="text-zinc-500">Source files:</span>
+              <span className="text-zinc-200 font-mono">{currentRepo.totalFiles}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">Scan Status:</span>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-500">Status:</span>
               <StatusPill
-                status={currentRepo.status === "healthy" ? "healthy" : "pr_created"}
-                label={currentRepo.status === "healthy" ? "Healthy / 0 Risks" : "Draft PR Created"}
+                status={currentRepo.status === "healthy" ? "healthy" : "affected"}
+                label={currentRepo.status === "healthy" ? "Healthy" : "Draft PR Created"}
               />
             </div>
           </div>
         </div>
 
         {/* Center Connection Graph */}
-        <div className="md:col-span-2 p-4 rounded-lg bg-zinc-950 border border-zinc-800 space-y-3">
-          <div className="flex justify-between items-center text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
-            <span>Detected Integration Graph ({currentRepo.providers.length} SDKs)</span>
-            <span className="text-emerald-400">AST Symbol Mapped</span>
+        <div className="md:col-span-2 p-4 rounded bg-zinc-900/60 border border-zinc-800 space-y-3">
+          <div className="flex justify-between items-center text-xs font-semibold text-zinc-400">
+            <span>Detected integrations ({currentRepo.providers.length} SDKs)</span>
+            <span className="text-blue-400 font-normal text-[11px]">Symbol mapped</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -110,28 +110,28 @@ export function CompatibilityMap() {
               return (
                 <div
                   key={provider}
-                  className={`p-2.5 rounded border space-y-1 transition-all ${
+                  className={`p-2.5 rounded border space-y-1 transition-colors ${
                     isAffected
-                      ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                      ? "bg-rose-950/30 border-rose-800/50 text-rose-300"
                       : isReviewed
-                      ? "bg-teal-500/10 border-teal-500/30 text-teal-300"
-                      : "bg-zinc-900/60 border-zinc-800 text-zinc-400"
+                      ? "bg-blue-950/30 border-blue-800/40 text-blue-300"
+                      : "bg-zinc-950 border-zinc-800 text-zinc-400"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs">{provider}</span>
+                    <span className="font-semibold text-xs text-zinc-200">{provider}</span>
                     {isAffected ? (
                       <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
                     ) : isReviewed ? (
-                      <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
                     ) : (
                       <CheckCircle2 className="w-3.5 h-3.5 text-zinc-600" />
                     )}
                   </div>
-                  <div className="text-[10px] font-sans flex justify-between items-center text-zinc-500">
-                    <span>{isReviewed ? "Reviewed Rules" : "Detected"}</span>
-                    {provider === "Twilio" && <span className="font-mono text-emerald-400 font-bold">27 usages</span>}
-                    {provider === "Stripe" && <span className="font-mono text-amber-400 font-bold">1 usage</span>}
+                  <div className="text-[11px] flex justify-between items-center text-zinc-500">
+                    <span>{isReviewed ? "Reviewed" : "Detected"}</span>
+                    {provider === "Twilio" && <span className="font-mono text-blue-300">27 usages</span>}
+                    {provider === "Stripe" && <span className="font-mono text-amber-300">1 usage</span>}
                   </div>
                 </div>
               );

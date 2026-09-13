@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Bell, Github } from 'lucide-react';
+import { Search, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
@@ -31,19 +31,19 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className="h-14 bg-[#090a0f]/90 backdrop-blur-md border-b border-[#1f2333] px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-14 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-xs">
-        <Link href="/dashboard" className="text-zinc-400 hover:text-zinc-200 transition-colors">
+        <Link href="/dashboard" className="text-zinc-500 hover:text-zinc-300 transition-colors font-medium">
           APIProof
         </Link>
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.href} className="flex items-center gap-2">
-            <span className="text-zinc-400">/</span>
+            <span className="text-zinc-600">/</span>
             <Link
               href={crumb.href}
               className={`transition-colors ${
-                i === breadcrumbs.length - 1 ? 'text-zinc-100 font-medium' : 'text-zinc-400 hover:text-zinc-200'
+                i === breadcrumbs.length - 1 ? 'text-zinc-200 font-medium' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               {crumb.name}
@@ -57,19 +57,13 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
         {/* Command Search Trigger */}
         <button
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-3 bg-[#12141c] hover:bg-[#181b26] border border-[#1f2333] hover:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition-all shadow-sm group"
+          className="flex items-center gap-2.5 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 rounded-md px-3 py-1.5 text-xs text-zinc-400 transition-colors"
         >
-          <Search className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-300" />
+          <Search className="h-3.5 w-3.5 text-zinc-400" />
           <span>Search repos, findings, SDKs...</span>
-          <kbd className="bg-zinc-800 text-zinc-400 border border-zinc-700/60 rounded px-1.5 py-0.5 text-[10px] font-mono font-medium ml-2">
+          <kbd className="bg-zinc-800 text-zinc-400 border border-zinc-700/60 rounded px-1.5 py-0.5 text-[10px] font-mono ml-2">
             ⌘K
           </kbd>
-        </button>
-
-        {/* Notifications */}
-        <button className="relative p-2 rounded-lg bg-[#12141c] hover:bg-[#181b26] border border-[#1f2333] text-zinc-400 hover:text-zinc-200 transition-all">
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
         </button>
 
         {/* Connect GitHub Button */}
@@ -78,7 +72,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
           size="sm"
           onClick={onOpenConnectModal}
           icon={<Github className="h-3.5 w-3.5 text-zinc-300" />}
-          className="bg-[#12141c]"
+          className="bg-zinc-900 border-zinc-800 text-xs"
         >
           <span>Connect GitHub</span>
         </Button>
