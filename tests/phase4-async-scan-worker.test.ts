@@ -27,9 +27,12 @@ import crypto from 'node:crypto';
 // Module-level mocks (MUST be at top level — vi.mock is hoisted by vitest)
 // ---------------------------------------------------------------------------
 
+import type * as GitHubModule from '../apps/web/src/lib/server/github.js';
+import type * as CoreModule from '@apiproof/core';
+
 // We mock the github module so fetchRemoteRepositoryFiles can be controlled per test.
 vi.mock('../apps/web/src/lib/server/github.js', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../apps/web/src/lib/server/github.js')>();
+  const original = await importOriginal<typeof GitHubModule>();
   return {
     ...original,
     fetchRemoteRepositoryFiles: vi.fn(),
@@ -38,7 +41,7 @@ vi.mock('../apps/web/src/lib/server/github.js', async (importOriginal) => {
 
 // We mock @apiproof/core so no real GitHub App credentials are needed.
 vi.mock('@apiproof/core', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@apiproof/core')>();
+  const original = await importOriginal<typeof CoreModule>();
   return {
     ...original,
     // Use function constructor so `new NodeGitHubAppTokenProvider(...)` works
@@ -68,6 +71,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { processPendingGitHubScans } from '../apps/web/src/lib/server/scan-worker.js';
 import { fetchRemoteRepositoryFiles } from '../apps/web/src/lib/server/github.js';
+import { POST as workerPostHandler, GET as workerGetHandler } from '../apps/web/src/app/api/internal/scan-worker/route.js';
 
 // ---------------------------------------------------------------------------
 // Test database path
@@ -530,5 +534,107 @@ export async function createSub(customerId: string, priceId: string, couponId: s
     expect(result.jobsClaimed).toBe(3);
     expect(result.results).toHaveLength(3);
     expect(result.jobsFailed).toBe(3);
+  });
+
+  // -------------------------------------------------------------------------
+  // TEST O: Stale job recovery
+  // -------------------------------------------------------------------------
+  it('TEST O: stale processing job older than 5 minutes is recovered and executed', async () => {
+    const { workspaceId, userId } = await createWorkspaceWithInstallation('test-o@example.com', 'inst_test_o');
+    const repoId = await createRepository(workspaceId, userId);
+    const staleReqId = randomId('gsrq');
+
+    const db = getDatabase();
+    // Insert a job created 10 minutes ago in 'processing' state (stale)
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    await db.execute(`
+      INSERT INTO github_scan_requests (id, workspace_id, repository_id, commit_sha, ref, status, created_at)
+      VALUES (?, ?, ?, 'sha_o_stale_000000000000000000000000', 'refs/heads/main', 'processing', ?)
+    `, [staleReqId, workspaceId, repoId, tenMinAgo]);
+
+    mockFetchRemoteFiles.mockResolvedValueOnce(makeEmptyFilesResult('sha_o_stale_000000000000000000000000'));
+
+    const result = await processPendingGitHubScans({ batchSize: 1 });
+
+    expect(result.jobsClaimed).toBe(1);
+    expect(result.jobsCompleted).toBe(1);
+    const jobRes = result.results.find((r) => r.scanRequestId === staleReqId);
+    expect(jobRes?.status).toBe('completed');
+  });
+
+  // -------------------------------------------------------------------------
+  // TEST P: Route authentication and fail-closed security
+  // -------------------------------------------------------------------------
+  it('TEST P: worker route fails closed without CRON_SECRET and requires valid Bearer token', async () => {
+    const origSecret = process.env.CRON_SECRET;
+
+    try {
+      // 1. Unset CRON_SECRET → always 401
+      delete process.env.CRON_SECRET;
+      const reqNoSecret = new Request('http://localhost/api/internal/scan-worker', { method: 'POST' });
+      const resNoSecret = await workerPostHandler(reqNoSecret as any);
+      expect(resNoSecret.status).toBe(401);
+
+      // 2. Set CRON_SECRET
+      process.env.CRON_SECRET = 'super-secret-cron-token-12345';
+
+      // 3. No Authorization header → 401
+      const reqNoAuth = new Request('http://localhost/api/internal/scan-worker', { method: 'POST' });
+      const resNoAuth = await workerPostHandler(reqNoAuth as any);
+      expect(resNoAuth.status).toBe(401);
+
+      // 4. Invalid Authorization header → 401
+      const reqWrongAuth = new Request('http://localhost/api/internal/scan-worker', {
+        method: 'POST',
+        headers: { authorization: 'Bearer wrong-secret' },
+      });
+      const resWrongAuth = await workerPostHandler(reqWrongAuth as any);
+      expect(resWrongAuth.status).toBe(401);
+
+      // 5. Valid Authorization header → 200
+      const reqValidAuth = new Request('http://localhost/api/internal/scan-worker', {
+        method: 'POST',
+        headers: { authorization: 'Bearer super-secret-cron-token-12345' },
+      });
+      const resValidAuth = await workerPostHandler(reqValidAuth as any);
+      expect(resValidAuth.status).toBe(200);
+
+      // 6. GET request → 405 Method Not Allowed
+      const resGet = await workerGetHandler();
+      expect(resGet.status).toBe(405);
+    } finally {
+      if (origSecret) {
+        process.env.CRON_SECRET = origSecret;
+      } else {
+        delete process.env.CRON_SECRET;
+      }
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // TEST Q: Claim isolation logic ignores existing processing jobs
+  // -------------------------------------------------------------------------
+  it('TEST Q: worker claims only pending jobs when active processing jobs exist', async () => {
+    const { workspaceId, userId } = await createWorkspaceWithInstallation('test-q@example.com', 'inst_test_q');
+    const repoId = await createRepository(workspaceId, userId);
+    const db = getDatabase();
+    const now = new Date().toISOString();
+
+    // Active job 1: processing (created just now, so NOT stale)
+    const activeReqId = randomId('gsrq');
+    await db.execute(`
+      INSERT INTO github_scan_requests (id, workspace_id, repository_id, commit_sha, ref, status, created_at)
+      VALUES (?, ?, ?, 'sha_q_active_000000000000000000000000', 'refs/heads/main', 'processing', ?)
+    `, [activeReqId, workspaceId, repoId, now]);
+
+    // Pending job 2: pending
+    const pendingReqId = await createScanRequest(workspaceId, repoId, 'sha_q_pending_00000000000000000000000');
+
+    mockFetchRemoteFiles.mockResolvedValueOnce(makeEmptyFilesResult('sha_q_pending_00000000000000000000000'));
+
+    const result = await processPendingGitHubScans({ batchSize: 1 });
+
+    expect(result.jobsClaimed).toBe(1);
+    expect(result.results[0]?.scanRequestId).toBe(pendingReqId);
   });
 });

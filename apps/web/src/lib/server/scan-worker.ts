@@ -22,7 +22,6 @@ import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/anal
 import { StripeProvider, TwilioProvider } from '@apiproof/providers';
 import type { ApiProvider } from '@apiproof/core';
 import { loadProviderRegistry } from './registry-utils.js';
-import { EXCLUDED_DIRECTORIES } from '@apiproof/shared';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -30,9 +29,9 @@ import { EXCLUDED_DIRECTORIES } from '@apiproof/shared';
 
 export interface ScanWorkerOptions {
   /** Maximum number of jobs to claim and process in one invocation. Default: 5 */
-  batchSize?: number;
+  batchSize?: number | undefined;
   /** Maximum wall-clock milliseconds for the entire invocation. Default: 50_000 */
-  timeoutMs?: number;
+  timeoutMs?: number | undefined;
 }
 
 export interface ScanWorkerJobResult {
@@ -84,16 +83,25 @@ interface RepositoryRow {
 
 /**
  * Claims up to `limit` pending scan requests atomically.
+ * Also recovers stale jobs stuck in 'processing' state for > 5 minutes.
  *
  * PostgreSQL: uses SELECT ... FOR UPDATE SKIP LOCKED to avoid contention.
- * SQLite: uses a serialized UPDATE + SELECT (SQLite is single-writer; no concurrent workers).
+ * SQLite: uses transaction-isolated SELECT pending -> UPDATE claimed IDs.
  */
 async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
   const db = getDatabase();
+  const staleThreshold = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
   if (db.engine === 'postgres') {
     // PostgreSQL atomic claim using FOR UPDATE SKIP LOCKED
     return await db.transaction(async (tx) => {
+      // Revert stale jobs older than 5 minutes back to pending
+      await tx.execute(`
+        UPDATE github_scan_requests
+        SET status = 'pending'
+        WHERE status = 'processing' AND created_at < $1
+      `, [staleThreshold]);
+
       const rows = await tx.query<PendingScanRequest>(`
         SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at
         FROM github_scan_requests
@@ -108,7 +116,6 @@ async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
       }
 
       const ids = rows.map((r) => r.id);
-      // Build parameterized IN clause: $1, $2, … (ids are the only params)
       const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
       await tx.execute(
         `UPDATE github_scan_requests SET status = 'processing' WHERE id IN (${placeholders})`,
@@ -119,26 +126,33 @@ async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
     });
   }
 
-  // SQLite: single-writer — UPDATE subquery then SELECT claimed rows
+  // SQLite: serialized write transaction — select pending IDs first, then update those exact IDs
   return await db.transaction(async (tx) => {
+    // Revert stale jobs older than 5 minutes back to pending
     await tx.execute(`
       UPDATE github_scan_requests
-      SET status = 'processing'
-      WHERE id IN (
-        SELECT id FROM github_scan_requests
-        WHERE status = 'pending'
-        ORDER BY created_at ASC
-        LIMIT ?
-      )
-    `, [limit]);
+      SET status = 'pending'
+      WHERE status = 'processing' AND created_at < ?
+    `, [staleThreshold]);
 
     const rows = await tx.query<PendingScanRequest>(`
       SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at
       FROM github_scan_requests
-      WHERE status = 'processing'
+      WHERE status = 'pending'
       ORDER BY created_at ASC
       LIMIT ?
     `, [limit]);
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const ids = rows.map((r) => r.id);
+    const placeholders = ids.map(() => '?').join(', ');
+    await tx.execute(
+      `UPDATE github_scan_requests SET status = 'processing' WHERE id IN (${placeholders})`,
+      ids
+    );
 
     return rows;
   });

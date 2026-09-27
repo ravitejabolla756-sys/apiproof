@@ -1,5 +1,13 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": { "noEmit": true },
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./apps/web/src/*"],
+      "next/server": ["./apps/web/node_modules/next/server.d.ts"],
+      "next/*": ["./apps/web/node_modules/next/*"]
+    }
+  },
   "include": ["tests/**/*.ts", "vitest.config.ts"]
 }

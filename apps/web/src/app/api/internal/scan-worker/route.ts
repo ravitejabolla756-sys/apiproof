@@ -13,8 +13,9 @@
  * The route is idempotent: if there are no pending jobs, it returns immediately.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { processPendingGitHubScans } from '@/lib/server/scan-worker';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { processPendingGitHubScans } from '../../../../lib/server/scan-worker.js';
 
 // ---------------------------------------------------------------------------
 // Authorization helper
@@ -60,7 +61,7 @@ async function isAuthorized(request: NextRequest): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  if (!isAuthorized(request)) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
