@@ -9,6 +9,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
+import { checkWorkspaceLimit, recordWorkspaceUsage } from '@/lib/server/billing/service';
 
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const csrf = assertCsrfProtection(req);
@@ -35,15 +36,30 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
   // Verify workspace repository access (central authorization / IDOR protection)
   let repo;
+  let workspaceId: string;
   try {
     const access = await requireRepositoryAccess(idValidation.data, user.id);
     repo = access.repository;
+    workspaceId = access.workspace.id;
   } catch {
     return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
   }
 
+  // Billing plan scan limit check (runs after authorization)
+  const limitCheck = await checkWorkspaceLimit(workspaceId, 'scans');
+  if (!limitCheck.allowed) {
+    return NextResponse.json({
+      error: limitCheck.reason,
+      code: 'PLAN_LIMIT_EXCEEDED',
+      metric: 'scans',
+      limit: limitCheck.limit,
+      current: limitCheck.current,
+    }, { status: 402 });
+  }
+
   try {
     const result = await runRepositoryScan(repo.id, user.id);
+    await recordWorkspaceUsage(workspaceId, 'scans');
     return NextResponse.json({ success: true, result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';

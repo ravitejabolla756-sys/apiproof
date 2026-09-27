@@ -15,6 +15,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
+import { checkWorkspaceLimit } from '@/lib/server/billing/service';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -75,6 +76,18 @@ export async function POST(req: Request) {
     } else {
       const defaultWs = await getDefaultWorkspaceForUser(user.id);
       workspaceId = defaultWs.id;
+    }
+
+    // Billing plan repository limit check (runs after workspace authorization)
+    const limitCheck = await checkWorkspaceLimit(workspaceId, 'repositories');
+    if (!limitCheck.allowed) {
+      return NextResponse.json({
+        error: limitCheck.reason,
+        code: 'PLAN_LIMIT_EXCEEDED',
+        metric: 'repositories',
+        limit: limitCheck.limit,
+        current: limitCheck.current,
+      }, { status: 402 });
     }
 
     let owner: string;

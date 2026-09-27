@@ -13,6 +13,7 @@ import {
 } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
 import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
+import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -32,7 +33,13 @@ export async function createGitHubProposal(migrationId: string, userId: string):
   const db = getDatabase();
 
   // 1. Fetch migration and verify workspace access (central authorization / IDOR protection)
-  const { migration: rawMigration, repository: repo } = await requireMigrationAccess(migrationId, userId);
+  const { migration: rawMigration, repository: repo, workspace } = await requireMigrationAccess(migrationId, userId);
+
+  // 1a. Billing limit check (runs after workspace authorization)
+  const limitCheck = await checkWorkspaceLimit(workspace.id, 'draft_prs');
+  if (!limitCheck.allowed) {
+    throw new Error(limitCheck.reason);
+  }
 
   const finding = await db.queryOne<{ change_id: string; file_path: string; symbol: string }>(`
     SELECT change_id, file_path, symbol FROM findings WHERE id = ?
@@ -241,6 +248,8 @@ export async function createGitHubProposal(migrationId: string, userId: string):
       now
     ]);
   });
+
+  await recordWorkspaceUsage(workspace.id, 'draft_prs');
 
   return {
     pullRequestId,

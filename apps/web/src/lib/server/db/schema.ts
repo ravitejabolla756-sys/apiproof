@@ -173,6 +173,40 @@ CREATE TABLE IF NOT EXISTS _apiproof_migrations (
   applied_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS workspace_subscriptions (
+  workspace_id TEXT PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL DEFAULT 'free',
+  customer_id TEXT,
+  subscription_id TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  current_period_start TEXT NOT NULL,
+  current_period_end TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS workspace_usage (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  metric TEXT NOT NULL,
+  period_start TEXT NOT NULL,
+  period_end TEXT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE (workspace_id, metric, period_start)
+);
+
+CREATE TABLE IF NOT EXISTS billing_webhook_events (
+  id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  payload_hash TEXT NOT NULL,
+  processed_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (provider, payload_hash)
+);
+
 CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id);
@@ -190,6 +224,8 @@ CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
+CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;
 
 export const SQLITE_SCHEMA = `
@@ -386,6 +422,42 @@ CREATE TABLE IF NOT EXISTS _apiproof_migrations (
   applied_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS workspace_subscriptions (
+  workspace_id TEXT PRIMARY KEY,
+  plan_id TEXT NOT NULL DEFAULT 'free',
+  customer_id TEXT,
+  subscription_id TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  current_period_start TEXT NOT NULL,
+  current_period_end TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS workspace_usage (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  metric TEXT NOT NULL,
+  period_start TEXT NOT NULL,
+  period_end TEXT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+  UNIQUE (workspace_id, metric, period_start)
+);
+
+CREATE TABLE IF NOT EXISTS billing_webhook_events (
+  id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  payload_hash TEXT NOT NULL,
+  processed_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (provider, payload_hash)
+);
+
 CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id);
@@ -403,4 +475,6 @@ CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
+CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;
