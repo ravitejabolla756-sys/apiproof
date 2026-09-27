@@ -8,19 +8,35 @@ import {
   deleteSession,
   AUTH_COOKIE_NAME,
 } from '@/lib/server/auth';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/server/rate-limit';
+import {
+  assertCsrfProtection,
+  validateSignupInput,
+  validateLoginInput,
+  badRequestResponse,
+  forbiddenCsrfResponse,
+} from '@/lib/server/validation';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ authenticated: false, user: null }, { status: 401 });
+    return NextResponse.json({ authenticated: false, user: null, code: 'UNAUTHORIZED' }, { status: 401 });
   }
   return NextResponse.json({ authenticated: true, user });
 }
 
 export async function POST(req: Request) {
+  // 1. CSRF / Origin protection
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) {
+    return forbiddenCsrfResponse(csrf.error);
+  }
+
+  const clientIp = getClientIp(req);
+
   try {
     const body = await req.json();
-    const { action, email, password, name } = body;
+    const action = body?.action;
 
     if (action === 'logout') {
       const cookieStore = await cookies();
@@ -33,9 +49,20 @@ export async function POST(req: Request) {
     }
 
     if (action === 'signup') {
-      if (!email || !password || !name) {
-        return NextResponse.json({ error: 'Email, password, and name are required.' }, { status: 400 });
+      // Rate limit: 5 signups per 15 minutes per IP
+      const rateCheck = await checkRateLimit(`auth:signup:${clientIp}`, 5, 15 * 60 * 1000);
+      if (!rateCheck.allowed) {
+        return rateLimitResponse(rateCheck.resetInMs);
       }
+
+      // Input validation
+      const validation = validateSignupInput(body);
+      if (!validation.valid || !validation.data) {
+        return badRequestResponse(validation.error || 'Invalid signup payload.');
+      }
+
+      const { email, password, name } = validation.data;
+
       try {
         const { user, session } = await createUserWithSession(email, password, name);
         const cookieStore = await cookies();
@@ -53,20 +80,38 @@ export async function POST(req: Request) {
           message.includes('unique constraint') ||
           message.includes('duplicate key')
         ) {
-          return NextResponse.json({ error: 'User with this email already exists.' }, { status: 409 });
+          return NextResponse.json(
+            { error: 'User with this email already exists.', code: 'USER_ALREADY_EXISTS' },
+            { status: 409 }
+          );
         }
         throw err;
       }
     }
 
     if (action === 'login') {
-      if (!email || !password) {
-        return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
+      // Input validation
+      const validation = validateLoginInput(body);
+      if (!validation.valid || !validation.data) {
+        return badRequestResponse(validation.error || 'Invalid login payload.');
       }
+
+      const { email, password } = validation.data;
+
+      // Rate limit: 10 login attempts per 5 minutes per IP + email
+      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${email}`, 10, 5 * 60 * 1000);
+      if (!rateCheck.allowed) {
+        return rateLimitResponse(rateCheck.resetInMs);
+      }
+
       const user = await authenticateUser(email, password);
       if (!user) {
-        return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
+        return NextResponse.json(
+          { error: 'Invalid email or password.', code: 'INVALID_CREDENTIALS' },
+          { status: 401 }
+        );
       }
+
       const session = await createSession(user.id);
       const cookieStore = await cookies();
       cookieStore.set(AUTH_COOKIE_NAME, session.id, {
@@ -78,9 +123,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, user });
     }
 
-    return NextResponse.json({ error: 'Invalid action.' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout.', code: 'INVALID_ACTION' }, { status: 400 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal server error.';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
@@ -22,12 +22,40 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [openFindingsCount, setOpenFindingsCount] = useState<number | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/overview');
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data.stats?.openFindings === 'number') {
+            setOpenFindingsCount(data.stats.openFindings);
+          }
+          if (data.user?.email) {
+            setUserEmail(data.user.email);
+          }
+        }
+      } catch {
+        // Ignore background stat fetch errors
+      }
+    }
+    loadStats();
+  }, [pathname]);
 
   const mainNav = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Repositories", href: "/dashboard/repositories", icon: GitBranch },
     { name: "API Inventory", href: "/dashboard/inventory", icon: Boxes },
-    { name: "Findings", href: "/dashboard/findings", icon: AlertTriangle, badge: "1", risk: true },
+    {
+      name: "Findings",
+      href: "/dashboard/findings",
+      icon: AlertTriangle,
+      badge: openFindingsCount !== null && openFindingsCount > 0 ? String(openFindingsCount) : undefined,
+      risk: openFindingsCount !== null && openFindingsCount > 0,
+    },
     { name: "Migrations", href: "/dashboard/migrations", icon: FileCheck2 },
     { name: "Pull Requests", href: "/dashboard/pull-requests", icon: GitPullRequest },
   ];
@@ -137,7 +165,9 @@ export function Sidebar() {
       <div className="p-4 border-t border-[#E8E8E5] bg-white font-sans text-xs">
         {!collapsed ? (
           <div className="flex items-center justify-between">
-            <span className="truncate font-mono text-[11px] text-[#111111]">ravitejabolla756-sys</span>
+            <span className="truncate font-mono text-[11px] text-[#111111]" title={userEmail}>
+              {userEmail || 'Active Workspace'}
+            </span>
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"

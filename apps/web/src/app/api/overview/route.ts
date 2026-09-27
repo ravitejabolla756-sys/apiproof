@@ -84,6 +84,11 @@ export async function GET(req: Request) {
   `, [user.id]);
 
   return NextResponse.json({
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    },
     stats: {
       connectedRepositories: Number(repoStats?.count ?? 0),
       scansCompleted: Number(scanStats?.count ?? 0),

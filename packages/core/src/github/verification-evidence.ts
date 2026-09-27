@@ -1,7 +1,19 @@
 import crypto from 'node:crypto';
 import type { ProofLevel } from './types.js';
 
-const VERIFIER_INTERNAL_SECRET = crypto.randomBytes(32).toString('hex');
+export function getVerifierSecret(secretOverride?: string): string {
+  if (secretOverride && secretOverride.trim().length > 0) {
+    return secretOverride.trim();
+  }
+  const secret = process.env.APIPROOF_SECRET?.trim() || process.env.AUTH_SECRET?.trim();
+  if (secret) {
+    return secret;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('VERIFIER_SECRET_MISSING: Production requires APIPROOF_SECRET (or AUTH_SECRET) to be configured in environment variables.');
+  }
+  return 'apiproof-dev-verifier-secret-stable-key-32b';
+}
 
 export interface VerifiedMigrationArtifact {
   readonly artifactId: string;
@@ -58,8 +70,9 @@ function computeProvenanceToken(input: {
   patchDigest: string;
   proofLevel: ProofLevel;
   evidenceDigest: string;
-}): string {
-  const hmac = crypto.createHmac('sha256', VERIFIER_INTERNAL_SECRET);
+}, secretOverride?: string): string {
+  const secretKey = getVerifierSecret(secretOverride);
+  const hmac = crypto.createHmac('sha256', secretKey);
   hmac.update(
     `${input.repositoryId}:${input.baselineSha}:${input.changeId}:${input.patchDigest}:${input.proofLevel}:${input.evidenceDigest}`
   );
@@ -77,7 +90,7 @@ export class MigrationVerifier {
     typecheckPassed: boolean;
     testsPassed: boolean;
     contractPassed: boolean;
-  }): VerifiedMigrationArtifact {
+  }, secretOverride?: string): VerifiedMigrationArtifact {
     const verifiedAt = new Date().toISOString();
     const evidenceDigest = computeEvidenceDigest(input);
     const provenanceToken = computeProvenanceToken({
@@ -87,7 +100,7 @@ export class MigrationVerifier {
       patchDigest: input.patchDigest,
       proofLevel: input.proofLevel,
       evidenceDigest,
-    });
+    }, secretOverride);
 
     return Object.freeze({
       artifactId: `artifact-${crypto.randomBytes(8).toString('hex')}`,
@@ -99,18 +112,21 @@ export class MigrationVerifier {
   }
 }
 
-export function createVerificationEvidence(input: {
-  baselineSha: string;
-  patchDigest: string;
-  changeId: string;
-  repositoryId: string;
-  proofLevel: ProofLevel;
-  patchApplied: boolean;
-  typecheckPassed: boolean;
-  testsPassed: boolean;
-  contractPassed: boolean;
-}): VerifiedMigrationArtifact {
-  return MigrationVerifier.verify(input);
+export function createVerificationEvidence(
+  input: {
+    baselineSha: string;
+    patchDigest: string;
+    changeId: string;
+    repositoryId: string;
+    proofLevel: ProofLevel;
+    patchApplied: boolean;
+    typecheckPassed: boolean;
+    testsPassed: boolean;
+    contractPassed: boolean;
+  },
+  secretOverride?: string
+): VerifiedMigrationArtifact {
+  return MigrationVerifier.verify(input, secretOverride);
 }
 
 export function verifyEvidenceBinding(
@@ -120,7 +136,8 @@ export function verifyEvidenceBinding(
     patchDigest: string;
     changeId: string;
     repositoryId: string;
-  }
+  },
+  secretOverride?: string
 ): { valid: boolean; reason?: string } {
   if (!evidence || typeof evidence !== 'object') {
     return { valid: false, reason: 'GITHUB_EVIDENCE_MISSING: Verification evidence object is missing.' };
@@ -159,7 +176,7 @@ export function verifyEvidenceBinding(
     patchDigest: evidence.patchDigest,
     proofLevel: evidence.proofLevel,
     evidenceDigest: evidence.evidenceDigest,
-  });
+  }, secretOverride);
 
   if (evidence.provenanceToken !== expectedProvenanceToken) {
     return { valid: false, reason: 'GITHUB_EVIDENCE_MISMATCH: Verifier provenance signature check failed (forged evidence).' };

@@ -3,11 +3,18 @@ import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { getAccessibleRepositoryInfo } from '@/lib/server/github';
+import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
+import {
+  assertCsrfProtection,
+  validateRepositoryConnectInput,
+  badRequestResponse,
+  forbiddenCsrfResponse,
+} from '@/lib/server/validation';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
 
   const db = getDatabase();
@@ -22,7 +29,6 @@ export async function GET(req: Request) {
     ORDER BY r.created_at DESC
   `, [user.id]);
 
-  // Also include accessible GitHub App info if available
   const githubInfo = await getAccessibleRepositoryInfo();
 
   return NextResponse.json({
@@ -32,23 +38,33 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) {
+    return forbiddenCsrfResponse(csrf.error);
+  }
+
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  }
+
+  // Rate limit: 20 repo connections per 10 minutes per user
+  const rateCheck = await checkRateLimit(`repo:connect:${user.id}`, 20, 10 * 60 * 1000);
+  if (!rateCheck.allowed) {
+    return rateLimitResponse(rateCheck.resetInMs);
   }
 
   try {
     const body = await req.json();
-    const { owner, name, defaultBranch, githubRepositoryId } = body;
-
-    if (!owner || !name) {
-      return NextResponse.json({ error: 'Owner and repository name are required.' }, { status: 400 });
+    const validation = validateRepositoryConnectInput(body);
+    if (!validation.valid || !validation.data) {
+      return badRequestResponse(validation.error || 'Invalid repository connection payload.');
     }
 
-    const fullName = `${owner.trim()}/${name.trim()}`;
-    const branch = defaultBranch?.trim() || 'main';
+    const { owner, name, defaultBranch, githubRepositoryId } = validation.data;
+    const fullName = `${owner}/${name}`;
     const repoId = `repo_${crypto.randomBytes(10).toString('hex')}`;
-    const ghId = githubRepositoryId?.toString() || crypto.randomInt(1000000, 9999999).toString();
+    const ghId = githubRepositoryId || crypto.randomInt(1000000, 9999999).toString();
     const now = new Date().toISOString();
 
     const db = getDatabase();
@@ -59,7 +75,10 @@ export async function POST(req: Request) {
     `, [user.id, fullName]);
 
     if (existing) {
-      return NextResponse.json({ error: 'Repository is already connected.', id: existing.id }, { status: 409 });
+      return NextResponse.json(
+        { error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED', id: existing.id },
+        { status: 409 }
+      );
     }
 
     // Atomic transaction for repository and activity event creation
@@ -67,7 +86,7 @@ export async function POST(req: Request) {
       await tx.execute(`
         INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, 'connected', ?)
-      `, [repoId, user.id, owner.trim(), name.trim(), fullName, ghId, branch, now]);
+      `, [repoId, user.id, owner, name, fullName, ghId, defaultBranch, now]);
 
       await tx.execute(`
         INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
@@ -76,7 +95,7 @@ export async function POST(req: Request) {
         `act_${crypto.randomBytes(10).toString('hex')}`,
         user.id,
         repoId,
-        `Connected ${fullName} (${branch}) for AST compatibility analysis.`,
+        `Connected ${fullName} (${defaultBranch}) for AST compatibility analysis.`,
         now
       ]);
     });
@@ -85,16 +104,16 @@ export async function POST(req: Request) {
       success: true,
       repository: {
         id: repoId,
-        owner: owner.trim(),
-        name: name.trim(),
+        owner,
+        name,
         fullName,
-        defaultBranch: branch,
+        defaultBranch,
         status: 'connected',
         createdAt: now,
       },
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to connect repository.';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

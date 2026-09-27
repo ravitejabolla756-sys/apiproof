@@ -66,6 +66,30 @@ export const migrations: Migration[] = [
       }
     },
   },
+  {
+    id: '002',
+    name: 'phase1_integrity_constraints_and_rate_limits',
+    up: async (db: DatabaseAdapter) => {
+      const resetAtType = db.engine === 'postgres' ? 'BIGINT' : 'INTEGER';
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS rate_limits (
+          key TEXT PRIMARY KEY,
+          points INTEGER NOT NULL,
+          reset_at ${resetAtType} NOT NULL
+        )
+      `);
+
+      await db.execute(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_findings_identity 
+        ON findings(repository_id, change_id, file_path, symbol)
+      `);
+
+      await db.execute(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_pull_requests_migration 
+        ON pull_requests(migration_id)
+      `);
+    },
+  },
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {

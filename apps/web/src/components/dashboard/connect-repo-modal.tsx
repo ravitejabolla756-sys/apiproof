@@ -11,8 +11,8 @@ interface ConnectRepoModalProps {
 }
 
 export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModalProps) {
-  const [owner, setOwner] = useState('ravitejabolla756-sys');
-  const [name, setName] = useState('apiproof-github-fixture');
+  const [owner, setOwner] = useState('');
+  const [name, setName] = useState('');
   const [defaultBranch, setDefaultBranch] = useState('main');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +98,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 required
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
-                placeholder="e.g. ravitejabolla756-sys"
+                placeholder="e.g. acme-corp"
                 className="w-full px-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
               />
             </div>
@@ -112,7 +112,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. apiproof-github-fixture"
+                placeholder="e.g. billing-service"
                 className="w-full px-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
               />
             </div>

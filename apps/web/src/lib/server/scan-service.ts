@@ -213,35 +213,67 @@ export async function createCustomerSubscription(customerId: string, priceId: st
       }
     }
 
-    // 7. Persist findings to database inside a transaction
+    // 7. Persist findings to database inside a transaction with deduplication
     await db.transaction(async (tx) => {
+      const activeFindingIds: string[] = [];
+
       for (const f of collectedFindings) {
-        await tx.execute(`
-          INSERT INTO findings (
-            id, scan_id, repository_id, usage_id, change_id, provider, title, description,
-            severity, confidence, file_path, line_number, symbol, status, reason, reason_codes,
-            evidence, source_snippet, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?)
-        `, [
-          f.id,
-          scanId,
-          repo.id,
-          f.id, // usage_id
-          f.changeId,
-          f.provider,
-          f.title,
-          f.description,
-          f.severity,
-          f.confidence,
-          f.filePath,
-          f.lineNumber,
-          f.symbol,
-          f.reason,
-          JSON.stringify(f.reasonCodes),
-          JSON.stringify(f.evidence),
-          f.sourceSnippet,
-          now
-        ]);
+        const existing = await tx.queryOne<{ id: string; status: string }>(`
+          SELECT id, status FROM findings
+          WHERE repository_id = ? AND change_id = ? AND file_path = ? AND symbol = ?
+        `, [repo.id, f.changeId, f.filePath, f.symbol]);
+
+        if (existing) {
+          await tx.execute(`
+            UPDATE findings
+            SET scan_id = ?,
+                line_number = ?,
+                confidence = ?,
+                reason = ?,
+                reason_codes = ?,
+                evidence = ?,
+                source_snippet = ?
+            WHERE id = ?
+          `, [
+            scanId,
+            f.lineNumber,
+            f.confidence,
+            f.reason,
+            JSON.stringify(f.reasonCodes),
+            JSON.stringify(f.evidence),
+            f.sourceSnippet,
+            existing.id
+          ]);
+          activeFindingIds.push(existing.id);
+        } else {
+          await tx.execute(`
+            INSERT INTO findings (
+              id, scan_id, repository_id, usage_id, change_id, provider, title, description,
+              severity, confidence, file_path, line_number, symbol, status, reason, reason_codes,
+              evidence, source_snippet, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?)
+          `, [
+            f.id,
+            scanId,
+            repo.id,
+            f.id, // usage_id
+            f.changeId,
+            f.provider,
+            f.title,
+            f.description,
+            f.severity,
+            f.confidence,
+            f.filePath,
+            f.lineNumber,
+            f.symbol,
+            f.reason,
+            JSON.stringify(f.reasonCodes),
+            JSON.stringify(f.evidence),
+            f.sourceSnippet,
+            now
+          ]);
+          activeFindingIds.push(f.id);
+        }
       }
 
       // 8. Update scan record to completed
@@ -254,7 +286,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             findings_count = ?,
             completed_at = ?
         WHERE id = ?
-      `, [headSha, inputDigest, totalFilesAnalyzed, collectedFindings.length, new Date().toISOString(), scanId]);
+      `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length, new Date().toISOString(), scanId]);
 
       // 9. Update repository status
       const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';

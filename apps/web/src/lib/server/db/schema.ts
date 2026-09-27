@@ -88,7 +88,14 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   base_branch TEXT NOT NULL,
   url TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'draft',
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  UNIQUE (migration_id)
+);
+
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key TEXT PRIMARY KEY,
+  points INTEGER NOT NULL,
+  reset_at BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS activity_events (
@@ -112,6 +119,8 @@ CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_scan ON findings(scan_id);
 CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_findings_identity ON findings(repository_id, change_id, file_path, symbol);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pull_requests_migration ON pull_requests(migration_id);
 CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
 `;
 
@@ -214,7 +223,14 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   state TEXT NOT NULL DEFAULT 'draft',
   created_at TEXT NOT NULL,
   FOREIGN KEY (migration_id) REFERENCES migrations(id) ON DELETE CASCADE,
-  FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE
+  FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE,
+  UNIQUE (migration_id)
+);
+
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key TEXT PRIMARY KEY,
+  points INTEGER NOT NULL,
+  reset_at INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS activity_events (
@@ -240,5 +256,7 @@ CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_scan ON findings(scan_id);
 CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_findings_identity ON findings(repository_id, change_id, file_path, symbol);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pull_requests_migration ON pull_requests(migration_id);
 CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
 `;

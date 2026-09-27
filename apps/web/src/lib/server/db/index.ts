@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import type { DatabaseAdapter } from './types.js';
 import { SqliteDatabaseAdapter } from './sqlite-adapter.js';
 import { PostgresDatabaseAdapter } from './postgres-adapter.js';
+import { SQLITE_SCHEMA } from './schema.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -107,133 +108,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec('PRAGMA foreign_keys = ON;');
 
   // Schema creation
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      name TEXT NOT NULL,
-      created_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS sessions (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      expires_at TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS repositories (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      owner TEXT NOT NULL,
-      name TEXT NOT NULL,
-      full_name TEXT NOT NULL,
-      github_repository_id TEXT NOT NULL,
-      default_branch TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'connected',
-      last_scan_at TEXT,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      UNIQUE (user_id, full_name)
-    );
-
-    CREATE TABLE IF NOT EXISTS scans (
-      id TEXT PRIMARY KEY,
-      repository_id TEXT NOT NULL,
-      sha TEXT NOT NULL,
-      status TEXT NOT NULL,
-      provider TEXT NOT NULL,
-      input_digest TEXT,
-      files_analyzed INTEGER DEFAULT 0,
-      findings_count INTEGER DEFAULT 0,
-      raw_result TEXT,
-      error_message TEXT,
-      started_at TEXT NOT NULL,
-      completed_at TEXT,
-      FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS findings (
-      id TEXT PRIMARY KEY,
-      scan_id TEXT NOT NULL,
-      repository_id TEXT NOT NULL,
-      usage_id TEXT NOT NULL,
-      change_id TEXT NOT NULL,
-      provider TEXT NOT NULL,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      severity TEXT NOT NULL,
-      confidence REAL NOT NULL,
-      file_path TEXT NOT NULL,
-      line_number INTEGER NOT NULL,
-      symbol TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'open',
-      reason TEXT NOT NULL,
-      reason_codes TEXT NOT NULL,
-      evidence TEXT NOT NULL,
-      source_snippet TEXT,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (scan_id) REFERENCES scans(id) ON DELETE CASCADE,
-      FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS migrations (
-      id TEXT PRIMARY KEY,
-      finding_id TEXT NOT NULL,
-      repository_id TEXT NOT NULL,
-      plan_id TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'planned',
-      plan_json TEXT NOT NULL,
-      patch_diff TEXT,
-      patch_digest TEXT,
-      verification_report TEXT,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (finding_id) REFERENCES findings(id) ON DELETE CASCADE,
-      FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS pull_requests (
-      id TEXT PRIMARY KEY,
-      migration_id TEXT NOT NULL,
-      repository_id TEXT NOT NULL,
-      number INTEGER NOT NULL,
-      title TEXT NOT NULL,
-      branch_name TEXT NOT NULL,
-      base_branch TEXT NOT NULL,
-      url TEXT NOT NULL,
-      state TEXT NOT NULL DEFAULT 'draft',
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (migration_id) REFERENCES migrations(id) ON DELETE CASCADE,
-      FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS activity_events (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      repository_id TEXT,
-      type TEXT NOT NULL,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE SET NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS _apiproof_migrations (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      applied_at TEXT NOT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
-    CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
-    CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);
-    CREATE INDEX IF NOT EXISTS idx_findings_scan ON findings(scan_id);
-    CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
-    CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
-  `);
+  db.exec(SQLITE_SCHEMA);
 
   seedDefaultUserAndFixtureSqlite(db);
 

@@ -1,10 +1,15 @@
 import crypto from 'node:crypto';
 import {
   FakeGitHubWriteTransport,
+  FetchGitHubControlledWriteTransport,
+  NodeGitHubAppTokenProvider,
+  loadGitHubAppConfig,
+  assertLiveConfig,
   validateControlledWriteRequest,
   validatePatchScope,
   createVerificationEvidence,
   type ControlledWriteRequest,
+  type GitHubControlledWriteTransport,
 } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
 
@@ -53,6 +58,38 @@ export async function createGitHubProposal(migrationId: string, userId: string):
 
   if (!migration) {
     throw new Error('Migration not found or access denied.');
+  }
+
+  // 1b. Check if a PR already exists for this migration (idempotent proposal creation)
+  const existingPr = await db.queryOne<{
+    id: string;
+    number: number;
+    title: string;
+    branch_name: string;
+    base_branch: string;
+    url: string;
+    state: string;
+    created_at: string;
+  }>(`
+    SELECT id, number, title, branch_name, base_branch, url, state, created_at
+    FROM pull_requests
+    WHERE migration_id = ?
+  `, [migration.id]);
+
+  if (existingPr) {
+    return {
+      pullRequestId: existingPr.id,
+      number: existingPr.number,
+      title: existingPr.title,
+      url: existingPr.url,
+      branchName: existingPr.branch_name,
+      baseBranch: existingPr.base_branch,
+      state: 'draft',
+      humanReviewRequired: true,
+      autoMergeEnabled: false,
+      patchDigest: migration.patch_digest,
+      createdAt: existingPr.created_at,
+    };
   }
 
   // 2. Validate Patch Scope (no .env, .github, etc.)
@@ -113,12 +150,22 @@ export async function createGitHubProposal(migrationId: string, userId: string):
     throw new Error(`Controlled write rejected by safety contract: ${validation.reason}`);
   }
 
-  // 5. Execute proposal write (using FakeGitHubWriteTransport for safe deterministic proposal verification)
-  const transport = new FakeGitHubWriteTransport(
-    migration.repo_owner,
-    migration.repo_name,
-    migration.default_branch
-  );
+  // 5. Select transport: live controlled GitHub transport when enabled, otherwise safe fake transport
+  const isLiveWrite = process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE === 'true';
+  let transport: GitHubControlledWriteTransport;
+
+  if (isLiveWrite) {
+    const config = loadGitHubAppConfig();
+    assertLiveConfig(config);
+    const tokenProvider = new NodeGitHubAppTokenProvider(config);
+    transport = new FetchGitHubControlledWriteTransport(config, tokenProvider);
+  } else {
+    transport = new FakeGitHubWriteTransport(
+      migration.repo_owner,
+      migration.repo_name,
+      migration.default_branch
+    );
+  }
 
   const title = `fix(api): deterministic migration for ${migration.change_id}`;
   const prBody = `## APIProof Deterministic Migration Proposal
