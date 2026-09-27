@@ -86,6 +86,11 @@ export async function GET(req: Request) {
     LIMIT 6
   `, [workspace.id]);
 
+  // Check GitHub installation status
+  const installation = await db.queryOne<{ status: string; account_login: string }>(`
+    SELECT status, account_login FROM github_installations WHERE workspace_id = ? ORDER BY created_at DESC LIMIT 1
+  `, [workspace.id]);
+
   return NextResponse.json({
     workspace: {
       id: workspace.id,
@@ -95,6 +100,9 @@ export async function GET(req: Request) {
       repositoryCount: Number(repoStats?.count ?? 0),
       scanCount: Number(scanStats?.count ?? 0),
       openFindingCount: Number(findingStats?.open_count ?? 0),
+      hasGitHubInstallation: Boolean(installation && installation.status === 'active'),
+      installationStatus: installation ? installation.status : 'none',
+      installationAccount: installation ? installation.account_login : null,
     },
     user: {
       id: user.id,

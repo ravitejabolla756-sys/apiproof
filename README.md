@@ -1,8 +1,8 @@
 # APIProof
 
-Deterministic Stripe impact analysis, evidence-linked migration planning, controlled candidate patches, isolated fixture verification, behavioral contracts, and review-gated GitHub proposals. **Phase 7 (0.7.0)** adds a fake-provider-tested source-control boundary with permanent merge, default-branch, and deployment prohibitions. No customer repository or target application is executed. See the [Phase 7 design](docs/phase7-design.md) and [completion report](docs/phase7-results.md).
+Deterministic Stripe & Twilio impact analysis, evidence-linked migration planning, controlled candidate patches, isolated fixture verification, behavioral contracts, and review-gated GitHub draft PR proposals. See the comprehensive [APIProof v1.0 Documentation](docs/apiproof-v1-documentation.md) for full operational, architectural, and deployment details.
 
-**APIProof must never automatically merge pull requests or deploy customer code. Human review remains mandatory in all future phases.**
+**APIProof must never automatically merge pull requests or deploy customer code. Human review remains mandatory in all phases.**
 
 ## Run
 

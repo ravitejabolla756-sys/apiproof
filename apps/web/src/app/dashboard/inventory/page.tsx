@@ -1,31 +1,80 @@
 "use client";
 
-import { useState } from "react";
-import { DEMO_INVENTORY } from "@/lib/demo-data";
+import { useEffect, useState } from "react";
 import { ProviderBadge } from "@/components/ui/status-pill";
-import { Search, Boxes } from "lucide-react";
+import { Search, Boxes, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface InventoryRule {
+  id: string;
+  title: string;
+  severity: string;
+  description: string;
+}
+
+interface ProviderInventoryItem {
+  id: string;
+  name: string;
+  category: string;
+  status: "reviewed" | "detected";
+  rulesCount: number;
+  description: string;
+  rules: InventoryRule[];
+}
 
 export default function ApiInventoryPage() {
+  const [providers, setProviders] = useState<ProviderInventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const items = DEMO_INVENTORY.filter(
+  async function loadInventory() {
+    try {
+      const res = await fetch("/api/inventory");
+      if (res.ok) {
+        const json = await res.json();
+        setProviders(json.providers || []);
+      }
+    } catch (err) {
+      console.error("Failed to load API inventory:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadInventory();
+  }, []);
+
+  const items = providers.filter(
     (item) =>
       item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.category.toLowerCase().includes(search.toLowerCase())
+      item.category.toLowerCase().includes(search.toLowerCase()) ||
+      item.rules.some((r) => r.title.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
-
       {/* HEADER */}
-      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
-        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-          <Boxes className="w-6 h-6 text-purple-700" />
-          API Inventory & Integrations
-        </h1>
-        <p className="text-xs text-[#686868]">
-          Detected third-party SDK dependencies and reviewed vendor API compatibility rule coverage.
-        </p>
+      <div className="border-b border-[#E8E8E5] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
+            <Boxes className="w-6 h-6 text-purple-700" />
+            API Inventory & Rule Registry
+          </h1>
+          <p className="text-xs text-[#686868] mt-1">
+            Server-registered third-party API SDK breaking change rules evaluated during AST repository scans.
+          </p>
+        </div>
+
+        <Button
+          onClick={loadInventory}
+          variant="outline"
+          size="sm"
+          icon={<RefreshCw className="w-3.5 h-3.5" />}
+          className="font-medium text-xs"
+        >
+          Refresh
+        </Button>
       </div>
 
       {/* SEARCH */}
@@ -40,28 +89,66 @@ export default function ApiInventoryPage() {
         />
       </div>
 
-      {/* GRID OF PROVIDERS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="p-5 rounded-[24px] bg-white border border-[#E8E8E5] space-y-4 shadow-xs hover:border-[#111111]/30 transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <ProviderBadge name={item.name} status={item.status} />
-              <span className="text-[10px] text-[#686868] uppercase font-semibold">{item.category}</span>
-            </div>
+      {loading ? (
+        <div className="py-20 text-center text-[#686868]">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <span>Loading API provider registry...</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="p-6 rounded-[24px] bg-white border border-[#E8E8E5] space-y-4 shadow-xs"
+            >
+              <div className="flex items-center justify-between">
+                <ProviderBadge name={item.name} status={item.status} />
+                <span className="text-[10px] text-[#686868] uppercase font-semibold tracking-wider">
+                  {item.category}
+                </span>
+              </div>
 
-            <div className="pt-2 border-t border-[#E8E8E5] flex items-center justify-between text-xs">
-              <span className="text-[#686868]">Rules Status</span>
-              <span className="font-semibold text-[#111111]">
-                {item.status === "reviewed" ? `${item.rulesCount} active rules` : "Auto-detected"}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+              <p className="text-xs text-[#686868] leading-relaxed">
+                {item.description}
+              </p>
 
+              <div className="pt-3 border-t border-[#E8E8E5] space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#686868] font-medium flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-purple-700" />
+                    Active Rule Coverage
+                  </span>
+                  <span className="font-semibold text-[#111111] bg-purple-50 text-purple-800 px-2.5 py-0.5 rounded-full text-[11px] border border-purple-200">
+                    {item.rulesCount} registered rules
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {item.rules.map((rule) => (
+                    <div
+                      key={rule.id}
+                      className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] text-xs space-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[11px] font-semibold text-[#111111]">
+                          {rule.id}
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                          {rule.severity}
+                        </span>
+                      </div>
+                      <div className="font-medium text-[#111111]">{rule.title}</div>
+                      <p className="text-[11px] text-[#686868] leading-normal">
+                        {rule.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

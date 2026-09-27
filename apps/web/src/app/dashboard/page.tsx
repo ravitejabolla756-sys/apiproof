@@ -17,6 +17,9 @@ interface OverviewData {
     repositoryCount: number;
     scanCount: number;
     openFindingCount: number;
+    hasGitHubInstallation?: boolean;
+    installationStatus?: string;
+    installationAccount?: string | null;
   };
   stats: {
     connectedRepositories: number;
@@ -149,6 +152,112 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
       </div>
+
+      {/* ONBOARDING CHECKLIST BANNER */}
+      {(stats.connectedRepositories === 0 || !data?.workspace?.hasGitHubInstallation || stats.scansCompleted === 0) && (
+        <div className="rounded-[28px] bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white p-8 space-y-6 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-800/60 pb-5">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-800/50 border border-purple-700/50 text-[11px] font-semibold tracking-wide uppercase text-purple-200">
+                Getting Started with APIProof
+              </div>
+              <h2 className="text-xl font-semibold mt-2 text-white">
+                4 Steps to Automate Breaking API Migration PRs
+              </h2>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setIsConnectOpen(true)}
+              className="bg-white text-purple-950 hover:bg-purple-100 font-semibold gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Connect GitHub Repository</span>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            {/* Step 1 */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              data?.workspace?.hasGitHubInstallation
+                ? "bg-purple-900/40 border-emerald-500/40"
+                : "bg-purple-900/80 border-purple-700"
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">1</span>
+                {data?.workspace?.hasGitHubInstallation ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <span className="text-[10px] text-purple-300 font-medium">Pending</span>
+                )}
+              </div>
+              <h4 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h4>
+              <p className="text-purple-200 text-[11px] leading-relaxed">
+                Authorize the APIProof GitHub App with read-only repository permissions.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              stats.connectedRepositories > 0
+                ? "bg-purple-900/40 border-emerald-500/40"
+                : "bg-purple-900/80 border-purple-700"
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">2</span>
+                {stats.connectedRepositories > 0 ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <span className="text-[10px] text-purple-300 font-medium">Pending</span>
+                )}
+              </div>
+              <h4 className="font-semibold text-white text-xs mb-1">Choose Repository</h4>
+              <p className="text-purple-200 text-[11px] leading-relaxed">
+                Select target repositories to monitor for breaking vendor API changes.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              stats.scansCompleted > 0
+                ? "bg-purple-900/40 border-emerald-500/40"
+                : "bg-purple-900/80 border-purple-700"
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">3</span>
+                {stats.scansCompleted > 0 ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <span className="text-[10px] text-purple-300 font-medium">Pending</span>
+                )}
+              </div>
+              <h4 className="font-semibold text-white text-xs mb-1">Run Initial AST Scan</h4>
+              <p className="text-purple-200 text-[11px] leading-relaxed">
+                Scan target repo commits using deterministic AST pattern matchers.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              stats.draftPrsCount > 0 || stats.openFindings > 0
+                ? "bg-purple-900/40 border-emerald-500/40"
+                : "bg-purple-900/80 border-purple-700"
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">4</span>
+                {stats.draftPrsCount > 0 ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <span className="text-[10px] text-purple-300 font-medium">Pending</span>
+                )}
+              </div>
+              <h4 className="font-semibold text-white text-xs mb-1">Review & Draft PR</h4>
+              <p className="text-purple-200 text-[11px] leading-relaxed">
+                Inspect findings, verify patch diffs, and create safe draft PRs.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* EDITORIAL SPLIT: LEFT 65% / RIGHT 35% */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
