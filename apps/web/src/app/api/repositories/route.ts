@@ -5,6 +5,10 @@ import { getDatabase } from '@/lib/server/db';
 import { getAccessibleRepositoryInfo } from '@/lib/server/github';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import {
+  getDefaultWorkspaceForUser,
+  requireWorkspaceMember,
+} from '@/lib/server/workspace-service';
+import {
   assertCsrfProtection,
   validateRepositoryConnectInput,
   badRequestResponse,
@@ -25,7 +29,8 @@ export async function GET(req: Request) {
            (SELECT COUNT(*) FROM scans s WHERE s.repository_id = r.id) as scans_count,
            (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
     FROM repositories r
-    WHERE r.user_id = ?
+    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
+    WHERE wm.user_id = ?
     ORDER BY r.created_at DESC
   `, [user.id]);
 
@@ -61,6 +66,16 @@ export async function POST(req: Request) {
       return badRequestResponse(validation.error || 'Invalid repository connection payload.');
     }
 
+    // Resolve target workspace: if provided, verify membership; else use default
+    let workspaceId: string;
+    if (body.workspaceId && typeof body.workspaceId === 'string') {
+      const ws = await requireWorkspaceMember(user.id, body.workspaceId);
+      workspaceId = ws.id;
+    } else {
+      const defaultWs = await getDefaultWorkspaceForUser(user.id);
+      workspaceId = defaultWs.id;
+    }
+
     const { owner, name, defaultBranch, githubRepositoryId } = validation.data;
     const fullName = `${owner}/${name}`;
     const repoId = `repo_${crypto.randomBytes(10).toString('hex')}`;
@@ -69,10 +84,10 @@ export async function POST(req: Request) {
 
     const db = getDatabase();
 
-    // Check if already connected (IDOR / tenant scoped)
+    // Check if already connected within this workspace (workspace scoped IDOR protection)
     const existing = await db.queryOne<{ id: string }>(`
-      SELECT id FROM repositories WHERE user_id = ? AND full_name = ?
-    `, [user.id, fullName]);
+      SELECT id FROM repositories WHERE workspace_id = ? AND full_name = ?
+    `, [workspaceId, fullName]);
 
     if (existing) {
       return NextResponse.json(
@@ -84,9 +99,9 @@ export async function POST(req: Request) {
     // Atomic transaction for repository and activity event creation
     await db.transaction(async (tx) => {
       await tx.execute(`
-        INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'connected', ?)
-      `, [repoId, user.id, owner, name, fullName, ghId, defaultBranch, now]);
+        INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', ?)
+      `, [repoId, workspaceId, user.id, owner, name, fullName, ghId, defaultBranch, now]);
 
       await tx.execute(`
         INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
@@ -104,6 +119,7 @@ export async function POST(req: Request) {
       success: true,
       repository: {
         id: repoId,
+        workspaceId,
         owner,
         name,
         fullName,

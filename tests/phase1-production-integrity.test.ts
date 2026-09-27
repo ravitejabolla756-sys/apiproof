@@ -201,8 +201,8 @@ describe('APIProof Phase 1 — Production Integrity Test Suite', () => {
       // Must NOT have 2 findings:
       expect(secondFindingRows.length).toBe(1);
       // Finding ID is preserved (updated in place):
-      expect(secondFindingRows[0].id).toBe(originalFindingId);
-      expect(secondFindingRows[0].status).toBe('open');
+      expect(secondFindingRows[0]!.id).toBe(originalFindingId);
+      expect(secondFindingRows[0]!.status).toBe('open');
 
       // Scans table still records history:
       const scanCount = db.prepare('SELECT COUNT(*) as c FROM scans WHERE repository_id = ?').get(repoId) as { c: number };

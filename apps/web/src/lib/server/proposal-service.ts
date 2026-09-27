@@ -12,6 +12,7 @@ import {
   type GitHubControlledWriteTransport,
 } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
+import { requireMigrationAccess } from './workspace-service.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -30,35 +31,29 @@ export interface ProposalResult {
 export async function createGitHubProposal(migrationId: string, userId: string): Promise<ProposalResult> {
   const db = getDatabase();
 
-  // 1. Fetch migration and verify user ownership (IDOR protection)
-  const migration = await db.queryOne<{
-    id: string;
-    finding_id: string;
-    repository_id: string;
-    plan_id: string;
-    patch_diff: string;
-    patch_digest: string;
-    change_id: string;
-    file_path: string;
-    symbol: string;
-    repo_id: string;
-    repo_owner: string;
-    repo_name: string;
-    repo_full_name: string;
-    github_repository_id: string;
-    default_branch: string;
-  }>(`
-    SELECT m.*, f.change_id, f.file_path, f.symbol, r.id as repo_id, r.owner as repo_owner, r.name as repo_name,
-           r.full_name as repo_full_name, r.github_repository_id, r.default_branch
-    FROM migrations m
-    JOIN findings f ON f.id = m.finding_id
-    JOIN repositories r ON r.id = m.repository_id
-    WHERE m.id = ? AND r.user_id = ?
-  `, [migrationId, userId]);
+  // 1. Fetch migration and verify workspace access (central authorization / IDOR protection)
+  const { migration: rawMigration, repository: repo } = await requireMigrationAccess(migrationId, userId);
 
-  if (!migration) {
-    throw new Error('Migration not found or access denied.');
+  const finding = await db.queryOne<{ change_id: string; file_path: string; symbol: string }>(`
+    SELECT change_id, file_path, symbol FROM findings WHERE id = ?
+  `, [rawMigration.finding_id]);
+
+  if (!finding) {
+    throw new Error('Finding for migration not found.');
   }
+
+  const migration = {
+    ...rawMigration,
+    change_id: finding.change_id,
+    file_path: finding.file_path,
+    symbol: finding.symbol,
+    repo_id: repo.id,
+    repo_owner: repo.owner,
+    repo_name: repo.name,
+    repo_full_name: repo.full_name,
+    github_repository_id: repo.github_repository_id,
+    default_branch: repo.default_branch,
+  };
 
   // 1b. Check if a PR already exists for this migration (idempotent proposal creation)
   const existingPr = await db.queryOne<{

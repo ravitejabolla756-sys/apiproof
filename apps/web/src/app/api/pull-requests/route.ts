@@ -18,7 +18,8 @@ export async function GET(req: Request) {
     JOIN repositories r ON r.id = pr.repository_id
     JOIN migrations m ON m.id = pr.migration_id
     JOIN findings f ON f.id = m.finding_id
-    WHERE r.user_id = ?
+    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
+    WHERE wm.user_id = ?
     ORDER BY pr.created_at DESC
   `, [user.id]);
 

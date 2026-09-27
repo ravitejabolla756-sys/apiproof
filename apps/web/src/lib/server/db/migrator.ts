@@ -90,6 +90,148 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    id: '003',
+    name: 'phase2_multi_tenant_workspaces_and_installations',
+    up: async (db: DatabaseAdapter) => {
+      // 1. Create workspaces table
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS workspaces (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          slug TEXT UNIQUE NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      `);
+
+      // 2. Create workspace_members table
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS workspace_members (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+            user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            role TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            UNIQUE (workspace_id, user_id)
+          )
+        `);
+      } else {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS workspace_members (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE (workspace_id, user_id)
+          )
+        `);
+      }
+
+      // 3. Create github_installations table
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS github_installations (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+            installation_id TEXT UNIQUE NOT NULL,
+            account_login TEXT NOT NULL,
+            account_type TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        `);
+      } else {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS github_installations (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL,
+            installation_id TEXT UNIQUE NOT NULL,
+            account_login TEXT NOT NULL,
+            account_type TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+          )
+        `);
+      }
+
+      // 4. Add workspace_id column to repositories if not exists
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          ALTER TABLE repositories ADD COLUMN IF NOT EXISTS workspace_id TEXT REFERENCES workspaces(id) ON DELETE CASCADE
+        `);
+      } else {
+        const columns = await db.query<{ name: string }>('PRAGMA table_info(repositories)');
+        const hasWorkspaceCol = columns.some((c) => c.name === 'workspace_id');
+        if (!hasWorkspaceCol) {
+          await db.execute('ALTER TABLE repositories ADD COLUMN workspace_id TEXT');
+        }
+      }
+
+      // 5. Create indexes
+      await db.execute(`CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug)`);
+      await db.execute(`CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id)`);
+      await db.execute(`CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id)`);
+      await db.execute(`CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installations(workspace_id)`);
+      await db.execute(`CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id)`);
+
+      // 6. Data migration: Migrate existing users to default workspaces without repository loss
+      const users = await db.query<{ id: string; email: string; name: string; created_at: string }>(
+        'SELECT id, email, name, created_at FROM users'
+      );
+
+      for (const u of users) {
+        // Check if user already belongs to any workspace
+        const existingMember = await db.queryOne<{ workspace_id: string }>(
+          'SELECT workspace_id FROM workspace_members WHERE user_id = ?',
+          [u.id]
+        );
+
+        let wsId: string;
+        if (existingMember) {
+          wsId = existingMember.workspace_id;
+        } else {
+          wsId = `ws_${u.id.replace(/^usr_/, '')}`;
+          const cleanEmail = u.email ? u.email.split('@')[0]!.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'workspace';
+          const slug = `${cleanEmail}-${u.id.slice(4, 10)}`;
+          const wsName = `${u.name || 'User'}'s Workspace`;
+          const memberId = `wsm_${u.id.replace(/^usr_/, '')}`;
+          const now = u.created_at || new Date().toISOString();
+
+          // Idempotent workspace check
+          const existingWs = await db.queryOne<{ id: string }>(
+            'SELECT id FROM workspaces WHERE id = ? OR slug = ?',
+            [wsId, slug]
+          );
+
+          if (!existingWs) {
+            await db.execute(
+              'INSERT INTO workspaces (id, name, slug, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+              [wsId, wsName, slug, now, now]
+            );
+          } else {
+            wsId = existingWs.id;
+          }
+
+          await db.execute(
+            'INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (workspace_id, user_id) DO NOTHING',
+            [memberId, wsId, u.id, 'owner', now]
+          );
+        }
+
+        // Migrate repositories previously associated with user_id
+        await db.execute(
+          "UPDATE repositories SET workspace_id = ? WHERE user_id = ? AND (workspace_id IS NULL OR workspace_id = '')",
+          [wsId, u.id]
+        );
+      }
+    },
+  },
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {

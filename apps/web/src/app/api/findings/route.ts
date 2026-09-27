@@ -25,7 +25,8 @@ export async function GET(req: Request) {
            (SELECT p.url FROM pull_requests p WHERE p.repository_id = f.repository_id LIMIT 1) as pr_url
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
-    WHERE r.user_id = ?
+    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
+    WHERE wm.user_id = ?
   `;
   const params: unknown[] = [user.id];
 

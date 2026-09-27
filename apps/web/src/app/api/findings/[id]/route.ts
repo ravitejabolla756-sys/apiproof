@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { requireFindingAccess } from '@/lib/server/workspace-service';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -9,28 +10,17 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const db = getDatabase();
-
-  interface FindingRow {
-    id: string;
-    repository_id: string;
-    change_id: string;
-    evidence: string;
-    reason_codes: string;
-    [key: string]: unknown;
-  }
-
-  const finding = await db.queryOne<FindingRow>(`
-    SELECT f.*, r.name as repo_name, r.full_name as repo_full_name, r.owner as repo_owner, r.default_branch
-    FROM findings f
-    JOIN repositories r ON r.id = f.repository_id
-    WHERE (f.id = ? OR f.change_id = ?) AND r.user_id = ?
-    LIMIT 1
-  `, [id, id, user.id]);
-
-  if (!finding) {
+  let finding;
+  let repository;
+  try {
+    const access = await requireFindingAccess(id, user.id);
+    finding = access.finding;
+    repository = access.repository;
+  } catch {
     return NextResponse.json({ error: 'Finding not found or access denied.' }, { status: 404 });
   }
+
+  const db = getDatabase();
 
   // Parse stored JSON
   let evidence: unknown[];
@@ -75,6 +65,10 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
   return NextResponse.json({
     finding: {
       ...finding,
+      repo_name: repository.name,
+      repo_full_name: repository.full_name,
+      repo_owner: repository.owner,
+      default_branch: repository.default_branch,
       evidence,
       reasonCodes,
     },

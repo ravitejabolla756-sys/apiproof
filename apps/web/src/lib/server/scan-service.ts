@@ -7,6 +7,7 @@ import type { ApiProvider } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
 import { getGitHubProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadProviderRegistry } from './registry-utils.js';
+import { requireRepositoryAccess } from './workspace-service.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -43,24 +44,8 @@ function extractSourceSnippet(fileContent: string, lineNumber: number, contextLi
 export async function runRepositoryScan(repositoryId: string, userId: string): Promise<ScanExecutionResult> {
   const db = getDatabase();
   
-  // 1. Verify repository ownership (security / IDOR protection)
-  const repo = await db.queryOne<{
-    id: string;
-    owner: string;
-    name: string;
-    full_name: string;
-    github_repository_id: string;
-    default_branch: string;
-    user_id: string;
-  }>(`
-    SELECT id, owner, name, full_name, github_repository_id, default_branch, user_id
-    FROM repositories
-    WHERE id = ? AND user_id = ?
-  `, [repositoryId, userId]);
-
-  if (!repo) {
-    throw new Error('Repository not found or access denied.');
-  }
+  // 1. Verify workspace repository access (central authorization / IDOR protection)
+  const { repository: repo } = await requireRepositoryAccess(repositoryId, userId);
 
   const scanId = `scn_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();

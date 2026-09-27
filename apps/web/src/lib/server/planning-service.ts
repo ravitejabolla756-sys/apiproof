@@ -3,6 +3,7 @@ import { DeterministicPlanner, computeCanonicalPatchDigest } from '@apiproof/cor
 import type { PlanningInput } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { loadProviderRegistry } from './registry-utils.js';
+import { requireFindingAccess } from './workspace-service.js';
 
 export interface MigrationPlanRecord {
   id: string;
@@ -18,38 +19,15 @@ export interface MigrationPlanRecord {
 export async function generateMigrationForFinding(findingId: string, userId: string): Promise<MigrationPlanRecord> {
   const db = getDatabase();
 
-  // 1. Fetch finding and ensure user owns repository (IDOR protection)
-  const finding = await db.queryOne<{
-    id: string;
-    scan_id: string;
-    repository_id: string;
-    usage_id: string;
-    change_id: string;
-    provider: 'stripe' | 'twilio';
-    title: string;
-    description: string;
-    severity: string;
-    confidence: number;
-    file_path: string;
-    line_number: number;
-    symbol: string;
-    reason: string;
-    reason_codes: string;
-    evidence: string;
-    source_snippet: string | null;
-    repo_full_name: string;
-    repo_name: string;
-    repo_owner: string;
-  }>(`
-    SELECT f.*, r.full_name as repo_full_name, r.name as repo_name, r.owner as repo_owner
-    FROM findings f
-    JOIN repositories r ON r.id = f.repository_id
-    WHERE f.id = ? AND r.user_id = ?
-  `, [findingId, userId]);
-
-  if (!finding) {
-    throw new Error('Finding not found or access denied.');
-  }
+  // 1. Fetch finding and ensure workspace membership (central authorization / IDOR protection)
+  const { finding: rawFinding, repository: repo } = await requireFindingAccess(findingId, userId);
+  const finding = {
+    ...rawFinding,
+    provider: rawFinding.provider as 'stripe' | 'twilio',
+    repo_full_name: repo.full_name,
+    repo_name: repo.name,
+    repo_owner: repo.owner,
+  };
 
   // 2. Load registry change definition
   const registryChanges = await loadProviderRegistry(finding.provider);

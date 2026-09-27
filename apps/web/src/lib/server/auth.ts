@@ -37,15 +37,33 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 export async function createUserAsync(email: string, password: string, name: string): Promise<User> {
   const db = getDatabase();
   const id = `usr_${crypto.randomBytes(12).toString('hex')}`;
+  const workspaceId = `ws_${crypto.randomBytes(10).toString('hex')}`;
+  const memberId = `wsm_${crypto.randomBytes(10).toString('hex')}`;
   const now = new Date().toISOString();
   const passwordHash = hashPassword(password);
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanName = name.trim();
+  const slugPrefix = cleanEmail.split('@')[0]!.replace(/[^a-z0-9]/g, '-') || 'workspace';
+  const slug = `${slugPrefix}-${crypto.randomBytes(3).toString('hex')}`;
 
-  await db.execute(`
-    INSERT INTO users (id, email, password_hash, name, created_at)
-    VALUES (?, ?, ?, ?, ?)
-  `, [id, email.toLowerCase().trim(), passwordHash, name.trim(), now]);
+  return await db.transaction(async (tx) => {
+    await tx.execute(`
+      INSERT INTO users (id, email, password_hash, name, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `, [id, cleanEmail, passwordHash, cleanName, now]);
 
-  return { id, email: email.toLowerCase().trim(), name: name.trim(), createdAt: now };
+    await tx.execute(`
+      INSERT INTO workspaces (id, name, slug, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+    `, [workspaceId, `${cleanName}'s Workspace`, slug, now, now]);
+
+    await tx.execute(`
+      INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at)
+      VALUES (?, ?, ?, 'owner', ?)
+    `, [memberId, workspaceId, id, now]);
+
+    return { id, email: cleanEmail, name: cleanName, createdAt: now };
+  });
 }
 
 export function createUser(email: string, password: string, name: string): User;
@@ -54,13 +72,32 @@ export function createUser(email: string, password: string, name: string): User 
   const db = getDatabase();
   if (db.engine === 'sqlite') {
     const id = `usr_${crypto.randomBytes(12).toString('hex')}`;
+    const workspaceId = `ws_${crypto.randomBytes(10).toString('hex')}`;
+    const memberId = `wsm_${crypto.randomBytes(10).toString('hex')}`;
     const now = new Date().toISOString();
     const passwordHash = hashPassword(password);
-    (db as SqliteDatabaseAdapter).executeSync(`
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanName = name.trim();
+    const slugPrefix = cleanEmail.split('@')[0]!.replace(/[^a-z0-9]/g, '-') || 'workspace';
+    const slug = `${slugPrefix}-${crypto.randomBytes(3).toString('hex')}`;
+
+    const sqlite = db as SqliteDatabaseAdapter;
+    sqlite.executeSync(`
       INSERT INTO users (id, email, password_hash, name, created_at)
       VALUES (?, ?, ?, ?, ?)
-    `, [id, email.toLowerCase().trim(), passwordHash, name.trim(), now]);
-    return { id, email: email.toLowerCase().trim(), name: name.trim(), createdAt: now };
+    `, [id, cleanEmail, passwordHash, cleanName, now]);
+
+    sqlite.executeSync(`
+      INSERT INTO workspaces (id, name, slug, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+    `, [workspaceId, `${cleanName}'s Workspace`, slug, now, now]);
+
+    sqlite.executeSync(`
+      INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at)
+      VALUES (?, ?, ?, 'owner', ?)
+    `, [memberId, workspaceId, id, now]);
+
+    return { id, email: cleanEmail, name: cleanName, createdAt: now };
   }
   return createUserAsync(email, password, name);
 }
@@ -162,17 +199,33 @@ export async function createUserWithSession(
 ): Promise<{ user: User; session: Session }> {
   const db = getDatabase();
   const userId = `usr_${crypto.randomBytes(12).toString('hex')}`;
+  const workspaceId = `ws_${crypto.randomBytes(10).toString('hex')}`;
+  const memberId = `wsm_${crypto.randomBytes(10).toString('hex')}`;
   const sessionId = `ses_${crypto.randomBytes(24).toString('hex')}`;
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_TTL_MS).toISOString();
   const createdAt = now.toISOString();
   const passwordHash = hashPassword(password);
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanName = name.trim();
+  const slugPrefix = cleanEmail.split('@')[0]!.replace(/[^a-z0-9]/g, '-') || 'workspace';
+  const slug = `${slugPrefix}-${crypto.randomBytes(3).toString('hex')}`;
 
   return await db.transaction(async (tx) => {
     await tx.execute(`
       INSERT INTO users (id, email, password_hash, name, created_at)
       VALUES (?, ?, ?, ?, ?)
-    `, [userId, email.toLowerCase().trim(), passwordHash, name.trim(), createdAt]);
+    `, [userId, cleanEmail, passwordHash, cleanName, createdAt]);
+
+    await tx.execute(`
+      INSERT INTO workspaces (id, name, slug, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+    `, [workspaceId, `${cleanName}'s Workspace`, slug, createdAt, createdAt]);
+
+    await tx.execute(`
+      INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at)
+      VALUES (?, ?, ?, 'owner', ?)
+    `, [memberId, workspaceId, userId, createdAt]);
 
     await tx.execute(`
       INSERT INTO sessions (id, user_id, expires_at, created_at)
@@ -180,7 +233,7 @@ export async function createUserWithSession(
     `, [sessionId, userId, expiresAt, createdAt]);
 
     return {
-      user: { id: userId, email: email.toLowerCase().trim(), name: name.trim(), createdAt },
+      user: { id: userId, email: cleanEmail, name: cleanName, createdAt },
       session: { id: sessionId, userId, expiresAt, createdAt },
     };
   });

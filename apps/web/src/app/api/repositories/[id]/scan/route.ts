@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
 import { runRepositoryScan } from '@/lib/server/scan-service';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
+import { requireRepositoryAccess } from '@/lib/server/workspace-service';
 import {
   assertCsrfProtection,
   validateSafeId,
@@ -33,14 +33,12 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     return rateLimitResponse(rateCheck.resetInMs);
   }
 
-  const db = getDatabase();
-  // Resolve repo ID by ID or slug with user_id tenant enforcement
-  const repo = await db.queryOne<{ id: string; full_name: string }>(`
-    SELECT id, full_name FROM repositories
-    WHERE (id = ? OR name = ? OR full_name = ?) AND user_id = ?
-  `, [idValidation.data, idValidation.data, idValidation.data, user.id]);
-
-  if (!repo) {
+  // Verify workspace repository access (central authorization / IDOR protection)
+  let repo;
+  try {
+    const access = await requireRepositoryAccess(idValidation.data, user.id);
+    repo = access.repository;
+  } catch {
     return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
   }
 
@@ -53,4 +51,3 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     return NextResponse.json({ error: message, code: 'SCAN_FAILED' }, { status: 500 });
   }
 }
-

@@ -18,7 +18,8 @@ export async function GET(req: Request) {
     JOIN findings f ON f.id = m.finding_id
     JOIN repositories r ON r.id = m.repository_id
     LEFT JOIN pull_requests pr ON pr.migration_id = m.id
-    WHERE r.user_id = ?
+    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
+    WHERE wm.user_id = ?
     ORDER BY m.created_at DESC
   `, [user.id]);
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -8,18 +9,20 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Resolve user's active/default workspace
+  const workspace = await getDefaultWorkspaceForUser(user.id);
   const db = getDatabase();
 
-  // Aggregate real stats for current user
+  // Aggregate stats for current workspace
   const repoStats = await db.queryOne<{ count: number }>(`
-    SELECT COUNT(*) as count FROM repositories WHERE user_id = ?
-  `, [user.id]);
+    SELECT COUNT(*) as count FROM repositories WHERE workspace_id = ?
+  `, [workspace.id]);
 
   const scanStats = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) as count FROM scans s
     JOIN repositories r ON r.id = s.repository_id
-    WHERE r.user_id = ? AND s.status = 'completed'
-  `, [user.id]);
+    WHERE r.workspace_id = ? AND s.status = 'completed'
+  `, [workspace.id]);
 
   const findingStats = await db.queryOne<{ total: number; open_count: number | null; critical_count: number | null }>(`
     SELECT 
@@ -28,14 +31,14 @@ export async function GET(req: Request) {
       SUM(CASE WHEN f.severity = 'critical' AND f.status = 'open' THEN 1 ELSE 0 END) as critical_count
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
-    WHERE r.user_id = ?
-  `, [user.id]);
+    WHERE r.workspace_id = ?
+  `, [workspace.id]);
 
   const prStats = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) as count FROM pull_requests pr
     JOIN repositories r ON r.id = pr.repository_id
-    WHERE r.user_id = ?
-  `, [user.id]);
+    WHERE r.workspace_id = ?
+  `, [workspace.id]);
 
   const repositories = await db.query<Array<{
     id: string;
@@ -50,9 +53,9 @@ export async function GET(req: Request) {
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch, r.status, r.last_scan_at,
            (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count
     FROM repositories r
-    WHERE r.user_id = ?
+    WHERE r.workspace_id = ?
     ORDER BY r.created_at DESC
-  `, [user.id]);
+  `, [workspace.id]);
 
   const criticalFinding = await db.queryOne<{
     id: string;
@@ -69,21 +72,30 @@ export async function GET(req: Request) {
            r.name as repo_name, r.full_name as repo_full_name
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
-    WHERE r.user_id = ?
+    WHERE r.workspace_id = ?
     ORDER BY CASE f.severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 ELSE 3 END, f.created_at DESC
     LIMIT 1
-  `, [user.id]);
+  `, [workspace.id]);
 
   const recentActivities = await db.query(`
     SELECT a.id, a.type, a.title, a.description, a.created_at, r.name as repo_name
     FROM activity_events a
-    LEFT JOIN repositories r ON r.id = a.repository_id
-    WHERE a.user_id = ?
+    JOIN repositories r ON r.id = a.repository_id
+    WHERE r.workspace_id = ?
     ORDER BY a.created_at DESC
     LIMIT 6
-  `, [user.id]);
+  `, [workspace.id]);
 
   return NextResponse.json({
+    workspace: {
+      id: workspace.id,
+      name: workspace.name,
+      slug: workspace.slug,
+      role: workspace.role,
+      repositoryCount: Number(repoStats?.count ?? 0),
+      scanCount: Number(scanStats?.count ?? 0),
+      openFindingCount: Number(findingStats?.open_count ?? 0),
+    },
     user: {
       id: user.id,
       email: user.email,

@@ -55,6 +55,8 @@ function seedDefaultUserAndFixtureSqlite(db: DatabaseSync): void {
   const userCheck = db.prepare('SELECT id FROM users LIMIT 1').get() as { id: string } | undefined;
   if (!userCheck) {
     const userId = 'usr_pilot_developer';
+    const workspaceId = 'ws_pilot_developer';
+    const memberId = 'wsm_pilot_developer';
     const now = new Date().toISOString();
 
     const salt = 'apiproof_pilot_salt';
@@ -66,12 +68,23 @@ function seedDefaultUserAndFixtureSqlite(db: DatabaseSync): void {
       VALUES (?, ?, ?, ?, ?)
     `).run(userId, 'developer@apiproof.dev', passwordHash, 'APIProof Developer', now);
 
+    db.prepare(`
+      INSERT INTO workspaces (id, name, slug, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(workspaceId, "Developer's Workspace", 'developer-workspace', now, now);
+
+    db.prepare(`
+      INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at)
+      VALUES (?, ?, ?, 'owner', ?)
+    `).run(memberId, workspaceId, userId, now);
+
     const repoId = 'repo_apiproof_fixture';
     db.prepare(`
-      INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       repoId,
+      workspaceId,
       userId,
       'ravitejabolla756-sys',
       'apiproof-github-fixture',

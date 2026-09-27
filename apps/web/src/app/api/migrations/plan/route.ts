@@ -37,8 +37,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, migration });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Migration planning failed.';
+    if (message.includes('not found') || message.includes('access denied')) {
+      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+    }
     console.error('Migration planning failed:', error);
     return NextResponse.json({ error: message, code: 'PLANNING_FAILED' }, { status: 500 });
   }
 }
-

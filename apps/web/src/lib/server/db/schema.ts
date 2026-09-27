@@ -7,6 +7,33 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS workspaces (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS workspace_members (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (workspace_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS github_installations (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  installation_id TEXT UNIQUE NOT NULL,
+  account_login TEXT NOT NULL,
+  account_type TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -16,7 +43,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE TABLE IF NOT EXISTS repositories (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  workspace_id TEXT REFERENCES workspaces(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
   owner TEXT NOT NULL,
   name TEXT NOT NULL,
   full_name TEXT NOT NULL,
@@ -25,7 +53,7 @@ CREATE TABLE IF NOT EXISTS repositories (
   status TEXT NOT NULL DEFAULT 'connected',
   last_scan_at TEXT,
   created_at TEXT NOT NULL,
-  UNIQUE (user_id, full_name)
+  UNIQUE (workspace_id, full_name)
 );
 
 CREATE TABLE IF NOT EXISTS scans (
@@ -114,6 +142,11 @@ CREATE TABLE IF NOT EXISTS _apiproof_migrations (
   applied_at TEXT NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
+CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installations(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
 CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);
@@ -133,6 +166,36 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS workspaces (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS workspace_members (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  role TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE (workspace_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS github_installations (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  installation_id TEXT UNIQUE NOT NULL,
+  account_login TEXT NOT NULL,
+  account_type TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
@@ -143,7 +206,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE TABLE IF NOT EXISTS repositories (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
+  workspace_id TEXT,
+  user_id TEXT,
   owner TEXT NOT NULL,
   name TEXT NOT NULL,
   full_name TEXT NOT NULL,
@@ -152,8 +216,9 @@ CREATE TABLE IF NOT EXISTS repositories (
   status TEXT NOT NULL DEFAULT 'connected',
   last_scan_at TEXT,
   created_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE (user_id, full_name)
+  UNIQUE (workspace_id, full_name)
 );
 
 CREATE TABLE IF NOT EXISTS scans (
@@ -251,6 +316,11 @@ CREATE TABLE IF NOT EXISTS _apiproof_migrations (
   applied_at TEXT NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
+CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installations(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
 CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);

@@ -9,6 +9,15 @@ import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, Refre
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 
 interface OverviewData {
+  workspace?: {
+    id: string;
+    name: string;
+    slug: string;
+    role: string;
+    repositoryCount: number;
+    scanCount: number;
+    openFindingCount: number;
+  };
   stats: {
     connectedRepositories: number;
     scansCompleted: number;

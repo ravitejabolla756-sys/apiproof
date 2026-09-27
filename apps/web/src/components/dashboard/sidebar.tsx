@@ -24,6 +24,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [openFindingsCount, setOpenFindingsCount] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [workspaceName, setWorkspaceName] = useState<string>('');
 
   useEffect(() => {
     async function loadStats() {
@@ -33,6 +34,9 @@ export function Sidebar() {
           const data = await res.json();
           if (typeof data.stats?.openFindings === 'number') {
             setOpenFindingsCount(data.stats.openFindings);
+          }
+          if (data.workspace?.name) {
+            setWorkspaceName(data.workspace.name);
           }
           if (data.user?.email) {
             setUserEmail(data.user.email);
@@ -165,9 +169,14 @@ export function Sidebar() {
       <div className="p-4 border-t border-[#E8E8E5] bg-white font-sans text-xs">
         {!collapsed ? (
           <div className="flex items-center justify-between">
-            <span className="truncate font-mono text-[11px] text-[#111111]" title={userEmail}>
-              {userEmail || 'Active Workspace'}
-            </span>
+            <div className="flex flex-col min-w-0 pr-2">
+              <span className="truncate text-[11px] font-semibold text-[#111111]" title={workspaceName || 'Active Workspace'}>
+                {workspaceName || 'Active Workspace'}
+              </span>
+              <span className="truncate font-mono text-[10px] text-[#888888]" title={userEmail}>
+                {userEmail}
+              </span>
+            </div>
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
