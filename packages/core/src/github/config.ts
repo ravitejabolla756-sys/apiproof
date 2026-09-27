@@ -2,6 +2,7 @@ export interface GitHubAppConfig {
   enabled: boolean;
   writeEnabled?: boolean | undefined;
   appId: string;
+  appSlug?: string | undefined;
   privateKeyPath?: string | undefined;
   privateKey?: string | undefined;
   installationId: string;
@@ -49,6 +50,7 @@ export function loadGitHubAppConfig(env: NodeJS.ProcessEnv = process.env): GitHu
     enabled,
     writeEnabled,
     appId: value('GITHUB_APP_ID'),
+    appSlug: value('GITHUB_APP_SLUG') || 'apiproof',
     privateKeyPath,
     privateKey: privateKey || undefined,
     installationId: value('GITHUB_INSTALLATION_ID'),

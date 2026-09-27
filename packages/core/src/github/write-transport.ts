@@ -85,6 +85,10 @@ export class DisabledGitHubWriteTransport implements GitHubControlledWriteTransp
   }
 }
 
+export interface ControlledWriteTransportOptions {
+  workspaceAuthorized?: boolean;
+}
+
 export class FetchGitHubControlledWriteTransport implements GitHubControlledWriteTransport {
   private readonly fetchImpl: typeof fetch;
 
@@ -92,7 +96,8 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     private readonly config: GitHubAppConfig,
     private readonly tokens: InstallationTokenProvider,
     customFetch?: typeof fetch,
-    private readonly baseUrl = 'https://api.github.com'
+    private readonly baseUrl = 'https://api.github.com',
+    private readonly options?: ControlledWriteTransportOptions
   ) {
     this.fetchImpl = customFetch ?? globalThis.fetch;
   }
@@ -110,11 +115,20 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     draft?: boolean;
     force?: boolean;
   }): void {
-    if (this.config.repositoryId !== '1363070568') {
-      throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Write transport repository ID mismatch (${this.config.repositoryId} !== 1363070568)`);
-    }
-    if (this.config.owner !== 'ravitejabolla756-sys' || this.config.repository !== 'apiproof-github-fixture') {
-      throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Write transport target repository mismatch (${this.config.owner}/${this.config.repository})`);
+    if (this.options?.workspaceAuthorized) {
+      if (!this.config.repositoryId || !/^\d+$/.test(this.config.repositoryId)) {
+        throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Write transport repository ID mismatch (${this.config.repositoryId})`);
+      }
+      if (!this.config.owner || !this.config.repository) {
+        throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Write transport target repository mismatch (${this.config.owner}/${this.config.repository})`);
+      }
+    } else {
+      if (this.config.repositoryId !== '1363070568') {
+        throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Write transport repository ID mismatch (${this.config.repositoryId} !== 1363070568)`);
+      }
+      if (this.config.owner !== 'ravitejabolla756-sys' || this.config.repository !== 'apiproof-github-fixture') {
+        throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Write transport target repository mismatch (${this.config.owner}/${this.config.repository})`);
+      }
     }
 
     if (operation.force === true) {

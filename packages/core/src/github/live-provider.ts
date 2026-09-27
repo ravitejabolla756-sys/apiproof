@@ -19,69 +19,64 @@ function base64url(input: Buffer | string): string {
 
 export const APPROVED_OBSERVE_REPOSITORY_IDS: ReadonlySet<string> = new Set(['1363070568', '1260141355']);
 
+export interface GitHubRepoItem {
+  id: string;
+  name: string;
+  fullName: string;
+  owner: string;
+  private: boolean;
+  defaultBranch: string;
+}
+
+export interface GitHubInstallationMetadata {
+  id: string;
+  appId: string;
+  accountLogin: string;
+  accountType: string;
+  targetType?: string | undefined;
+}
+
 export class NodeGitHubAppTokenProvider implements InstallationTokenProvider {
-  private cachedToken: { token: string; expiresAtMs: number } | null = null;
+  private readonly cachedTokens = new Map<string, { token: string; expiresAtMs: number }>();
+  private readonly allowAnyRepository: boolean;
 
-  constructor(private readonly config: GitHubAppConfig) {}
-
-  async getToken(installationId: string, repositoryId: string): Promise<string> {
-    const isApprovedRepo = APPROVED_OBSERVE_REPOSITORY_IDS.has(repositoryId) || repositoryId === this.config.repositoryId;
-    if (installationId !== this.config.installationId || !isApprovedRepo) {
-      throw new Error('GITHUB_REPOSITORY_NOT_APPROVED');
-    }
-    const now = Date.now();
-    if (this.cachedToken && this.cachedToken.expiresAtMs > now + 60000) {
-      return this.cachedToken.token;
-    }
-
-    let privateKeyPem: string;
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    if (this.config.privateKey) {
-      privateKeyPem = normalizePrivateKeyPem(this.config.privateKey);
-    } else if (isProduction) {
-      // In production, never fall back to local filesystem .pem file
-      throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE: Production requires GITHUB_APP_PRIVATE_KEY environment variable.');
-    } else if (this.config.privateKeyPath) {
-      try {
-        privateKeyPem = await fs.readFile(this.config.privateKeyPath, 'utf8');
-      } catch {
-        throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
-      }
-    } else {
-      throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
-    }
-
-    const jwt = this.createAppJwt(this.config.appId, privateKeyPem);
-    const url = `https://api.github.com/app/installations/${encodeURIComponent(installationId)}/access_tokens`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          Accept: 'application/vnd.github+json',
-          'User-Agent': 'APIProof-App',
-        },
-      });
-      if (!response.ok) {
-        throw new Error('GITHUB_AUTHENTICATION_FAILED');
-      }
-      const data = (await response.json()) as { token?: string; expires_at?: string };
-      if (!data.token) throw new Error('GITHUB_AUTHENTICATION_FAILED');
-
-      const expiresAtMs = data.expires_at ? new Date(data.expires_at).getTime() : now + 3600000;
-      this.cachedToken = { token: data.token, expiresAtMs };
-      return data.token;
-    } catch (error) {
-      if (String(error).includes('GITHUB_PRIVATE_KEY_UNREADABLE') || String(error).includes('GITHUB_REPOSITORY_NOT_APPROVED')) {
-        throw error;
-      }
-      throw new Error('GITHUB_AUTHENTICATION_FAILED', { cause: error });
-    }
+  constructor(
+    private readonly config: GitHubAppConfig | {
+      appId: string;
+      privateKey?: string | undefined;
+      privateKeyPath?: string | undefined;
+      installationId?: string | undefined;
+      repositoryId?: string | undefined;
+      owner?: string | undefined;
+      repository?: string | undefined;
+    },
+    options?: { allowAnyRepository?: boolean }
+  ) {
+    this.allowAnyRepository = options?.allowAnyRepository ?? false;
   }
 
-  private createAppJwt(appId: string, privateKeyPem: string): string {
+  createAppJwt(overrideAppId?: string, overridePrivateKeyPem?: string): string {
+    const appId = overrideAppId ?? this.config.appId;
+    let privateKeyPem = overridePrivateKeyPem;
+
+    if (!privateKeyPem) {
+      const isProduction = process.env.NODE_ENV === 'production';
+      if (this.config.privateKey) {
+        privateKeyPem = normalizePrivateKeyPem(this.config.privateKey);
+      } else if (isProduction) {
+        throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE: Production requires GITHUB_APP_PRIVATE_KEY environment variable.');
+      } else if (this.config.privateKeyPath) {
+        // Fallback for non-production environments with key path
+        throw new Error('GITHUB_PRIVATE_KEY_ASYNC_REQUIRED');
+      } else {
+        throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
+      }
+    }
+
+    return NodeGitHubAppTokenProvider.signAppJwt(appId, privateKeyPem);
+  }
+
+  static signAppJwt(appId: string, privateKeyPem: string): string {
     const nowSec = Math.floor(Date.now() / 1000);
     const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
     const payload = base64url(JSON.stringify({
@@ -98,6 +93,232 @@ export class NodeGitHubAppTokenProvider implements InstallationTokenProvider {
       throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
     }
   }
+
+  private async resolvePrivateKey(): Promise<string> {
+    const isProduction = process.env.NODE_ENV === 'production';
+    if (this.config.privateKey) {
+      return normalizePrivateKeyPem(this.config.privateKey);
+    }
+    if (isProduction) {
+      throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE: Production requires GITHUB_APP_PRIVATE_KEY environment variable.');
+    }
+    if (this.config.privateKeyPath) {
+      try {
+        return await fs.readFile(this.config.privateKeyPath, 'utf8');
+      } catch {
+        throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
+      }
+    }
+    throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
+  }
+
+  async getInstallationToken(installationId: string, customFetch?: typeof fetch): Promise<string> {
+    const now = Date.now();
+    const cached = this.cachedTokens.get(installationId);
+    if (cached && cached.expiresAtMs > now + 60000) {
+      return cached.token;
+    }
+
+    const privateKeyPem = await this.resolvePrivateKey();
+    const jwt = NodeGitHubAppTokenProvider.signAppJwt(this.config.appId, privateKeyPem);
+    const url = `https://api.github.com/app/installations/${encodeURIComponent(installationId)}/access_tokens`;
+    const fetchImpl = customFetch ?? fetch;
+
+    try {
+      const response = await fetchImpl(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          Accept: 'application/vnd.github+json',
+          'User-Agent': 'APIProof-App',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('GITHUB_AUTHENTICATION_FAILED');
+      }
+      const data = (await response.json()) as { token?: string; expires_at?: string };
+      if (!data.token) throw new Error('GITHUB_AUTHENTICATION_FAILED');
+
+      const expiresAtMs = data.expires_at ? new Date(data.expires_at).getTime() : now + 3600000;
+      this.cachedTokens.set(installationId, { token: data.token, expiresAtMs });
+      return data.token;
+    } catch (error) {
+      if (String(error).includes('GITHUB_PRIVATE_KEY_UNREADABLE') || String(error).includes('GITHUB_REPOSITORY_NOT_APPROVED')) {
+        throw error;
+      }
+      throw new Error('GITHUB_AUTHENTICATION_FAILED', { cause: error });
+    }
+  }
+
+  async getToken(installationId: string, repositoryId?: string, customFetch?: typeof fetch): Promise<string> {
+    // If repositoryId is specified and allowAnyRepository is not active, enforce approved check (backwards compatibility)
+    if (repositoryId && !this.allowAnyRepository) {
+      const isApprovedRepo = APPROVED_OBSERVE_REPOSITORY_IDS.has(repositoryId) ||
+        (this.config.repositoryId !== undefined && repositoryId === this.config.repositoryId);
+      if (this.config.installationId && installationId !== this.config.installationId) {
+        throw new Error('GITHUB_REPOSITORY_NOT_APPROVED');
+      }
+      if (!isApprovedRepo) {
+        throw new Error('GITHUB_REPOSITORY_NOT_APPROVED');
+      }
+    }
+
+    return this.getInstallationToken(installationId, customFetch);
+  }
+}
+
+export async function getAppInstallationMetadata(
+  appId: string,
+  privateKeyPem: string,
+  installationId: string,
+  customFetch?: typeof fetch
+): Promise<GitHubInstallationMetadata> {
+  const jwt = NodeGitHubAppTokenProvider.signAppJwt(appId, normalizePrivateKeyPem(privateKeyPem));
+  const url = `https://api.github.com/app/installations/${encodeURIComponent(installationId)}`;
+  const fetchImpl = customFetch ?? fetch;
+
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'APIProof-App',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('GITHUB_INSTALLATION_NOT_FOUND');
+  }
+
+  const data = (await response.json()) as {
+    id: number | string;
+    app_id: number | string;
+    account?: { login?: string; type?: string };
+    target_type?: string;
+  };
+
+  if (String(data.app_id) !== String(appId)) {
+    throw new Error('GITHUB_INSTALLATION_APP_MISMATCH');
+  }
+
+  return {
+    id: String(data.id),
+    appId: String(data.app_id),
+    accountLogin: String(data.account?.login ?? ''),
+    accountType: String(data.account?.type ?? 'User'),
+    targetType: data.target_type ? String(data.target_type) : undefined,
+  };
+}
+
+export async function listInstallationRepositories(
+  installationToken: string,
+  options: { page?: number; perPage?: number } = {},
+  customFetch?: typeof fetch
+): Promise<{ repositories: GitHubRepoItem[]; totalCount: number }> {
+  const page = options.page ?? 1;
+  const perPage = options.perPage ?? 100;
+  const url = `https://api.github.com/installation/repositories?page=${page}&per_page=${perPage}`;
+  const fetchImpl = customFetch ?? fetch;
+
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${installationToken}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'APIProof-App',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('GITHUB_AUTHENTICATION_FAILED');
+  }
+
+  const data = (await response.json()) as {
+    total_count?: number;
+    repositories?: Array<{
+      id: number | string;
+      name: string;
+      full_name: string;
+      owner?: { login?: string };
+      private: boolean;
+      default_branch: string;
+    }>;
+  };
+
+  const totalCount = Number(data.total_count ?? 0);
+  const repositories: GitHubRepoItem[] = (data.repositories ?? []).map((repo) => ({
+    id: String(repo.id),
+    name: String(repo.name),
+    fullName: String(repo.full_name),
+    owner: String(repo.owner?.login ?? ''),
+    private: Boolean(repo.private),
+    defaultBranch: String(repo.default_branch ?? 'main'),
+  }));
+
+  return { repositories, totalCount };
+}
+
+export async function fetchAllInstallationRepositories(
+  installationToken: string,
+  customFetch?: typeof fetch
+): Promise<GitHubRepoItem[]> {
+  const allRepos: GitHubRepoItem[] = [];
+  let page = 1;
+  const perPage = 100;
+
+  while (true) {
+    const { repositories, totalCount } = await listInstallationRepositories(
+      installationToken,
+      { page, perPage },
+      customFetch
+    );
+    if (repositories.length === 0) break;
+    allRepos.push(...repositories);
+    if (allRepos.length >= totalCount || repositories.length < perPage) break;
+    page++;
+  }
+
+  return allRepos;
+}
+
+export async function getInstallationRepository(
+  installationToken: string,
+  repositoryId: string,
+  customFetch?: typeof fetch
+): Promise<GitHubRepoItem> {
+  const url = `https://api.github.com/repositories/${encodeURIComponent(repositoryId)}`;
+  const fetchImpl = customFetch ?? fetch;
+
+  const response = await fetchImpl(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${installationToken}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'APIProof-App',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('GITHUB_REPOSITORY_NOT_FOUND_IN_INSTALLATION');
+  }
+
+  const data = (await response.json()) as {
+    id: number | string;
+    name: string;
+    full_name: string;
+    owner?: { login?: string };
+    private: boolean;
+    default_branch: string;
+  };
+
+  return {
+    id: String(data.id),
+    name: String(data.name),
+    fullName: String(data.full_name),
+    owner: String(data.owner?.login ?? ''),
+    private: Boolean(data.private),
+    defaultBranch: String(data.default_branch ?? 'main'),
+  };
 }
 
 export class FetchGitHubReadTransport implements GitHubReadTransport {

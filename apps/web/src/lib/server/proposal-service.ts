@@ -12,7 +12,7 @@ import {
   type GitHubControlledWriteTransport,
 } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
-import { requireMigrationAccess } from './workspace-service.js';
+import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -152,8 +152,24 @@ export async function createGitHubProposal(migrationId: string, userId: string):
   if (isLiveWrite) {
     const config = loadGitHubAppConfig();
     assertLiveConfig(config);
-    const tokenProvider = new NodeGitHubAppTokenProvider(config);
-    transport = new FetchGitHubControlledWriteTransport(config, tokenProvider);
+    const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
+
+    const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
+    if (!installation) {
+      throw new Error('WORKSPACE_GITHUB_NOT_CONNECTED: Cannot create live pull request without connected workspace GitHub installation.');
+    }
+
+    const writeConfig = {
+      ...config,
+      installationId: installation.installationId,
+      repositoryId: repo.github_repository_id,
+      owner: repo.owner,
+      repository: repo.name,
+    };
+
+    transport = new FetchGitHubControlledWriteTransport(writeConfig, tokenProvider, undefined, undefined, {
+      workspaceAuthorized: true,
+    });
   } else {
     transport = new FakeGitHubWriteTransport(
       migration.repo_owner,

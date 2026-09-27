@@ -42,3 +42,24 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     scans,
   });
 }
+
+export async function DELETE(req: Request, props: { params: Promise<{ id: string }> }) {
+  const { id } = await props.params;
+  const user = await getCurrentUser(req);
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  }
+
+  let repo;
+  try {
+    const access = await requireRepositoryAccess(id, user.id);
+    repo = access.repository;
+  } catch {
+    return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
+  }
+
+  const db = getDatabase();
+  await db.execute('DELETE FROM repositories WHERE id = ?', [repo.id]);
+
+  return NextResponse.json({ success: true, id: repo.id });
+}

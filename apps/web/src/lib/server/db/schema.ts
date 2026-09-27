@@ -34,6 +34,15 @@ CREATE TABLE IF NOT EXISTS github_installations (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS github_installation_states (
+  state TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  expires_at BIGINT NOT NULL,
+  consumed_at BIGINT,
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -146,6 +155,7 @@ CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installations(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_installation_states_user ON github_installation_states(user_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
 CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
@@ -193,6 +203,17 @@ CREATE TABLE IF NOT EXISTS github_installations (
   account_type TEXT NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS github_installation_states (
+  state TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  workspace_id TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  consumed_at INTEGER,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
 );
 
@@ -320,6 +341,7 @@ CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user ON workspace_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace ON workspace_members(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installations(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_installation_states_user ON github_installation_states(user_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
 CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);

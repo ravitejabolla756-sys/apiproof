@@ -1,11 +1,20 @@
+import crypto from 'node:crypto';
 import {
   loadGitHubAppConfig,
   assertLiveConfig,
   NodeGitHubAppTokenProvider,
   FetchGitHubReadTransport,
   GitHubAppSourceControlProvider,
+  getAppInstallationMetadata,
+  fetchAllInstallationRepositories,
+  getInstallationRepository,
+  getVerifierSecret,
+  type GitHubRepoItem,
+  type GitHubInstallationMetadata,
 } from '@apiproof/core';
 import { EXCLUDED_DIRECTORIES } from '@apiproof/shared';
+import { getDatabase } from './db/index.js';
+import { getWorkspaceGitHubInstallation, type GitHubInstallationRecord } from './workspace-service.js';
 
 export interface GitHubRepoSummary {
   id: string;
@@ -13,7 +22,189 @@ export interface GitHubRepoSummary {
   owner: string;
   fullName: string;
   defaultBranch: string;
-  sha: string;
+  sha?: string;
+  private?: boolean;
+}
+
+export function getGitHubAppConfig() {
+  return loadGitHubAppConfig();
+}
+
+/**
+ * Generates the official GitHub App installation URL with a cryptographically bound single-use state token.
+ */
+export async function getGitHubAppInstallUrl(userId: string, workspaceId: string): Promise<string> {
+  const config = loadGitHubAppConfig();
+  const slug = config.appSlug || process.env.GITHUB_APP_SLUG || 'apiproof';
+  const state = await createGitHubInstallationState(userId, workspaceId);
+  return `https://github.com/apps/${encodeURIComponent(slug)}/installations/new?state=${encodeURIComponent(state)}`;
+}
+
+/**
+ * Creates a cryptographically random, signed, single-use state token bound to an authenticated user and workspace.
+ */
+export async function createGitHubInstallationState(userId: string, workspaceId: string): Promise<string> {
+  const nonce = crypto.randomBytes(24).toString('hex');
+  const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes TTL
+  const payload = `${userId}:${workspaceId}:${expiresAt}:${nonce}`;
+  const hmac = crypto.createHmac('sha256', getVerifierSecret()).update(payload).digest('hex');
+  const state = `${Buffer.from(payload).toString('base64url')}.${hmac}`;
+
+  const db = getDatabase();
+  const now = new Date().toISOString();
+  await db.execute(`
+    INSERT INTO github_installation_states (state, user_id, workspace_id, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?)
+  `, [state, userId, workspaceId, expiresAt, now]);
+
+  return state;
+}
+
+/**
+ * Verifies and atomically consumes a single-use installation callback state.
+ */
+export async function verifyAndConsumeGitHubInstallationState(
+  state: string,
+  userId: string
+): Promise<{ valid: boolean; workspaceId?: string; error?: string; errorCode?: string }> {
+  if (!state || typeof state !== 'string' || !state.includes('.')) {
+    return { valid: false, error: 'Invalid callback state format.', errorCode: 'INVALID_STATE' };
+  }
+
+  const [encodedPayload, providedHmac] = state.split('.');
+  if (!encodedPayload || !providedHmac) {
+    return { valid: false, error: 'Malformed callback state.', errorCode: 'INVALID_STATE' };
+  }
+
+  let payload: string;
+  try {
+    payload = Buffer.from(encodedPayload, 'base64url').toString('utf8');
+  } catch {
+    return { valid: false, error: 'Malformed callback state payload.', errorCode: 'INVALID_STATE' };
+  }
+
+  const expectedHmac = crypto.createHmac('sha256', getVerifierSecret()).update(payload).digest('hex');
+  const providedBuffer = Buffer.from(providedHmac);
+  const expectedBuffer = Buffer.from(expectedHmac);
+
+  if (providedBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(providedBuffer, expectedBuffer)) {
+    return { valid: false, error: 'Callback state signature verification failed.', errorCode: 'INVALID_STATE' };
+  }
+
+  const db = getDatabase();
+  const row = await db.queryOne<{
+    state: string;
+    user_id: string;
+    workspace_id: string;
+    expires_at: number;
+    consumed_at: number | null;
+  }>(`
+    SELECT state, user_id, workspace_id, expires_at, consumed_at
+    FROM github_installation_states
+    WHERE state = ?
+  `, [state]);
+
+  if (!row) {
+    return { valid: false, error: 'Callback state not recognized or expired.', errorCode: 'INVALID_STATE' };
+  }
+
+  if (row.consumed_at !== null && row.consumed_at !== undefined) {
+    return { valid: false, error: 'Callback state has already been used.', errorCode: 'REUSED_STATE' };
+  }
+
+  if (Number(row.expires_at) < Date.now()) {
+    return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
+  }
+
+  if (row.user_id !== userId) {
+    return { valid: false, error: 'Callback state does not belong to the authenticated user.', errorCode: 'STATE_USER_MISMATCH' };
+  }
+
+  // Atomically mark as consumed
+  await db.execute(`
+    UPDATE github_installation_states
+    SET consumed_at = ?
+    WHERE state = ?
+  `, [Date.now(), state]);
+
+  return { valid: true, workspaceId: row.workspace_id };
+}
+
+/**
+ * Verifies that a GitHub installation belongs to this APIProof GitHub App.
+ */
+export async function verifyGitHubAppInstallation(
+  installationId: string,
+  customFetch?: typeof fetch
+): Promise<GitHubInstallationMetadata> {
+  const config = loadGitHubAppConfig();
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (!config.appId) {
+    throw new Error('GITHUB_CONFIG_MISSING_APP_ID');
+  }
+
+  let privateKeyPem: string;
+  if (config.privateKey) {
+    privateKeyPem = config.privateKey;
+  } else if (isProduction) {
+    throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE: Production requires GITHUB_APP_PRIVATE_KEY.');
+  } else if (config.privateKeyPath) {
+    const fs = await import('node:fs/promises');
+    privateKeyPem = await fs.readFile(config.privateKeyPath, 'utf8');
+  } else {
+    throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
+  }
+
+  return await getAppInstallationMetadata(config.appId, privateKeyPem, installationId, customFetch);
+}
+
+/**
+ * Fetches all repositories accessible to a workspace's connected GitHub App installation.
+ */
+export async function fetchWorkspaceRepositories(
+  workspaceId: string,
+  customFetch?: typeof fetch
+): Promise<{
+  connected: boolean;
+  installation?: GitHubInstallationRecord;
+  repositories: GitHubRepoItem[];
+}> {
+  const installation = await getWorkspaceGitHubInstallation(workspaceId);
+  if (!installation) {
+    return { connected: false, repositories: [] };
+  }
+
+  const config = loadGitHubAppConfig();
+  const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
+  const token = await tokenProvider.getInstallationToken(installation.installationId, customFetch);
+  const repositories = await fetchAllInstallationRepositories(token, customFetch);
+
+  return {
+    connected: true,
+    installation,
+    repositories,
+  };
+}
+
+/**
+ * Fetches a single repository accessible to a workspace's connected GitHub App installation.
+ */
+export async function fetchWorkspaceRepository(
+  workspaceId: string,
+  repositoryId: string,
+  customFetch?: typeof fetch
+): Promise<GitHubRepoItem> {
+  const installation = await getWorkspaceGitHubInstallation(workspaceId);
+  if (!installation) {
+    throw new Error('NO_GITHUB_INSTALLATION_CONNECTED');
+  }
+
+  const config = loadGitHubAppConfig();
+  const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
+  const token = await tokenProvider.getInstallationToken(installation.installationId, customFetch);
+
+  return await getInstallationRepository(token, repositoryId, customFetch);
 }
 
 export function getGitHubProvider(): GitHubAppSourceControlProvider | null {

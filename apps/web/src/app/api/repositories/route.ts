@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
-import { getAccessibleRepositoryInfo } from '@/lib/server/github';
+import { getDatabase, type DatabaseAdapter } from '@/lib/server/db';
+import { getAccessibleRepositoryInfo, fetchWorkspaceRepository } from '@/lib/server/github';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import {
   getDefaultWorkspaceForUser,
   requireWorkspaceMember,
+  getWorkspaceGitHubInstallation,
 } from '@/lib/server/workspace-service';
 import {
   assertCsrfProtection,
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const body = (await req.json()) as Record<string, unknown>;
     const validation = validateRepositoryConnectInput(body);
     if (!validation.valid || !validation.data) {
       return badRequestResponse(validation.error || 'Invalid repository connection payload.');
@@ -76,10 +77,48 @@ export async function POST(req: Request) {
       workspaceId = defaultWs.id;
     }
 
-    const { owner, name, defaultBranch, githubRepositoryId } = validation.data;
-    const fullName = `${owner}/${name}`;
+    let owner: string;
+    let name: string;
+    let fullName: string;
+    let defaultBranch: string;
+    let ghId: string;
+
+    if (validation.data.githubRepositoryId) {
+      // 1. Verify workspace has a connected GitHub installation
+      const installation = await getWorkspaceGitHubInstallation(workspaceId);
+      if (!installation) {
+        return NextResponse.json({
+          error: 'Workspace does not have a connected GitHub App installation. Please connect GitHub first.',
+          code: 'NO_GITHUB_INSTALLATION',
+        }, { status: 400 });
+      }
+
+      // 2. Fetch authoritative repository metadata from GitHub using workspace installation token
+      try {
+        const repoMeta = await fetchWorkspaceRepository(workspaceId, validation.data.githubRepositoryId);
+        owner = repoMeta.owner;
+        name = repoMeta.name;
+        fullName = repoMeta.fullName;
+        defaultBranch = repoMeta.defaultBranch;
+        ghId = repoMeta.id;
+      } catch {
+        return NextResponse.json({
+          error: 'Repository not found or not accessible to this workspace GitHub installation.',
+          code: 'REPOSITORY_NOT_FOUND',
+        }, { status: 404 });
+      }
+    } else if (validation.data.owner && validation.data.name) {
+      // Legacy fixture path
+      owner = validation.data.owner;
+      name = validation.data.name;
+      fullName = `${owner}/${name}`;
+      defaultBranch = validation.data.defaultBranch || 'main';
+      ghId = crypto.randomInt(1000000, 9999999).toString();
+    } else {
+      return badRequestResponse('Repository githubRepositoryId or owner/name required.');
+    }
+
     const repoId = `repo_${crypto.randomBytes(10).toString('hex')}`;
-    const ghId = githubRepositoryId || crypto.randomInt(1000000, 9999999).toString();
     const now = new Date().toISOString();
 
     const db = getDatabase();
@@ -97,7 +136,7 @@ export async function POST(req: Request) {
     }
 
     // Atomic transaction for repository and activity event creation
-    await db.transaction(async (tx) => {
+    await db.transaction(async (tx: DatabaseAdapter) => {
       await tx.execute(`
         INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', ?)

@@ -65,9 +65,9 @@ export function validateLoginInput(body: unknown): ValidationResult<{ email: str
 }
 
 export function validateRepositoryConnectInput(body: unknown): ValidationResult<{
-  owner: string;
-  name: string;
-  defaultBranch: string;
+  owner?: string;
+  name?: string;
+  defaultBranch?: string;
   githubRepositoryId?: string;
 }> {
   if (!body || typeof body !== 'object') {
@@ -75,6 +75,35 @@ export function validateRepositoryConnectInput(body: unknown): ValidationResult<
   }
   const { owner, name, defaultBranch, githubRepositoryId } = body as Record<string, unknown>;
 
+  const gitHubId = typeof githubRepositoryId === 'string' || typeof githubRepositoryId === 'number'
+    ? String(githubRepositoryId).trim()
+    : undefined;
+
+  // Modern Phase 3A: githubRepositoryId alone is sufficient
+  if (gitHubId !== undefined) {
+    if (!/^\d+$/.test(gitHubId)) {
+      return { valid: false, error: 'Invalid githubRepositoryId format.' };
+    }
+    const data: {
+      owner?: string;
+      name?: string;
+      defaultBranch?: string;
+      githubRepositoryId: string;
+    } = { githubRepositoryId: gitHubId };
+
+    if (typeof owner === 'string' && GITHUB_NAME_REGEX.test(owner.trim())) {
+      data.owner = owner.trim();
+    }
+    if (typeof name === 'string' && GITHUB_NAME_REGEX.test(name.trim())) {
+      data.name = name.trim();
+    }
+    if (typeof defaultBranch === 'string' && GIT_BRANCH_REGEX.test(defaultBranch.trim())) {
+      data.defaultBranch = defaultBranch.trim();
+    }
+    return { valid: true, data };
+  }
+
+  // Legacy fallback: owner and name are required
   if (typeof owner !== 'string' || !GITHUB_NAME_REGEX.test(owner.trim())) {
     return { valid: false, error: 'Invalid repository owner/organization name.' };
   }
@@ -91,28 +120,13 @@ export function validateRepositoryConnectInput(body: unknown): ValidationResult<
     return { valid: false, error: 'Invalid default branch format.' };
   }
 
-  const data: {
-    owner: string;
-    name: string;
-    defaultBranch: string;
-    githubRepositoryId?: string;
-  } = {
-    owner: owner.trim(),
-    name: name.trim(),
-    defaultBranch: branch,
-  };
-
-  const gitHubId = typeof githubRepositoryId === 'string' || typeof githubRepositoryId === 'number'
-    ? String(githubRepositoryId).trim()
-    : undefined;
-
-  if (gitHubId !== undefined) {
-    data.githubRepositoryId = gitHubId;
-  }
-
   return {
     valid: true,
-    data,
+    data: {
+      owner: owner.trim(),
+      name: name.trim(),
+      defaultBranch: branch,
+    },
   };
 }
 
