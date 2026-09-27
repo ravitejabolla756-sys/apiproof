@@ -569,10 +569,12 @@ export async function createSub(customerId: string, priceId: string, couponId: s
     const origSecret = process.env.CRON_SECRET;
 
     try {
+      type WorkerReq = Parameters<typeof workerPostHandler>[0];
+
       // 1. Unset CRON_SECRET → always 401
       delete process.env.CRON_SECRET;
       const reqNoSecret = new Request('http://localhost/api/internal/scan-worker', { method: 'POST' });
-      const resNoSecret = await workerPostHandler(reqNoSecret as any);
+      const resNoSecret = await workerPostHandler(reqNoSecret as unknown as WorkerReq);
       expect(resNoSecret.status).toBe(401);
 
       // 2. Set CRON_SECRET
@@ -580,7 +582,7 @@ export async function createSub(customerId: string, priceId: string, couponId: s
 
       // 3. No Authorization header → 401
       const reqNoAuth = new Request('http://localhost/api/internal/scan-worker', { method: 'POST' });
-      const resNoAuth = await workerPostHandler(reqNoAuth as any);
+      const resNoAuth = await workerPostHandler(reqNoAuth as unknown as WorkerReq);
       expect(resNoAuth.status).toBe(401);
 
       // 4. Invalid Authorization header → 401
@@ -588,7 +590,7 @@ export async function createSub(customerId: string, priceId: string, couponId: s
         method: 'POST',
         headers: { authorization: 'Bearer wrong-secret' },
       });
-      const resWrongAuth = await workerPostHandler(reqWrongAuth as any);
+      const resWrongAuth = await workerPostHandler(reqWrongAuth as unknown as WorkerReq);
       expect(resWrongAuth.status).toBe(401);
 
       // 5. Valid Authorization header → 200
@@ -596,7 +598,7 @@ export async function createSub(customerId: string, priceId: string, couponId: s
         method: 'POST',
         headers: { authorization: 'Bearer super-secret-cron-token-12345' },
       });
-      const resValidAuth = await workerPostHandler(reqValidAuth as any);
+      const resValidAuth = await workerPostHandler(reqValidAuth as unknown as WorkerReq);
       expect(resValidAuth.status).toBe(200);
 
       // 6. GET request → 405 Method Not Allowed

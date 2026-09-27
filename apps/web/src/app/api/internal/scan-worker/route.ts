@@ -15,7 +15,7 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { processPendingGitHubScans } from '../../../../lib/server/scan-worker.js';
+import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
 
 // ---------------------------------------------------------------------------
 // Authorization helper
@@ -67,17 +67,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   let batchSize: number | undefined;
   let timeoutMs: number | undefined;
+  let metricsOnly = false;
 
   try {
-    const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown };
+    const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown };
     if (typeof body.batchSize === 'number') batchSize = body.batchSize;
     if (typeof body.timeoutMs === 'number') timeoutMs = body.timeoutMs;
+    if (typeof body.metricsOnly === 'boolean') metricsOnly = body.metricsOnly;
   } catch {
     // No body or invalid JSON — use defaults
   }
 
   try {
+    if (metricsOnly) {
+      const metrics = await getScanWorkerMetrics();
+      return NextResponse.json({ ok: true, metrics });
+    }
+
     const result = await processPendingGitHubScans({ batchSize, timeoutMs });
+    const metrics = await getScanWorkerMetrics();
 
     return NextResponse.json({
       ok: true,
@@ -86,6 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       jobsFailed: result.jobsFailed,
       jobsSkipped: result.jobsSkipped,
       timedOut: result.timedOut,
+      metrics,
       results: result.results,
     });
   } catch (error) {
