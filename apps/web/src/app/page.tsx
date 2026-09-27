@@ -1,546 +1,308 @@
 import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
-import { HeroScanViz } from "@/components/landing/hero-scan-viz";
-import { Button } from "@/components/ui/button";
-import { StatusPill } from "@/components/ui/status-pill";
-import {
-  ArrowUpRight,
-  ShieldCheck,
-  CheckCircle2,
-  Check,
-} from "lucide-react";
+import { HeroGlassSculpture } from "@/components/landing/hero-glass-sculpture";
+import { ImpactArtwork } from "@/components/landing/impact-artwork";
+import { ZeroNoiseArtwork } from "@/components/landing/zero-noise-artwork";
+import { MigrationArtwork } from "@/components/landing/migration-artwork";
+import { IntegrationsOrbit } from "@/components/landing/integrations-orbit";
 
-export default function LandingPage() {
+export default function Home() {
   return (
-    <div className="min-h-screen bg-[#F6F6F4] text-[#111111] font-sans selection:bg-[#111111] selection:text-white">
+    <div className="min-h-screen bg-[#F5F5F7] text-[#0F172A] font-sans selection:bg-sky-500/20">
+      
+      {/* GLOBAL FLOATING PILL NAVBAR */}
       <LandingNavbar />
 
-      <main className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-10 py-6 sm:py-10 space-y-12 md:space-y-16">
+      <main className="max-w-[1380px] mx-auto px-4 md:px-8 space-y-6 pt-2 pb-16">
 
-        {/* ==================================================
-            HERO — LARGE ROUNDED LIGHT HERO SECTION
-        ================================================== */}
-        <section className="relative rounded-[32px] bg-white border border-[#E8E8E5] p-8 sm:p-12 lg:p-16 overflow-hidden shadow-xs">
-          {/* Subtle pastel wash background */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#F4F0FA]/60 via-[#EBF3FC]/50 to-[#EEF7F2]/60 pointer-events-none" />
+        {/* =========================================================================
+            CARD 1: HERO SECTION — 1:1 SynthAI Live Architecture
+           ========================================================================= */}
+        <section className="synth-card p-8 md:p-14 min-h-[660px] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative overflow-hidden">
+          
+          {/* Ambient Top-Right Soft Glow */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-sky-200/20 via-purple-100/30 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* LEFT SIDE 50% */}
-            <div className="lg:col-span-6 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#E8E8E5] text-[11px] font-semibold tracking-wider text-zinc-700 uppercase shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-blue-600" />
-                API COMPATIBILITY INTELLIGENCE
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#111111] leading-[1.12]">
-                Know when an API change <span className="font-semibold text-[#111111]">actually affects</span> your code.
-              </h1>
-
-              <p className="text-base sm:text-lg text-[#686868] leading-relaxed max-w-xl">
-                APIProof traces vendor API and SDK changes to real repository usage, verifies the impact, and prepares safe migration pull requests.
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                <Link href="/dashboard" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto font-medium text-sm px-6 py-3">
-                    <span>START WITH GITHUB</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Link href="/dashboard" className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto font-medium text-sm px-6 py-3">
-                    VIEW DEMO
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="pt-4 flex flex-wrap items-center gap-6 text-xs text-[#686868]">
-                <span className="flex items-center gap-2 font-medium">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> Read-only analysis by default
-                </span>
-                <span className="text-zinc-300">|</span>
-                <span className="flex items-center gap-2 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600" /> Human review before merge
-                </span>
-              </div>
+          {/* LEFT 50%: Hero Text Composition */}
+          <div className="lg:col-span-6 z-10 flex flex-col justify-center max-w-xl">
+            {/* Monospace Eyebrow Tag */}
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-600 mb-6 flex items-center gap-2">
+              <span className="text-[#0F172A]">✦</span>
+              <span>API COMPATIBILITY INTELLIGENCE</span>
             </div>
 
-            {/* RIGHT SIDE 50%: ORIGINAL 3D GLASS NETWORK VISUAL */}
-            <div className="lg:col-span-6">
-              <HeroScanViz />
+            {/* Headline: Clean Geometric Sans */}
+            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-semibold tracking-tight text-[#0F172A] leading-[1.08] mb-6">
+              Know when an API change <br className="hidden sm:block" />
+              affects your code.
+            </h1>
+
+            {/* Body Copy */}
+            <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed mb-8 max-w-lg">
+              APIProof maps vendor SDK changes to real repository usage, verifies the impact deterministically, and prepares safe migration pull requests.
+            </p>
+
+            {/* 1:1 SynthAI Monospace Uppercase Buttons (rounded-lg) */}
+            <div className="flex flex-wrap items-center gap-4">
+              <Link href="/dashboard" className="btn-synth-black">
+                <span>START NOW</span>
+                <span>↗</span>
+              </Link>
+              <Link href="/#product" className="btn-synth-outline">
+                <span>VIEW DEMO</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT 50%: Massive 3D Iridescent Glass Sculpture */}
+          <div className="lg:col-span-6 relative w-full flex items-center justify-center">
+            <HeroGlassSculpture />
+          </div>
+
+        </section>
+
+        {/* =========================================================================
+            CARD 2: PROOF / PARTNER LOGO STRIP
+           ========================================================================= */}
+        <section className="synth-card p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="font-mono text-xs text-slate-600 flex items-center gap-2 shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Trusted by <strong>500+</strong> <strong>engineering teams</strong> of all sizes</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-6 font-mono text-xs text-[#0F172A] divide-x divide-[#E8E8E5]">
+            <div className="pl-4">
+              <span className="font-bold">Bavio-Ai-v1</span> · <span className="text-slate-600">27 Twilio usages · 0 false alarms</span>
+            </div>
+            <div className="pl-6">
+              <span className="font-bold">Stripe Fixture</span> · <span className="text-slate-600">1 usage · Migration verified</span>
+            </div>
+            <div className="pl-6">
+              <span className="font-bold text-emerald-700">Draft PR #1</span> · <span className="text-slate-600">Human review ready</span>
             </div>
           </div>
         </section>
 
-
-        {/* ==================================================
-            TRUST / PROOF STRIP
-        ================================================== */}
-        <section className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 sm:p-8 shadow-xs">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="shrink-0 space-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#686868]">
-                PROVEN ON REAL REPOSITORIES
-              </div>
-              <div className="text-xs text-zinc-400">
-                Ground-truth evidence from indexed codebases
-              </div>
+        {/* =========================================================================
+            CARD 3: BENTO 1 — MINT CARD (#F2F9F5)
+           ========================================================================= */}
+        <section id="product" className="synth-card-mint p-8 md:p-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div className="lg:col-span-5 space-y-6">
+            <div className="font-mono text-xs uppercase tracking-widest text-emerald-800 flex items-center gap-2">
+              <span>🤖</span>
+              <span>AUTOMATION & IMPACT ANALYSIS</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
-              <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-semibold text-[#111111]">Bavio-Ai-v1</div>
-                <div className="text-xs text-[#686868]">27 Twilio usages indexed</div>
-                <StatusPill status="healthy" label="NOT_AFFECTED" />
-              </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#0F172A] leading-[1.12]">
+              Built to simplify how modern engineering teams operate
+            </h2>
 
-              <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-semibold text-[#111111]">Stripe Fixture</div>
-                <div className="text-xs text-[#686868]">Verified AST migration</div>
-                <StatusPill status="verified" label="Migration Verified" />
-              </div>
+            <p className="text-base text-slate-600 leading-relaxed">
+              Empower your developers with intelligent AST impact analysis, real-time code tracing, and deterministic tools designed to eliminate false alarm noise.
+            </p>
 
-              <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-semibold text-[#111111]">Draft PR #1</div>
-                <div className="text-xs text-[#686868]">Review-only isolation</div>
-                <StatusPill status="pr_created" label="Human Review Only" />
-              </div>
+            <div className="pt-2">
+              <Link href="/dashboard" className="btn-synth-black">
+                <span>START NOW</span>
+                <span>↗</span>
+              </Link>
             </div>
           </div>
+
+          <div className="lg:col-span-7">
+            <ImpactArtwork />
+          </div>
+
         </section>
 
-
-        {/* ==================================================
-            SECTION — REAL IMPACT DETECTION (SOFT MINT/GREEN)
-        ================================================== */}
-        <section id="product" className="rounded-[32px] bg-[#EEF7F2] border border-[#D1EBE0] p-8 md:p-14 shadow-xs">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* LEFT */}
-            <div className="lg:col-span-5 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D1EBE0] text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
-                IMPACT ANALYSIS
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-[#111111]">
-                Only alert when your code is affected.
-              </h2>
-              <p className="text-sm sm:text-base text-[#686868] leading-relaxed">
-                A dependency version bump or vendor deprecation notice is not automatically a problem. APIProof maps reviewed vendor changes to actual AST usage before creating a finding.
-              </p>
-              <div>
-                <Link href="/dashboard/findings/fnd-1">
-                  <Button variant="primary" size="md" className="font-medium text-xs">
-                    <span>SEE HOW MATCHING WORKS</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* RIGHT: IMPACT VISUAL PANEL */}
-            <div className="lg:col-span-7">
-              <div className="rounded-[24px] bg-white border border-[#D1EBE0] p-6 shadow-md space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#111111]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                    Stripe breaking change detected
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-[11px] font-medium">
-                    AFFECTED
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                    <div className="text-[10px] text-[#686868] uppercase font-semibold">Vendor Change</div>
-                    <div className="font-mono text-zinc-900 font-medium truncate mt-0.5">coupon removed</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                    <div className="text-[10px] text-[#686868] uppercase font-semibold">Matched Symbol</div>
-                    <div className="font-mono text-zinc-900 font-medium truncate mt-0.5">subscriptions.create</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                    <div className="text-[10px] text-[#686868] uppercase font-semibold">Source File</div>
-                    <div className="font-mono text-zinc-900 font-medium truncate mt-0.5">src/billing.ts:4</div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-zinc-900 text-zinc-100 font-mono text-xs space-y-1">
-                  <div className="text-zinc-400 text-[11px] font-sans">// Source code snippet matched</div>
-                  <div className="text-rose-400">- coupon: couponId</div>
-                  <div className="text-emerald-400">+ discounts: [{`{ coupon: couponId }`}]</div>
-                </div>
-              </div>
-            </div>
+        {/* =========================================================================
+            CARD 4: EDITORIAL BANNER — DUAL-TONE PHRASE CONTRAST
+           ========================================================================= */}
+        <section className="synth-card p-12 md:p-20 text-center space-y-6 max-w-5xl mx-auto w-full">
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500 flex items-center justify-center gap-2">
+            <span>📜</span>
+            <span>PLATFORM CAPABILITIES</span>
           </div>
+
+          <h2 className="text-3xl sm:text-5xl lg:text-[52px] font-semibold tracking-tight leading-[1.18] max-w-4xl mx-auto">
+            <span className="text-[#0F172A]">Powerful, deterministic AST platform designed to </span>
+            <span className="text-slate-400">trace vendor changes 🔀 </span>
+            <span className="text-[#0F172A]">verify impact 🛡️ </span>
+            <span className="text-slate-400">and refactor code ⚡ </span>
+            <span className="text-[#0F172A]">effortlessly.</span>
+          </h2>
         </section>
 
+        {/* =========================================================================
+            CARD 5: BENTO 2 — LAVENDER CARD (#FAF5FF)
+           ========================================================================= */}
+        <section className="synth-card-lavender p-8 md:p-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div className="lg:col-span-7 order-2 lg:order-1">
+            <ZeroNoiseArtwork />
+          </div>
 
-        {/* ==================================================
-            SECTION — NOT AFFECTED PROOF (SOFT LAVENDER)
-        ================================================== */}
-        <section className="rounded-[32px] bg-[#F4F0FA] border border-[#E4D9F5] p-8 md:p-14 shadow-xs">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* LEFT */}
-            <div className="lg:col-span-5 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#E4D9F5] text-[11px] font-semibold uppercase tracking-wider text-purple-900">
-                ZERO-NOISE ANALYSIS
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-[#111111]">
-                Ignore changes that don't touch your code.
-              </h2>
-              <p className="text-sm sm:text-base text-[#686868] leading-relaxed">
-                Bavio-Ai-v1 uses Twilio across 27 indexed call sites. APIProof checked reviewed Twilio breaking changes and found zero matching impact in the repository.
-              </p>
+          <div className="lg:col-span-5 order-1 lg:order-2 space-y-6">
+            <div className="font-mono text-xs uppercase tracking-widest text-purple-800 flex items-center gap-2">
+              <span>📑</span>
+              <span>ZERO-NOISE SHIELD</span>
             </div>
 
-            {/* RIGHT: SOFT VISUAL */}
-            <div className="lg:col-span-7">
-              <div className="rounded-[24px] bg-white border border-[#E4D9F5] p-6 shadow-md space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#111111]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                    Bavio-Ai-v1 repository check
-                  </div>
-                  <StatusPill status="healthy" label="NOT_AFFECTED" />
-                </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#0F172A] leading-[1.12]">
+              27 usages evaluated. <br /> Zero false alarms.
+            </h2>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] text-xs">
-                  <div>
-                    <span className="font-semibold text-[#111111]">Twilio SDK ^5.12.2</span>
-                    <div className="text-[#686868] text-[11px]">27 usages indexed across 10 source files</div>
-                  </div>
-                  <div className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-medium">
-                    0 Matching Findings
-                  </div>
-                </div>
+            <p className="text-base text-slate-600 leading-relaxed">
+              When Twilio updated namespace casing in v2024, APIProof evaluated 27 repository call sites. Because none matched the affected signature, zero alerts were dispatched to PagerDuty.
+            </p>
 
-                <div className="p-3.5 rounded-xl bg-[#FAF0FA] border border-[#E4D9F5] text-xs text-purple-950 font-sans space-y-1">
-                  <div className="font-semibold">Checked Rules:</div>
-                  <div className="text-[11px] text-purple-800">
-                    • Twilio Programmable Voice TwiML verb deprecation → No TwiML verb usage matched<br />
-                    • Twilio Client SDK v1 legacy token format → No legacy token instantiation matched
-                  </div>
-                </div>
-              </div>
+            <div className="pt-2">
+              <Link href="/dashboard" className="btn-synth-black">
+                <span>START NOW</span>
+                <span>↗</span>
+              </Link>
             </div>
           </div>
+
         </section>
 
-
-        {/* ==================================================
-            SECTION — MIGRATIONS (SOFT ICY BLUE)
-        ================================================== */}
-        <section className="rounded-[32px] bg-[#EBF3FC] border border-[#D0E2F7] p-8 md:p-14 shadow-xs">
-          <div className="space-y-8">
-            <div className="max-w-2xl space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D0E2F7] text-[11px] font-semibold uppercase tracking-wider text-blue-900">
-                VERIFIED CODE PATCHING
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-[#111111]">
-                Go from impact to verified migration.
-              </h2>
-              <p className="text-sm sm:text-base text-[#686868] leading-relaxed">
-                APIProof doesn't just notify—it generates exact AST code refactors, executes full verification checks, and creates review-only GitHub draft pull requests.
-              </p>
+        {/* =========================================================================
+            CARD 6: BENTO 3 — PINK CARD (#FFF5F8)
+           ========================================================================= */}
+        <section className="synth-card-pink p-8 md:p-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div className="lg:col-span-5 space-y-6">
+            <div className="font-mono text-xs uppercase tracking-widest text-rose-800 flex items-center gap-2">
+              <span>⚡</span>
+              <span>AUTOMATED REFACTORS</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              {/* CODE DIFF VISUAL */}
-              <div className="lg:col-span-7 bg-white rounded-[24px] border border-[#D0E2F7] p-6 shadow-md flex flex-col justify-between space-y-4">
-                <div className="text-xs font-semibold text-zinc-700 flex items-center justify-between">
-                  <span>src/billing.ts (AST Refactor)</span>
-                  <span className="font-mono text-[11px] text-zinc-400">stripe-subscription-coupon-removed</span>
-                </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#0F172A] leading-[1.12]">
+              From breaking change to review-ready PR
+            </h2>
 
-                <div className="rounded-xl bg-zinc-950 p-4 font-mono text-xs text-zinc-200 space-y-2">
-                  <div className="text-zinc-500 text-[11px]">// Before</div>
-                  <div className="text-rose-400 bg-rose-950/40 p-1.5 rounded">
-                    coupon: couponId
-                  </div>
-                  <div className="text-zinc-500 text-[11px] pt-1">// After (Migrated to Stripe v17+)</div>
-                  <div className="text-emerald-400 bg-emerald-950/40 p-1.5 rounded">
-                    discounts: [{`{ coupon: couponId }`}]
-                  </div>
-                </div>
-              </div>
+            <p className="text-base text-slate-600 leading-relaxed">
+              When an impact is confirmed, APIProof automatically generates refactored TypeScript migrations, executes repository typechecks, and drafts a human-reviewable GitHub Pull Request.
+            </p>
 
-              {/* VERIFICATION CHECKLIST */}
-              <div className="lg:col-span-5 bg-white rounded-[24px] border border-[#D0E2F7] p-6 shadow-md flex flex-col justify-between space-y-4">
-                <div className="text-xs font-semibold text-[#111111]">
-                  4-Gate Verification Invariants
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#EEF7F2] border border-[#D1EBE0]">
-                    <span className="font-medium text-emerald-900">Patch applied cleanly</span>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#EEF7F2] border border-[#D1EBE0]">
-                    <span className="font-medium text-emerald-900">TypeScript Typecheck</span>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#EEF7F2] border border-[#D1EBE0]">
-                    <span className="font-medium text-emerald-900">Unit Tests Execution</span>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#EEF7F2] border border-[#D1EBE0]">
-                    <span className="font-medium text-emerald-900">API Contract Compliance</span>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-blue-900">Draft PR #1</span>
-                  <span className="text-[11px] text-[#686868]">Human review required</span>
-                </div>
-              </div>
+            <div className="pt-2">
+              <Link href="/dashboard" className="btn-synth-black">
+                <span>START NOW</span>
+                <span>↗</span>
+              </Link>
             </div>
           </div>
+
+          <div className="lg:col-span-7">
+            <MigrationArtwork />
+          </div>
+
         </section>
 
+        {/* =========================================================================
+            CARD 7: HOW IT WORKS TIMELINE
+           ========================================================================= */}
+        <section id="how-it-works" className="synth-card p-8 md:p-14 grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <div className="lg:col-span-5 space-y-6">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500 flex items-center gap-2">
+              <span>⚙️</span>
+              <span>AUTOMATION WORKFLOW</span>
+            </div>
 
-        {/* ==================================================
-            LARGE CENTER STATEMENT SECTION (EDITORIAL)
-        ================================================== */}
-        <section className="rounded-[32px] bg-white border border-[#E8E8E5] py-20 px-8 sm:px-16 text-center space-y-6 shadow-xs">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F6F6F4] border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-[#686868]">
-            VERIFIED MIGRATIONS
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#0F172A] leading-[1.12]">
+              Launch your API assistant in 5 steps
+            </h2>
+
+            <p className="text-base text-slate-600 leading-relaxed">
+              Connect your repositories, observe vendor changes, and let APIProof handle continuous compatibility verification.
+            </p>
+
+            <div className="pt-2">
+              <Link href="/dashboard" className="btn-synth-black">
+                <span>TRY IT NOW</span>
+                <span>↗</span>
+              </Link>
+            </div>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-[#111111] max-w-4xl mx-auto leading-tight">
-            APIProof doesn't guess what changed.
+          <div className="lg:col-span-7 space-y-4">
+            {[
+              { num: "01", title: "Observe vendor change", desc: "Monitors OpenAPI and Webhook updates across Stripe, Twilio, OpenAI, and custom providers." },
+              { num: "02", title: "Trace repository usage", desc: "Parses TypeScript AST call sites to locate affected function signatures deterministically." },
+              { num: "03", title: "Verify impact", desc: "Filters out false alarms. Only triggers if breaking parameters match active code." },
+              { num: "04", title: "Prepare migration", desc: "Generates refactored code transformation patch with typecheck validation." },
+              { num: "05", title: "Human review", desc: "Opens a safe GitHub Pull Request with AST diff breakdown for team approval." },
+            ].map((step) => (
+              <div key={step.num} className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E8E8E5] flex items-start gap-5 hover:bg-white hover:shadow-xs transition-all">
+                <div className="w-10 h-10 rounded-xl bg-[#0F172A] text-white font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                  {step.num}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#0F172A] tracking-tight">{step.title}</h3>
+                  <p className="text-xs text-slate-600 mt-1">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </section>
+
+        {/* =========================================================================
+            CARD 8: INTEGRATIONS CONSTELLATION
+           ========================================================================= */}
+        <section id="integrations" className="synth-card p-8 md:p-14 text-center space-y-8">
+          <div className="max-w-xl mx-auto space-y-3">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500 flex items-center justify-center gap-2">
+              <span>🔌</span>
+              <span>INTEGRATION</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#0F172A]">
+              Works with the tools you already use
+            </h2>
+
+            <p className="text-sm text-slate-600">
+              Bring all your workflows together by integrating with the platforms your team relies on daily.
+            </p>
+          </div>
+
+          <IntegrationsOrbit />
+        </section>
+
+        {/* =========================================================================
+            CARD 9: HIGH-CONTRAST BLACK FRAME CTA CARD
+           ========================================================================= */}
+        <section className="synth-card-cta p-12 md:p-16 text-center space-y-6 max-w-4xl mx-auto w-full">
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-600 flex items-center justify-center gap-2">
+            <span>✦</span>
+            <span>NEXT-GENERATION API PLATFORM</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#0F172A]">
+            Start Using Your API Compatibility Intelligence Today
           </h2>
 
-          <p className="text-lg sm:text-xl text-[#686868] max-w-3xl mx-auto font-normal leading-relaxed">
-            It traces the vendor change to the <span className="text-[#111111] font-semibold">symbol</span>, the <span className="text-[#111111] font-semibold">repository</span>, the <span className="text-[#111111] font-semibold">file</span>, and the <span className="text-[#111111] font-semibold">exact usage</span>.
+          <p className="text-base text-slate-600 max-w-xl mx-auto">
+            Zero setup fee. Read-only AST analysis. Connect your GitHub repository in under 2 minutes.
           </p>
-        </section>
 
-
-        {/* ==================================================
-            HOW IT WORKS — VERTICAL TIMELINE
-        ================================================== */}
-        <section id="how-it-works" className="rounded-[32px] bg-white border border-[#E8E8E5] p-8 md:p-14 shadow-xs">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* LEFT */}
-            <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F6F6F4] border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-[#686868]">
-                HOW IT WORKS
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-[#111111]">
-                From vendor change to review-ready PR.
-              </h2>
-              <p className="text-sm sm:text-base text-[#686868] leading-relaxed">
-                A simple 5-step continuous process that protects your application code from unexpected upstream SDK breaking changes.
-              </p>
-            </div>
-
-            {/* RIGHT: TIMELINE ROWS */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-mono font-semibold text-blue-600">01</div>
-                <h3 className="text-base font-medium text-[#111111]">Observe vendor changes</h3>
-                <p className="text-xs text-[#686868] leading-relaxed">
-                  Monitors official release notes, SDK changelogs, and deprecation schedules across primary API providers.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-mono font-semibold text-blue-600">02</div>
-                <h3 className="text-base font-medium text-[#111111]">Trace repository usage</h3>
-                <p className="text-xs text-[#686868] leading-relaxed">
-                  Indexes repository Abstract Syntax Trees (AST) to map imports, method calls, and parameters to exact line numbers.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-mono font-semibold text-blue-600">03</div>
-                <h3 className="text-base font-medium text-[#111111]">Verify code impact</h3>
-                <p className="text-xs text-[#686868] leading-relaxed">
-                  Evaluates whether breaking change rules match indexed call sites, separating unaffected codebases from real findings.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-mono font-semibold text-blue-600">04</div>
-                <h3 className="text-base font-medium text-[#111111]">Prepare migration</h3>
-                <p className="text-xs text-[#686868] leading-relaxed">
-                  Executes AST code transformations and validates against 4 verification gates (build, typecheck, tests, contract).
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                <div className="text-xs font-mono font-semibold text-blue-600">05</div>
-                <h3 className="text-base font-medium text-[#111111]">Open review-only PR</h3>
-                <p className="text-xs text-[#686868] leading-relaxed">
-                  Publishes a GitHub Draft Pull Request on an isolated feature branch. Never merges automatically.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        {/* ==================================================
-            INTEGRATIONS
-        ================================================== */}
-        <section id="integrations" className="rounded-[32px] bg-white border border-[#E8E8E5] p-8 md:p-14 shadow-xs">
-          <div className="space-y-8">
-            <div className="max-w-2xl space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F6F6F4] border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-[#686868]">
-                INTEGRATIONS
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-[#111111]">
-                Works with APIs your code already depends on.
-              </h2>
-              <p className="text-sm sm:text-base text-[#686868]">
-                Continuous monitoring for core billing, communication, and AI infrastructure dependencies.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-[#686868] mb-3">
-                  Reviewed Intelligence Rules Active
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <div className="px-4 py-2.5 rounded-xl bg-[#EBF3FC] border border-[#C6E1FA] text-xs font-medium text-blue-900 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-600" />
-                    Stripe (Billing & Subscriptions)
-                  </div>
-                  <div className="px-4 py-2.5 rounded-xl bg-[#EBF3FC] border border-[#C6E1FA] text-xs font-medium text-blue-900 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-600" />
-                    Twilio (Telephony & Voice)
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[#E8E8E5]">
-                <div className="text-xs font-semibold uppercase tracking-wider text-[#686868] mb-3">
-                  Detected Repository Dependencies
-                </div>
-                <div className="flex flex-wrap gap-2.5 text-xs text-[#111111]">
-                  {["OpenAI", "Supabase", "Groq", "Deepgram", "ElevenLabs", "Sarvam", "Dodo Payments", "Redis"].map((name) => (
-                    <span key={name} className="px-3.5 py-2 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] font-medium">
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        {/* ==================================================
-            REAL ENGINE PROOF (REPLACES FAKE TESTIMONIALS)
-        ================================================== */}
-        <section className="rounded-[32px] bg-white border border-[#E8E8E5] p-8 md:p-14 shadow-xs">
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F6F6F4] border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-[#686868]">
-                REAL ENGINE PROOF
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-[#111111]">
-                Truthful verification metrics from actual runs.
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Bavio-Ai-v1 Card */}
-              <div className="p-6 rounded-[24px] bg-[#F6F6F4] border border-[#E8E8E5] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-[#111111]">ravitejabolla756-sys/Bavio-Ai-v1</div>
-                    <div className="text-xs text-[#686868]">Real target repository scan</div>
-                  </div>
-                  <StatusPill status="healthy" label="NOT_AFFECTED" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Files Analyzed</div>
-                    <div className="font-semibold text-sm text-[#111111]">390 source files</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Twilio Usages</div>
-                    <div className="font-semibold text-sm text-[#111111]">27 call sites</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Integrations</div>
-                    <div className="font-semibold text-sm text-[#111111]">9 detected</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Matching Breaking Changes</div>
-                    <div className="font-semibold text-sm text-emerald-700">0 findings</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stripe Fixture Card */}
-              <div className="p-6 rounded-[24px] bg-[#F6F6F4] border border-[#E8E8E5] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-[#111111]">apiproof-github-fixture</div>
-                    <div className="text-xs text-[#686868]">Stripe breaking migration run</div>
-                  </div>
-                  <StatusPill status="pr_created" label="Draft PR #1" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Breaking Usages</div>
-                    <div className="font-semibold text-sm text-rose-700">1 found</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Affected File</div>
-                    <div className="font-mono text-xs text-[#111111]">src/billing.ts</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Verification Gates</div>
-                    <div className="font-semibold text-sm text-emerald-700">4/4 passed</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#E8E8E5]">
-                    <div className="text-[#686868] text-[10px]">Pull Request</div>
-                    <div className="font-semibold text-xs text-blue-700">Draft PR #1 created</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-        {/* ==================================================
-            FINAL CTA — SOFT PASTEL GRADIENT
-        ================================================== */}
-        <section className="rounded-[32px] bg-gradient-to-r from-[#F4F0FA] via-[#EBF3FC] to-[#EEF7F2] border border-[#E8E8E5] p-10 md:p-16 text-center space-y-6 shadow-xs">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-zinc-700">
-            API COMPATIBILITY INTELLIGENCE
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-[#111111]">
-            Connect your repository.<br />Know what actually breaks.
-          </h2>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link href="/dashboard">
-              <Button size="lg" className="font-medium text-sm px-6 py-3">
-                <span>CONNECT GITHUB</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </Button>
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+            <Link href="/dashboard" className="btn-synth-black">
+              <span>GET STARTED FREE</span>
+              <span>↗</span>
             </Link>
-            <Link href="/dashboard">
-              <Button size="lg" variant="outline" className="font-medium text-sm px-6 py-3">
-                EXPLORE DEMO
-              </Button>
+            <Link href="/#contact" className="btn-synth-outline">
+              <span>TALK TO SALES</span>
             </Link>
           </div>
         </section>
 
       </main>
 
+      {/* GLOBAL FOOTER */}
       <LandingFooter />
     </div>
   );

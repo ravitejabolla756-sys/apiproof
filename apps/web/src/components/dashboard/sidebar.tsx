@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import {
   LayoutDashboard,
@@ -15,10 +15,12 @@ import {
   Sliders,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
 
   const mainNav = [
@@ -34,6 +36,15 @@ export function Sidebar() {
     { name: "Activity", href: "/dashboard/activity", icon: Activity },
     { name: "Settings", href: "/dashboard/settings", icon: Sliders },
   ];
+
+  async function handleLogout() {
+    await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'logout' }),
+    });
+    router.push('/login');
+  }
 
   return (
     <aside
@@ -53,7 +64,7 @@ export function Sidebar() {
                 APIProof
               </span>
               <span className="text-[10px] bg-[#F6F6F4] border border-[#E8E8E5] px-2 py-0.5 rounded-full text-zinc-600 font-medium">
-                Demo
+                v0.7
               </span>
             </div>
           )}
@@ -122,15 +133,30 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Account / Workspace Switcher Footer */}
-      {!collapsed && (
-        <div className="p-4 border-t border-[#E8E8E5] bg-white font-sans text-xs">
-          <div className="flex items-center justify-between text-[#686868]">
+      {/* Account Footer with Logout */}
+      <div className="p-4 border-t border-[#E8E8E5] bg-white font-sans text-xs">
+        {!collapsed ? (
+          <div className="flex items-center justify-between">
             <span className="truncate font-mono text-[11px] text-[#111111]">ravitejabolla756-sys</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500" title="GitHub connected" />
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
+              title="Sign out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
+            </button>
           </div>
-        </div>
-      )}
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center p-1.5 rounded-lg text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </aside>
   );
 }

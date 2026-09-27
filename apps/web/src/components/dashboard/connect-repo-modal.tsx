@@ -1,15 +1,60 @@
 'use client';
 
-import { X, ShieldCheck, Lock, CheckCircle2, Github, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { X, ShieldCheck, CheckCircle2, Github, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ConnectRepoModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function ConnectRepoModal({ isOpen, onClose }: ConnectRepoModalProps) {
+export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModalProps) {
+  const [owner, setOwner] = useState('ravitejabolla756-sys');
+  const [name, setName] = useState('apiproof-github-fixture');
+  const [defaultBranch, setDefaultBranch] = useState('main');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
   if (!isOpen) return null;
+
+  async function handleConnect(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/repositories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          owner: owner.trim(),
+          name: name.trim(),
+          defaultBranch: defaultBranch.trim() || 'main',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to connect repository.');
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        onClose();
+        if (onSuccess) {
+          onSuccess();
+        }
+      }, 900);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150 font-sans">
@@ -28,72 +73,88 @@ export function ConnectRepoModal({ isOpen, onClose }: ConnectRepoModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-5 text-xs">
-          <div className="bg-[#EEF7F2] border border-[#D1EBE0] rounded-2xl p-4 flex items-start gap-3">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="text-emerald-950 space-y-1">
-              <p className="font-semibold">Read-Only & Scoped Security Guarantee</p>
-              <p className="text-emerald-800 leading-relaxed text-[11px]">
-                APIProof operates in observe-only mode by default. Code analysis runs in memory without executing package scripts or altering repository files.
-              </p>
+        <form onSubmit={handleConnect} className="p-6 space-y-5 text-xs">
+          {error && (
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{error}</span>
             </div>
-          </div>
+          )}
+
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Repository connected successfully! Updating workspace...</span>
+            </div>
+          )}
 
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-[#686868] uppercase tracking-wider">
-              App Permissions & Controls
-            </h4>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                <span className="text-[#111111] flex items-center gap-2 font-medium">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Metadata Access
-                </span>
-                <span className="font-mono text-[#686868] text-[11px]">Read-only</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                <span className="text-[#111111] flex items-center gap-2 font-medium">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Contents & Code Analysis
-                </span>
-                <span className="font-mono text-[#686868] text-[11px]">Read-only (Observe)</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                <span className="text-[#111111] flex items-center gap-2 font-medium">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Pull Request Generation
-                </span>
-                <span className="font-mono text-emerald-700 font-semibold text-[11px]">Draft Mode Only</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                <span className="text-[#111111] flex items-center gap-2 font-medium">
-                  <Lock className="h-4 w-4 text-rose-600" /> Automatic Merging
-                </span>
-                <span className="font-mono text-rose-700 font-semibold text-[11px]">Strictly Blocked</span>
-              </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-[#111111] mb-1">
+                Repository Owner / Organization
+              </label>
+              <input
+                type="text"
+                required
+                value={owner}
+                onChange={(e) => setOwner(e.target.value)}
+                placeholder="e.g. ravitejabolla756-sys"
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-[#111111] mb-1">
+                Repository Name
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. apiproof-github-fixture"
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-[#111111] mb-1">
+                Default Branch
+              </label>
+              <input
+                type="text"
+                value={defaultBranch}
+                onChange={(e) => setDefaultBranch(e.target.value)}
+                placeholder="main"
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20 font-mono"
+              />
             </div>
           </div>
 
-          <div className="bg-[#FEF8EC] border border-[#FDE68A] rounded-2xl p-3.5 text-xs text-amber-950 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-            <span>Connected Repositories in local pilot: <strong className="font-mono text-[#111111]">Bavio-Ai-v1</strong> and <strong className="font-mono text-[#111111]">apiproof-github-fixture</strong>.</span>
+          <div className="bg-[#EEF7F2] border border-[#D1EBE0] rounded-2xl p-3.5 flex items-start gap-2.5">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+            <p className="text-emerald-800 leading-relaxed text-[11px]">
+              APIProof operates in read-only observe mode by default. Code analysis runs in memory without executing package scripts or altering repository files.
+            </p>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-[#F6F6F4] border-t border-[#E8E8E5] flex items-center justify-end gap-3">
-          <Button variant="outline" size="sm" onClick={onClose} className="font-medium">
-            Close
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              alert('Demo Mode: ravitejabolla756-sys repositories are connected and indexed.');
-              onClose();
-            }}
-            className="font-medium"
-          >
-            Configure GitHub App
-          </Button>
-        </div>
+          {/* Footer */}
+          <div className="pt-3 border-t border-[#E8E8E5] flex items-center justify-end gap-3">
+            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={loading} className="font-medium">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={loading || success}
+              className="font-medium gap-1.5"
+            >
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>{loading ? 'Connecting...' : 'Connect & Monitor'}</span>
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

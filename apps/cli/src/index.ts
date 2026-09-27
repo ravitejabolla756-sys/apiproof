@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { ApiProof, evaluateCorpus, evaluatePlanningCorpus, runFixturePatch, evaluatePatchCorpus, evaluateVerification, evaluateContracts, contractScenarios, verifyContracts, FakeContractHarness, verificationFixtures, verifyPatchedFixture, FakeSandbox, evaluateGithub, loadGitHubAppConfig, assertLiveConfig, NodeGitHubAppTokenProvider, FetchGitHubReadTransport, GitHubAppSourceControlProvider, runMigrateDryRun, runMigrateLive } from '@apiproof/core';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
-import { StripeProvider, loadStripeRegistry } from '@apiproof/providers';
+import { StripeProvider, loadStripeRegistry, TwilioProvider, loadTwilioRegistry } from '@apiproof/providers';
 import { AnalysisError, EXCLUDED_DIRECTORIES, readJsonFile, TOOL_VERSION } from '@apiproof/shared';
 import { formatImpact, formatScan } from './format.js';
 import { formatEvaluation } from './evaluation-format.js';
@@ -14,13 +14,13 @@ import { formatVerification } from './verification-format.js';
 import { formatContract } from './contract-format.js';
 
 const toolRoot = fileURLToPath(new URL('../../../', import.meta.url));
-const help = `APIProof Phase 7 — Stripe analysis, planning, contracts and review-gated GitHub proposals
+const help = `APIProof Phase 7 — Stripe and Twilio analysis, planning, contracts and review-gated GitHub proposals
 
 Usage:
-  apiproof scan <repository-path> [--json]
-  apiproof impact <repository-path> --change <change.json> [--json]
-  apiproof impact <repository-path> --change-id <registry-id> [--json]
-  apiproof plan <repository-path> --change-id <registry-id> [--json]
+  apiproof scan <repository-path> [--provider <stripe|twilio>] [--json]
+  apiproof impact <repository-path> --change <change.json> [--provider <stripe|twilio>] [--json]
+  apiproof impact <repository-path> --change-id <registry-id> [--provider <stripe|twilio>] [--json]
+  apiproof plan <repository-path> --change-id <registry-id> [--provider <stripe|twilio>] [--json]
   apiproof evaluate [--corpus <directory>] [--registry <directory>] [--json]
   apiproof evaluate-plans [--corpus <directory>] [--registry <directory>] [--json]
   apiproof patch <bundled-fixture-path> --change-id <registry-id> [--json]
@@ -38,6 +38,7 @@ Usage:
 Options:
   --json                       Emit one JSON object (including errors)
   --confirm-controlled-write   Explicit confirmation for one-shot controlled migration write
+  --provider                   Provider to analyze: stripe | twilio (default: stripe)
   --change                     Structured change fixture; required for impact
   --change-id                  Reviewed registry record ID; alternative to --change
   --with-model                 Reserved opt-in model path; unavailable unless a provider is configured
@@ -61,15 +62,21 @@ async function main(): Promise<void> {
     let parsed;
     try {
       parsed = parseArgs({ args, allowPositionals: true, strict: true,
-        options: { json: { type: 'boolean' }, 'confirm-controlled-write': { type: 'boolean' }, change: { type: 'string' }, 'change-id': { type: 'string' }, 'with-model': { type: 'boolean' },
+        options: { json: { type: 'boolean' }, 'confirm-controlled-write': { type: 'boolean' }, provider: { type: 'string' }, change: { type: 'string' }, 'change-id': { type: 'string' }, 'with-model': { type: 'boolean' },
           registry: { type: 'string' }, corpus: { type: 'string' }, help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' } } });
     } catch { throw new AnalysisError('INVALID_ARGUMENTS', 'Invalid arguments. Run apiproof --help for usage.'); }
     json = parsed.values.json ?? false;
     if (parsed.values.help) { process.stdout.write(json ? `${JSON.stringify({ help })}\n` : `${help}\n`); return; }
     if (parsed.values.version) { process.stdout.write(`${json ? JSON.stringify({ version: TOOL_VERSION }) : TOOL_VERSION}\n`); return; }
     const [command, repository] = parsed.positionals;
-    const proof = new ApiProof(new TypeScriptRepositoryAnalyzer(), new StripeProvider());
-    const registryPath = parsed.values.registry ?? path.join(toolRoot, 'registry/stripe');
+    const providerName = parsed.values.provider ?? 'stripe';
+    if (providerName !== 'stripe' && providerName !== 'twilio') {
+      throw new AnalysisError('UNSUPPORTED_PROVIDER', `Unsupported provider: ${providerName}. Supported providers are stripe, twilio.`);
+    }
+    const provider = providerName === 'twilio' ? new TwilioProvider() : new StripeProvider();
+    const loadRegistry = providerName === 'twilio' ? loadTwilioRegistry : loadStripeRegistry;
+    const proof = new ApiProof(new TypeScriptRepositoryAnalyzer(), provider);
+    const registryPath = parsed.values.registry ?? path.join(toolRoot, `registry/${providerName}`);
     if (command === 'evaluate-verification') {
       if (parsed.positionals.length !== 1 || parsed.values.corpus || parsed.values.registry || parsed.values.change || parsed.values['change-id']) throw new AnalysisError('INVALID_ARGUMENTS', 'Verification evaluation uses only --docker and --json.');
       if (parsed.values['with-model']) throw new AnalysisError('MODEL_UNAVAILABLE', 'Models cannot control verification.');
@@ -119,15 +126,16 @@ async function main(): Promise<void> {
 
       const filesMap = new Map<string, string>();
       const filesToFetch = tree.filter((file) =>
-        file === 'package.json' || (/\.(?:ts|tsx|mts|cts)$/i.test(file) && !file.split('/').some((p) => EXCLUDED_DIRECTORIES.has(p) || p.startsWith('.')))
+        file === 'package.json' || (/\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i.test(file) && !file.split('/').some((p) => EXCLUDED_DIRECTORIES.has(p) || p.startsWith('.')))
       );
       for (const filePath of filesToFetch) {
         const content = await provider.readFile(filePath, head.sha);
         filesMap.set(filePath, content);
       }
       const remoteSnapshot = RepositorySnapshot.fromMemory(path.join(toolRoot, '.tmp/remote-repo'), filesMap);
-      const registry = await loadStripeRegistry(registryPath);
-      const changeId = parsed.values['change-id'] ?? 'stripe-subscription-coupon-removed';
+      const registry = await loadRegistry(registryPath);
+      const defaultChangeId = providerName === 'twilio' ? 'twilio-twiml-namespace-casing' : 'stripe-subscription-coupon-removed';
+      const changeId = parsed.values['change-id'] ?? defaultChangeId;
       const change = registry.find((item) => item.id === changeId) ?? registry[0];
       const impact = await proof.impact(remoteSnapshot, change);
 
@@ -196,7 +204,7 @@ async function main(): Promise<void> {
     }
     if (command === 'evaluate') {
       if (parsed.positionals.length !== 1 || parsed.values.change || parsed.values['change-id']) throw new AnalysisError('INVALID_ARGUMENTS', 'Evaluate accepts only --corpus, --registry and --json.');
-      const result = await evaluateCorpus(parsed.values.corpus ?? path.join(toolRoot, 'evaluation'), await loadStripeRegistry(registryPath), proof);
+      const result = await evaluateCorpus(parsed.values.corpus ?? path.join(toolRoot, 'evaluation'), await loadRegistry(registryPath), proof);
       process.stdout.write(`${json ? JSON.stringify(result, null, 2) : formatEvaluation(result)}\n`);
       if (result.failedCases) process.exitCode = 1;
       return;
@@ -204,7 +212,7 @@ async function main(): Promise<void> {
     if (command === 'evaluate-plans') {
       if (parsed.positionals.length !== 1 || parsed.values.change || parsed.values['change-id']) throw new AnalysisError('INVALID_ARGUMENTS', 'Evaluate-plans accepts only --corpus, --registry, --with-model and --json.');
       if (parsed.values['with-model']) throw new AnalysisError('MODEL_UNAVAILABLE', 'No external model provider is configured; deterministic planning evaluation remains available.');
-      const result = await evaluatePlanningCorpus(parsed.values.corpus ?? path.join(toolRoot, 'evaluation-plans'), await loadStripeRegistry(registryPath), { plan: (repositoryPath, change) => proof.plan(repositoryPath, change) });
+      const result = await evaluatePlanningCorpus(parsed.values.corpus ?? path.join(toolRoot, 'evaluation-plans'), await loadRegistry(registryPath), { plan: (repositoryPath, change) => proof.plan(repositoryPath, change) });
       process.stdout.write(`${json ? JSON.stringify(result, null, 2) : formatPlanningEvaluation(result)}\n`);
       if (result.planningFailures) process.exitCode = 1;
       return;
@@ -213,7 +221,7 @@ async function main(): Promise<void> {
     if (command === 'plan') {
       if (parsed.positionals.length !== 2 || !repository || !changeId || parsed.values.change || parsed.values.corpus) throw new AnalysisError('INVALID_ARGUMENTS', 'Use plan <path> --change-id <reviewed-record>.');
       if (parsed.values['with-model']) throw new AnalysisError('MODEL_UNAVAILABLE', 'No external model provider is configured; deterministic planning remains available.');
-      const input = (await loadStripeRegistry(registryPath)).find((change) => change.id === changeId);
+      const input = (await loadRegistry(registryPath)).find((change) => change.id === changeId);
       if (!input) throw new AnalysisError('INVALID_CHANGE_ID', 'Change ID was not found in the registry.');
       const result = await proof.plan(repository, input);
       process.stdout.write(`${json ? JSON.stringify(result, null, 2) : formatPlan(result)}\n`);
@@ -225,7 +233,7 @@ async function main(): Promise<void> {
       throw new AnalysisError('INVALID_ARGUMENTS', 'Use scan <path> or impact <path> --change <file>. See --help.');
     }
     if (command === 'impact') {
-      const input = changeId ? (await loadStripeRegistry(registryPath)).find((change) => change.id === changeId) : await readChange(parsed.values.change!);
+      const input = changeId ? (await loadRegistry(registryPath)).find((change) => change.id === changeId) : await readChange(parsed.values.change!);
       if (!input) throw new AnalysisError('INVALID_CHANGE_ID', 'Change ID was not found in the registry.');
       const result = await proof.impact(repository, input);
       process.stdout.write(`${json ? JSON.stringify(result, null, 2) : formatImpact(result)}\n`);

@@ -1,0 +1,98 @@
+import { NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/server/auth';
+import { getDatabase } from '@/lib/server/db';
+
+export async function GET(req: Request) {
+  const user = await getCurrentUser(req);
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const db = getDatabase();
+
+  // Aggregate real stats for current user
+  const repoStats = await db.queryOne<{ count: number }>(`
+    SELECT COUNT(*) as count FROM repositories WHERE user_id = ?
+  `, [user.id]);
+
+  const scanStats = await db.queryOne<{ count: number }>(`
+    SELECT COUNT(*) as count FROM scans s
+    JOIN repositories r ON r.id = s.repository_id
+    WHERE r.user_id = ? AND s.status = 'completed'
+  `, [user.id]);
+
+  const findingStats = await db.queryOne<{ total: number; open_count: number | null; critical_count: number | null }>(`
+    SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN f.status = 'open' THEN 1 ELSE 0 END) as open_count,
+      SUM(CASE WHEN f.severity = 'critical' AND f.status = 'open' THEN 1 ELSE 0 END) as critical_count
+    FROM findings f
+    JOIN repositories r ON r.id = f.repository_id
+    WHERE r.user_id = ?
+  `, [user.id]);
+
+  const prStats = await db.queryOne<{ count: number }>(`
+    SELECT COUNT(*) as count FROM pull_requests pr
+    JOIN repositories r ON r.id = pr.repository_id
+    WHERE r.user_id = ?
+  `, [user.id]);
+
+  const repositories = await db.query<Array<{
+    id: string;
+    name: string;
+    owner: string;
+    full_name: string;
+    default_branch: string;
+    status: string;
+    last_scan_at: string | null;
+    findings_count: number;
+  }>>(`
+    SELECT r.id, r.name, r.owner, r.full_name, r.default_branch, r.status, r.last_scan_at,
+           (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count
+    FROM repositories r
+    WHERE r.user_id = ?
+    ORDER BY r.created_at DESC
+  `, [user.id]);
+
+  const criticalFinding = await db.queryOne<{
+    id: string;
+    title: string;
+    description: string;
+    severity: string;
+    symbol: string;
+    file_path: string;
+    status: string;
+    repo_name: string;
+    repo_full_name: string;
+  }>(`
+    SELECT f.id, f.title, f.description, f.severity, f.symbol, f.file_path, f.status,
+           r.name as repo_name, r.full_name as repo_full_name
+    FROM findings f
+    JOIN repositories r ON r.id = f.repository_id
+    WHERE r.user_id = ?
+    ORDER BY CASE f.severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 ELSE 3 END, f.created_at DESC
+    LIMIT 1
+  `, [user.id]);
+
+  const recentActivities = await db.query(`
+    SELECT a.id, a.type, a.title, a.description, a.created_at, r.name as repo_name
+    FROM activity_events a
+    LEFT JOIN repositories r ON r.id = a.repository_id
+    WHERE a.user_id = ?
+    ORDER BY a.created_at DESC
+    LIMIT 6
+  `, [user.id]);
+
+  return NextResponse.json({
+    stats: {
+      connectedRepositories: Number(repoStats?.count ?? 0),
+      scansCompleted: Number(scanStats?.count ?? 0),
+      openFindings: Number(findingStats?.open_count ?? 0),
+      criticalFindings: Number(findingStats?.critical_count ?? 0),
+      draftPrsCount: Number(prStats?.count ?? 0),
+    },
+    repositories,
+    criticalFinding: criticalFinding ?? null,
+    recentActivities,
+  });
+}

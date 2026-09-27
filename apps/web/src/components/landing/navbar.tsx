@@ -1,70 +1,70 @@
 import Link from "next/link";
-import { Github, ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Github } from "lucide-react";
 import { ApiProofLogo } from "@/components/ui/logo";
 
 export function LandingNavbar() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-[#E8E8E5]">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between font-sans">
-        {/* LEFT: Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl bg-stone-100 border border-[#E8E8E5] flex items-center justify-center transition-transform group-hover:scale-105">
-            <ApiProofLogo className="w-5 h-5" />
+    <header className="w-full pt-4 pb-2 z-50 relative">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-8 flex items-center justify-between">
+        
+        {/* LEFT: Logo & Wordmark */}
+        <Link href="/" className="flex items-center gap-3 group shrink-0">
+          <div className="w-9 h-9 shrink-0 rounded-xl bg-white border border-[#E8E8E5] flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs overflow-hidden">
+            <ApiProofLogo className="w-5 h-5 text-[#0F172A]" />
           </div>
-          <span className="text-base font-semibold tracking-tight text-[#111111]">
+          <span className="text-xl font-bold tracking-tight text-[#0F172A]">
             APIProof
           </span>
         </Link>
 
-        {/* CENTER: Clean Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold uppercase tracking-wider text-[#686868]">
-          <Link href="/#product" className="hover:text-[#111111] transition-colors">
+        {/* RIGHT: Floating White Pill Navigation Container (1:1 SynthAI Live Spec) */}
+        <nav className="synth-pill-nav px-6 py-2 flex items-center gap-6">
+          <Link
+            href="/#product"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors"
+          >
             PRODUCT
           </Link>
-          <Link href="/#how-it-works" className="hover:text-[#111111] transition-colors">
-            HOW IT WORKS
-          </Link>
-          <Link href="/#integrations" className="hover:text-[#111111] transition-colors">
+          <Link
+            href="/#integrations"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-block"
+          >
             INTEGRATIONS
           </Link>
-          <Link href="/pricing" className="hover:text-[#111111] transition-colors">
-            PRICING
+          <Link
+            href="/#security"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-[#686868] hover:text-[#0F172A] transition-colors hidden md:inline-block"
+          >
+            SECURITY
           </Link>
-          <Link href="/about" className="hover:text-[#111111] transition-colors">
-            ABOUT
+          <Link
+            href="/#how-it-works"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-[#686868] hover:text-[#0F172A] transition-colors hidden lg:inline-block"
+          >
+            DOCS
           </Link>
-          <Link href="/blog" className="hover:text-[#111111] transition-colors">
-            BLOG
-          </Link>
-          <Link href="/contact" className="hover:text-[#111111] transition-colors">
-            CONTACT
-          </Link>
-        </nav>
-
-        {/* RIGHT: Action CTAs */}
-        <div className="flex items-center gap-3">
           <a
             href="https://github.com/ravitejabolla756-sys/apiproof"
             target="_blank"
             rel="noreferrer"
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-[#686868] hover:text-[#111111] transition-colors px-2 py-1"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-flex items-center gap-1.5"
           >
-            <Github className="w-4 h-4 text-[#111111]" />
+            <Github className="w-3.5 h-3.5 text-[#0F172A]" />
             <span>GitHub</span>
           </a>
-
-          <Link href="/dashboard" className="hidden sm:inline-block text-xs font-medium text-[#686868] hover:text-[#111111] transition-colors px-2 py-1">
+          <Link
+            href="/login"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-block"
+          >
             SIGN IN
           </Link>
 
-          <Link href="/dashboard">
-            <Button size="sm" variant="primary" className="text-xs px-4 py-2 font-medium">
-              <span>GET STARTED</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Button>
+          {/* SynthAI CTA Button (rounded-lg font-mono uppercase) */}
+          <Link href="/login" className="px-4 py-2 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-colors ml-1">
+            <span>GET STARTED</span>
           </Link>
-        </div>
+        </nav>
+
       </div>
     </header>
   );

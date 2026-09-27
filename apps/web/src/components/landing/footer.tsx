@@ -1,86 +1,84 @@
 import Link from "next/link";
 import { ApiProofLogo } from "@/components/ui/logo";
+import { Github, Twitter, Linkedin } from "lucide-react";
 
 export function LandingFooter() {
   return (
-    <footer className="bg-[#111111] text-white py-16 md:py-24 font-sans border-t border-zinc-800">
-      <div className="max-w-[1440px] mx-auto px-6 sm:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-zinc-800">
-          {/* LEFT 4 Columns: Brand */}
-          <div className="md:col-span-4 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                <ApiProofLogo className="w-5 h-5 filter invert brightness-200" />
+    <footer className="w-full pt-8 pb-12">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-8">
+        
+        {/* SynthAI 1:1 Black Footer Card */}
+        <div className="synth-card-footer p-10 md:p-16 space-y-12">
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+            {/* Column 1: Brand Info */}
+            <div className="md:col-span-5 space-y-5">
+              <Link href="/" className="flex items-center gap-3 shrink-0">
+                <div className="w-9 h-9 shrink-0 rounded-xl bg-white text-slate-950 flex items-center justify-center font-bold overflow-hidden">
+                  <ApiProofLogo className="w-5 h-5 text-slate-950" />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-white">
+                  APIProof
+                </span>
+              </Link>
+
+              <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
+                Continuous API compatibility intelligence for TypeScript repositories. Detects breaking SDK changes, verifies impact deterministically, and prepares safe PRs.
+              </p>
+
+              <div className="flex items-center gap-3 text-slate-400 pt-2">
+                <a href="https://github.com/ravitejabolla756-sys/apiproof" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-700 transition-colors">
+                  <Github className="w-4 h-4" />
+                </a>
+                <a href="#" className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-700 transition-colors">
+                  <Twitter className="w-4 h-4" />
+                </a>
+                <a href="#" className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-700 transition-colors">
+                  <Linkedin className="w-4 h-4" />
+                </a>
               </div>
-              <span className="text-lg font-semibold tracking-tight text-white">
-                APIProof
-              </span>
-            </Link>
-            <p className="text-sm text-zinc-400 max-w-sm leading-relaxed">
-              API compatibility intelligence for engineering teams. Trace vendor SDK breaking changes directly to repository usage.
-            </p>
-          </div>
+            </div>
 
-          {/* RIGHT 8 Columns: Link Columns */}
-          <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Product
-              </h4>
-              <ul className="space-y-2 text-xs text-zinc-400">
-                <li><Link href="/#product" className="hover:text-white transition-colors">Overview</Link></li>
+            {/* Column 2: Main Pages */}
+            <div className="md:col-span-3 space-y-4 font-mono text-xs uppercase tracking-wider">
+              <div className="text-white font-bold text-sm">Product</div>
+              <ul className="space-y-2.5 text-slate-400">
+                <li><Link href="/#product" className="hover:text-white transition-colors">Impact Analysis</Link></li>
+                <li><Link href="/#security" className="hover:text-white transition-colors">Zero-Noise Shield</Link></li>
+                <li><Link href="/#how-it-works" className="hover:text-white transition-colors">Refactor Engine</Link></li>
                 <li><Link href="/#integrations" className="hover:text-white transition-colors">Integrations</Link></li>
-                <li><Link href="/#security" className="hover:text-white transition-colors">Security Architecture</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Dashboard Demo</Link></li>
               </ul>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Resources
-              </h4>
-              <ul className="space-y-2 text-xs text-zinc-400">
-                <li><Link href="/blog" className="hover:text-white transition-colors">Change Intelligence</Link></li>
-                <li><a href="https://github.com/ravitejabolla756-sys/apiproof" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">GitHub Repository</a></li>
-                <li><Link href="/#how-it-works" className="hover:text-white transition-colors">Verification Process</Link></li>
+            {/* Column 3: Inner Pages */}
+            <div className="md:col-span-2 space-y-4 font-mono text-xs uppercase tracking-wider">
+              <div className="text-white font-bold text-sm">Resources</div>
+              <ul className="space-y-2.5 text-slate-400">
+                <li><Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link></li>
+                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition-colors">Changelog</Link></li>
               </ul>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Company
-              </h4>
-              <ul className="space-y-2 text-xs text-zinc-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Legal
-              </h4>
-              <ul className="space-y-2 text-xs text-zinc-400">
-                <li><span className="text-zinc-500 cursor-not-allowed">Privacy Policy</span></li>
-                <li><span className="text-zinc-500 cursor-not-allowed">Terms of Service</span></li>
-                <li><span className="text-zinc-500 cursor-not-allowed">Security Policy</span></li>
+            {/* Column 4: Legal Pages */}
+            <div className="md:col-span-2 space-y-4 font-mono text-xs uppercase tracking-wider">
+              <div className="text-white font-bold text-sm">Legal</div>
+              <ul className="space-y-2.5 text-slate-400">
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/security" className="hover:text-white transition-colors">Security Policy</Link></li>
               </ul>
             </div>
           </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-500">
+            <div>© {new Date().getFullYear()} APIProof. All Rights Reserved.</div>
+            <div>Built for mission-critical developer infrastructure.</div>
+          </div>
+
         </div>
 
-        {/* BOTTOM STRIP */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
-          <div>
-            &copy; {new Date().getFullYear()} APIProof Inc. Verified API compatibility intelligence.
-          </div>
-          <div className="flex items-center gap-6">
-            <span className="inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" /> Read-only AST analysis engine
-            </span>
-          </div>
-        </div>
       </div>
     </footer>
   );

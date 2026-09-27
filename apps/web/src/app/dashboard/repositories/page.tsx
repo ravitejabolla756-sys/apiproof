@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { demoData } from "@/lib/demo-data";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,29 +11,102 @@ import {
   ExternalLink,
   Search,
   Plus,
+  Play,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 
+interface RepositoryRecord {
+  id: string;
+  owner: string;
+  name: string;
+  full_name: string;
+  github_repository_id: string;
+  default_branch: string;
+  status: string;
+  last_scan_at: string | null;
+  created_at: string;
+  findings_count: number;
+  scans_count: number;
+  last_scan_sha: string | null;
+}
+
 export default function RepositoriesTablePage() {
+  const [repositories, setRepositories] = useState<RepositoryRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [scanningRepoId, setScanningRepoId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "healthy" | "affected">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedRepo, setExpandedRepo] = useState<string | null>("bavio-ai-v1");
+  const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const [scanMessage, setScanMessage] = useState<{ id: string; text: string; error?: boolean } | null>(null);
 
-  const filteredRepos = demoData.repositories.filter((repo) => {
+  async function loadRepositories() {
+    try {
+      const res = await fetch("/api/repositories");
+      if (res.ok) {
+        const json = await res.json();
+        setRepositories(json.repositories || []);
+        if (json.repositories?.length > 0 && !expandedRepo) {
+          setExpandedRepo(json.repositories[0].id);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load repositories:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadRepositories();
+  }, []);
+
+  async function handleTriggerScan(repoId: string) {
+    setScanningRepoId(repoId);
+    setScanMessage({ id: repoId, text: "Running AST analyzer against repository..." });
+
+    try {
+      const res = await fetch(`/api/repositories/${repoId}/scan`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Scan execution failed.");
+      }
+
+      setScanMessage({
+        id: repoId,
+        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+      });
+      await loadRepositories();
+    } catch (err: unknown) {
+      setScanMessage({ id: repoId, text: err instanceof Error ? err.message : String(err), error: true });
+    } finally {
+      setScanningRepoId(null);
+    }
+  }
+
+  const filteredRepos = repositories.filter((repo) => {
     const matchesFilter =
       filter === "all" ||
-      (filter === "healthy" && repo.status === "healthy") ||
-      (filter === "affected" && repo.status !== "healthy");
+      (filter === "healthy" && repo.findings_count === 0) ||
+      (filter === "affected" && repo.findings_count > 0);
     const matchesSearch =
       repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      repo.fullName.toLowerCase().includes(searchQuery.toLowerCase());
+      repo.full_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
-      <ConnectRepoModal isOpen={isConnectOpen} onClose={() => setIsConnectOpen(false)} />
+      <ConnectRepoModal
+        isOpen={isConnectOpen}
+        onClose={() => setIsConnectOpen(false)}
+        onSuccess={loadRepositories}
+      />
 
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E8E5] pb-6">
@@ -43,18 +115,29 @@ export default function RepositoriesTablePage() {
             Repositories
           </h1>
           <p className="text-xs text-[#686868] mt-1">
-            Repositories currently analyzed by APIProof AST compatibility engine.
+            Repositories connected to the deterministic APIProof AST compatibility engine.
           </p>
         </div>
 
-        <Button
-          onClick={() => setIsConnectOpen(true)}
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-          className="font-medium"
-        >
-          Connect repository
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={loadRepositories}
+            variant="outline"
+            size="sm"
+            icon={<RefreshCw className="w-3.5 h-3.5" />}
+            className="font-medium"
+          >
+            Refresh
+          </Button>
+          <Button
+            onClick={() => setIsConnectOpen(true)}
+            size="sm"
+            icon={<Plus className="w-4 h-4" />}
+            className="font-medium"
+          >
+            Connect repository
+          </Button>
+        </div>
       </div>
 
       {/* Filter & Search Controls */}
@@ -96,122 +179,157 @@ export default function RepositoriesTablePage() {
               <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">
                 <th className="py-3 px-4 w-10" />
                 <th className="py-3 px-4">Repository</th>
-                <th className="py-3 px-4">Providers</th>
-                <th className="py-3 px-4">Coverage</th>
+                <th className="py-3 px-4">Branch</th>
+                <th className="py-3 px-4 text-center">Scans</th>
                 <th className="py-3 px-4 text-center">Findings</th>
-                <th className="py-3 px-4">Last analyzed</th>
+                <th className="py-3 px-4">Last Analyzed</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8E8E5] text-xs">
-              {filteredRepos.map((repo) => {
-                const isExpanded = expandedRepo === repo.id;
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-[#686868]">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
+                    <span>Loading repositories from database...</span>
+                  </td>
+                </tr>
+              ) : filteredRepos.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-[#686868]">
+                    No repositories found matching your filter.
+                  </td>
+                </tr>
+              ) : (
+                filteredRepos.map((repo) => {
+                  const isExpanded = expandedRepo === repo.id;
+                  const isScanning = scanningRepoId === repo.id;
 
-                return (
-                  <tr key={repo.id} className="group hover:bg-[#F6F6F4]/50 transition-colors">
-                    <td colSpan={8} className="p-0">
-                      {/* Main Table Row */}
-                      <div className="flex items-center justify-between py-3.5 px-4">
-                        <div className="w-10">
-                          <button
-                            onClick={() => setExpandedRepo(isExpanded ? null : repo.id)}
-                            className="p-1 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="w-4 h-4 text-purple-700" />
+                  return (
+                    <tr key={repo.id} className="group hover:bg-[#F6F6F4]/50 transition-colors">
+                      <td colSpan={8} className="p-0">
+                        {/* Main Table Row */}
+                        <div className="flex items-center justify-between py-3.5 px-4">
+                          <div className="w-10">
+                            <button
+                              onClick={() => setExpandedRepo(isExpanded ? null : repo.id)}
+                              className="p-1 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4 text-purple-700" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+
+                          <div className="flex-1 font-medium text-[#111111] flex items-center gap-2">
+                            <GitBranch className="w-4 h-4 text-zinc-400" />
+                            <Link href={`/dashboard/repositories/${repo.id}`} className="font-mono text-xs hover:underline">
+                              {repo.name}
+                            </Link>
+                            <span className="text-[11px] text-[#686868] font-mono hidden md:inline">({repo.full_name})</span>
+                          </div>
+
+                          <div className="w-28 text-[#686868] font-mono">
+                            {repo.default_branch}
+                          </div>
+
+                          <div className="w-20 text-center font-mono font-medium text-[#111111]">
+                            {repo.scans_count}
+                          </div>
+
+                          <div className="w-20 text-center font-mono font-medium">
+                            {repo.findings_count > 0 ? (
+                              <span className="text-rose-700 font-semibold">{repo.findings_count}</span>
                             ) : (
-                              <ChevronRight className="w-4 h-4" />
+                              <span className="text-emerald-700 font-semibold">0</span>
                             )}
-                          </button>
-                        </div>
-
-                        <div className="flex-1 font-medium text-[#111111] flex items-center gap-2">
-                          <GitBranch className="w-4 h-4 text-zinc-400" />
-                          <span className="font-mono text-xs">{repo.name}</span>
-                          <span className="text-[11px] text-[#686868] font-mono hidden md:inline">({repo.fullName})</span>
-                        </div>
-
-                        <div className="w-36 text-[#686868]">
-                          {repo.providers[0]}
-                          {repo.providers.length > 1 && ` +${repo.providers.length - 1}`}
-                        </div>
-
-                        <div className="w-36 text-[#686868]">
-                          {repo.providers.includes("Twilio") ? "Reviewed: Twilio" : repo.providers.includes("Stripe") ? "Reviewed: Stripe" : "Detected"}
-                        </div>
-
-                        <div className="w-20 text-center font-mono font-medium">
-                          {repo.findingsCount > 0 ? (
-                            <span className="text-rose-700 font-semibold">{repo.findingsCount}</span>
-                          ) : (
-                            <span className="text-emerald-700 font-semibold">0</span>
-                          )}
-                        </div>
-
-                        <div className="w-28 text-[#686868] text-[11px]">
-                          Sep 11
-                        </div>
-
-                        <div className="w-32">
-                          <StatusPill
-                            status={repo.status === "healthy" ? "healthy" : "affected"}
-                            label={repo.status === "healthy" ? "Healthy" : "Needs review"}
-                          />
-                        </div>
-
-                        <div className="w-20 text-right">
-                          <Link
-                            href={`/dashboard/repositories/${repo.id}`}
-                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
-                          >
-                            Inspect <ExternalLink className="w-3 h-3" />
-                          </Link>
-                        </div>
-                      </div>
-
-                      {/* Expanded Row Detail Drawer */}
-                      {isExpanded && (
-                        <div className="bg-[#F6F6F4] p-5 border-t border-[#E8E8E5] space-y-4 text-xs">
-                          <div className="text-xs font-semibold text-[#111111]">
-                            Repository details: {repo.name}
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                            <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
-                              <span className="text-[#686868] block text-[10px] uppercase font-semibold">Source files</span>
-                              <span className="text-[#111111] font-mono font-semibold">{repo.totalFiles} files</span>
-                            </div>
-                            <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
-                              <span className="text-[#686868] block text-[10px] uppercase font-semibold">Usages indexed</span>
-                              <span className="text-purple-700 font-mono font-semibold">{repo.usagesCount} locations</span>
-                            </div>
-                            <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
-                              <span className="text-[#686868] block text-[10px] uppercase font-semibold">Reviewed coverage</span>
-                              <span className="text-[#111111] font-medium">
-                                {repo.providers.filter((p) => p === "Stripe" || p === "Twilio").join(", ") || "None"}
-                              </span>
-                            </div>
-                            <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
-                              <span className="text-[#686868] block text-[10px] uppercase font-semibold">Findings</span>
-                              <span className="text-[#111111] font-mono font-semibold">{repo.findingsCount} active</span>
-                            </div>
+                          <div className="w-32 text-[#686868] text-[11px]">
+                            {repo.last_scan_at ? new Date(repo.last_scan_at).toLocaleDateString() : 'Never'}
                           </div>
 
-                          <div className="text-xs text-[#686868] pt-1">
-                            Detected SDKs:{" "}
-                            {repo.providers.map((p) => (
-                              <span key={p} className="inline-block mr-1.5 text-[#111111] font-mono text-[11px] bg-white px-2.5 py-0.5 rounded-lg border border-[#E8E8E5]">
-                                {p}
-                              </span>
-                            ))}
+                          <div className="w-32">
+                            <StatusPill
+                              status={repo.findings_count > 0 ? "affected" : "healthy"}
+                              label={repo.findings_count > 0 ? `${repo.findings_count} findings` : "Healthy"}
+                            />
+                          </div>
+
+                          <div className="w-40 flex items-center justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={isScanning}
+                              onClick={() => handleTriggerScan(repo.id)}
+                              className="text-xs gap-1 font-medium"
+                            >
+                              {isScanning ? (
+                                <Loader2 className="w-3 h-3 animate-spin text-purple-700" />
+                              ) : (
+                                <Play className="w-3 h-3 text-purple-700" />
+                              )}
+                              <span>{isScanning ? "Scanning..." : "Scan"}</span>
+                            </Button>
+
+                            <Link
+                              href={`/dashboard/repositories/${repo.id}`}
+                              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1"
+                            >
+                              Inspect <ExternalLink className="w-3 h-3" />
+                            </Link>
                           </div>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+
+                        {/* Scan Status Toast if active for this repo */}
+                        {scanMessage && scanMessage.id === repo.id && (
+                          <div className={`px-5 py-2 text-xs border-t ${
+                            scanMessage.error
+                              ? "bg-rose-50 text-rose-800 border-rose-200"
+                              : "bg-purple-50 text-purple-900 border-purple-200"
+                          }`}>
+                            {scanMessage.text}
+                          </div>
+                        )}
+
+                        {/* Expanded Row Detail Drawer */}
+                        {isExpanded && (
+                          <div className="bg-[#F6F6F4] p-5 border-t border-[#E8E8E5] space-y-4 text-xs">
+                            <div className="text-xs font-semibold text-[#111111] flex items-center justify-between">
+                              <span>Repository metadata: {repo.full_name}</span>
+                              <span className="font-mono text-[11px] text-[#686868]">ID: {repo.id}</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                              <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
+                                <span className="text-[#686868] block text-[10px] uppercase font-semibold">GitHub Repo ID</span>
+                                <span className="text-[#111111] font-mono font-semibold">{repo.github_repository_id}</span>
+                              </div>
+                              <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
+                                <span className="text-[#686868] block text-[10px] uppercase font-semibold">Completed Scans</span>
+                                <span className="text-purple-700 font-mono font-semibold">{repo.scans_count} scans</span>
+                              </div>
+                              <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
+                                <span className="text-[#686868] block text-[10px] uppercase font-semibold">Breaking Findings</span>
+                                <span className="text-rose-700 font-mono font-semibold">{repo.findings_count} active</span>
+                              </div>
+                              <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
+                                <span className="text-[#686868] block text-[10px] uppercase font-semibold">Last Analyzed SHA</span>
+                                <span className="text-[#111111] font-mono text-[11px] truncate block">
+                                  {repo.last_scan_sha ? repo.last_scan_sha.slice(0, 10) : 'None'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

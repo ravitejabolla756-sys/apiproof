@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r typecheck && tsc -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "db:migrate": "pnpm --filter @apiproof/web db:migrate"
   },
   "devDependencies": {
     "@apiproof/analyzers": "workspace:*",

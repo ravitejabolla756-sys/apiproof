@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { AnalysisError } from '@apiproof/shared';
 import { allowedPatchPath, assertPlainPath, fail, sha256 } from './policy.js';
 
-export const patchToolRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+export const patchToolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../');
 export const patchCorpusRoot = path.join(patchToolRoot, 'evaluation-patches');
 export interface FixtureManifest { schemaVersion: '1.0'; fixtures: Record<string, Record<string, string>> }
 export interface PatchWorkspace { readonly runId: string; readonly repositoryId: string; readonly directory: string; readonly originalDirectory: string; readonly snapshot: Readonly<Record<string, string>> }

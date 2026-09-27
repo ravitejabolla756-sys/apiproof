@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import type { RepositoryIdentity, GitHubOperation } from './types.js';
 import type { SourceControlProvider } from './provider.js';
-import type { GitHubAppConfig } from './config.js';
+import { type GitHubAppConfig, normalizePrivateKeyPem } from './config.js';
 
 export interface InstallationTokenProvider {
   getToken(installationId: string, repositoryId: string): Promise<string>;
@@ -35,9 +35,20 @@ export class NodeGitHubAppTokenProvider implements InstallationTokenProvider {
     }
 
     let privateKeyPem: string;
-    try {
-      privateKeyPem = await fs.readFile(this.config.privateKeyPath, 'utf8');
-    } catch {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    if (this.config.privateKey) {
+      privateKeyPem = normalizePrivateKeyPem(this.config.privateKey);
+    } else if (isProduction) {
+      // In production, never fall back to local filesystem .pem file
+      throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE: Production requires GITHUB_APP_PRIVATE_KEY environment variable.');
+    } else if (this.config.privateKeyPath) {
+      try {
+        privateKeyPem = await fs.readFile(this.config.privateKeyPath, 'utf8');
+      } catch {
+        throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
+      }
+    } else {
       throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
     }
 
@@ -78,10 +89,14 @@ export class NodeGitHubAppTokenProvider implements InstallationTokenProvider {
       exp: nowSec + (10 * 60),
       iss: appId,
     }));
-    const sign = crypto.createSign('RSA-SHA256');
-    sign.update(`${header}.${payload}`);
-    const signature = base64url(sign.sign(privateKeyPem));
-    return `${header}.${payload}.${signature}`;
+    try {
+      const sign = crypto.createSign('RSA-SHA256');
+      sign.update(`${header}.${payload}`);
+      const signature = base64url(sign.sign(privateKeyPem));
+      return `${header}.${payload}.${signature}`;
+    } catch {
+      throw new Error('GITHUB_PRIVATE_KEY_UNREADABLE');
+    }
   }
 }
 
