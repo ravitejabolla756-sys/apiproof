@@ -232,6 +232,72 @@ export const migrations: Migration[] = [
       }
     },
   },
+  {
+    id: '004',
+    name: 'phase3b_github_webhooks_and_synchronization',
+    up: async (db: DatabaseAdapter) => {
+      // 1. Ensure status column on github_installations
+      if (db.engine === 'postgres') {
+        await db.execute("ALTER TABLE github_installations ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active'");
+      } else {
+        const colCheck = await db.query<{ name: string }>("PRAGMA table_info(github_installations)");
+        if (!colCheck.some((c) => c.name === 'status')) {
+          await db.execute("ALTER TABLE github_installations ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
+        }
+      }
+
+      // 2. Create github_webhook_deliveries
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
+          id TEXT PRIMARY KEY,
+          event TEXT NOT NULL,
+          status TEXT NOT NULL,
+          received_at TEXT NOT NULL,
+          processed_at TEXT NOT NULL,
+          error_message TEXT
+        )
+      `);
+
+      // 3. Create github_scan_requests
+
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS github_scan_requests (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+            repository_id TEXT NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
+            commit_sha TEXT NOT NULL,
+            ref TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            delivery_id TEXT,
+            created_at TEXT NOT NULL,
+            UNIQUE (repository_id, commit_sha)
+          )
+        `);
+      } else {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS github_scan_requests (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL,
+            repository_id TEXT NOT NULL,
+            commit_sha TEXT NOT NULL,
+            ref TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            delivery_id TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+            FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE,
+            UNIQUE (repository_id, commit_sha)
+          )
+        `);
+      }
+
+      // 4. Create indexes
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status)');
+    },
+  },
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {

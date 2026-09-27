@@ -29,6 +29,7 @@ export interface GitHubInstallationRecord {
   installationId: string;
   accountLogin: string;
   accountType: string;
+  status: 'active' | 'suspended' | 'deleted';
   createdAt: string;
   updatedAt: string;
 }
@@ -437,21 +438,27 @@ export async function requirePullRequestAccess(
  * Queries GitHub installation metadata belonging to a workspace.
  */
 export async function getWorkspaceGitHubInstallation(
-  workspaceId: string
+  workspaceId: string,
+  options?: { includeInactive?: boolean }
 ): Promise<GitHubInstallationRecord | null> {
   const db = getDatabase();
+  const filterInactive = !options?.includeInactive;
+  const whereClause = filterInactive
+    ? "WHERE workspace_id = ? AND (status IS NULL OR status = 'active')"
+    : 'WHERE workspace_id = ?';
   const row = await db.queryOne<{
     id: string;
     workspace_id: string;
     installation_id: string;
     account_login: string;
     account_type: string;
+    status: string | null;
     created_at: string;
     updated_at: string;
   }>(`
-    SELECT id, workspace_id, installation_id, account_login, account_type, created_at, updated_at
+    SELECT id, workspace_id, installation_id, account_login, account_type, status, created_at, updated_at
     FROM github_installations
-    WHERE workspace_id = ?
+    ${whereClause}
     LIMIT 1
   `, [workspaceId]);
 
@@ -465,7 +472,68 @@ export async function getWorkspaceGitHubInstallation(
     installationId: row.installation_id,
     accountLogin: row.account_login,
     accountType: row.account_type,
+    status: (row.status as 'active' | 'suspended' | 'deleted') || 'active',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+/**
+ * Queries GitHub installation metadata by installation ID.
+ */
+export async function getGitHubInstallationByInstallationId(
+  installationId: string,
+  options?: { includeInactive?: boolean }
+): Promise<GitHubInstallationRecord | null> {
+  const db = getDatabase();
+  const filterInactive = !options?.includeInactive;
+  const whereClause = filterInactive
+    ? "WHERE installation_id = ? AND (status IS NULL OR status = 'active')"
+    : 'WHERE installation_id = ?';
+  const row = await db.queryOne<{
+    id: string;
+    workspace_id: string;
+    installation_id: string;
+    account_login: string;
+    account_type: string;
+    status: string | null;
+    created_at: string;
+    updated_at: string;
+  }>(`
+    SELECT id, workspace_id, installation_id, account_login, account_type, status, created_at, updated_at
+    FROM github_installations
+    ${whereClause}
+    LIMIT 1
+  `, [installationId]);
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    installationId: row.installation_id,
+    accountLogin: row.account_login,
+    accountType: row.account_type,
+    status: (row.status as 'active' | 'suspended' | 'deleted') || 'active',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+/**
+ * Updates status of a GitHub installation record.
+ */
+export async function updateGitHubInstallationStatus(
+  installationId: string,
+  status: 'active' | 'suspended' | 'deleted'
+): Promise<void> {
+  const db = getDatabase();
+  const now = new Date().toISOString();
+  await db.execute(`
+    UPDATE github_installations
+    SET status = ?, updated_at = ?
+    WHERE installation_id = ?
+  `, [status, now, installationId]);
 }

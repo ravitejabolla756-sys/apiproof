@@ -30,8 +30,30 @@ CREATE TABLE IF NOT EXISTS github_installations (
   installation_id TEXT UNIQUE NOT NULL,
   account_login TEXT NOT NULL,
   account_type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
+  id TEXT PRIMARY KEY,
+  event TEXT NOT NULL,
+  status TEXT NOT NULL,
+  received_at TEXT NOT NULL,
+  processed_at TEXT NOT NULL,
+  error_message TEXT
+);
+
+CREATE TABLE IF NOT EXISTS github_scan_requests (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  repository_id TEXT NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
+  commit_sha TEXT NOT NULL,
+  ref TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  delivery_id TEXT,
+  created_at TEXT NOT NULL,
+  UNIQUE (repository_id, commit_sha)
 );
 
 CREATE TABLE IF NOT EXISTS github_installation_states (
@@ -165,6 +187,9 @@ CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_findings_identity ON findings(repository_id, change_id, file_path, symbol);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pull_requests_migration ON pull_requests(migration_id);
 CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
 `;
 
 export const SQLITE_SCHEMA = `
@@ -201,9 +226,33 @@ CREATE TABLE IF NOT EXISTS github_installations (
   installation_id TEXT UNIQUE NOT NULL,
   account_login TEXT NOT NULL,
   account_type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
+  id TEXT PRIMARY KEY,
+  event TEXT NOT NULL,
+  status TEXT NOT NULL,
+  received_at TEXT NOT NULL,
+  processed_at TEXT NOT NULL,
+  error_message TEXT
+);
+
+CREATE TABLE IF NOT EXISTS github_scan_requests (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  repository_id TEXT NOT NULL,
+  commit_sha TEXT NOT NULL,
+  ref TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  delivery_id TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+  FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE,
+  UNIQUE (repository_id, commit_sha)
 );
 
 CREATE TABLE IF NOT EXISTS github_installation_states (
@@ -351,4 +400,7 @@ CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_findings_identity ON findings(repository_id, change_id, file_path, symbol);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pull_requests_migration ON pull_requests(migration_id);
 CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
 `;
