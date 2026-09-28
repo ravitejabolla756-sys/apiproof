@@ -3,11 +3,17 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
 import { StripeProvider, TwilioProvider } from '@apiproof/providers';
-import type { ApiProvider } from '@apiproof/core';
+import {
+  type ApiProvider,
+  loadGitHubAppConfig,
+  NodeGitHubAppTokenProvider,
+  GitHubAppSourceControlProvider,
+  FetchGitHubReadTransport,
+} from '@apiproof/core';
 import { getDatabase } from './db/index.js';
 import { getGitHubProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadProviderRegistry } from './registry-utils.js';
-import { requireRepositoryAccess } from './workspace-service.js';
+import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -76,7 +82,24 @@ export async function runRepositoryScan(repositoryId: string, userId: string): P
     let headSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
 
     // 3. Fetch source files (via live GitHub App if available, or fixture snapshot)
-    const githubProvider = getGitHubProvider();
+    let githubProvider = getGitHubProvider();
+    if (githubProvider && repo.workspace_id) {
+      const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
+      if (installation) {
+        const config = loadGitHubAppConfig();
+        const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
+        const repoConfig = {
+          ...config,
+          installationId: installation.installationId,
+          repositoryId: repo.github_repository_id,
+          owner: repo.owner,
+          repository: repo.name,
+        };
+        const transport = new FetchGitHubReadTransport();
+        githubProvider = new GitHubAppSourceControlProvider(repoConfig, tokenProvider, transport);
+      }
+    }
+
     if (githubProvider) {
       try {
         const remoteData = await fetchRemoteRepositoryFiles(githubProvider);

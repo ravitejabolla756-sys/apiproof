@@ -43,6 +43,15 @@ export async function POST(req: Request) {
     if (message.includes('not found') || message.includes('access denied')) {
       return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
     }
+    if (message.includes('REPOSITORY_HEAD_DIVERGED')) {
+      return NextResponse.json({ error: message, code: 'REPOSITORY_HEAD_DIVERGED' }, { status: 409 });
+    }
+    if (message.includes('BASELINE_SHA_REPOSITORY_MISMATCH')) {
+      return NextResponse.json({ error: message, code: 'BASELINE_SHA_REPOSITORY_MISMATCH' }, { status: 400 });
+    }
+    if (message.includes('BASELINE_SHA_INVALID')) {
+      return NextResponse.json({ error: message, code: 'BASELINE_SHA_INVALID' }, { status: 400 });
+    }
     console.error('Proposal generation failed:', error);
     return NextResponse.json({ error: message, code: 'PROPOSAL_FAILED' }, { status: 500 });
   }

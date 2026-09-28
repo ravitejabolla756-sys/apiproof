@@ -30,7 +30,11 @@ export interface ProposalResult {
   createdAt: string;
 }
 
-export async function createGitHubProposal(migrationId: string, userId: string): Promise<ProposalResult> {
+export async function createGitHubProposal(
+  migrationId: string,
+  userId: string,
+  customTransport?: GitHubControlledWriteTransport
+): Promise<ProposalResult> {
   const db = getDatabase();
 
   // 1. Fetch migration and verify workspace access (central authorization / IDOR protection)
@@ -95,6 +99,33 @@ export async function createGitHubProposal(migrationId: string, userId: string):
     };
   }
 
+  // 1c. Resolve and validate the exact scan baseline SHA
+  let baselineSha = (rawMigration.baseline_sha as string | undefined)?.trim();
+  if (!baselineSha) {
+    const scanRow = await db.queryOne<{ sha: string }>(`
+      SELECT s.sha
+      FROM findings f
+      JOIN scans s ON f.scan_id = s.id
+      WHERE f.id = ? AND s.repository_id = ?
+    `, [rawMigration.finding_id, repo.id]);
+    baselineSha = scanRow?.sha?.trim();
+  }
+
+  if (!baselineSha || !/^[a-f0-9]{40}$/i.test(baselineSha)) {
+    throw new Error('BASELINE_SHA_INVALID: Valid 40-character commit SHA required for migration proposal.');
+  }
+
+  // Validate that the baseline SHA actually belongs to a completed scan for this target repository
+  const repoScan = await db.queryOne<{ id: string }>(`
+    SELECT s.id
+    FROM scans s
+    WHERE s.repository_id = ? AND s.sha = ?
+  `, [repo.id, baselineSha]);
+
+  if (!repoScan) {
+    throw new Error(`BASELINE_SHA_REPOSITORY_MISMATCH: Baseline SHA ${baselineSha} does not belong to repository ${repo.full_name}.`);
+  }
+
   // 2. Validate Patch Scope (no .env, .github, etc.)
   const patchScopeCheck = validatePatchScope([migration.file_path], [migration.file_path]);
   if (!patchScopeCheck.valid) {
@@ -103,7 +134,6 @@ export async function createGitHubProposal(migrationId: string, userId: string):
 
   // 3. Construct Verification Evidence & ControlledWriteRequest
   const branchName = formatCanonicalMigrationBranch(migration.change_id, migration.id);
-  const baselineSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
 
   const verification = createVerificationEvidence({
     repositoryId: migration.github_repository_id,
@@ -153,11 +183,13 @@ export async function createGitHubProposal(migrationId: string, userId: string):
     throw new Error(`Controlled write rejected by safety contract: ${validation.reason}`);
   }
 
-  // 5. Select transport: live controlled GitHub transport when enabled, otherwise safe fake transport
+  // 5. Select transport: custom test transport, live controlled GitHub transport when enabled, or safe fake transport
   const isLiveWrite = process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE === 'true';
   let transport: GitHubControlledWriteTransport;
 
-  if (isLiveWrite) {
+  if (customTransport) {
+    transport = customTransport;
+  } else if (isLiveWrite) {
     const config = loadGitHubAppConfig();
     assertLiveConfig(config);
     const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
@@ -182,8 +214,17 @@ export async function createGitHubProposal(migrationId: string, userId: string):
     transport = new FakeGitHubWriteTransport(
       migration.repo_owner,
       migration.repo_name,
-      migration.default_branch
+      migration.default_branch,
+      baselineSha
     );
+  }
+
+  // Invariant 8: Check if repository default branch HEAD has moved since scan was performed
+  if (transport.getDefaultBranchSha) {
+    const remoteHeadSha = await transport.getDefaultBranchSha(migration.default_branch);
+    if (remoteHeadSha && remoteHeadSha !== baselineSha) {
+      throw new Error(`REPOSITORY_HEAD_DIVERGED: Target repository default branch HEAD (${remoteHeadSha.slice(0, 7)}) has moved since scan was performed (${baselineSha.slice(0, 7)}). A fresh scan is required before proposing a migration.`);
+    }
   }
 
   const title = `fix(api): deterministic migration for ${migration.change_id}`;

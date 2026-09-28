@@ -25,11 +25,20 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
     draft: boolean;
   }> = [];
 
+  public defaultBranchSha: string | undefined;
+
   constructor(
     private readonly repositoryOwner = 'ravitejabolla756-sys',
     private readonly repositoryName = 'apiproof-github-fixture',
-    private readonly defaultBranch = 'main'
-  ) {}
+    private readonly defaultBranch = 'main',
+    defaultBranchSha?: string
+  ) {
+    this.defaultBranchSha = defaultBranchSha;
+  }
+
+  async getDefaultBranchSha(_branchName?: string): Promise<string> {
+    return this.defaultBranchSha ?? '';
+  }
 
   operationAllowed(operation: GitHubOperation): boolean {
     if (STRICTLY_FORBIDDEN_WRITE_OPERATIONS.includes(operation)) return false;

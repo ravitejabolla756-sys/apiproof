@@ -81,6 +81,7 @@ export interface MigrationRecord {
   plan_json: string;
   patch_diff: string;
   patch_digest: string;
+  baseline_sha?: string | null;
   verification_report: string | null;
   created_at: string;
   [key: string]: unknown;

@@ -7,6 +7,7 @@ export interface GitHubControlledWriteTransport {
   createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }>;
   createPullRequest(input: { branch: string; title: string; body: string; base: string; draft?: boolean }): Promise<{ number: number; url: string }>;
   getBranchRef?(branchName: string): Promise<{ ref: string; sha: string } | null>;
+  getDefaultBranchSha?(branchName?: string): Promise<string>;
   findOpenPullRequestByHead?(branchName: string): Promise<{ number: number; url: string; title: string; body: string; head: string; base: string; draft: boolean } | null>;
   operationAllowed(operation: GitHubOperation): boolean;
 }
@@ -83,6 +84,10 @@ export class DisabledGitHubWriteTransport implements GitHubControlledWriteTransp
   }
 
   async createPullRequest(_input: { branch: string; title: string; body: string; base: string; draft?: boolean }): Promise<{ number: number; url: string }> {
+    throw new Error('GITHUB_WRITE_DISABLED: Remote writes are strictly disabled in this phase.');
+  }
+
+  async getDefaultBranchSha(_branchName?: string): Promise<string> {
     throw new Error('GITHUB_WRITE_DISABLED: Remote writes are strictly disabled in this phase.');
   }
 }
@@ -236,9 +241,41 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
       if (existing && existing.sha !== sha) {
         throw new Error(`GITHUB_BRANCH_CONFLICT: Branch '${branchName}' already exists at unexpected SHA (${existing.sha} !== expected ${sha})`);
       }
+
+      let errorBody: { message?: string } | undefined;
+      try {
+        errorBody = (await response.json()) as { message?: string };
+      } catch {
+        // ignore
+      }
+      if (errorBody?.message?.toLowerCase().includes('object does not exist')) {
+        throw new Error(`GITHUB_BASELINE_NOT_FOUND: Baseline commit ${sha} does not exist in target repository.`);
+      }
     }
 
     throw new Error('GITHUB_WRITE_FAILED');
+  }
+
+  async getDefaultBranchSha(branchName = 'main'): Promise<string> {
+    const cleanRef = branchName.replace(/^refs\/heads\//, '');
+    const path = `/repos/${this.config.owner}/${this.config.repository}/git/ref/heads/${encodeURIComponent(cleanRef)}`;
+    const token = await this.tokens.getToken(this.config.installationId, this.config.repositoryId);
+    const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
+    });
+    if (response.status === 404) {
+      throw new Error(`GITHUB_DEFAULT_BRANCH_NOT_FOUND: Default branch '${branchName}' not found in remote repository.`);
+    }
+    if (!response.ok) {
+      throw new Error('GITHUB_READ_FAILED: Failed to fetch remote repository default branch ref.');
+    }
+    const data = (await response.json()) as { object?: { sha?: string } };
+    const sha = data.object?.sha;
+    if (!sha || !/^[a-f0-9]{40}$/i.test(sha)) {
+      throw new Error('GITHUB_READ_FAILED: Invalid SHA received for remote default branch ref.');
+    }
+    return sha;
   }
 
   async createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }> {

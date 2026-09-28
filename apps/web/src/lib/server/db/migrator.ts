@@ -420,6 +420,43 @@ export const migrations: Migration[] = [
       await db.execute('CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start)');
     },
   },
+  {
+    id: '007',
+    name: 'phase9_migration_baseline_sha',
+    up: async (db: DatabaseAdapter) => {
+      // Check if migrations table exists
+      const tableCheck = db.engine === 'postgres'
+        ? await db.queryOne<{ exists: boolean }>("SELECT to_regclass('public.migrations') IS NOT NULL AS exists")
+        : await db.queryOne<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'migrations'");
+
+      const tableExists = db.engine === 'postgres' ? (tableCheck as { exists?: boolean })?.exists : Boolean(tableCheck);
+      if (!tableExists) {
+        return;
+      }
+
+      // 1. Add baseline_sha column to migrations table if not exists
+      if (db.engine === 'postgres') {
+        await db.execute('ALTER TABLE migrations ADD COLUMN IF NOT EXISTS baseline_sha TEXT');
+      } else {
+        const columns = await db.query<{ name: string }>('PRAGMA table_info(migrations)');
+        if (!columns.some((c) => c.name === 'baseline_sha')) {
+          await db.execute('ALTER TABLE migrations ADD COLUMN baseline_sha TEXT');
+        }
+      }
+
+      // 2. Backfill baseline_sha for existing migrations using finding -> scan association
+      await db.execute(`
+        UPDATE migrations
+        SET baseline_sha = (
+          SELECT s.sha
+          FROM findings f
+          JOIN scans s ON f.scan_id = s.id
+          WHERE f.id = migrations.finding_id
+        )
+        WHERE baseline_sha IS NULL OR baseline_sha = ''
+      `);
+    },
+  },
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {

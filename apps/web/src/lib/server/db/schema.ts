@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS migrations (
   plan_json TEXT NOT NULL,
   patch_diff TEXT,
   patch_digest TEXT,
+  baseline_sha TEXT,
   verification_report TEXT,
   created_at TEXT NOT NULL
 );
@@ -376,6 +377,7 @@ CREATE TABLE IF NOT EXISTS migrations (
   plan_json TEXT NOT NULL,
   patch_diff TEXT,
   patch_digest TEXT,
+  baseline_sha TEXT,
   verification_report TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (finding_id) REFERENCES findings(id) ON DELETE CASCADE,

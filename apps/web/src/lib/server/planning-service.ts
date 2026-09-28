@@ -11,8 +11,10 @@ export interface MigrationPlanRecord {
   repositoryId: string;
   planId: string;
   status: string;
-  targetBranch?: string;
-  target_branch?: string;
+  targetBranch?: string | undefined;
+  target_branch?: string | undefined;
+  baselineSha?: string | undefined;
+  baseline_sha?: string | undefined;
   plan: unknown;
   patchDiff: string;
   createdAt: string;
@@ -151,12 +153,21 @@ export async function generateMigrationForFinding(findingId: string, userId: str
   const migrationId = `mig_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();
 
+  // Query baseline SHA from the scan that produced this finding
+  const scanRecord = await db.queryOne<{ sha: string }>(`
+    SELECT s.sha
+    FROM findings f
+    JOIN scans s ON f.scan_id = s.id
+    WHERE f.id = ?
+  `, [finding.id]);
+  const baselineSha = scanRecord?.sha;
+
   // 6. Save migration, update finding status, and emit activity inside a single transaction
   await db.transaction(async (tx) => {
     await tx.execute(`
       INSERT INTO migrations (
-        id, finding_id, repository_id, plan_id, status, plan_json, patch_diff, patch_digest, created_at
-      ) VALUES (?, ?, ?, ?, 'planned', ?, ?, ?, ?)
+        id, finding_id, repository_id, plan_id, status, plan_json, patch_diff, patch_digest, baseline_sha, created_at
+      ) VALUES (?, ?, ?, ?, 'planned', ?, ?, ?, ?, ?)
     `, [
       migrationId,
       finding.id,
@@ -165,6 +176,7 @@ export async function generateMigrationForFinding(findingId: string, userId: str
       JSON.stringify(plan),
       patchDiff,
       patchDigest,
+      baselineSha ?? null,
       now
     ]);
 
@@ -198,6 +210,8 @@ export async function generateMigrationForFinding(findingId: string, userId: str
     status: 'planned',
     targetBranch: branchName,
     target_branch: branchName,
+    baselineSha,
+    baseline_sha: baselineSha,
     plan,
     patchDiff,
     createdAt: now,
