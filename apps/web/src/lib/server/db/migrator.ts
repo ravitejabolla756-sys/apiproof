@@ -334,6 +334,92 @@ export const migrations: Migration[] = [
       await db.execute('CREATE INDEX IF NOT EXISTS idx_installation_states_user ON github_installation_states(user_id)');
     },
   },
+  {
+    id: '006',
+    name: 'phase7_workspace_subscriptions_and_usage',
+    up: async (db: DatabaseAdapter) => {
+      // 1. Create workspace_subscriptions table
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS workspace_subscriptions (
+            workspace_id TEXT PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
+            plan_id TEXT NOT NULL DEFAULT 'free',
+            customer_id TEXT,
+            subscription_id TEXT,
+            status TEXT NOT NULL DEFAULT 'active',
+            current_period_start TEXT NOT NULL,
+            current_period_end TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        `);
+      } else {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS workspace_subscriptions (
+            workspace_id TEXT PRIMARY KEY,
+            plan_id TEXT NOT NULL DEFAULT 'free',
+            customer_id TEXT,
+            subscription_id TEXT,
+            status TEXT NOT NULL DEFAULT 'active',
+            current_period_start TEXT NOT NULL,
+            current_period_end TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+          )
+        `);
+      }
+
+      // 2. Create workspace_usage table
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS workspace_usage (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+            metric TEXT NOT NULL,
+            period_start TEXT NOT NULL,
+            period_end TEXT NOT NULL,
+            count INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE (workspace_id, metric, period_start)
+          )
+        `);
+      } else {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS workspace_usage (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL,
+            metric TEXT NOT NULL,
+            period_start TEXT NOT NULL,
+            period_end TEXT NOT NULL,
+            count INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
+            UNIQUE (workspace_id, metric, period_start)
+          )
+        `);
+      }
+
+      // 3. Create billing_webhook_events table
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS billing_webhook_events (
+          id TEXT PRIMARY KEY,
+          provider TEXT NOT NULL,
+          event_type TEXT NOT NULL,
+          payload_hash TEXT NOT NULL,
+          processed_at TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          UNIQUE (provider, payload_hash)
+        )
+      `);
+
+      // 4. Create indexes
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start)');
+    },
+  },
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {
