@@ -126,7 +126,7 @@ The asynchronous scan worker executes pending scan jobs reliably.
 
 ### Worker Operation
 - Endpoint: `POST /api/internal/scan-worker`
-- Authorization: Requires `Authorization: Bearer <WORKER_SECRET>` header.
+- Authorization: Requires `Authorization: Bearer <CRON_SECRET>` header (Vercel Cron automatically attaches `Authorization: Bearer <CRON_SECRET>`).
 - Claiming Engine:
   - **PostgreSQL**: `SELECT ... FOR UPDATE SKIP LOCKED` ensures zero race conditions across horizontal worker nodes.
   - **SQLite** (dev/local): Transactional status updates.
@@ -165,17 +165,25 @@ pnpm lint
 ## 11. Environment Variables
 
 | Variable | Description | Required | Default |
-| font-mono | --- | --- | --- |
+| --- | --- | --- | --- |
+| `NODE_ENV` | Environment mode (`production`, `development`, `test`) | Yes | `development` |
 | `PORT` | Web server listening port | No | `3000` |
 | `DATABASE_TYPE` | Database driver (`sqlite` or `postgres`) | Yes | `sqlite` |
-| `DATABASE_URL` | Connection string or SQLite path | Yes | `./apiproof.db` |
+| `DATABASE_URL` | PostgreSQL connection string or SQLite path | Yes (in prod) | `./apiproof.db` |
+| `APIPROOF_SECRET` | Secret key for verification provenance & artifact digests | Yes (in prod) | - |
+| `SESSION_SECRET` | Secret key for HMAC cookie session signing | Yes (in prod) | - |
+| `NEXT_PUBLIC_APP_URL` | Public application URL | Yes (in prod) | `http://localhost:3000` |
 | `GITHUB_APP_ID` | GitHub App numeric ID | Yes (in prod) | - |
+| `GITHUB_APP_SLUG` | GitHub App slug / name | Yes (in prod) | `apiproof` |
 | `GITHUB_APP_PRIVATE_KEY` | RSA private key PEM for GitHub App JWTs | Yes (in prod) | - |
 | `GITHUB_CLIENT_ID` | OAuth Client ID for GitHub App | Yes (in prod) | - |
 | `GITHUB_CLIENT_SECRET` | OAuth Client Secret for GitHub App | Yes (in prod) | - |
 | `GITHUB_WEBHOOK_SECRET` | Secret for HMAC SHA-256 webhook signature validation | Yes (in prod) | - |
-| `WORKER_SECRET` | Secret token protecting `/api/internal/scan-worker` | Yes | - |
-| `SESSION_SECRET` | HMAC secret key for cookie session signing | Yes | - |
+| `CRON_SECRET` | Bearer token protecting `POST /api/internal/scan-worker` | Yes (in prod) | - |
+| `APIPROOF_ENABLE_LIVE_GITHUB_WRITE` | Enable real GitHub branch pushes & Draft PR creation | No | `false` |
+| `BILLING_PROVIDER` | Billing vendor (`mock` or `stripe`) | No | `mock` |
+| `STRIPE_SECRET_KEY` | Stripe secret API key (if `BILLING_PROVIDER=stripe`) | No | - |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (if `BILLING_PROVIDER=stripe`) | No | - |
 
 ---
 
@@ -185,5 +193,5 @@ pnpm lint
 1. Deploy Next.js App Router on Vercel, Node.js server, or Container runtime.
 2. Configure PostgreSQL database (`DATABASE_TYPE=postgres`, `DATABASE_URL=postgres://...`).
 3. Register and configure the production GitHub App.
-4. Set up periodic cron job or background service pinging `POST /api/internal/scan-worker` with `WORKER_SECRET`.
+4. Set up periodic cron job or Vercel Cron pinging `POST /api/internal/scan-worker` with `CRON_SECRET`.
 5. Verify SSL/TLS certificates and CSRF origin protection headers.

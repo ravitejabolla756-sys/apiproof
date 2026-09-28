@@ -34,7 +34,7 @@ export type ResolvedDatabaseConfig =
   | { type: 'sqlite'; path: string };
 
 export function resolveDatabaseConfig(): ResolvedDatabaseConfig {
-  const dbUrl = process.env.APIPROOF_DATABASE_URL;
+  const dbUrl = process.env.DATABASE_URL || process.env.APIPROOF_DATABASE_URL;
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (dbUrl && dbUrl.trim().length > 0) {
@@ -43,7 +43,7 @@ export function resolveDatabaseConfig(): ResolvedDatabaseConfig {
 
   if (isProduction) {
     throw new Error(
-      'MISSING_PRODUCTION_DATABASE_URL: APIPROOF_DATABASE_URL environment variable must be configured in production.'
+      'MISSING_PRODUCTION_DATABASE_URL: DATABASE_URL or APIPROOF_DATABASE_URL environment variable must be configured in production.'
     );
   }
 

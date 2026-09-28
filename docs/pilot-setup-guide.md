@@ -47,7 +47,7 @@ PORT=3000
 DATABASE_TYPE=postgres
 DATABASE_URL=postgres://user:password@localhost:5432/apiproof
 SESSION_SECRET=a_random_32_byte_string_for_session_cookies
-WORKER_SECRET=a_random_32_byte_string_for_scan_worker_auth
+CRON_SECRET=a_random_32_byte_string_for_scan_worker_auth
 
 # GitHub App Integration
 GITHUB_APP_ID=123456
@@ -87,7 +87,7 @@ APIProof processes scans asynchronously via `/api/internal/scan-worker`. Set up 
 
 ### Option B: Linux `crontab` or Systemd Timer
 ```bash
-* * * * * curl -X POST https://your-domain.com/api/internal/scan-worker -H "Authorization: Bearer YOUR_WORKER_SECRET"
+* * * * * curl -X POST https://your-domain.com/api/internal/scan-worker -H "Authorization: Bearer YOUR_CRON_SECRET"
 ```
 
 ---
