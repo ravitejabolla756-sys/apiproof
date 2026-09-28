@@ -200,68 +200,224 @@ export async function createGitHubProposal(migrationId: string, userId: string):
 * **No Default Branch Modification**: Targeted isolated branch \`${branchName}\`.
 * **Human Review**: Maintainer review is mandatory prior to integration.`;
 
-  await transport.createBranchRef(branchName, writeRequest.baseline.exactSha);
-  await transport.createCommit(branchName, writeRequest.migration.patchContent, title, writeRequest.baseline.exactSha);
-  const prResult = await transport.createPullRequest({
-    branch: branchName,
-    title,
-    body: prBody,
-    base: migration.default_branch,
-    draft: true,
-  });
+  // GAP 2: Check if an existing open PR on GitHub is already attributable to this deterministic branch
+  if (transport.findOpenPullRequestByHead) {
+    const remotePr = await transport.findOpenPullRequestByHead(branchName);
+    if (remotePr) {
+      if (remotePr.base !== migration.default_branch) {
+        throw new Error(`GITHUB_PR_CONFLICT: Existing PR #${remotePr.number} targets base '${remotePr.base}' instead of default branch '${migration.default_branch}'.`);
+      }
+      if (remotePr.head !== branchName) {
+        throw new Error(`GITHUB_PR_CONFLICT: Existing PR #${remotePr.number} head branch '${remotePr.head}' does not match expected branch '${branchName}'.`);
+      }
+      if (remotePr.draft !== true) {
+        throw new Error(`GITHUB_PR_CONFLICT: Existing PR #${remotePr.number} on branch '${branchName}' is not a draft PR.`);
+      }
 
+      // Reconcile / adopt existing GitHub Draft PR into PostgreSQL
+      return await persistPullRequestRecord(db, {
+        migrationId: migration.id,
+        repositoryId: migration.repository_id,
+        findingId: migration.finding_id,
+        workspaceId: workspace.id,
+        userId,
+        changeId: migration.change_id,
+        prNumber: remotePr.number,
+        title: remotePr.title || title,
+        branchName,
+        baseBranch: migration.default_branch,
+        url: remotePr.url,
+        patchDigest: migration.patch_digest,
+      });
+    }
+  }
+
+  let prResult: { number: number; url: string };
+  try {
+    await transport.createBranchRef(branchName, writeRequest.baseline.exactSha);
+    await transport.createCommit(branchName, writeRequest.migration.patchContent, title, writeRequest.baseline.exactSha);
+    prResult = await transport.createPullRequest({
+      branch: branchName,
+      title,
+      body: prBody,
+      base: migration.default_branch,
+      draft: true,
+    });
+  } catch (err: unknown) {
+    // GAP 3: Check if a concurrent proposal created the PR in DB or on GitHub
+    const concurrentDbPr = await db.queryOne<{
+      id: string;
+      number: number;
+      title: string;
+      branch_name: string;
+      base_branch: string;
+      url: string;
+      state: string;
+      created_at: string;
+    }>(`
+      SELECT id, number, title, branch_name, base_branch, url, state, created_at
+      FROM pull_requests
+      WHERE migration_id = ?
+    `, [migration.id]);
+
+    if (concurrentDbPr) {
+      return {
+        pullRequestId: concurrentDbPr.id,
+        number: concurrentDbPr.number,
+        title: concurrentDbPr.title,
+        url: concurrentDbPr.url,
+        branchName: concurrentDbPr.branch_name,
+        baseBranch: concurrentDbPr.base_branch,
+        state: 'draft',
+        humanReviewRequired: true,
+        autoMergeEnabled: false,
+        patchDigest: migration.patch_digest,
+        createdAt: concurrentDbPr.created_at,
+      };
+    }
+
+    if (transport.findOpenPullRequestByHead) {
+      const remotePr = await transport.findOpenPullRequestByHead(branchName);
+      if (remotePr && remotePr.draft === true && remotePr.base === migration.default_branch && remotePr.head === branchName) {
+        return await persistPullRequestRecord(db, {
+          migrationId: migration.id,
+          repositoryId: migration.repository_id,
+          findingId: migration.finding_id,
+          workspaceId: workspace.id,
+          userId,
+          changeId: migration.change_id,
+          prNumber: remotePr.number,
+          title: remotePr.title || title,
+          branchName,
+          baseBranch: migration.default_branch,
+          url: remotePr.url,
+          patchDigest: migration.patch_digest,
+        });
+      }
+    }
+
+    throw err;
+  }
+
+  return await persistPullRequestRecord(db, {
+    migrationId: migration.id,
+    repositoryId: migration.repository_id,
+    findingId: migration.finding_id,
+    workspaceId: workspace.id,
+    userId,
+    changeId: migration.change_id,
+    prNumber: prResult.number,
+    title,
+    branchName,
+    baseBranch: migration.default_branch,
+    url: prResult.url,
+    patchDigest: migration.patch_digest,
+  });
+}
+
+async function persistPullRequestRecord(
+  db: ReturnType<typeof getDatabase>,
+  params: {
+    migrationId: string;
+    repositoryId: string;
+    findingId: string;
+    workspaceId: string;
+    userId: string;
+    changeId: string;
+    prNumber: number;
+    title: string;
+    branchName: string;
+    baseBranch: string;
+    url: string;
+    patchDigest: string;
+  }
+): Promise<ProposalResult> {
   const pullRequestId = `pr_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();
 
-  // 6. Record pull request in database and update statuses in a single atomic transaction
-  await db.transaction(async (tx) => {
-    await tx.execute(`
-      INSERT INTO pull_requests (
-        id, migration_id, repository_id, number, title, branch_name, base_branch, url, state, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)
-    `, [
+  try {
+    await db.transaction(async (tx) => {
+      await tx.execute(`
+        INSERT INTO pull_requests (
+          id, migration_id, repository_id, number, title, branch_name, base_branch, url, state, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)
+      `, [
+        pullRequestId,
+        params.migrationId,
+        params.repositoryId,
+        params.prNumber,
+        params.title,
+        params.branchName,
+        params.baseBranch,
+        params.url,
+        now,
+      ]);
+
+      await tx.execute('UPDATE migrations SET status = ? WHERE id = ?', ['pr_created', params.migrationId]);
+      await tx.execute('UPDATE findings SET status = ? WHERE id = ?', ['pr_created', params.findingId]);
+      await tx.execute('UPDATE repositories SET status = ? WHERE id = ?', ['migration_ready', params.repositoryId]);
+
+      await tx.execute(`
+        INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [
+        `act_${crypto.randomBytes(10).toString('hex')}`,
+        params.userId,
+        params.repositoryId,
+        'pr_created',
+        'Draft PR Generated',
+        `Opened review-only Draft PR #${params.prNumber} for ${params.changeId}.`,
+        now,
+      ]);
+    });
+
+    await recordWorkspaceUsage(params.workspaceId, 'draft_prs');
+
+    return {
       pullRequestId,
-      migration.id,
-      migration.repository_id,
-      prResult.number,
-      title,
-      branchName,
-      migration.default_branch,
-      prResult.url,
-      now
-    ]);
+      number: params.prNumber,
+      title: params.title,
+      url: params.url,
+      branchName: params.branchName,
+      baseBranch: params.baseBranch,
+      state: 'draft',
+      humanReviewRequired: true,
+      autoMergeEnabled: false,
+      patchDigest: params.patchDigest,
+      createdAt: now,
+    };
+  } catch (err: unknown) {
+    const existingPr = await db.queryOne<{
+      id: string;
+      number: number;
+      title: string;
+      branch_name: string;
+      base_branch: string;
+      url: string;
+      state: string;
+      created_at: string;
+    }>(`
+      SELECT id, number, title, branch_name, base_branch, url, state, created_at
+      FROM pull_requests
+      WHERE migration_id = ?
+    `, [params.migrationId]);
 
-    await tx.execute('UPDATE migrations SET status = ? WHERE id = ?', ['pr_created', migration.id]);
-    await tx.execute('UPDATE findings SET status = ? WHERE id = ?', ['pr_created', migration.finding_id]);
-    await tx.execute('UPDATE repositories SET status = ? WHERE id = ?', ['migration_ready', migration.repository_id]);
+    if (existingPr) {
+      return {
+        pullRequestId: existingPr.id,
+        number: existingPr.number,
+        title: existingPr.title,
+        url: existingPr.url,
+        branchName: existingPr.branch_name,
+        baseBranch: existingPr.base_branch,
+        state: 'draft',
+        humanReviewRequired: true,
+        autoMergeEnabled: false,
+        patchDigest: params.patchDigest,
+        createdAt: existingPr.created_at,
+      };
+    }
 
-    await tx.execute(`
-      INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-      `act_${crypto.randomBytes(10).toString('hex')}`,
-      userId,
-      migration.repository_id,
-      'pr_created',
-      'Draft PR Generated',
-      `Opened review-only Draft PR #${prResult.number} for ${migration.change_id}.`,
-      now
-    ]);
-  });
-
-  await recordWorkspaceUsage(workspace.id, 'draft_prs');
-
-  return {
-    pullRequestId,
-    number: prResult.number,
-    title,
-    url: prResult.url,
-    branchName,
-    baseBranch: migration.default_branch,
-    state: 'draft',
-    humanReviewRequired: true,
-    autoMergeEnabled: false,
-    patchDigest: migration.patch_digest,
-    createdAt: now,
-  };
+    throw err;
+  }
 }

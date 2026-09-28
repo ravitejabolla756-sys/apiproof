@@ -6,6 +6,8 @@ export interface GitHubControlledWriteTransport {
   createBranchRef(branchName: string, sha: string): Promise<{ ref: string; sha: string }>;
   createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }>;
   createPullRequest(input: { branch: string; title: string; body: string; base: string; draft?: boolean }): Promise<{ number: number; url: string }>;
+  getBranchRef?(branchName: string): Promise<{ ref: string; sha: string } | null>;
+  findOpenPullRequestByHead?(branchName: string): Promise<{ number: number; url: string; title: string; body: string; head: string; base: string; draft: boolean } | null>;
   operationAllowed(operation: GitHubOperation): boolean;
 }
 
@@ -158,6 +160,58 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     }
   }
 
+  async getBranchRef(branchName: string): Promise<{ ref: string; sha: string } | null> {
+    if (!branchName.startsWith('apiproof/')) {
+      throw new Error(`GITHUB_INVALID_BRANCH_NAME: Head branch '${branchName}' must start with apiproof/ namespace.`);
+    }
+    const cleanRef = branchName.replace(/^refs\/heads\//, '');
+    const path = `/repos/${this.config.owner}/${this.config.repository}/git/ref/heads/${encodeURIComponent(cleanRef)}`;
+    const token = await this.tokens.getToken(this.config.installationId, this.config.repositoryId);
+    const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error('GITHUB_READ_FAILED');
+    const data = (await response.json()) as { object?: { sha?: string }; ref?: string };
+    return { ref: data.ref || `refs/heads/${branchName}`, sha: data.object?.sha || '' };
+  }
+
+  async findOpenPullRequestByHead(branchName: string): Promise<{ number: number; url: string; title: string; body: string; head: string; base: string; draft: boolean } | null> {
+    if (!branchName.startsWith('apiproof/')) {
+      throw new Error(`GITHUB_INVALID_BRANCH_NAME: Head branch '${branchName}' must start with apiproof/ namespace.`);
+    }
+    const headQuery = `${this.config.owner}:${branchName}`;
+    const path = `/repos/${this.config.owner}/${this.config.repository}/pulls?head=${encodeURIComponent(headQuery)}&state=open`;
+    const token = await this.tokens.getToken(this.config.installationId, this.config.repositoryId);
+    const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
+    });
+    if (!response.ok) return null;
+    const prs = (await response.json()) as Array<{
+      number?: number;
+      html_url?: string;
+      title?: string;
+      body?: string;
+      head?: { ref?: string };
+      base?: { ref?: string };
+      draft?: boolean;
+    }>;
+    if (!Array.isArray(prs) || prs.length === 0) return null;
+    const matching = prs.find((p) => p.head?.ref === branchName);
+    if (!matching) return null;
+    return {
+      number: Number(matching.number),
+      url: String(matching.html_url ?? ''),
+      title: String(matching.title ?? ''),
+      body: String(matching.body ?? ''),
+      head: String(matching.head?.ref ?? ''),
+      base: String(matching.base?.ref ?? ''),
+      draft: matching.draft === true,
+    };
+  }
+
   async createBranchRef(branchName: string, sha: string): Promise<{ ref: string; sha: string }> {
     const path = `/repos/${this.config.owner}/${this.config.repository}/git/refs`;
     this.validatePreFlight({ method: 'POST', path, branchName });
@@ -169,8 +223,22 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
       body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha }),
     });
 
-    if (!response.ok) throw new Error('GITHUB_WRITE_FAILED');
-    return { ref: `refs/heads/${branchName}`, sha };
+    if (response.ok) {
+      return { ref: `refs/heads/${branchName}`, sha };
+    }
+
+    // GAP 1: If branch already exists (HTTP 422), check if existing ref matches expected baseline SHA
+    if (response.status === 422) {
+      const existing = await this.getBranchRef(branchName);
+      if (existing && existing.sha === sha) {
+        return { ref: `refs/heads/${branchName}`, sha };
+      }
+      if (existing && existing.sha !== sha) {
+        throw new Error(`GITHUB_BRANCH_CONFLICT: Branch '${branchName}' already exists at unexpected SHA (${existing.sha} !== expected ${sha})`);
+      }
+    }
+
+    throw new Error('GITHUB_WRITE_FAILED');
   }
 
   async createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }> {

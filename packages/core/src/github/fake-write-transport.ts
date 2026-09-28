@@ -36,6 +36,25 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
     return (PERMITTED_WRITE_OPERATIONS as readonly GitHubOperation[]).includes(operation);
   }
 
+  async getBranchRef(branchName: string): Promise<{ ref: string; sha: string } | null> {
+    if (!branchName.startsWith('apiproof/')) {
+      throw new Error('GITHUB_INVALID_BRANCH_NAME: Branch name must start with apiproof/');
+    }
+    if (this.branches.has(branchName)) {
+      return { ref: `refs/heads/${branchName}`, sha: this.branches.get(branchName)! };
+    }
+    return null;
+  }
+
+  async findOpenPullRequestByHead(branchName: string): Promise<{ number: number; url: string; title: string; body: string; head: string; base: string; draft: boolean } | null> {
+    if (!branchName.startsWith('apiproof/')) {
+      throw new Error('GITHUB_INVALID_BRANCH_NAME: Head branch must be in apiproof/* namespace');
+    }
+    const pr = this.prs.find((p) => p.head === branchName);
+    if (!pr) return null;
+    return { ...pr };
+  }
+
   async createBranchRef(branchName: string, sha: string): Promise<{ ref: string; sha: string }> {
     if (!branchName.startsWith('apiproof/')) {
       throw new Error('GITHUB_INVALID_BRANCH_NAME: Branch name must start with apiproof/');
@@ -51,7 +70,11 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
     });
 
     if (this.branches.has(branchName)) {
-      throw new Error('GITHUB_BRANCH_EXISTS');
+      const existingSha = this.branches.get(branchName);
+      if (existingSha === sha) {
+        return { ref: `refs/heads/${branchName}`, sha };
+      }
+      throw new Error(`GITHUB_BRANCH_CONFLICT: Branch '${branchName}' already exists at unexpected SHA (${existingSha} !== expected ${sha})`);
     }
     this.branches.set(branchName, sha);
     return { ref: `refs/heads/${branchName}`, sha };

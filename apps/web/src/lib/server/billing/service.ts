@@ -60,22 +60,43 @@ export async function getWorkspaceSubscription(workspaceId: string): Promise<Wor
   if (!row) {
     const period = getDefaultPeriod();
     const now = new Date().toISOString();
-    await db.execute(`
-      INSERT INTO workspace_subscriptions (workspace_id, plan_id, customer_id, subscription_id, status, current_period_start, current_period_end, created_at, updated_at)
-      VALUES (?, 'free', NULL, NULL, 'active', ?, ?, ?, ?)
-    `, [workspaceId, period.start, period.end, now, now]);
+    try {
+      await db.execute(`
+        INSERT INTO workspace_subscriptions (workspace_id, plan_id, customer_id, subscription_id, status, current_period_start, current_period_end, created_at, updated_at)
+        VALUES (?, 'free', NULL, NULL, 'active', ?, ?, ?, ?)
+        ON CONFLICT (workspace_id) DO NOTHING
+      `, [workspaceId, period.start, period.end, now, now]);
+    } catch {
+      // Ignore conflict if inserted concurrently
+    }
 
-    row = {
-      workspace_id: workspaceId,
-      plan_id: 'free',
-      customer_id: null,
-      subscription_id: null,
-      status: 'active',
-      current_period_start: period.start,
-      current_period_end: period.end,
-      created_at: now,
-      updated_at: now,
-    };
+    row = await db.queryOne<{
+      workspace_id: string;
+      plan_id: string;
+      customer_id: string | null;
+      subscription_id: string | null;
+      status: string;
+      current_period_start: string;
+      current_period_end: string;
+      created_at: string;
+      updated_at: string;
+    }>(`
+      SELECT * FROM workspace_subscriptions WHERE workspace_id = ?
+    `, [workspaceId]);
+
+    if (!row) {
+      row = {
+        workspace_id: workspaceId,
+        plan_id: 'free',
+        customer_id: null,
+        subscription_id: null,
+        status: 'active',
+        current_period_start: period.start,
+        current_period_end: period.end,
+        created_at: now,
+        updated_at: now,
+      };
+    }
   }
 
   return {
