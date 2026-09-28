@@ -298,6 +298,42 @@ export const migrations: Migration[] = [
       await db.execute('CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status)');
     },
   },
+  {
+    id: '005',
+    name: 'phase3a_github_installation_states',
+    up: async (db: DatabaseAdapter) => {
+      const expiresAtType = db.engine === 'postgres' ? 'BIGINT' : 'INTEGER';
+      const consumedAtType = db.engine === 'postgres' ? 'BIGINT' : 'INTEGER';
+
+      if (db.engine === 'postgres') {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS github_installation_states (
+            state TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+            expires_at ${expiresAtType} NOT NULL,
+            consumed_at ${consumedAtType},
+            created_at TEXT NOT NULL
+          )
+        `);
+      } else {
+        await db.execute(`
+          CREATE TABLE IF NOT EXISTS github_installation_states (
+            state TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            workspace_id TEXT NOT NULL,
+            expires_at ${expiresAtType} NOT NULL,
+            consumed_at ${consumedAtType},
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+          )
+        `);
+      }
+
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_installation_states_user ON github_installation_states(user_id)');
+    },
+  },
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {
