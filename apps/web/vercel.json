@@ -4,7 +4,7 @@
   "crons": [
     {
       "path": "/api/internal/scan-worker",
-      "schedule": "* * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
