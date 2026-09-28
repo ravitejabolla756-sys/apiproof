@@ -11,7 +11,7 @@ APIProof is a multi-tenant, SaaS-enabled system designed to automate impact anal
 ### Key Architectural Characteristics
 - **Multi-Tenant SaaS Foundation**: Enforces workspace boundary isolation across users, repositories, scans, findings, migrations, and audit logs.
 - **Deterministic AST Engine**: Inspects TypeScript code using TypeScript compiler AST parsers to match breaking vendor API changes with zero runtime execution of customer code.
-- **Draft-Only Safety Invariant**: Generates pull requests exclusively as GitHub **Draft PRs** on isolated branches (`apiproof/migration-...`). APIProof NEVER merges PRs, NEVER writes to default branches, and NEVER executes customer code.
+- **Draft-Only Safety Invariant**: Generates pull requests exclusively as GitHub **Draft PRs** on isolated branches (`apiproof/*`). APIProof NEVER merges PRs, NEVER writes to default branches, and NEVER executes customer code.
 - **Asynchronous Execution Architecture**: Decouples webhook reception from AST processing via a durable PostgreSQL job queue with `SELECT ... FOR UPDATE SKIP LOCKED` atomic claiming.
 
 ---
@@ -88,7 +88,7 @@ APIProof provides deterministic migration planning and candidate patch generatio
 2. The migration planner generates a unified diff patch (`.patch`) transforming outdated API usages to the modern provider format.
 3. The proposed patch is verified against synthetic test AST fixtures.
 4. If verified, the user can click **Create Draft PR**.
-5. APIProof creates branch `apiproof/migration-[finding-id]`, commits the patch, and opens a Draft Pull Request on GitHub.
+5. APIProof creates a deterministic branch in the format `apiproof/<change-id>/<migration-prefix>` (e.g., `apiproof/stripe-subscription-coupon-removed/629a0934`, where `<change-id>` is the migration/finding change identifier and `<migration-prefix>` is the 8-character deterministic migration ID prefix), commits the patch, and opens a Draft Pull Request on GitHub.
 
 ---
 
@@ -97,7 +97,7 @@ APIProof provides deterministic migration planning and candidate patch generatio
 APIProof adheres to strict, immutable safety controls:
 
 1. **Draft PR Only**: Every pull request is created with `draft: true`.
-2. **Isolated Branching**: Patches are pushed strictly to `apiproof/migration-*` branches.
+2. **Isolated Branching**: Patches are pushed strictly to `apiproof/*` isolated branches (in `apiproof/<change-id>/<migration-prefix>` format).
 3. **Exact Baseline SHA**: Patches are applied against the exact commit SHA scanned.
 4. **Canonical Patch Digest**: SHA-256 digests verify patch integrity before PR creation.
 5. **No Auto-Merge**: APIProof NEVER merges PRs or modifies default branches under any circumstances.
