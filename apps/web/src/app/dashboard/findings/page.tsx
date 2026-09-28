@@ -208,8 +208,15 @@ export default function FindingsListPage() {
                   <div className="font-mono text-purple-700 font-semibold">{finding.symbol}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                  <div className="text-[10px] text-[#686868] uppercase font-semibold">Confidence</div>
-                  <div className="text-[#111111] font-mono font-semibold">{finding.confidence}</div>
+                  <div className="text-[10px] text-[#686868] uppercase font-semibold">Detector Confidence</div>
+                  <div
+                    className="text-[#111111] font-mono font-semibold"
+                    title="Confidence reflects the detector's match strength for this known API-change rule."
+                  >
+                    {typeof finding.confidence === 'number' || !isNaN(Number(finding.confidence))
+                      ? `${Math.round(Number(finding.confidence) * 100)}% — AST match`
+                      : finding.confidence}
+                  </div>
                 </div>
               </div>
 

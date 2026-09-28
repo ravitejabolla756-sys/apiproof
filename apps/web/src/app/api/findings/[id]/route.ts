@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { requireFindingAccess } from '@/lib/server/workspace-service';
@@ -62,6 +63,10 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     }
   }
 
+  const canonicalBranch = migration
+    ? (typeof migration.branch_name === 'string' && migration.branch_name.length > 0 ? migration.branch_name : formatCanonicalMigrationBranch(finding.change_id, String(migration.id)))
+    : null;
+
   return NextResponse.json({
     finding: {
       ...finding,
@@ -74,6 +79,8 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     },
     migration: migration ? {
       ...migration,
+      target_branch: canonicalBranch,
+      branch_name: canonicalBranch,
       plan: planJson,
     } : null,
   });

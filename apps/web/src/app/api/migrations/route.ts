@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 
@@ -23,5 +24,12 @@ export async function GET(req: Request) {
     ORDER BY m.created_at DESC
   `, [user.id]);
 
-  return NextResponse.json({ migrations });
+  const mapped = (migrations as Array<Record<string, unknown>>).map((m) => ({
+    ...m,
+    target_branch: typeof m.branch_name === 'string' && m.branch_name.length > 0
+      ? m.branch_name
+      : formatCanonicalMigrationBranch(String(m.change_id), String(m.id)),
+  }));
+
+  return NextResponse.json({ migrations: mapped });
 }

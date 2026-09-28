@@ -199,6 +199,72 @@ export default function RepositoryDetailPage({
           </div>
         </div>
 
+        {/* HONEST SCAN STATE BANNER */}
+        <div className="p-4 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+              scanning
+                ? "bg-purple-50 text-purple-700 border-purple-200"
+                : scans.length === 0
+                ? "bg-zinc-100 text-zinc-600 border-zinc-200"
+                : scans[0]?.status === "failed"
+                ? "bg-rose-50 text-rose-700 border-rose-200"
+                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+            }`}>
+              {scanning ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : scans.length === 0 ? (
+                <FileCode className="w-4 h-4" />
+              ) : scans[0]?.status === "failed" ? (
+                <AlertTriangle className="w-4 h-4" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4" />
+              )}
+            </div>
+
+            <div className="space-y-0.5">
+              <div className="font-semibold text-[#111111] flex items-center gap-2">
+                <span>Scan Status:</span>
+                <span className="font-mono uppercase text-[11px] text-purple-800">
+                  {scanning
+                    ? "Scan in progress"
+                    : scans.length === 0
+                    ? "Not Scanned"
+                    : scans[0]?.status === "failed"
+                    ? "Scan Failed"
+                    : "Scan Completed"}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#686868]">
+                {scanning
+                  ? "Running deterministic in-memory AST analysis against latest commit tree..."
+                  : scans.length === 0
+                  ? "No compatibility scans recorded yet. Trigger an AST scan to detect vendor breaking changes."
+                  : scans[0]?.status === "failed"
+                  ? "Previous scan encountered an issue fetching repository contents. Retry scan anytime."
+                  : `Analyzed commit ${scans[0]?.sha ? scans[0].sha.slice(0, 8) : 'latest'} · ${findings.length} breaking change${findings.length === 1 ? '' : 's'} recorded.`}
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            <Button
+              size="sm"
+              variant={scans[0]?.status === "failed" || scans.length === 0 ? "primary" : "outline"}
+              disabled={scanning}
+              onClick={handleTriggerScan}
+              className="gap-1.5 text-xs font-medium"
+            >
+              {scanning ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Play className="w-3.5 h-3.5" />
+              )}
+              <span>{scanning ? "Analyzing AST..." : scans[0]?.status === "failed" ? "Retry Scan" : "Run AST Scan"}</span>
+            </Button>
+          </div>
+        </div>
+
         {message && (
           <div
             className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
@@ -266,8 +332,15 @@ export default function RepositoryDetailPage({
                     <div className="font-mono text-purple-700 font-semibold">{finding.symbol}</div>
                   </div>
                   <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
-                    <div className="text-[10px] text-[#686868] uppercase font-semibold">Confidence Score</div>
-                    <div className="font-mono text-[#111111] font-semibold">{finding.confidence}</div>
+                    <div className="text-[10px] text-[#686868] uppercase font-semibold">Detector Confidence</div>
+                    <div
+                      className="font-mono text-[#111111] font-semibold"
+                      title="Confidence reflects the detector's match strength for this known API-change rule."
+                    >
+                      {typeof finding.confidence === 'number' || !isNaN(Number(finding.confidence))
+                        ? `${Math.round(Number(finding.confidence) * 100)}% — AST match`
+                        : finding.confidence}
+                    </div>
                   </div>
                 </div>
 

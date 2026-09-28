@@ -75,3 +75,13 @@ export function generateDeterministicBranchName(input: {
   const shortHash = hash.digest('hex').slice(0, 8);
   return generateSafeBranchName(input.changeId, shortHash);
 }
+
+export function formatCanonicalMigrationBranch(changeId: string, migrationId: string): string {
+  const prefix = migrationId.startsWith('mig_') ? migrationId.slice(4, 12) : migrationId.slice(0, 8);
+  const branch = `apiproof/${changeId}/${prefix}`;
+  const validation = validateBranchName(branch);
+  if (!validation.valid) {
+    throw new Error(`GITHUB_INVALID_BRANCH_NAME: ${validation.reason}`);
+  }
+  return branch;
+}

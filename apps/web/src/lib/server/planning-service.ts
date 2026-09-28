@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { DeterministicPlanner, computeCanonicalPatchDigest } from '@apiproof/core';
+import { DeterministicPlanner, computeCanonicalPatchDigest, formatCanonicalMigrationBranch } from '@apiproof/core';
 import type { PlanningInput } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { loadProviderRegistry } from './registry-utils.js';
@@ -11,6 +11,8 @@ export interface MigrationPlanRecord {
   repositoryId: string;
   planId: string;
   status: string;
+  targetBranch?: string;
+  target_branch?: string;
   plan: unknown;
   patchDiff: string;
   createdAt: string;
@@ -186,12 +188,16 @@ export async function generateMigrationForFinding(findingId: string, userId: str
     ]);
   });
 
+  const branchName = formatCanonicalMigrationBranch(finding.change_id, migrationId);
+
   return {
     id: migrationId,
     findingId: finding.id,
     repositoryId: finding.repository_id,
     planId: plan.generatedBy.changeDigest,
     status: 'planned',
+    targetBranch: branchName,
+    target_branch: branchName,
     plan,
     patchDiff,
     createdAt: now,

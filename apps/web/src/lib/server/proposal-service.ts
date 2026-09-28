@@ -8,6 +8,7 @@ import {
   validateControlledWriteRequest,
   validatePatchScope,
   createVerificationEvidence,
+  formatCanonicalMigrationBranch,
   type ControlledWriteRequest,
   type GitHubControlledWriteTransport,
 } from '@apiproof/core';
@@ -101,7 +102,7 @@ export async function createGitHubProposal(migrationId: string, userId: string):
   }
 
   // 3. Construct Verification Evidence & ControlledWriteRequest
-  const branchName = `apiproof/${migration.change_id}/${migration.id.slice(4, 12)}`;
+  const branchName = formatCanonicalMigrationBranch(migration.change_id, migration.id);
   const baselineSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
 
   const verification = createVerificationEvidence({

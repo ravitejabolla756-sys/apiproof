@@ -49,6 +49,7 @@ interface MigrationDetail {
   pr_number?: number;
   pr_url?: string;
   branch_name?: string;
+  target_branch?: string;
   pr_state?: string;
 }
 
@@ -158,6 +159,8 @@ export default function FindingDetailPage({
     );
   }
 
+  const currentStep = migration?.pr_number ? 3 : migration ? 2 : 1;
+
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* BACK NAVIGATION */}
@@ -217,6 +220,100 @@ export default function FindingDetailPage({
           </div>
         )}
 
+        {/* FINDING LIFECYCLE STEPPER */}
+        <div className="p-4 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">
+            Lifecycle Progression
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            {/* Step 1: Detected */}
+            <div className={`p-3.5 rounded-xl border transition-all ${
+              currentStep >= 1
+                ? 'bg-white border-[#D1EBE0] shadow-2xs'
+                : 'bg-white/60 border-[#E8E8E5] opacity-60'
+            }`}>
+              <div className="flex items-center justify-between pb-1">
+                <span className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  1. Detected
+                </span>
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                  AST Match
+                </span>
+              </div>
+              <p className="text-[11px] text-[#686868] leading-relaxed">
+                APIProof detected breaking parameter usage at line {finding.line_number}.
+              </p>
+            </div>
+
+            {/* Step 2: Migration Planned */}
+            <div className={`p-3.5 rounded-xl border transition-all ${
+              currentStep >= 2
+                ? 'bg-white border-[#D1EBE0] shadow-2xs'
+                : currentStep === 1
+                ? 'bg-white border-purple-300 shadow-2xs'
+                : 'bg-white/60 border-[#E8E8E5] opacity-60'
+            }`}>
+              <div className="flex items-center justify-between pb-1">
+                <span className={`font-semibold flex items-center gap-1.5 ${currentStep >= 2 ? 'text-emerald-950' : 'text-purple-950'}`}>
+                  {currentStep >= 2 ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-purple-600 flex items-center justify-center text-[10px] font-bold text-purple-700">2</div>
+                  )}
+                  2. Migration Planned
+                </span>
+                <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-medium border ${
+                  currentStep >= 2
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-purple-50 text-purple-800 border-purple-200'
+                }`}>
+                  {currentStep >= 2 ? 'Plan Ready' : 'Next Action'}
+                </span>
+              </div>
+              <p className={`text-[11px] leading-relaxed ${currentStep >= 2 ? 'text-[#686868]' : 'text-purple-900'}`}>
+                {currentStep >= 2
+                  ? 'Deterministic patch synthesized & 4-gate verification validated.'
+                  : 'Click "Generate Migration Plan" to synthesize deterministic AST refactors.'}
+              </p>
+            </div>
+
+            {/* Step 3: Draft PR Created */}
+            <div className={`p-3.5 rounded-xl border transition-all ${
+              currentStep >= 3
+                ? 'bg-white border-[#D1EBE0] shadow-2xs'
+                : currentStep === 2
+                ? 'bg-white border-purple-300 shadow-2xs'
+                : 'bg-white/60 border-[#E8E8E5] opacity-60'
+            }`}>
+              <div className="flex items-center justify-between pb-1">
+                <span className={`font-semibold flex items-center gap-1.5 ${currentStep >= 3 ? 'text-emerald-950' : 'text-zinc-700'}`}>
+                  {currentStep >= 3 ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-zinc-400 flex items-center justify-center text-[10px] font-bold text-zinc-600">3</div>
+                  )}
+                  3. Draft PR Created
+                </span>
+                <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-medium border ${
+                  currentStep >= 3
+                    ? 'bg-blue-50 text-blue-800 border-blue-200'
+                    : currentStep === 2
+                    ? 'bg-purple-50 text-purple-800 border-purple-200'
+                    : 'bg-zinc-100 text-zinc-600 border-zinc-200'
+                }`}>
+                  {currentStep >= 3 ? `PR #${migration?.pr_number ?? '2'}` : currentStep === 2 ? 'Ready to Propose' : 'Pending Plan'}
+                </span>
+              </div>
+              <p className={`text-[11px] leading-relaxed ${currentStep >= 3 ? 'text-[#686868]' : 'text-zinc-600'}`}>
+                {currentStep >= 3
+                  ? 'Review the generated change on GitHub before human approval and merging.'
+                  : 'Open a safe review-only Draft PR to an isolated branch on GitHub.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* IMPACT VISUALIZATION FLOW */}
         <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">
@@ -247,8 +344,20 @@ export default function FindingDetailPage({
             <ArrowRight className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
 
             <div className="w-full md:w-auto p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">
-              <div className="text-[10px] text-emerald-800 font-semibold">4. Confidence</div>
-              <div className="font-mono text-emerald-900 font-semibold">{finding.confidence}</div>
+              <div className="text-[10px] text-emerald-800 font-semibold">4. Detector Confidence</div>
+              <div
+                className="font-mono text-emerald-900 font-semibold flex items-center gap-1.5"
+                title="Confidence reflects the detector's match strength for this known API-change rule."
+              >
+                <span>
+                  {typeof finding.confidence === 'number' || !isNaN(Number(finding.confidence))
+                    ? `${Math.round(Number(finding.confidence) * 100)}% — AST match`
+                    : finding.confidence}
+                </span>
+                <span className="text-[10px] font-normal text-emerald-700 font-mono">
+                  (score: {finding.confidence})
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -323,10 +432,33 @@ export default function FindingDetailPage({
                 </Button>
               </div>
             ) : !migration.pr_number ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-xs text-[#686868] leading-relaxed">
-                  Deterministic migration plan generated. Open a safe, review-only GitHub draft PR to isolated feature branch.
+                  Deterministic migration plan generated. Open a safe, review-only GitHub draft PR to an isolated feature branch.
                 </p>
+
+                {/* Pre-proposal branch & safety information */}
+                <div className="p-3.5 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-2.5 text-xs">
+                  <div className="space-y-1">
+                    <div className="text-[10px] uppercase font-semibold text-[#686868]">Target Branch</div>
+                    <div className="font-mono text-[11px] text-purple-900 bg-white px-2.5 py-1.5 rounded-lg border border-[#E8E8E5] break-all font-semibold">
+                      {migration.target_branch || migration.branch_name || 'Pending assignment'}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-[10px] uppercase font-semibold text-[#686868]">Base Branch</div>
+                    <div className="font-mono text-[11px] text-[#111111] bg-white px-2.5 py-1.5 rounded-lg border border-[#E8E8E5]">
+                      {finding.default_branch || 'main'}
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[11px] text-emerald-800 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Draft PR only • No direct writes to {finding.default_branch || 'main'}</span>
+                  </div>
+                </div>
+
                 <Button
                   size="md"
                   variant="primary"
@@ -349,7 +481,7 @@ export default function FindingDetailPage({
                   <span>Draft PR #{migration.pr_number} Active</span>
                 </div>
                 <p className="text-[11px] text-blue-800">
-                  Target Branch: <code className="font-mono bg-white px-1 rounded border border-[#C6E1FA]">{migration.branch_name}</code>
+                  Target Branch: <code className="font-mono bg-white px-1 rounded border border-[#C6E1FA]">{migration.branch_name || migration.target_branch}</code>
                 </p>
                 <div className="pt-2">
                   <a href={migration.pr_url} target="_blank" rel="noreferrer" className="block">

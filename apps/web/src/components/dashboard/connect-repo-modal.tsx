@@ -27,6 +27,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
   const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -89,6 +90,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
 
     setSubmitting(true);
     setError(null);
+    setStatusMessage('Connecting repository...');
 
     try {
       const res = await fetch('/api/repositories', {
@@ -104,16 +106,40 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         throw new Error(data.error || 'Failed to connect repository.');
       }
 
+      const connectedRepoId = data.repository?.id;
+
+      // 1. Repository is connected -> Automatically initiate first scan
+      if (connectedRepoId) {
+        setStatusMessage('Repository connected. Starting initial AST compatibility scan...');
+        try {
+          const scanRes = await fetch(`/api/repositories/${connectedRepoId}/scan`, {
+            method: 'POST',
+          });
+          const scanData = await scanRes.json();
+          if (scanRes.ok && scanData.result) {
+            const count = scanData.result.findingsCount ?? 0;
+            setStatusMessage(`Initial scan completed: ${count} breaking change${count === 1 ? '' : 's'} identified.`);
+          } else {
+            // Non-fatal: repo connected, scan failed gracefully
+            setStatusMessage('Repository connected. Initial scan can be run from the repository workbench.');
+          }
+        } catch {
+          setStatusMessage('Repository connected. Initial scan can be run from the repository workbench.');
+        }
+      }
+
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
+        setStatusMessage(null);
         onClose();
         if (onSuccess) {
           onSuccess();
         }
-      }, 900);
+      }, 1200);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
+      setStatusMessage(null);
     } finally {
       setSubmitting(false);
     }
@@ -149,7 +175,14 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             </div>
           )}
 
-          {success && (
+          {statusMessage && (
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-purple-900 text-xs flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
+              <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {success && !statusMessage && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Repository connected successfully! Updating workspace...</span>
