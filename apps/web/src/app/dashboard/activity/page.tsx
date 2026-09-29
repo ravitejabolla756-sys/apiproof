@@ -3,16 +3,7 @@
 import { useEffect, useState } from "react";
 import { Activity, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface ActivityItem {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  created_at: string;
-  repo_name: string | null;
-  repo_full_name: string | null;
-}
+import { formatActivityTimestamp, type ActivityItem } from "@/lib/activity-utils";
 
 export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -92,7 +83,7 @@ export default function ActivityPage() {
                 </div>
 
                 <div className="text-right text-[11px] text-[#686868] font-mono shrink-0">
-                  {new Date(act.created_at).toLocaleString()}
+                  {formatActivityTimestamp(act.created_at ?? act.timestamp)}
                 </div>
               </div>
             ))}
