@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { getDatabase } from '@/lib/server/db/index.js';
+import type { DatabaseAdapter } from '@/lib/server/db/types.js';
 import {
   verifyAndConsumeGitHubInstallationState,
   verifyGitHubAppInstallation,
-} from '@/lib/server/github';
-import { requireWorkspaceMember } from '@/lib/server/workspace-service';
+} from '@/lib/server/github.js';
+import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
 
 export async function GET(req: Request) {
   // 1. Authenticate APIProof session
@@ -75,8 +76,20 @@ export async function GET(req: Request) {
     SELECT id, workspace_id FROM github_installations WHERE installation_id = ?
   `, [cleanInstallationId]);
 
-  if (existingRecord) {
-    if (existingRecord.workspace_id !== workspaceId) {
+  if (existingRecord && existingRecord.workspace_id !== workspaceId) {
+    // Reassociation requested: verify caller owns BOTH target workspace and existing workspace
+    try {
+      await requireWorkspaceOwner(user.id, workspaceId);
+    } catch {
+      return NextResponse.json({
+        error: 'Action requires workspace owner privileges on target workspace.',
+        code: 'FORBIDDEN',
+      }, { status: 403 });
+    }
+
+    try {
+      await requireWorkspaceOwner(user.id, existingRecord.workspace_id);
+    } catch {
       return NextResponse.json({
         error: 'This GitHub installation is already associated with another workspace.',
         code: 'INSTALLATION_OWNED_BY_ANOTHER_WORKSPACE',
@@ -86,39 +99,54 @@ export async function GET(req: Request) {
 
   const now = new Date().toISOString();
 
-  // 7 & 8. Persist/update github_installations associated with the authenticated workspace
-  if (existingRecord) {
-    await db.execute(`
-      UPDATE github_installations
-      SET account_login = ?, account_type = ?, updated_at = ?
-      WHERE id = ?
-    `, [installationMeta.accountLogin, installationMeta.accountType, now, existingRecord.id]);
-  } else {
-    const installationRecordId = `ghi_${crypto.randomBytes(10).toString('hex')}`;
-    await db.execute(`
-      INSERT INTO github_installations (id, workspace_id, installation_id, account_login, account_type, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+  // Persist/update github_installations and activity events transactionally
+  await db.transaction(async (tx: DatabaseAdapter) => {
+    if (existingRecord) {
+      await tx.execute(`
+        UPDATE github_installations
+        SET workspace_id = ?, account_login = ?, account_type = ?, status = 'active', updated_at = ?
+        WHERE id = ?
+      `, [
+        workspaceId,
+        installationMeta.accountLogin,
+        installationMeta.accountType,
+        now,
+        existingRecord.id,
+      ]);
+    } else {
+      const installationRecordId = `ghi_${crypto.randomBytes(10).toString('hex')}`;
+      await tx.execute(`
+        INSERT INTO github_installations (id, workspace_id, installation_id, account_login, account_type, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, 'active', ?, ?)
+      `, [
+        installationRecordId,
+        workspaceId,
+        cleanInstallationId,
+        installationMeta.accountLogin,
+        installationMeta.accountType,
+        now,
+        now,
+      ]);
+    }
+
+    const activityTitle = (existingRecord && existingRecord.workspace_id !== workspaceId)
+      ? 'GitHub Reassociated'
+      : 'GitHub Connected';
+    const activityDesc = (existingRecord && existingRecord.workspace_id !== workspaceId)
+      ? `Reassociated GitHub account ${installationMeta.accountLogin} (${installationMeta.accountType}) to workspace.`
+      : `Connected GitHub account ${installationMeta.accountLogin} (${installationMeta.accountType}).`;
+
+    await tx.execute(`
+      INSERT INTO activity_events (id, user_id, type, title, description, created_at)
+      VALUES (?, ?, 'github_connected', ?, ?, ?)
     `, [
-      installationRecordId,
-      workspaceId,
-      cleanInstallationId,
-      installationMeta.accountLogin,
-      installationMeta.accountType,
-      now,
+      `act_${crypto.randomBytes(10).toString('hex')}`,
+      user.id,
+      activityTitle,
+      activityDesc,
       now,
     ]);
-  }
-
-  // Activity event
-  await db.execute(`
-    INSERT INTO activity_events (id, user_id, type, title, description, created_at)
-    VALUES (?, ?, 'github_connected', 'GitHub Connected', ?, ?)
-  `, [
-    `act_${crypto.randomBytes(10).toString('hex')}`,
-    user.id,
-    `Connected GitHub account ${installationMeta.accountLogin} (${installationMeta.accountType}).`,
-    now,
-  ]);
+  });
 
   const acceptHeader = req.headers.get('accept') || '';
   if (acceptHeader.includes('text/html')) {
