@@ -2,15 +2,17 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Github } from 'lucide-react';
+import { Search, Github, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   onOpenCommandPalette: () => void;
   onOpenConnectModal: () => void;
+  /** null = still loading; true = connected; false = not connected */
+  githubConnected?: boolean | null;
 }
 
-export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps) {
+export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnected }: HeaderProps) {
   const pathname = usePathname();
 
   const getBreadcrumbs = () => {
@@ -66,16 +68,32 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal }: HeaderProps
           </kbd>
         </button>
 
-        {/* Connect GitHub Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onOpenConnectModal}
-          icon={<Github className="h-3.5 w-3.5 text-[#111111]" />}
-          className="text-xs font-medium"
-        >
-          <span>Connect GitHub</span>
-        </Button>
+        {/* GitHub Connection Control */}
+        {githubConnected ? (
+          /* Connected state — still clickable to manage/reconnect */
+          <button
+            id="github-connected-btn"
+            onClick={onOpenConnectModal}
+            title="GitHub connected — click to manage repositories"
+            className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl px-3.5 py-2 text-xs font-medium transition-colors shadow-2xs"
+          >
+            <Github className="h-3.5 w-3.5 text-emerald-700" />
+            <span>GitHub Connected</span>
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+          </button>
+        ) : (
+          /* Not connected (or still loading — show connect button while unknown) */
+          <Button
+            id="github-connect-btn"
+            variant="outline"
+            size="sm"
+            onClick={onOpenConnectModal}
+            icon={<Github className="h-3.5 w-3.5 text-[#111111]" />}
+            className="text-xs font-medium"
+          >
+            <span>Connect GitHub</span>
+          </Button>
+        )}
       </div>
     </header>
   );
