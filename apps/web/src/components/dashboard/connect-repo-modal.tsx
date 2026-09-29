@@ -77,7 +77,8 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
       if (!res.ok || !data.url) {
         throw new Error(data.error || 'Failed to generate installation URL');
       }
-      window.location.href = data.url;
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+      setConnectingGitHub(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to initiate GitHub connection.');
       setConnectingGitHub(false);
