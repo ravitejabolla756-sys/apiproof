@@ -1,8 +1,24 @@
+'use client';
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Github } from "lucide-react";
+import { Github, LayoutDashboard } from "lucide-react";
 import { ApiProofLogo } from "@/components/ui/logo";
 
 export function LandingNavbar() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.authenticated) {
+          setIsAuthenticated(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <header className="w-full pt-4 pb-2 z-50 relative">
       <div className="max-w-[1380px] mx-auto px-4 md:px-8 flex items-center justify-between">
@@ -52,17 +68,36 @@ export function LandingNavbar() {
             <Github className="w-3.5 h-3.5 text-[#0F172A]" />
             <span>GitHub</span>
           </a>
-          <Link
-            href="/login"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-block"
-          >
-            SIGN IN
-          </Link>
 
-          {/* SynthAI CTA Button (rounded-lg font-mono uppercase) */}
-          <Link href="/login" className="px-4 py-2 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-colors ml-1">
-            <span>GET STARTED</span>
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href="/dashboard"
+              prefetch={true}
+              className="px-4 py-2 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-colors ml-1 flex items-center gap-1.5"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>DASHBOARD</span>
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                prefetch={true}
+                className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-block"
+              >
+                SIGN IN
+              </Link>
+
+              {/* SynthAI CTA Button (rounded-lg font-mono uppercase) */}
+              <Link
+                href="/login"
+                prefetch={true}
+                className="px-4 py-2 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-colors ml-1"
+              >
+                <span>GET STARTED</span>
+              </Link>
+            </>
+          )}
         </nav>
 
       </div>

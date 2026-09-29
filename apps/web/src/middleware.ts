@@ -35,5 +35,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/overview/:path*', '/api/repositories/:path*', '/api/findings/:path*', '/api/migrations/:path*', '/api/pull-requests/:path*', '/api/activity/:path*'],
+  matcher: [
+    '/login',
+    '/dashboard/:path*',
+    '/api/overview/:path*',
+    '/api/repositories/:path*',
+    '/api/findings/:path*',
+    '/api/migrations/:path*',
+    '/api/pull-requests/:path*',
+    '/api/activity/:path*',
+  ],
 };

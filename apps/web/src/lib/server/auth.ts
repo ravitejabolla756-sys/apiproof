@@ -16,7 +16,42 @@ export interface Session {
 }
 
 export const AUTH_COOKIE_NAME = 'apiproof_session';
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+export const SESSION_TTL_SECONDS = Math.floor(SESSION_TTL_MS / 1000); // 2,592,000 seconds
+
+export interface AuthCookieOptions {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'lax';
+  path: string;
+  maxAge: number;
+  expires: Date;
+}
+
+export function getAuthCookieOptions(expiresAt?: string | Date): AuthCookieOptions {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const expiresDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + SESSION_TTL_MS);
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: SESSION_TTL_SECONDS,
+    expires: expiresDate,
+  };
+}
+
+export function getClearAuthCookieOptions(): AuthCookieOptions {
+  const isProduction = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+  };
+}
 
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');

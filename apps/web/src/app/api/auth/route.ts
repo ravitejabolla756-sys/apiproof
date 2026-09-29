@@ -1,21 +1,23 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import {
   getCurrentUser,
   authenticateUser,
   createUserWithSession,
   createSession,
   deleteSession,
+  extractSessionId,
   AUTH_COOKIE_NAME,
-} from '@/lib/server/auth';
-import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/server/rate-limit';
+  getAuthCookieOptions,
+  getClearAuthCookieOptions,
+} from '@/lib/server/auth.js';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   assertCsrfProtection,
   validateSignupInput,
   validateLoginInput,
   badRequestResponse,
   forbiddenCsrfResponse,
-} from '@/lib/server/validation';
+} from '@/lib/server/validation.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -35,17 +37,18 @@ export async function POST(req: Request) {
   const clientIp = getClientIp(req);
 
   try {
-    const body = await req.json();
+    const body = (await req.json()) as Record<string, unknown> | null;
     const action = body?.action;
 
     if (action === 'logout') {
-      const cookieStore = await cookies();
-      const sessionId = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+      const sessionId = extractSessionId(req);
       if (sessionId) {
         await deleteSession(sessionId);
       }
-      cookieStore.delete(AUTH_COOKIE_NAME);
-      return NextResponse.json({ success: true, message: 'Logged out successfully.' });
+      const res = NextResponse.json({ success: true, message: 'Logged out successfully.' });
+      const clearOptions = getClearAuthCookieOptions();
+      res.cookies.set(AUTH_COOKIE_NAME, '', clearOptions);
+      return res;
     }
 
     if (action === 'signup') {
@@ -65,14 +68,10 @@ export async function POST(req: Request) {
 
       try {
         const { user, session } = await createUserWithSession(email, password, name);
-        const cookieStore = await cookies();
-        cookieStore.set(AUTH_COOKIE_NAME, session.id, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-        });
-        return NextResponse.json({ success: true, user });
+        const cookieOptions = getAuthCookieOptions(session.expiresAt);
+        const res = NextResponse.json({ success: true, user });
+        res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
+        return res;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         if (
@@ -113,14 +112,10 @@ export async function POST(req: Request) {
       }
 
       const session = await createSession(user.id);
-      const cookieStore = await cookies();
-      cookieStore.set(AUTH_COOKIE_NAME, session.id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-      return NextResponse.json({ success: true, user });
+      const cookieOptions = getAuthCookieOptions(session.expiresAt);
+      const res = NextResponse.json({ success: true, user });
+      res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
+      return res;
     }
 
     return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout.', code: 'INVALID_ACTION' }, { status: 400 });
@@ -129,4 +124,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }
-

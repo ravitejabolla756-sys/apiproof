@@ -1,23 +1,38 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 import { ApiProofLogo } from '@/components/ui/logo';
 
 type AuthMode = 'login' | 'signup';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isSubmitting = useRef(false);
+
+  // If already authenticated, redirect to /dashboard
+  useEffect(() => {
+    fetch('/api/auth')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.authenticated) {
+          window.location.href = '/dashboard';
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (isSubmitting.current || loading) return;
+
+    isSubmitting.current = true;
     setError('');
     setLoading(true);
 
@@ -41,14 +56,18 @@ export default function LoginPage() {
 
       if (!res.ok) {
         setError(data.error || 'Authentication failed.');
+        setLoading(false);
+        isSubmitting.current = false;
         return;
       }
 
-      router.push('/dashboard');
+      // Success: remain in loading state to prevent further clicks,
+      // and perform full navigation so the session cookie is transmitted cleanly.
+      window.location.href = '/dashboard';
     } catch {
       setError('Network error. Please try again.');
-    } finally {
       setLoading(false);
+      isSubmitting.current = false;
     }
   }
 
@@ -70,8 +89,9 @@ export default function LoginPage() {
         <div className="flex gap-1 p-1 bg-[#F5F5F7] rounded-xl mb-8">
           <button
             type="button"
+            disabled={loading}
             onClick={() => { setMode('login'); setError(''); }}
-            className={`flex-1 py-2.5 rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all ${
+            className={`flex-1 py-2.5 rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
               mode === 'login'
                 ? 'bg-white text-[#0F172A] shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
@@ -81,8 +101,9 @@ export default function LoginPage() {
           </button>
           <button
             type="button"
+            disabled={loading}
             onClick={() => { setMode('signup'); setError(''); }}
-            className={`flex-1 py-2.5 rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all ${
+            className={`flex-1 py-2.5 rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
               mode === 'signup'
                 ? 'bg-white text-[#0F172A] shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
@@ -102,10 +123,11 @@ export default function LoginPage() {
                 id="name"
                 type="text"
                 required
+                disabled={loading}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Alex Morgan"
-                className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           )}
@@ -118,10 +140,11 @@ export default function LoginPage() {
               id="email"
               type="email"
               required
+              disabled={loading}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -134,10 +157,11 @@ export default function LoginPage() {
               type="password"
               required
               minLength={8}
+              disabled={loading}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimum 8 characters"
-              className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -150,14 +174,18 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading
-              ? 'Please wait...'
-              : mode === 'login'
-                ? 'Sign In'
-                : 'Create Account'
-            }
+            {loading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
+              </>
+            ) : mode === 'login' ? (
+              'Sign In'
+            ) : (
+              'Create Account'
+            )}
           </button>
         </form>
       </div>

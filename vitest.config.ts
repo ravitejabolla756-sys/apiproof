@@ -9,6 +9,7 @@ export default defineConfig({
         `@apiproof/${name}`, fileURLToPath(new URL(`./packages/${name}/src/index.ts`, import.meta.url)),
       ])),
       '@': fileURLToPath(new URL('./apps/web/src', import.meta.url)),
+      'next/server': fileURLToPath(new URL('./apps/web/node_modules/next/server.js', import.meta.url)),
     },
   },
   test: { include: ['tests/**/*.test.ts'], testTimeout: 30_000 },

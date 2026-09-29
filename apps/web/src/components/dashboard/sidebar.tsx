@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import {
   LayoutDashboard,
@@ -20,7 +20,6 @@ import {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [openFindingsCount, setOpenFindingsCount] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
@@ -70,12 +69,16 @@ export function Sidebar() {
   ];
 
   async function handleLogout() {
-    await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'logout' }),
-    });
-    router.push('/login');
+    try {
+      await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout' }),
+      });
+    } catch {
+      // ignore
+    }
+    window.location.href = '/login';
   }
 
   return (
