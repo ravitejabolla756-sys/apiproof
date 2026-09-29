@@ -26,6 +26,7 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
   }> = [];
 
   public defaultBranchSha: string | undefined;
+  public emptyRepository = false;
 
   constructor(
     private readonly repositoryOwner = 'ravitejabolla756-sys',
@@ -37,6 +38,9 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
   }
 
   async getDefaultBranchSha(_branchName?: string): Promise<string> {
+    if (this.emptyRepository) {
+      throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${this.repositoryOwner}/${this.repositoryName}' has no commits on default branch '${this.defaultBranch}'.`);
+    }
     return this.defaultBranchSha ?? '';
   }
 

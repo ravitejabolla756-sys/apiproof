@@ -47,7 +47,11 @@ function extractSourceSnippet(fileContent: string, lineNumber: number, contextLi
   }).join('\n');
 }
 
-export async function runRepositoryScan(repositoryId: string, userId: string): Promise<ScanExecutionResult> {
+export async function runRepositoryScan(
+  repositoryId: string,
+  userId: string,
+  customProvider?: GitHubAppSourceControlProvider
+): Promise<ScanExecutionResult> {
   const db = getDatabase();
   
   // 1. Verify workspace repository access (central authorization / IDOR protection)
@@ -79,56 +83,62 @@ export async function runRepositoryScan(repositoryId: string, userId: string): P
 
   try {
     let filesMap = new Map<string, string>();
-    let headSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
+    let headSha = '';
 
     // 3. Fetch source files (via live GitHub App if available, or fixture snapshot)
-    let githubProvider = getGitHubProvider();
-    if (githubProvider && repo.workspace_id) {
-      const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
-      if (installation) {
-        const config = loadGitHubAppConfig();
-        const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
-        const repoConfig = {
-          ...config,
-          installationId: installation.installationId,
-          repositoryId: repo.github_repository_id,
-          owner: repo.owner,
-          repository: repo.name,
-        };
-        const transport = new FetchGitHubReadTransport();
-        githubProvider = new GitHubAppSourceControlProvider(repoConfig, tokenProvider, transport);
-      }
+    const installation = repo.workspace_id ? await getWorkspaceGitHubInstallation(repo.workspace_id) : null;
+    const isLiveGitHubRepo = Boolean(installation || (repo.github_repository_id && repo.github_repository_id !== '1363070568'));
+
+    let githubProvider = customProvider ?? getGitHubProvider();
+    if (!customProvider && githubProvider && repo.workspace_id && installation) {
+      const config = loadGitHubAppConfig();
+      const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
+      const repoConfig = {
+        ...config,
+        installationId: installation.installationId,
+        repositoryId: repo.github_repository_id,
+        owner: repo.owner,
+        repository: repo.name,
+      };
+      const transport = new FetchGitHubReadTransport();
+      githubProvider = new GitHubAppSourceControlProvider(repoConfig, tokenProvider, transport);
     }
 
-    if (githubProvider) {
-      try {
-        const remoteData = await fetchRemoteRepositoryFiles(githubProvider);
-        filesMap = remoteData.files;
-        headSha = remoteData.headSha;
-      } catch (err) {
-        console.warn('Failed to fetch from live GitHub App, falling back to local snapshot:', err);
+    if (isLiveGitHubRepo || customProvider) {
+      if (!githubProvider) {
+        throw new Error('GITHUB_APP_NOT_CONFIGURED: Active GitHub App configuration is required to scan connected repository.');
       }
-    }
+      // Strictly fetch from remote GitHub — NEVER fall back to local fixture
+      const remoteData = await fetchRemoteRepositoryFiles(githubProvider);
+      filesMap = remoteData.files;
+      headSha = remoteData.headSha;
 
-    // Fallback: If no files retrieved from remote (or no GitHub App credentials), check local fixture
-    if (filesMap.size === 0) {
-      const localFixturePath = path.resolve('C:\\apiproof-github-fixture');
-      if (fs.existsSync(localFixturePath)) {
-        const billingPath = path.join(localFixturePath, 'src/billing.ts');
-        const pkgPath = path.join(localFixturePath, 'package.json');
-        if (fs.existsSync(billingPath)) {
-          filesMap.set('src/billing.ts', fs.readFileSync(billingPath, 'utf8'));
-        }
-        if (fs.existsSync(pkgPath)) {
-          filesMap.set('package.json', fs.readFileSync(pkgPath, 'utf8'));
-        }
-      } else {
-        // Built-in synthetic fixture if external directory absent
-        filesMap.set('package.json', JSON.stringify({
-          name: repo.name,
-          dependencies: { stripe: '^16.0.0', twilio: '^3.80.0' }
-        }, null, 2));
-        filesMap.set('src/billing.ts', `import Stripe from 'stripe';
+      if (!headSha || !/^[a-f0-9]{40}$/i.test(headSha)) {
+        throw new Error('GITHUB_INVALID_RESPONSE: Invalid commit SHA returned for repository default branch.');
+      }
+      if (filesMap.size === 0) {
+        throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${repo.full_name}' contains no code files to analyze.`);
+      }
+    } else {
+      // Local development/test fixture fallback ONLY for offline test fixture
+      if (repo.name === 'apiproof-github-fixture' || repo.owner === 'ravitejabolla756-sys') {
+        const localFixturePath = path.resolve('C:\\apiproof-github-fixture');
+        if (fs.existsSync(localFixturePath)) {
+          const billingPath = path.join(localFixturePath, 'src/billing.ts');
+          const pkgPath = path.join(localFixturePath, 'package.json');
+          if (fs.existsSync(billingPath)) {
+            filesMap.set('src/billing.ts', fs.readFileSync(billingPath, 'utf8'));
+          }
+          if (fs.existsSync(pkgPath)) {
+            filesMap.set('package.json', fs.readFileSync(pkgPath, 'utf8'));
+          }
+        } else {
+          // Built-in synthetic fixture if external directory absent
+          filesMap.set('package.json', JSON.stringify({
+            name: repo.name,
+            dependencies: { stripe: '^16.0.0', twilio: '^3.80.0' }
+          }, null, 2));
+          filesMap.set('src/billing.ts', `import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 export async function createCustomerSubscription(customerId: string, priceId: string, couponId: string) {
   return stripe.subscriptions.create({
@@ -137,6 +147,10 @@ export async function createCustomerSubscription(customerId: string, priceId: st
     coupon: couponId
   });
 }`);
+        }
+        headSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
+      } else {
+        throw new Error(`REPOSITORY_SOURCE_UNAVAILABLE: Repository '${repo.full_name}' is not connected to GitHub and has no local test fixture.`);
       }
     }
 

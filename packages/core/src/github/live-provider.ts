@@ -393,6 +393,15 @@ export class GitHubAppSourceControlProvider implements Pick<SourceControlProvide
   async getDefaultBranch(): Promise<{ name: string; sha: string }> {
     const repository = await this.getRepository();
     const result = await this.read(`/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.repository)}/git/ref/heads/${encodeURIComponent(repository.defaultBranch)}`);
+    if (result.status === 409) {
+      throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${repository.owner}/${repository.repository}' has no commits on default branch '${repository.defaultBranch}'.`);
+    }
+    if (result.status === 404) {
+      throw new Error(`GITHUB_DEFAULT_BRANCH_NOT_FOUND: Default branch '${repository.defaultBranch}' not found in remote repository '${repository.owner}/${repository.repository}'.`);
+    }
+    if (result.status === 401 || result.status === 403) {
+      throw new Error(`GITHUB_AUTHORIZATION_FAILED: Not authorized to read repository '${repository.owner}/${repository.repository}'.`);
+    }
     if (result.status !== 200 || typeof result.body !== 'object' || result.body === null) {
       throw new Error('GITHUB_REF_NOT_FOUND');
     }

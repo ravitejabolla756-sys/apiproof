@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { createGitHubProposal } from '@/lib/server/proposal-service';
-import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { createGitHubProposal } from '@/lib/server/proposal-service.js';
+import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   assertCsrfProtection,
   validateSafeId,
   badRequestResponse,
   forbiddenCsrfResponse,
-} from '@/lib/server/validation';
+} from '@/lib/server/validation.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const body = (await req.json()) as { migrationId?: unknown };
     const idValidation = validateSafeId(body?.migrationId, 'migrationId');
     if (!idValidation.valid || !idValidation.data) {
       return badRequestResponse(idValidation.error || 'migrationId is required.');
@@ -42,6 +42,18 @@ export async function POST(req: Request) {
     }
     if (message.includes('not found') || message.includes('access denied')) {
       return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+    }
+    if (message.includes('GITHUB_REPOSITORY_EMPTY') || message.includes('GITHUB_DEFAULT_BRANCH_NOT_FOUND')) {
+      return NextResponse.json({
+        error: 'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan before proposing a migration.',
+        code: 'REPOSITORY_EMPTY',
+      }, { status: 422 });
+    }
+    if (message.includes('GITHUB_AUTHORIZATION_FAILED')) {
+      return NextResponse.json({
+        error: 'GitHub App is not authorized to access this repository. Check installation permissions.',
+        code: 'GITHUB_UNAUTHORIZED',
+      }, { status: 403 });
     }
     if (message.includes('REPOSITORY_HEAD_DIVERGED')) {
       return NextResponse.json({ error: message, code: 'REPOSITORY_HEAD_DIVERGED' }, { status: 409 });

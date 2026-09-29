@@ -64,6 +64,24 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';
     console.error('Scan execution error:', error);
+    if (message.includes('GITHUB_REPOSITORY_EMPTY')) {
+      return NextResponse.json({
+        error: 'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan.',
+        code: 'REPOSITORY_EMPTY',
+      }, { status: 422 });
+    }
+    if (message.includes('GITHUB_DEFAULT_BRANCH_NOT_FOUND')) {
+      return NextResponse.json({
+        error: `Default branch '${repo.default_branch}' not found in remote repository.`,
+        code: 'DEFAULT_BRANCH_NOT_FOUND',
+      }, { status: 422 });
+    }
+    if (message.includes('GITHUB_AUTHORIZATION_FAILED')) {
+      return NextResponse.json({
+        error: 'GitHub App is not authorized to access this repository. Check installation permissions.',
+        code: 'GITHUB_UNAUTHORIZED',
+      }, { status: 403 });
+    }
     return NextResponse.json({ error: message, code: 'SCAN_FAILED' }, { status: 500 });
   }
 }

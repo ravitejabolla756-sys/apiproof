@@ -1,13 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
-import { FakeGitHubWriteTransport } from '@apiproof/core';
+import {
+  FakeGitHubWriteTransport,
+  FetchGitHubControlledWriteTransport,
+  GitHubAppSourceControlProvider,
+  type GitHubAppConfig,
+  type InstallationTokenProvider,
+  type GitHubReadTransport,
+} from '@apiproof/core';
 import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
-import { createUser } from '../apps/web/src/lib/server/auth.js';
+import { createUser, createSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
+import * as proposalService from '../apps/web/src/lib/server/proposal-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import { POST as proposeRoutePost } from '../apps/web/src/app/api/migrations/propose/route.js';
+import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-proposal-baseline.db');
 
@@ -291,5 +301,351 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
 
     const fixtureSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
     expect(content.includes(fixtureSha)).toBe(false);
+  });
+
+  // =========================================================================
+  // Requirement 8A: HTTP 409 empty GitHub repository -> GITHUB_REPOSITORY_EMPTY
+  // =========================================================================
+  it('8A: HTTP 409 empty GitHub repository throws GITHUB_REPOSITORY_EMPTY', async () => {
+    const config: GitHubAppConfig = {
+      appId: '12345',
+      installationId: '165848879',
+      repositoryId: '1118854755',
+      owner: 'pavanvarma-creator',
+      repository: 'student-tools',
+      mode: 'OBSERVE',
+      enabled: true,
+    };
+    const tokens: InstallationTokenProvider = {
+      getToken: async () => 'test-token',
+    };
+
+    // Custom fetch returning HTTP 409 Conflict with GitHub's empty repository message
+    const customFetch: typeof fetch = async (url) => {
+      if (String(url).includes('/git/ref/heads/main')) {
+        return new Response(JSON.stringify({
+          message: 'Git Repository is empty.',
+          documentation_url: 'https://docs.github.com/rest/git/refs#get-a-reference',
+          status: '409',
+        }), { status: 409 });
+      }
+      return new Response('Not Found', { status: 404 });
+    };
+
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, customFetch, undefined, { workspaceAuthorized: true });
+
+    await expect(transport.getDefaultBranchSha('main')).rejects.toThrow(
+      /GITHUB_REPOSITORY_EMPTY: Remote repository 'pavanvarma-creator\/student-tools' has no commits on default branch 'main'/
+    );
+
+    // Also verify getBranchRef returns null for empty repository rather than throwing
+    const branchRef = await transport.getBranchRef('apiproof/test-branch');
+    expect(branchRef).toBeNull();
+
+    // Verify GitHubAppSourceControlProvider.getDefaultBranch also throws GITHUB_REPOSITORY_EMPTY
+    const readTransport: GitHubReadTransport = {
+      request: async (p) => {
+        if (p.includes('/git/ref/heads/')) {
+          return { status: 409, body: { message: 'Git Repository is empty.' } };
+        }
+        return {
+          status: 200,
+          body: {
+            id: '1118854755',
+            name: 'student-tools',
+            owner: { login: 'pavanvarma-creator' },
+            default_branch: 'main',
+          },
+        };
+      },
+    };
+    const provider = new GitHubAppSourceControlProvider(config, tokens, readTransport);
+    await expect(provider.getDefaultBranch()).rejects.toThrow(/GITHUB_REPOSITORY_EMPTY/);
+  });
+
+  // =========================================================================
+  // Requirement 8B: Proposal route maps GITHUB_REPOSITORY_EMPTY to HTTP 422
+  // =========================================================================
+  it('8B: proposal route maps GITHUB_REPOSITORY_EMPTY to HTTP 422 with sanitized actionable message', async () => {
+    const user = createUser('empty_route@example.com', 'Pass12345!', 'Empty Route Tester');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const session = createSession(user.id);
+
+    setupRepoWithScanAndFinding({
+      userId: user.id,
+      workspaceId: ws.id,
+      repoId: 'repo_empty_route',
+      owner: 'pavanvarma-creator',
+      name: 'student-tools',
+      githubRepoId: '1118854755',
+      scanId: 'scn_empty_route',
+      scanSha: '9999999999999999999999999999999999999999',
+      findingId: 'fnd_empty_route',
+    });
+
+    const migration = await generateMigrationForFinding('fnd_empty_route', user.id);
+
+    // Write transport with emptyRepository = true throws GITHUB_REPOSITORY_EMPTY
+    const emptyTransport = new FakeGitHubWriteTransport('pavanvarma-creator', 'student-tools', 'main', '9999999999999999999999999999999999999999');
+    emptyTransport.emptyRepository = true;
+
+    await expect(createGitHubProposal(migration.id, user.id, emptyTransport)).rejects.toThrow(/GITHUB_REPOSITORY_EMPTY/);
+
+    // Call proposal route handler with empty repository failure via spy
+    const spy = vi.spyOn(proposalService, 'createGitHubProposal').mockRejectedValueOnce(
+      new Error("GITHUB_REPOSITORY_EMPTY: Remote repository 'pavanvarma-creator/student-tools' has no commits on default branch 'main'.")
+    );
+
+    const req = new Request('http://localhost:3000/api/migrations/propose', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${session.id}`,
+      },
+      body: JSON.stringify({ migrationId: migration.id }),
+    });
+
+    const res = await proposeRoutePost(req);
+    expect(res.status).toBe(422);
+    const data = (await res.json()) as { code?: string; error?: string };
+    expect(data.code).toBe('REPOSITORY_EMPTY');
+    expect(data.error).toBe(
+      'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan before proposing a migration.'
+    );
+    spy.mockRestore();
+
+    // Verify bad request validation still protects the route
+    const badReq = new Request('http://localhost:3000/api/migrations/propose', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${session.id}`,
+      },
+      body: JSON.stringify({ migrationId: 'non_existent_id' }),
+    });
+    const badRes = await proposeRoutePost(badReq);
+    expect(badRes.status).toBe(404);
+  });
+
+  // =========================================================================
+  // Requirement 8C: Empty live GitHub repository scan MUST NOT fall back to fixture
+  // =========================================================================
+  it('8C: empty live GitHub repository scan fails closed and NEVER falls back to developer fixture', async () => {
+    const user = createUser('empty_scan@example.com', 'Pass12345!', 'Empty Scan Tester');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const now = new Date().toISOString();
+
+    const repoId = 'repo_live_empty';
+    db.prepare(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
+      VALUES (?, ?, ?, 'pavanvarma-creator', 'student-tools', 'pavanvarma-creator/student-tools', '1118854755', 'main', 'connected', ?)
+    `).run(repoId, ws.id, user.id, now);
+
+    // Mock live GitHub provider that throws GITHUB_REPOSITORY_EMPTY
+    const config: GitHubAppConfig = {
+      appId: '12345',
+      installationId: '165848879',
+      repositoryId: '1118854755',
+      owner: 'pavanvarma-creator',
+      repository: 'student-tools',
+      mode: 'OBSERVE',
+      enabled: true,
+    };
+    const tokens: InstallationTokenProvider = {
+      getToken: async () => 'test-token',
+    };
+    const readTransport: GitHubReadTransport = {
+      request: async (p) => {
+        if (p.includes('/git/ref/heads/')) {
+          return { status: 409, body: { message: 'Git Repository is empty.' } };
+        }
+        return { status: 200, body: { id: 1118854755, name: 'student-tools', owner: { login: 'pavanvarma-creator' }, default_branch: 'main' } };
+      },
+    };
+    const mockLiveProvider = new GitHubAppSourceControlProvider(config, tokens, readTransport);
+
+    // Scan execution must fail closed with GITHUB_REPOSITORY_EMPTY
+    await expect(runRepositoryScan(repoId, user.id, mockLiveProvider)).rejects.toThrow(
+      /GITHUB_REPOSITORY_EMPTY: Remote repository 'pavanvarma-creator\/student-tools' has no commits on default branch 'main'/
+    );
+
+    // Assert: scan record marked as failed
+    const scan = db.prepare('SELECT status, error_message, sha FROM scans WHERE repository_id = ? ORDER BY started_at DESC LIMIT 1').get(repoId) as { status: string; error_message: string; sha: string };
+    expect(scan.status).toBe('failed');
+    expect(scan.error_message).toContain('GITHUB_REPOSITORY_EMPTY');
+
+    // Assert: NEVER used b1be45...
+    expect(scan.sha).not.toBe('b1be45b401f41106ecfd489bbbb1fff71639c763');
+
+    // Assert: ZERO findings created (no src/billing.ts, no coupon findings!)
+    const findings = db.prepare('SELECT * FROM findings WHERE repository_id = ?').all(repoId);
+    expect(findings.length).toBe(0);
+  });
+
+  // =========================================================================
+  // Requirement 8D: Live GitHub fetch failure MUST NOT fall back to fixture
+  // =========================================================================
+  it('8D: live GitHub fetch failure fails closed and does NOT fall back to developer fixture', async () => {
+    const user = createUser('fetch_fail@example.com', 'Pass12345!', 'Fetch Fail Tester');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const now = new Date().toISOString();
+
+    const repoId = 'repo_fetch_fail';
+    db.prepare(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
+      VALUES (?, ?, ?, 'my-org', 'my-repo', 'my-org/my-repo', '222333444', 'main', 'connected', ?)
+    `).run(repoId, ws.id, user.id, now);
+
+    const config: GitHubAppConfig = {
+      appId: '12345',
+      installationId: '165848879',
+      repositoryId: '222333444',
+      owner: 'my-org',
+      repository: 'my-repo',
+      mode: 'OBSERVE',
+      enabled: true,
+    };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+    const failingTransport: GitHubReadTransport = {
+      request: async () => {
+        return { status: 500, body: { message: 'Internal Server Error' } };
+      },
+    };
+    const mockProvider = new GitHubAppSourceControlProvider(config, tokens, failingTransport);
+
+    await expect(runRepositoryScan(repoId, user.id, mockProvider)).rejects.toThrow();
+
+    // Verify scan failed and 0 findings created
+    const scan = db.prepare('SELECT status, error_message FROM scans WHERE repository_id = ?').get(repoId) as { status: string; error_message: string };
+    expect(scan.status).toBe('failed');
+
+    const findings = db.prepare('SELECT * FROM findings WHERE repository_id = ?').all(repoId);
+    expect(findings.length).toBe(0);
+  });
+
+  // =========================================================================
+  // Requirement 8E & 8F: Successful real GitHub repository scan & baseline integrity
+  // =========================================================================
+  it('8E & 8F: Successful real GitHub repository scan produces real findings and preserves baseline integrity', async () => {
+    const user = createUser('real_scan@example.com', 'Pass12345!', 'Real Scan Tester');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const now = new Date().toISOString();
+
+    const repoId = 'repo_real_scan';
+    const realSha = '8888888888888888888888888888888888888888';
+
+    db.prepare(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
+      VALUES (?, ?, ?, 'acme-corp', 'billing-service', 'acme-corp/billing-service', '333444555', 'main', 'connected', ?)
+    `).run(repoId, ws.id, user.id, now);
+
+    const pkgJson = JSON.stringify({ name: 'billing-service', dependencies: { stripe: '^16.0.0' } });
+    const paymentsTs = `import Stripe from 'stripe';
+const stripe = new Stripe('sk_test_123');
+export async function createSub(cust: string, price: string, c: string) {
+  return stripe.subscriptions.create({ customer: cust, items: [{ price }], coupon: c } as never);
+}
+`;
+
+    const config: GitHubAppConfig = {
+      appId: '12345',
+      installationId: '165848879',
+      repositoryId: '333444555',
+      owner: 'acme-corp',
+      repository: 'billing-service',
+      mode: 'OBSERVE',
+      enabled: true,
+    };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+    const successTransport: GitHubReadTransport = {
+      request: async (p) => {
+        if (p.includes('/git/ref/heads/')) {
+          return { status: 200, body: { object: { sha: realSha } } };
+        }
+        if (p.includes('/git/trees/')) {
+          return {
+            status: 200,
+            body: {
+              tree: [
+                { type: 'blob', path: 'package.json' },
+                { type: 'blob', path: 'src/payments.ts' },
+              ],
+            },
+          };
+        }
+        if (p.includes('/contents/package.json')) {
+          return { status: 200, body: { content: Buffer.from(pkgJson).toString('base64') } };
+        }
+        if (p.includes('/contents/src/payments.ts')) {
+          return { status: 200, body: { content: Buffer.from(paymentsTs).toString('base64') } };
+        }
+        return { status: 200, body: { id: 333444555, name: 'billing-service', owner: { login: 'acme-corp' }, default_branch: 'main' } };
+      },
+    };
+
+    const realProvider = new GitHubAppSourceControlProvider(config, tokens, successTransport);
+
+    const result = await runRepositoryScan(repoId, user.id, realProvider);
+    expect(result.status).toBe('completed');
+    expect(result.sha).toBe(realSha);
+    expect(result.filesAnalyzed).toBe(1);
+    expect(result.findingsCount).toBe(1);
+
+    // Finding must be on src/payments.ts (NOT the developer fixture src/billing.ts)
+    const finding = db.prepare('SELECT * FROM findings WHERE repository_id = ?').get(repoId) as { id: string; file_path: string; change_id: string };
+    expect(finding).toBeDefined();
+    expect(finding.file_path).toBe('src/payments.ts');
+
+    // Requirement 8F: Migration plan uses exact scan SHA
+    const plan = await generateMigrationForFinding(finding.id, user.id);
+    expect(plan.baselineSha).toBe(realSha);
+
+    const migRow = db.prepare('SELECT baseline_sha FROM migrations WHERE id = ?').get(plan.id) as { baseline_sha: string };
+    expect(migRow.baseline_sha).toBe(realSha);
+  });
+
+  // =========================================================================
+  // Requirement 8G: Repository isolation (SHA from another repo rejected)
+  // =========================================================================
+  it('8G: repository isolation prevents migration proposal using a SHA from another repository', async () => {
+    const user = createUser('isolation_g@example.com', 'Pass12345!', 'Isolation G Tester');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+
+    const shaRepo1 = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const shaRepo2 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+
+    setupRepoWithScanAndFinding({
+      userId: user.id,
+      workspaceId: ws.id,
+      repoId: 'repo_g1',
+      owner: 'org-g',
+      name: 'service-1',
+      githubRepoId: '500001',
+      scanId: 'scn_g1',
+      scanSha: shaRepo1,
+      findingId: 'fnd_g1',
+    });
+
+    setupRepoWithScanAndFinding({
+      userId: user.id,
+      workspaceId: ws.id,
+      repoId: 'repo_g2',
+      owner: 'org-g',
+      name: 'service-2',
+      githubRepoId: '500002',
+      scanId: 'scn_g2',
+      scanSha: shaRepo2,
+      findingId: 'fnd_g2',
+    });
+
+    const mig = await generateMigrationForFinding('fnd_g1', user.id);
+    expect(mig.baselineSha).toBe(shaRepo1);
+
+    // Attempt to hijack migration to use service-2's SHA
+    db.prepare('UPDATE migrations SET baseline_sha = ? WHERE id = ?').run(shaRepo2, mig.id);
+
+    await expect(createGitHubProposal(mig.id, user.id)).rejects.toThrow(
+      /BASELINE_SHA_REPOSITORY_MISMATCH/
+    );
   });
 });

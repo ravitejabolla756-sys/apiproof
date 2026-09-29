@@ -176,7 +176,7 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
       method: 'GET',
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
     });
-    if (response.status === 404) return null;
+    if (response.status === 404 || response.status === 409) return null;
     if (!response.ok) throw new Error('GITHUB_READ_FAILED');
     const data = (await response.json()) as { object?: { sha?: string }; ref?: string };
     return { ref: data.ref || `refs/heads/${branchName}`, sha: data.object?.sha || '' };
@@ -266,6 +266,21 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     });
     if (response.status === 404) {
       throw new Error(`GITHUB_DEFAULT_BRANCH_NOT_FOUND: Default branch '${branchName}' not found in remote repository.`);
+    }
+    if (response.status === 409) {
+      let bodyText = '';
+      try {
+        const errJson = (await response.json()) as { message?: string };
+        bodyText = errJson?.message ?? '';
+      } catch {
+        // ignore
+      }
+      if (bodyText.toLowerCase().includes('empty') || !bodyText) {
+        throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${this.config.owner}/${this.config.repository}' has no commits on default branch '${branchName}'.`);
+      }
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`GITHUB_AUTHORIZATION_FAILED: Not authorized to read repository '${this.config.owner}/${this.config.repository}'.`);
     }
     if (!response.ok) {
       throw new Error('GITHUB_READ_FAILED: Failed to fetch remote repository default branch ref.');
