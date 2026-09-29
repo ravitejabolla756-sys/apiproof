@@ -96,7 +96,7 @@ export function Sidebar() {
           {!collapsed && (
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-[#111111] tracking-tight">
-                APIProof
+                MY OWL
               </span>
               <span className="text-[10px] bg-[#F6F6F4] border border-[#E8E8E5] px-2 py-0.5 rounded-full text-zinc-600 font-medium">
                 v0.7

@@ -38,7 +38,7 @@ export function ScanProgress() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Search className="w-4 h-4 text-emerald-400" />
-          <span className="font-bold text-zinc-100">APIProof Scan Simulator</span>
+          <span className="font-bold text-zinc-100">MY OWL Scan Simulator</span>
           <span className="text-[10px] bg-zinc-900 text-zinc-400 px-2 py-0.5 rounded border border-zinc-800">
             AST Engine v1.0
           </span>

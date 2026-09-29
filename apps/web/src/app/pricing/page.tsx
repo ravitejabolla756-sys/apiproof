@@ -20,7 +20,7 @@ export default function PricingPage() {
             Simple, Transparent Access
           </h1>
           <p className="text-base text-[#686868]">
-            APIProof is currently in private developer preview. Early engineering teams access read-only scans and verified migration generation.
+            MY OWL is currently in private developer preview. Early engineering teams access read-only scans and verified migration generation.
           </p>
         </div>
 

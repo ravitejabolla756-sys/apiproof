@@ -40,7 +40,7 @@ export default function Home() {
 
             {/* Body Copy */}
             <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed mb-8 max-w-lg">
-              APIProof maps vendor SDK changes to real repository usage, verifies the impact deterministically, and prepares safe migration pull requests.
+              MY OWL maps vendor SDK changes to real repository usage, verifies the impact deterministically, and prepares safe migration pull requests.
             </p>
 
             {/* 1:1 SynthAI Monospace Uppercase Buttons (rounded-lg) */}
@@ -155,7 +155,7 @@ export default function Home() {
             </h2>
 
             <p className="text-base text-slate-600 leading-relaxed">
-              When Twilio updated namespace casing in v2024, APIProof evaluated 27 repository call sites. Because none matched the affected signature, zero alerts were dispatched to PagerDuty.
+              When Twilio updated namespace casing in v2024, MY OWL evaluated 27 repository call sites. Because none matched the affected signature, zero alerts were dispatched to PagerDuty.
             </p>
 
             <div className="pt-2">
@@ -184,7 +184,7 @@ export default function Home() {
             </h2>
 
             <p className="text-base text-slate-600 leading-relaxed">
-              When an impact is confirmed, APIProof automatically generates refactored TypeScript migrations, executes repository typechecks, and drafts a human-reviewable GitHub Pull Request.
+              When an impact is confirmed, MY OWL automatically generates refactored TypeScript migrations, executes repository typechecks, and drafts a human-reviewable GitHub Pull Request.
             </p>
 
             <div className="pt-2">
@@ -217,7 +217,7 @@ export default function Home() {
             </h2>
 
             <p className="text-base text-slate-600 leading-relaxed">
-              Connect your repositories, observe vendor changes, and let APIProof handle continuous compatibility verification.
+              Connect your repositories, observe vendor changes, and let MY OWL handle continuous compatibility verification.
             </p>
 
             <div className="pt-2">

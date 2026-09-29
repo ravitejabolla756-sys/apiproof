@@ -220,7 +220,7 @@ export const DEMO_VERIFICATION_CHECKS: VerificationCheck[] = [
 
 export const DEMO_PULL_REQUEST: PullRequestSummary = {
   number: 1,
-  title: 'APIProof: migrate stripe-subscription-coupon-removed',
+  title: 'MY OWL: migrate stripe-subscription-coupon-removed',
   repository: 'apiproof-github-fixture',
   owner: 'ravitejabolla756-sys',
   headBranch: 'apiproof/stripe-subscription-coupon-removed-9cc601a8',

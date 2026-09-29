@@ -228,7 +228,7 @@ export async function createGitHubProposal(
   }
 
   const title = `fix(api): deterministic migration for ${migration.change_id}`;
-  const prBody = `## APIProof Deterministic Migration Proposal
+  const prBody = `## MY OWL Deterministic Migration Proposal
 
 ### Summary
 * **Change ID**: \`${migration.change_id}\`

@@ -13,11 +13,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'APIProof — Know when API changes break your code',
+  title: 'MY OWL — Know when API changes break your code',
   description:
-    'APIProof monitors API and SDK changes, maps them to actual usages in your repository, and prepares verified review-only migrations.',
+    'MY OWL monitors API and SDK changes, maps them to actual usages in your repository, and prepares verified review-only migrations.',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.svg',
   },
 };
 

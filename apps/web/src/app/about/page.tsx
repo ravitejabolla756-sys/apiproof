@@ -17,7 +17,7 @@ export default function AboutPage() {
             {/* LEFT 5 COLUMNS */}
             <div className="lg:col-span-5 space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F6F6F4] border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-[#686868]">
-                ABOUT APIProof
+                ABOUT MY OWL
               </div>
               <h1 className="text-4xl sm:text-5xl font-medium tracking-tight text-[#111111] leading-tight">
                 APIs change.<br />
@@ -28,13 +28,13 @@ export default function AboutPage() {
             {/* RIGHT 7 COLUMNS */}
             <div className="lg:col-span-7 space-y-6 text-[#686868] text-base leading-relaxed">
               <p className="text-lg text-[#111111] font-medium">
-                APIProof helps engineering teams understand whether upstream API and SDK changes actually affect their codebase.
+                MY OWL helps engineering teams understand whether upstream API and SDK changes actually affect their codebase.
               </p>
               <p>
                 Modern applications rely on dozens of vendor APIs—from payment processors like Stripe to communications providers like Twilio and AI infrastructure providers like OpenAI. When a vendor updates their SDK or deprecates a parameter, software teams face a silent dilemma: spend hours auditing every call site manually, or risk breaking production.
               </p>
               <p>
-                APIProof bridges this gap by indexing repository Abstract Syntax Trees (ASTs), matching reviewed vendor breaking change rules to actual symbol usages, and executing 4-gate verification pipelines before generating human-reviewable draft pull requests.
+                MY OWL bridges this gap by indexing repository Abstract Syntax Trees (ASTs), matching reviewed vendor breaking change rules to actual symbol usages, and executing 4-gate verification pipelines before generating human-reviewable draft pull requests.
               </p>
               <div className="pt-2">
                 <Link href="/dashboard">
@@ -58,7 +58,7 @@ export default function AboutPage() {
               Traceable AST Graph Matching
             </h2>
             <p className="text-xs text-[#686868]">
-              APIProof constructs an exact graph mapping third-party symbols to repository call sites.
+              MY OWL constructs an exact graph mapping third-party symbols to repository call sites.
             </p>
           </div>
 

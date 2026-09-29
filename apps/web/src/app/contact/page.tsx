@@ -30,7 +30,7 @@ export default function ContactPage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-medium tracking-tight text-[#111111]">
-                Talk to APIProof
+                Talk to the MY OWL Team
               </h1>
 
               <p className="text-base text-[#686868] leading-relaxed">
@@ -44,7 +44,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] text-[#686868] uppercase font-semibold">Direct Email</div>
-                    <div className="font-mono text-sm font-medium">contact@apiproof.dev</div>
+                    <div className="font-mono text-sm font-medium">contact@myowl.dev</div>
                   </div>
                 </div>
 
@@ -54,7 +54,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] text-[#686868] uppercase font-semibold">Security Inquiries</div>
-                    <div className="font-mono text-sm font-medium">security@apiproof.dev</div>
+                    <div className="font-mono text-sm font-medium">security@myowl.dev</div>
                   </div>
                 </div>
               </div>

@@ -115,7 +115,7 @@ export default function RepositoriesTablePage() {
             Repositories
           </h1>
           <p className="text-xs text-[#686868] mt-1">
-            Repositories connected to the deterministic APIProof AST compatibility engine.
+            Repositories connected to the deterministic MY OWL AST compatibility engine.
           </p>
         </div>
 

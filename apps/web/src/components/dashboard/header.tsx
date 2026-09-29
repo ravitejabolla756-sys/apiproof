@@ -37,7 +37,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-xs">
         <Link href="/dashboard" className="text-[#686868] hover:text-[#111111] transition-colors font-medium">
-          APIProof
+          MY OWL
         </Link>
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.href} className="flex items-center gap-2">

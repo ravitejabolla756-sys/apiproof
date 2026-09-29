@@ -18,7 +18,7 @@ export function LandingFooter() {
                   <ApiProofLogo className="w-5 h-5 text-slate-950" />
                 </div>
                 <span className="text-xl font-bold tracking-tight text-white">
-                  APIProof
+                  MY OWL
                 </span>
               </Link>
 
@@ -73,7 +73,7 @@ export function LandingFooter() {
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-500">
-            <div>© {new Date().getFullYear()} APIProof. All Rights Reserved.</div>
+            <div>© {new Date().getFullYear()} MY OWL. All Rights Reserved.</div>
             <div>Built for mission-critical developer infrastructure.</div>
           </div>
 

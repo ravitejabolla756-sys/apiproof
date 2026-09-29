@@ -203,7 +203,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-[#111111]">GitHub App Not Connected</h4>
                 <p className="text-xs text-[#686868] max-w-sm mx-auto">
-                  Connect the APIProof GitHub App to your account or organization to grant repository access.
+                  Connect the MY OWL GitHub App to your account or organization to grant repository access.
                 </p>
               </div>
               <Button
@@ -295,7 +295,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
               <div className="bg-[#EEF7F2] border border-[#D1EBE0] rounded-2xl p-3.5 flex items-start gap-2.5">
                 <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                 <p className="text-emerald-800 leading-relaxed text-[11px]">
-                  Connecting a repository authorizes APIProof in read-only observe mode. Real AST compatibility scans run in memory without altering repository files.
+                  Connecting a repository authorizes MY OWL in read-only observe mode. Real AST compatibility scans run in memory without altering repository files.
                 </p>
               </div>
 

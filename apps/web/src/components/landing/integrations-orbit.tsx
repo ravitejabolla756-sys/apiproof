@@ -21,12 +21,12 @@ export function IntegrationsOrbit() {
         <circle cx="340" cy="210" r="95" stroke="#D1D1D6" strokeWidth="1.5" strokeDasharray="2 4" />
       </svg>
 
-      {/* Central Core APIProof Node */}
+      {/* Central Core MY OWL Node */}
       <div className="relative z-20 w-28 h-28 rounded-3xl bg-[#111111] text-white shadow-xl flex flex-col items-center justify-center border border-slate-800">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-400 to-emerald-400 text-slate-950 font-bold text-base flex items-center justify-center mb-1">
           [·]
         </div>
-        <div className="text-xs font-bold tracking-tight text-white">APIProof</div>
+        <div className="text-xs font-bold tracking-tight text-white">MY OWL</div>
         <div className="font-mono text-[8px] text-emerald-400 mt-0.5">AST Core</div>
       </div>
 

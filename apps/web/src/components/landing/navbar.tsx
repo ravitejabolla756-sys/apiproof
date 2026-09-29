@@ -29,7 +29,7 @@ export function LandingNavbar() {
             <ApiProofLogo className="w-5 h-5 text-[#0F172A]" />
           </div>
           <span className="text-xl font-bold tracking-tight text-[#0F172A]">
-            APIProof
+            MY OWL
           </span>
         </Link>
 

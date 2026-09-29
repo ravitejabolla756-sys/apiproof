@@ -15,7 +15,7 @@ export const PLANS: Record<string, PlanDefinition> = {
   free: {
     id: 'free',
     name: 'Free',
-    description: 'For small projects and evaluating APIProof AST analysis',
+    description: 'For small projects and evaluating MY OWL AST analysis',
     priceMonthly: 0,
     currency: 'usd',
     limits: {

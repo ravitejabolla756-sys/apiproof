@@ -159,7 +159,7 @@ export default function DashboardOverviewPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-800/60 pb-5">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-800/50 border border-purple-700/50 text-[11px] font-semibold tracking-wide uppercase text-purple-200">
-                Getting Started with APIProof
+                Getting Started with MY OWL
               </div>
               <h2 className="text-xl font-semibold mt-2 text-white">
                 4 Steps to Automate Breaking API Migration PRs
@@ -192,7 +192,7 @@ export default function DashboardOverviewPage() {
               </div>
               <h4 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h4>
               <p className="text-purple-200 text-[11px] leading-relaxed">
-                Authorize the APIProof GitHub App with read-only repository permissions.
+                Authorize the MY OWL GitHub App with read-only repository permissions.
               </p>
             </div>
 

@@ -43,7 +43,7 @@ export function validateEnvConfig(env: Record<string, string | undefined> = proc
   const isProduction = nodeEnv === 'production';
   const issues: ValidationIssue[] = [];
 
-  const appUrl = env.NEXT_PUBLIC_APP_URL || env.APIPROOF_APP_URL || (isProduction ? '' : 'http://localhost:3000');
+  const appUrl = env.NEXT_PUBLIC_APP_URL || env.APIPROOF_APP_URL || (isProduction ? 'https://myowl.dev' : 'http://localhost:3000');
   const apiproofSecret = env.APIPROOF_SECRET || (isProduction ? '' : 'test-apiproof-secret-32-chars-minimum-length!!');
   const githubAppId = env.GITHUB_APP_ID || (isProduction ? '' : '12345');
   const githubAppSlug = env.GITHUB_APP_SLUG || (isProduction ? '' : 'apiproof-dev');

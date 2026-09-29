@@ -242,7 +242,7 @@ export default function FindingDetailPage({
                 </span>
               </div>
               <p className="text-[11px] text-[#686868] leading-relaxed">
-                APIProof detected breaking parameter usage at line {finding.line_number}.
+                MY OWL detected breaking parameter usage at line {finding.line_number}.
               </p>
             </div>
 

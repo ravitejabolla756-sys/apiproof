@@ -321,7 +321,7 @@ export default function SettingsPage() {
                 <div className="space-y-1">
                   <div className="font-semibold text-xs text-[#111111]">Not connected to GitHub</div>
                   <div className="text-[11px] text-[#686868]">
-                    Install the APIProof GitHub App to grant access to your repositories.
+                    Install the MY OWL GitHub App to grant access to your repositories.
                   </div>
                 </div>
                 <Button
@@ -343,7 +343,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
                   <div>
                     <div className="font-medium text-xs text-[#111111]">Read-only scanning mode</div>
-                    <div className="text-[11px] text-[#686868]">APIProof never writes directly to monitored default branches</div>
+                    <div className="text-[11px] text-[#686868]">MY OWL never writes directly to monitored default branches</div>
                   </div>
                   <Check className="w-4 h-4 text-emerald-600" />
                 </div>
