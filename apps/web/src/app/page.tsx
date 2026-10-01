@@ -50,7 +50,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 1. HERO SECTION (Visual Foundation + Authentic Product Copy) */}
       {/* ========================================================================= */}
-      <section className="relative w-full min-h-screen flex flex-col items-center justify-center pt-32 pb-24 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#001033_0%,#004EE8_55%,#58B8F6_90%,#FAFAFA_100%)]">
+      <section className="relative w-full min-h-[70vh] lg:min-h-[74vh] flex flex-col items-center justify-center pt-32 pb-20 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#001033_0%,#002B80_24%,#004EE8_50%,#4FA8F6_76%,#C5E6FC_89%,#FFFFFF_100%)]">
         {/* Interactive Cursor-Following Diagonal Lines & Spotlight Background */}
         <InteractiveHeroBackground />
 
