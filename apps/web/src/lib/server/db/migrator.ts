@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import type { DatabaseAdapter, Migration, MigrationRecord } from './types.js';
 import { POSTGRES_SCHEMA, SQLITE_SCHEMA } from './schema.js';
+import { passwordResetMigrations } from './password-reset-migration.js';
 
 export const migrations: Migration[] = [
   {
@@ -457,6 +458,7 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  ...passwordResetMigrations,
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {

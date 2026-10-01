@@ -5,6 +5,12 @@ import { Sidebar } from '@/components/dashboard/sidebar';
 import { Header } from '@/components/dashboard/header';
 import { CommandPalette } from '@/components/dashboard/command-palette';
 import { ConnectRepoModal } from '@/components/dashboard/connect-repo-modal';
+import {
+  GITHUB_CONNECTION_CHANGED_EVENT,
+  GITHUB_CONNECTION_STORAGE_KEY,
+  isGitHubConnectionChangedMessage,
+  publishGitHubConnectionChanged,
+} from '@/lib/github-connection-sync';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -13,7 +19,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const refreshGithubStatus = useCallback(async () => {
     try {
-      const res = await fetch('/api/github/repositories');
+      const res = await fetch('/api/github/repositories', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setGithubConnected(Boolean(data.connected));
@@ -27,6 +33,52 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshGithubStatus();
+  }, [refreshGithubStatus]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('github') !== 'connected') return;
+
+    publishGitHubConnectionChanged();
+    window.history.replaceState(null, '', window.location.pathname);
+    refreshGithubStatus();
+  }, [refreshGithubStatus]);
+
+  useEffect(() => {
+    const refreshFromMessage = (message: unknown) => {
+      if (isGitHubConnectionChangedMessage(message)) refreshGithubStatus();
+    };
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== GITHUB_CONNECTION_STORAGE_KEY || !event.newValue) return;
+      try {
+        refreshFromMessage(JSON.parse(event.newValue));
+      } catch {
+        // Ignore malformed client storage and rely on the next refresh.
+      }
+    };
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel(GITHUB_CONNECTION_CHANGED_EVENT);
+      channel.addEventListener('message', (event) => refreshFromMessage(event.data));
+    } catch {
+      // Storage and visibility listeners below provide the fallback.
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshGithubStatus();
+    };
+    window.addEventListener('storage', onStorage);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', refreshGithubStatus);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', refreshGithubStatus);
+      channel?.close();
+    };
   }, [refreshGithubStatus]);
 
   useEffect(() => {

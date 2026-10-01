@@ -150,7 +150,9 @@ export async function GET(req: Request) {
 
   const acceptHeader = req.headers.get('accept') || '';
   if (acceptHeader.includes('text/html')) {
-    return NextResponse.redirect(new URL('/dashboard/settings?github=connected', req.url));
+    const response = NextResponse.redirect(new URL('/dashboard/settings?github=connected', req.url));
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   }
 
   return NextResponse.json({
@@ -159,7 +161,7 @@ export async function GET(req: Request) {
     installationId: cleanInstallationId,
     accountLogin: installationMeta.accountLogin,
     accountType: installationMeta.accountType,
-  });
+  }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
 }
 
 export async function POST(req: Request) {

@@ -8,9 +8,10 @@ import {
 } from '@/lib/server/workspace-service';
 
 export async function GET(req: Request) {
+  const noStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: noStoreHeaders });
   }
 
   const urlObj = new URL(req.url);
@@ -22,7 +23,7 @@ export async function GET(req: Request) {
       const ws = await requireWorkspaceMember(user.id, requestedWorkspaceId);
       workspaceId = ws.id;
     } catch {
-      return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403 });
+      return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403, headers: noStoreHeaders });
     }
   } else {
     const defaultWs = await getDefaultWorkspaceForUser(user.id);
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
         connected: false,
         repositories: [],
         totalCount: 0,
-      });
+      }, { headers: noStoreHeaders });
     }
 
     // Return only minimum sanitized fields needed by the repository picker
@@ -59,15 +60,15 @@ export async function GET(req: Request) {
       },
       repositories: sanitizedRepositories,
       totalCount: sanitizedRepositories.length,
-    });
+    }, { headers: noStoreHeaders });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to fetch repositories from GitHub.';
     if (message.includes('GITHUB_AUTHENTICATION_FAILED')) {
       return NextResponse.json({
         error: 'GitHub authentication failed. Installation access may have been revoked.',
         code: 'GITHUB_AUTH_FAILED',
-      }, { status: 502 });
+      }, { status: 502, headers: noStoreHeaders });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500, headers: noStoreHeaders });
   }
 }

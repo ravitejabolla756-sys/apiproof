@@ -64,6 +64,27 @@ export function validateLoginInput(body: unknown): ValidationResult<{ email: str
   };
 }
 
+export function validatePasswordResetRequestInput(body: unknown): ValidationResult<{ email: string }> {
+  if (!body || typeof body !== 'object') return { valid: false, error: 'Request body must be a JSON object.' };
+  const email = (body as Record<string, unknown>).email;
+  if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim()) || email.trim().length > 255) {
+    return { valid: false, error: 'A valid email address is required.' };
+  }
+  return { valid: true, data: { email: email.trim().toLowerCase() } };
+}
+
+export function validatePasswordResetCompletionInput(body: unknown): ValidationResult<{ token: string; password: string }> {
+  if (!body || typeof body !== 'object') return { valid: false, error: 'Request body must be a JSON object.' };
+  const { token, password } = body as Record<string, unknown>;
+  if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    return { valid: false, error: 'A valid password reset token is required.' };
+  }
+  if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+    return { valid: false, error: 'Password must be 8-128 characters long.' };
+  }
+  return { valid: true, data: { token, password } };
+}
+
 export function validateRepositoryConnectInput(body: unknown): ValidationResult<{
   owner?: string;
   name?: string;

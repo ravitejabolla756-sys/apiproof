@@ -114,6 +114,25 @@ describe('GitHub Installation Reassociation Hardening', () => {
     expect(allRows.length).toBe(1);
   });
 
+  it('redirects HTML OAuth completion with a no-store response for cross-tab refresh', async () => {
+    const { user, session } = await createUserWithSession('html-callback@example.com', 'Pass12345!', 'HTML Callback');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, ws.id);
+
+    const req = new Request(`http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&state=${state}`, {
+      headers: {
+        accept: 'text/html',
+        cookie: `apiproof_session=${session.id}`,
+      },
+    });
+
+    const res = await callbackGet(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBe('http://localhost/dashboard/settings?github=connected');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await getWorkspaceGitHubInstallation(ws.id)).not.toBeNull();
+  });
+
   // TEST B: Same user owning both old and new workspaces can reassociate
   it('TEST B: Same user owning both old and new workspaces can reassociate', async () => {
     const { user, session } = await createUserWithSession('bob@example.com', 'Pass12345!', 'Bob');

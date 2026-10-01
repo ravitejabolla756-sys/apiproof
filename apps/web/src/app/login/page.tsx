@@ -186,6 +186,13 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+        {mode === 'login' && (
+          <div className="mt-5 text-center">
+            <Link href="/forgot-password" className="text-sm text-slate-600 underline-offset-4 hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+        )}
       </div>
 
       <p className="mt-6 text-xs text-slate-500">

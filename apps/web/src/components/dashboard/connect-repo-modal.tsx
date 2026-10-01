@@ -35,11 +35,12 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     if (!isOpen) return;
 
     let isMounted = true;
+    const pollTimer: ReturnType<typeof setInterval> = setInterval(fetchAvailableRepos, 2000);
     async function fetchAvailableRepos() {
       setLoadingRepos(true);
       setError(null);
       try {
-        const res = await fetch('/api/github/repositories');
+        const res = await fetch('/api/github/repositories', { cache: 'no-store' });
         if (!res.ok) {
           throw new Error('Failed to load GitHub repositories.');
         }
@@ -63,6 +64,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
 
     return () => {
       isMounted = false;
+      if (pollTimer) clearInterval(pollTimer);
     };
   }, [isOpen]);
 

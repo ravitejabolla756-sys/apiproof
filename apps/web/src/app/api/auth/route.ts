@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'node:crypto';
 import {
   getCurrentUser,
   authenticateUser,
@@ -15,9 +16,13 @@ import {
   assertCsrfProtection,
   validateSignupInput,
   validateLoginInput,
+  validatePasswordResetRequestInput,
+  validatePasswordResetCompletionInput,
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
+import { requestPasswordReset, completePasswordReset } from '@/lib/server/password-reset.js';
+import { isPasswordResetEmailConfigured } from '@/lib/server/password-reset-email.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -39,6 +44,48 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Record<string, unknown> | null;
     const action = body?.action;
+
+    if (action === 'request_password_reset') {
+      if (!isPasswordResetEmailConfigured()) {
+        return NextResponse.json(
+          { error: 'Password recovery is temporarily unavailable.', code: 'PASSWORD_RESET_UNAVAILABLE' },
+          { status: 503 },
+        );
+      }
+      const validation = validatePasswordResetRequestInput(body);
+      if (!validation.valid || !validation.data) return badRequestResponse(validation.error || 'Invalid request.');
+      const { email } = validation.data;
+      const emailKey = crypto.createHash('sha256').update(email).digest('hex');
+      const [ipLimit, emailLimit] = await Promise.all([
+        checkRateLimit(`auth:password-reset:ip:${clientIp}`, 10, 15 * 60 * 1000, { failClosed: true }),
+        checkRateLimit(`auth:password-reset:email:${emailKey}`, 3, 60 * 60 * 1000, { failClosed: true }),
+      ]);
+      if (!ipLimit.allowed || !emailLimit.allowed) {
+        return rateLimitResponse(Math.max(ipLimit.resetInMs, emailLimit.resetInMs));
+      }
+
+      try {
+        await requestPasswordReset(email);
+      } catch (error) {
+        if (!(error instanceof Error) || error.message !== 'PASSWORD_RESET_DELIVERY_FAILED') throw error;
+        // Keep the response indistinguishable for existing and unknown accounts.
+        console.error('[password-reset] Email delivery failed.');
+      }
+      return NextResponse.json({ success: true, message: 'If an account exists for that email, reset instructions will be sent.' }, { status: 202 });
+    }
+
+    if (action === 'complete_password_reset') {
+      const validation = validatePasswordResetCompletionInput(body);
+      if (!validation.valid || !validation.data) return badRequestResponse(validation.error || 'Invalid request.');
+      const rateCheck = await checkRateLimit(`auth:password-reset-complete:${clientIp}`, 10, 15 * 60 * 1000, { failClosed: true });
+      if (!rateCheck.allowed) return rateLimitResponse(rateCheck.resetInMs);
+
+      const completed = await completePasswordReset(validation.data.token, validation.data.password);
+      if (!completed) {
+        return NextResponse.json({ error: 'This reset link is invalid or expired.', code: 'INVALID_RESET_TOKEN' }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
+    }
 
     if (action === 'logout') {
       const sessionId = extractSessionId(req);
@@ -118,9 +165,8 @@ export async function POST(req: Request) {
       return res;
     }
 
-    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout.', code: 'INVALID_ACTION' }, { status: 400 });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal server error.';
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset.', code: 'INVALID_ACTION' }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

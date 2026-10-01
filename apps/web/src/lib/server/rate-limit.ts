@@ -35,7 +35,8 @@ export function getClientIp(req: Request): string {
 export async function checkRateLimit(
   key: string,
   limit: number,
-  windowMs: number
+  windowMs: number,
+  options: { failClosed?: boolean } = {},
 ): Promise<RateLimitResult> {
   const now = Date.now();
 
@@ -82,6 +83,9 @@ export async function checkRateLimit(
       resetInMs: Math.max(0, resetAt - now),
     };
   } catch (err) {
+    if (options.failClosed) {
+      throw new Error('RATE_LIMIT_STORE_UNAVAILABLE', { cause: err });
+    }
     // In-memory fallback if database table is unavailable or busy
     console.warn('Rate limiter database lookup failed, using memory fallback:', err);
     const cached = inMemoryFallback.get(key);
