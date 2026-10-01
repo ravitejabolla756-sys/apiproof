@@ -1,12 +1,29 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Github, LayoutDashboard } from "lucide-react";
-import { ApiProofLogo } from "@/components/ui/logo";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Menu, X } from "lucide-react";
+import { MyOwlLogo } from "@/components/ui/logo";
+
+// Desktop navbar links: STRICTLY Features, How it works, Pricing ONLY
+const DESKTOP_NAV_LINKS = [
+  { label: "Features", href: "/features" },
+  { label: "How it works", href: "/how-it-works" },
+  { label: "Pricing", href: "/pricing" },
+];
+
+// Mobile menu links: Features, How it works, Pricing
+const MOBILE_NAV_LINKS = [
+  { label: "Features", href: "/features" },
+  { label: "How it works", href: "/how-it-works" },
+  { label: "Pricing", href: "/pricing" },
+];
 
 export function LandingNavbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     fetch('/api/auth')
@@ -19,88 +36,151 @@ export function LandingNavbar() {
       .catch(() => {});
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  const isLinkActive = (href: string) => {
+    if (!pathname) return false;
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
   return (
-    <header className="w-full pt-4 pb-2 z-50 relative">
-      <div className="max-w-[1380px] mx-auto px-4 md:px-8 flex items-center justify-between">
-        
-        {/* LEFT: Logo & Wordmark */}
-        <Link href="/" className="flex items-center gap-3 group shrink-0">
-          <div className="w-9 h-9 shrink-0 rounded-xl bg-white border border-[#E8E8E5] flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs overflow-hidden">
-            <ApiProofLogo className="w-5 h-5 text-[#0F172A]" />
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[660px] pointer-events-none">
+      <header className="pointer-events-auto w-full">
+        {/* Main Navbar Bar */}
+        <div className="h-[54px] sm:h-[56px] px-3.5 sm:px-5 rounded-full bg-[#071328]/85 backdrop-blur-md border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.18)] flex items-center justify-between transition-all">
+
+          {/* LEFT: Geometric Developer Logo & Brand Wordmark (No background box) */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 sm:gap-2.5 group shrink-0 focus:outline-hidden"
+            aria-label="MY OWL Home"
+          >
+            <MyOwlLogo className="h-5 sm:h-6 w-auto transition-transform group-hover:scale-105" variant="light" />
+            <span className="text-xs sm:text-sm font-semibold tracking-wider text-white uppercase select-none">
+              MY OWL
+            </span>
+          </Link>
+
+          {/* CENTER: Desktop Navigation (Features, How it works, Pricing) */}
+          <nav className="hidden md:flex items-center gap-1 text-[13px] font-medium">
+            {DESKTOP_NAV_LINKS.map((link) => {
+              const active = isLinkActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3.5 py-1.5 rounded-full transition-colors ${
+                    active
+                      ? "text-white bg-white/10 font-medium"
+                      : "text-slate-300 hover:text-white hover:bg-white/[0.06]"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* RIGHT: Primary Action (Get Started) */}
+          <div className="hidden md:flex items-center shrink-0">
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                prefetch={true}
+                className="px-3.5 py-1.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-medium rounded-full transition-colors flex items-center gap-1.5 shadow-xs"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Dashboard</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                prefetch={true}
+                className="px-4 py-1.5 bg-[#D0F100] hover:bg-[#bce000] text-black text-xs font-semibold rounded-full transition-all shadow-xs hover:shadow-[0_0_16px_rgba(208,241,0,0.35)] active:scale-95"
+              >
+                Get Started
+              </Link>
+            )}
           </div>
-          <span className="text-xl font-bold tracking-tight text-[#0F172A]">
-            MY OWL
-          </span>
-        </Link>
 
-        {/* RIGHT: Floating White Pill Navigation Container (1:1 SynthAI Live Spec) */}
-        <nav className="synth-pill-nav px-6 py-2 flex items-center gap-6">
-          <Link
-            href="/#product"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors"
-          >
-            PRODUCT
-          </Link>
-          <Link
-            href="/#integrations"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-block"
-          >
-            INTEGRATIONS
-          </Link>
-          <Link
-            href="/#security"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-[#686868] hover:text-[#0F172A] transition-colors hidden md:inline-block"
-          >
-            SECURITY
-          </Link>
-          <Link
-            href="/#how-it-works"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-[#686868] hover:text-[#0F172A] transition-colors hidden lg:inline-block"
-          >
-            DOCS
-          </Link>
-          <a
-            href="https://github.com/ravitejabolla756-sys/apiproof"
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-flex items-center gap-1.5"
-          >
-            <Github className="w-3.5 h-3.5 text-[#0F172A]" />
-            <span>GitHub</span>
-          </a>
-
-          {isAuthenticated ? (
-            <Link
-              href="/dashboard"
-              prefetch={true}
-              className="px-4 py-2 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-colors ml-1 flex items-center gap-1.5"
+          {/* MOBILE TOGGLE (< 768px / mobile only) */}
+          <div className="flex items-center md:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white flex items-center justify-center transition-colors focus:outline-hidden"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>DASHBOARD</span>
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                prefetch={true}
-                className="font-mono text-xs font-medium uppercase tracking-wider text-slate-600 hover:text-[#0F172A] transition-colors hidden sm:inline-block"
-              >
-                SIGN IN
-              </Link>
+              {mobileMenuOpen ? (
+                <X className="w-4 h-4 text-white" />
+              ) : (
+                <Menu className="w-4 h-4 text-white" />
+              )}
+            </button>
+          </div>
 
-              {/* SynthAI CTA Button (rounded-lg font-mono uppercase) */}
-              <Link
-                href="/login"
-                prefetch={true}
-                className="px-4 py-2 bg-[#0F172A] text-white font-mono text-xs font-medium uppercase tracking-wider rounded-lg hover:bg-slate-800 transition-colors ml-1"
-              >
-                <span>GET STARTED</span>
-              </Link>
-            </>
-          )}
-        </nav>
+        </div>
 
-      </div>
-    </header>
+        {/* MOBILE OVERLAY SHEET */}
+        {mobileMenuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-[-1] bg-black/50 backdrop-blur-xs md:hidden pointer-events-auto"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200">
+              <nav className="flex flex-col gap-1">
+                {MOBILE_NAV_LINKS.map((link) => {
+                  const active = isLinkActive(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        active
+                          ? "text-white bg-white/10"
+                          : "text-slate-300 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="h-px bg-white/10 my-3" />
+
+              {isAuthenticated ? (
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/10 border border-white/15 text-white text-sm font-medium hover:bg-white/15 transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 px-4 rounded-xl bg-[#D0F100] hover:bg-[#bce000] text-black text-sm font-semibold transition-colors shadow-xs"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </header>
+    </div>
   );
 }

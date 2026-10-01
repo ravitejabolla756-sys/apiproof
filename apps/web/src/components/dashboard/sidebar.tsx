@@ -90,9 +90,7 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-[#E8E8E5] font-sans">
         <Link href="/dashboard" className="flex items-center gap-2.5 overflow-hidden">
-          <div className="w-8 h-8 rounded-xl bg-stone-100 border border-[#E8E8E5] flex items-center justify-center shrink-0">
-            <ApiProofLogo className="w-5 h-5" />
-          </div>
+          <ApiProofLogo className="h-6 w-auto shrink-0 transition-transform hover:scale-105" variant="dark" />
           {!collapsed && (
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-[#111111] tracking-tight">

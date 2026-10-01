@@ -1,34 +1,35 @@
+import React from "react";
 import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Code2, Network, ShieldCheck } from "lucide-react";
+import { ArrowRight, Code2, ShieldCheck, Lock } from "lucide-react";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#F6F6F4] text-[#111111] font-sans selection:bg-[#111111] selection:text-white">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-12 md:py-20 space-y-16">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
 
-        {/* EDITORIAL SPLIT */}
-        <div className="rounded-[32px] bg-white border border-[#E8E8E5] p-8 md:p-16 shadow-xs">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* LEFT 5 COLUMNS */}
+        {/* EDITORIAL HERO */}
+        <div className="rounded-[32px] bg-[#EFF1F5] border border-black/[0.04] p-8 md:p-14 shadow-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+
+            {/* Left 5 cols */}
             <div className="lg:col-span-5 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F6F6F4] border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-[#686868]">
-                ABOUT MY OWL
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
+                <span>OUR MISSION</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-medium tracking-tight text-[#111111] leading-tight">
-                APIs change.<br />
-                <span className="font-semibold text-[#111111]">Your code shouldn't fail silently.</span>
+              <h1 className="font-serif text-4xl sm:text-5xl font-normal text-[#000E29] leading-[1.12]">
+                Your APIs change.<br />
+                <span className="italic font-normal">Your code shouldn&apos;t fail silently.</span>
               </h1>
             </div>
 
-            {/* RIGHT 7 COLUMNS */}
-            <div className="lg:col-span-7 space-y-6 text-[#686868] text-base leading-relaxed">
-              <p className="text-lg text-[#111111] font-medium">
-                MY OWL helps engineering teams understand whether upstream API and SDK changes actually affect their codebase.
+            {/* Right 7 cols */}
+            <div className="lg:col-span-7 space-y-5 text-slate-700 text-sm sm:text-base leading-relaxed">
+              <p className="text-base sm:text-lg text-[#000E29] font-medium leading-snug">
+                MY OWL gives engineering teams continuous clarity on whether upstream API, SDK, and package changes actually break their codebase.
               </p>
               <p>
                 Modern applications rely on dozens of vendor APIs—from payment processors like Stripe to communications providers like Twilio and AI infrastructure providers like OpenAI. When a vendor updates their SDK or deprecates a parameter, software teams face a silent dilemma: spend hours auditing every call site manually, or risk breaking production.
@@ -37,70 +38,109 @@ export default function AboutPage() {
                 MY OWL bridges this gap by indexing repository Abstract Syntax Trees (ASTs), matching reviewed vendor breaking change rules to actual symbol usages, and executing 4-gate verification pipelines before generating human-reviewable draft pull requests.
               </p>
               <div className="pt-2">
-                <Link href="/dashboard">
-                  <Button size="md" className="font-medium text-xs">
-                    <span>EXPLORE THE ENGINE</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Button>
+                <Link
+                  href="/login"
+                  className="btn-lime text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)] inline-flex items-center gap-2"
+                >
+                  <span>Connect GitHub</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                 </Link>
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* ABSTRACT DEPENDENCY TOPOLOGY VISUAL */}
-        <div className="rounded-[32px] bg-gradient-to-br from-[#F4F0FA] via-[#EBF3FC] to-[#EEF7F2] border border-[#E8E8E5] p-8 md:p-14 shadow-xs">
-          <div className="space-y-6 text-center max-w-2xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#E8E8E5] text-[11px] font-semibold uppercase tracking-wider text-zinc-700">
-              DEPENDENCY TOPOLOGY ENGINE
-            </div>
-            <h2 className="text-3xl font-medium tracking-tight text-[#111111]">
-              Traceable AST Graph Matching
-            </h2>
-            <p className="text-xs text-[#686868]">
-              MY OWL constructs an exact graph mapping third-party symbols to repository call sites.
+        {/* 3 CORE PILLARS */}
+        <div className="space-y-8">
+          <div className="max-w-2xl space-y-2">
+            <p className="text-xs font-mono font-semibold tracking-wider text-slate-500 uppercase">
+              ARCHITECTURAL PRINCIPLES
             </p>
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#000E29] font-normal">
+              Built for Developer Trust &amp; Production Safety
+            </h2>
           </div>
 
-          <div className="relative max-w-4xl mx-auto bg-white/80 backdrop-blur-md rounded-[24px] border border-white/80 p-8 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            {/* NODE 1 */}
-            <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
-              <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-700">
-                <Network className="w-4 h-4" />
+            <div className="rounded-[32px] bg-[#EFF1F5] p-8 border border-black/[0.04] space-y-4 shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-white border border-black/[0.08] flex items-center justify-center text-slate-900 shadow-xs">
+                  <Code2 className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif text-xl text-[#000E29] font-medium">
+                  Deterministic AST Matching
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  We parse source code into formal Abstract Syntax Trees. We never guess with regex or simple string searches. If an API signature changes, we trace exact call expressions.
+                </p>
               </div>
-              <div className="text-xs font-semibold text-[#111111]">1. Vendor Change Registry</div>
-              <p className="text-xs text-[#686868] leading-relaxed">
-                Reviewed breaking change rules parsed from official vendor release notes and SDK changelogs.
-              </p>
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+                AST symbol tracing
+              </div>
             </div>
 
-            {/* NODE 2 */}
-            <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
-              <div className="w-8 h-8 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700">
-                <Code2 className="w-4 h-4" />
+            <div className="rounded-[32px] bg-[#EFF1F5] p-8 border border-black/[0.04] space-y-4 shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-white border border-black/[0.08] flex items-center justify-center text-slate-900 shadow-xs">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif text-xl text-[#000E29] font-medium">
+                  4-Gate Verification
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Every proposed migration is verified against syntactic validity, TypeScript compiler diagnostics, call-site scope boundaries, and isolated dry-run test execution.
+                </p>
               </div>
-              <div className="text-xs font-semibold text-[#111111]">2. AST Repository Index</div>
-              <p className="text-xs text-[#686868] leading-relaxed">
-                Read-only analysis indexing call sites, parameter names, and SDK version constraints across files.
-              </p>
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+                Compiler + test checks
+              </div>
             </div>
 
-            {/* NODE 3 */}
-            <div className="p-5 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="rounded-[32px] bg-[#EFF1F5] p-8 border border-black/[0.04] space-y-4 shadow-xs flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-white border border-black/[0.08] flex items-center justify-center text-slate-900 shadow-xs">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif text-xl text-[#000E29] font-medium">
+                  Human Sovereign Review
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  We never commit to your default branch. We never auto-merge. Automated changes are delivered as isolated GitHub Draft Pull Requests for engineers to inspect and approve.
+                </p>
               </div>
-              <div className="text-xs font-semibold text-[#111111]">3. Verified Refactoring</div>
-              <p className="text-xs text-[#686868] leading-relaxed">
-                Automated patch generation verified against typecheck and unit tests before opening a draft PR.
-              </p>
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+                Draft PR boundary
+              </div>
             </div>
 
           </div>
         </div>
 
       </main>
+
+      {/* PRE-FOOTER RADIANT GRADIENT CTA */}
+      <section className="relative w-full py-28 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(0deg,#001033_0%,#0050F8_55%,#5FBDF7_85%,#FAFAFA_100%)] text-white text-center">
+        <div className="absolute inset-0 bg-star-pattern opacity-60 pointer-events-none" />
+        <div className="relative z-10 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
+          <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
+            Stop silent API breakage before it reaches production.
+          </h2>
+          <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
+            Connect your repository in seconds. Read-only AST observation, deterministic migration planning, and safe draft PRs.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/login"
+              className="btn-lime text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
+            >
+              <span>Connect GitHub Free</span>
+              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <LandingFooter />
     </div>

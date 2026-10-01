@@ -75,9 +75,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-3 mb-10 group">
-        <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-[#E8E8E5] flex items-center justify-center shadow-xs overflow-hidden transition-transform group-hover:scale-105">
-          <ApiProofLogo className="w-5 h-5 text-[#0F172A]" />
-        </div>
+        <ApiProofLogo className="h-8 w-auto shrink-0 transition-transform group-hover:scale-105" variant="dark" />
         <span className="text-2xl font-bold tracking-tight text-[#0F172A]">
           MY OWL
         </span>

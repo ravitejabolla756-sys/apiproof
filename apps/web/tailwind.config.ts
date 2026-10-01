@@ -19,6 +19,12 @@ const config: Config = {
           900: '#0c4a6e',
           950: '#082f49',
         },
+        navy: {
+          950: '#061332',
+          900: '#0A1128',
+          800: '#111D4A',
+          700: '#1E2D65',
+        },
         dark: {
           bg: '#090a0f',
           card: '#12141c',
@@ -35,8 +41,9 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'Menlo', 'monospace'],
+        sans: ['var(--font-sans)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Newsreader', 'Georgia', 'Cambria', 'serif'],
+        mono: ['var(--font-mono)', 'JetBrains Mono', 'Fira Code', 'Menlo', 'monospace'],
       },
     },
   },
