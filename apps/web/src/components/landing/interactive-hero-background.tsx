@@ -61,7 +61,7 @@ export function InteractiveHeroBackground({
   return (
     <div
       ref={containerRef}
-      className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}
+      className={`absolute inset-0 pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,black_0%,black_75%,transparent_98%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_75%,transparent_98%)] ${className}`}
       style={
         {
           '--spotlight-x': initialX,

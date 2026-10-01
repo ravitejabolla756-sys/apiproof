@@ -43,14 +43,14 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased overflow-x-clip selection:bg-[#D0F100] selection:text-black">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#000E29] font-sans antialiased overflow-x-clip selection:bg-[#D0F100] selection:text-black">
       {/* FLOATING CAPSULE NAVBAR */}
       <LandingNavbar />
 
       {/* ========================================================================= */}
       {/* 1. HERO SECTION (Visual Foundation + Authentic Product Copy) */}
       {/* ========================================================================= */}
-      <section className="relative w-full min-h-[70vh] lg:min-h-[74vh] flex flex-col items-center justify-center pt-32 pb-20 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#001033_0%,#002B80_24%,#004EE8_50%,#4FA8F6_76%,#C5E6FC_89%,#FFFFFF_100%)]">
+      <section className="relative w-full min-h-screen flex flex-col items-center justify-start pt-28 sm:pt-32 pb-24 sm:pb-32 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#001033_0%,#002B80_15%,#004EE8_38%,#3B9EF8_60%,#68BCF9_74%,#96D0FB_85%,#BDE3FC_92%,#D8EEFD_96.5%,#EEF5FF_100%)]">
         {/* Interactive Cursor-Following Diagonal Lines & Spotlight Background */}
         <InteractiveHeroBackground />
 
@@ -99,13 +99,13 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="pt-2 flex items-center gap-4 text-xs font-mono text-slate-300">
+          <div className="pt-2 flex items-center gap-4 text-xs font-mono text-slate-200">
             <span className="flex items-center gap-1.5">
-              <Lock className="w-3 h-3 text-cyan-400" /> Read-only code inspection
+              <Lock className="w-3.5 h-3.5 text-cyan-300" /> Read-only code inspection
             </span>
-            <span className="text-white/20">•</span>
+            <span className="text-white/30">•</span>
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Human-in-the-loop review
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" /> Human-in-the-loop review
             </span>
           </div>
 

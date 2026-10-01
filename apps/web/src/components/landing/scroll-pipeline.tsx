@@ -44,8 +44,10 @@ const STAGES: StageData[] = [
 
 export function ScrollPipeline() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const spineFillRef = useRef<HTMLDivElement>(null);
-  const mobileSpineFillRef = useRef<HTMLDivElement>(null);
+  const activeDotRef = useRef<HTMLDivElement>(null);
+  const mobileActiveDotRef = useRef<HTMLDivElement>(null);
+  const desktopSpineAuraRef = useRef<HTMLDivElement>(null);
+  const mobileSpineAuraRef = useRef<HTMLDivElement>(null);
   const statusTextRef = useRef<HTMLSpanElement>(null);
 
   const rawProgressRef = useRef(0);
@@ -71,6 +73,22 @@ export function ScrollPipeline() {
 
     const LERP_FACTOR = 0.07;
 
+    const getInterpolatedStagePosition = (p: number): number => {
+      // Smooth cubic Hermite interpolation between stage anchors (0, 1, 2, 3)
+      const smoothstep = (min: number, max: number, val: number) => {
+        const x = Math.max(0, Math.min(1, (val - min) / (max - min)));
+        return x * x * (3 - 2 * x);
+      };
+
+      if (p <= 0.18) return 0;
+      if (p < 0.28) return 0 + smoothstep(0.18, 0.28, p);
+      if (p <= 0.43) return 1;
+      if (p < 0.53) return 1 + smoothstep(0.43, 0.53, p);
+      if (p <= 0.68) return 2;
+      if (p < 0.78) return 2 + smoothstep(0.68, 0.78, p);
+      return 3;
+    };
+
     const tick = () => {
       const prev = smoothProgressRef.current;
       const target = rawProgressRef.current;
@@ -83,17 +101,26 @@ export function ScrollPipeline() {
       }
 
       const currentSmooth = smoothProgressRef.current;
+      const stagePos = getInterpolatedStagePosition(currentSmooth);
 
-      // Direct DOM update for vertical spine fill
-      if (spineFillRef.current) {
-        const spinePct = Math.min(100, Math.max(0, currentSmooth * 100));
-        spineFillRef.current.style.height = `${spinePct}%`;
+      // Direct DOM update for smooth floating active dot (Desktop)
+      // Track is h-[300px], buttons are 16px tall (centers at 8px, 102.67px, 197.33px, 292px)
+      // Distance between center of button 0 (8px) and button 3 (292px) is 284px
+      if (activeDotRef.current) {
+        const topPx = 8 + (stagePos / 3) * 284;
+        activeDotRef.current.style.top = `${topPx}px`;
+        if (desktopSpineAuraRef.current) {
+          desktopSpineAuraRef.current.style.top = `${topPx}px`;
+        }
       }
 
-      // Direct DOM update for mobile spine fill
-      if (mobileSpineFillRef.current) {
-        const mobilePct = Math.min(100, Math.max(0, currentSmooth * 100));
-        mobileSpineFillRef.current.style.height = `${mobilePct}%`;
+      // Direct DOM update for smooth floating active dot (Mobile)
+      if (mobileActiveDotRef.current) {
+        const mobilePct = (stagePos / 3) * 100;
+        mobileActiveDotRef.current.style.left = `${mobilePct}%`;
+        if (mobileSpineAuraRef.current) {
+          mobileSpineAuraRef.current.style.left = `${mobilePct}%`;
+        }
       }
 
       // Direct DOM update for bottom anchor status text
@@ -156,28 +183,11 @@ export function ScrollPipeline() {
       aria-label="MY OWL Four-Stage Pipeline Story"
     >
       {/* ========================================================================= */}
-      {/* PINNED / STICKY VIEWPORT CANVAS                                           */}
-      {/* Anchored during scroll, releases naturally when Step 04 finishes          */}
-      {/* ========================================================================= */}
       <div className="sticky top-0 h-screen w-full overflow-y-auto lg:overflow-hidden bg-[#FFFFFF] flex flex-col justify-between selection:bg-[#004EE8]/10 selection:text-[#000E29]">
-        {/* ======================================================================= */}
-        {/* THIN ATMOSPHERIC BLUE GRADIENT                                         */}
-        {/* Occupies approximately 10-15% of viewport height at the very top only.   */}
-        {/* The rest of the experience is predominantly pure white.                */}
-        {/* When the pinned scene releases, this gradient moves up with the page.  */}
-        {/* ======================================================================= */}
-        <div
-          aria-hidden="true"
-          className="absolute top-0 left-0 right-0 h-[13vh] max-h-[110px] pointer-events-none bg-gradient-to-b from-[#004EE8]/[0.08] via-[#004EE8]/[0.02] to-transparent z-10"
-        />
-
-        {/* TOP VIEWPORT BUFFER (Keeps content below fixed navbar) */}
-        <div className="pt-14 sm:pt-16" />
-
         {/* ======================================================================= */}
         {/* MAIN EDITORIAL CONTENT: LEFT STORY | CENTRAL SPINE | RIGHT TECHNICAL    */}
         {/* ======================================================================= */}
-        <div className="relative z-20 max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center">
+        <div className="relative z-20 max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center pt-16 sm:pt-20 pb-2">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_40px_1.15fr] items-start gap-6 lg:gap-10">
             {/* ------------------------------------------------------------------- */}
             {/* LEFT SIDE: Narrative / Story Explanation (Stacked Panels)           */}
@@ -334,92 +344,109 @@ export function ScrollPipeline() {
             </div>
 
             {/* ------------------------------------------------------------------- */}
-            {/* MOBILE & TABLET: Central Spine Connector (STORY -> LINE -> VISUAL)   */}
+            {/* MOBILE & TABLET: Stage Indicator Nodes (Soft Fading Spine)          */}
             {/* ------------------------------------------------------------------- */}
-            <div className="flex lg:hidden items-center justify-center gap-4 py-2 select-none border-y border-slate-100">
-              <div className="h-6 w-[1px] bg-slate-200 relative overflow-hidden">
+            <div className="flex lg:hidden items-center justify-center py-3 select-none">
+              <div className="relative flex items-center justify-between w-56 px-2">
+                {/* 1. Soft Ambient Horizontal Spine */}
                 <div
-                  ref={mobileSpineFillRef}
-                  className="w-[1.5px] bg-[#004EE8] will-change-[height]"
-                  style={{ height: '0%' }}
+                  className="absolute left-3 right-3 top-1/2 -translate-y-1/2 h-[1.5px] pointer-events-none z-0 rounded-full"
+                  style={{
+                    background:
+                      'linear-gradient(to right, transparent 0%, rgba(148, 163, 184, 0.12) 15%, rgba(148, 163, 184, 0.22) 50%, rgba(148, 163, 184, 0.12) 85%, transparent 100%)',
+                    filter: 'blur(0.5px)',
+                  }}
                 />
-              </div>
-              <div className="flex items-center gap-4">
-                {STAGES.map((s, idx) => {
-                  const isActive = idx === activeStep;
-                  const isDone = idx < activeStep;
-                  return (
-                    <button
-                      key={s.number}
-                      onClick={() => scrollToStep(idx)}
-                      className="flex items-center gap-1.5 focus:outline-none"
+
+                {/* 2. Soft Blue Active Spine Aura (follows active dot) */}
+                <div
+                  ref={mobileSpineAuraRef}
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-[3px] rounded-full pointer-events-none z-0 will-change-[left]"
+                  style={{
+                    left: '0%',
+                    background:
+                      'linear-gradient(to right, transparent 0%, rgba(0, 78, 232, 0.08) 25%, rgba(0, 78, 232, 0.25) 50%, rgba(0, 78, 232, 0.08) 75%, transparent 100%)',
+                    filter: 'blur(1px)',
+                  }}
+                />
+
+                {/* 3. Smooth Floating Active Dot */}
+                <div
+                  ref={mobileActiveDotRef}
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-[#004EE8] ring-3 ring-[#004EE8]/20 pointer-events-none z-20 will-change-[left]"
+                  style={{ left: '0%' }}
+                />
+
+                {/* 4. Four Static Dots */}
+                {STAGES.map((s, idx) => (
+                  <button
+                    key={s.number}
+                    onClick={() => scrollToStep(idx)}
+                    className="flex items-center gap-1.5 focus:outline-none z-10"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-white border border-slate-300" />
+                    <span
+                      className={`text-[10px] font-mono transition-colors ${
+                        activeStep === idx ? 'font-bold text-[#004EE8]' : 'text-slate-400'
+                      }`}
                     >
-                      <div
-                        className={`rounded-full transition-all duration-300 ${
-                          isActive
-                            ? 'w-3 h-3 bg-[#004EE8] ring-3 ring-[#004EE8]/20'
-                            : isDone
-                            ? 'w-2 h-2 bg-[#000E29]'
-                            : 'w-2 h-2 bg-white border border-slate-300'
-                        }`}
-                      />
-                      <span
-                        className={`text-[10px] font-mono ${
-                          isActive ? 'font-bold text-[#004EE8]' : 'text-slate-400'
-                        }`}
-                      >
-                        {s.number}
-                      </span>
-                    </button>
-                  );
-                })}
+                      {s.number}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* ------------------------------------------------------------------- */}
-            {/* DESKTOP CENTER: One Thin Vertical Spine Line with 4 Circular Nodes  */}
+            {/* DESKTOP CENTER: Soft Fading Spine with 4 Stage Indicator Nodes      */}
             {/* ------------------------------------------------------------------- */}
             <div className="hidden lg:flex flex-col items-center justify-center relative h-[360px] select-none">
-              {/* The Single Continuous 1px Vertical Line */}
-              <div className="absolute top-0 bottom-0 w-[1px] bg-slate-200" />
+              <div className="relative w-8 h-[300px] flex flex-col justify-between items-center">
+                {/* 1. Soft Ambient Vertical Spine (fades to transparent at top & bottom) */}
+                <div
+                  className="absolute top-1 bottom-1 left-1/2 -translate-x-1/2 w-[1.5px] pointer-events-none z-0 rounded-full"
+                  style={{
+                    background:
+                      'linear-gradient(to bottom, transparent 0%, rgba(148, 163, 184, 0.12) 15%, rgba(148, 163, 184, 0.22) 50%, rgba(148, 163, 184, 0.12) 85%, transparent 100%)',
+                    filter: 'blur(0.5px)',
+                  }}
+                />
 
-              {/* The Active Progress Stroke Travelling Down the Spine (Pure rAF DOM driven) */}
-              <div
-                ref={spineFillRef}
-                className="absolute top-0 w-[1.5px] bg-[#004EE8] will-change-[height]"
-                style={{ height: '0%' }}
-              />
+                {/* 2. Soft Blue Active Spine Aura (illuminates the spine softly around active dot) */}
+                <div
+                  ref={desktopSpineAuraRef}
+                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[3px] h-28 rounded-full pointer-events-none z-0 will-change-[top]"
+                  style={{
+                    top: '8px',
+                    background:
+                      'linear-gradient(to bottom, transparent 0%, rgba(0, 78, 232, 0.08) 25%, rgba(0, 78, 232, 0.25) 50%, rgba(0, 78, 232, 0.08) 75%, transparent 100%)',
+                    filter: 'blur(1px)',
+                  }}
+                />
 
-              {/* The 4 Stage Nodes */}
-              <div className="relative z-10 flex flex-col justify-between h-full py-4 items-center">
-                {STAGES.map((s, idx) => {
-                  const isActive = idx === activeStep;
-                  const isDone = idx < activeStep;
-                  return (
-                    <button
-                      key={s.number}
-                      onClick={() => scrollToStep(idx)}
-                      className="group relative flex items-center justify-center focus:outline-none"
-                      aria-label={`Jump to stage ${s.number}: ${s.tag}`}
-                    >
-                      {/* Node Circle */}
-                      <div
-                        className={`rounded-full transition-all duration-300 ${
-                          isActive
-                            ? 'w-3.5 h-3.5 bg-[#004EE8] ring-4 ring-[#004EE8]/20 scale-125 shadow-sm'
-                            : isDone
-                            ? 'w-2.5 h-2.5 bg-[#000E29]'
-                            : 'w-2.5 h-2.5 bg-white border border-slate-300 group-hover:border-slate-500'
-                        }`}
-                      />
+                {/* 3. Smooth Floating Active Blue Glowing Dot (crisp & prominent at z-20) */}
+                <div
+                  ref={activeDotRef}
+                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#004EE8] ring-4 ring-[#004EE8]/25 shadow-sm pointer-events-none z-20 will-change-[top]"
+                  style={{ top: '8px' }}
+                />
 
-                      {/* Hover Tooltip showing stage number */}
-                      <span className="absolute left-6 font-mono text-[10px] font-semibold text-slate-400 group-hover:text-slate-900 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {s.number} {s.tag}
-                      </span>
-                    </button>
-                  );
-                })}
+                {/* 4. Four Static Stage Nodes (z-10 above spine) */}
+                {STAGES.map((s, idx) => (
+                  <button
+                    key={s.number}
+                    onClick={() => scrollToStep(idx)}
+                    className="group relative flex items-center justify-center w-4 h-4 focus:outline-none z-10"
+                    aria-label={`Jump to stage ${s.number}: ${s.tag}`}
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full bg-white border border-slate-300 group-hover:border-slate-500 transition-colors" />
+
+                    {/* Hover Tooltip showing stage number */}
+                    <span className="absolute left-8 font-mono text-[10px] font-semibold text-slate-400 group-hover:text-slate-900 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                      {s.number} {s.tag}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
 

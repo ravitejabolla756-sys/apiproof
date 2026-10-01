@@ -26,14 +26,15 @@ export function MyOwlLogo({
       ? ""
       : "dark:brightness-0 dark:invert";
 
+  const { style, ...restProps } = props;
+
   return (
     <img
       src="/LOGO.jpeg"
       alt={alt}
-      width={1594}
-      height={816}
+      style={{ maxHeight: "100%", width: "auto", display: "inline-block", ...style }}
       className={`object-contain select-none shrink-0 ${filterClass} ${className}`}
-      {...props}
+      {...restProps}
     />
   );
 }
