@@ -2,14 +2,13 @@ import type { MigrationPlan, PlanningInput } from '@apiproof/shared';
 import { validatePlan } from '../planning/validator.js';
 import type { PatchWorkspace } from './workspace.js';
 import { checkWorkspace } from './workspace.js';
-import { allowedPatchPath, assertPlainPath, fail, redactPatchContext, sha256 } from './policy.js';
+import { allowedPatchPath, fail, redactPatchContext, sha256 } from './policy.js';
 import { targetsFor, syntaxValid } from './transforms.js';
 import { loadPatchRules } from './rules.js';
 import type { AuthorizedTarget } from './transforms.js';
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { RegistryChangeSchema } from '@apiproof/shared';
-import { patchToolRoot } from './workspace.js';
+import { resolveBundledResource } from './workspace.js';
 
 export interface PatchGenerationInput {
   plan: MigrationPlan; planDigest: string; changeDigest: string; rulesDigest: string;
@@ -26,7 +25,7 @@ export function verifiedPatchContext(input: PatchGenerationInput, workspace: Pat
 export async function buildPatchContext(workspace: PatchWorkspace, input: PlanningInput, plan: MigrationPlan): Promise<PatchGenerationInput> {
   await checkWorkspace(workspace); validatePlan(plan, input);
   if (!/^[a-z0-9-]+$/.test(input.change.id)) fail('UNTRUSTED_CHANGE');
-  const registryFile = path.join(patchToolRoot, 'registry', input.change.provider, `${input.change.id}.json`); await assertPlainPath(registryFile);
+  const registryFile = await resolveBundledResource('registry', input.change.provider, `${input.change.id}.json`);
   const bundled = RegistryChangeSchema.parse(JSON.parse(await readFile(registryFile, 'utf8')));
   if (sha256(JSON.stringify(bundled)) !== sha256(JSON.stringify(input.change))) fail('UNTRUSTED_CHANGE');
   const rules = await loadPatchRules(); const rule = rules.rules[input.change.id];

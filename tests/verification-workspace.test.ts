@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
@@ -7,6 +8,7 @@ import {
   buildPatchContext,
   buildVerificationWorkspaceCommands,
   cleanupPatchWorkspace,
+  patchWorkspaceRunsRoot,
   computeCanonicalPatchDigest,
   createVerificationEvidence,
   createSourcePatchWorkspace,
@@ -67,6 +69,22 @@ describe('production verification workspace preparation', () => {
       expect(commands).toMatchObject({ packageManager: 'pnpm', commands: { install: ['corepack', 'pnpm@10.30.3', 'install', '--offline', '--frozen-lockfile', '--ignore-scripts', '--store-dir', '/provisioned-dependencies/pnpm-store'] } });
       expect(commands.commands.typecheck).toContain('tsc');
       expect(commands.commands.test).toContain('vitest');
+    } finally {
+      await cleanupPatchWorkspace(workspace);
+    }
+  });
+
+  it('uses the serverless writable temp directory instead of the package/build path', async () => {
+    const workspace = await createSourcePatchWorkspace('serverless-runtime', {
+      'package.json': '{"private":true}',
+      'src/index.ts': 'export const value = 1;',
+    });
+    try {
+      const tempRoot = path.resolve(os.tmpdir());
+      const workspaceRoot = path.resolve(patchWorkspaceRunsRoot);
+      expect(path.relative(tempRoot, workspaceRoot)).not.toMatch(/^\.\./);
+      expect(path.relative(workspaceRoot, path.resolve(workspace.directory))).not.toMatch(/^\.\./);
+      expect(workspace.directory).not.toMatch(/^[\\/]vercel(?:[\\/]|$)/i);
     } finally {
       await cleanupPatchWorkspace(workspace);
     }

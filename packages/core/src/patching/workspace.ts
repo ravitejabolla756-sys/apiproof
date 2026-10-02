@@ -1,12 +1,16 @@
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 import { AnalysisError } from '@apiproof/shared';
 import { allowedPatchPath, assertPlainPath, fail, sha256 } from './policy.js';
 
 export const patchToolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../');
 export const patchCorpusRoot = path.join(patchToolRoot, 'evaluation-patches');
+/** Writable runtime state must not be derived from the package/build location. */
+export const patchWorkspaceRunsRoot = path.join(os.tmpdir(), 'apiproof', 'patch-runs');
 const MAX_WORKSPACE_FILES = 500;
 const MAX_WORKSPACE_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_WORKSPACE_BYTES = 32 * 1024 * 1024;
@@ -66,6 +70,34 @@ async function inventory(root: string, relative = ''): Promise<string[]> {
   }
   return files.sort();
 }
+async function ensurePatchWorkspaceRunsRoot(): Promise<string> {
+  const tempRoot = path.resolve(os.tmpdir());
+  const relative = path.relative(tempRoot, path.resolve(patchWorkspaceRunsRoot));
+  if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) fail('WORKSPACE_TEMP_PATH_INVALID');
+  let parent = tempRoot;
+  await assertPlainPath(tempRoot);
+  for (const part of ['apiproof', 'patch-runs']) {
+    parent = path.join(parent, part);
+    await mkdir(parent).catch((error: NodeJS.ErrnoException) => { if (error.code !== 'EEXIST') throw error; });
+    await assertPlainPath(parent);
+  }
+  return parent;
+}
+/** Resolve a fixed, bundled repository resource without assuming a build root exists. */
+export async function resolveBundledResource(...relativeParts: string[]): Promise<string> {
+  const relative = path.join(...relativeParts);
+  const candidates = [
+    path.resolve(process.cwd(), relative),
+    path.resolve(process.cwd(), '..', '..', relative),
+    path.join(patchToolRoot, relative),
+  ];
+  for (const candidate of candidates) {
+    if (!existsSync(candidate)) continue;
+    await assertPlainPath(candidate);
+    return candidate;
+  }
+  throw new Error(`BUNDLED_RESOURCE_UNAVAILABLE: ${relative}`);
+}
 export async function createPatchWorkspace(repository: string): Promise<PatchWorkspace> {
   const manifest = await loadFixtureManifest();
   const originalDirectory = path.resolve(repository);
@@ -81,10 +113,7 @@ export async function createPatchWorkspace(repository: string): Promise<PatchWor
     snapshot[file] = bytes.toString('utf8');
   }
   // Create ancestors one at a time and validate before descending; never follow a preexisting junction.
-  let parent = patchToolRoot; await assertPlainPath(parent);
-  for (const part of ['.tmp', 'patch-runs']) {
-    parent = path.join(parent, part); await mkdir(parent).catch((error: NodeJS.ErrnoException) => { if (error.code !== 'EEXIST') throw error; }); await assertPlainPath(parent);
-  }
+  const parent = await ensurePatchWorkspaceRunsRoot();
   const runId = randomUUID(); const run = path.join(parent, runId);
   await mkdir(run); const directory = path.join(run, 'repository'); await mkdir(directory);
   await mkdir(path.join(directory, 'node_modules')); await mkdir(path.join(directory, '.verification-cache'));
@@ -112,10 +141,7 @@ export async function createSourcePatchWorkspace(repositoryId: string, files: Re
     if (Buffer.byteLength(text, 'utf8') > 2_097_152 || text.includes('\0')) fail('WORKSPACE_FILE_INVALID');
     snapshot[file] = text;
   }
-  let parent = patchToolRoot; await assertPlainPath(parent);
-  for (const part of ['.tmp', 'patch-runs']) {
-    parent = path.join(parent, part); await mkdir(parent).catch((error: NodeJS.ErrnoException) => { if (error.code !== 'EEXIST') throw error; }); await assertPlainPath(parent);
-  }
+  const parent = await ensurePatchWorkspaceRunsRoot();
   const runId = randomUUID(); const run = path.join(parent, runId);
   await mkdir(run); const originalDirectory = path.join(run, 'baseline'); const directory = path.join(run, 'repository');
   await mkdir(originalDirectory); await mkdir(directory);
@@ -136,7 +162,7 @@ export async function createSourcePatchWorkspace(repositoryId: string, files: Re
  */
 export async function cleanupPatchWorkspace(workspace: PatchWorkspace): Promise<void> {
   if (!issued.has(workspace)) return;
-  const runsRoot = path.resolve(path.join(patchToolRoot, '.tmp', 'patch-runs'));
+  const runsRoot = path.resolve(patchWorkspaceRunsRoot);
   const runRoot = path.resolve(path.join(runsRoot, workspace.runId));
   if (path.relative(runsRoot, runRoot) !== workspace.runId) fail('WORKSPACE_CLEANUP_PATH_INVALID');
   await rm(runRoot, { recursive: true, force: true });

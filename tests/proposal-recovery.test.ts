@@ -2,13 +2,14 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
-import { FakeGitHubWriteTransport } from '@apiproof/core';
+import { FakeGitHubWriteTransport, FakeSandbox } from '@apiproof/core';
 import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUser } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import { vi } from 'vitest';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-proposal-recovery.db');
 
@@ -59,6 +60,22 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
   // GAP 1: REMOTE BRANCH RECONCILIATION
   // =========================================================================
   describe('Gap 1: Remote Branch Partial-Failure Reconciliation', () => {
+    it('blocks Draft PR creation when verification fails and leaves no PR record', async () => {
+      const { user, migration } = await setupFixture();
+      const originalRun = FakeSandbox.prototype.run;
+      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockImplementation(async (request) => {
+        const status = request.stage === 'TEST' ? 'FAILED' : 'PASSED';
+        return originalRun.call(new FakeSandbox({ [request.stage]: { status, exitCode: status === 'PASSED' ? 0 : 1 } }), request);
+      });
+      try {
+        await expect(createGitHubProposal(migration.id, user.id, new FakeGitHubWriteTransport())).rejects.toThrow(/VERIFICATION_FAILED|VERIFICATION_TEST_FAILED/);
+        expect(db.prepare('SELECT COUNT(*) as c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+        expect(db.prepare('SELECT status FROM migrations WHERE id = ?').get(migration.id)).toEqual({ status: 'verification_failed' });
+      } finally {
+        run.mockRestore();
+      }
+    });
+
     it('rejects an unknown default branch HEAD before any remote write', async () => {
       const { user, migration } = await setupFixture();
       const transport = new FakeGitHubWriteTransport();
