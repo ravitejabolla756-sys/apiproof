@@ -1,144 +1,249 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { demoData } from "@/lib/demo-data";
 import { StatusPill } from "@/components/ui/status-pill";
-import {
-  GitBranch,
-  ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
-  Layers,
-  ArrowUpRight,
-} from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, GitBranch, Layers, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 
-export function CompatibilityMap() {
-  const [selectedRepo, setSelectedRepo] = useState<string>("bavio-ai-v1");
-  const currentRepo = demoData.repositories.find((r) => r.id === selectedRepo) || demoData.repositories[0] || {
-    id: "bavio-ai-v1",
-    name: "Bavio-Ai-v1",
-    fullName: "ravitejabolla756-sys/Bavio-Ai-v1",
-    totalFiles: 390,
-    status: "healthy",
-    usagesCount: 27,
-    providers: ["Twilio", "OpenAI", "Supabase", "Groq", "Deepgram", "ElevenLabs"],
-  };
+interface CompatibilityFinding {
+  id: string;
+  provider: string;
+  title: string;
+  status: string;
+  filePath: string;
+  symbol: string;
+  migration: { id: string; status: string | null } | null;
+  pullRequest: { id: string; number: number | null; state: string | null; url: string | null } | null;
+}
+
+interface CompatibilityRepository {
+  id: string;
+  owner: string;
+  name: string;
+  fullName: string;
+  defaultBranch: string;
+  latestScanStatus: string;
+  latestCompletedScan: {
+    id: string;
+    sha: string | null;
+    baselineSha: string | null;
+    filesAnalyzed: number;
+    findingsCount: number;
+    completedAt: string | null;
+  } | null;
+  analysisEvidenceAvailable: boolean;
+  integrations: Array<{
+    provider: string;
+    detected: boolean;
+    usageCount: number | null;
+    mappedSymbolCount: number | null;
+    reviewedChangeCount: number;
+  }>;
+  openFindingCount: number;
+  findings: CompatibilityFinding[];
+}
+
+interface CompatibilityMapResponse {
+  repositories: CompatibilityRepository[];
+}
+
+export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
+  const [repositories, setRepositories] = useState<CompatibilityRepository[]>([]);
+  const [selectedRepoId, setSelectedRepoId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestId = useRef(0);
+  const controller = useRef<AbortController | null>(null);
+  const hasRepositories = useRef(false);
+  const currentRepo = repositories.find((repository) => repository.id === selectedRepoId) ?? repositories[0];
+
+  const loadMap = useCallback(async (explicitRefresh = false) => {
+    const id = ++requestId.current;
+    controller.current?.abort();
+    const nextController = new AbortController();
+    controller.current = nextController;
+    if (!hasRepositories.current) setLoading(true);
+    else if (explicitRefresh) setRefreshing(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/compatibility-map", {
+        cache: "no-store",
+        signal: nextController.signal,
+      });
+      if (!response.ok) throw new Error(`Compatibility data could not be loaded (${response.status}).`);
+      const payload = await response.json() as CompatibilityMapResponse;
+      if (id !== requestId.current) return;
+      hasRepositories.current = payload.repositories.length > 0;
+      setRepositories(payload.repositories);
+      setSelectedRepoId((selected) => payload.repositories.some((repo) => repo.id === selected)
+        ? selected
+        : payload.repositories[0]?.id ?? "");
+    } catch (cause) {
+      if (id !== requestId.current || (cause instanceof DOMException && cause.name === "AbortError")) return;
+      setError(cause instanceof Error ? cause.message : "Compatibility data could not be loaded.");
+    } finally {
+      if (id === requestId.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadMap();
+    return () => {
+      requestId.current += 1;
+      controller.current?.abort();
+    };
+  }, [loadMap]);
+
+  if (loading && repositories.length === 0) {
+    return <div className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
+      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
+    </div>;
+  }
+
+  if (error && repositories.length === 0) {
+    return <div className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
+      <p>{error}</p>
+      <button onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
+        <RefreshCw className="h-3.5 w-3.5" />Retry
+      </button>
+    </div>;
+  }
+
+  if (repositories.length === 0) {
+    return <div className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
+      <p>Connect a GitHub repository to build your compatibility map.</p>
+      {onConnect && <button onClick={onConnect} className="mt-3 rounded-lg bg-[#111111] px-4 py-2 font-medium text-white">Connect repository</button>}
+    </div>;
+  }
+
+  if (!currentRepo) return null;
+
+  const pullRequests = [...new Map(currentRepo.findings
+    .filter((finding) => finding.pullRequest)
+    .map((finding) => [finding.pullRequest!.id, finding.pullRequest!])).values()];
+  const draftPullRequests = pullRequests.filter((pullRequest) => pullRequest.state === "draft");
+  const repoStatus = currentRepo.latestScanStatus === "failed"
+    ? { label: "Latest scan failed", variant: "warning" as const }
+    : draftPullRequests[0]
+      ? { label: `Draft PR #${draftPullRequests[0].number ?? "—"}`, variant: "pr_created" as const }
+      : currentRepo.openFindingCount > 0
+        ? { label: `${currentRepo.openFindingCount} open findings`, variant: "affected" as const }
+        : currentRepo.latestCompletedScan
+          ? { label: "Scanned", variant: "healthy" as const }
+          : { label: "Awaiting first completed scan", variant: "neutral" as const };
 
   return (
-    <div className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-5 space-y-5 font-sans text-xs">
-      {/* Header & Repo Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E8E5] pb-4">
+    <div className="space-y-5 rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-5 font-sans text-xs">
+      <div className="flex flex-col justify-between gap-4 border-b border-[#E8E8E5] pb-4 sm:flex-row sm:items-center">
         <div>
-          <h3 className="text-sm font-semibold text-[#111111] flex items-center gap-2">
-            <Layers className="w-4 h-4 text-purple-700" />
-            Compatibility Topology Graph
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#111111]">
+            <Layers className="h-4 w-4 text-purple-700" />Compatibility topology
           </h3>
-          <p className="text-xs text-[#686868] mt-0.5">
-            Vendor API integration graph and reviewed intelligence coverage
-          </p>
+          <p className="mt-0.5 text-xs text-[#686868]">Integrations and findings from the latest completed repository scan</p>
         </div>
-
-        <div className="flex items-center gap-2">
-          {demoData.repositories.map((repo) => (
-            <button
-              key={repo.id}
-              onClick={() => setSelectedRepo(repo.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-2 border ${
-                selectedRepo === repo.id
-                  ? "bg-white text-[#111111] border-[#111111] shadow-2xs font-semibold"
-                  : "bg-white text-[#686868] border-[#E8E8E5] hover:text-[#111111]"
-              }`}
-            >
-              <GitBranch className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="font-mono text-[11px]">{repo.name}</span>
-              {repo.status === "healthy" ? (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              )}
+        <div className="flex flex-wrap items-center gap-2">
+          {repositories.map((repository) => (
+            <button key={repository.id} onClick={() => setSelectedRepoId(repository.id)}
+              className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-colors ${selectedRepoId === repository.id ? "border-[#111111] bg-white font-semibold text-[#111111]" : "border-[#E8E8E5] bg-white text-[#686868] hover:text-[#111111]"}`}>
+              <GitBranch className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="font-mono text-[11px]">{repository.name}</span>
+              {repository.latestScanStatus === "failed"
+                ? <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                : <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
             </button>
           ))}
+          <button onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Refresh compatibility map"
+            className="rounded-lg border border-[#E8E8E5] bg-white p-2 text-[#686868] disabled:opacity-50">
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
         </div>
       </div>
 
-      {/* Dependency Network Visualizer */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-5 rounded-2xl border border-[#E8E8E5] shadow-xs">
-        {/* Repo Node */}
-        <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">
-            Selected Repository
-          </div>
+      {error && <p role="alert" className="rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900">Refresh failed: {error}</p>}
+
+      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs md:grid-cols-3">
+        <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">Selected repository</div>
           <div className="space-y-1">
-            <Link
-              href={`/dashboard/repositories/${currentRepo.id}`}
-              className="text-sm font-semibold font-mono text-[#111111] hover:text-purple-700 flex items-center gap-1.5"
-            >
-              {currentRepo.name}
-              <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400" />
+            <Link href={`/dashboard/repositories/${currentRepo.id}`} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-[#111111] hover:text-purple-700">
+              {currentRepo.name}<ArrowUpRight className="h-3.5 w-3.5 text-zinc-400" />
             </Link>
-            <div className="text-[11px] text-[#686868] font-mono">{currentRepo.fullName}</div>
+            <div className="font-mono text-[11px] text-[#686868]">{currentRepo.fullName}</div>
           </div>
-
-          <div className="pt-2 border-t border-[#E8E8E5] space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-[#686868]">Source files:</span>
-              <span className="text-[#111111] font-mono">{currentRepo.totalFiles}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#686868]">Status:</span>
-              <StatusPill
-                status={currentRepo.status === "healthy" ? "healthy" : "affected"}
-                label={currentRepo.status === "healthy" ? "Healthy" : "Draft PR Created"}
-              />
-            </div>
+          <div className="space-y-2 border-t border-[#E8E8E5] pt-2 text-xs">
+            <div className="flex justify-between"><span className="text-[#686868]">Default branch:</span><span className="font-mono text-[#111111]">{currentRepo.defaultBranch}</span></div>
+            <div className="flex justify-between"><span className="text-[#686868]">Files analyzed:</span><span className="font-mono text-[#111111]">{currentRepo.latestCompletedScan?.filesAnalyzed ?? "—"}</span></div>
+            <div className="flex items-center justify-between gap-2"><span className="text-[#686868]">Status:</span><StatusPill status={repoStatus.variant} label={repoStatus.label} /></div>
+            {currentRepo.latestCompletedScan?.sha && <div className="truncate font-mono text-[10px] text-[#686868]" title={currentRepo.latestCompletedScan.sha}>Baseline {currentRepo.latestCompletedScan.sha}</div>}
           </div>
         </div>
 
-        {/* Center Connection Graph */}
-        <div className="md:col-span-2 p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
-          <div className="flex justify-between items-center text-xs font-semibold text-[#686868]">
-            <span>Detected integrations ({currentRepo.providers.length} SDKs)</span>
-            <span className="text-purple-700 font-medium text-[11px]">Symbol mapped</span>
+        <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 md:col-span-2">
+          <div className="flex items-center justify-between gap-3 text-xs font-semibold text-[#686868]">
+            <span>Detected integrations ({currentRepo.integrations.length})</span>
+            <span className="text-[11px] font-normal">{currentRepo.latestCompletedScan ? `Scan ${currentRepo.latestCompletedScan.id}` : "No completed scan"}</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {currentRepo.providers.map((provider) => {
-              const isReviewed = provider === "Stripe" || provider === "Twilio";
-              const isAffected = currentRepo.id === "apiproof-github-fixture" && provider === "Stripe";
+          {!currentRepo.latestCompletedScan ? (
+            <p className="rounded-lg border border-[#E8E8E5] bg-white p-4 text-[#686868]">
+              {currentRepo.latestScanStatus === "failed" ? "Latest scan failed — review scan status." : "Awaiting first completed scan."}
+            </p>
+          ) : !currentRepo.analysisEvidenceAvailable ? (
+            <p className="rounded-lg border border-[#FDE68A] bg-[#FEF8EC] p-4 text-amber-900">Integration evidence is unavailable for this older scan. Run a fresh scan to build a complete compatibility map.</p>
+          ) : currentRepo.integrations.length === 0 ? (
+            <p className="rounded-lg border border-[#E8E8E5] bg-white p-4 text-[#686868]">No supported API integrations detected.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {currentRepo.integrations.map((integration) => {
+                const reviewed = integration.reviewedChangeCount > 0;
+                const providerName = integration.provider.split(/[-_]/).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+                return (
+                  <div key={integration.provider} className={`space-y-1 rounded-xl border p-3 ${currentRepo.openFindingCount > 0 && currentRepo.findings.some((finding) => finding.provider === integration.provider && (finding.status === "open" || finding.status === "affected")) ? "border-[#F8D7DA] bg-[#FDF2F2]" : reviewed ? "border-[#C6E1FA] bg-[#EBF3FC]" : "border-[#E8E8E5] bg-white"}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-[#111111]">{providerName}</span>
+                      {reviewed ? <ShieldCheck className="h-3.5 w-3.5 text-blue-600" /> : <CheckCircle2 className="h-3.5 w-3.5 text-zinc-400" />}
+                    </div>
+                    <div className="flex items-center justify-between gap-1 text-[11px] text-[#686868]">
+                      <span>{reviewed ? "Reviewed" : "Detected · Not reviewed"}</span>
+                      <span className="font-mono">{integration.usageCount === null ? "Usage count unavailable" : `${integration.usageCount} usages`}</span>
+                    </div>
+                    <div className="text-[11px] text-[#686868]">
+                      {integration.mappedSymbolCount === null ? "Mapping evidence unavailable" : integration.mappedSymbolCount > 0 ? `${integration.mappedSymbolCount} mapped symbols` : "No mapped symbols"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-              return (
-                <div
-                  key={provider}
-                  className={`p-3 rounded-xl border space-y-1 transition-colors ${
-                    isAffected
-                      ? "bg-[#FDF2F2] border-[#F8D7DA] text-rose-900"
-                      : isReviewed
-                      ? "bg-[#EBF3FC] border-[#C6E1FA] text-blue-900"
-                      : "bg-white border-[#E8E8E5] text-zinc-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-[#111111]">{provider}</span>
-                    {isAffected ? (
-                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                    ) : isReviewed ? (
-                      <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-zinc-400" />
-                    )}
-                  </div>
-                  <div className="text-[11px] flex justify-between items-center text-[#686868]">
-                    <span>{isReviewed ? "Reviewed" : "Detected"}</span>
-                    {provider === "Twilio" && <span className="font-mono text-blue-800 font-medium">27 usages</span>}
-                    {provider === "Stripe" && <span className="font-mono text-rose-800 font-medium">1 usage</span>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {currentRepo.latestCompletedScan && currentRepo.analysisEvidenceAvailable && currentRepo.findings.length === 0 && (
+            <p className="text-[11px] text-[#686868]">No findings in this completed scan.</p>
+          )}
         </div>
       </div>
+
+      {currentRepo.latestCompletedScan && currentRepo.findings.length > 0 && (
+        <div className="space-y-2 rounded-xl border border-[#E8E8E5] bg-white p-4">
+          <div className="flex items-center gap-2 font-semibold text-[#111111]"><AlertTriangle className="h-3.5 w-3.5 text-amber-600" />Findings and linked migration state</div>
+          {currentRepo.findings.map((finding) => (
+            <div key={finding.id} className="flex flex-col justify-between gap-2 border-t border-[#E8E8E5] pt-2 sm:flex-row sm:items-center">
+              <Link href={`/dashboard/findings/${finding.id}`} className="min-w-0 text-[#111111] hover:text-purple-700">
+                <span className="font-medium">{finding.title}</span><span className="ml-2 font-mono text-[10px] text-[#686868]">{finding.filePath} · {finding.symbol}</span>
+              </Link>
+              <div className="flex shrink-0 flex-wrap items-center gap-2 text-[10px] text-[#686868]">
+                <span>Finding: {finding.status}</span>
+                {finding.migration && <span>Migration: {finding.migration.status ?? "unknown"}</span>}
+                {finding.pullRequest && <span>PR: {finding.pullRequest.state ?? "unknown"} #{finding.pullRequest.number ?? "—"}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

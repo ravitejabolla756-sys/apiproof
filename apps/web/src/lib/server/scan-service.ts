@@ -5,15 +5,14 @@ import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/anal
 import { StripeProvider, TwilioProvider } from '@apiproof/providers';
 import {
   type ApiProvider,
-  loadGitHubAppConfig,
-  NodeGitHubAppTokenProvider,
-  GitHubAppSourceControlProvider,
-  FetchGitHubReadTransport,
+  type GitHubAppSourceControlProvider,
 } from '@apiproof/core';
+import type { ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
-import { getGitHubProvider, fetchRemoteRepositoryFiles } from './github.js';
+import { createWorkspaceGitHubSourceControlProvider, getGitHubProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
+import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -92,19 +91,16 @@ export async function runRepositoryScan(
     const installation = repo.workspace_id ? await getWorkspaceGitHubInstallation(repo.workspace_id) : null;
     const isLiveGitHubRepo = Boolean(installation || (repo.github_repository_id && repo.github_repository_id !== '1363070568'));
 
-    let githubProvider = customProvider ?? getGitHubProvider();
-    if (!customProvider && githubProvider && repo.workspace_id && installation) {
-      const config = loadGitHubAppConfig();
-      const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
-      const repoConfig = {
-        ...config,
+    let githubProvider = customProvider ?? null;
+    if (!customProvider && repo.workspace_id && installation) {
+      githubProvider = createWorkspaceGitHubSourceControlProvider({
         installationId: installation.installationId,
         repositoryId: repo.github_repository_id,
         owner: repo.owner,
         repository: repo.name,
-      };
-      const transport = new FetchGitHubReadTransport();
-      githubProvider = new GitHubAppSourceControlProvider(repoConfig, tokenProvider, transport);
+      });
+    } else if (!customProvider) {
+      githubProvider = getGitHubProvider();
     }
 
     if (isLiveGitHubRepo || customProvider) {
@@ -206,9 +202,11 @@ export async function createCustomerSubscription(customerId: string, priceId: st
 
     let totalFilesAnalyzed = 0;
     let inputDigest = snapshot.digest();
+    const compatibilityResults: ScanResult[] = [];
 
     for (const { id: provId, provider } of providersToAnalyze) {
       const scanResult = await analyzer.analyze(snapshot, provider.descriptor);
+      compatibilityResults.push(scanResult);
       totalFilesAnalyzed = Math.max(totalFilesAnalyzed, scanResult.coverage.filesAnalyzed);
       inputDigest = scanResult.audit.inputDigest;
 
@@ -317,9 +315,11 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             input_digest = ?,
             files_analyzed = ?,
             findings_count = ?,
+            raw_result = ?,
             completed_at = ?
         WHERE id = ?
-      `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length, new Date().toISOString(), scanId]);
+      `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
+        JSON.stringify(summarizeScanCompatibility(compatibilityResults)), new Date().toISOString(), scanId]);
 
       // 9. Update repository status
       const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';

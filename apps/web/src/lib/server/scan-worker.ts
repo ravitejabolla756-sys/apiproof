@@ -16,14 +16,15 @@
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
-import { loadGitHubAppConfig, NodeGitHubAppTokenProvider, GitHubAppSourceControlProvider, FetchGitHubReadTransport } from '@apiproof/core';
-import { fetchRemoteRepositoryFiles } from './github.js';
+import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
 import { StripeProvider, TwilioProvider } from '@apiproof/providers';
 import type { ApiProvider } from '@apiproof/core';
+import type { ScanResult } from '@apiproof/shared';
 import { loadProviderRegistry } from './registry-utils.js';
 import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
 import { logger } from './logger.js';
+import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -125,6 +126,7 @@ interface RepositoryRow {
   owner: string;
   name: string;
   full_name: string;
+  github_repository_id: string;
   default_branch: string;
 }
 
@@ -256,7 +258,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
   // 1. Resolve repository record
   const repo = await db.queryOne<RepositoryRow>(`
-    SELECT id, workspace_id, owner, name, full_name, default_branch, lifecycle
+    SELECT id, workspace_id, owner, name, full_name, github_repository_id, default_branch, lifecycle
     FROM repositories
     WHERE id = ? AND workspace_id = ? AND lifecycle = 'active'
   `, [job.repository_id, job.workspace_id]);
@@ -341,14 +343,13 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     existingScan ? [now, scanId] : [scanId, repo.id, job.commit_sha, now]);
 
   try {
-    // 4. Obtain ephemeral installation token (never stored)
-    const config = loadGitHubAppConfig();
-    const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
-    const installationToken = await tokenProvider.getInstallationToken(installation.installationId);
-
     // 5. Fetch files at exact commit SHA
-    const transport = new FetchGitHubReadTransport();
-    const provider = new GitHubAppSourceControlProvider(config, tokenProvider, transport);
+    const provider = createWorkspaceGitHubSourceControlProvider({
+      installationId: installation.installationId,
+      repositoryId: repo.github_repository_id,
+      owner: repo.owner,
+      repository: repo.name,
+    });
 
     let filesMap = new Map<string, string>();
     let headSha = job.commit_sha;
@@ -374,9 +375,6 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         error: errorMsg,
       };
     }
-
-    // Keep token reference to suppress unused variable lint while keeping it ephemeral
-    void installationToken;
 
     // 6. Build snapshot and detect providers
     const snapshot = RepositorySnapshot.fromMemory(repo.name, filesMap);
@@ -419,9 +417,11 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
     let totalFilesAnalyzed = 0;
     let inputDigest = snapshot.digest();
+    const compatibilityResults: ScanResult[] = [];
 
     for (const { id: provId, provider } of providersToAnalyze) {
       const scanResult = await analyzer.analyze(snapshot, provider.descriptor);
+      compatibilityResults.push(scanResult);
       totalFilesAnalyzed = Math.max(totalFilesAnalyzed, scanResult.coverage.filesAnalyzed);
       inputDigest = scanResult.audit.inputDigest;
 
@@ -523,9 +523,11 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             input_digest = ?,
             files_analyzed = ?,
             findings_count = ?,
+            raw_result = ?,
             completed_at = ?
         WHERE id = ?
-      `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length, completedAt, scanId]);
+      `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
+        JSON.stringify(summarizeScanCompatibility(compatibilityResults)), completedAt, scanId]);
 
       const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';
       await tx.execute(`
@@ -578,10 +580,6 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------------
 
@@ -591,12 +589,9 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
  * Designed for Vercel serverless invocation via an internal protected route.
  * Bounded by batchSize and timeoutMs to stay within function time limits.
  */
-export async function processPendingGitHubScans(
-  options: ScanWorkerOptions = {}
-): Promise<ScanWorkerResult> {
+export async function processPendingGitHubScans(options: ScanWorkerOptions = {}): Promise<ScanWorkerResult> {
   const batchSize = Math.min(options.batchSize ?? 5, 20); // hard cap at 20
   const timeoutMs = Math.min(options.timeoutMs ?? 50_000, 270_000); // hard cap at 270s (Vercel Pro max)
-
   const deadline = Date.now() + timeoutMs;
   const results: ScanWorkerJobResult[] = [];
   let timedOut = false;

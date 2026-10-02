@@ -102,12 +102,15 @@ async function createWorkspaceWithInstallation(
   const { user } = await createUserWithSession(email, 'Pass1234!', 'Test User');
   const ws = await getDefaultWorkspaceForUser(user.id);
   const installationDbId = randomId('gi');
+  const numericInstallationId = /^\d+$/.test(installationId)
+    ? installationId
+    : String(1_000_000 + crypto.createHash('sha256').update(installationId).digest().readUInt32BE(0) % 9_000_000);
   const now = new Date().toISOString();
 
   await db.execute(`
     INSERT INTO github_installations (id, workspace_id, installation_id, account_login, account_type, status, created_at, updated_at)
     VALUES (?, ?, ?, 'test-org', 'Organization', ?, ?, ?)
-  `, [installationDbId, ws.id, installationId, status, now, now]);
+  `, [installationDbId, ws.id, numericInstallationId, status, now, now]);
 
   return { userId: user.id, workspaceId: ws.id };
 }
@@ -117,7 +120,7 @@ async function createRepository(workspaceId: string, userId: string, suffix = ''
   const repoId = randomId('repo');
   const now = new Date().toISOString();
   const repoName = `test-repo${suffix}`;
-  const githubRepositoryId = `999000${repoId.slice(-8)}`;
+  const githubRepositoryId = crypto.randomInt(1_000_000, 9_999_999_999).toString();
 
   await db.execute(`
     INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
@@ -411,12 +414,18 @@ describe('Phase 4 — Asynchronous Scan Worker', () => {
     expect(scanId).toBeDefined();
 
     const db = getDatabase();
-    const scan = await db.queryOne<{ status: string; sha: string; completed_at: string | null }>(
-      'SELECT status, sha, completed_at FROM scans WHERE id = ?', [scanId]
+    const scan = await db.queryOne<{ status: string; sha: string; completed_at: string | null; raw_result: string | null }>(
+      'SELECT status, sha, completed_at, raw_result FROM scans WHERE id = ?', [scanId]
     );
     expect(scan?.status).toBe('completed');
     expect(scan?.sha).toBe(sha);
     expect(scan?.completed_at).toBeTruthy();
+    expect(JSON.parse(scan?.raw_result ?? 'null')).toMatchObject({
+      schemaVersion: 1,
+      providers: expect.arrayContaining([
+        expect.objectContaining({ provider: 'stripe', detected: false, usageCount: 0, mappedSymbolCount: 0 }),
+      ]),
+    });
   });
 
   // -------------------------------------------------------------------------

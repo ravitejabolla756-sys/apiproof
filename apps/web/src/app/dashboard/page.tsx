@@ -414,7 +414,7 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
 
-        <CompatibilityMap />
+        <CompatibilityMap onConnect={() => setIsConnectOpen(true)} />
       </div>
 
     </div>

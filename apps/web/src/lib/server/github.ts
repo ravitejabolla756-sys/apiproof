@@ -223,6 +223,22 @@ export function getGitHubProvider(): GitHubAppSourceControlProvider | null {
   }
 }
 
+export function createWorkspaceGitHubSourceControlProvider(input: {
+  installationId: string;
+  repositoryId: string;
+  owner: string;
+  repository: string;
+}): GitHubAppSourceControlProvider {
+  const baseConfig = loadGitHubAppConfig();
+  const config = { ...baseConfig, ...input };
+  assertLiveConfig(config);
+  return new GitHubAppSourceControlProvider(
+    config,
+    new NodeGitHubAppTokenProvider(baseConfig, { allowAnyRepository: true }),
+    new FetchGitHubReadTransport(),
+  );
+}
+
 export async function fetchRemoteRepositoryFiles(
   provider: GitHubAppSourceControlProvider,
   targetSha?: string
