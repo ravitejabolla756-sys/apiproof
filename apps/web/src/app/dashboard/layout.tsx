@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/dashboard/sidebar';
 import { Header } from '@/components/dashboard/header';
 import { CommandPalette } from '@/components/dashboard/command-palette';
 import { ConnectRepoModal } from '@/components/dashboard/connect-repo-modal';
+import { createSessionRevalidator, type SessionViewState } from '@/lib/session-revalidation';
 import {
   GITHUB_CONNECTION_CHANGED_EVENT,
   GITHUB_CONNECTION_STORAGE_KEY,
@@ -16,6 +17,28 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [githubConnected, setGithubConnected] = useState<boolean | null>(null);
+  const [authState, setAuthState] = useState<SessionViewState>('checking');
+
+  useEffect(() => {
+    const session = createSessionRevalidator({
+      request: (signal) => fetch('/api/auth', { cache: 'no-store', signal }),
+      onState: setAuthState,
+      onExpired: () => {
+          const from = `${window.location.pathname}${window.location.search}`;
+          window.location.replace(`/login?from=${encodeURIComponent(from)}`);
+      },
+    });
+
+    void session.validate();
+    const interval = window.setInterval(() => { void session.validate(); }, 60_000);
+    const onFocus = () => { void session.validate(); };
+    window.addEventListener('focus', onFocus);
+    return () => {
+      session.dispose();
+      window.clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
   const refreshGithubStatus = useCallback(async () => {
     try {
@@ -87,8 +110,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('open-command-palette', handleCustomOpen);
   }, []);
 
+  if (authState !== 'authenticated') {
+    return (
+      <div className="min-h-screen bg-[#F6F6F4] flex items-center justify-center p-6 text-center font-sans text-sm text-[#686868]">
+        <div className="space-y-3">
+          <p>{authState === 'checking' ? 'Checking your session…' : 'We could not validate your session.'}</p>
+          {authState === 'unavailable' && (
+            <button className="underline text-[#111111]" onClick={() => window.location.reload()}>
+              Try again
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#F6F6F4] text-[#111111] flex font-sans selection:bg-[#111111] selection:text-white">
+    <div className="min-h-screen bg-[#F6F6F4] text-[#111111] flex flex-col md:flex-row font-sans selection:bg-[#111111] selection:text-white">
       {/* Sidebar */}
       <Sidebar />
 

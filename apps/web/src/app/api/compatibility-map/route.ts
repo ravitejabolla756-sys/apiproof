@@ -37,6 +37,7 @@ interface FindingRow {
   pull_request_number: number | null;
   pull_request_state: string | null;
   pull_request_url: string | null;
+  pull_request_created_at: string | null;
 }
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -72,7 +73,7 @@ export async function GET(req: Request) {
        WHERE s.repository_id = r.id AND s.status = 'completed'
        ORDER BY COALESCE(s.completed_at, s.started_at) DESC, s.id DESC LIMIT 1) AS completed_scan_raw_result
     FROM repositories r
-    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
     ORDER BY r.created_at DESC, r.id ASC
   `, [workspace.id]);
 
@@ -81,7 +82,8 @@ export async function GET(req: Request) {
            f.file_path, f.symbol,
            m.id AS migration_id, m.status AS migration_status,
            pr.id AS pull_request_id, pr.number AS pull_request_number,
-           pr.state AS pull_request_state, pr.url AS pull_request_url
+           pr.state AS pull_request_state, pr.url AS pull_request_url,
+           pr.created_at AS pull_request_created_at
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
     JOIN scans s ON s.id = f.scan_id AND s.status = 'completed'
@@ -91,7 +93,7 @@ export async function GET(req: Request) {
       ORDER BY m2.created_at DESC, m2.id DESC LIMIT 1
     )
     LEFT JOIN pull_requests pr ON pr.migration_id = m.id AND pr.repository_id = r.id
-    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
       AND s.id = (
         SELECT latest.id FROM scans latest
         WHERE latest.repository_id = r.id AND latest.status = 'completed'
@@ -151,6 +153,7 @@ export async function GET(req: Request) {
         number: finding.pull_request_number,
         state: finding.pull_request_state,
         url: finding.pull_request_url,
+        createdAt: finding.pull_request_created_at,
       } : null,
     }));
 

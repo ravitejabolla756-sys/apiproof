@@ -1,5 +1,16 @@
 import crypto from 'node:crypto';
 
+/** Require GitHub-supplied branch metadata; never invent a default branch. */
+export function requireAuthoritativeDefaultBranch(value: unknown): string {
+  if (typeof value !== 'string' || !value || value.length > 255 || value.trim() !== value
+    || value.split('/').some((part) => !part || part.startsWith('.') || part.endsWith('.') || part.endsWith('.lock'))
+    || value.includes('..') || value.includes('@{') || value === '@'
+    || Array.from(value).some((character) => character.charCodeAt(0) <= 0x20 || character.charCodeAt(0) === 0x7f || '~^:?*[\\'.includes(character))) {
+    throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Authoritative repository default branch metadata is missing or invalid.');
+  }
+  return value;
+}
+
 const PROTECTED_BRANCH_NAMES = new Set([
   'main',
   'master',

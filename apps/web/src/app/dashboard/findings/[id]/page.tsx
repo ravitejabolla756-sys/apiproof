@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
+import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -51,6 +52,7 @@ interface MigrationDetail {
   branch_name?: string;
   target_branch?: string;
   pr_state?: string;
+  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
 }
 
 export default function FindingDetailPage({
@@ -102,7 +104,7 @@ export default function FindingDetailPage({
         throw new Error(data.error || "Plan generation failed.");
       }
 
-      setMessage({ text: "Deterministic migration plan generated and verified." });
+      setMessage({ text: "Deterministic migration plan generated. Verification is pending until the proposal workflow executes it." });
       await loadFinding();
     } catch (err: unknown) {
       setMessage({ text: err instanceof Error ? err.message : String(err), error: true });
@@ -128,7 +130,7 @@ export default function FindingDetailPage({
         throw new Error(data.error || "Draft proposal failed.");
       }
 
-      setMessage({ text: `Safe draft PR #${data.proposal.number} opened on branch ${data.proposal.branchName}.` });
+      setMessage({ text: `${getPullRequestStateLabel(data.proposal.state)} #${data.proposal.number} on branch ${data.proposal.branchName}.` });
       await loadFinding();
     } catch (err: unknown) {
       setMessage({ text: err instanceof Error ? err.message : String(err), error: true });
@@ -195,8 +197,8 @@ export default function FindingDetailPage({
             <StatusPill status="affected" label={finding.severity.toUpperCase()} />
             {migration && (
               <StatusPill
-                status={migration.pr_number ? "pr_created" : "verified"}
-                label={migration.pr_number ? `Draft PR #${migration.pr_number}` : "Migration Planned"}
+                status={migration.lifecycle_state === "Verification Passed" || migration.lifecycle_state === "Pull Request Merged" ? "verified" : migration.lifecycle_state === "Verification Failed" || migration.lifecycle_state === "Pull Request Closed" ? "warning" : migration.lifecycle_state === "Draft PR Created" || migration.lifecycle_state === "Pull Request Open" ? "pr_created" : migration.lifecycle_state === "Pull Request State Unavailable" ? "neutral" : "detected"}
+                label={migration.lifecycle_state || "Migration Planned"}
               />
             )}
           </div>
@@ -268,7 +270,7 @@ export default function FindingDetailPage({
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                     : 'bg-purple-50 text-purple-800 border-purple-200'
                 }`}>
-                  {currentStep >= 2 ? 'Plan Ready' : 'Next Action'}
+                  {currentStep >= 2 ? 'Verification Pending' : 'Next Action'}
                 </span>
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 2 ? 'text-[#686868]' : 'text-purple-900'}`}>
@@ -302,7 +304,7 @@ export default function FindingDetailPage({
                     ? 'bg-purple-50 text-purple-800 border-purple-200'
                     : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                 }`}>
-                  {currentStep >= 3 ? `PR #${migration?.pr_number ?? '2'}` : currentStep === 2 ? 'Ready to Propose' : 'Pending Plan'}
+                  {currentStep >= 3 && migration?.pr_number ? `PR #${migration.pr_number}` : currentStep === 2 ? 'Verification Pending' : 'Pending Plan'}
                 </span>
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 3 ? 'text-[#686868]' : 'text-zinc-600'}`}>
@@ -478,7 +480,7 @@ export default function FindingDetailPage({
               <div className="p-4 rounded-xl bg-[#EBF3FC] border border-[#C6E1FA] space-y-2">
                 <div className="flex items-center gap-2 text-blue-900 font-semibold text-xs">
                   <GitPullRequest className="w-4 h-4 text-blue-600" />
-                  <span>Draft PR #{migration.pr_number} Active</span>
+                  <span>{getPullRequestStateLabel(migration.pr_state)} · #{migration.pr_number}</span>
                 </div>
                 <p className="text-[11px] text-blue-800">
                   Target Branch: <code className="font-mono bg-white px-1 rounded border border-[#C6E1FA]">{migration.branch_name || migration.target_branch}</code>

@@ -125,7 +125,7 @@ describe('Local Safety Architecture — Production Transport, Executable Patch D
     };
     const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
 
-    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch);
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch, undefined, { authoritativeDefaultBranch: 'main' });
     const branchRes = await transport.createBranchRef('apiproof/stripe-123', BASE_SHA);
     expect(branchRes.ref).toBe('refs/heads/apiproof/stripe-123');
 
@@ -151,7 +151,7 @@ describe('Local Safety Architecture — Production Transport, Executable Patch D
       repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
     };
     const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
-    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch);
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch, undefined, { authoritativeDefaultBranch: 'main' });
 
     // 1. Non-apiproof branch name
     await expect(transport.createBranchRef('feature/main', BASE_SHA)).rejects.toThrow('GITHUB_INVALID_BRANCH_NAME');
@@ -163,6 +163,38 @@ describe('Local Safety Architecture — Production Transport, Executable Patch D
     await expect(transport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'main', draft: false })).rejects.toThrow('GITHUB_OPERATION_REJECTED');
 
     expect(callCount).toBe(0);
+  });
+
+  it.each(['main', 'master', 'trunk', 'develop', 'release/2026'])('accepts the authenticated repository default branch %s and rejects arbitrary bases', async (defaultBranch) => {
+    const requests: string[] = [];
+    const mockFetch: typeof fetch = async (input, init) => {
+      requests.push(`${init?.method ?? 'GET'} ${String(input)}`);
+      return new Response(JSON.stringify({ number: 7, html_url: 'https://github.com/org/repo/pull/7' }), { status: 201 });
+    };
+    const config: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
+    };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, mockFetch, undefined, { authoritativeDefaultBranch: defaultBranch });
+
+    await expect(transport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: defaultBranch, draft: true })).resolves.toEqual({ number: 7, url: 'https://github.com/org/repo/pull/7' });
+    await expect(transport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'feature/not-default', draft: true })).rejects.toThrow('GITHUB_OPERATION_REJECTED');
+    expect(requests).toHaveLength(1);
+  });
+
+  it('rejects an unconfigured base branch and revalidates stale persisted metadata before writes', async () => {
+    const config: GitHubAppConfig = {
+      enabled: true, appId: '4888527', privateKeyPath: 'dummy.pem', installationId: '160401452',
+      repositoryId: '1363070568', owner: 'ravitejabolla756-sys', repository: 'apiproof-github-fixture', mode: 'OBSERVE',
+    };
+    const tokens: InstallationTokenProvider = { getToken: async () => 'test-token' };
+    const noBranch = new FetchGitHubControlledWriteTransport(config, tokens, async () => new Response(null, { status: 201 }));
+    await expect(noBranch.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'main', draft: true })).rejects.toThrow('GITHUB_DEFAULT_BRANCH_UNVERIFIED');
+
+    const staleTransport = new FetchGitHubControlledWriteTransport(config, tokens, async () => new Response(JSON.stringify({ id: 1363070568, default_branch: 'trunk' }), { status: 200 }));
+    await expect(staleTransport.getRepositoryDefaultBranch!()).resolves.toBe('trunk');
+    await expect(staleTransport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'main', draft: true })).rejects.toThrow('GITHUB_DEFAULT_BRANCH_UNVERIFIED');
   });
 
   // Test 5: Wrong repository ID or owner in transport config rejected pre-flight
@@ -307,7 +339,7 @@ describe('Local Safety Architecture — Production Transport, Executable Patch D
     await expect(tokenProvider.getToken('160401452', '999999999')).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
 
     // 2. FetchGitHubControlledWriteTransport strictly rejects Bavio (1260141355) pre-flight
-    const bavioWriteTransport = new FetchGitHubControlledWriteTransport(bavioConfig, tokenProvider, mockFetch);
+    const bavioWriteTransport = new FetchGitHubControlledWriteTransport(bavioConfig, tokenProvider, mockFetch, undefined, { authoritativeDefaultBranch: 'main' });
     await expect(bavioWriteTransport.createBranchRef('apiproof/test', BASE_SHA)).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
     await expect(bavioWriteTransport.createCommit('apiproof/test', {}, 'msg')).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
     await expect(bavioWriteTransport.createPullRequest({ branch: 'apiproof/test', title: 't', body: 'b', base: 'main', draft: true })).rejects.toThrow('GITHUB_REPOSITORY_NOT_APPROVED');
@@ -316,4 +348,3 @@ describe('Local Safety Architecture — Production Transport, Executable Patch D
     expect(callCount).toBe(0);
   });
 });
-

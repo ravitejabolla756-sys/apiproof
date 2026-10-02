@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -31,6 +32,7 @@ interface FindingRecord {
   repo_full_name: string;
   pr_number?: number | null;
   pr_url?: string | null;
+  pr_state?: string | null;
 }
 
 export default function FindingsListPage() {
@@ -187,8 +189,10 @@ export default function FindingsListPage() {
                 </div>
 
                 <StatusPill
-                  status={finding.status === "pr_created" ? "pr_created" : finding.status === "migration_planned" ? "verified" : "affected"}
-                  label={finding.status === "pr_created" ? `Draft PR #${finding.pr_number ?? '1'}` : finding.status === "migration_planned" ? "Plan Ready" : finding.severity.toUpperCase()}
+                  status={finding.pr_state === 'draft' || finding.pr_state === 'open' ? 'pr_created' : finding.pr_state === 'merged' ? 'healthy' : finding.pr_state === 'closed' ? 'warning' : finding.status === "migration_planned" ? "detected" : "neutral"}
+                  label={finding.pr_number != null
+                    ? `${getPullRequestStateLabel(finding.pr_state)} #${finding.pr_number}`
+                    : finding.status === "migration_planned" ? "Migration Planned" : "Detected"}
                 />
               </div>
 
@@ -222,10 +226,10 @@ export default function FindingsListPage() {
 
               <div className="pt-2 border-t border-[#E8E8E5] flex items-center justify-between text-xs">
                 <span className="text-[#686868] flex items-center gap-1.5 font-medium">
-                  {finding.status === "pr_created" ? (
+                  {finding.pr_number != null ? (
                     <>
                       <GitPullRequest className="w-4 h-4 text-blue-600" />
-                      <span>Draft PR #{finding.pr_number ?? '1'} created</span>
+                      <span>{getPullRequestStateLabel(finding.pr_state)} · #{finding.pr_number}</span>
                     </>
                   ) : (
                     <span>Rule: <code className="font-mono text-[11px] text-[#111111]">{finding.change_id}</code></span>

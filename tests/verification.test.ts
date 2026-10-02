@@ -29,4 +29,17 @@ describe('isolated verification', () => {
   it('Docker command is shell-free and network-disabled', () => {
     const sandbox=new DockerSandbox(); expect(sandbox).toBeDefined();
   });
+  it('rejects fake execution in production before running any stage', async () => {
+    const prior = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      const report = await verifyPatchedFixture(patch, fixture, new FakeSandbox());
+      expect(report.status).toBe('VERIFICATION_POLICY_REJECTED');
+      expect(report.steps).toHaveLength(0);
+    } finally { if (prior === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = prior; }
+  });
+  it('requires successful exit codes, not merely passed labels', async () => {
+    const report = await verifyPatchedFixture(patch, fixture, new FakeSandbox({ TEST: { status: 'PASSED', exitCode: 1 } }));
+    expect(report.status).toBe('VERIFICATION_TEST_FAILED');
+  });
 });

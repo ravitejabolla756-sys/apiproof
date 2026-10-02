@@ -163,6 +163,11 @@ describe('APIProof Web Application Backend & Engine Integration', () => {
       // Verify finding updated to migration_planned
       const updatedFinding = db.prepare('SELECT status FROM findings WHERE id = ?').get(finding.id) as { status: string } | undefined;
       expect(updatedFinding?.status).toBe('migration_planned');
+
+      const activity = db.prepare(
+        "SELECT type FROM activity_events WHERE title = 'Migration Plan Generated' AND repository_id = ? ORDER BY created_at DESC LIMIT 1",
+      ).get(repoId) as { type: string } | undefined;
+      expect(activity?.type).toBe('migration_planned');
     });
   });
 

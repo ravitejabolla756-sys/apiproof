@@ -1,13 +1,15 @@
 import type { GitHubOperation } from './types.js';
 import type { GitHubAppConfig } from './config.js';
 import type { InstallationTokenProvider } from './live-provider.js';
+import { requireAuthoritativeDefaultBranch } from './branch-policy.js';
 
 export interface GitHubControlledWriteTransport {
   createBranchRef(branchName: string, sha: string): Promise<{ ref: string; sha: string }>;
   createCommit(branchName: string, files: Record<string, string>, message: string, parentSha?: string): Promise<{ sha: string }>;
   createPullRequest(input: { branch: string; title: string; body: string; base: string; draft?: boolean }): Promise<{ number: number; url: string }>;
   getBranchRef?(branchName: string): Promise<{ ref: string; sha: string } | null>;
-  getDefaultBranchSha?(branchName?: string): Promise<string>;
+  getRepositoryDefaultBranch?(): Promise<string>;
+  getDefaultBranchSha?(branchName: string): Promise<string>;
   findOpenPullRequestByHead?(branchName: string): Promise<{ number: number; url: string; title: string; body: string; head: string; base: string; draft: boolean } | null>;
   operationAllowed(operation: GitHubOperation): boolean;
 }
@@ -94,6 +96,8 @@ export class DisabledGitHubWriteTransport implements GitHubControlledWriteTransp
 
 export interface ControlledWriteTransportOptions {
   workspaceAuthorized?: boolean;
+  /** Trusted repository metadata resolved by the authenticated workspace flow. */
+  authoritativeDefaultBranch?: string;
 }
 
 export class FetchGitHubControlledWriteTransport implements GitHubControlledWriteTransport {
@@ -143,6 +147,7 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     }
 
     if (operation.branchName) {
+      if (operation.branchName === this.options?.authoritativeDefaultBranch) throw new Error('GITHUB_INVALID_BRANCH_NAME: Cannot mutate the authoritative default branch.');
       if (!operation.branchName.startsWith('apiproof/')) {
         throw new Error(`GITHUB_INVALID_BRANCH_NAME: Head branch '${operation.branchName}' must start with apiproof/ namespace.`);
       }
@@ -151,8 +156,14 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
       }
     }
 
-    if (operation.baseBranch !== undefined && operation.baseBranch !== 'main') {
-      throw new Error(`GITHUB_OPERATION_REJECTED: PR base branch '${operation.baseBranch}' must equal default branch main.`);
+    if (operation.baseBranch !== undefined) {
+      const authoritative = this.options?.authoritativeDefaultBranch?.trim();
+      if (!authoritative || !isSafeBranchName(authoritative)) {
+        throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Authoritative repository default branch is missing or invalid.');
+      }
+      if (operation.baseBranch !== authoritative) {
+        throw new Error(`GITHUB_OPERATION_REJECTED: PR base branch '${operation.baseBranch}' must equal authoritative default branch '${authoritative}'.`);
+      }
     }
 
     if (operation.draft !== undefined && operation.draft !== true) {
@@ -180,6 +191,22 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     if (!response.ok) throw new Error('GITHUB_READ_FAILED');
     const data = (await response.json()) as { object?: { sha?: string }; ref?: string };
     return { ref: data.ref || `refs/heads/${branchName}`, sha: data.object?.sha || '' };
+  }
+
+  async getRepositoryDefaultBranch(): Promise<string> {
+    const path = `/repos/${this.config.owner}/${this.config.repository}`;
+    const token = await this.tokens.getToken(this.config.installationId, this.config.repositoryId);
+    const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'APIProof-App' },
+    });
+    if (response.status === 401 || response.status === 403) throw new Error('GITHUB_AUTHORIZATION_FAILED: Cannot establish authoritative repository metadata.');
+    if (!response.ok) throw new Error('GITHUB_READ_FAILED: Failed to fetch authoritative repository metadata.');
+    const data = (await response.json()) as { id?: number | string; default_branch?: string };
+    if (String(data.id ?? '') !== this.config.repositoryId || !data.default_branch || !isSafeBranchName(data.default_branch)) {
+      throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: GitHub returned incomplete or mismatched repository metadata.');
+    }
+    return data.default_branch;
   }
 
   async findOpenPullRequestByHead(branchName: string): Promise<{ number: number; url: string; title: string; body: string; head: string; base: string; draft: boolean } | null> {
@@ -256,7 +283,7 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
     throw new Error('GITHUB_WRITE_FAILED');
   }
 
-  async getDefaultBranchSha(branchName = 'main'): Promise<string> {
+  async getDefaultBranchSha(branchName: string): Promise<string> {
     const cleanRef = branchName.replace(/^refs\/heads\//, '');
     const path = `/repos/${this.config.owner}/${this.config.repository}/git/ref/heads/${encodeURIComponent(cleanRef)}`;
     const token = await this.tokens.getToken(this.config.installationId, this.config.repositoryId);
@@ -371,6 +398,12 @@ export class FetchGitHubControlledWriteTransport implements GitHubControlledWrit
 
     if (!response.ok) throw new Error('GITHUB_WRITE_FAILED');
     const data = (await response.json()) as { number?: number; html_url?: string };
-    return { number: Number(data.number ?? 1), url: String(data.html_url ?? '') };
+    if (!Number.isSafeInteger(data.number) || Number(data.number) <= 0 || typeof data.html_url !== 'string' || !data.html_url.startsWith('https://github.com/')) throw new Error('GITHUB_WRITE_RESPONSE_INVALID: GitHub did not return an authoritative pull request identity.');
+    return { number: Number(data.number), url: data.html_url };
   }
+}
+
+function isSafeBranchName(branchName: string): boolean {
+  try { requireAuthoritativeDefaultBranch(branchName); return true; }
+  catch { return false; }
 }

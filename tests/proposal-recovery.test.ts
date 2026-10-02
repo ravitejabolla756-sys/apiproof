@@ -48,21 +48,28 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       VALUES (?, ?, ?, 'ravitejabolla756-sys', 'apiproof-github-fixture', 'ravitejabolla756-sys/apiproof-github-fixture', '1363070568', 'main', 'connected', ?)
     `).run(repoId, ws.id, user.id, new Date().toISOString());
 
-    await runRepositoryScan(repoId, user.id);
+    const scan = await runRepositoryScan(repoId, user.id);
     const finding = db.prepare('SELECT id FROM findings WHERE repository_id = ? LIMIT 1').get(repoId) as { id: string };
     const migration = await generateMigrationForFinding(finding.id, user.id);
 
-    return { user, ws, repoId, migration };
+    return { user, ws, repoId, migration, baselineSha: scan.sha };
   }
 
   // =========================================================================
   // GAP 1: REMOTE BRANCH RECONCILIATION
   // =========================================================================
   describe('Gap 1: Remote Branch Partial-Failure Reconciliation', () => {
-    it('does not record pr_created when branch creation succeeds but commit creation fails', async () => {
+    it('rejects an unknown default branch HEAD before any remote write', async () => {
       const { user, migration } = await setupFixture();
-      const branchName = `apiproof/stripe-subscription-coupon-removed/${migration.id.slice(4, 12)}`;
       const transport = new FakeGitHubWriteTransport();
+      await expect(createGitHubProposal(migration.id, user.id, transport)).rejects.toThrow(/GITHUB_DEFAULT_BRANCH_UNVERIFIED/);
+      expect(transport.branches.size).toBe(0);
+      expect(db.prepare('SELECT COUNT(*) as c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+    });
+    it('does not record pr_created when branch creation succeeds but commit creation fails', async () => {
+      const { user, migration, baselineSha } = await setupFixture();
+      const branchName = `apiproof/stripe-subscription-coupon-removed/${migration.id.slice(4, 12)}`;
+      const transport = new FakeGitHubWriteTransport('ravitejabolla756-sys', 'apiproof-github-fixture', 'main', baselineSha);
       transport.createCommit = async () => { throw new Error('COMMIT_FAILED'); };
 
       await expect(createGitHubProposal(migration.id, user.id, transport)).rejects.toThrow('COMMIT_FAILED');
@@ -72,9 +79,9 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
     });
 
     it('does not record pr_created when commit succeeds but Draft PR creation fails', async () => {
-      const { user, migration } = await setupFixture();
+      const { user, migration, baselineSha } = await setupFixture();
       const branchName = `apiproof/stripe-subscription-coupon-removed/${migration.id.slice(4, 12)}`;
-      const transport = new FakeGitHubWriteTransport();
+      const transport = new FakeGitHubWriteTransport('ravitejabolla756-sys', 'apiproof-github-fixture', 'main', baselineSha);
       transport.createPullRequest = async () => { throw new Error('PR_FAILED'); };
 
       await expect(createGitHubProposal(migration.id, user.id, transport)).rejects.toThrow('PR_FAILED');

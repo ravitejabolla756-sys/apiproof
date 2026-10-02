@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { FileCheck2, CheckCircle2, GitPullRequest, Loader2, RefreshCw, ExternalLink } from "lucide-react";
 
 interface MigrationItem {
@@ -25,6 +26,9 @@ interface MigrationItem {
   pr_number?: number | null;
   pr_url?: string | null;
   branch_name?: string | null;
+  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
+  pr_state?: string | null;
+  execution_verified?: boolean;
 }
 
 export default function MigrationsWorkbenchPage() {
@@ -115,9 +119,12 @@ export default function MigrationsWorkbenchPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <StatusPill status="verified" label="4/4 Gates Passed" />
+                  <StatusPill
+                    status={mig.lifecycle_state === 'Verification Passed' || mig.lifecycle_state === 'Pull Request Merged' ? 'verified' : mig.lifecycle_state === 'Verification Failed' || mig.lifecycle_state === 'Pull Request Closed' ? 'warning' : mig.lifecycle_state === 'Draft PR Created' || mig.lifecycle_state === 'Pull Request Open' ? 'pr_created' : mig.lifecycle_state === 'Pull Request State Unavailable' ? 'neutral' : 'detected'}
+                    label={mig.lifecycle_state || 'Verification Pending'}
+                  />
                   {mig.pr_number && (
-                    <StatusPill status="pr_created" label={`Draft PR #${mig.pr_number}`} />
+                    <StatusPill status={mig.pr_state === 'closed' ? 'warning' : mig.pr_state === 'merged' ? 'healthy' : mig.pr_state === 'draft' || mig.pr_state === 'open' ? 'pr_created' : 'neutral'} label={`${getPullRequestStateLabel(mig.pr_state)} #${mig.pr_number}`} />
                   )}
                 </div>
               </div>
@@ -127,7 +134,7 @@ export default function MigrationsWorkbenchPage() {
                 {/* CODE DIFF ON LEFT (60%) */}
                 <div className="lg:col-span-7 bg-[#F6F6F4] rounded-[24px] border border-[#E8E8E5] p-5 space-y-3 flex flex-col justify-between">
                   <div className="text-xs font-semibold text-[#111111] flex items-center justify-between">
-                    <span>AST Transformation Output</span>
+                    <span>{mig.execution_verified ? 'Verified Transformation Output' : 'Planned Transformation (not applied)'}</span>
                     <span className="font-mono text-[11px] text-[#686868]">{mig.file_path}</span>
                   </div>
 
@@ -143,7 +150,11 @@ export default function MigrationsWorkbenchPage() {
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Verification Invariants
                     </div>
                     <p className="text-[11px] text-emerald-800">
-                      Passed all 4 AST and test suite compilation gates.
+                      {mig.execution_verified
+                        ? 'All four verification gates executed successfully.'
+                        : mig.lifecycle_state === 'Verification Failed'
+                        ? 'Verification failed. Review the recorded failure before retrying.'
+                        : 'Successful execution evidence is not available. Verification is required before Draft PR proposal.'}
                     </p>
                   </div>
 
@@ -151,16 +162,16 @@ export default function MigrationsWorkbenchPage() {
                     <div className="p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between shadow-2xs">
                       <div>
                         <div className="font-semibold text-[#111111]">Patch Scope Check</div>
-                        <div className="text-[11px] text-[#686868]">No forbidden paths touched ({mig.file_path})</div>
+                        <div className="text-[11px] text-[#686868]">{mig.execution_verified ? `Validated target: ${mig.file_path}` : `Planned target: ${mig.file_path}; checked during verification`}</div>
                       </div>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      {mig.execution_verified ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
                     </div>
                     <div className="p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between shadow-2xs">
                       <div>
-                        <div className="font-semibold text-[#111111]">Deterministic Digest</div>
-                        <div className="text-[11px] text-[#686868] font-mono truncate">{mig.patch_digest.slice(0, 18)}...</div>
+                        <div className="font-semibold text-[#111111]">{mig.execution_verified ? 'Resulting Patch Digest' : 'Planned Digest (not verified)'}</div>
+                        <div className="text-[11px] text-[#686868] font-mono truncate">{mig.patch_digest ? `${mig.patch_digest.slice(0, 18)}...` : 'Resulting patch digest pending'}</div>
                       </div>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      {mig.execution_verified ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
                     </div>
                   </div>
 
@@ -169,7 +180,7 @@ export default function MigrationsWorkbenchPage() {
                       <a href={mig.pr_url} target="_blank" rel="noreferrer">
                         <Button size="sm" variant="primary" className="gap-1.5 text-xs font-medium">
                           <GitPullRequest className="w-3.5 h-3.5" />
-                          <span>Review Draft PR #{mig.pr_number}</span>
+                          <span>Inspect Pull Request #{mig.pr_number}</span>
                         </Button>
                       </a>
                     ) : (

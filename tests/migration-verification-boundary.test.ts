@@ -26,6 +26,7 @@ describe('evidence-bound migration boundary', () => {
   it('fails closed for missing, stale, and mismatched persisted evidence', () => {
     expect(() => validatePersistedMigrationEvidence(undefined, { repositoryId: '1', baselineSha: sha, changeId: 'change', patchDigest: 'digest' })).toThrow(/GITHUB_EVIDENCE_MISSING/);
     expect(() => validatePersistedMigrationEvidence(JSON.stringify({ baselineSha: sha, patchDigest: 'old', report: { status: 'VERIFICATION_PASSED' } }), { repositoryId: '1', baselineSha: sha, changeId: 'change', patchDigest: 'digest' })).toThrow(/GITHUB_EVIDENCE_STALE/);
+    expect(() => validatePersistedMigrationEvidence(JSON.stringify({ baselineSha: sha, patchDigest: 'digest', report: { status: 'VERIFICATION_TYPECHECK_FAILED' } }), { repositoryId: '1', baselineSha: sha, changeId: 'change', patchDigest: 'digest' })).toThrow(/GITHUB_EVIDENCE_STALE/);
   });
 
   it('cleans up an isolated source workspace after the caller finishes', async () => {

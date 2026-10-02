@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
+import { requireAuthoritativeDefaultBranch } from './branch-policy.js';
 import type { RepositoryIdentity, GitHubOperation } from './types.js';
 import type { SourceControlProvider } from './provider.js';
 import { type GitHubAppConfig, normalizePrivateKeyPem } from './config.js';
@@ -252,7 +253,7 @@ export async function listInstallationRepositories(
     fullName: String(repo.full_name),
     owner: String(repo.owner?.login ?? ''),
     private: Boolean(repo.private),
-    defaultBranch: String(repo.default_branch ?? 'main'),
+    defaultBranch: requireAuthoritativeDefaultBranch(repo.default_branch),
   }));
 
   return { repositories, totalCount };
@@ -311,13 +312,14 @@ export async function getInstallationRepository(
     default_branch: string;
   };
 
+  if (String(data.id) !== repositoryId) throw new Error('GITHUB_REPOSITORY_NOT_APPROVED');
   return {
     id: String(data.id),
     name: String(data.name),
     fullName: String(data.full_name),
     owner: String(data.owner?.login ?? ''),
     private: Boolean(data.private),
-    defaultBranch: String(data.default_branch ?? 'main'),
+    defaultBranch: requireAuthoritativeDefaultBranch(data.default_branch),
   };
 }
 
@@ -386,7 +388,7 @@ export class GitHubAppSourceControlProvider implements Pick<SourceControlProvide
       repositoryId: returnedId,
       owner: String(ownerObj.login ?? this.config.owner),
       repository: String(body.name ?? this.config.repository),
-      defaultBranch: String(body.default_branch ?? 'main'),
+      defaultBranch: requireAuthoritativeDefaultBranch(body.default_branch),
     };
   }
 

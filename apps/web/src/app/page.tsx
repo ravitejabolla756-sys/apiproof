@@ -468,9 +468,14 @@ export default function HomePage() {
                 </span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-serif text-4xl font-normal text-[#000E29]">$29</span>
+                <span className="font-serif text-lg text-slate-400 line-through">$29/month</span>
+                <span className="sr-only">planned price</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                 <span className="text-xs text-slate-500 font-mono">/ mo</span>
               </div>
+              <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access · Free while open</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
@@ -502,9 +507,14 @@ export default function HomePage() {
                 <div className="text-xs text-slate-500 font-sans">For engineering orgs</div>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-serif text-4xl font-normal text-[#000E29]">$99</span>
+                <span className="font-serif text-lg text-slate-400 line-through">$99/month</span>
+                <span className="sr-only">planned price</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                 <span className="text-xs text-slate-500 font-mono">/ mo</span>
               </div>
+              <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access · Free while open</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
@@ -536,8 +546,9 @@ export default function HomePage() {
                 <div className="text-xs text-slate-500 font-sans">For security-sensitive scale</div>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-serif text-3xl font-normal text-[#000E29]">Custom</span>
+                <span className="font-serif text-2xl font-normal text-[#000E29]">$0 during Early Access</span>
               </div>
+              <div className="text-[10px] text-slate-500 font-mono">Custom plan · contact us</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />

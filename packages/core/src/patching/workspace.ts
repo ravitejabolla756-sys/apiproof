@@ -7,9 +7,49 @@ import { allowedPatchPath, assertPlainPath, fail, sha256 } from './policy.js';
 
 export const patchToolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../');
 export const patchCorpusRoot = path.join(patchToolRoot, 'evaluation-patches');
+const MAX_WORKSPACE_FILES = 500;
+const MAX_WORKSPACE_FILE_BYTES = 2 * 1024 * 1024;
+const MAX_WORKSPACE_BYTES = 32 * 1024 * 1024;
 export interface FixtureManifest { schemaVersion: '1.0'; fixtures: Record<string, Record<string, string>> }
 export interface PatchWorkspace { readonly runId: string; readonly repositoryId: string; readonly directory: string; readonly originalDirectory: string; readonly snapshot: Readonly<Record<string, string>> }
 const issued = new WeakSet<PatchWorkspace>();
+
+/** Bounded source/config inputs suitable for deterministic patching and verification. */
+export function isVerificationWorkspacePath(file: string): boolean {
+  if (!file || file.startsWith('/') || file.includes('\\') || file.split('/').some((part) => !part || part === '.' || part === '..')) return false;
+  const parts = file.split('/');
+  const lower = file.toLowerCase();
+  const basename = parts.at(-1)!;
+  if (parts.some((part) => /^(?:node_modules|\.git|\.next|dist|build|coverage|vendor|secrets?|credentials?)$/i.test(part))) return false;
+  if (basename.toLowerCase().startsWith('.env') || /\.(?:pem|key|p12|pfx|env)$/i.test(lower) || /(?:secret|credential|password|token)/i.test(basename)) return false;
+  if (allowedPatchPath(file)) return true;
+  if (basename === 'package.json') return true;
+  if (/^tsconfig(?:\.[A-Za-z0-9_-]+)?\.json$/i.test(basename)) return true;
+  if (parts.length === 1 && ['pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'pnpm-workspace.yaml', '.npmrc', '.yarnrc.yml', '.yarnrc.yaml'].includes(basename)) return true;
+  return /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i.test(basename);
+}
+
+export function assertVerificationWorkspaceBounds(files: ReadonlyMap<string, string>): void {
+  if (!files.size || files.size > MAX_WORKSPACE_FILES) throw new Error('VERIFICATION_WORKSPACE_FILE_LIMIT: Source snapshot exceeds the bounded verification workspace limit.');
+  let totalBytes = 0;
+  for (const [file, content] of files) {
+    if (!isVerificationWorkspacePath(file)) throw new Error(`VERIFICATION_WORKSPACE_PATH_REJECTED: ${file}`);
+    const bytes = Buffer.byteLength(content, 'utf8');
+    if (bytes > MAX_WORKSPACE_FILE_BYTES) throw new Error(`VERIFICATION_WORKSPACE_FILE_LIMIT: ${file} exceeds the per-file size limit.`);
+    if (isPackageManagerMetadata(file) && hasEmbeddedCredential(content)) throw new Error(`VERIFICATION_CREDENTIAL_MATERIAL_REJECTED: Sensitive material detected in ${file}.`);
+    totalBytes += bytes;
+    if (totalBytes > MAX_WORKSPACE_BYTES) throw new Error('VERIFICATION_WORKSPACE_SIZE_LIMIT: Source snapshot exceeds the total verification workspace limit.');
+  }
+}
+
+function isPackageManagerMetadata(file: string): boolean {
+  return file.endsWith('/package.json') || file === 'package.json' || file === 'pnpm-lock.yaml' || file === 'package-lock.json' || file === 'yarn.lock' || file === 'pnpm-workspace.yaml' || file === '.npmrc' || file === '.yarnrc.yml' || file === '.yarnrc.yaml';
+}
+
+function hasEmbeddedCredential(content: string): boolean {
+  return /https?:\/\/[^\s/@]+:[^\s/@]+@/i.test(content)
+    || /(?:_authToken|npmAuthToken|npmAuthIdent|private_key|password|authorization)\s*[:=]\s*["']?[^\s"']+/i.test(content);
+}
 
 export async function loadFixtureManifest(): Promise<FixtureManifest> {
   const file = path.join(patchCorpusRoot, 'manifest.json'); await assertPlainPath(file);
@@ -47,6 +87,7 @@ export async function createPatchWorkspace(repository: string): Promise<PatchWor
   }
   const runId = randomUUID(); const run = path.join(parent, runId);
   await mkdir(run); const directory = path.join(run, 'repository'); await mkdir(directory);
+  await mkdir(path.join(directory, 'node_modules')); await mkdir(path.join(directory, '.verification-cache'));
   for (const [file, text] of Object.entries(snapshot)) {
     await mkdir(path.dirname(path.join(directory, file)), { recursive: true });
     await assertPlainPath(path.dirname(path.join(directory, file)));
@@ -64,9 +105,10 @@ export async function createPatchWorkspace(repository: string): Promise<PatchWor
 export async function createSourcePatchWorkspace(repositoryId: string, files: Readonly<Record<string, string>>): Promise<PatchWorkspace> {
   const entries = Object.entries(files).sort(([a], [b]) => a.localeCompare(b));
   if (!entries.length || entries.length > 500) fail('WORKSPACE_FILE_SET_INVALID');
+  assertVerificationWorkspaceBounds(new Map(entries));
   const snapshot: Record<string, string> = {};
   for (const [file, text] of entries) {
-    if (!assertSafeWorkspaceFile(file) || (!allowedPatchPath(file) && !['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'].includes(file))) fail('WORKSPACE_PATH_INVALID');
+    if (!assertSafeWorkspaceFile(file) || !isVerificationWorkspacePath(file)) fail('WORKSPACE_PATH_INVALID');
     if (Buffer.byteLength(text, 'utf8') > 2_097_152 || text.includes('\0')) fail('WORKSPACE_FILE_INVALID');
     snapshot[file] = text;
   }
@@ -77,6 +119,7 @@ export async function createSourcePatchWorkspace(repositoryId: string, files: Re
   const runId = randomUUID(); const run = path.join(parent, runId);
   await mkdir(run); const originalDirectory = path.join(run, 'baseline'); const directory = path.join(run, 'repository');
   await mkdir(originalDirectory); await mkdir(directory);
+  await mkdir(path.join(directory, 'node_modules')); await mkdir(path.join(directory, '.verification-cache'));
   for (const [file, text] of entries) {
     for (const root of [originalDirectory, directory]) {
       const destination = path.join(root, file); await mkdir(path.dirname(destination), { recursive: true }); await assertPlainPath(path.dirname(destination));
@@ -115,4 +158,21 @@ export async function checkWorkspace(workspace: PatchWorkspace, expected = works
 export async function workspaceFileNames(workspace: PatchWorkspace): Promise<string[]> {
   if (!issued.has(workspace)) fail('UNISSUED_WORKSPACE');
   return inventory(workspace.directory);
+}
+
+/** Ensure verification did not rewrite any captured source or configuration input. */
+export async function findWorkspaceContentDrift(workspace: PatchWorkspace, resultingFiles: Readonly<Record<string, string>>): Promise<string[]> {
+  if (!issued.has(workspace)) fail('UNISSUED_WORKSPACE');
+  const changed: string[] = [];
+  for (const [file, baseline] of Object.entries(workspace.snapshot)) {
+    const target = path.join(workspace.directory, file);
+    try {
+      await assertPlainPath(target);
+      const expected = resultingFiles[file] ?? baseline;
+      if (sha256(await readFile(target)) !== sha256(expected)) changed.push(file);
+    } catch {
+      changed.push(file);
+    }
+  }
+  return changed;
 }

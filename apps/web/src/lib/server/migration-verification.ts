@@ -8,11 +8,16 @@ import {
   cleanupPatchWorkspace,
   createSourcePatchWorkspace,
   createVerificationEvidence,
+  findWorkspaceContentDrift,
   DeterministicPatchGenerator,
   DockerSandbox,
   FakeSandbox,
-  verifyEvidenceBinding,
   verifyPatchedFixture,
+  assertVerificationWorkspaceBounds,
+  buildVerificationWorkspaceCommands,
+  provisionVerificationDependencies,
+  cleanupProvisionedDependencies,
+  isVerificationWorkspacePath,
   loadGitHubAppConfig,
   NodeGitHubAppTokenProvider,
   GitHubAppSourceControlProvider,
@@ -20,11 +25,12 @@ import {
   type ExecutionSandbox,
   type VerifiedMigrationArtifact,
 } from '@apiproof/core';
-import { MigrationPlanSchema } from '@apiproof/shared';
+import { MigrationPlanSchema, VerificationReportSchema } from '@apiproof/shared';
 import type { PlanningInput, VerificationReport } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { loadProviderRegistry } from './registry-utils.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
+import { readBoundMigrationProof } from './migration-proof.js';
 
 export interface MigrationVerificationOptions {
   sandbox?: ExecutionSandbox;
@@ -57,8 +63,10 @@ export function validateExactMigrationSource(input: { expectedBaselineSha: strin
 export async function verifyMigrationForProposal(input: { migration: MigrationVerificationMigration; finding: MigrationVerificationFinding; repo: MigrationVerificationRepo; options?: MigrationVerificationOptions }): Promise<MigrationVerificationResult> {
   let baselineSha: string | undefined;
   let workspace: Awaited<ReturnType<typeof createSourcePatchWorkspace>> | undefined;
+  let provisioning: Awaited<ReturnType<typeof provisionVerificationDependencies>> | undefined;
   let failurePersisted = false;
   try {
+    if (process.env.NODE_ENV !== 'test' && input.options && Object.keys(input.options).length) throw new Error('VERIFICATION_TEST_OVERRIDE_FORBIDDEN: Captured source and sandbox overrides are test-only.');
     if (input.repo.lifecycle && input.repo.lifecycle !== 'active') throw new Error('REPOSITORY_NOT_ACTIVE: Historical or disconnected repositories cannot produce migration verification evidence.');
     baselineSha = input.migration.baseline_sha?.trim();
     if (!baselineSha || !/^[a-f0-9]{40}$/i.test(baselineSha)) throw new Error('BASELINE_SHA_INVALID: Migration is not bound to a valid scan commit.');
@@ -66,6 +74,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     if (!scan || scan.status !== 'completed' || scan.repository_id !== input.repo.id || scan.sha !== baselineSha) throw new Error('BASELINE_SHA_MISMATCH: Migration baseline does not match the completed scan baseline.');
 
     const files = input.options?.sourceFiles ? new Map(Object.entries(input.options.sourceFiles)) : await fetchExactSource(input.repo, baselineSha);
+    assertVerificationWorkspaceBounds(files);
     const source = files.get(input.finding.file_path);
     if (source === undefined) throw new Error(`SOURCE_FILE_NOT_FOUND: ${input.finding.file_path} was not present at baseline ${baselineSha}.`);
     const sourceDigest = digest(source);
@@ -98,14 +107,29 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     if (input.migration.verification_report && input.migration.patch_digest && input.migration.patch_digest !== patchDigest) throw new Error('PATCH_DIGEST_MISMATCH: Existing verification evidence belongs to a different resulting patch.');
 
     const sandbox = input.options?.sandbox ?? (process.env.NODE_ENV === 'test' ? new FakeSandbox() : new DockerSandbox());
-    const fixture = { id: `migration-${input.migration.id.replace(/[^a-z0-9-]/gi, '-')}`, executionAllowed: true, packageManager: 'pnpm' as const, commands: { install: ['pnpm', 'install', '--offline', '--ignore-scripts'], build: ['pnpm', 'exec', 'tsc', '--noEmit'], typecheck: ['pnpm', 'exec', 'tsc', '--noEmit'], test: ['pnpm', 'exec', 'vitest', 'run'] } };
-    const report = await verifyPatchedFixture(patch, fixture, sandbox, { workspace: workspace.directory });
+    if (process.env.NODE_ENV === 'production' && !(sandbox instanceof DockerSandbox)) {
+      throw new Error('VERIFICATION_EXECUTION_SANDBOX_REQUIRED: Production proposals require the isolated Docker sandbox.');
+    }
+    const fixture = buildVerificationWorkspaceCommands(
+      `migration-${input.migration.id.replace(/[^a-z0-9-]/gi, '-')}`,
+      files,
+    );
+    if (sandbox instanceof DockerSandbox) provisioning = await provisionVerificationDependencies(files, fixture);
+    let report = await verifyPatchedFixture(patch, fixture, sandbox, { workspace: workspace.directory, ...(provisioning ? { dependencyProvisioning: provisioning } : {}) });
+    const workspaceDrift = await findWorkspaceContentDrift(workspace, patchContent);
+    if (workspaceDrift.length) {
+      report = VerificationReportSchema.parse({
+        ...report,
+        status: 'VERIFICATION_SANDBOX_FAILED',
+        warnings: [...report.warnings, `Verification modified tracked source or configuration: ${workspaceDrift.join(', ')}`],
+      });
+    }
     const reportDigest = digest(JSON.stringify(report));
     const passed = report.status === 'VERIFICATION_PASSED';
     const targetFiles = patch.files.map((file) => file.path).sort();
     const sourceDigests = Object.fromEntries(patch.files.map((file) => [file.path, file.originalDigest]));
     const resultingDigests = Object.fromEntries(patch.files.map((file) => [file.path, file.patchedDigest ?? digest(patchContent[file.path]!)]));
-    const evidence = createVerificationEvidence({
+    const evidence = passed ? createVerificationEvidence({
       repositoryId: input.repo.github_repository_id,
       baselineSha,
       changeId: input.finding.change_id,
@@ -121,12 +145,12 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
       targetFiles,
       sourceDigests,
       resultingDigests,
-    });
-    const wrapper = { schemaVersion: '1.0', migrationId: input.migration.id, repositoryId: input.repo.github_repository_id, baselineSha, patchDigest, targetFiles, sourceDigests, resultingDigests, report, evidence, failureReasons: passed ? [] : [report.status] };
+    }) : null;
+    const wrapper = { schemaVersion: '1.0', migrationId: input.migration.id, repositoryId: input.repo.github_repository_id, baselineSha, patchDigest, targetFiles, sourceDigests, resultingDigests, report, evidence, failureReasons: passed ? [] : [...workspaceDrift.map((file) => `VERIFICATION_WORKSPACE_MUTATED: ${file}`), report.status] };
     const db = getDatabase();
     await db.execute('UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = ?, status = ? WHERE id = ?', [patchDigest, JSON.stringify(patchContent), patch.files.map((file) => file.unifiedDiff).join('\n'), JSON.stringify(wrapper), passed ? 'verified' : 'verification_failed', input.migration.id]);
     failurePersisted = true;
-    if (!passed) throw new Error(`VERIFICATION_FAILED: ${report.status}`);
+    if (!passed || !evidence) throw new Error(`VERIFICATION_FAILED: ${report.status}`);
     return { patchDigest, patchContent, patchDiff: patch.files.map((file) => file.unifiedDiff).join('\n'), evidence, report, wrapper };
   } catch (error: unknown) {
     if (!failurePersisted) {
@@ -135,6 +159,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     throw error;
   } finally {
     if (workspace) await cleanupPatchWorkspace(workspace);
+    if (provisioning) await cleanupProvisionedDependencies(provisioning);
   }
 }
 
@@ -158,27 +183,27 @@ async function persistVerificationFailure(input: { migration: MigrationVerificat
 }
 
 export function validatePersistedMigrationEvidence(raw: string | null | undefined, expected: { repositoryId: string; baselineSha: string; changeId: string; patchDigest: string }): void {
-  if (!raw) throw new Error('GITHUB_EVIDENCE_MISSING: Verification evidence is required before Draft PR creation.');
-  let wrapper: { evidence?: VerifiedMigrationArtifact; report?: VerificationReport; baselineSha?: string; patchDigest?: string; targetFiles?: string[] };
-  try { wrapper = JSON.parse(raw) as typeof wrapper; } catch { throw new Error('GITHUB_EVIDENCE_INVALID: Persisted verification evidence is not valid JSON.'); }
-  if (wrapper.baselineSha !== expected.baselineSha || wrapper.patchDigest !== expected.patchDigest || wrapper.report?.status !== 'VERIFICATION_PASSED') throw new Error('GITHUB_EVIDENCE_STALE: Persisted verification evidence is incomplete or belongs to another migration state.');
-  const result = verifyEvidenceBinding(wrapper.evidence, { ...expected, requireExecutionEvidence: true });
-  if (!result.valid) throw new Error(result.reason ?? 'GITHUB_EVIDENCE_MISMATCH');
+  readBoundMigrationProof(raw, expected);
 }
 
 async function fetchExactSource(repo: MigrationVerificationRepo, baselineSha: string): Promise<Map<string, string>> {
   const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
   if (!installation) {
-    if (process.env.NODE_ENV === 'production') throw new Error('WORKSPACE_GITHUB_NOT_CONNECTED: Exact source retrieval requires an active GitHub installation.');
+    if (process.env.NODE_ENV !== 'test') throw new Error('WORKSPACE_GITHUB_NOT_CONNECTED: Exact source retrieval requires an active GitHub installation.');
     const fixtureRoot = 'C:\\apiproof-github-fixture';
     const files = new Map<string, string>();
     try {
       if (repo.name !== 'apiproof-github-fixture') throw new Error('synthetic-test-source');
       files.set('src/billing.ts', await fs.readFile(path.join(fixtureRoot, 'src/billing.ts'), 'utf8'));
       files.set('package.json', await fs.readFile(path.join(fixtureRoot, 'package.json'), 'utf8'));
+      for (const lockfile of ['pnpm-lock.yaml', 'package-lock.json', 'yarn.lock']) {
+        try { files.set(lockfile, await fs.readFile(path.join(fixtureRoot, lockfile), 'utf8')); break; }
+        catch { /* Try the next supported lockfile; absence is rejected by command selection. */ }
+      }
     } catch {
       files.set('src/billing.ts', `import Stripe from 'stripe';\nconst stripe = new Stripe('sk_test_fixture');\nexport function migrate() {\n  const customerId = 'customer';\n  const priceId = 'price';\n  const couponId = 'coupon';\n  const metadata = {};\n  const options = {};\n\n  return stripe.subscriptions.create({ customer: customerId, items: [{ price: priceId }], coupon: couponId });\n}`);
       files.set('package.json', JSON.stringify({ name: repo.name, dependencies: { stripe: '^16.0.0' } }));
+      files.set('pnpm-lock.yaml', "lockfileVersion: '9.0'\nimporters:\n  .:\n    dependencies:\n      stripe:\n        specifier: ^16.0.0\n        version: 16.12.0\n");
     }
     return files;
   }
@@ -187,8 +212,11 @@ async function fetchExactSource(repo: MigrationVerificationRepo, baselineSha: st
   const provider = new GitHubAppSourceControlProvider({ ...config, installationId: installation.installationId, repositoryId: repo.github_repository_id, owner: repo.owner, repository: repo.name }, tokens, new FetchGitHubReadTransport());
   const tree = await provider.readTree(baselineSha);
   const files = new Map<string, string>();
-  for (const file of tree.filter((candidate) => candidate === 'package.json' || /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i.test(candidate))) {
+  const selectedFiles = tree.filter(isVerificationWorkspacePath);
+  assertVerificationWorkspaceBounds(new Map(selectedFiles.map((file) => [file, ''])));
+  for (const file of selectedFiles) {
     files.set(file, await provider.readFile(file, baselineSha));
+    assertVerificationWorkspaceBounds(files);
   }
   return files;
 }

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
-import { AlertTriangle, ArrowUpRight, CheckCircle2, GitBranch, Layers, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { getPullRequestStateLabel, getRegistryCoverageDescription, getRegistryCoverageLabel } from "@/lib/compatibility-map-labels";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, GitBranch, Layers, Loader2, RefreshCw } from "lucide-react";
 
 interface CompatibilityFinding {
   id: string;
@@ -13,7 +14,7 @@ interface CompatibilityFinding {
   filePath: string;
   symbol: string;
   migration: { id: string; status: string | null } | null;
-  pullRequest: { id: string; number: number | null; state: string | null; url: string | null } | null;
+  pullRequest: { id: string; number: number | null; state: string | null; url: string | null; createdAt: string | null } | null;
 }
 
 interface CompatibilityRepository {
@@ -126,11 +127,11 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   const pullRequests = [...new Map(currentRepo.findings
     .filter((finding) => finding.pullRequest)
     .map((finding) => [finding.pullRequest!.id, finding.pullRequest!])).values()];
-  const draftPullRequests = pullRequests.filter((pullRequest) => pullRequest.state === "draft");
+  const latestPullRequest = pullRequests.sort((left, right) => (right.createdAt ?? '').localeCompare(left.createdAt ?? ''))[0];
   const repoStatus = currentRepo.latestScanStatus === "failed"
     ? { label: "Latest scan failed", variant: "warning" as const }
-    : draftPullRequests[0]
-      ? { label: `Draft PR #${draftPullRequests[0].number ?? "—"}`, variant: "pr_created" as const }
+    : latestPullRequest
+      ? { label: `${getPullRequestStateLabel(latestPullRequest.state)} #${latestPullRequest.number ?? "—"}`, variant: latestPullRequest.state === 'closed' ? "warning" as const : latestPullRequest.state === 'merged' ? "healthy" as const : latestPullRequest.state === 'draft' || latestPullRequest.state === 'open' ? "pr_created" as const : "neutral" as const }
       : currentRepo.openFindingCount > 0
         ? { label: `${currentRepo.openFindingCount} open findings`, variant: "affected" as const }
         : currentRepo.latestCompletedScan
@@ -206,10 +207,10 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
                   <div key={integration.provider} className={`space-y-1 rounded-xl border p-3 ${currentRepo.openFindingCount > 0 && currentRepo.findings.some((finding) => finding.provider === integration.provider && (finding.status === "open" || finding.status === "affected")) ? "border-[#F8D7DA] bg-[#FDF2F2]" : reviewed ? "border-[#C6E1FA] bg-[#EBF3FC]" : "border-[#E8E8E5] bg-white"}`}>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-semibold text-[#111111]">{providerName}</span>
-                      {reviewed ? <ShieldCheck className="h-3.5 w-3.5 text-blue-600" /> : <CheckCircle2 className="h-3.5 w-3.5 text-zinc-400" />}
+                      <CheckCircle2 className={`h-3.5 w-3.5 ${reviewed ? "text-blue-600" : "text-zinc-400"}`} />
                     </div>
                     <div className="flex items-center justify-between gap-1 text-[11px] text-[#686868]">
-                      <span>{reviewed ? "Reviewed" : "Detected · Not reviewed"}</span>
+                      <span title={getRegistryCoverageDescription()}>{getRegistryCoverageLabel(integration.reviewedChangeCount)}</span>
                       <span className="font-mono">{integration.usageCount === null ? "Usage count unavailable" : `${integration.usageCount} usages`}</span>
                     </div>
                     <div className="text-[11px] text-[#686868]">

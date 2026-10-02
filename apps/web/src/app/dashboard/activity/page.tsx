@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Activity, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatActivityTimestamp, type ActivityItem } from "@/lib/activity-utils";
+import { formatActivityTimestamp, getActivityTypeLabel, type ActivityItem } from "@/lib/activity-utils";
 
 export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -74,7 +74,7 @@ export default function ActivityPage() {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-[#111111]">{act.title}</span>
                     <span className="px-2.5 py-0.5 rounded-full bg-[#F6F6F4] text-zinc-700 border border-[#E8E8E5] text-[10px] font-medium uppercase font-mono">
-                      {act.type.replace('_', ' ')}
+                      {getActivityTypeLabel(act.type, act.title)}
                     </span>
                   </div>
                   <p className="text-xs text-[#686868] leading-relaxed">

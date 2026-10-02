@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { GitPullRequest, ExternalLink, ShieldCheck, Loader2, RefreshCw } from "lucide-react";
 
 interface PullRequestItem {
@@ -79,7 +80,7 @@ export default function PullRequestsPage() {
           <GitPullRequest className="w-8 h-8 text-blue-600 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No pull requests created yet</p>
           <p className="text-xs text-[#686868]">
-            Propose a draft pull request from any verified migration plan to see it listed here.
+            Propose a draft pull request only after execution-bound verification passes.
           </p>
         </div>
       ) : (
@@ -90,7 +91,7 @@ export default function PullRequestsPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-base text-[#111111]">
-                      Draft PR #{pr.number}: {pr.title}
+                      Pull Request #{pr.number}: {pr.title}
                     </span>
                   </div>
                   <div className="text-xs text-[#686868] font-mono">
@@ -98,7 +99,10 @@ export default function PullRequestsPage() {
                   </div>
                 </div>
 
-                <StatusPill status="pr_created" label="Draft PR Open" />
+                <StatusPill
+                  status={pr.state === 'draft' || pr.state === 'open' ? 'pr_created' : pr.state === 'merged' ? 'healthy' : pr.state === 'closed' ? 'warning' : 'neutral'}
+                  label={getPullRequestStateLabel(pr.state)}
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">

@@ -221,6 +221,13 @@ describe('GET /api/compatibility-map', () => {
     expect(scanned.analysisEvidenceAvailable).toBe(true);
     expect(scanned.integrations).toEqual([]);
   });
+  it('does not expose a seeded identity as a live selectable repository even if its lifecycle is active', async () => {
+    const user = await createUserWithSession('map-seeded@example.com', 'Strong-password-1!', 'Seed Isolation');
+    await createRepository(user.user.id, 'repo_map_seeded_active', 'seeded-repository');
+    await getDatabase().execute("UPDATE repositories SET origin = 'seeded_fixture' WHERE id = ?", ['repo_map_seeded_active']);
+    const response = await getMap(user.session.id);
+    expect((await response.json() as CompatibilityMapTestPayload).repositories).toEqual([]);
+  });
 
   it('does not infer usage counts or symbol mapping for legacy evidence or provider names', async () => {
     const user = await createUserWithSession('map-legacy@example.com', 'Strong-password-1!', 'Legacy User');

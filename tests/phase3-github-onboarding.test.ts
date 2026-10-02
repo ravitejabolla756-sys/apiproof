@@ -433,7 +433,7 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
       tokenProvider,
       mockFetch,
       'https://api.github.com',
-      { workspaceAuthorized: true }
+      { workspaceAuthorized: true, authoritativeDefaultBranch: 'main' }
     );
 
     const branchRes = await transport.createBranchRef('apiproof/fix-customer-1', 'base-sha');
@@ -460,7 +460,7 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
       installationId: 'inst_1', repositoryId: '123', owner: 'org', repository: 'repo', mode: 'PROPOSE',
     };
     const tokens = { getToken: async () => 'tok' };
-    const transport = new FetchGitHubControlledWriteTransport(config, tokens, undefined, undefined, { workspaceAuthorized: true });
+    const transport = new FetchGitHubControlledWriteTransport(config, tokens, undefined, undefined, { workspaceAuthorized: true, authoritativeDefaultBranch: 'main' });
 
     await expect(transport.createPullRequest({
       branch: 'apiproof/test',

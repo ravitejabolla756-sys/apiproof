@@ -19,7 +19,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { formatActivityTimestamp, type ActivityItem } from '../apps/web/src/lib/activity-utils.js';
+import { formatActivityTimestamp, getActivityTypeLabel, type ActivityItem } from '../apps/web/src/lib/activity-utils.js';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
@@ -28,6 +28,14 @@ import { GET as activityGet } from '../apps/web/src/app/api/activity/route.js';
 const TEST_DB_PATH = path.resolve('.tmp/test-activity-api.db');
 
 describe('Activity Page Timestamp Formatting — formatActivityTimestamp', () => {
+  it('does not label a legacy migration-plan event as verified', () => {
+    expect(getActivityTypeLabel('migration_verified', 'Migration Plan Generated')).toBe('migration planned');
+  });
+
+  it('preserves the normal label for verified events with a different title', () => {
+    expect(getActivityTypeLabel('migration_verified', 'Migration Verification Passed')).toBe('migration verified');
+  });
+
   it('formats a valid ISO/database timestamp string into a human-readable date/time', () => {
     const isoTimestamp = '2026-09-29T10:30:00.000Z';
     const formatted = formatActivityTimestamp(isoTimestamp);

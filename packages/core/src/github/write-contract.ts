@@ -79,6 +79,7 @@ export function validateControlledWriteRequest(
     return { valid: false, status: 'GITHUB_INVALID_BRANCH_NAME', reason: 'Controlled write request branch name missing.' };
   }
   const branchValidation = validateBranchName(request.branch.branchName);
+  if (request.branch.branchName === request.repository.defaultBranch) return { valid: false, status: 'GITHUB_INVALID_BRANCH_NAME', reason: 'Migration branch cannot be the authoritative default branch.' };
   if (!branchValidation.valid) {
     return { valid: false, status: 'GITHUB_INVALID_BRANCH_NAME', reason: branchValidation.reason ?? 'Invalid branch name.' };
   }

@@ -77,7 +77,7 @@ export default function PricingPage() {
                   <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                   <span className="text-xs text-slate-500 font-medium">/ month</span>
                 </div>
-                <div className="text-[11px] text-emerald-700 font-medium font-mono">Free during Early Access</div>
+                <div className="text-[11px] text-slate-500 font-medium font-mono">Always free</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
@@ -127,10 +127,15 @@ export default function PricingPage() {
 
               <div className="space-y-0.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-serif text-4xl font-normal text-[#000E29]">$29</span>
+                  <span className="font-serif text-lg text-slate-400 line-through">$29/month</span>
+                  <span className="sr-only">planned price</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                   <span className="text-xs text-slate-500 font-medium">/ month</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-mono">Billed monthly</div>
+                <div className="text-[11px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access</div>
+                <div className="text-[11px] text-slate-500">Free while Early Access is open.</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
@@ -175,10 +180,15 @@ export default function PricingPage() {
 
               <div className="space-y-0.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-serif text-4xl font-normal text-[#000E29]">$99</span>
+                  <span className="font-serif text-lg text-slate-400 line-through">$99/month</span>
+                  <span className="sr-only">planned price</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                   <span className="text-xs text-slate-500 font-medium">/ month</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-mono">Billed monthly</div>
+                <div className="text-[11px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access</div>
+                <div className="text-[11px] text-slate-500">Free while Early Access is open.</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
@@ -223,9 +233,9 @@ export default function PricingPage() {
 
               <div className="space-y-0.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-serif text-3xl font-normal text-[#000E29]">Custom</span>
+                  <span className="font-serif text-2xl font-normal text-[#000E29]">$0 during Early Access</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-mono">Tailored agreement</div>
+                <div className="text-[11px] text-slate-500 font-mono">Custom plan · contact us</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">

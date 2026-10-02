@@ -1,0 +1,14 @@
+{
+  "name": "verification-minimal",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.4",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

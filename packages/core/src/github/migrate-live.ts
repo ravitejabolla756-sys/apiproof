@@ -11,6 +11,7 @@ import {
 import {
   validateBranchName,
   generateDeterministicBranchName,
+  requireAuthoritativeDefaultBranch,
 } from './branch-policy.js';
 
 import { validatePatchScope } from './patch-scope.js';
@@ -132,9 +133,7 @@ export async function runMigrateLive(
   if (identity.repository !== 'apiproof-github-fixture') {
     throw new Error(`GITHUB_REPOSITORY_NOT_APPROVED: Repository name mismatch (${identity.repository} !== apiproof-github-fixture).`);
   }
-  if (identity.defaultBranch !== 'main') {
-    throw new Error(`GITHUB_OPERATION_REJECTED: Default branch mismatch (${identity.defaultBranch} !== main).`);
-  }
+  requireAuthoritativeDefaultBranch(identity.defaultBranch);
 
   const head = await activeReadProvider.getDefaultBranch();
   const expectedSha = options.expectedBaselineSha ?? 'b1be45b401f41106ecfd489bbbb1fff71639c763';
@@ -355,7 +354,9 @@ export async function runMigrateLive(
   } else {
     assertLiveConfig(config);
     const tokenProvider = new NodeGitHubAppTokenProvider(config);
-    writeTransport = new FetchGitHubControlledWriteTransport(config, tokenProvider);
+    writeTransport = new FetchGitHubControlledWriteTransport(config, tokenProvider, undefined, undefined, {
+      authoritativeDefaultBranch: identity.defaultBranch,
+    });
   }
 
   if (!writeTransport.operationAllowed('CREATE_APIPROOF_BRANCH') || !writeTransport.operationAllowed('CREATE_PULL_REQUEST')) {

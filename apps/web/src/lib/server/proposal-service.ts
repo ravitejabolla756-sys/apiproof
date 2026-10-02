@@ -15,6 +15,7 @@ import { getDatabase } from './db/index.js';
 import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
 import { validatePersistedMigrationEvidence, verifyMigrationForProposal } from './migration-verification.js';
+import { describeMigrationProof } from './migration-proof.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -23,7 +24,7 @@ export interface ProposalResult {
   url: string;
   branchName: string;
   baseBranch: string;
-  state: 'draft';
+  state: string;
   humanReviewRequired: boolean;
   autoMergeEnabled: boolean;
   patchDigest: string;
@@ -108,7 +109,7 @@ export async function createGitHubProposal(
       url: existingPr.url,
       branchName: existingPr.branch_name,
       baseBranch: existingPr.base_branch,
-      state: 'draft',
+      state: existingPr.state,
       humanReviewRequired: true,
       autoMergeEnabled: false,
       patchDigest: migration.patch_digest,
@@ -196,6 +197,7 @@ export async function createGitHubProposal(
 
     transport = new FetchGitHubControlledWriteTransport(writeConfig, tokenProvider, undefined, undefined, {
       workspaceAuthorized: true,
+      authoritativeDefaultBranch: repo.default_branch,
     });
   } else {
     transport = new FakeGitHubWriteTransport(
@@ -206,13 +208,28 @@ export async function createGitHubProposal(
     );
   }
 
+  if (!migration.default_branch || migration.default_branch.trim() !== migration.default_branch || migration.default_branch.includes('..')) {
+    throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Persisted repository default branch is missing or invalid.');
+  }
+  if (transport.getRepositoryDefaultBranch) {
+    const remoteDefaultBranch = await transport.getRepositoryDefaultBranch();
+    if (remoteDefaultBranch !== migration.default_branch) {
+      throw new Error(`GITHUB_DEFAULT_BRANCH_CHANGED: Repository default branch changed from '${migration.default_branch}' to '${remoteDefaultBranch}'. A fresh scan is required.`);
+    }
+  } else if (isProduction) {
+    throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Live proposal transport cannot establish the authoritative repository default branch.');
+  }
+
   // Invariant 8: Check if repository default branch HEAD has moved since scan was performed
   if (transport.getDefaultBranchSha) {
     const remoteHeadSha = await transport.getDefaultBranchSha(migration.default_branch);
+    if (!/^[a-f0-9]{40}$/i.test(remoteHeadSha)) throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Authoritative default branch HEAD is missing or invalid.');
     if (remoteHeadSha && remoteHeadSha !== baselineSha) {
       await db.execute('UPDATE migrations SET status = ?, patch_digest = NULL, patch_content = NULL, verification_report = NULL WHERE id = ?', ['planned', migration.id]);
       throw new Error(`REPOSITORY_HEAD_DIVERGED: Target repository default branch HEAD (${remoteHeadSha.slice(0, 7)}) has moved since scan was performed (${baselineSha.slice(0, 7)}). A fresh scan is required before proposing a migration.`);
     }
+  } else if (isProduction) {
+    throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Live proposal transport cannot establish the exact repository HEAD.');
   }
 
   const title = `fix(api): deterministic migration for ${migration.change_id}`;
@@ -222,7 +239,7 @@ export async function createGitHubProposal(
 * **Change ID**: \`${migration.change_id}\`
 * **Affected Call Site**: \`${migration.symbol}\` in \`${migration.file_path}\`
 * **Patch Digest**: \`${migration.patch_digest}\`
-* **Verification Proof**: \`CONTRACT_VERIFIED\` (4/4 gates passed)
+${describeMigrationProof(JSON.stringify(verified.wrapper))}
 
 ### Safety Guarantees
 * **Draft PR**: Opened in review-only mode.
@@ -298,7 +315,7 @@ export async function createGitHubProposal(
         url: concurrentDbPr.url,
         branchName: concurrentDbPr.branch_name,
         baseBranch: concurrentDbPr.base_branch,
-        state: 'draft',
+        state: concurrentDbPr.state,
         humanReviewRequired: true,
         autoMergeEnabled: false,
         patchDigest: migration.patch_digest,
@@ -440,7 +457,7 @@ async function persistPullRequestRecord(
         url: existingPr.url,
         branchName: existingPr.branch_name,
         baseBranch: existingPr.base_branch,
-        state: 'draft',
+        state: existingPr.state,
         humanReviewRequired: true,
         autoMergeEnabled: false,
         patchDigest: params.patchDigest,

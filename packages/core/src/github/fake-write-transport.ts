@@ -37,11 +37,15 @@ export class FakeGitHubWriteTransport implements GitHubControlledWriteTransport 
     this.defaultBranchSha = defaultBranchSha;
   }
 
-  async getDefaultBranchSha(_branchName?: string): Promise<string> {
+  async getDefaultBranchSha(_branchName: string): Promise<string> {
     if (this.emptyRepository) {
       throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${this.repositoryOwner}/${this.repositoryName}' has no commits on default branch '${this.defaultBranch}'.`);
     }
     return this.defaultBranchSha ?? '';
+  }
+
+  async getRepositoryDefaultBranch(): Promise<string> {
+    return this.defaultBranch;
   }
 
   operationAllowed(operation: GitHubOperation): boolean {

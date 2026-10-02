@@ -21,8 +21,9 @@ export async function GET(req: Request) {
     SELECT f.id, f.scan_id, f.repository_id, f.change_id, f.provider, f.title, f.description,
            f.severity, f.confidence, f.file_path, f.line_number, f.symbol, f.status, f.created_at,
            r.name as repo_name, r.full_name as repo_full_name,
-           (SELECT p.number FROM pull_requests p WHERE p.repository_id = f.repository_id LIMIT 1) as pr_number,
-           (SELECT p.url FROM pull_requests p WHERE p.repository_id = f.repository_id LIMIT 1) as pr_url
+           (SELECT p.number FROM pull_requests p JOIN migrations pm ON pm.id = p.migration_id WHERE pm.finding_id = f.id ORDER BY p.created_at DESC LIMIT 1) as pr_number,
+           (SELECT p.url FROM pull_requests p JOIN migrations pm ON pm.id = p.migration_id WHERE pm.finding_id = f.id ORDER BY p.created_at DESC LIMIT 1) as pr_url,
+           (SELECT p.state FROM pull_requests p JOIN migrations pm ON pm.id = p.migration_id WHERE pm.finding_id = f.id ORDER BY p.created_at DESC LIMIT 1) as pr_state
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id

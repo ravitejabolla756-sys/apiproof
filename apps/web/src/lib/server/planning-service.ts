@@ -174,7 +174,7 @@ export async function generateMigrationForFinding(findingId: string, userId: str
       `act_${crypto.randomBytes(10).toString('hex')}`,
       userId,
       finding.repository_id,
-      'migration_verified',
+      'migration_planned',
       'Migration Plan Generated',
       `Generated deterministic migration plan for ${finding.change_id} in ${finding.file_path}.`,
       now

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase, type DatabaseAdapter } from '@/lib/server/db';
-import { getAccessibleRepositoryInfo, fetchWorkspaceRepository } from '@/lib/server/github';
+import { fetchWorkspaceRepository } from '@/lib/server/github';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import {
   getDefaultWorkspaceForUser,
@@ -18,11 +18,13 @@ import {
 import { checkWorkspaceLimit } from '@/lib/server/billing/service';
 
 export async function GET(req: Request) {
+  const privateNoStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
 
+  const workspace = await getDefaultWorkspaceForUser(user.id);
   const db = getDatabase();
   const repos = await db.query(`
     SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
@@ -31,17 +33,13 @@ export async function GET(req: Request) {
            (SELECT COUNT(*) FROM scans s WHERE s.repository_id = r.id) as scans_count,
            (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
     FROM repositories r
-    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
     ORDER BY r.created_at DESC
-  `, [user.id]);
-
-  const githubInfo = await getAccessibleRepositoryInfo();
+  `, [workspace.id]);
 
   return NextResponse.json({
     repositories: repos,
-    githubAppConnection: githubInfo,
-  });
+  }, { headers: privateNoStoreHeaders });
 }
 
 export async function POST(req: Request) {
@@ -121,12 +119,15 @@ export async function POST(req: Request) {
         }, { status: 404 });
       }
     } else if (validation.data.owner && validation.data.name) {
-      // Legacy fixture path
-      owner = validation.data.owner;
-      name = validation.data.name;
-      fullName = `${owner}/${name}`;
-      defaultBranch = validation.data.defaultBranch || 'main';
-      ghId = crypto.randomInt(1000000, 9999999).toString();
+      // Repository identity must always be established by the authenticated
+      // workspace installation. The old owner/name path manufactured a random
+      // GitHub ID and could create a production repository with no authoritative
+      // GitHub identity. Keep historical rows available for read-only migration
+      // compatibility, but never create new ones through this route.
+      return NextResponse.json({
+        error: 'Repository connection requires an authoritative GitHub repository ID from the workspace installation.',
+        code: 'AUTHORITATIVE_REPOSITORY_ID_REQUIRED',
+      }, { status: 400 });
     } else {
       return badRequestResponse('Repository githubRepositoryId or owner/name required.');
     }

@@ -316,6 +316,9 @@ export async function requireRepositoryAccess(
     `, [repositoryIdOrSlug, repositoryIdOrSlug, repositoryIdOrSlug, userId]);
 
     if (legacyRow) {
+      if (process.env.NODE_ENV !== 'test') {
+        throw new Error('Repository not found or access denied. Legacy repository identity is not eligible for production access.');
+      }
       const defaultWs = await getDefaultWorkspaceForUser(userId);
       await db.execute('UPDATE repositories SET workspace_id = ? WHERE id = ?', [defaultWs.id, legacyRow.id]);
       return {
@@ -333,6 +336,7 @@ export async function requireRepositoryAccess(
   if (!row) {
     throw new Error('Repository not found or access denied.');
   }
+  if (process.env.NODE_ENV !== 'test' && row.origin !== 'connected') throw new Error('Repository not found or access denied. Historical or synthetic identity is not eligible for live access.');
 
   return {
     repository: {

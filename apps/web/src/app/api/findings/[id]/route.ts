@@ -3,6 +3,7 @@ import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { requireFindingAccess } from '@/lib/server/workspace-service';
+import { getMigrationLifecycleState } from '@/lib/server/migration-lifecycle';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -79,6 +80,12 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     },
     migration: migration ? {
       ...migration,
+      lifecycle_state: getMigrationLifecycleState({
+        status: typeof migration.status === 'string' ? migration.status : null,
+        verificationReport: typeof migration.verification_report === 'string' ? migration.verification_report : null,
+        hasPullRequest: migration.pr_number !== null && migration.pr_number !== undefined,
+        pullRequestState: typeof migration.pr_state === 'string' ? migration.pr_state : null,
+      }),
       target_branch: canonicalBranch,
       branch_name: canonicalBranch,
       plan: planJson,

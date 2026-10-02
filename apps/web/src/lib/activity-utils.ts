@@ -24,3 +24,15 @@ export function formatActivityTimestamp(rawTimestamp?: string | number | null): 
   }
   return date.toLocaleString();
 }
+
+/**
+ * Keeps legacy plan-generation events from claiming verification. Older rows
+ * were persisted with `migration_verified` before a migration was actually
+ * verified; their title identifies that historical encoding unambiguously.
+ */
+export function getActivityTypeLabel(type: string, title?: string): string {
+  if (type === 'migration_verified' && title === 'Migration Plan Generated') {
+    return 'migration planned';
+  }
+  return type.replace('_', ' ');
+}

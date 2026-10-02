@@ -9,7 +9,7 @@ import {
 } from '@apiproof/core';
 import type { ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
-import { createWorkspaceGitHubSourceControlProvider, getGitHubProvider, fetchRemoteRepositoryFiles } from './github.js';
+import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
@@ -55,6 +55,7 @@ export async function runRepositoryScan(
   
   // 1. Verify workspace repository access (central authorization / IDOR protection)
   const { repository: repo } = await requireRepositoryAccess(repositoryId, userId);
+  if (customProvider && process.env.NODE_ENV !== 'test') throw new Error('GITHUB_TEST_PROVIDER_FORBIDDEN: Source provider overrides are available only to automated tests.');
   if (repo.lifecycle !== 'active') {
     throw new Error('REPOSITORY_NOT_ACTIVE: Historical or disconnected repositories cannot be scanned.');
   }
@@ -87,9 +88,10 @@ export async function runRepositoryScan(
     let filesMap = new Map<string, string>();
     let headSha = '';
 
-    // 3. Fetch source files (via live GitHub App if available, or fixture snapshot)
+    // 3. Fetch source files from the workspace-owned GitHub installation.
+    // Synthetic/local fixture material is available only to automated tests.
     const installation = repo.workspace_id ? await getWorkspaceGitHubInstallation(repo.workspace_id) : null;
-    const isLiveGitHubRepo = Boolean(installation || (repo.github_repository_id && repo.github_repository_id !== '1363070568'));
+    const isTestFixture = process.env.NODE_ENV === 'test';
 
     let githubProvider = customProvider ?? null;
     if (!customProvider && repo.workspace_id && installation) {
@@ -99,11 +101,9 @@ export async function runRepositoryScan(
         owner: repo.owner,
         repository: repo.name,
       });
-    } else if (!customProvider) {
-      githubProvider = getGitHubProvider();
     }
 
-    if (isLiveGitHubRepo || customProvider) {
+    if (customProvider || installation) {
       if (!githubProvider) {
         throw new Error('GITHUB_APP_NOT_CONFIGURED: Active GitHub App configuration is required to scan connected repository.');
       }
@@ -119,8 +119,8 @@ export async function runRepositoryScan(
         throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${repo.full_name}' contains no code files to analyze.`);
       }
     } else {
-      if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
-        throw new Error('GITHUB_APP_NOT_CONFIGURED: Live GitHub source retrieval is required for production scans.');
+      if (!isTestFixture) {
+        throw new Error('GITHUB_APP_NOT_CONFIGURED: Live GitHub source retrieval requires an active workspace installation.');
       }
       // Local development/test fixture fallback ONLY for offline test fixture
       if (repo.name === 'apiproof-github-fixture' || repo.owner === 'ravitejabolla756-sys') {

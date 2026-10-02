@@ -314,6 +314,81 @@ export async function processGitHubWebhook(params: {
     return { received: true, handled: false, reason: `unhandled_action_${action}` };
   }
 
+  // 2b. Pull request lifecycle synchronization. The installation and numeric
+  // repository identity must both match the same workspace before a PR row can
+  // be updated. Unknown PRs are acknowledged and retained as ignored events.
+  if (event === 'pull_request') {
+    const action = String(payload.action ?? '');
+    const supportedActions = new Set([
+      'opened', 'converted_to_draft', 'ready_for_review', 'closed', 'reopened', 'synchronize',
+    ]);
+    if (!supportedActions.has(action)) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, `Unhandled pull_request action: ${action}`);
+      return { received: true, handled: false, reason: `unhandled_action_${action}` };
+    }
+
+    const installationData = payload.installation as Record<string, unknown> | undefined;
+    const repositoryData = payload.repository as Record<string, unknown> | undefined;
+    const pullRequestData = payload.pull_request as Record<string, unknown> | undefined;
+    const installationId = installationData?.id == null ? '' : String(installationData.id);
+    const githubRepositoryId = repositoryData?.id == null ? '' : String(repositoryData.id);
+    const number = Number(pullRequestData?.number);
+    const prState = String(pullRequestData?.state ?? '');
+    const isDraft = pullRequestData?.draft === true;
+
+    if (!installationId || !githubRepositoryId || !Number.isSafeInteger(number) || number <= 0) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Missing installation, repository, or pull request identity');
+      return { received: true, handled: false, reason: 'missing_pull_request_identity' };
+    }
+
+    const installation = await getGitHubInstallationByInstallationId(installationId);
+    if (!installation) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Installation not found or inactive');
+      return { received: true, handled: false, reason: 'installation_not_found' };
+    }
+
+    const repository = await db.queryOne<{ id: string; workspace_id: string }>(`
+      SELECT id, workspace_id FROM repositories
+      WHERE github_repository_id = ? AND workspace_id = ? AND lifecycle = 'active'
+    `, [githubRepositoryId, installation.workspaceId]);
+    if (!repository) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Repository does not belong to the installation workspace');
+      return { received: true, handled: false, reason: 'repository_not_in_installation_workspace' };
+    }
+
+    let state: 'draft' | 'open' | 'closed' | 'merged';
+    if (prState === 'closed') state = pullRequestData?.merged === true ? 'merged' : 'closed';
+    else if (prState === 'open') state = isDraft ? 'draft' : 'open';
+    else {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Pull request state is not authoritative');
+      return { received: true, handled: false, reason: 'invalid_pull_request_state' };
+    }
+
+    const result = await db.execute(`
+      UPDATE pull_requests
+      SET state = ?
+      WHERE repository_id = ? AND number = ?
+        AND EXISTS (
+          SELECT 1 FROM repositories r
+          JOIN github_installations gi ON gi.workspace_id = r.workspace_id
+          WHERE r.id = pull_requests.repository_id
+            AND r.workspace_id = ?
+            AND r.github_repository_id = ?
+            AND r.lifecycle = 'active'
+            AND gi.installation_id = ?
+            AND (gi.status IS NULL OR gi.status = 'active')
+        )
+    `, [state, repository.id, number, installation.workspaceId, githubRepositoryId, installationId]);
+
+    if (result.changes === 0) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Pull request is not mapped to a local proposal');
+      return { received: true, handled: false, reason: 'unmapped_pull_request' };
+    }
+
+    await recordWebhookDelivery(deliveryId, event, 'processed', now);
+    return { received: true, handled: true, deliveryId, status: state };
+  }
+
   // 3. Push Events
   if (event === 'push') {
     // A. Check if push deleted the ref

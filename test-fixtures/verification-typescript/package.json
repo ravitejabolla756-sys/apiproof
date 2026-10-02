@@ -1,0 +1,16 @@
+{
+  "name": "verification-typescript-fixture",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "stripe": "17.7.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}
