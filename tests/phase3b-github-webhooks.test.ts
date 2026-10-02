@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser, getWorkspaceGitHubInstallation, requireRepositoryAccess } from '../apps/web/src/lib/server/workspace-service.js';
-import { verifyWebhookSignature, isDeliveryProcessed, recordWebhookDelivery, processGitHubWebhook } from '../apps/web/src/lib/server/github-webhooks.js';
+import { verifyWebhookSignature, isDeliveryProcessed, recordWebhookDelivery, claimWebhookDelivery, processGitHubWebhook } from '../apps/web/src/lib/server/github-webhooks.js';
 import { computeCanonicalPatchDigest, createVerificationEvidence } from '@apiproof/core';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase3b-webhooks.db');
@@ -82,6 +82,21 @@ describe('Phase 3B — GitHub Webhooks & Repository Synchronization', () => {
     expect(await isDeliveryProcessed(deliveryId)).toBe(false);
     await recordWebhookDelivery(deliveryId, 'push', 'processed', new Date().toISOString());
     expect(await isDeliveryProcessed(deliveryId)).toBe(true);
+  });
+
+  it('atomically claims a delivery so concurrent webhook handlers execute once', async () => {
+    const deliveryId = 'delivery_atomic_claim';
+    const receivedAt = new Date().toISOString();
+    const claims = await Promise.all([
+      claimWebhookDelivery(deliveryId, 'push', receivedAt),
+      claimWebhookDelivery(deliveryId, 'push', receivedAt),
+    ]);
+
+    expect(claims.filter(Boolean)).toHaveLength(1);
+    const row = await getDatabase().queryOne<{ status: string }>(
+      'SELECT status FROM github_webhook_deliveries WHERE id = ?', [deliveryId]
+    );
+    expect(row?.status).toBe('processing');
   });
 
   // TEST G: installation.created associates only with the correct workspace

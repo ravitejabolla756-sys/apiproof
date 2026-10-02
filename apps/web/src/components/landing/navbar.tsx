@@ -6,24 +6,37 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Menu, X } from "lucide-react";
 import { MyOwlLogo } from "@/components/ui/logo";
 
-// Desktop navbar links: STRICTLY Features, How it works, Pricing ONLY
+// Desktop navbar links: Product, How it works, Security, Docs, Pricing
 const DESKTOP_NAV_LINKS = [
-  { label: "Features", href: "/features" },
+  { label: "Product", href: "/features" },
   { label: "How it works", href: "/how-it-works" },
+  { label: "Security", href: "/security" },
+  { label: "Docs", href: "/docs" },
   { label: "Pricing", href: "/pricing" },
 ];
 
-// Mobile menu links: Features, How it works, Pricing
+// Mobile menu links: Product, How it works, Security, Docs, Pricing
 const MOBILE_NAV_LINKS = [
-  { label: "Features", href: "/features" },
+  { label: "Product", href: "/features" },
   { label: "How it works", href: "/how-it-works" },
+  { label: "Security", href: "/security" },
+  { label: "Docs", href: "/docs" },
   { label: "Pricing", href: "/pricing" },
 ];
 
 export function LandingNavbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetch('/api/auth')
@@ -48,10 +61,14 @@ export function LandingNavbar() {
   };
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[660px] pointer-events-none">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-[760px] pointer-events-none transition-all duration-300">
       <header className="pointer-events-auto w-full">
-        {/* Main Navbar Bar */}
-        <div className="h-[54px] sm:h-[56px] px-3.5 sm:px-5 rounded-full bg-[#071328]/85 backdrop-blur-md border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.18)] flex items-center justify-between transition-all">
+        {/* Main Navbar Bar (Quieter when scrolling) */}
+        <div className={`px-3.5 sm:px-5 rounded-full border flex items-center justify-between transition-all duration-300 ${
+          isScrolled
+            ? "h-[50px] sm:h-[52px] bg-[#071328]/70 backdrop-blur-xl border-white/[0.08] shadow-md scale-[0.98]"
+            : "h-[54px] sm:h-[56px] bg-[#071328]/85 backdrop-blur-md border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.18)] scale-100"
+        }`}>
 
           {/* LEFT: Geometric Developer Logo & Brand Wordmark (No background box) */}
           <Link

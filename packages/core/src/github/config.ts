@@ -86,3 +86,13 @@ export function assertLiveConfig(config: GitHubAppConfig, isProduction: boolean 
   if (!/^[a-zA-Z0-9_.-]+$/.test(config.repository)) throw new Error('GITHUB_CONFIG_INVALID_REPOSITORY');
 }
 
+/**
+ * Validates the stronger configuration required before a production write.
+ * Observe-only configuration must never be treated as proposal capability.
+ */
+export function assertLiveWriteConfig(config: GitHubAppConfig, isProduction: boolean = process.env.NODE_ENV === 'production'): void {
+  assertLiveConfig(config, isProduction);
+  if (!config.writeEnabled) {
+    throw new Error('GITHUB_CONFIG_WRITE_NOT_ENABLED: Live GitHub writes are not enabled for this environment.');
+  }
+}

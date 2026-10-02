@@ -74,7 +74,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
         id, scan_id, repository_id, usage_id, change_id, provider, title, description,
         severity, confidence, file_path, line_number, symbol, status, reason, reason_codes, evidence, source_snippet, created_at
       )
-      VALUES (?, ?, ?, 'u1', 'stripe-subscription-coupon-removed', 'stripe', 'Coupon removed', 'desc', 'critical', 0.95, 'src/billing.ts', 10, 'stripe.subscriptions.create', 'open', 'reason', '[]', '[]', 'coupon: couponId', ?)
+      VALUES (?, ?, ?, 'u1', 'stripe-subscription-coupon-removed', 'stripe', 'Coupon removed', 'desc', 'critical', 0.95, 'src/billing.ts', 10, 'subscriptions.create', 'open', 'reason', '["CALLSITE"]', '[]', 'coupon: couponId', ?)
     `).run(params.findingId, params.scanId, params.repoId, now);
   }
 

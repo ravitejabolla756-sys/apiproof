@@ -18,12 +18,19 @@ export function targetsFor(file: string, source: string, input: PlanningInput, d
       targets.push({ targetId: `target-${targets.length}-${impact.usageId}`, path: file, symbol: impact.symbol, originalDigest: digest, operation: 'replace-range', start, end, expected: source.slice(start, end), replacement, evidenceIds: [`impact:${impact.usageId}`, `change:${input.change.id}`] });
     };
     const visit = (node: ts.Node): void => {
-      if (node.getStart(parsed) === at) {
+      // Scan evidence may identify the affected member/property within the
+      // call rather than the call's opening token. Accept the smallest
+      // authorized enclosing call/type node, while the exact source digest,
+      // file and symbol still remain mandatory provenance.
+      const nodeLine = parsed.getLineAndCharacterOfPosition(node.getStart(parsed)).line + 1;
+      if ((node.getStart(parsed) <= at && node.end >= at) || (nodeLine === impact.location.start.line && (ts.isCallExpression(node) || ts.isTypeReferenceNode(node)))) {
         if (semantics.kind === 'singleton-discount' && ts.isCallExpression(node)) {
           const rules = input.change.rules.filter((rule) => rule.kind === 'parameter' && rule.symbol === impact.symbol);
           for (const rule of rules) {
             if (rule.kind !== 'parameter' || !semantics.paths.includes(rule.path) || rule.replacementPath !== semantics.destination) continue;
-            const arg = node.arguments[rule.argumentIndex]; if (!arg || !ts.isObjectLiteralExpression(arg)) continue;
+            const rawArg = node.arguments[rule.argumentIndex];
+            const arg = rawArg && ts.isAsExpression(rawArg) ? rawArg.expression : rawArg;
+            if (!arg || !ts.isObjectLiteralExpression(arg)) continue;
             if (arg.properties.some((p) => !ts.isPropertyAssignment(p) || !ts.isIdentifier(p.name))) continue;
             const props = arg.properties.filter(ts.isPropertyAssignment);
             const selected = props.filter((p) => p.name.getText(parsed) === rule.path);

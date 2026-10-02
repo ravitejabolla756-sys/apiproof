@@ -8,6 +8,8 @@ import { getDefaultWorkspaceForUser, getWorkspaceGitHubInstallation, requireRepo
 import { createGitHubInstallationState, verifyAndConsumeGitHubInstallationState, getGitHubAppInstallUrl, verifyGitHubAppInstallation, fetchWorkspaceRepositories, fetchWorkspaceRepository } from '../apps/web/src/lib/server/github.js';
 import { NodeGitHubAppTokenProvider, FetchGitHubControlledWriteTransport, fetchAllInstallationRepositories, createVerificationEvidence, computeCanonicalPatchDigest, validateControlledWriteRequest, type GitHubAppConfig } from '@apiproof/core';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
+import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase3-onboarding.db');
 
@@ -533,30 +535,15 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
     const dbAdapter = getDatabase();
 
     const repoId = 'repo_idem';
+    await dbAdapter.execute("UPDATE repositories SET lifecycle = 'historical', origin = 'seeded_fixture' WHERE id = 'repo_apiproof_fixture'");
     await dbAdapter.execute(`
       INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-      VALUES (?, ?, ?, 'acme', 'billing', 'acme/billing', '1363070568', 'main', 'connected', ?)
+      VALUES (?, ?, ?, 'ravitejabolla756-sys', 'apiproof-github-fixture', 'ravitejabolla756-sys/apiproof-github-fixture', '1363070568', 'main', 'connected', ?)
     `, [repoId, ws.id, user.id, new Date().toISOString()]);
-
-    const scanId = 'scn_idem';
-    await dbAdapter.execute(`
-      INSERT INTO scans (id, repository_id, sha, status, provider, started_at)
-      VALUES (?, ?, 'b1be45b401f41106ecfd489bbbb1fff71639c763', 'completed', 'stripe', ?)
-    `, [scanId, repoId, new Date().toISOString()]);
-
-    const findingId = 'fnd_idem';
-    await dbAdapter.execute(`
-      INSERT INTO findings (id, scan_id, repository_id, usage_id, change_id, provider, title, description, severity, confidence, file_path, line_number, symbol, status, reason, reason_codes, evidence, created_at)
-      VALUES (?, ?, ?, 'u1', 'stripe_sub_1', 'stripe', 'Sub create', 'desc', 'critical', 0.95, 'src/billing.ts', 10, 'stripe.subscriptions.create', 'open', 'reason', '[]', '[]', ?)
-    `, [findingId, scanId, repoId, new Date().toISOString()]);
-
-    const patch = { 'src/billing.ts': 'patch' };
-    const patchDigest = computeCanonicalPatchDigest(patch);
-    const migrationId = 'mig_idem';
-    await dbAdapter.execute(`
-      INSERT INTO migrations (id, finding_id, repository_id, plan_id, status, plan_json, patch_diff, patch_digest, created_at)
-      VALUES (?, ?, ?, 'plan_1', 'planned', '{}', 'patch', ?, ?)
-    `, [migrationId, findingId, repoId, patchDigest, new Date().toISOString()]);
+    const scan = await runRepositoryScan(repoId, user.id);
+    const finding = scan.findings.find((item) => item.changeId === 'stripe-subscription-coupon-removed')!;
+    const migration = await generateMigrationForFinding(finding.id, user.id);
+    const migrationId = migration.id;
 
     // First proposal creation
     const res1 = await createGitHubProposal(migrationId, user.id);

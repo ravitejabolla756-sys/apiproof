@@ -1,197 +1,54 @@
-# APIProof v1.0 Production Documentation
+# MY OWL Free-Beta Readiness Checklist
 
-This document serves as the authoritative production manual and architectural reference for APIProof v1.0.
+Internal operator and beta-user reference. This describes the current web product and its limits; it is not a promise that every repository can be migrated or that every deployment has production integrations configured.
 
----
+## Product and user journey
 
-## 1. APIProof System Overview
+- [ ] **What MY OWL does:** connects a user's workspace to a GitHub App installation, reads selected repositories, analyzes supported source with deterministic AST rules for currently supported Stripe and Twilio API changes, records findings, creates migration plans, attempts patch/verification gates, and can open a review-only GitHub Draft PR when all required checks and live-write gates pass.
+- [ ] **What MY OWL does not do:** guarantee detection of every API break; infer runtime behavior; provide general-purpose code migration; run the customer's entire CI pipeline; merge PRs; write to the default branch; or deploy customer code. Findings and plans are evidence for review, not a guarantee of safety.
+- [ ] **Sign up/login:** the web app creates a user, default workspace, and server-side session. Session cookies are HTTP-only, SameSite=Lax, Secure in production, and expire after 30 days. Expired/revoked sessions require signing in again.
+- [ ] **Connect GitHub:** the authenticated user starts GitHub App installation from the dashboard. The callback validates signed, expiring, user/workspace-bound state and records the installation against that workspace. The new-tab flow returns to MY OWL; the dashboard refreshes connection state from the authenticated GitHub-repositories endpoint and also listens for cross-tab updates.
+- [ ] **Select a repository:** the picker lists repositories accessible to the active workspace's installation. Connecting a repository stores its workspace association. The app must have access to the chosen repository.
+- [ ] **Scan:** a manual scan fetches the current default-branch HEAD; a GitHub push webhook queues a scan for the pushed commit for the worker. The worker uses the queued SHA. The scanner fetches bounded source snapshots and runs AST analysis in memory; it does not install or execute repository code during scanning.
+- [ ] **Finding:** a finding is a deterministic registry-rule/AST-pattern match with a repository path, line, symbol, reason, and source evidence. It means “this supported pattern matched,” not “the application is definitely broken” or “the migration is safe.” Coverage gaps and unsupported constructs can cause misses.
+- [ ] **Migration plan:** generating a plan records deterministic, evidence-linked intent for a finding. It does not yet apply a patch or verify the repository. The baseline is the scan's commit SHA.
+- [ ] **Verification:** when proposing a Draft PR, MY OWL fetches the approved source at that baseline, checks its recorded digest, applies the deterministic patch, and runs the configured install/build/typecheck/test gates in a sandbox. Any failed or missing gate blocks proposal creation. A local/test fake sandbox is not production verification evidence.
+- [ ] **Important verification limit:** the current proposal verifier reconstructs a bounded workspace from `package.json` and selected source files; it does not fetch every repository file, lockfile, test, and build configuration. Therefore its gates are not equivalent to the customer's full CI. Treat this as a beta limitation; do not represent a passed result as full-project CI coverage.
+- [ ] **Draft PR boundary:** production writes require the live GitHub configuration and explicit live-write gates. The transport writes the complete resulting file content to an isolated `apiproof/*` branch based on the exact scan SHA and creates a Draft PR only. There is no auto-merge. Proposal creation fails closed when verification or write configuration is missing. Current write validation accepts only `main` as the PR base; repositories with another default-branch name cannot currently complete this proposal flow.
 
-APIProof is a multi-tenant, SaaS-enabled system designed to automate impact analysis, migration planning, and draft Pull Request generation for breaking third-party API changes (e.g., Stripe, Twilio). 
+## Repository and scan requirements
 
-### Key Architectural Characteristics
-- **Multi-Tenant SaaS Foundation**: Enforces workspace boundary isolation across users, repositories, scans, findings, migrations, and audit logs.
-- **Deterministic AST Engine**: Inspects TypeScript code using TypeScript compiler AST parsers to match breaking vendor API changes with zero runtime execution of customer code.
-- **Draft-Only Safety Invariant**: Generates pull requests exclusively as GitHub **Draft PRs** on isolated branches (`apiproof/*`). APIProof NEVER merges PRs, NEVER writes to default branches, and NEVER executes customer code.
-- **Asynchronous Execution Architecture**: Decouples webhook reception from AST processing via a durable PostgreSQL job queue with `SELECT ... FOR UPDATE SKIP LOCKED` atomic claiming.
+- [ ] Install the MY OWL GitHub App on the account/organization and grant it access to the selected repository. Repository contents read permission is needed for scans; contents write and pull-request write permissions are needed for Draft PR proposals.
+- [ ] Use an active, connected repository with a committed default branch, a valid root `package.json`, and files the scanner can fetch. An empty repository or one with no selected source/package files cannot be scanned and returns an empty-repository error (HTTP 422 on the manual scan route); a missing/invalid root manifest can fail analysis.
+- [ ] The live scan snapshot is bounded to at most 2,000 selected files, with a 2 MiB per-file limit. Source extensions fetched include TypeScript and JavaScript variants, but AST analysis currently supports `.ts`, `.tsx`, `.mts`, and `.cts` only. Hidden/excluded directories are not scanned.
+- [ ] Stripe/Twilio detection is based on package metadata when available. If no provider dependency is detected, the current scanner defaults to Stripe analysis; an empty result is not proof that the repository has no breaking change.
+- [ ] Live scanning uses GitHub's real source and SHA. Fixture/synthetic fallback is restricted to local development/test paths; production must fail closed rather than use fixture source.
+- [ ] Manual scans run synchronously through the repository scan endpoint. Push-triggered scans are queued and require the protected scan worker to run. A webhook receipt is not proof that its scan has completed.
 
----
+## Failure and troubleshooting guide
 
-## 2. GitHub App Installation
+- [ ] **GitHub still says “Connect GitHub”:** allow pop-ups for MY OWL, finish the GitHub App installation in the opened tab, then return/focus the original dashboard. The dashboard re-reads connection state. If it remains disconnected, use Refresh/reopen the picker and report the time and sanitized error; do not share cookies or OAuth URLs containing state.
+- [ ] **Connected, but repository list is empty:** check the GitHub App installation's repository access settings. An active installation can legitimately expose zero repositories.
+- [ ] **Repository cannot be scanned:** confirm it is active, the installation still has access, the default branch exists and has commits, and the repository contains supported files within size/count limits. For an empty repository, add an initial commit/source file and scan again.
+- [ ] **Scan fails:** capture the displayed error/code, repository full name and ID, scan/request ID if shown, timestamp with timezone, and whether the scan was manual or push-triggered. Do not report a finding count from a failed scan.
+- [ ] **Finding page says not found/access denied:** confirm the signed-in account and active workspace are the ones that own the repository. A stale/expired session may need a fresh login.
+- [ ] **Plan fails:** capture the finding ID, visible error/code, time, and repository/scan SHA. A plan is not created until the authenticated plan request succeeds.
+- [ ] **Verification/proposal fails:** no successful Draft PR should be reported unless GitHub confirms it. Capture the migration ID, baseline SHA, verification status/gates, sanitized failure reason, and any GitHub response category. Do not blindly retry if the prior attempt may have created a branch, commit, or PR.
+- [ ] **Draft PR unavailable on non-`main` default branch:** this is a current product limitation, not a repository setup mistake. Report the repository's actual default branch; do not rename it solely to work around MY OWL.
 
-APIProof connects to GitHub organizations and personal accounts using a dedicated GitHub App.
+## Account recovery and production dependencies
 
-### Installation Flow
-1. User clicks **Connect GitHub** in the APIProof Dashboard.
-2. The user is redirected to GitHub's App installation URL (`https://github.com/apps/<app-name>/installations/new`).
-3. The user selects target repositories (or "All repositories") and completes installation.
-4. GitHub redirects back to `/api/github/callback?installation_id=...&setup_action=install`.
-5. APIProof links the `installation_id` to the user's active workspace and stores installation metadata in `github_installations`.
+- [ ] Password recovery is implemented at `/forgot-password` and `/reset-password`. Reset links use a single-use token that expires after 20 minutes; successful reset revokes the account's existing sessions.
+- [ ] Password-reset email delivery depends on SMTP configuration: `SMTP_HOST`, `SMTP_PORT` (defaults to 587), `SMTP_USER`, `SMTP_PASSWORD`, `PASSWORD_RESET_FROM`, and a canonical HTTPS application URL in production (`NEXT_PUBLIC_APP_URL` or `APIPROOF_APP_URL`). `SMTP_SECURE` may be set to `true`; port 465 is treated as secure. Do not include any of these secret values in support reports.
+- [ ] If required email configuration is absent or invalid, the reset-request endpoint returns `503 PASSWORD_RESET_UNAVAILABLE`; users will not receive a reset email. Beta operations must confirm SMTP delivery readiness before promising account recovery.
 
-### Required Permissions
-- **Repository Contents**: Read & Write (Write required strictly to push candidate migration branches and open draft PRs).
-- **Metadata**: Read-only.
-- **Pull Requests**: Read & Write (to open draft PRs).
-- **Webhooks**: Subscribed to `push`, `installation`, and `installation_repositories`.
+## Known readiness limits and validation record
 
----
+- [ ] Do not promise comprehensive API-change coverage, full repository CI verification, support for non-`main` proposal bases, or automatic repair of partially completed remote GitHub writes.
+- [ ] Fake transports and fake verification can be used by tests/non-production paths; they are not live evidence. Passing mocked tests does not prove a live GitHub scan, execution, or Draft PR.
+- [ ] Last local validation recorded on 2026-10-02: **559 tests passed across 43 files**; workspace typecheck and lint passed; production build completed. Build emitted warnings that `source-map-support` could not be resolved through the `ts-morph` dependency and that the Next.js ESLint plugin was not detected. These warnings did not fail that build.
+- [ ] No live production validation is implied by the local test/build results. Live GitHub App, database, SMTP, and sandbox readiness must be verified in the target deployment without exposing credentials.
 
-## 3. Repository Connection
+## What beta users should report
 
-Workspace members can view and connect repositories from their active GitHub installation.
-
-### Sync & Connection Mechanics
-- `/api/github/repositories` lists available repositories from the workspace's GitHub App installation.
-- Connecting a repository creates a record in `repositories` linked to the `workspace_id`.
-- Repositories maintain live health and status flags:
-  - `connected`: Active and monitored.
-  - `disconnected`: Manually disconnected or removed from installation scope.
-  - `suspended`: GitHub installation is suspended.
-  - `deleted`: GitHub installation or repository was removed on GitHub.
-
----
-
-## 4. Scan Lifecycle
-
-Scans analyze code at an exact git commit SHA for breaking third-party API pattern matches.
-
-### Life Cycle Stages
-1. **Trigger**: Triggered via GitHub `push` webhook or manual "Run AST Scan" API call.
-2. **Pending**: APIProof creates a durable `github_scan_requests` record and a `scans` row with `status = 'pending'`.
-3. **Claiming**: The scan worker atomically claims pending scan jobs (`status = 'processing'`) using transaction locks.
-4. **Execution**: The scan worker fetches the commit repository tree via GitHub App installation tokens, runs the AST analyzer in memory, and matches symbols against the provider rule registries (Stripe & Twilio).
-5. **Completion**: Findings are written to `findings`, scan summary updated (`status = 'completed'`), and an activity log event is recorded.
-
----
-
-## 5. Findings Experience
-
-Findings represent verified matches between vendor breaking change definitions and AST call sites in repository source files.
-
-### Attributes
-- `id`: Unique finding identifier.
-- `rule_id` / `change_id`: Standardized provider rule ID (e.g., `stripe-2024-12-18-charge-dispute`).
-- `severity`: Severity level (`critical`, `high`, `medium`, `low`) provided by official rule registries.
-- `file_path` & `line_number`: Precise source location.
-- `symbol`: AST method or type symbol matched (e.g., `stripe.disputes.retrieve`).
-- `description`: Explanation of the breaking API change.
-- `evidence`: Matched AST code snippet context.
-- `status`: Finding state (`open`, `resolved`, `ignored`).
-
----
-
-## 6. Migration Experience
-
-APIProof provides deterministic migration planning and candidate patch generation.
-
-### Migration Flow
-1. User selects a finding and clicks **Plan Migration**.
-2. The migration planner generates a unified diff patch (`.patch`) transforming outdated API usages to the modern provider format.
-3. The proposed patch is verified against synthetic test AST fixtures.
-4. If verified, the user can click **Create Draft PR**.
-5. APIProof creates a deterministic branch in the format `apiproof/<change-id>/<migration-prefix>` (e.g., `apiproof/stripe-subscription-coupon-removed/629a0934`, where `<change-id>` is the migration/finding change identifier and `<migration-prefix>` is the 8-character deterministic migration ID prefix), commits the patch, and opens a Draft Pull Request on GitHub.
-
----
-
-## 7. Draft PR Safety Invariants
-
-APIProof adheres to strict, immutable safety controls:
-
-1. **Draft PR Only**: Every pull request is created with `draft: true`.
-2. **Isolated Branching**: Patches are pushed strictly to `apiproof/*` isolated branches (in `apiproof/<change-id>/<migration-prefix>` format).
-3. **Exact Baseline SHA**: Patches are applied against the exact commit SHA scanned.
-4. **Canonical Patch Digest**: SHA-256 digests verify patch integrity before PR creation.
-5. **No Auto-Merge**: APIProof NEVER merges PRs or modifies default branches under any circumstances.
-6. **No Remote Code Execution**: Customer code is never executed, built, or evaluated in a sandbox.
-
----
-
-## 8. Webhook Setup
-
-GitHub webhooks keep APIProof in sync with installation events and repo pushes.
-
-### Configuration
-- **Payload URL**: `https://your-domain.com/api/webhooks/github`
-- **Content Type**: `application/json`
-- **Secret**: Set via `GITHUB_WEBHOOK_SECRET` environment variable.
-
-### Security & Integrity
-- All incoming webhooks require valid `X-Hub-Signature-256` HMAC validation.
-- Delivery IDs (`X-GitHub-Delivery`) are recorded for replay protection and idempotency.
-
----
-
-## 9. Worker Setup
-
-The asynchronous scan worker executes pending scan jobs reliably.
-
-### Worker Operation
-- Endpoint: `POST /api/internal/scan-worker`
-- Authorization: Requires `Authorization: Bearer <CRON_SECRET>` header (Vercel Cron automatically attaches `Authorization: Bearer <CRON_SECRET>`).
-- Claiming Engine:
-  - **PostgreSQL**: `SELECT ... FOR UPDATE SKIP LOCKED` ensures zero race conditions across horizontal worker nodes.
-  - **SQLite** (dev/local): Transactional status updates.
-- Stale Job Recovery: Jobs stuck in `processing` longer than 15 minutes are automatically reset to `pending` with incremented retry count. Max retries: 3.
-
----
-
-## 10. Local Development
-
-### Prerequisites
-- Node.js `^22.14.0`
-- pnpm `^10.0.0`
-
-### Setup Steps
-```bash
-# 1. Install dependencies
-pnpm install
-
-# 2. Configure environment
-cp .env.example .env
-
-# 3. Run database migrations (or auto-initialize SQLite)
-pnpm build
-
-# 4. Start local development server
-pnpm dev
-
-# 5. Run full test suite
-pnpm test
-pnpm typecheck
-pnpm lint
-```
-
----
-
-## 11. Environment Variables
-
-| Variable | Description | Required | Default |
-| --- | --- | --- | --- |
-| `NODE_ENV` | Environment mode (`production`, `development`, `test`) | Yes | `development` |
-| `PORT` | Web server listening port | No | `3000` |
-| `DATABASE_TYPE` | Database driver (`sqlite` or `postgres`) | Yes | `sqlite` |
-| `DATABASE_URL` | PostgreSQL connection string or SQLite path | Yes (in prod) | `./apiproof.db` |
-| `APIPROOF_SECRET` | Secret key for verification provenance & artifact digests | Yes (in prod) | - |
-| `SESSION_SECRET` | Secret key for HMAC cookie session signing | Yes (in prod) | - |
-| `NEXT_PUBLIC_APP_URL` | Public application URL | Yes (in prod) | `http://localhost:3000` |
-| `GITHUB_APP_ID` | GitHub App numeric ID | Yes (in prod) | - |
-| `GITHUB_APP_SLUG` | GitHub App slug / name | Yes (in prod) | `apiproof` |
-| `GITHUB_APP_PRIVATE_KEY` | RSA private key PEM for GitHub App JWTs | Yes (in prod) | - |
-| `GITHUB_CLIENT_ID` | OAuth Client ID for GitHub App | Yes (in prod) | - |
-| `GITHUB_CLIENT_SECRET` | OAuth Client Secret for GitHub App | Yes (in prod) | - |
-| `GITHUB_WEBHOOK_SECRET` | Secret for HMAC SHA-256 webhook signature validation | Yes (in prod) | - |
-| `CRON_SECRET` | Bearer token protecting `POST /api/internal/scan-worker` | Yes (in prod) | - |
-| `APIPROOF_ENABLE_LIVE_GITHUB_WRITE` | Enable real GitHub branch pushes & Draft PR creation | No | `false` |
-| `BILLING_PROVIDER` | Billing vendor (`mock` or `stripe`) | No | `mock` |
-| `STRIPE_SECRET_KEY` | Stripe secret API key (if `BILLING_PROVIDER=stripe`) | No | - |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (if `BILLING_PROVIDER=stripe`) | No | - |
-
----
-
-## 12. Production Deployment
-
-### Production Checklist
-1. Deploy Next.js App Router on Vercel, Node.js server, or Container runtime.
-2. Configure PostgreSQL database (`DATABASE_TYPE=postgres`, `DATABASE_URL=postgres://...`).
-3. Register and configure the production GitHub App.
-4. Set up periodic cron job or Vercel Cron pinging `POST /api/internal/scan-worker` with `CRON_SECRET`.
-5. Verify SSL/TLS certificates and CSRF origin protection headers.
+Please include the affected step, expected versus actual result, timestamp and timezone, browser/OS, sanitized visible error and code, repository full name/ID, default branch, scan/finding/migration IDs, and baseline SHA when available. Include whether the action was manual or triggered by a GitHub push. Redact source snippets if sensitive. Never send passwords, reset links/tokens, cookies, GitHub tokens, private keys, SMTP credentials, database URLs, or other secrets.

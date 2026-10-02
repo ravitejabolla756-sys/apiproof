@@ -53,6 +53,11 @@ CREATE TABLE IF NOT EXISTS github_scan_requests (
   status TEXT NOT NULL DEFAULT 'pending',
   delivery_id TEXT,
   created_at TEXT NOT NULL,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  claimed_at TEXT,
+  lease_expires_at TEXT,
+  last_error_category TEXT,
+  last_error_message TEXT,
   UNIQUE (repository_id, commit_sha)
 );
 
@@ -93,6 +98,8 @@ CREATE TABLE IF NOT EXISTS repositories (
   github_repository_id TEXT NOT NULL,
   default_branch TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'connected',
+  origin TEXT NOT NULL DEFAULT 'connected',
+  lifecycle TEXT NOT NULL DEFAULT 'active',
   last_scan_at TEXT,
   created_at TEXT NOT NULL,
   UNIQUE (workspace_id, full_name)
@@ -132,6 +139,7 @@ CREATE TABLE IF NOT EXISTS findings (
   reason_codes TEXT NOT NULL,
   evidence TEXT NOT NULL,
   source_snippet TEXT,
+  source_digest TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -144,6 +152,7 @@ CREATE TABLE IF NOT EXISTS migrations (
   plan_json TEXT NOT NULL,
   patch_diff TEXT,
   patch_digest TEXT,
+  patch_content TEXT,
   baseline_sha TEXT,
   verification_report TEXT,
   created_at TEXT NOT NULL
@@ -226,6 +235,8 @@ CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installa
 CREATE INDEX IF NOT EXISTS idx_installation_states_user ON github_installation_states(user_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_repositories_active_github_identity
+  ON repositories(github_repository_id) WHERE lifecycle = 'active';
 CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_scan ON findings(scan_id);
@@ -236,6 +247,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_claim ON github_scan_requests(status, lease_expires_at, created_at);
 CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;
@@ -298,6 +310,11 @@ CREATE TABLE IF NOT EXISTS github_scan_requests (
   status TEXT NOT NULL DEFAULT 'pending',
   delivery_id TEXT,
   created_at TEXT NOT NULL,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  claimed_at TEXT,
+  lease_expires_at TEXT,
+  last_error_category TEXT,
+  last_error_message TEXT,
   FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
   FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE,
   UNIQUE (repository_id, commit_sha)
@@ -344,6 +361,8 @@ CREATE TABLE IF NOT EXISTS repositories (
   github_repository_id TEXT NOT NULL,
   default_branch TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'connected',
+  origin TEXT NOT NULL DEFAULT 'connected',
+  lifecycle TEXT NOT NULL DEFAULT 'active',
   last_scan_at TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -386,6 +405,7 @@ CREATE TABLE IF NOT EXISTS findings (
   reason_codes TEXT NOT NULL,
   evidence TEXT NOT NULL,
   source_snippet TEXT,
+  source_digest TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (scan_id) REFERENCES scans(id) ON DELETE CASCADE,
   FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE
@@ -400,6 +420,7 @@ CREATE TABLE IF NOT EXISTS migrations (
   plan_json TEXT NOT NULL,
   patch_diff TEXT,
   patch_digest TEXT,
+  patch_content TEXT,
   baseline_sha TEXT,
   verification_report TEXT,
   created_at TEXT NOT NULL,
@@ -490,6 +511,8 @@ CREATE INDEX IF NOT EXISTS idx_github_installations_workspace ON github_installa
 CREATE INDEX IF NOT EXISTS idx_installation_states_user ON github_installation_states(user_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_workspace ON repositories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_repositories_user ON repositories(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_repositories_active_github_identity
+  ON repositories(github_repository_id) WHERE lifecycle = 'active';
 CREATE INDEX IF NOT EXISTS idx_scans_repo ON scans(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_repo ON findings(repository_id);
 CREATE INDEX IF NOT EXISTS idx_findings_scan ON findings(scan_id);
@@ -500,6 +523,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_deliveries(event);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_claim ON github_scan_requests(status, lease_expires_at, created_at);
 CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;

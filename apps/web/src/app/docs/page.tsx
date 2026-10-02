@@ -2,68 +2,132 @@ import React from "react";
 import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
-import { ArrowRight, Terminal, ChevronRight } from "lucide-react";
+import {
+  Terminal,
+  BookOpen,
+  ArrowRight
+} from "lucide-react";
 
 export default function DocsPage() {
-  const docSections = [
+  const docCategories = [
     {
-      title: "Getting Started",
-      description: "Quickly install the MY OWL GitHub App, select repositories to monitor, and run your first AST scan.",
-      topics: [
-        "GitHub App Installation & Scopes",
-        "Selecting Protected Repositories",
-        "Initial Repository Indexing Pass",
-        "Webhook Event Triggers"
+      id: "getting-started",
+      name: "Getting Started",
+      description: "Step-by-step setup guides to connect your GitHub organization, configure repositories, and run an initial AST scan.",
+      articles: [
+        {
+          title: "Connecting the GitHub App",
+          slug: "connect-github",
+          desc: "How to install the official MY OWL GitHub App and authorize specific organizations or repositories."
+        },
+        {
+          title: "Selecting Protected Repositories",
+          slug: "select-repositories",
+          desc: "Configuring which repositories are continuously monitored for upstream breaking changes."
+        },
+        {
+          title: "Triggering Your First AST Scan",
+          slug: "first-scan",
+          desc: "Initiating a baseline scan from the dashboard and understanding the scan worker lifecycle."
+        }
       ]
     },
     {
-      title: "AST Matching Engine",
-      description: "Understanding how our TypeScript/JavaScript compiler engine distinguishes between detected packages and affected call sites.",
-      topics: [
-        "TypeScript Compiler API Overview",
-        "Symbol Resolution & Import Aliases",
-        "Destructured Parameter Tracking",
-        "Detected vs. Affected Classification"
+      id: "core-concepts",
+      name: "Core Concepts",
+      description: "The fundamental architectural concepts behind MY OWL's detection, tracing, and verification engines.",
+      articles: [
+        {
+          title: "Findings: Open vs. Resolved",
+          slug: "findings-lifecycle",
+          desc: "How findings are detected, tracked, and updated across multiple repository re-scans."
+        },
+        {
+          title: "Detected vs. Affected Usage",
+          slug: "detected-vs-affected",
+          desc: "Why package manifest presence does not mean broken code, and how AST symbol tracing eliminates 90% false positive noise."
+        },
+        {
+          title: "Deterministic Migration Plans",
+          slug: "migration-plans",
+          desc: "How context-bounded AST transformation rules synthesize minimal, syntax-safe code replacements."
+        },
+        {
+          title: "The 4-Gate Verification Harness",
+          slug: "verification-harness",
+          desc: "Deep dive into AST syntax validity, TypeScript compiler diagnostics, call-site scope checks, and test runner dry-runs."
+        },
+        {
+          title: "GitHub Draft Pull Requests",
+          slug: "draft-prs",
+          desc: "Why MY OWL stops at a Draft PR on an isolated branch rather than auto-merging into main."
+        }
       ]
     },
     {
-      title: "4-Gate Verification Harness",
-      description: "Deep dive into the four safety gates that validate proposed migration patches before any draft PR is created.",
-      topics: [
-        "Gate 1: Syntactic Validity Check",
-        "Gate 2: TypeScript Compiler Diagnostics",
-        "Gate 3: Call-Site Boundary Verification",
-        "Gate 4: Automated Test Suite Dry-Run"
+      id: "github-integration",
+      name: "GitHub Integration & Permissions",
+      description: "Permissions, authentication mechanics, branch policies, and baseline integrity protection.",
+      articles: [
+        {
+          title: "GitHub App Scopes & Least Privilege",
+          slug: "github-scopes",
+          desc: "Detailed explanation of why we request contents:read and pull_requests:write, with zero main branch write access."
+        },
+        {
+          title: "Isolated Branch Policy (apiproof/*)",
+          slug: "branch-policy",
+          desc: "How branch naming conventions prevent accidental collisions with developer branches."
+        },
+        {
+          title: "Repository Divergence Protection",
+          slug: "divergence-protection",
+          desc: "How MY OWL verifies that default branch HEAD hasn't moved since the scan, failing closed if divergence occurs."
+        }
       ]
     },
     {
-      title: "Configuration & .myowl.yml",
-      description: "Fine-tune branch naming, path exclusions, custom test runner commands, and migration heuristics.",
-      topics: [
-        "Repository Config Schema Reference",
-        "Custom Branch Prefix: apiproof/*",
-        "Excluding Test Fixtures & Vendors",
-        "Notification Webhooks & Slack Alerts"
+      id: "security",
+      name: "Security & Verification Boundaries",
+      description: "Authentication, tenant isolation, webhook HMAC validation, and signed execution evidence.",
+      articles: [
+        {
+          title: "Workspace Multi-Tenancy",
+          slug: "tenant-isolation",
+          desc: "How user permissions, repositories, and scan findings are partitioned securely across workspaces."
+        },
+        {
+          title: "Webhook Signature Validation",
+          slug: "webhook-validation",
+          desc: "Verifying GitHub webhook delivery authenticity with HMAC-SHA256 signatures."
+        },
+        {
+          title: "Execution-Bound Verification Evidence",
+          slug: "verification-evidence",
+          desc: "Cryptographic binding of repository ID, baseline commit SHA, change ID, and patch digest."
+        }
       ]
     },
     {
-      title: "Security & Data Governance",
-      description: "Our strict zero code retention policy, read-only observation invariants, and enterprise compliance posture.",
-      topics: [
-        "Ephemeral In-Memory AST Analysis",
-        "Scoped Read-Only Repository Access",
-        "Isolated Branch Write Invariants",
-        "SOC 2 Type II Alignment"
-      ]
-    },
-    {
-      title: "Monitored Ecosystems",
-      description: "Supported vendor APIs, SDKs, and npm packages tracked in our continuous breaking change catalog.",
-      topics: [
-        "Stripe API & Stripe Node SDK",
-        "OpenAI API & Official Clients",
-        "Supabase JS / PostgREST APIs",
-        "Custom OpenAPI 3.0 Schemas"
+      id: "supported-apis",
+      name: "Supported APIs & Rule Catalogs",
+      description: "Currently verified vendor catalogs and our active integration expansion roadmap.",
+      articles: [
+        {
+          title: "Stripe Node SDK Catalog",
+          slug: "stripe-catalog",
+          desc: "Monitored subscription coupon parameters, customer creation payloads, and v17 to v18 migration rules."
+        },
+        {
+          title: "Twilio Node SDK Catalog",
+          slug: "twilio-catalog",
+          desc: "Monitored messaging service changes, toll-free verification schemas, and call recording API updates."
+        },
+        {
+          title: "Planned Provider Roadmap",
+          slug: "roadmap-providers",
+          desc: "Upcoming support for OpenAI, GitHub Octokit, Supabase, Resend, and custom OpenAPI schema ingestion."
+        }
       ]
     }
   ];
@@ -77,112 +141,105 @@ export default function DocsPage() {
         {/* HEADER */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
-            <span>DEVELOPER DOCUMENTATION</span>
+            <BookOpen className="w-3.5 h-3.5 text-slate-700" />
+            <span>TECHNICAL DOCUMENTATION</span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
             MY OWL Documentation
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Everything you need to understand, configure, and operate continuous breaking change intelligence across your codebases.
+            Comprehensive reference guides, architecture deep-dives, verification contracts, and API integration specifications.
           </p>
         </div>
 
-        {/* QUICKSTART CODE CALLOUT */}
-        <div className="rounded-[28px] bg-[#001033] border border-white/10 p-6 sm:p-8 text-white shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-mono text-[#D0F100] mb-1">
-                <Terminal className="w-4 h-4" />
-                <span>QUICKSTART INTEGRATION</span>
-              </div>
-              <h2 className="font-serif text-2xl font-normal text-white">
-                Zero-Config Continuous Monitoring
-              </h2>
-            </div>
-            <Link
-              href="/login"
-              className="btn-lime text-xs px-5 py-2.5 shadow-[0_0_20px_rgba(208,241,0,0.35)] shrink-0 self-start md:self-auto"
-            >
-              Install GitHub App
-            </Link>
+        {/* QUICK SEARCH / INTRO BAR */}
+        <div className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
+          <div className="flex items-center gap-3 text-slate-700">
+            <Terminal className="w-4 h-4 text-[#004EE8]" />
+            <span>Core Model: Ingest → AST Trace → Deterministic Plan → 4 Gates → Draft PR</span>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-            <div className="space-y-2">
-              <div className="text-xs font-mono text-slate-400">01 / INSTALL</div>
-              <div className="text-sm font-medium text-white">Authorize GitHub App</div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Connect via GitHub OAuth with read-only repository metadata scopes.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-xs font-mono text-slate-400">02 / INDEX</div>
-              <div className="text-sm font-medium text-white">Select Repositories</div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                MY OWL inspects your manifests and indexes existing vendor API call sites.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-xs font-mono text-slate-400">03 / MONITOR</div>
-              <div className="text-sm font-medium text-white">Receive Verified PRs</div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                When upstream APIs break, you receive verified draft PRs automatically.
-              </p>
-            </div>
-          </div>
+          <Link
+            href="/how-it-works"
+            className="text-[#004EE8] hover:underline flex items-center gap-1 font-semibold"
+          >
+            <span>View 9-Stage Pipeline Specification</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
-        {/* DOCS TOPIC CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {docSections.map((section) => (
-            <div
-              key={section.title}
-              className="rounded-[28px] bg-[#EFF1F5] p-7 flex flex-col justify-between border border-black/[0.04] space-y-6 shadow-xs hover:border-black/[0.1] transition-all"
+        {/* DOCUMENTATION CATEGORIES & TOPICS */}
+        <div className="space-y-12">
+          {docCategories.map((category) => (
+            <section
+              key={category.id}
+              id={category.id}
+              className="rounded-3xl bg-white border border-slate-200/80 p-8 sm:p-10 space-y-6 shadow-xs"
             >
-              <div className="space-y-3">
-                <h3 className="font-serif text-2xl font-normal text-[#000E29]">
-                  {section.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  {section.description}
+              {/* Category Header */}
+              <div className="pb-4 border-b border-slate-100 space-y-1">
+                <span className="text-xs font-mono font-bold text-[#004EE8] uppercase tracking-wider">
+                  {category.name}
+                </span>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
+                  {category.description}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-black/[0.06] space-y-2">
-                {section.topics.map((topic) => (
-                  <div key={topic} className="flex items-center justify-between text-xs text-slate-700 py-1 border-b border-black/[0.03] last:border-0">
-                    <span className="font-medium">{topic}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              {/* Articles Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {category.articles.map((art) => (
+                  <div
+                    key={art.slug}
+                    className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2.5 flex flex-col justify-between hover:border-slate-300 transition-colors group"
+                  >
+                    <div className="space-y-1.5">
+                      <h3 className="font-semibold text-sm text-[#000E29] group-hover:text-[#004EE8] transition-colors">
+                        {art.title}
+                      </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                        {art.desc}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                      <span>docs/{category.id}</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#004EE8] transition-transform group-hover:translate-x-0.5" />
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
 
-      </main>
-
-      {/* PRE-FOOTER RADIANT GRADIENT CTA */}
-      <section className="relative w-full py-28 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(0deg,#001033_0%,#0050F8_55%,#5FBDF7_85%,#FAFAFA_100%)] text-white text-center">
-        <div className="relative z-10 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
-          <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
-            Ready to protect your production APIs?
-          </h2>
-          <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
-            Start free with full developer access. Zero auto-merges, strict AST safety.
-          </p>
-          <div className="pt-2">
+        {/* BOTTOM HELP BANNER */}
+        <div className="rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <h3 className="font-serif text-2xl font-normal">
+              Have technical questions or custom API requirements?
+            </h3>
+            <p className="text-xs text-slate-300 font-sans leading-relaxed">
+              Explore our engineering articles on AST analysis and verification, or reach out to our team for custom rule integration.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
             <Link
-              href="/login"
-              className="btn-lime text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
+              href="/blog"
+              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-mono font-medium transition-colors border border-white/10"
             >
-              <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+              Engineering Blog
+            </Link>
+            <Link
+              href="/contact"
+              className="btn-lime px-5 py-2.5 rounded-full text-xs font-mono font-bold text-black shadow-sm"
+            >
+              Contact Us
             </Link>
           </div>
         </div>
-      </section>
+
+      </main>
 
       <LandingFooter />
     </div>

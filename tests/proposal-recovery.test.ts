@@ -41,6 +41,8 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
     const ws = await getDefaultWorkspaceForUser(user.id);
     const repoId = 'repo_recovery_fixture';
 
+    db.prepare("UPDATE repositories SET lifecycle = 'historical', origin = 'seeded_fixture' WHERE id = 'repo_apiproof_fixture'").run();
+
     db.prepare(`
       INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
       VALUES (?, ?, ?, 'ravitejabolla756-sys', 'apiproof-github-fixture', 'ravitejabolla756-sys/apiproof-github-fixture', '1363070568', 'main', 'connected', ?)
@@ -57,6 +59,31 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
   // GAP 1: REMOTE BRANCH RECONCILIATION
   // =========================================================================
   describe('Gap 1: Remote Branch Partial-Failure Reconciliation', () => {
+    it('does not record pr_created when branch creation succeeds but commit creation fails', async () => {
+      const { user, migration } = await setupFixture();
+      const branchName = `apiproof/stripe-subscription-coupon-removed/${migration.id.slice(4, 12)}`;
+      const transport = new FakeGitHubWriteTransport();
+      transport.createCommit = async () => { throw new Error('COMMIT_FAILED'); };
+
+      await expect(createGitHubProposal(migration.id, user.id, transport)).rejects.toThrow('COMMIT_FAILED');
+      expect(transport.branches.get(branchName)).toBeDefined();
+      expect(db.prepare('SELECT COUNT(*) as c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+      expect(db.prepare('SELECT status FROM migrations WHERE id = ?').get(migration.id)).not.toEqual({ status: 'pr_created' });
+    });
+
+    it('does not record pr_created when commit succeeds but Draft PR creation fails', async () => {
+      const { user, migration } = await setupFixture();
+      const branchName = `apiproof/stripe-subscription-coupon-removed/${migration.id.slice(4, 12)}`;
+      const transport = new FakeGitHubWriteTransport();
+      transport.createPullRequest = async () => { throw new Error('PR_FAILED'); };
+
+      await expect(createGitHubProposal(migration.id, user.id, transport)).rejects.toThrow('PR_FAILED');
+      expect(transport.branches.get(branchName)).toBeDefined();
+      expect(transport.branches.get(branchName)).not.toBe('');
+      expect(db.prepare('SELECT COUNT(*) as c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+      expect(db.prepare('SELECT status FROM migrations WHERE id = ?').get(migration.id)).not.toEqual({ status: 'pr_created' });
+    });
+
     it('re-uses existing branch when branch points to the expected baseline SHA', async () => {
       const { user, migration } = await setupFixture();
       const branchName = `apiproof/stripe-subscription-coupon-removed/${migration.id.slice(4, 12)}`;

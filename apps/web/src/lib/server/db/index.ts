@@ -80,8 +80,8 @@ function seedDefaultUserAndFixtureSqlite(db: DatabaseSync): void {
 
     const repoId = 'repo_apiproof_fixture';
     db.prepare(`
-      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'seeded_fixture', 'historical', ?)
     `).run(
       repoId,
       workspaceId,

@@ -273,7 +273,7 @@ export default function FindingDetailPage({
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 2 ? 'text-[#686868]' : 'text-purple-900'}`}>
                 {currentStep >= 2
-                  ? 'Deterministic patch synthesized & 4-gate verification validated.'
+                  ? 'Deterministic migration plan is ready. Source patching and verification run when you propose a Draft PR.'
                   : 'Click "Generate Migration Plan" to synthesize deterministic AST refactors.'}
               </p>
             </div>
@@ -414,7 +414,7 @@ export default function FindingDetailPage({
             {!migration ? (
               <div className="space-y-3">
                 <p className="text-xs text-[#686868] leading-relaxed">
-                  Generate a validated AST patch for this breaking change using the deterministic planner.
+                  Generate a deterministic migration plan for this breaking change. Source patching and verification happen before a Draft PR is created.
                 </p>
                 <Button
                   size="md"

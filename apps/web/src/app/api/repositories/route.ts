@@ -32,7 +32,7 @@ export async function GET(req: Request) {
            (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
     FROM repositories r
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ?
+    WHERE wm.user_id = ? AND r.lifecycle = 'active'
     ORDER BY r.created_at DESC
   `, [user.id]);
 
@@ -136,6 +136,26 @@ export async function POST(req: Request) {
 
     const db = getDatabase();
 
+    // GitHub repository identity is globally unique among active records. Keep
+    // the response deliberately generic so another workspace is not disclosed.
+    const activeIdentity = await db.queryOne<{ id: string; workspace_id: string }>(`
+      SELECT id, workspace_id
+      FROM repositories
+      WHERE github_repository_id = ? AND lifecycle = 'active'
+      LIMIT 1
+    `, [ghId]);
+    if (activeIdentity) {
+      const sameWorkspace = activeIdentity.workspace_id === workspaceId;
+      return NextResponse.json(
+        {
+          error: sameWorkspace ? 'Repository is already connected.' : 'Repository is already connected to another workspace.',
+          code: 'REPOSITORY_ALREADY_CONNECTED',
+          ...(sameWorkspace ? { id: activeIdentity.id } : {}),
+        },
+        { status: 409 }
+      );
+    }
+
     // Check if already connected within this workspace (workspace scoped IDOR protection)
     const existing = await db.queryOne<{ id: string }>(`
       SELECT id FROM repositories WHERE workspace_id = ? AND full_name = ?
@@ -151,8 +171,8 @@ export async function POST(req: Request) {
     // Atomic transaction for repository and activity event creation
     await db.transaction(async (tx: DatabaseAdapter) => {
       await tx.execute(`
-        INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', ?)
+        INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', 'connected', 'active', ?)
       `, [repoId, workspaceId, user.id, owner, name, fullName, ghId, defaultBranch, now]);
 
       await tx.execute(`
@@ -182,6 +202,9 @@ export async function POST(req: Request) {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to connect repository.';
+    if (message.includes('idx_repositories_active_github_identity') || message.includes('unique constraint') || message.includes('duplicate key')) {
+      return NextResponse.json({ error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED' }, { status: 409 });
+    }
     return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

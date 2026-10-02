@@ -4,10 +4,9 @@ import {
   FetchGitHubControlledWriteTransport,
   NodeGitHubAppTokenProvider,
   loadGitHubAppConfig,
-  assertLiveConfig,
+  assertLiveWriteConfig,
   validateControlledWriteRequest,
   validatePatchScope,
-  createVerificationEvidence,
   formatCanonicalMigrationBranch,
   type ControlledWriteRequest,
   type GitHubControlledWriteTransport,
@@ -15,6 +14,7 @@ import {
 import { getDatabase } from './db/index.js';
 import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
+import { validatePersistedMigrationEvidence, verifyMigrationForProposal } from './migration-verification.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -46,8 +46,8 @@ export async function createGitHubProposal(
     throw new Error(limitCheck.reason);
   }
 
-  const finding = await db.queryOne<{ change_id: string; file_path: string; symbol: string }>(`
-    SELECT change_id, file_path, symbol FROM findings WHERE id = ?
+  const finding = await db.queryOne<{ change_id: string; file_path: string; symbol: string; id: string; repository_id: string; usage_id: string; provider: string; confidence: number; line_number: number; reason: string; reason_codes: string; evidence: string; source_snippet: string | null; source_digest: string | null }>(`
+    SELECT id, change_id, file_path, symbol, repository_id, usage_id, provider, confidence, line_number, reason, reason_codes, evidence, source_snippet, source_digest FROM findings WHERE id = ?
   `, [rawMigration.finding_id]);
 
   if (!finding) {
@@ -67,7 +67,23 @@ export async function createGitHubProposal(
     default_branch: repo.default_branch,
   };
 
-  // 1b. Check if a PR already exists for this migration (idempotent proposal creation)
+  // 1b. Resolve and validate the exact scan baseline SHA
+  let baselineSha = (rawMigration.baseline_sha as string | undefined)?.trim();
+  if (!baselineSha) {
+    const scanRow = await db.queryOne<{ sha: string }>(`
+      SELECT s.sha
+      FROM findings f
+      JOIN scans s ON f.scan_id = s.id
+      WHERE f.id = ? AND s.repository_id = ?
+    `, [rawMigration.finding_id, repo.id]);
+    baselineSha = scanRow?.sha?.trim();
+  }
+  if (!baselineSha || !/^[a-f0-9]{40}$/i.test(baselineSha)) throw new Error('BASELINE_SHA_INVALID: Valid 40-character commit SHA required for migration proposal.');
+  const repoScan = await db.queryOne<{ id: string }>('SELECT s.id FROM scans s WHERE s.repository_id = ? AND s.sha = ? AND s.status = \'completed\'', [repo.id, baselineSha]);
+  if (!repoScan) throw new Error(`BASELINE_SHA_REPOSITORY_MISMATCH: Baseline SHA ${baselineSha} does not belong to repository ${repo.full_name}.`);
+
+  // 1c. Check if a PR already exists for this migration (idempotent proposal creation).
+  // Existing PRs are only returned when their persisted evidence is still bound.
   const existingPr = await db.queryOne<{
     id: string;
     number: number;
@@ -84,6 +100,7 @@ export async function createGitHubProposal(
   `, [migration.id]);
 
   if (existingPr) {
+    validatePersistedMigrationEvidence(rawMigration.verification_report, { repositoryId: migration.github_repository_id, baselineSha, changeId: migration.change_id, patchDigest: migration.patch_digest ?? '' });
     return {
       pullRequestId: existingPr.id,
       number: existingPr.number,
@@ -99,53 +116,19 @@ export async function createGitHubProposal(
     };
   }
 
-  // 1c. Resolve and validate the exact scan baseline SHA
-  let baselineSha = (rawMigration.baseline_sha as string | undefined)?.trim();
-  if (!baselineSha) {
-    const scanRow = await db.queryOne<{ sha: string }>(`
-      SELECT s.sha
-      FROM findings f
-      JOIN scans s ON f.scan_id = s.id
-      WHERE f.id = ? AND s.repository_id = ?
-    `, [rawMigration.finding_id, repo.id]);
-    baselineSha = scanRow?.sha?.trim();
-  }
+  // 2. Apply the deterministic patch to the exact source snapshot and run execution verification.
+  const verified = await verifyMigrationForProposal({ migration: { ...rawMigration, baseline_sha: baselineSha }, finding: { ...finding, source_digest: finding.source_digest }, repo });
+  migration.patch_digest = verified.patchDigest;
+  migration.patch_content = JSON.stringify(verified.patchContent);
 
-  if (!baselineSha || !/^[a-f0-9]{40}$/i.test(baselineSha)) {
-    throw new Error('BASELINE_SHA_INVALID: Valid 40-character commit SHA required for migration proposal.');
-  }
-
-  // Validate that the baseline SHA actually belongs to a completed scan for this target repository
-  const repoScan = await db.queryOne<{ id: string }>(`
-    SELECT s.id
-    FROM scans s
-    WHERE s.repository_id = ? AND s.sha = ?
-  `, [repo.id, baselineSha]);
-
-  if (!repoScan) {
-    throw new Error(`BASELINE_SHA_REPOSITORY_MISMATCH: Baseline SHA ${baselineSha} does not belong to repository ${repo.full_name}.`);
-  }
-
-  // 2. Validate Patch Scope (no .env, .github, etc.)
-  const patchScopeCheck = validatePatchScope([migration.file_path], [migration.file_path]);
+  // 3. Validate Patch Scope (no .env, .github, etc.)
+  const patchScopeCheck = validatePatchScope(Object.keys(verified.patchContent), Object.keys(verified.patchContent));
   if (!patchScopeCheck.valid) {
     throw new Error(`Controlled write rejected by patch scope policy: ${patchScopeCheck.reason}`);
   }
 
-  // 3. Construct Verification Evidence & ControlledWriteRequest
+  // 4. Construct the controlled write request from complete resulting files.
   const branchName = formatCanonicalMigrationBranch(migration.change_id, migration.id);
-
-  const verification = createVerificationEvidence({
-    repositoryId: migration.github_repository_id,
-    baselineSha,
-    changeId: migration.change_id,
-    patchDigest: migration.patch_digest,
-    proofLevel: 'CONTRACT_VERIFIED',
-    patchApplied: true,
-    typecheckPassed: true,
-    testsPassed: true,
-    contractPassed: true,
-  });
 
   const writeRequest: ControlledWriteRequest = {
     repository: {
@@ -162,14 +145,14 @@ export async function createGitHubProposal(
     },
     migration: {
       planId: migration.plan_id,
-      patchDigest: migration.patch_digest,
-      allowedFiles: [migration.file_path],
-      patchContent: { [migration.file_path]: migration.patch_diff },
+      patchDigest: verified.patchDigest,
+      allowedFiles: Object.keys(verified.patchContent),
+      patchContent: verified.patchContent,
     },
     branch: {
       branchName,
     },
-    verification,
+    verification: verified.evidence,
   };
 
   // 4. Validate through Core write contract
@@ -177,21 +160,25 @@ export async function createGitHubProposal(
     repositoryId: migration.github_repository_id,
     owner: migration.repo_owner,
     repository: migration.repo_name,
-  });
+  }, { requireExecutionEvidence: true });
 
   if (!validation.valid) {
     throw new Error(`Controlled write rejected by safety contract: ${validation.reason}`);
   }
 
-  // 5. Select transport: custom test transport, live controlled GitHub transport when enabled, or safe fake transport
+  // 5. Select transport: custom transport only for local/test execution, or the live controlled GitHub transport.
+  const isProduction = process.env.NODE_ENV === 'production';
   const isLiveWrite = process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE === 'true';
   let transport: GitHubControlledWriteTransport;
 
   if (customTransport) {
+    if (isProduction) {
+      throw new Error('GITHUB_WRITE_CONFIGURATION_INVALID: Custom GitHub write transports are forbidden in production.');
+    }
     transport = customTransport;
-  } else if (isLiveWrite) {
+  } else if (isLiveWrite || isProduction) {
     const config = loadGitHubAppConfig();
-    assertLiveConfig(config);
+    assertLiveWriteConfig(config, isProduction);
     const tokenProvider = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });
 
     const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
@@ -223,6 +210,7 @@ export async function createGitHubProposal(
   if (transport.getDefaultBranchSha) {
     const remoteHeadSha = await transport.getDefaultBranchSha(migration.default_branch);
     if (remoteHeadSha && remoteHeadSha !== baselineSha) {
+      await db.execute('UPDATE migrations SET status = ?, patch_digest = NULL, patch_content = NULL, verification_report = NULL WHERE id = ?', ['planned', migration.id]);
       throw new Error(`REPOSITORY_HEAD_DIVERGED: Target repository default branch HEAD (${remoteHeadSha.slice(0, 7)}) has moved since scan was performed (${baselineSha.slice(0, 7)}). A fresh scan is required before proposing a migration.`);
     }
   }

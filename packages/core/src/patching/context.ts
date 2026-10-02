@@ -26,7 +26,7 @@ export function verifiedPatchContext(input: PatchGenerationInput, workspace: Pat
 export async function buildPatchContext(workspace: PatchWorkspace, input: PlanningInput, plan: MigrationPlan): Promise<PatchGenerationInput> {
   await checkWorkspace(workspace); validatePlan(plan, input);
   if (!/^[a-z0-9-]+$/.test(input.change.id)) fail('UNTRUSTED_CHANGE');
-  const registryFile = path.join(patchToolRoot, 'registry/stripe', `${input.change.id}.json`); await assertPlainPath(registryFile);
+  const registryFile = path.join(patchToolRoot, 'registry', input.change.provider, `${input.change.id}.json`); await assertPlainPath(registryFile);
   const bundled = RegistryChangeSchema.parse(JSON.parse(await readFile(registryFile, 'utf8')));
   if (sha256(JSON.stringify(bundled)) !== sha256(JSON.stringify(input.change))) fail('UNTRUSTED_CHANGE');
   const rules = await loadPatchRules(); const rule = rules.rules[input.change.id];

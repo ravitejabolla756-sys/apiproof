@@ -91,6 +91,17 @@ describe('APIProof Phase 1 — Production Integrity Test Suite', () => {
       expect(wrongSecretCheck.reason).toContain('Verifier provenance signature check failed');
     });
 
+    it('rejects manufactured successful evidence in production without execution metadata', () => {
+      const previousNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      try {
+        expect(() => createVerificationEvidence(mockInput)).toThrow('VERIFICATION_EXECUTION_EVIDENCE_REQUIRED');
+      } finally {
+        if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = previousNodeEnv;
+      }
+    });
+
     it('verifies evidence across simulated separate Vercel serverless invocations sharing APIPROOF_SECRET', () => {
       const sharedClusterSecret = 'cluster-secret-key-prod-0123456789abcdef';
 
@@ -138,27 +149,32 @@ describe('APIProof Phase 1 — Production Integrity Test Suite', () => {
   // 2. PRODUCTION GITHUB WRITE TRANSPORT SELECTION
   // =========================================================================
   describe('2. GitHub Controlled Write Transport Selection', () => {
-    it('defaults to safe FakeGitHubWriteTransport when APIPROOF_ENABLE_LIVE_GITHUB_WRITE is not set', async () => {
+    it('fails closed in production when live GitHub writing is not enabled', async () => {
       delete process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE;
+      const previousNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
 
-      const user = createUser('transport_test@example.com', 'Pass1234!', 'Transport User');
-      db.prepare(`
-        INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-        VALUES ('repo_transport', ?, 'ravitejabolla756-sys', 'apiproof-github-fixture', 'ravitejabolla756-sys/apiproof-github-fixture', '1363070568', 'main', 'connected', ?)
-      `).run(user.id, new Date().toISOString());
+      try {
+        process.env.NODE_ENV = 'test';
+        const user = createUser('transport_test@example.com', 'Pass1234!', 'Transport User');
+        db.prepare(`
+          INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
+          VALUES ('repo_transport', ?, 'ravitejabolla756-sys', 'apiproof-github-fixture', 'ravitejabolla756-sys/apiproof-github-fixture', '1363070568', 'main', 'connected', ?)
+        `).run(user.id, new Date().toISOString());
 
-      const scanResult = await runRepositoryScan('repo_transport', user.id);
-      expect(scanResult.findingsCount).toBeGreaterThan(0);
+        const scanResult = await runRepositoryScan('repo_transport', user.id);
+        expect(scanResult.findingsCount).toBeGreaterThan(0);
+        const findings = db.prepare('SELECT id FROM findings WHERE repository_id = ?').all('repo_transport') as { id: string }[];
+        const migration = await generateMigrationForFinding(findings[0]!.id, user.id);
 
-      const findings = db.prepare('SELECT id FROM findings WHERE repository_id = ?').all('repo_transport') as { id: string }[];
-      const migration = await generateMigrationForFinding(findings[0]!.id, user.id);
-
-      // Proposal must succeed using FakeGitHubWriteTransport (safe default, no real API calls)
-      const proposal = await createGitHubProposal(migration.id, user.id);
-      expect(proposal.pullRequestId).toBeDefined();
-      expect(proposal.url).toBeDefined();
-      expect(proposal.number).toBe(1);
-      expect(proposal.state).toBe('draft');
+        process.env.NODE_ENV = 'production';
+        await expect(createGitHubProposal(migration.id, user.id)).rejects.toThrow();
+        expect(db.prepare('SELECT COUNT(*) as count FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ count: 0 });
+        expect(db.prepare('SELECT status FROM migrations WHERE id = ?').get(migration.id)).not.toEqual({ status: 'pr_created' });
+      } finally {
+        if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = previousNodeEnv;
+      }
     });
 
     it('selects live write transport only when APIPROOF_ENABLE_LIVE_GITHUB_WRITE=true', () => {

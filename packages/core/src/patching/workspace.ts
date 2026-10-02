@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,6 +53,55 @@ export async function createPatchWorkspace(repository: string): Promise<PatchWor
     await writeFile(path.join(directory, file), text, { flag: 'wx' });
   }
   const workspace = Object.freeze({ runId, repositoryId: id, directory, originalDirectory, snapshot: Object.freeze(snapshot) }); issued.add(workspace); return workspace;
+}
+
+/**
+ * Creates an isolated workspace from a caller-provided, already authenticated
+ * source snapshot. The fixture-only entry point above remains fixture-only;
+ * this entry point is for the live GitHub migration path after the caller has
+ * bound the snapshot to an exact commit SHA.
+ */
+export async function createSourcePatchWorkspace(repositoryId: string, files: Readonly<Record<string, string>>): Promise<PatchWorkspace> {
+  const entries = Object.entries(files).sort(([a], [b]) => a.localeCompare(b));
+  if (!entries.length || entries.length > 500) fail('WORKSPACE_FILE_SET_INVALID');
+  const snapshot: Record<string, string> = {};
+  for (const [file, text] of entries) {
+    if (!assertSafeWorkspaceFile(file) || (!allowedPatchPath(file) && !['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'].includes(file))) fail('WORKSPACE_PATH_INVALID');
+    if (Buffer.byteLength(text, 'utf8') > 2_097_152 || text.includes('\0')) fail('WORKSPACE_FILE_INVALID');
+    snapshot[file] = text;
+  }
+  let parent = patchToolRoot; await assertPlainPath(parent);
+  for (const part of ['.tmp', 'patch-runs']) {
+    parent = path.join(parent, part); await mkdir(parent).catch((error: NodeJS.ErrnoException) => { if (error.code !== 'EEXIST') throw error; }); await assertPlainPath(parent);
+  }
+  const runId = randomUUID(); const run = path.join(parent, runId);
+  await mkdir(run); const originalDirectory = path.join(run, 'baseline'); const directory = path.join(run, 'repository');
+  await mkdir(originalDirectory); await mkdir(directory);
+  for (const [file, text] of entries) {
+    for (const root of [originalDirectory, directory]) {
+      const destination = path.join(root, file); await mkdir(path.dirname(destination), { recursive: true }); await assertPlainPath(path.dirname(destination));
+      await writeFile(destination, text, { flag: 'wx' });
+    }
+  }
+  const workspace = Object.freeze({ runId, repositoryId, directory, originalDirectory, snapshot: Object.freeze(snapshot) }); issued.add(workspace); return workspace;
+}
+
+/**
+ * Removes a live patch workspace after the caller has finished with it.
+ * The run id is generated internally, and the containment check prevents a
+ * caller from turning cleanup into an arbitrary recursive delete.
+ */
+export async function cleanupPatchWorkspace(workspace: PatchWorkspace): Promise<void> {
+  if (!issued.has(workspace)) return;
+  const runsRoot = path.resolve(path.join(patchToolRoot, '.tmp', 'patch-runs'));
+  const runRoot = path.resolve(path.join(runsRoot, workspace.runId));
+  if (path.relative(runsRoot, runRoot) !== workspace.runId) fail('WORKSPACE_CLEANUP_PATH_INVALID');
+  await rm(runRoot, { recursive: true, force: true });
+  issued.delete(workspace);
+}
+
+function assertSafeWorkspaceFile(file: string): boolean {
+  return Boolean(file) && !path.isAbsolute(file) && !file.includes('\\') && !file.split('/').some((part) => !part || part === '.' || part === '..');
 }
 export async function checkWorkspace(workspace: PatchWorkspace, expected = workspace.snapshot): Promise<void> {
   if (!issued.has(workspace)) fail('UNISSUED_WORKSPACE');

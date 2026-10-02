@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     FROM activity_events a
     LEFT JOIN repositories r ON r.id = a.repository_id
     LEFT JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? OR (a.repository_id IS NULL AND a.user_id = ?)
+    WHERE (wm.user_id = ? AND r.lifecycle = 'active') OR (a.repository_id IS NULL AND a.user_id = ?)
     ORDER BY a.created_at DESC
     LIMIT 50
   `, [user.id, user.id]);

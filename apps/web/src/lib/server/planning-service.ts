@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { DeterministicPlanner, computeCanonicalPatchDigest, formatCanonicalMigrationBranch } from '@apiproof/core';
+import { DeterministicPlanner, formatCanonicalMigrationBranch } from '@apiproof/core';
 import type { PlanningInput } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { loadProviderRegistry } from './registry-utils.js';
@@ -16,7 +16,7 @@ export interface MigrationPlanRecord {
   baselineSha?: string | undefined;
   baseline_sha?: string | undefined;
   plan: unknown;
-  patchDiff: string;
+  patchDiff: string | null;
   createdAt: string;
 }
 
@@ -127,29 +127,10 @@ export async function generateMigrationForFinding(findingId: string, userId: str
   const planner = new DeterministicPlanner();
   const plan = await planner.plan(planningInput);
 
-  // 5. Generate Unified Diff representation
-  let patchDiff: string;
-  if (finding.change_id === 'stripe-subscription-coupon-removed') {
-    patchDiff = `--- a/${finding.file_path}
-+++ b/${finding.file_path}
-@@ -${finding.line_number},3 +${finding.line_number},3 @@
--    coupon: couponId,
-+    discounts: [{ coupon: couponId }],`;
-  } else if (finding.change_id === 'twilio-twiml-namespace-casing') {
-    patchDiff = `--- a/${finding.file_path}
-+++ b/${finding.file_path}
-@@ -${finding.line_number},1 +${finding.line_number},1 @@
--    new twilio.Twiml.VoiceResponse();
-+    new twilio.twiml.VoiceResponse();`;
-  } else {
-    patchDiff = `--- a/${finding.file_path}
-+++ b/${finding.file_path}
-@@ -${finding.line_number},1 +${finding.line_number},1 @@
--    ${finding.symbol}
-+    // Automated migration required: review ${change.title}`;
-  }
-
-  const patchDigest = computeCanonicalPatchDigest({ [finding.file_path]: patchDiff });
+  // Planning records intent only. The executable diff and resulting source
+  // are produced later by migration-verification.ts from the exact baseline.
+  const patchDiff: string | null = null;
+  const patchDigest: string | null = null;
   const migrationId = `mig_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();
 

@@ -227,9 +227,26 @@ export async function fetchRemoteRepositoryFiles(
   provider: GitHubAppSourceControlProvider,
   targetSha?: string
 ): Promise<{ files: Map<string, string>; headSha: string; defaultBranch: string }> {
+  const MAX_FILES = 2_000;
+  const MAX_FILE_BYTES = 2 * 1024 * 1024;
+  const readWithRetry = async <T>(operation: () => Promise<T>, label: string): Promise<T> => {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        if (attempt < 3) {
+          await new Promise((resolve) => setTimeout(resolve, 50 * 2 ** (attempt - 1)));
+        }
+      }
+    }
+    throw new Error(`GITHUB_READ_FAILED:${label}`, { cause: lastError });
+  };
+
   const head = await provider.getDefaultBranch();
   const sha = targetSha ?? head.sha;
-  const tree = await provider.readTree(sha);
+  const tree = await readWithRetry(() => provider.readTree(sha), `tree@${sha}`);
 
   const filesMap = new Map<string, string>();
   const filesToFetch = tree.filter((file) =>
@@ -238,13 +255,20 @@ export async function fetchRemoteRepositoryFiles(
       !file.split('/').some((p) => EXCLUDED_DIRECTORIES.has(p) || p.startsWith('.')))
   );
 
+  if (filesToFetch.length > MAX_FILES) {
+    throw new Error(`GITHUB_SNAPSHOT_TOO_LARGE: repository contains more than ${MAX_FILES} analyzable files`);
+  }
+
   for (const filePath of filesToFetch) {
-    try {
-      const content = await provider.readFile(filePath, sha);
-      filesMap.set(filePath, content);
-    } catch (err) {
-      console.warn(`Failed to read remote file ${filePath}:`, err);
+    const content = await readWithRetry(() => provider.readFile(filePath, sha), `file:${filePath}@${sha}`);
+    const byteLength = Buffer.byteLength(content, 'utf8');
+    if (byteLength > MAX_FILE_BYTES) {
+      throw new Error(`GITHUB_FILE_TOO_LARGE:${filePath}`);
     }
+    if (content.includes('\u0000')) {
+      throw new Error(`GITHUB_BINARY_FILE_UNSUPPORTED:${filePath}`);
+    }
+    filesMap.set(filePath, content);
   }
 
   return { files: filesMap, headSha: sha, defaultBranch: head.name };

@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import type { DatabaseAdapter, Migration, MigrationRecord } from './types.js';
 import { POSTGRES_SCHEMA, SQLITE_SCHEMA } from './schema.js';
+import { extendedMigrations } from './extended-migrations.js';
 import { passwordResetMigrations } from './password-reset-migration.js';
 
 export const migrations: Migration[] = [
@@ -38,8 +39,8 @@ export const migrations: Migration[] = [
 
         const repoId = 'repo_apiproof_fixture';
         await db.execute(`
-          INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'seeded_fixture', 'historical', ?)
         `, [
           repoId,
           userId,
@@ -458,6 +459,7 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  ...extendedMigrations,
   ...passwordResetMigrations,
 ];
 

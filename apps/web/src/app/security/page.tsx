@@ -1,57 +1,62 @@
 import React from "react";
-import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
-import { ShieldCheck, Lock, GitBranch, Terminal, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  Lock,
+  GitBranch,
+  CheckCircle2,
+  Key,
+  FileCheck
+} from "lucide-react";
 
 export default function SecurityPage() {
-  const securityPillars = [
+  const securityArchitecture = [
+    {
+      icon: Key,
+      title: "GitHub App Authentication & Scopes",
+      tag: "LEAST PRIVILEGE",
+      description: "MY OWL connects via an official GitHub App rather than personal access tokens. Scopes are strictly restricted to read repository contents/metadata and write pull requests exclusively to isolated migration branches.",
+      points: [
+        "Repository Contents: Read-only access for ephemeral AST symbol parsing",
+        "Pull Requests: Write access exclusively for opening Draft PRs",
+        "Zero default branch (main/master) write permissions",
+        "Revocable instantly through GitHub Organization Settings"
+      ]
+    },
     {
       icon: Lock,
-      title: "Read-Only Code Inspection",
-      tag: "IN-MEMORY PARSING",
-      description: "MY OWL parses your TypeScript and JavaScript source files ephemerally in-memory using the TypeScript compiler API. We do not store, duplicate, or persistently retain your proprietary source code on our servers, and we never train machine learning models on your repositories.",
+      title: "Installation State Binding & Webhook HMAC",
+      tag: "TAMPER RESISTANT",
+      description: "Installation flows generate single-use, cryptographically signed state tokens with 15-minute expiration to prevent cross-site request forgery and installation hijacking.",
       points: [
-        "In-memory ephemeral Abstract Syntax Tree (AST) parsing",
-        "Zero persistent source code storage on disk",
-        "No training on customer codebases",
-        "Immediate buffer disposal post-analysis"
+        "HMAC-SHA256 state signature bound to user and workspace ID",
+        "Incoming GitHub webhook signature verification (X-Hub-Signature-256)",
+        "Replay attack prevention via unique webhook delivery IDs",
+        "Zero exposure of GitHub App private keys to the client"
       ]
     },
     {
       icon: GitBranch,
-      title: "Draft-Only Write Invariants",
-      tag: "HUMAN OVERSIGHT",
-      description: "MY OWL enforces strict write isolation. The platform cannot push directly to your default branch, cannot bypass branch protection rules, and cannot auto-merge code. All suggested migrations are delivered exclusively as GitHub Draft Pull Requests on isolated branches (apiproof/*).",
+      title: "Controlled Write Safety Contract",
+      tag: "DRAFT-ONLY BOUNDARY",
+      description: "Every proposed modification is validated by a strict ControlledWriteRequest contract in core before any Git operation is executed. Direct commits to default branches are programmatically impossible.",
       points: [
-        "Push access restricted to isolated apiproof/* branches",
-        "Zero auto-merge capability or permissions",
-        "Draft Pull Requests require human developer review and merge",
-        "Full Git provenance and audit trails for every patch"
+        "Mandatory branch naming enforcement (apiproof/* or myowl/* prefix)",
+        "Forbidden path protection: blocks touching CI workflows or dotfiles",
+        "Strict single-use idempotency keys prevent duplicate PR creation",
+        "Opened strictly with draft: true requiring developer review"
       ]
     },
     {
-      icon: ShieldCheck,
-      title: "Scoped GitHub App Permissions",
-      tag: "LEAST PRIVILEGE",
-      description: "Our official GitHub App requests only the minimum permissions necessary to detect API breaking changes and submit proposed fixes. We follow least-privilege principles across repository contents, issues, and pull requests.",
+      icon: FileCheck,
+      title: "Baseline Integrity & Divergence Protection",
+      tag: "STATE GUARANTEE",
+      description: "Scans record the exact 40-character Git commit SHA of the target branch. If your default branch HEAD moves before a proposal is created, the system refuses to push.",
       points: [
-        "Contents: Read-only access for AST symbol resolution",
-        "Pull Requests: Write access solely for opening Draft PRs",
-        "Webhooks: Push & release event notifications",
-        "Revocable instantly through your GitHub organization settings"
-      ]
-    },
-    {
-      icon: Terminal,
-      title: "4-Gate Verification Boundaries",
-      tag: "COMPILER SAFETY",
-      description: "No code diff is ever submitted without passing four deterministic verification gates. If a proposed migration fails compiler checks or diagnostic validations, the PR is withheld from submission.",
-      points: [
-        "Gate 1: Syntactic Validity parse verification",
-        "Gate 2: TypeScript compiler diagnostic check",
-        "Gate 3: Call-site boundary constraint verification",
-        "Gate 4: Isolated test suite dry-run runner"
+        "Immutable baseline commit SHA pinned during AST analysis",
+        "Pre-write HEAD divergence verification against live GitHub repository",
+        "Fails closed with REPOSITORY_HEAD_DIVERGED if remote has moved",
+        "Cryptographically signed verification evidence bound to baseline SHA"
       ]
     }
   ];
@@ -59,33 +64,57 @@ export default function SecurityPage() {
   const invariantMatrix = [
     {
       operation: "Source Code Inspection",
-      capability: "In-memory AST parsing only",
-      status: "Allowed (Ephemeral)",
-      detail: "Code is read into memory buffers, parsed into AST nodes, and immediately freed."
+      capability: "Read-only AST traversal",
+      status: "Implemented",
+      detail: "Code is read into memory buffers, parsed into AST nodes by ts-morph, and analyzed for symbol reachability."
     },
     {
-      operation: "Direct Commit to Main",
-      capability: "Strictly blocked",
-      status: "Forbidden",
-      detail: "MY OWL has no permissions to write to default or protected branches."
+      operation: "Default Branch (main/master) Commits",
+      capability: "Strictly forbidden",
+      status: "Blocked",
+      detail: "MY OWL has no permissions to write directly to default branches. Proposals must target isolated branches."
     },
     {
       operation: "Auto-Merging Pull Requests",
-      capability: "Strictly blocked",
-      status: "Forbidden",
-      detail: "No code is ever merged automatically; all draft PRs require human approval."
+      capability: "Strictly forbidden",
+      status: "Blocked",
+      detail: "No auto-merge capability or permissions exist. Every proposal stops at a GitHub Draft PR for human review."
     },
     {
-      operation: "Branch Write Scope",
-      capability: "apiproof/* isolated prefix only",
-      status: "Restricted",
-      detail: "Branch creations are programmatically restricted to isolated migration branches."
+      operation: "Branch Creation Scope",
+      capability: "apiproof/* and myowl/* only",
+      status: "Enforced",
+      detail: "Validated against canonical branch naming policy. Custom or unapproved branch prefixes are rejected."
     },
     {
-      operation: "Data at Rest",
-      capability: "Metadata & symbol diffs only",
-      status: "Encrypted",
-      detail: "Only finding IDs, symbol signatures, and audit logs are retained in encrypted storage."
+      operation: "Patch Scope Boundary",
+      capability: "Affected file lines only",
+      status: "Enforced",
+      detail: "Rejects patches modifying files outside the target finding or touching workflow configuration files."
+    },
+    {
+      operation: "Pre-Proposal Verification",
+      capability: "4-gate compiler harness",
+      status: "Enforced",
+      detail: "Syntax check, TypeScript compiler diagnostics, scope boundaries, and dry-run tests must pass before PR creation."
+    },
+    {
+      operation: "Data Persistence",
+      capability: "Metadata, findings & plans only",
+      status: "Implemented",
+      detail: "Database stores repository metadata, baseline SHAs, finding snippets, and verification reports."
+    },
+    {
+      operation: "Self-Hosted Runners / Private VPC",
+      capability: "Execution in customer perimeter",
+      status: "Planned",
+      detail: "Architecture supports runner decoupling; dedicated self-hosted test execution is on the roadmap."
+    },
+    {
+      operation: "Enterprise SSO / SAML",
+      capability: "Corporate identity integration",
+      status: "Planned",
+      detail: "Currently supports GitHub OAuth session auth; SAML/Okta integration is on the roadmap."
     }
   ];
 
@@ -99,49 +128,49 @@ export default function SecurityPage() {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <Lock className="w-3.5 h-3.5 text-slate-700" />
-            <span>SECURITY ARCHITECTURE</span>
+            <span>SECURITY ARCHITECTURE &amp; INVARIANTS</span>
           </div>
 
           <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
-            Engineered with Strict Security Invariants
+            Security Built on Verifiable Boundaries
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            How MY OWL protects your source code, isolates write boundaries, and guarantees zero auto-merge execution.
+            MY OWL is engineered for security-conscious development teams. We document our actual security controls, write contracts, and architectural invariants truthfully.
           </p>
         </div>
 
-        {/* 4 PILLARS */}
+        {/* 4 CORE SECURITY ARCHITECTURE PILLARS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {securityPillars.map((pillar) => {
+          {securityArchitecture.map((pillar) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={pillar.title}
-                className="rounded-[28px] bg-[#EFF1F5] p-7 md:p-8 flex flex-col justify-between border border-black/[0.04] space-y-6 shadow-xs"
+                className="rounded-3xl bg-white border border-slate-200/80 p-7 sm:p-8 flex flex-col justify-between space-y-6 shadow-xs"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#001033] shadow-xs border border-black/[0.06]">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[#001033] border border-slate-200">
                       <Icon className="w-5 h-5 stroke-[2]" />
                     </div>
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-slate-500 uppercase bg-black/[0.04] px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-slate-600 uppercase bg-slate-100 px-2.5 py-1 rounded-full">
                       {pillar.tag}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="font-serif text-2xl font-normal text-[#000E29]">
+                    <h2 className="font-serif text-2xl font-normal text-[#000E29]">
                       {pillar.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed font-sans">
                       {pillar.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-black/[0.06] space-y-2">
+                <div className="pt-4 border-t border-slate-100 space-y-2 font-mono text-xs text-slate-700">
                   {pillar.points.map((pt) => (
-                    <div key={pt} className="flex items-center gap-2 text-xs text-slate-700">
+                    <div key={pt} className="flex items-center gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span>{pt}</span>
                     </div>
@@ -152,47 +181,47 @@ export default function SecurityPage() {
           })}
         </div>
 
-        {/* INVARIANT TABLE */}
-        <div className="rounded-[28px] bg-[#EFF1F5] p-6 sm:p-8 border border-black/[0.04] space-y-6 shadow-xs">
+        {/* SECURITY INVARIANT MATRIX */}
+        <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="max-w-2xl space-y-2">
-            <p className="text-xs font-mono font-semibold tracking-wider text-slate-500 uppercase">
-              OPERATIONAL BOUNDARIES
+            <p className="text-xs font-mono font-semibold tracking-wider text-[#004EE8] uppercase">
+              OPERATIONAL INVARIANTS
             </p>
             <h2 className="font-serif text-2xl sm:text-3xl text-[#000E29] font-normal">
               Security Invariant Matrix
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Deterministic boundaries enforced by GitHub App scopes and application logic.
+            <p className="text-xs sm:text-sm text-slate-600 font-sans">
+              Strict execution boundaries enforced by our GitHub App write contracts and platform architecture.
             </p>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse font-sans">
               <thead>
-                <tr className="border-b border-black/[0.08] text-slate-500 font-mono text-[11px] uppercase">
-                  <th className="py-3 px-3">Operation</th>
-                  <th className="py-3 px-3">MY OWL Capability</th>
+                <tr className="border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase">
+                  <th className="py-3 px-3">Operation / Capability</th>
+                  <th className="py-3 px-3">Enforcement</th>
                   <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3">Enforcement Detail</th>
+                  <th className="py-3 px-3">Implementation Detail</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/[0.04] text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-700 text-xs">
                 {invariantMatrix.map((row) => (
-                  <tr key={row.operation} className="hover:bg-white/40 transition-colors">
+                  <tr key={row.operation} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3.5 px-3 font-semibold text-[#000E29]">{row.operation}</td>
-                    <td className="py-3.5 px-3 font-mono text-slate-800">{row.capability}</td>
+                    <td className="py-3.5 px-3 font-mono text-slate-800 text-[11px]">{row.capability}</td>
                     <td className="py-3.5 px-3">
                       <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold ${
-                        row.status === "Forbidden"
+                        row.status === "Blocked"
                           ? "bg-rose-100 text-rose-800"
-                          : row.status.startsWith("Allowed")
+                          : row.status === "Enforced" || row.status === "Implemented"
                           ? "bg-emerald-100 text-emerald-800"
-                          : "bg-blue-100 text-blue-800"
+                          : "bg-amber-100 text-amber-800"
                       }`}>
                         {row.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-3 text-slate-600">{row.detail}</td>
+                    <td className="py-3.5 px-3 text-slate-600 leading-relaxed text-xs">{row.detail}</td>
                   </tr>
                 ))}
               </tbody>
@@ -200,28 +229,47 @@ export default function SecurityPage() {
           </div>
         </div>
 
-      </main>
+        {/* HONEST DATA HANDLING SECTION */}
+        <div className="rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 space-y-6">
+          <div className="max-w-2xl space-y-2">
+            <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
+              DATA HANDLING &amp; SOURCE INTEGRITY
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-normal">
+              What We Store and What We Discard
+            </h2>
+            <p className="text-sm text-slate-300 leading-relaxed font-sans">
+              We believe in radical transparency about data boundaries. We do not make vague marketing claims; here is exactly what our database holds.
+            </p>
+          </div>
 
-      {/* PRE-FOOTER RADIANT GRADIENT CTA */}
-      <section className="relative w-full py-28 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(0deg,#001033_0%,#0050F8_55%,#5FBDF7_85%,#FAFAFA_100%)] text-white text-center">
-        <div className="relative z-10 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
-          <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
-            Security-first breaking change detection.
-          </h2>
-          <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
-            Protect your production code with verifiable read-only safety guarantees.
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/login"
-              className="btn-lime text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
-            >
-              <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10 text-xs font-mono">
+            <div className="space-y-3 p-5 rounded-2xl bg-white/[0.04] border border-white/10">
+              <div className="text-emerald-400 font-bold uppercase text-[11px]">WHAT IS STORED IN DATABASE</div>
+              <ul className="space-y-2 text-slate-300 font-sans text-xs leading-relaxed">
+                <li>• Repository identity (GitHub ID, full name, default branch name)</li>
+                <li>• Baseline commit SHA (40-char hex string)</li>
+                <li>• Finding metadata: file path, line number, AST symbol, and minimal source snippet around the affected call site</li>
+                <li>• Deterministic MigrationPlan JSON &amp; patch diff text</li>
+                <li>• Verification evidence digests &amp; execution reports</li>
+                <li>• Audit logs of scan events and proposal creations</li>
+              </ul>
+            </div>
+
+            <div className="space-y-3 p-5 rounded-2xl bg-white/[0.04] border border-white/10">
+              <div className="text-cyan-400 font-bold uppercase text-[11px]">WHAT IS NEVER STORED</div>
+              <ul className="space-y-2 text-slate-300 font-sans text-xs leading-relaxed">
+                <li>• Full repository source trees or unimpacted files</li>
+                <li>• Customer environment variables or .env secrets</li>
+                <li>• Customer database passwords or production API keys</li>
+                <li>• Private keys (stored in encrypted server environment only)</li>
+                <li>• We do not train machine learning models on customer code</li>
+              </ul>
+            </div>
           </div>
         </div>
-      </section>
+
+      </main>
 
       <LandingFooter />
     </div>

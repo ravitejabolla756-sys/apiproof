@@ -60,7 +60,7 @@ async function isAuthorized(request: NextRequest): Promise<boolean> {
 // Handler
 // ---------------------------------------------------------------------------
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function runWorker(request: NextRequest): Promise<NextResponse> {
   if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -98,13 +98,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       results: result.results,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('[scan-worker-route] Unhandled error:', error);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'SCAN_WORKER_FAILED' }, { status: 500 });
   }
 }
 
-// Reject non-POST methods
-export async function GET(): Promise<NextResponse> {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  return runWorker(request);
+}
+
+// Vercel Cron invokes configured cron paths with GET. Keep the same auth and
+// execution contract so scheduled production scans cannot silently 405.
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // Keep direct/unit callers that do not provide an HTTP request fail-closed.
+  if (!request) return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return runWorker(request);
+}
+
+export async function DELETE(_request: NextRequest): Promise<NextResponse> {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'GET, POST' } });
 }

@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ?
+    WHERE wm.user_id = ? AND r.lifecycle = 'active'
   `;
   const params: unknown[] = [user.id];
 

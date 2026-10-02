@@ -64,6 +64,24 @@ export async function isDeliveryProcessed(deliveryId: string): Promise<boolean> 
 }
 
 /**
+ * Atomically reserves a delivery for processing. A unique delivery ID is the
+ * idempotency key; only the request that inserts the row may execute it.
+ */
+export async function claimWebhookDelivery(
+  deliveryId: string,
+  event: string,
+  receivedAt: string
+): Promise<boolean> {
+  const db = getDatabase();
+  const result = await db.execute(`
+    INSERT INTO github_webhook_deliveries (id, event, status, received_at, processed_at)
+    VALUES (?, ?, 'processing', ?, ?)
+    ON CONFLICT (id) DO NOTHING
+  `, [deliveryId, event, receivedAt, receivedAt]);
+  return result.changes === 1;
+}
+
+/**
  * Records a delivery in github_webhook_deliveries table.
  */
 export async function recordWebhookDelivery(
@@ -242,12 +260,12 @@ export async function processGitHubWebhook(params: {
         // Mark repository unavailable in APIProof (preserve all history)
         const localRepo = await db.queryOne<{ id: string; name: string }>(`
           SELECT id, name FROM repositories
-          WHERE workspace_id = ? AND github_repository_id = ?
+          WHERE workspace_id = ? AND github_repository_id = ? AND lifecycle = 'active'
         `, [installation.workspaceId, ghRepoId]);
 
         if (localRepo) {
           await db.execute(`
-            UPDATE repositories SET status = 'unavailable' WHERE id = ?
+            UPDATE repositories SET status = 'unavailable', lifecycle = 'disconnected' WHERE id = ?
           `, [localRepo.id]);
 
           if (userId) {
@@ -326,6 +344,7 @@ export async function processGitHubWebhook(params: {
       JOIN github_installations gi ON gi.workspace_id = r.workspace_id
       WHERE r.github_repository_id = ?
         AND r.status = 'connected'
+        AND r.lifecycle = 'active'
         AND (gi.status IS NULL OR gi.status = 'active')
       LIMIT 1
     `, [ghRepoId]);

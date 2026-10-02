@@ -71,7 +71,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { processPendingGitHubScans } from '../apps/web/src/lib/server/scan-worker.js';
 import { fetchRemoteRepositoryFiles } from '../apps/web/src/lib/server/github.js';
-import { POST as workerPostHandler, GET as workerGetHandler } from '../apps/web/src/app/api/internal/scan-worker/route.js';
+import { POST as workerPostHandler, GET as workerGetHandler, DELETE as workerDeleteHandler } from '../apps/web/src/app/api/internal/scan-worker/route.js';
 
 // ---------------------------------------------------------------------------
 // Test database path
@@ -117,11 +117,12 @@ async function createRepository(workspaceId: string, userId: string, suffix = ''
   const repoId = randomId('repo');
   const now = new Date().toISOString();
   const repoName = `test-repo${suffix}`;
+  const githubRepositoryId = `999000${repoId.slice(-8)}`;
 
   await db.execute(`
     INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
-    VALUES (?, ?, ?, 'test-org', ?, ?, '999000', 'main', 'connected', ?)
-  `, [repoId, workspaceId, userId, repoName, `test-org/${repoName}`, now]);
+    VALUES (?, ?, ?, 'test-org', ?, ?, ?, 'main', 'connected', ?)
+  `, [repoId, workspaceId, userId, repoName, `test-org/${repoName}`, githubRepositoryId, now]);
 
   return repoId;
 }
@@ -565,7 +566,7 @@ export async function createSub(customerId: string, priceId: string, couponId: s
   // -------------------------------------------------------------------------
   // TEST P: Route authentication and fail-closed security
   // -------------------------------------------------------------------------
-  it('TEST P: worker route fails closed without CRON_SECRET and requires valid Bearer token', async () => {
+  it('TEST P: worker supports authenticated GET/POST, rejects invalid credentials, and returns 405 for unsupported methods', async () => {
     const origSecret = process.env.CRON_SECRET;
 
     try {
@@ -576,6 +577,12 @@ export async function createSub(customerId: string, priceId: string, couponId: s
       const reqNoSecret = new Request('http://localhost/api/internal/scan-worker', { method: 'POST' });
       const resNoSecret = await workerPostHandler(reqNoSecret as unknown as WorkerReq);
       expect(resNoSecret.status).toBe(401);
+
+      // GET is a supported Vercel Cron method, but remains protected.
+      const resUnauthenticatedGet = await workerGetHandler(
+        new Request('http://localhost/api/internal/scan-worker', { method: 'GET' }) as unknown as Parameters<typeof workerGetHandler>[0],
+      );
+      expect(resUnauthenticatedGet.status).toBe(401);
 
       // 2. Set CRON_SECRET
       process.env.CRON_SECRET = 'super-secret-cron-token-12345';
@@ -593,6 +600,16 @@ export async function createSub(customerId: string, priceId: string, couponId: s
       const resWrongAuth = await workerPostHandler(reqWrongAuth as unknown as WorkerReq);
       expect(resWrongAuth.status).toBe(401);
 
+      // Unsupported methods are rejected before any worker operation.
+      const resAuthenticatedDelete = await workerDeleteHandler(
+        new Request('http://localhost/api/internal/scan-worker', {
+          method: 'DELETE',
+          headers: { authorization: 'Bearer super-secret-cron-token-12345' },
+        }) as unknown as Parameters<typeof workerDeleteHandler>[0],
+      );
+      expect(resAuthenticatedDelete.status).toBe(405);
+      expect(resAuthenticatedDelete.headers.get('allow')).toBe('GET, POST');
+
       // 5. Valid Authorization header → 200
       const reqValidAuth = new Request('http://localhost/api/internal/scan-worker', {
         method: 'POST',
@@ -600,10 +617,19 @@ export async function createSub(customerId: string, priceId: string, couponId: s
       });
       const resValidAuth = await workerPostHandler(reqValidAuth as unknown as WorkerReq);
       expect(resValidAuth.status).toBe(200);
+      const postBody = await resValidAuth.json() as { ok: boolean; jobsClaimed: number; jobsCompleted: number };
+      expect(postBody.ok).toBe(true);
+      expect(postBody.jobsClaimed).toBe(0);
+      expect(postBody.jobsCompleted).toBe(0);
 
-      // 6. GET request → 405 Method Not Allowed
-      const resGet = await workerGetHandler();
-      expect(resGet.status).toBe(405);
+      // GET is also authorized for Vercel Cron and invokes the worker.
+      const reqValidGet = new Request('http://localhost/api/internal/scan-worker', {
+        method: 'GET',
+        headers: { authorization: 'Bearer super-secret-cron-token-12345' },
+      });
+      const resValidGet = await workerGetHandler(reqValidGet as unknown as Parameters<typeof workerGetHandler>[0]);
+      expect(resValidGet.status).toBe(200);
+      expect((await resValidGet.json() as { ok: boolean }).ok).toBe(true);
     } finally {
       if (origSecret) {
         process.env.CRON_SECRET = origSecret;
@@ -638,5 +664,23 @@ export async function createSub(customerId: string, priceId: string, couponId: s
 
     expect(result.jobsClaimed).toBe(1);
     expect(result.results[0]?.scanRequestId).toBe(pendingReqId);
+  });
+
+  it('claims one request exactly once when two worker invocations race', async () => {
+    const { workspaceId, userId } = await createWorkspaceWithInstallation('race-worker@example.com', 'inst_race_worker');
+    const repoId = await createRepository(workspaceId, userId);
+    await createScanRequest(workspaceId, repoId, 'race_sha_000000000000000000000000000000000000');
+
+    const [first, second] = await Promise.all([
+      processPendingGitHubScans({ batchSize: 1 }),
+      processPendingGitHubScans({ batchSize: 1 }),
+    ]);
+
+    expect(first.jobsClaimed + second.jobsClaimed).toBe(1);
+    const rows = await getDatabase().query<{ status: string }>(
+      'SELECT status FROM github_scan_requests WHERE repository_id = ?', [repoId]
+    );
+    expect(rows).toHaveLength(1);
+    expect(['completed', 'failed', 'pending']).toContain(rows[0]?.status);
   });
 });

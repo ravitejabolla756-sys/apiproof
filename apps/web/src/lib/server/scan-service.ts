@@ -56,6 +56,9 @@ export async function runRepositoryScan(
   
   // 1. Verify workspace repository access (central authorization / IDOR protection)
   const { repository: repo } = await requireRepositoryAccess(repositoryId, userId);
+  if (repo.lifecycle !== 'active') {
+    throw new Error('REPOSITORY_NOT_ACTIVE: Historical or disconnected repositories cannot be scanned.');
+  }
 
   const scanId = `scn_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();
@@ -120,6 +123,9 @@ export async function runRepositoryScan(
         throw new Error(`GITHUB_REPOSITORY_EMPTY: Remote repository '${repo.full_name}' contains no code files to analyze.`);
       }
     } else {
+      if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
+        throw new Error('GITHUB_APP_NOT_CONFIGURED: Live GitHub source retrieval is required for production scans.');
+      }
       // Local development/test fixture fallback ONLY for offline test fixture
       if (repo.name === 'apiproof-github-fixture' || repo.owner === 'ravitejabolla756-sys') {
         const localFixturePath = path.resolve('C:\\apiproof-github-fixture');
@@ -195,6 +201,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
       reasonCodes: string[];
       evidence: unknown[];
       sourceSnippet: string;
+      sourceDigest: string;
     }> = [];
 
     let totalFilesAnalyzed = 0;
@@ -230,6 +237,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             reasonCodes: impact.reasonCodes,
             evidence: impact.evidence,
             sourceSnippet: snippet,
+            sourceDigest: crypto.createHash('sha256').update(fileRaw).digest('hex'),
           });
         }
       }
@@ -254,7 +262,8 @@ export async function createCustomerSubscription(customerId: string, priceId: st
                 reason = ?,
                 reason_codes = ?,
                 evidence = ?,
-                source_snippet = ?
+                source_snippet = ?,
+                source_digest = ?
             WHERE id = ?
           `, [
             scanId,
@@ -264,6 +273,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             JSON.stringify(f.reasonCodes),
             JSON.stringify(f.evidence),
             f.sourceSnippet,
+            f.sourceDigest,
             existing.id
           ]);
           activeFindingIds.push(existing.id);
@@ -272,8 +282,8 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             INSERT INTO findings (
               id, scan_id, repository_id, usage_id, change_id, provider, title, description,
               severity, confidence, file_path, line_number, symbol, status, reason, reason_codes,
-              evidence, source_snippet, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?)
+              evidence, source_snippet, source_digest, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?)
           `, [
             f.id,
             scanId,
@@ -292,6 +302,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             JSON.stringify(f.reasonCodes),
             JSON.stringify(f.evidence),
             f.sourceSnippet,
+            f.sourceDigest,
             now
           ]);
           activeFindingIds.push(f.id);

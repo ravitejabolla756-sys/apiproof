@@ -29,6 +29,12 @@ export interface VerifiedMigrationArtifact {
   readonly verifiedAt: string;
   readonly evidenceDigest: string;
   readonly provenanceToken: string;
+  readonly verificationId?: string;
+  readonly verificationStatus?: string;
+  readonly verificationReportDigest?: string;
+  readonly targetFiles?: readonly string[];
+  readonly sourceDigests?: Readonly<Record<string, string>>;
+  readonly resultingDigests?: Readonly<Record<string, string>>;
 }
 
 export type VerificationEvidence = VerifiedMigrationArtifact;
@@ -55,11 +61,20 @@ export function computeEvidenceDigest(input: {
   typecheckPassed: boolean;
   testsPassed: boolean;
   contractPassed: boolean;
+  verificationId?: string;
+  verificationStatus?: string;
+  verificationReportDigest?: string;
+  targetFiles?: readonly string[];
+  sourceDigests?: Readonly<Record<string, string>>;
+  resultingDigests?: Readonly<Record<string, string>>;
 }): string {
   const hash = crypto.createHash('sha256');
   hash.update(
     `${input.repositoryId}:${input.baselineSha}:${input.changeId}:${input.patchDigest}:${input.proofLevel}:${input.patchApplied}:${input.typecheckPassed}:${input.testsPassed}:${input.contractPassed}`
   );
+  if (input.verificationId || input.verificationStatus || input.verificationReportDigest || input.targetFiles || input.sourceDigests || input.resultingDigests) {
+    hash.update(JSON.stringify({ verificationId: input.verificationId ?? null, verificationStatus: input.verificationStatus ?? null, verificationReportDigest: input.verificationReportDigest ?? null, targetFiles: [...(input.targetFiles ?? [])].sort(), sourceDigests: input.sourceDigests ?? {}, resultingDigests: input.resultingDigests ?? {} }));
+  }
   return hash.digest('hex');
 }
 
@@ -89,8 +104,24 @@ export class MigrationVerifier {
     patchApplied: boolean;
     typecheckPassed: boolean;
     testsPassed: boolean;
-    contractPassed: boolean;
+  contractPassed: boolean;
+    verificationId?: string;
+    verificationStatus?: string;
+    verificationReportDigest?: string;
+    targetFiles?: readonly string[];
+    sourceDigests?: Readonly<Record<string, string>>;
+    resultingDigests?: Readonly<Record<string, string>>;
   }, secretOverride?: string): VerifiedMigrationArtifact {
+    if (process.env.NODE_ENV === 'production' && (
+      !input.verificationId ||
+      input.verificationStatus !== 'VERIFICATION_PASSED' ||
+      !input.verificationReportDigest ||
+      !input.targetFiles?.length ||
+      !input.sourceDigests ||
+      !input.resultingDigests
+    )) {
+      throw new Error('VERIFICATION_EXECUTION_EVIDENCE_REQUIRED: Production evidence must include successful execution metadata.');
+    }
     const verifiedAt = new Date().toISOString();
     const evidenceDigest = computeEvidenceDigest(input);
     const provenanceToken = computeProvenanceToken({
@@ -123,6 +154,12 @@ export function createVerificationEvidence(
     typecheckPassed: boolean;
     testsPassed: boolean;
     contractPassed: boolean;
+    verificationId?: string;
+    verificationStatus?: string;
+    verificationReportDigest?: string;
+    targetFiles?: readonly string[];
+    sourceDigests?: Readonly<Record<string, string>>;
+    resultingDigests?: Readonly<Record<string, string>>;
   },
   secretOverride?: string
 ): VerifiedMigrationArtifact {
@@ -136,6 +173,7 @@ export function verifyEvidenceBinding(
     patchDigest: string;
     changeId: string;
     repositoryId: string;
+    requireExecutionEvidence?: boolean;
   },
   secretOverride?: string
 ): { valid: boolean; reason?: string } {
@@ -162,6 +200,11 @@ export function verifyEvidenceBinding(
   }
   if (evidence.patchDigest !== expected.patchDigest) {
     return { valid: false, reason: `GITHUB_EVIDENCE_MISMATCH: Evidence patchDigest (${evidence.patchDigest}) does not match request patchDigest (${expected.patchDigest}).` };
+  }
+  if (expected.requireExecutionEvidence) {
+    if (!evidence.verificationId || evidence.verificationStatus !== 'VERIFICATION_PASSED' || !evidence.verificationReportDigest || !evidence.targetFiles?.length || !evidence.sourceDigests || !evidence.resultingDigests) {
+      return { valid: false, reason: 'GITHUB_EVIDENCE_INCOMPLETE: Execution-bound verification metadata is missing.' };
+    }
   }
 
   const expectedDigest = computeEvidenceDigest(evidence);

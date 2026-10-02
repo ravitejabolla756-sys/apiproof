@@ -138,17 +138,15 @@ describe('Phase 6 — Customer Product UX, Onboarding & Documentation', () => {
     expect(fs.existsSync(docPath)).toBe(true);
 
     const content = fs.readFileSync(docPath, 'utf-8');
-    expect(content).toContain('1. APIProof System Overview');
-    expect(content).toContain('2. GitHub App Installation');
-    expect(content).toContain('3. Repository Connection');
-    expect(content).toContain('4. Scan Lifecycle');
-    expect(content).toContain('5. Findings Experience');
-    expect(content).toContain('6. Migration Experience');
-    expect(content).toContain('7. Draft PR Safety Invariants');
-    expect(content).toContain('8. Webhook Setup');
-    expect(content).toContain('9. Worker Setup');
-    expect(content).toContain('10. Local Development');
-    expect(content).toContain('11. Environment Variables');
-    expect(content).toContain('12. Production Deployment');
+    expect(content).toContain('# MY OWL Free-Beta Readiness Checklist');
+    expect(content).toContain('## Product and user journey');
+    expect(content).toContain('## Repository and scan requirements');
+    expect(content).toContain('## Failure and troubleshooting guide');
+    expect(content).toContain('## Account recovery and production dependencies');
+    expect(content).toContain('## Known readiness limits and validation record');
+    expect(content).toContain('## What beta users should report');
+    expect(content).toContain('single-use token');
+    expect(content).toContain('Draft PR only');
+    expect(content).toContain('Fixture/synthetic fallback is restricted to local development/test paths');
   });
 });

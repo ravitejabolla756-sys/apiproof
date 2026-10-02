@@ -1,8 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, ShieldCheck, CheckCircle2, Github, AlertCircle, Loader2, Search, ExternalLink, GitBranch, Lock, Globe } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { X, ShieldCheck, CheckCircle2, Github, AlertCircle, Loader2, Search, ExternalLink, GitBranch, Lock, Globe, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { openGitHubAuthorizationPopup } from '@/lib/github-oauth-popup';
+import {
+  GITHUB_CONNECTION_CHANGED_EVENT,
+  GITHUB_CONNECTION_STORAGE_KEY,
+  isGitHubConnectionChangedMessage,
+} from '@/lib/github-connection-sync';
+import { isCurrentRepositoryRequest, shouldReloadRepositoriesAfterStatusRefresh } from '@/lib/github-repository-picker';
 
 interface GitHubRepoItem {
   id: string;
@@ -30,59 +37,117 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const connectRequestInFlight = useRef(false);
+  const repositoryRequestId = useRef(0);
+  const repositoryController = useRef<AbortController | null>(null);
+  const statusRequestId = useRef(0);
+  const initialRepositoryLoadComplete = useRef(false);
+  const connectedRef = useRef<boolean | null>(null);
+
+  const loadRepositories = useCallback(async (showLoading: boolean) => {
+    const requestId = ++repositoryRequestId.current;
+    repositoryController.current?.abort();
+    const controller = new AbortController();
+    repositoryController.current = controller;
+    if (showLoading) {
+      setLoadingRepos(true);
+      setError(null);
+    }
+    try {
+      const res = await fetch('/api/github/repositories', { cache: 'no-store', signal: controller.signal });
+      if (!res.ok) throw new Error('Failed to load GitHub repositories.');
+      const data = await res.json();
+      if (!isCurrentRepositoryRequest(requestId, repositoryRequestId.current) || controller.signal.aborted) return;
+      const isConnected = Boolean(data.connected);
+      connectedRef.current = isConnected;
+      initialRepositoryLoadComplete.current = true;
+      setConnected(isConnected);
+      setRepositories(data.repositories || []);
+      setError(null);
+    } catch (err: unknown) {
+      if (!isCurrentRepositoryRequest(requestId, repositoryRequestId.current) || controller.signal.aborted) return;
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (requestId === repositoryRequestId.current && !controller.signal.aborted) setLoadingRepos(false);
+    }
+  }, []);
+
+  const refreshConnectionStatus = useCallback(async () => {
+    const requestId = ++statusRequestId.current;
+    try {
+      const res = await fetch('/api/github/repositories/status', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json() as { connected?: unknown };
+      if (!isCurrentRepositoryRequest(requestId, statusRequestId.current)) return;
+      if (!initialRepositoryLoadComplete.current) return;
+      const nextConnected = Boolean(data.connected);
+      if (shouldReloadRepositoriesAfterStatusRefresh(initialRepositoryLoadComplete.current, connectedRef.current, nextConnected)) {
+        connectedRef.current = nextConnected;
+        setConnected(nextConnected);
+        void loadRepositories(true);
+      }
+    } catch {
+      // Keep the last known connection/list state; status refresh is non-disruptive.
+    }
+  }, [loadRepositories]);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    let isMounted = true;
-    const pollTimer: ReturnType<typeof setInterval> = setInterval(fetchAvailableRepos, 2000);
-    async function fetchAvailableRepos() {
-      setLoadingRepos(true);
-      setError(null);
-      try {
-        const res = await fetch('/api/github/repositories', { cache: 'no-store' });
-        if (!res.ok) {
-          throw new Error('Failed to load GitHub repositories.');
-        }
-        const data = await res.json();
-        if (isMounted) {
-          setConnected(Boolean(data.connected));
-          setRepositories(data.repositories || []);
-        }
-      } catch (err: unknown) {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : String(err));
-        }
-      } finally {
-        if (isMounted) {
-          setLoadingRepos(false);
-        }
-      }
-    }
+    initialRepositoryLoadComplete.current = false;
+    connectedRef.current = null;
+    void loadRepositories(true);
 
-    fetchAvailableRepos();
+    const onConnectionChanged = (value: unknown) => {
+      if (isGitHubConnectionChangedMessage(value)) void refreshConnectionStatus();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== GITHUB_CONNECTION_STORAGE_KEY || !event.newValue) return;
+      try { onConnectionChanged(JSON.parse(event.newValue)); } catch { /* Ignore malformed storage events. */ }
+    };
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel(GITHUB_CONNECTION_CHANGED_EVENT);
+      channel.addEventListener('message', (event) => onConnectionChanged(event.data));
+    } catch { /* The status poll and storage event are fallbacks. */ }
+    window.addEventListener('storage', onStorage);
+    const pollTimer = setInterval(() => void refreshConnectionStatus(), 2000);
 
     return () => {
-      isMounted = false;
-      if (pollTimer) clearInterval(pollTimer);
+      clearInterval(pollTimer);
+      window.removeEventListener('storage', onStorage);
+      channel?.close();
+      repositoryRequestId.current += 1;
+      statusRequestId.current += 1;
+      repositoryController.current?.abort();
+      repositoryController.current = null;
+      initialRepositoryLoadComplete.current = false;
     };
-  }, [isOpen]);
+  }, [isOpen, loadRepositories, refreshConnectionStatus]);
 
   if (!isOpen) return null;
 
   async function handleConnectGitHub() {
+    if (connectRequestInFlight.current) return;
+    connectRequestInFlight.current = true;
     setConnectingGitHub(true);
     setError(null);
     try {
-      const res = await fetch('/api/github/install');
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || 'Failed to generate installation URL');
-      }
-      window.open(data.url, '_blank', 'noopener,noreferrer');
-      setConnectingGitHub(false);
+      await openGitHubAuthorizationPopup(async () => {
+        const res = await fetch('/api/github/install', { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok || !data.url) {
+          throw new Error(data.error || 'Failed to generate installation URL');
+        }
+        return data.url as string;
+      }, () => window.open('about:blank', '_blank'));
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to initiate GitHub connection.');
+      const message = err instanceof Error ? err.message : 'Failed to initiate GitHub connection.';
+      setError(message === 'GITHUB_POPUP_BLOCKED'
+        ? 'The browser blocked the GitHub sign-in tab. Allow pop-ups for MY OWL and try again.'
+        : message);
+    } finally {
+      connectRequestInFlight.current = false;
       setConnectingGitHub(false);
     }
   }
@@ -240,15 +305,20 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             </div>
           ) : (
             <form onSubmit={handleConnectRepository} className="space-y-4">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
-                <input
-                  type="text"
-                  placeholder="Filter repositories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
-                />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
+                  <input
+                    type="text"
+                    placeholder="Filter repositories..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+                  />
+                </div>
+                <Button type="button" variant="outline" size="sm" aria-label="Refresh repositories" disabled={loadingRepos} onClick={() => void loadRepositories(true)}>
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingRepos ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
 
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">

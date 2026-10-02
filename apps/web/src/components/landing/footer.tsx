@@ -41,12 +41,17 @@ export function LandingFooter() {
             <ul className="space-y-2.5 text-slate-400">
               <li>
                 <Link href="/features" className="hover:text-white transition-colors">
-                  Features
+                  Product Overview
                 </Link>
               </li>
               <li>
                 <Link href="/how-it-works" className="hover:text-white transition-colors">
                   How it works
+                </Link>
+              </li>
+              <li>
+                <Link href="/security" className="hover:text-white transition-colors">
+                  Security Invariants
                 </Link>
               </li>
               <li>

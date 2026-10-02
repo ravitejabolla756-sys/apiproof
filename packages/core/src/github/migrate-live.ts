@@ -215,7 +215,8 @@ export async function runMigrateLive(
       repositoryId: expectedRepoId,
       owner: identity.owner,
       repository: identity.repository,
-    }
+    },
+    { requireExecutionEvidence: process.env.NODE_ENV === 'production' }
   );
 
   if (!contractResult.valid) {

@@ -119,7 +119,7 @@ export async function getWorkspaceUsageSummary(workspaceId: string): Promise<Wor
 
   // Repositories count
   const repoRow = await db.queryOne<{ count: number }>(`
-    SELECT COUNT(*) as count FROM repositories WHERE workspace_id = ? AND status != 'deleted'
+    SELECT COUNT(*) as count FROM repositories WHERE workspace_id = ? AND lifecycle = 'active' AND status != 'deleted'
   `, [workspaceId]);
   const repoUsageRow = await db.queryOne<{ total: number }>(`
     SELECT SUM(count) as total FROM workspace_usage WHERE workspace_id = ? AND metric = 'repositories' AND period_start >= ?
@@ -129,7 +129,7 @@ export async function getWorkspaceUsageSummary(workspaceId: string): Promise<Wor
   // Scans count
   const scanRow = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) as count FROM scans s
-    JOIN repositories r ON r.id = s.repository_id
+    JOIN repositories r ON r.id = s.repository_id AND r.lifecycle = 'active'
     WHERE r.workspace_id = ? AND s.status = 'completed' AND s.completed_at >= ?
   `, [workspaceId, subscription.currentPeriodStart]);
   const scanUsageRow = await db.queryOne<{ total: number }>(`
@@ -140,7 +140,7 @@ export async function getWorkspaceUsageSummary(workspaceId: string): Promise<Wor
   // Draft PRs count
   const prRow = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) as count FROM pull_requests pr
-    JOIN repositories r ON r.id = pr.repository_id
+    JOIN repositories r ON r.id = pr.repository_id AND r.lifecycle = 'active'
     WHERE r.workspace_id = ? AND pr.created_at >= ?
   `, [workspaceId, subscription.currentPeriodStart]);
   const prUsageRow = await db.queryOne<{ total: number }>(`

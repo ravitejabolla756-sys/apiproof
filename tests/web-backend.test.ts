@@ -153,8 +153,7 @@ describe('APIProof Web Application Backend & Engine Integration', () => {
       expect(migration.id).toMatch(/^mig_/);
       expect(migration.findingId).toBe(finding.id);
       expect(migration.status).toBe('planned');
-      expect(migration.patchDiff).toContain('-    coupon: couponId');
-      expect(migration.patchDiff).toContain('+    discounts: [{ coupon: couponId }]');
+      expect(migration.patchDiff).toBeNull();
 
       // Verify persisted in migrations table
       const stored = db.prepare('SELECT * FROM migrations WHERE id = ?').get(migration.id) as { plan_json: string } | undefined;
@@ -201,6 +200,19 @@ describe('APIProof Web Application Backend & Engine Integration', () => {
 
       const updatedFinding = db.prepare('SELECT status FROM findings WHERE id = ?').get(finding.id) as { status: string } | undefined;
       expect(updatedFinding?.status).toBe('pr_created');
+
+      const verifiedMigration = db.prepare('SELECT patch_content, patch_diff, patch_digest, verification_report FROM migrations WHERE id = ?').get(migration.id) as { patch_content: string; patch_diff: string; patch_digest: string; verification_report: string };
+      const resultingFiles = JSON.parse(verifiedMigration.patch_content) as Record<string, string>;
+      expect(resultingFiles['src/billing.ts']).toContain('discounts: [{ coupon: couponId }]');
+      expect(resultingFiles['src/billing.ts']).toContain('import Stripe');
+      expect(resultingFiles['src/billing.ts']).not.toContain('--- a/');
+      expect(verifiedMigration.patch_diff).toContain('--- a/src/billing.ts');
+      const evidence = JSON.parse(verifiedMigration.verification_report) as { baselineSha: string; patchDigest: string; report: { status: string }; evidence: { patchApplied: boolean; typecheckPassed: boolean; testsPassed: boolean; contractPassed: boolean; targetFiles: string[] } };
+      expect(evidence.baselineSha).toBe((db.prepare('SELECT sha FROM scans WHERE id = (SELECT scan_id FROM findings WHERE id = ?)').get(finding.id) as { sha: string }).sha);
+      expect(evidence.patchDigest).toBe(verifiedMigration.patch_digest);
+      expect(evidence.report.status).toBe('VERIFICATION_PASSED');
+      expect(evidence.evidence).toMatchObject({ patchApplied: true, typecheckPassed: true, testsPassed: true, contractPassed: true });
+      expect(evidence.evidence.targetFiles).toEqual(['src/billing.ts']);
     });
   });
 });

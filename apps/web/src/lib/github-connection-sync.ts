@@ -10,7 +10,7 @@ export interface GitHubConnectionChangedMessage {
 export function createGitHubConnectionChangedMessage(workspaceId?: string): GitHubConnectionChangedMessage {
   return {
     type: GITHUB_CONNECTION_CHANGED_EVENT,
-    workspaceId,
+    ...(workspaceId ? { workspaceId } : {}),
     timestamp: Date.now(),
   };
 }
@@ -22,7 +22,10 @@ export function isGitHubConnectionChangedMessage(value: unknown): value is GitHu
 }
 
 export function publishGitHubConnectionChanged(workspaceId?: string): void {
-  if (typeof window === 'undefined') return;
+  const browser = globalThis as typeof globalThis & {
+    window?: { localStorage: { setItem(key: string, value: string): void } };
+  };
+  if (!browser.window) return;
   const message = createGitHubConnectionChangedMessage(workspaceId);
 
   try {
@@ -34,7 +37,7 @@ export function publishGitHubConnectionChanged(workspaceId?: string): void {
   }
 
   try {
-    window.localStorage.setItem(GITHUB_CONNECTION_STORAGE_KEY, JSON.stringify(message));
+    browser.window.localStorage.setItem(GITHUB_CONNECTION_STORAGE_KEY, JSON.stringify(message));
   } catch {
     // Storage can be unavailable; polling remains the fallback.
   }

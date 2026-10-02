@@ -45,7 +45,8 @@ export function validateControlledWriteRequest(
     repositoryId: string;
     owner: string;
     repository: string;
-  }
+  },
+  options?: { requireExecutionEvidence?: boolean }
 ): ControlledWriteValidationResult {
   if (!request || typeof request !== 'object') {
     return { valid: false, status: 'GITHUB_OPERATION_REJECTED', reason: 'Controlled write request object is missing.' };
@@ -104,6 +105,7 @@ export function validateControlledWriteRequest(
     baselineSha: request.baseline.exactSha,
     changeId: request.change.changeId,
     patchDigest: request.migration.patchDigest,
+    requireExecutionEvidence: options?.requireExecutionEvidence === true,
   });
   if (!evidenceValidation.valid) {
     return { valid: false, status: 'GITHUB_EVIDENCE_MISMATCH', reason: evidenceValidation.reason ?? 'Evidence mismatch.' };

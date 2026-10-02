@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import crypto from 'node:crypto';
 import {
   verifyWebhookSignature,
-  isDeliveryProcessed,
+  claimWebhookDelivery,
+  recordWebhookDelivery,
   processGitHubWebhook,
 } from '@/lib/server/github-webhooks';
 
@@ -23,7 +23,10 @@ export async function POST(req: Request) {
   // 3. Read GitHub webhook headers
   const signatureHeader = req.headers.get('x-hub-signature-256');
   const event = req.headers.get('x-github-event') || 'unknown';
-  const deliveryId = req.headers.get('x-github-delivery') || `gen_${crypto.randomBytes(12).toString('hex')}`;
+  const deliveryId = req.headers.get('x-github-delivery');
+  if (!deliveryId) {
+    return NextResponse.json({ error: 'Missing GitHub delivery ID' }, { status: 400 });
+  }
 
   // 4. Verify HMAC-SHA256 signature against raw body
   const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
@@ -43,8 +46,8 @@ export async function POST(req: Request) {
 
   // 5. Replay Protection: Check if delivery was already processed
   try {
-    const alreadyProcessed = await isDeliveryProcessed(deliveryId);
-    if (alreadyProcessed) {
+    const claimed = await claimWebhookDelivery(deliveryId, event, new Date().toISOString());
+    if (!claimed) {
       return NextResponse.json({
         received: true,
         replayed: true,
@@ -60,12 +63,16 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(result, { status: 200 });
-  } catch (err: unknown) {
+  } catch {
     // Safe error handling without logging sensitive payload or secrets
-    const errorMessage = err instanceof Error ? err.message : 'Internal webhook processing error';
+    try {
+      await recordWebhookDelivery(deliveryId, event, 'failed', new Date().toISOString(), 'Webhook processing exception');
+    } catch {
+      // Preserve the original response; reconciliation can inspect the processing row.
+    }
     return NextResponse.json({
       error: 'WEBHOOK_PROCESSING_FAILED',
-      message: errorMessage,
+      message: 'Webhook processing failed; delivery will be reconciled from its durable record.',
     }, { status: 500 });
   }
 }

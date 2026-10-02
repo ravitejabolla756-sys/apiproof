@@ -56,10 +56,10 @@ export default function MigrationsWorkbenchPage() {
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
             <FileCheck2 className="w-6 h-6 text-emerald-600" />
-            Verified Migrations Workbench
+            Migration Plans Workbench
           </h1>
           <p className="text-xs text-[#686868] mt-1">
-            AST code transformations validated against 4-gate verification pipelines before opening review-only PRs.
+            Review migration plans here. Source patching and verification run against the exact repository baseline when you propose a Draft PR.
           </p>
         </div>
 

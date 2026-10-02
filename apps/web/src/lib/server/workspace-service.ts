@@ -2,6 +2,8 @@ import crypto from 'node:crypto';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
 
 export type WorkspaceRole = 'owner' | 'member';
+export type RepositoryOrigin = 'connected' | 'seeded_fixture' | 'imported';
+export type RepositoryLifecycle = 'active' | 'historical' | 'disconnected';
 
 export interface Workspace {
   id: string;
@@ -44,6 +46,8 @@ export interface RepositoryRecord {
   github_repository_id: string;
   default_branch: string;
   status: string;
+  origin: RepositoryOrigin;
+  lifecycle: RepositoryLifecycle;
   last_scan_at: string | null;
   created_at: string;
   [key: string]: unknown;
@@ -68,6 +72,7 @@ export interface FindingRecord {
   reason_codes: string;
   evidence: string;
   source_snippet: string | null;
+  source_digest?: string | null;
   created_at: string;
   [key: string]: unknown;
 }
@@ -81,6 +86,7 @@ export interface MigrationRecord {
   plan_json: string;
   patch_diff: string;
   patch_digest: string;
+  patch_content?: string | null;
   baseline_sha?: string | null;
   verification_report: string | null;
   created_at: string;
@@ -262,6 +268,8 @@ export async function requireRepositoryAccess(
     github_repository_id: string;
     default_branch: string;
     status: string;
+    origin: RepositoryOrigin;
+    lifecycle: RepositoryLifecycle;
     last_scan_at: string | null;
     created_at: string;
     workspace_name: string;
@@ -279,6 +287,7 @@ export async function requireRepositoryAccess(
     JOIN workspace_members wm ON wm.workspace_id = w.id
     WHERE (r.id = ? OR r.name = ? OR r.full_name = ?)
       AND wm.user_id = ?
+      AND r.lifecycle = 'active'
   `, [repositoryIdOrSlug, repositoryIdOrSlug, repositoryIdOrSlug, userId]);
 
   if (!row) {
@@ -294,6 +303,8 @@ export async function requireRepositoryAccess(
       github_repository_id: string;
       default_branch: string;
       status: string;
+      origin: RepositoryOrigin;
+      lifecycle: RepositoryLifecycle;
       last_scan_at: string | null;
       created_at: string;
     }>(`
@@ -301,6 +312,7 @@ export async function requireRepositoryAccess(
       WHERE (id = ? OR name = ? OR full_name = ?)
         AND (workspace_id IS NULL OR workspace_id = '')
         AND user_id = ?
+        AND (lifecycle = 'active' OR lifecycle IS NULL)
     `, [repositoryIdOrSlug, repositoryIdOrSlug, repositoryIdOrSlug, userId]);
 
     if (legacyRow) {
@@ -310,6 +322,8 @@ export async function requireRepositoryAccess(
         repository: {
           ...legacyRow,
           workspace_id: defaultWs.id,
+          origin: legacyRow.origin ?? 'connected',
+          lifecycle: legacyRow.lifecycle ?? 'active',
         },
         workspace: defaultWs,
       };
@@ -331,6 +345,8 @@ export async function requireRepositoryAccess(
       github_repository_id: row.github_repository_id,
       default_branch: row.default_branch,
       status: row.status,
+      origin: row.origin,
+      lifecycle: row.lifecycle,
       last_scan_at: row.last_scan_at,
       created_at: row.created_at,
     },

@@ -15,13 +15,13 @@ export async function GET(req: Request) {
 
   // Aggregate stats for current workspace
   const repoStats = await db.queryOne<{ count: number }>(`
-    SELECT COUNT(*) as count FROM repositories WHERE workspace_id = ?
+    SELECT COUNT(*) as count FROM repositories WHERE workspace_id = ? AND lifecycle = 'active'
   `, [workspace.id]);
 
   const scanStats = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) as count FROM scans s
     JOIN repositories r ON r.id = s.repository_id
-    WHERE r.workspace_id = ? AND s.status = 'completed'
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND s.status = 'completed'
   `, [workspace.id]);
 
   const findingStats = await db.queryOne<{ total: number; open_count: number | null; critical_count: number | null }>(`
@@ -31,13 +31,13 @@ export async function GET(req: Request) {
       SUM(CASE WHEN f.severity = 'critical' AND f.status = 'open' THEN 1 ELSE 0 END) as critical_count
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
-    WHERE r.workspace_id = ?
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
   `, [workspace.id]);
 
   const prStats = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) as count FROM pull_requests pr
     JOIN repositories r ON r.id = pr.repository_id
-    WHERE r.workspace_id = ?
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
   `, [workspace.id]);
 
   const repositories = await db.query<Array<{
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch, r.status, r.last_scan_at,
            (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count
     FROM repositories r
-    WHERE r.workspace_id = ?
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY r.created_at DESC
   `, [workspace.id]);
 
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
            r.name as repo_name, r.full_name as repo_full_name
     FROM findings f
     JOIN repositories r ON r.id = f.repository_id
-    WHERE r.workspace_id = ?
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY CASE f.severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 ELSE 3 END, f.created_at DESC
     LIMIT 1
   `, [workspace.id]);
@@ -81,7 +81,7 @@ export async function GET(req: Request) {
     SELECT a.id, a.type, a.title, a.description, a.created_at, r.name as repo_name
     FROM activity_events a
     JOIN repositories r ON r.id = a.repository_id
-    WHERE r.workspace_id = ?
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY a.created_at DESC
     LIMIT 6
   `, [workspace.id]);
