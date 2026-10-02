@@ -130,6 +130,36 @@ export async function verifyAndConsumeGitHubInstallationState(
   return { valid: true, workspaceId: row.workspace_id };
 }
 
+/** Validate callback state without consuming it for ownership preflight. */
+export async function inspectGitHubInstallationState(
+  state: string,
+  userId: string
+): Promise<{ valid: boolean; workspaceId?: string; error?: string; errorCode?: string }> {
+  if (!state || typeof state !== 'string' || !state.includes('.')) {
+    return { valid: false, error: 'Invalid callback state format.', errorCode: 'INVALID_STATE' };
+  }
+  const [encodedPayload, providedHmac] = state.split('.');
+  if (!encodedPayload || !providedHmac) {
+    return { valid: false, error: 'Malformed callback state.', errorCode: 'INVALID_STATE' };
+  }
+  let payload: string;
+  try { payload = Buffer.from(encodedPayload, 'base64url').toString('utf8'); }
+  catch { return { valid: false, error: 'Malformed callback state payload.', errorCode: 'INVALID_STATE' }; }
+  const expectedHmac = crypto.createHmac('sha256', getVerifierSecret()).update(payload).digest('hex');
+  const providedBuffer = Buffer.from(providedHmac);
+  const expectedBuffer = Buffer.from(expectedHmac);
+  if (providedBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(providedBuffer, expectedBuffer)) {
+    return { valid: false, error: 'Callback state signature verification failed.', errorCode: 'INVALID_STATE' };
+  }
+  const row = await getDatabase().queryOne<{ workspace_id: string; user_id: string; expires_at: number; consumed_at: number | null }>(
+    'SELECT workspace_id, user_id, expires_at, consumed_at FROM github_installation_states WHERE state = ?', [state]);
+  if (!row) return { valid: false, error: 'Callback state not recognized or expired.', errorCode: 'INVALID_STATE' };
+  if (row.consumed_at !== null && row.consumed_at !== undefined) return { valid: false, error: 'Callback state has already been used.', errorCode: 'REUSED_STATE' };
+  if (Number(row.expires_at) < Date.now()) return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
+  if (row.user_id !== userId) return { valid: false, error: 'Callback state does not belong to the authenticated user.', errorCode: 'STATE_USER_MISMATCH' };
+  return { valid: true, workspaceId: row.workspace_id };
+}
+
 /**
  * Verifies that a GitHub installation belongs to this APIProof GitHub App.
  */

@@ -89,7 +89,7 @@ describe('GitHub Installation Reassociation Hardening', () => {
 
     const state = await createGitHubInstallationState(user.id, ws.id);
 
-    const req = new Request(`http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&state=${state}`, {
+    const req = new Request(`http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&setup_action=update&state=${state}`, {
       headers: { cookie: `apiproof_session=${session.id}` },
     });
 
@@ -252,6 +252,19 @@ describe('GitHub Installation Reassociation Hardening', () => {
     // Outsider's workspace has zero installations
     const outsiderInst = await getWorkspaceGitHubInstallation(outsiderWs.id);
     expect(outsiderInst).toBeNull();
+    const stateRow = await db.queryOne<{ consumed_at: number | null }>(
+      'SELECT consumed_at FROM github_installation_states WHERE state = ?', [state]);
+    expect(stateRow?.consumed_at).toBeNull();
+
+    // An authorized server-side repair can now make the same callback
+    // retryable; the callback itself never transfers ownership arbitrarily.
+    await db.execute(`
+      INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at)
+      VALUES ('wm_outsider_repaired', ?, ?, 'owner', ?)
+    `, [victimWs.id, outsiderUser.id, new Date().toISOString()]);
+    const retry = await callbackGet(req);
+    expect(retry.status).toBe(200);
+    expect((await retry.json() as CallbackSuccessData).workspaceId).toBe(outsiderWs.id);
   });
 
   // TEST E: Reassociation cannot create duplicate installation rows

@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import type { DatabaseAdapter } from '@/lib/server/db/types.js';
 import {
+  inspectGitHubInstallationState,
   verifyAndConsumeGitHubInstallationState,
   verifyGitHubAppInstallation,
 } from '@/lib/server/github.js';
@@ -30,7 +31,9 @@ export async function GET(req: Request) {
   }
 
   // 3 & 4. Validate state (bound to user and workspace, single-use, unexpired)
-  const stateVerification = await verifyAndConsumeGitHubInstallationState(state.trim(), user.id);
+  // Ownership preflight must not consume the one-time state. A rejected
+  // cross-workspace callback must remain retryable after authorized repair.
+  const stateVerification = await inspectGitHubInstallationState(state.trim(), user.id);
   if (!stateVerification.valid || !stateVerification.workspaceId) {
     const code = stateVerification.errorCode === 'INVALID_STATE'
       ? 'INVALID_CALLBACK_STATE'
@@ -95,6 +98,14 @@ export async function GET(req: Request) {
         code: 'INSTALLATION_OWNED_BY_ANOTHER_WORKSPACE',
       }, { status: 409 });
     }
+  }
+
+  const consumedState = await verifyAndConsumeGitHubInstallationState(state.trim(), user.id);
+  if (!consumedState.valid || consumedState.workspaceId !== workspaceId) {
+    return NextResponse.json({
+      error: consumedState.error || 'Invalid callback state.',
+      code: consumedState.errorCode || 'INVALID_CALLBACK_STATE',
+    }, { status: 400 });
   }
 
   const now = new Date().toISOString();
