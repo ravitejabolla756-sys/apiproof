@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { assertLiveWriteConfig, loadGitHubAppConfig, VERIFICATION_DOCKER_IMAGE } from '@apiproof/core';
+import { assertLiveWriteConfig, buildDockerProcessEnvironment, loadGitHubAppConfig, VERIFICATION_DOCKER_IMAGE } from '@apiproof/core';
 
 const execFileAsync = promisify(execFile);
 
@@ -8,7 +8,7 @@ async function dockerCheck(args: string[]): Promise<string> {
   const dockerPath = process.env.DOCKER_PATH?.trim() || 'docker';
   const { stdout } = await execFileAsync(dockerPath, args, {
     cwd: process.cwd(),
-    env: { PATH: process.env.PATH ?? '', CI: 'true', NODE_ENV: 'production' },
+    env: { ...buildDockerProcessEnvironment(), NODE_ENV: 'production' },
     timeout: 10_000,
     maxBuffer: 4096,
     windowsHide: true,

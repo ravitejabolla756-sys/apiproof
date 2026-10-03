@@ -1,5 +1,30 @@
 import { spawn } from 'node:child_process';
 
+const DOCKER_ENV_KEYS = [
+  'PATH',
+  'DOCKER_CONTEXT',
+  'DOCKER_HOST',
+  'DOCKER_CONFIG',
+  'DOCKER_CERT_PATH',
+  'DOCKER_TLS_VERIFY',
+  'HOME',
+  'USERPROFILE',
+  'HOMEDRIVE',
+  'HOMEPATH',
+] as const;
+
+/** Keep Docker CLI context/config available without forwarding application secrets. */
+export function buildDockerProcessEnvironment(
+  source: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv {
+  const environment: NodeJS.ProcessEnv = { CI: 'true' };
+  for (const key of DOCKER_ENV_KEYS) {
+    const value = source[key];
+    if (value !== undefined) environment[key] = value;
+  }
+  return environment;
+}
+
 export interface DockerProcessResult {
   code: number | null;
   timedOut: boolean;
@@ -17,7 +42,8 @@ export async function runDockerProcess(dockerPath: string, args: readonly string
   const started = Date.now();
   return await new Promise((resolve) => {
     const child = spawn(dockerPath, [...args], {
-      cwd: options.cwd, env: { PATH: options.path ?? process.env.PATH ?? '', CI: 'true' },
+      cwd: options.cwd,
+      env: buildDockerProcessEnvironment({ ...process.env, PATH: options.path ?? process.env.PATH ?? '' }),
       shell: false, windowsHide: true,
     });
     let stdout = Buffer.alloc(0); let stderr = Buffer.alloc(0);
