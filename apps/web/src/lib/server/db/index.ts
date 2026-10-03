@@ -7,6 +7,8 @@ import { SqliteDatabaseAdapter } from './sqlite-adapter.js';
 import { PostgresDatabaseAdapter } from './postgres-adapter.js';
 import { SQLITE_SCHEMA } from './schema.js';
 import { SQLITE_VERIFICATION_WORKER_SCHEMA } from './verification-worker-migration.js';
+import { SQLITE_SLACK_SCHEMA } from './slack-migration.js';
+import { initializeSlackReliabilitySqlite } from './slack-reliability-migration.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -124,6 +126,8 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   // Schema creation
   db.exec(SQLITE_SCHEMA);
   db.exec(SQLITE_VERIFICATION_WORKER_SCHEMA);
+  db.exec(SQLITE_SLACK_SCHEMA);
+  initializeSlackReliabilitySqlite(db);
 
   seedDefaultUserAndFixtureSqlite(db);
 

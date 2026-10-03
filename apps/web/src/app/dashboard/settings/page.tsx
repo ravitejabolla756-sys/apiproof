@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 
 interface GitHubInstallationInfo {
   id: string;
@@ -275,6 +276,7 @@ export default function SettingsPage() {
           </div>
 
           {/* GITHUB APP SETTINGS */}
+          <SlackConnectionCard />
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">

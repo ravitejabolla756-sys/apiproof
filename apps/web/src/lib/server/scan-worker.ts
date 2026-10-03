@@ -15,6 +15,7 @@
 
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
+import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
@@ -457,7 +458,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     }
 
     // 8. Persist findings idempotently + finalize scan
-    const completedAt = new Date().toISOString();
+    const completedAt = new Date().toISOString(), newlyCreatedFindingIds: string[] = [];
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
 
@@ -493,7 +494,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             f.severity, f.confidence, f.filePath, f.lineNumber, f.symbol, f.reason,
             JSON.stringify(f.reasonCodes), JSON.stringify(f.evidence), f.sourceSnippet, f.sourceDigest, now,
           ]);
-          activeFindingIds.push(f.id);
+          activeFindingIds.push(f.id); newlyCreatedFindingIds.push(f.id);
         }
       }
 
@@ -541,7 +542,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             last_error_category = NULL, last_error_message = NULL
         WHERE id = ? AND status = 'processing'
       `, [job.id]);
-    });
+      await enqueueNewFindingNotifications(newlyCreatedFindingIds, tx); });
 
     logger.info('scan_worker_job_completed', {
       scanRequestId: job.id,

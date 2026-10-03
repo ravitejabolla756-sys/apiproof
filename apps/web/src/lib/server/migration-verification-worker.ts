@@ -4,6 +4,9 @@ import { logger } from './logger.js';
 import { withSqliteClaimLock } from './scan-worker-state.js';
 import { publishVerificationWorkerHeartbeat } from './verification-worker-registry.js';
 import { probeDockerVerificationRuntime } from './verification-worker-runtime.js';
+import { processOneSlackInteractionJob } from './slack-interactions.js';
+import { processOneSlackNotificationDelivery } from './slack-notifications.js';
+import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -106,6 +109,7 @@ export async function processOneMigrationVerificationJob(workerId: string): Prom
   const job = await claimNextJob(workerId);
   if (!job) return false;
   await runClaimedJob(job, workerId);
+  await safelyReconcileSlackTerminalOutcomes();
   return true;
 }
 
@@ -115,20 +119,32 @@ export async function runVerificationWorker(options: { workerId: string; pollInt
   const interval = Math.max(1000, options.pollIntervalMs ?? 5000);
   let lastProbeAt = 0;
   let lastProbeError: unknown;
+  let dockerReady = false;
   while (!signal?.aborted) {
     try {
       if (Date.now() - lastProbeAt >= 30_000) {
         try {
           await probeDockerVerificationRuntime();
           lastProbeError = undefined;
+          dockerReady = true;
         } catch (error) {
           lastProbeError = error;
+          dockerReady = false;
         }
         lastProbeAt = Date.now();
       }
-      if (lastProbeError) throw lastProbeError;
-      await publishVerificationWorkerHeartbeat(workerId, true);
-      const processed = await processOneMigrationVerificationJob(workerId);
+      await publishVerificationWorkerHeartbeat(workerId, dockerReady, lastProbeError instanceof Error ? lastProbeError.message : undefined);
+      let processed = false;
+      await safelyReconcileSlackTerminalOutcomes();
+      try { processed = await processOneSlackInteractionJob(workerId, dockerReady) || processed; }
+      catch (error) { logger.warn('slack_interaction_dispatch_failed', { workerId, category: failureCategory(error) }); }
+      try { processed = await processOneSlackNotificationDelivery(workerId) || processed; }
+      catch (error) { logger.warn('slack_notification_dispatch_failed', { workerId, category: failureCategory(error) }); }
+      if (dockerReady) {
+        processed = await processOneMigrationVerificationJob(workerId) || processed;
+      } else if (lastProbeError) {
+        logger.warn('migration_verification_worker_docker_unavailable', { workerId, category: failureCategory(lastProbeError) });
+      }
       if (!processed) await new Promise((resolve) => setTimeout(resolve, interval));
     } catch (error) {
       const category = failureCategory(error);

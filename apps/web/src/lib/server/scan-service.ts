@@ -9,6 +9,7 @@ import {
 } from '@apiproof/core';
 import type { ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
+import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
@@ -242,6 +243,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
     }
 
     // 7. Persist findings to database inside a transaction with deduplication
+    const newlyCreatedFindingIds: string[] = [];
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
 
@@ -304,6 +306,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             now
           ]);
           activeFindingIds.push(f.id);
+          newlyCreatedFindingIds.push(f.id);
         }
       }
 
@@ -342,6 +345,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
         `Identified ${collectedFindings.length} breaking changes in ${repo.full_name} (${totalFilesAnalyzed} files scanned).`,
         new Date().toISOString()
       ]);
+      await enqueueNewFindingNotifications(newlyCreatedFindingIds, tx);
     });
 
     return {

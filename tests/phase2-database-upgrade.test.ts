@@ -2,12 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
-import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { initDatabase, closeDatabase, SqliteDatabaseAdapter } from '../apps/web/src/lib/server/db/index.js';
 import { createUser } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { runMigrations } from '../apps/web/src/lib/server/db/migrator.js';
 import { POSTGRES_SCHEMA, SQLITE_SCHEMA } from '../apps/web/src/lib/server/db/schema.js';
-import type { DatabaseAdapter } from '../apps/web/src/lib/server/db/types.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase2-upgrade.db');
 
@@ -121,30 +120,15 @@ describe('Phase 2 — Multi-Tenant Database Schema, Constraints & Upgrade Behavi
       INSERT INTO repositories VALUES ('repo_2', 'usr_bob', 'corp', 'repo-2', 'corp/repo-2', '2', 'main', 'connected', NULL, '${now}');
     `);
 
-    // Create a minimal adapter wrapper to run migrations
-    const adapter: DatabaseAdapter = {
-      engine: 'sqlite',
-      async query<T = unknown>(sql: string, params: unknown[] = []): Promise<T[]> {
-        return legacyDb.prepare(sql).all(...(params as string[])) as T[];
-      },
-      async queryOne<T = unknown>(sql: string, params: unknown[] = []): Promise<T | undefined> {
-        return legacyDb.prepare(sql).get(...(params as string[])) as T | undefined;
-      },
-      async execute(sql: string, params: unknown[] = []): Promise<{ changes: number }> {
-        const res = legacyDb.prepare(sql).run(...(params as string[]));
-        return { changes: Number(res.changes) };
-      },
-      async transaction<T>(fn: (tx: DatabaseAdapter) => Promise<T>): Promise<T> {
-        return fn(this);
-      },
-      async close() {
-        legacyDb.close();
-      },
-    };
+    // Exercise the production SQLite adapter, including complete multi-statement migration DDL.
+    const adapter = new SqliteDatabaseAdapter(legacyDb);
 
     // Run migrator
     const applied = await runMigrations(adapter);
     expect(applied.map((m) => m.id)).toContain('003');
+    expect(applied.map((m) => m.id)).toContain('014');
+    expect((await adapter.query<{ name: string }>('PRAGMA table_info(slack_notification_deliveries)')).map((column) => column.name)).toContain('next_attempt_at');
+    expect((await adapter.query<{ name: string }>('PRAGMA table_info(slack_interaction_jobs)')).map((column) => column.name)).toContain('next_attempt_at');
 
     // Verify workspaces created for both existing users
     const wsAlice = await adapter.queryOne<{ id: string; name: string }>(`
