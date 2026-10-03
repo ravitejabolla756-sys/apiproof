@@ -359,6 +359,32 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       }
     });
 
+    it('clears stale verification artifacts while preserving the immutable plan for a fresh retry', async () => {
+      const { user, migration } = await setupFixture();
+      const originalPlan = db.prepare('SELECT plan_json FROM migrations WHERE id = ?').get(migration.id) as { plan_json: string };
+      await markWorkerReady();
+      const first = await enqueueMigrationProposal(migration.id, user.id);
+
+      db.prepare(`UPDATE migration_verification_jobs
+        SET status = 'failed', error_category = 'VERIFICATION_TEST_FAILED', error_message = 'old verifier result'
+        WHERE id = ?`).run(first.jobId);
+      db.prepare(`UPDATE migrations SET status = 'verification_failed', patch_digest = 'old-digest',
+        patch_content = '{"src/billing.ts":"old source-only patch"}', patch_diff = 'old diff',
+        verification_report = '{"schemaVersion":"1.0","targetFiles":["src/billing.ts"]}'
+        WHERE id = ?`).run(migration.id);
+
+      const retry = await enqueueMigrationProposal(migration.id, user.id);
+      expect(retry).toMatchObject({ jobId: first.jobId, status: 'verification_in_progress' });
+      expect(db.prepare('SELECT plan_json, status, patch_digest, patch_content, patch_diff, verification_report FROM migrations WHERE id = ?').get(migration.id)).toEqual({
+        plan_json: originalPlan.plan_json,
+        status: 'planned',
+        patch_digest: null,
+        patch_content: null,
+        patch_diff: null,
+        verification_report: null,
+      });
+    });
+
     it('rejects the claimed job when its migration finding belongs to a different repository', async () => {
       const { user, ws, migration } = await setupFixture();
       await markWorkerReady();
