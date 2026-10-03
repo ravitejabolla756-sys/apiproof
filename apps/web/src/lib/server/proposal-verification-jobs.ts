@@ -4,6 +4,7 @@ import { getDatabase } from './db/index.js';
 import { checkWorkspaceLimit } from './billing/service.js';
 import { requireMigrationAccess } from './workspace-service.js';
 import { hasReadyVerificationWorker } from './verification-worker-registry.js';
+import type { DatabaseAdapter } from './db/types.js';
 
 export type ProposalJobStatus = 'verification_in_progress' | 'completed' | 'execution_unavailable' | 'failed';
 
@@ -47,20 +48,24 @@ export async function enqueueMigrationProposal(migrationId: string, userId: stri
 
   const now = new Date().toISOString();
   if (existing) {
-    await db.execute(`UPDATE migration_verification_jobs SET status = 'pending', requested_by = ?, baseline_sha = ?, attempt_count = 0,
-      claimed_by = NULL, lease_expires_at = NULL, error_category = NULL, error_message = NULL, result_json = NULL, updated_at = ? WHERE id = ?`,
-    [userId, baselineSha, now, existing.id]);
-    await db.execute(`UPDATE migrations SET status = 'planned', patch_digest = NULL, patch_content = NULL,
-      patch_diff = NULL, verification_report = NULL WHERE id = ? AND status IN ('verification_unavailable', 'verification_failed')`, [migrationId]);
+    await db.transaction(async (tx) => {
+      await tx.execute(`UPDATE migration_verification_jobs SET status = 'pending', requested_by = ?, baseline_sha = ?, attempt_count = 0,
+        claimed_by = NULL, lease_expires_at = NULL, error_category = NULL, error_message = NULL, result_json = NULL, updated_at = ? WHERE id = ?`,
+      [userId, baselineSha, now, existing.id]);
+      await invalidateFailedMigrationArtifacts(tx, migrationId);
+    });
     return { jobId: existing.id, status: 'verification_in_progress' };
   }
 
   const jobId = `vjob_${crypto.randomBytes(12).toString('hex')}`;
   try {
-    await db.execute(`INSERT INTO migration_verification_jobs
-      (id, migration_id, workspace_id, repository_id, requested_by, baseline_sha, status, attempt_count, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
-    [jobId, migrationId, workspace.id, repository.id, userId, baselineSha, now, now]);
+    await db.transaction(async (tx) => {
+      await tx.execute(`INSERT INTO migration_verification_jobs
+        (id, migration_id, workspace_id, repository_id, requested_by, baseline_sha, status, attempt_count, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
+      [jobId, migrationId, workspace.id, repository.id, userId, baselineSha, now, now]);
+      await invalidateFailedMigrationArtifacts(tx, migrationId);
+    });
   } catch {
     const raced = await db.queryOne<{ id: string; status: string; result_json: string | null }>(
       'SELECT id, status, result_json FROM migration_verification_jobs WHERE migration_id = ? AND workspace_id = ? AND repository_id = ?',
@@ -70,6 +75,13 @@ export async function enqueueMigrationProposal(migrationId: string, userId: stri
     return raced.status === 'completed' ? snapshotFromRow(raced) : { jobId: raced.id, status: 'verification_in_progress' };
   }
   return { jobId, status: 'verification_in_progress' };
+}
+
+async function invalidateFailedMigrationArtifacts(db: Pick<DatabaseAdapter, 'execute'>, migrationId: string): Promise<void> {
+  await db.execute(`UPDATE migrations SET status = 'planned', patch_digest = NULL, patch_content = NULL,
+    patch_diff = NULL, verification_report = NULL
+    WHERE id = ? AND status IN ('verification_unavailable', 'verification_failed')
+      AND NOT EXISTS (SELECT 1 FROM pull_requests WHERE migration_id = ?)`, [migrationId, migrationId]);
 }
 
 export async function getMigrationProposalJobStatus(migrationId: string, userId: string): Promise<ProposalJobSnapshot | null> {

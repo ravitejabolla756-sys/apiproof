@@ -64,6 +64,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
   let baselineSha: string | undefined;
   let workspace: Awaited<ReturnType<typeof createSourcePatchWorkspace>> | undefined;
   let provisioning: Awaited<ReturnType<typeof provisionVerificationDependencies>> | undefined;
+  let attemptedPatch: { patchDigest: string; patchContent: Record<string, string>; patchDiff: string; targetFiles: string[]; sourceDigests: Record<string, string>; resultingDigests: Record<string, string> } | undefined;
   let failurePersisted = false;
   try {
     if (process.env.NODE_ENV !== 'test' && input.options && Object.keys(input.options).length) throw new Error('VERIFICATION_TEST_OVERRIDE_FORBIDDEN: Captured source and sandbox overrides are test-only.');
@@ -104,7 +105,17 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
       patchContent[file.path] = result;
     }
     const patchDigest = computeCanonicalPatchDigest(patchContent);
-    if (input.migration.verification_report && input.migration.patch_digest && input.migration.patch_digest !== patchDigest) throw new Error('PATCH_DIGEST_MISMATCH: Existing verification evidence belongs to a different resulting patch.');
+    if (input.migration.patch_digest && input.migration.patch_digest !== patchDigest) throw new Error('PATCH_DIGEST_MISMATCH: Existing persisted patch belongs to a different deterministic result. Retry must explicitly invalidate the failed attempt first.');
+    const patchDiff = patch.files.map((file) => file.unifiedDiff).join('\n');
+    const targetFiles = patch.files.map((file) => file.path).sort();
+    const sourceDigests = Object.fromEntries(patch.files.map((file) => [file.path, file.originalDigest]));
+    const resultingDigests = Object.fromEntries(patch.files.map((file) => [file.path, file.patchedDigest ?? digest(patchContent[file.path]!) ]));
+    attemptedPatch = { patchDigest, patchContent, patchDiff, targetFiles, sourceDigests, resultingDigests };
+
+    // Persist the freshly generated patch before execution. A failed run has
+    // patch provenance but no verification evidence and cannot authorize PR creation.
+    await getDatabase().execute(`UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = NULL
+      WHERE id = ? AND status <> 'pr_created'`, [patchDigest, JSON.stringify(patchContent), patchDiff, input.migration.id]);
 
     const sandbox = input.options?.sandbox ?? (process.env.NODE_ENV === 'test' ? new FakeSandbox() : new DockerSandbox());
     if (process.env.NODE_ENV === 'production' && !(sandbox instanceof DockerSandbox)) {
@@ -126,9 +137,6 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     }
     const reportDigest = digest(JSON.stringify(report));
     const passed = report.status === 'VERIFICATION_PASSED';
-    const targetFiles = patch.files.map((file) => file.path).sort();
-    const sourceDigests = Object.fromEntries(patch.files.map((file) => [file.path, file.originalDigest]));
-    const resultingDigests = Object.fromEntries(patch.files.map((file) => [file.path, file.patchedDigest ?? digest(patchContent[file.path]!)]));
     const evidence = passed ? createVerificationEvidence({
       repositoryId: input.repo.github_repository_id,
       baselineSha,
@@ -148,13 +156,13 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     }) : null;
     const wrapper = { schemaVersion: '1.0', migrationId: input.migration.id, repositoryId: input.repo.github_repository_id, baselineSha, patchDigest, targetFiles, sourceDigests, resultingDigests, report, evidence, failureReasons: passed ? [] : [...workspaceDrift.map((file) => `VERIFICATION_WORKSPACE_MUTATED: ${file}`), report.status] };
     const db = getDatabase();
-    await db.execute('UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = ?, status = ? WHERE id = ?', [patchDigest, JSON.stringify(patchContent), patch.files.map((file) => file.unifiedDiff).join('\n'), JSON.stringify(wrapper), passed ? 'verified' : 'verification_failed', input.migration.id]);
+    await db.execute('UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = ?, status = ? WHERE id = ?', [patchDigest, JSON.stringify(patchContent), patchDiff, JSON.stringify(wrapper), passed ? 'verified' : 'verification_failed', input.migration.id]);
     failurePersisted = true;
     if (!passed || !evidence) throw new Error(`VERIFICATION_FAILED: ${report.status}`);
     return { patchDigest, patchContent, patchDiff: patch.files.map((file) => file.unifiedDiff).join('\n'), evidence, report, wrapper };
   } catch (error: unknown) {
     if (!failurePersisted) {
-      await persistVerificationFailure(input, baselineSha, error);
+      await persistVerificationFailure(input, baselineSha, error, attemptedPatch);
     }
     throw error;
   } finally {
@@ -163,7 +171,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
   }
 }
 
-async function persistVerificationFailure(input: { migration: MigrationVerificationMigration; repo: MigrationVerificationRepo }, baselineSha: string | undefined, error: unknown): Promise<void> {
+async function persistVerificationFailure(input: { migration: MigrationVerificationMigration; repo: MigrationVerificationRepo }, baselineSha: string | undefined, error: unknown, attemptedPatch?: { patchDigest: string; patchContent: Record<string, string>; patchDiff: string; targetFiles: string[]; sourceDigests: Record<string, string>; resultingDigests: Record<string, string> }): Promise<void> {
   const reason = error instanceof Error ? error.message : String(error);
   const status = /Docker exit unavailable|Docker CLI unavailable|VERIFICATION_DOCKER_.*UNAVAILABLE|VERIFICATION_PINNED_IMAGE_UNAVAILABLE/.test(reason)
     ? 'verification_unavailable'
@@ -173,16 +181,21 @@ async function persistVerificationFailure(input: { migration: MigrationVerificat
     migrationId: input.migration.id,
     repositoryId: input.repo.github_repository_id,
     baselineSha: baselineSha ?? input.migration.baseline_sha ?? null,
-    patchDigest: input.migration.patch_digest ?? null,
-    targetFiles: [],
-    sourceDigests: {},
-    resultingDigests: {},
+    patchDigest: attemptedPatch?.patchDigest ?? input.migration.patch_digest ?? null,
+    targetFiles: attemptedPatch?.targetFiles ?? [],
+    sourceDigests: attemptedPatch?.sourceDigests ?? {},
+    resultingDigests: attemptedPatch?.resultingDigests ?? {},
     report: null,
     evidence: null,
     failureReasons: [reason],
     failedAt: new Date().toISOString(),
   };
-  await getDatabase().execute('UPDATE migrations SET verification_report = ?, status = ? WHERE id = ?', [JSON.stringify(wrapper), status, input.migration.id]);
+  if (attemptedPatch) {
+    await getDatabase().execute(`UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = ?, status = ? WHERE id = ?`,
+      [attemptedPatch.patchDigest, JSON.stringify(attemptedPatch.patchContent), attemptedPatch.patchDiff, JSON.stringify(wrapper), status, input.migration.id]);
+  } else {
+    await getDatabase().execute('UPDATE migrations SET verification_report = ?, status = ? WHERE id = ?', [JSON.stringify(wrapper), status, input.migration.id]);
+  }
 }
 
 export function validatePersistedMigrationEvidence(raw: string | null | undefined, expected: { repositoryId: string; baselineSha: string; changeId: string; patchDigest: string }): void {
