@@ -14,6 +14,9 @@ describe('migration lifecycle wording', () => {
   it('uses explicit failed, passed, and Draft PR states', () => {
     const report = JSON.stringify({ report: { status: 'VERIFICATION_PASSED' }, evidence: { proofLevel: 'EXECUTION_VERIFIED' } });
     expect(getMigrationLifecycleState({ status: 'verification_failed', verificationReport: report })).toBe('Verification Failed');
+    expect(getMigrationLifecycleState({ status: 'verification_unavailable', verificationReport: report })).toBe('Verification Unavailable');
+    expect(getMigrationLifecycleState({ status: 'verification_failed', verificationJobStatus: 'pending' })).toBe('Verification Pending');
+    expect(getMigrationLifecycleState({ status: 'verification_unavailable', verificationJobStatus: 'execution_unavailable' })).toBe('Verification Unavailable');
     expect(getMigrationLifecycleState({ status: 'verified', verificationReport: report })).toBe('Verification Pending');
     expect(getMigrationLifecycleState({ status: 'verified', verificationReport: report, hasPullRequest: true, pullRequestState: 'draft' })).toBe('Draft PR Created');
     expect(getMigrationLifecycleState({ status: 'verified', verificationReport: report, hasPullRequest: true, pullRequestState: 'open' })).toBe('Pull Request Open');

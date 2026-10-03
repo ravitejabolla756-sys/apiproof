@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
-    "db:migrate": "pnpm --filter @apiproof/web db:migrate"
+    "db:migrate": "pnpm --filter @apiproof/web db:migrate",
+    "verification:worker": "tsx apps/web/scripts/verification-worker.ts"
   },
   "devDependencies": {
     "@apiproof/analyzers": "workspace:*",

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
-import { createGitHubProposal } from '@/lib/server/proposal-service.js';
+import { enqueueMigrationProposal, getMigrationProposalJobStatus } from '@/lib/server/proposal-verification-jobs.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   assertCsrfProtection,
@@ -8,6 +8,21 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
+
+export async function GET(req: Request) {
+  const user = await getCurrentUser(req);
+  if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  const migrationId = new URL(req.url).searchParams.get('migrationId');
+  const validation = validateSafeId(migrationId, 'migrationId');
+  if (!validation.valid || !validation.data) return badRequestResponse(validation.error || 'migrationId is required.');
+  try {
+    const job = await getMigrationProposalJobStatus(validation.data, user.id);
+    return NextResponse.json({ job }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Verification status unavailable.';
+    return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  }
+}
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -33,6 +48,19 @@ export async function POST(req: Request) {
       return badRequestResponse(idValidation.error || 'migrationId is required.');
     }
 
+    if (process.env.NODE_ENV === 'production') {
+      const job = await enqueueMigrationProposal(idValidation.data, user.id);
+      if (job.status === 'execution_unavailable') {
+        return NextResponse.json({
+          error: 'Secure verification execution is not currently available. No Draft PR was created; try again when the verification worker is online.',
+          code: job.errorCode,
+          status: job.status,
+        }, { status: 503, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+      }
+      if (job.status === 'completed') return NextResponse.json({ success: true, proposal: job.proposal });
+      return NextResponse.json({ success: true, job }, { status: 202, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+    }
+    const { createGitHubProposal } = await import('@/lib/server/proposal-service.js');
     const proposal = await createGitHubProposal(idValidation.data, user.id);
     return NextResponse.json({ success: true, proposal });
   } catch (error: unknown) {
@@ -63,6 +91,9 @@ export async function POST(req: Request) {
     }
     if (message.includes('BASELINE_SHA_INVALID')) {
       return NextResponse.json({ error: message, code: 'BASELINE_SHA_INVALID' }, { status: 400 });
+    }
+    if (message.includes('VERIFICATION_EXECUTION_UNAVAILABLE')) {
+      return NextResponse.json({ error: 'Secure verification execution is not currently available. No Draft PR was created.', code: 'VERIFICATION_EXECUTION_UNAVAILABLE' }, { status: 503 });
     }
     console.error('Proposal generation failed:', error);
     return NextResponse.json({ error: message, code: 'PROPOSAL_FAILED' }, { status: 500 });

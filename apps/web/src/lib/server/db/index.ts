@@ -6,6 +6,7 @@ import type { DatabaseAdapter } from './types.js';
 import { SqliteDatabaseAdapter } from './sqlite-adapter.js';
 import { PostgresDatabaseAdapter } from './postgres-adapter.js';
 import { SQLITE_SCHEMA } from './schema.js';
+import { SQLITE_VERIFICATION_WORKER_SCHEMA } from './verification-worker-migration.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -122,6 +123,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
 
   // Schema creation
   db.exec(SQLITE_SCHEMA);
+  db.exec(SQLITE_VERIFICATION_WORKER_SCHEMA);
 
   seedDefaultUserAndFixtureSqlite(db);
 

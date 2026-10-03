@@ -3,6 +3,7 @@ import type { DatabaseAdapter, Migration, MigrationRecord } from './types.js';
 import { POSTGRES_SCHEMA, SQLITE_SCHEMA } from './schema.js';
 import { extendedMigrations } from './extended-migrations.js';
 import { passwordResetMigrations } from './password-reset-migration.js';
+import { verificationWorkerMigrations } from './verification-worker-migration.js';
 
 export const migrations: Migration[] = [
   {
@@ -461,6 +462,7 @@ export const migrations: Migration[] = [
   },
   ...extendedMigrations,
   ...passwordResetMigrations,
+  ...verificationWorkerMigrations,
 ];
 
 export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {

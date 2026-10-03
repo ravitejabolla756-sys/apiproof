@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
+import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -52,7 +53,9 @@ interface MigrationDetail {
   branch_name?: string;
   target_branch?: string;
   pr_state?: string;
-  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
+  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Verification Unavailable' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
+  verification_job_id?: string | null;
+  verification_job_status?: string | null;
 }
 
 export default function FindingDetailPage({
@@ -86,6 +89,35 @@ export default function FindingDetailPage({
   useEffect(() => {
     loadFinding();
   }, [id]);
+
+  useEffect(() => {
+    if (!migration?.id || !isVerificationJobActive(migration.verification_job_status)) return;
+    const migrationId = migration.id;
+    return startVerificationJobPolling({
+      intervalMs: 3000,
+      fetchStatus: async () => {
+        const response = await fetch(`/api/migrations/propose?migrationId=${encodeURIComponent(migrationId)}`, { cache: 'no-store' });
+        if (!response.ok) return null;
+        const payload = await response.json();
+        return payload.job as { status?: string; errorCode?: string; proposal?: { number: number; state: string; branchName: string } } | null;
+      },
+      onStatus: (job) => {
+        setMigration((current) => current?.id === migrationId ? { ...current, verification_job_status: job.status } : current);
+      },
+      onTerminal: async (job) => {
+        if (job.status === 'completed' && job.proposal) {
+          setMessage({ text: `${getPullRequestStateLabel(job.proposal.state)} #${job.proposal.number} on branch ${job.proposal.branchName}.` });
+          await loadFinding();
+        } else if (job.status === 'execution_unavailable') {
+          setMessage({ text: 'Secure verification execution is unavailable. No Draft PR was created; try again when the verification worker is online.', error: true });
+          await loadFinding();
+        } else if (job.status === 'failed') {
+          setMessage({ text: 'Verification did not complete successfully. No Draft PR was created. Review the verification result before retrying.', error: true });
+          await loadFinding();
+        }
+      },
+    });
+  }, [migration?.id, migration?.verification_job_status]);
 
   async function handleGeneratePlan() {
     if (!finding) return;
@@ -128,6 +160,12 @@ export default function FindingDetailPage({
 
       if (!res.ok) {
         throw new Error(data.error || "Draft proposal failed.");
+      }
+
+      if (res.status === 202 && data.job?.status === 'verification_in_progress') {
+        setMigration((current) => current ? { ...current, verification_job_id: data.job.jobId, verification_job_status: 'pending', lifecycle_state: 'Verification Pending' } : current);
+        setMessage({ text: 'Verification is queued on the isolated worker. A Draft PR will be created only if all verification gates pass.' });
+        return;
       }
 
       setMessage({ text: `${getPullRequestStateLabel(data.proposal.state)} #${data.proposal.number} on branch ${data.proposal.branchName}.` });
@@ -197,7 +235,7 @@ export default function FindingDetailPage({
             <StatusPill status="affected" label={finding.severity.toUpperCase()} />
             {migration && (
               <StatusPill
-                status={migration.lifecycle_state === "Verification Passed" || migration.lifecycle_state === "Pull Request Merged" ? "verified" : migration.lifecycle_state === "Verification Failed" || migration.lifecycle_state === "Pull Request Closed" ? "warning" : migration.lifecycle_state === "Draft PR Created" || migration.lifecycle_state === "Pull Request Open" ? "pr_created" : migration.lifecycle_state === "Pull Request State Unavailable" ? "neutral" : "detected"}
+                status={migration.lifecycle_state === "Verification Passed" || migration.lifecycle_state === "Pull Request Merged" ? "verified" : migration.lifecycle_state === "Verification Failed" || migration.lifecycle_state === "Verification Unavailable" || migration.lifecycle_state === "Pull Request Closed" ? "warning" : migration.lifecycle_state === "Draft PR Created" || migration.lifecycle_state === "Pull Request Open" ? "pr_created" : migration.lifecycle_state === "Pull Request State Unavailable" ? "neutral" : "detected"}
                 label={migration.lifecycle_state || "Migration Planned"}
               />
             )}
@@ -436,7 +474,13 @@ export default function FindingDetailPage({
             ) : !migration.pr_number ? (
               <div className="space-y-4">
                 <p className="text-xs text-[#686868] leading-relaxed">
-                  Deterministic migration plan generated. Open a safe, review-only GitHub draft PR to an isolated feature branch.
+                  {migration.lifecycle_state === 'Verification Unavailable'
+                    ? 'The isolated verification worker is unavailable. No Draft PR was created.'
+                    : migration.lifecycle_state === 'Verification Failed'
+                    ? 'Verification failed. No Draft PR was created.'
+                    : isVerificationJobActive(migration.verification_job_status)
+                    ? 'Verification is running in the isolated worker. A Draft PR is created only after every required gate passes.'
+                    : 'Deterministic migration plan generated. Verification runs in an isolated worker before any GitHub Draft PR is created.'}
                 </p>
 
                 {/* Pre-proposal branch & safety information */}
@@ -464,7 +508,7 @@ export default function FindingDetailPage({
                 <Button
                   size="md"
                   variant="primary"
-                  disabled={proposing}
+                  disabled={proposing || isVerificationJobActive(migration.verification_job_status)}
                   onClick={handleProposePR}
                   className="w-full gap-2 font-medium"
                 >
@@ -473,7 +517,7 @@ export default function FindingDetailPage({
                   ) : (
                     <GitPullRequest className="w-4 h-4" />
                   )}
-                  <span>{proposing ? "Opening Draft PR..." : "Propose Safe GitHub Draft PR"}</span>
+                  <span>{proposing ? "Queueing Verification..." : isVerificationJobActive(migration.verification_job_status) ? "Verification In Progress" : "Propose Safe GitHub Draft PR"}</span>
                 </Button>
               </div>
             ) : (

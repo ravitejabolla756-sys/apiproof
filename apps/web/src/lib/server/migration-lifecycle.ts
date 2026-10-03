@@ -3,6 +3,7 @@ export type MigrationLifecycleState =
   | 'Verification Pending'
   | 'Verification Passed'
   | 'Verification Failed'
+  | 'Verification Unavailable'
   | 'Draft PR Created'
   | 'Pull Request Open'
   | 'Pull Request Closed'
@@ -28,6 +29,7 @@ function hasExecutionVerifiedEvidence(raw: unknown): boolean {
  */
 export function getMigrationLifecycleState(input: {
   status?: string | null;
+  verificationJobStatus?: string | null;
   verificationReport?: string | null;
   hasPullRequest?: boolean;
   pullRequestState?: string | null;
@@ -41,8 +43,11 @@ export function getMigrationLifecycleState(input: {
       default: return 'Pull Request State Unavailable';
     }
   }
+  if (input.verificationJobStatus === 'pending' || input.verificationJobStatus === 'processing') return 'Verification Pending';
+  if (input.verificationJobStatus === 'execution_unavailable') return 'Verification Unavailable';
   if (input.status === 'pr_created') return 'Pull Request State Unavailable';
   if (input.status === 'verification_failed') return 'Verification Failed';
+  if (input.status === 'verification_unavailable') return 'Verification Unavailable';
   if (input.status === 'verified' && hasExecutionVerifiedEvidence(input.verificationReport)) {
     return 'Verification Passed';
   }

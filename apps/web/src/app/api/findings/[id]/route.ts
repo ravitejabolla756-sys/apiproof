@@ -47,9 +47,11 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
 
   // Check if a migration plan exists for this finding
   const migration = await db.queryOne<MigrationRow>(`
-    SELECT m.*, pr.number as pr_number, pr.url as pr_url, pr.branch_name, pr.state as pr_state
+    SELECT m.*, pr.number as pr_number, pr.url as pr_url, pr.branch_name, pr.state as pr_state,
+      vj.id AS verification_job_id, vj.status AS verification_job_status
     FROM migrations m
     LEFT JOIN pull_requests pr ON pr.migration_id = m.id
+    LEFT JOIN migration_verification_jobs vj ON vj.migration_id = m.id
     WHERE m.finding_id = ?
     ORDER BY m.created_at DESC
     LIMIT 1
@@ -82,6 +84,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       ...migration,
       lifecycle_state: getMigrationLifecycleState({
         status: typeof migration.status === 'string' ? migration.status : null,
+        verificationJobStatus: typeof migration.verification_job_status === 'string' ? migration.verification_job_status : null,
         verificationReport: typeof migration.verification_report === 'string' ? migration.verification_report : null,
         hasPullRequest: migration.pr_number !== null && migration.pr_number !== undefined,
         pullRequestState: typeof migration.pr_state === 'string' ? migration.pr_state : null,
@@ -90,5 +93,5 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       branch_name: canonicalBranch,
       plan: planJson,
     } : null,
-  });
+  }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
 }

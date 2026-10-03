@@ -165,6 +165,9 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
 
 async function persistVerificationFailure(input: { migration: MigrationVerificationMigration; repo: MigrationVerificationRepo }, baselineSha: string | undefined, error: unknown): Promise<void> {
   const reason = error instanceof Error ? error.message : String(error);
+  const status = /Docker exit unavailable|Docker CLI unavailable|VERIFICATION_DOCKER_.*UNAVAILABLE|VERIFICATION_PINNED_IMAGE_UNAVAILABLE/.test(reason)
+    ? 'verification_unavailable'
+    : 'verification_failed';
   const wrapper = {
     schemaVersion: '1.0',
     migrationId: input.migration.id,
@@ -179,7 +182,7 @@ async function persistVerificationFailure(input: { migration: MigrationVerificat
     failureReasons: [reason],
     failedAt: new Date().toISOString(),
   };
-  await getDatabase().execute('UPDATE migrations SET verification_report = ?, status = ? WHERE id = ?', [JSON.stringify(wrapper), 'verification_failed', input.migration.id]);
+  await getDatabase().execute('UPDATE migrations SET verification_report = ?, status = ? WHERE id = ?', [JSON.stringify(wrapper), status, input.migration.id]);
 }
 
 export function validatePersistedMigrationEvidence(raw: string | null | undefined, expected: { repositoryId: string; baselineSha: string; changeId: string; patchDigest: string }): void {
