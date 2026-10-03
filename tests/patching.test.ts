@@ -3,7 +3,7 @@ import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { CandidatePatchSchema } from '@apiproof/shared';
 import { loadStripeRegistry } from '@apiproof/providers';
-import { allowedPatchPath, createPatchWorkspace, buildPatchContext, deterministicPlan, DeterministicPatchGenerator, LLMPatchGenerator, FakeStructuredPatchModel, validateCandidate, applyCandidate, evaluatePatchCase, patchCases, checkWorkspace, runFixturePatch, redactPatchContext, syntaxValid, unifiedDiff, editDiff } from '@apiproof/core';
+import { allowedPatchPath, createPatchWorkspace, createSourcePatchWorkspace, cleanupPatchWorkspace, buildPatchContext, deterministicPlan, DeterministicPatchGenerator, LLMPatchGenerator, FakeStructuredPatchModel, validateCandidate, applyCandidate, evaluatePatchCase, patchCases, checkWorkspace, runFixturePatch, redactPatchContext, syntaxValid, unifiedDiff, editDiff } from '@apiproof/core';
 import { proof, root, repository } from './helpers.js';
 
 const registry = await loadStripeRegistry(path.join(root, 'registry/stripe'));
@@ -17,7 +17,7 @@ async function setup(id = 'coupon-basic', changeId = 'stripe-subscription-coupon
   return { workspace, input, patch };
 }
 describe('patch paths', () => {
-  it.each(['src/billing.ts', 'src/routes/billing.ts', 'src/Widget.tsx'])('allows %s', (file) => expect(allowedPatchPath(file)).toBe(true));
+  it.each(['src/billing.ts', 'src/routes/billing.ts', 'src/Widget.tsx', 'src/billing.test.ts', 'tests/billing.spec.ts'])('allows %s', (file) => expect(allowedPatchPath(file)).toBe(true));
   it.each(['src/CON.ts', 'src/aux.ts', 'src/COM1.ts', 'src/LPT9/file.ts'])('rejects Windows device path %s', (file) => expect(allowedPatchPath(file)).toBe(false));
   it.each(['../../README.md', '../src/a.ts', '/src/a.ts', 'C:/src/a.ts', 'C:\\src\\a.ts', '\\\\server\\src\\a.ts', 'src/../a.ts', 'src/%2e%2e/a.ts', 'src\\a.ts', 'src//a.ts', 'src/a.ts:stream', 'src/a.ts.', 'src/a.ts ', 'src/a\u0000.ts', '.git/config', '.env', 'src/.env.ts', 'package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'src/node_modules/a.ts', 'src/build/a.ts', 'src/dist/a.ts', 'src/credentials.ts', 'src/config.ts', 'src/secrets/a.ts', 'src/a.js', 'src/a.png', 'src/a.d.ts'])('rejects %s', (file) => expect(allowedPatchPath(file)).toBe(false));
 });
@@ -108,6 +108,30 @@ describe('workspace and model trust boundary', () => {
     expect(await readFile(path.join(fixture, 'src/billing.ts'), 'utf8')).toBe(before);
     expect(result.validation.find((v) => v.stage === 'syntax')?.passed).toBe(true);
     expect((await applyCandidate(workspace, input, patch)).status).toBe('PATCH_REJECTED');
+  });
+  it('updates only matching Stripe test assertions alongside the migrated source call', async () => {
+    const files = {
+      'package.json': '{"name":"test-aware-stripe","dependencies":{"stripe":"17.7.0"}}',
+      'src/services/billing.ts': "import Stripe from 'stripe';\nconst client = new Stripe('');\nexport function createSubscription(couponId: string) {\n  return client.subscriptions.create({ customer: 'cus_controlled', coupon: couponId });\n}\n",
+      'tests/billing.test.ts': "import { expect, it, vi } from 'vitest';\nconst create = vi.fn();\nconst other = vi.fn();\nvi.mock('stripe', () => ({ default: class { subscriptions = { create }; } }));\nit('matches the migrated request', () => {\n  expect(create).toHaveBeenCalledWith({ customer: 'cus_controlled', coupon: 'PROMO2026' });\n  expect(create).toHaveBeenLastCalledWith({ coupon: 'SPRING50' });\n  expect(other).toHaveBeenCalledWith({ coupon: 'UNRELATED' });\n  expect({ coupon: 'UNRELATED' }).toEqual({ coupon: 'UNRELATED' });\n});\n",
+    };
+    const workspace = await createSourcePatchWorkspace('test-aware-stripe', files);
+    try {
+      const changeRecord = registry.find((candidate) => candidate.id === 'stripe-subscription-coupon-removed')!;
+      const planning = await proof.planningInput(workspace.directory, changeRecord);
+      const context = await buildPatchContext(workspace, planning, deterministicPlan(planning));
+      const patch = await applyCandidate(workspace, context, await new DeterministicPatchGenerator().generate(context));
+      expect(patch.status).toBe('PATCH_READY_FOR_VALIDATION');
+      expect(patch.files.map((file) => file.path)).toEqual(['src/services/billing.ts', 'tests/billing.test.ts']);
+      await expect(readFile(path.join(workspace.directory, 'src/services/billing.ts'), 'utf8')).resolves.toContain('discounts: [{ coupon: couponId }]');
+      const testResult = await readFile(path.join(workspace.directory, 'tests/billing.test.ts'), 'utf8');
+      expect(testResult).toContain("discounts: [{ coupon: 'PROMO2026' }]");
+      expect(testResult).toContain("discounts: [{ coupon: 'SPRING50' }]");
+      expect(testResult).toContain("expect(other).toHaveBeenCalledWith({ coupon: 'UNRELATED' })");
+      expect(testResult).toContain("expect({ coupon: 'UNRELATED' }).toEqual({ coupon: 'UNRELATED' })");
+    } finally {
+      await cleanupPatchWorkspace(workspace);
+    }
   });
   it('parses TS and TSX without running code and rejects malformed syntax', () => {
     expect(syntaxValid('src/a.ts', "throw new Error('must never run');")).toBe(true);

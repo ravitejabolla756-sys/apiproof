@@ -1,11 +1,82 @@
 import ts from 'typescript';
 import type { PlanningInput, PatchEdit, PatchTransformation } from '@apiproof/shared';
+import { sha256 } from './policy.js';
 export interface AuthorizedTarget extends PatchEdit { path: string; symbol: string; originalDigest: string }
 
 export function syntaxValid(file: string, source: string): boolean {
   const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
   return (parsed as ts.SourceFile & { parseDiagnostics: readonly ts.Diagnostic[] }).parseDiagnostics.length === 0;
 }
+
+function isStripeCouponMigration(input: PlanningInput, semantics: PatchTransformation | undefined): boolean {
+  return input.change.provider === 'stripe'
+    && input.change.id === 'stripe-subscription-coupon-removed'
+    && semantics?.kind === 'singleton-discount'
+    && semantics.destination === 'discounts'
+    && semantics.paths.includes('coupon');
+}
+
+function isTestFile(file: string): boolean {
+  return /(?:^|\/)(?:tests|__tests__)\//.test(file) || /\.(?:test|spec)\.tsx?$/.test(file);
+}
+
+function fileStem(file: string): string {
+  return file.split('/').at(-1)!.replace(/\.(?:(?:test|spec)\.)?(?:tsx?|mts|cts)$/i, '');
+}
+
+function isRelatedTestFile(testFile: string, sourceFile: string): boolean {
+  return isTestFile(testFile) && fileStem(testFile) === fileStem(sourceFile);
+}
+
+function assertionObjects(call: ts.CallExpression, sourceSymbol: string): ts.ObjectLiteralExpression[] {
+  if (!ts.isPropertyAccessExpression(call.expression)) return [];
+  if (!new Set(['toHaveBeenCalledWith', 'toHaveBeenLastCalledWith', 'toHaveBeenNthCalledWith', 'toMatchObject']).has(call.expression.name.text)) return [];
+  const expectation = call.expression.expression;
+  const sourceMethod = sourceSymbol.split('.').at(-1);
+  if (!sourceMethod || !ts.isCallExpression(expectation) || !ts.isIdentifier(expectation.expression) || expectation.expression.text !== 'expect') return [];
+  const actual = expectation.arguments[0];
+  const actualMethod = actual && ts.isPropertyAccessExpression(actual) ? actual.name.text : actual && ts.isIdentifier(actual) ? actual.text : undefined;
+  if (actualMethod !== sourceMethod) return [];
+  const first = call.arguments[0];
+  if (first && ts.isObjectLiteralExpression(first)) return [first];
+  const containing = first && ts.isCallExpression(first) ? first.arguments[0] : undefined;
+  if (first && ts.isCallExpression(first) && ts.isPropertyAccessExpression(first.expression)
+    && ts.isIdentifier(first.expression.expression) && first.expression.expression.text === 'expect'
+    && first.expression.name.text === 'objectContaining' && containing && ts.isObjectLiteralExpression(containing)) return [containing];
+  return [];
+}
+
+/** Add only direct matcher assertions in the test module corresponding to the migrated source module. */
+export function testAssertionTargetsFor(file: string, source: string, input: PlanningInput, sourceFile: string, sourceTarget: AuthorizedTarget): AuthorizedTarget[] {
+  const semantics = input.change.id === 'stripe-subscription-coupon-removed' ? ({ kind: 'singleton-discount', paths: ['coupon'], destination: 'discounts' } as PatchTransformation) : undefined;
+  if (!isStripeCouponMigration(input, semantics) || !isRelatedTestFile(file, sourceFile) || !/^\s*coupon\s*:/.test(sourceTarget.expected)) return [];
+  const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const targets: AuthorizedTarget[] = [];
+  const seen = new Set<string>();
+  const add = (node: ts.PropertyAssignment): void => {
+    const start = node.getStart(parsed); const end = node.end; const key = `${start}:${end}`;
+    if (seen.has(key)) return;
+    const value = node.initializer;
+    if (!(ts.isIdentifier(value) || (ts.isStringLiteral(value) && value.text.length > 0)) || value.getText(parsed) === 'undefined') return;
+    seen.add(key);
+    targets.push({ targetId: `test-target-${targets.length}-${sourceTarget.targetId}`, path: file, symbol: sourceTarget.symbol, originalDigest: sha256(source), operation: 'replace-range', start, end, expected: source.slice(start, end), replacement: `discounts: [{ coupon: ${value.getText(parsed)} }]`, evidenceIds: [...sourceTarget.evidenceIds] });
+  };
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node)) {
+      for (const object of assertionObjects(node, sourceTarget.symbol)) {
+        const properties = object.properties.filter(ts.isPropertyAssignment);
+        if (properties.some((property) => !ts.isIdentifier(property.name))) continue;
+        const coupon = properties.filter((property) => property.name.getText(parsed) === 'coupon');
+        if (coupon.length !== 1 || properties.some((property) => ['discounts', 'promotion_code'].includes(property.name.getText(parsed)))) continue;
+        add(coupon[0]!);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  return targets;
+}
+
 export function targetsFor(file: string, source: string, input: PlanningInput, digest: string, semantics?: PatchTransformation): AuthorizedTarget[] {
   if (!semantics) return [];
   const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);

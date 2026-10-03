@@ -158,8 +158,11 @@ describe('production verification workspace preparation', () => {
       const generated = await new DeterministicPatchGenerator().generate(context);
       const patch = await applyCandidate(workspace, context, generated);
       expect(patch.status).toBe('PATCH_READY_FOR_VALIDATION');
+      expect(patch.files.map((file) => file.path)).toEqual(['src/billing.ts', 'src/billing.test.ts']);
       const resulting = await readFile(path.join(workspace.directory, 'src/billing.ts'), 'utf8');
       expect(resulting).toContain("subscriptions.create({ customer: 'cus_controlled', discounts: [{ coupon: 'launch' }] })");
+      const resultingTest = await readFile(path.join(workspace.directory, 'src/billing.test.ts'), 'utf8');
+      expect(resultingTest).toContain("discounts: [{ coupon: 'launch' }]");
       expect(resulting).not.toContain('--- a/');
       expect(patch.files[0]?.patchedDigest).toBe(await sha256(resulting));
 
@@ -167,16 +170,17 @@ describe('production verification workspace preparation', () => {
       // the DockerSandbox path is exercised separately and fails closed below.
       const fakeVerified = await verifyPatchedFixture(patch, buildVerificationWorkspaceCommands('test-only', new Map(Object.entries(files))), new FakeSandbox(), { workspace: workspace.directory });
       expect(fakeVerified.status).toBe('VERIFICATION_PASSED');
-      const patchContent = { 'src/billing.ts': resulting };
+      const patchContent = { 'src/billing.ts': resulting, 'src/billing.test.ts': resultingTest };
+      const targetFiles = patch.files.map((file) => file.path);
       const evidence = createVerificationEvidence({
         repositoryId: 'repo-typescript-fixture', baselineSha: 'a'.repeat(40), changeId: changeRecord.id,
         patchDigest: computeCanonicalPatchDigest(patchContent), proofLevel: 'CONTRACT_VERIFIED',
         patchApplied: true, typecheckPassed: fakeVerified.summary.typecheckPassed,
         testsPassed: fakeVerified.summary.testPassed, contractPassed: true,
         verificationId: fakeVerified.verificationId, verificationStatus: fakeVerified.status,
-        verificationReportDigest: await sha256(JSON.stringify(fakeVerified)), targetFiles: ['src/billing.ts'],
-        sourceDigests: { 'src/billing.ts': patch.files[0]!.originalDigest },
-        resultingDigests: { 'src/billing.ts': patch.files[0]!.patchedDigest! },
+        verificationReportDigest: await sha256(JSON.stringify(fakeVerified)), targetFiles,
+        sourceDigests: Object.fromEntries(patch.files.map((file) => [file.path, file.originalDigest])),
+        resultingDigests: Object.fromEntries(patch.files.map((file) => [file.path, file.patchedDigest!])),
       });
       validatePersistedMigrationEvidence(JSON.stringify({ baselineSha: 'a'.repeat(40), patchDigest: evidence.patchDigest, report: fakeVerified, evidence }), {
         repositoryId: 'repo-typescript-fixture', baselineSha: 'a'.repeat(40), changeId: changeRecord.id, patchDigest: evidence.patchDigest,

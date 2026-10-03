@@ -6,7 +6,7 @@ import { AnalysisError } from '@apiproof/shared';
 export const sha256 = (text: string | Buffer): string => createHash('sha256').update(text).digest('hex');
 export function fail(code: string): never { throw new AnalysisError(code, `Phase 4 patch safety check failed: ${code}.`); }
 export function allowedPatchPath(file: string): boolean {
-  return /^src\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.tsx?$/.test(file)
+  return /^(?:src|tests|__tests__)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+(?:\.(?:test|spec))?\.tsx?$/.test(file)
     && !/(?:^|\/)(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|\/|$)/i.test(file)
     && !/(?:^|\/)(?:node_modules|dist|build|coverage|vendor|secrets?|credentials?|config)(?:\/|\.)/i.test(file)
     && !/(?:secret|credential|password|token|config|\.d\.ts)/i.test(file);

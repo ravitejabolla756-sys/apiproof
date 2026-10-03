@@ -3,7 +3,7 @@ import { validatePlan } from '../planning/validator.js';
 import type { PatchWorkspace } from './workspace.js';
 import { checkWorkspace } from './workspace.js';
 import { allowedPatchPath, fail, redactPatchContext, sha256 } from './policy.js';
-import { targetsFor, syntaxValid } from './transforms.js';
+import { targetsFor, testAssertionTargetsFor, syntaxValid } from './transforms.js';
 import { loadPatchRules } from './rules.js';
 import type { AuthorizedTarget } from './transforms.js';
 import { readFile } from 'node:fs/promises';
@@ -48,13 +48,19 @@ export async function buildPatchContext(workspace: PatchWorkspace, input: Planni
       snippets.push({ file, ...redacted }); targets.push(target);
     }
   }
+  const sourceTargets = [...targets];
+  for (const file of Object.keys(workspace.snapshot).sort()) {
+    if (sourceTargets.some((target) => target.path === file)) continue;
+    const source = workspace.snapshot[file]!;
+    for (const sourceTarget of sourceTargets) targets.push(...testAssertionTargetsFor(file, source, input, sourceTarget.path, sourceTarget));
+  }
   // Every proven impact must have its own authorized transformation. No partial migration by omission.
   if (!targets.length || input.impacts.some((impact) => !targets.some((target) => target.evidenceIds.includes(`impact:${impact.usageId}`))) || JSON.stringify(snippets).length > 24_000 || targets.length > 50 || targets.some((target) => target.expected.length > 16_000 || target.replacement.length > 16_000)) supported = false;
   const cleanPlan = JSON.parse(JSON.stringify(plan, (_key, value: unknown) => typeof value === 'string' ? redactPatchContext(value).text : value)) as MigrationPlan;
   // Local absolute paths are not model context.
   cleanPlan.repository = workspace.repositoryId;
   if (JSON.stringify({ plan: cleanPlan, snippets, targets }).length > 64_000) { supported = false; warnings.push('CONTEXT_BOUND_REACHED'); }
-  const sourceDigests = Object.fromEntries([...new Set(plan.affectedLocations.map((item) => item.file))].filter((file) => workspace.snapshot[file] !== undefined).map((file) => [file, sha256(workspace.snapshot[file]!)]));
+  const sourceDigests = Object.fromEntries([...new Set(targets.map((target) => target.path))].filter((file) => workspace.snapshot[file] !== undefined).map((file) => [file, sha256(workspace.snapshot[file]!)]));
   const result: PatchGenerationInput = { plan: cleanPlan, planDigest: sha256(JSON.stringify(plan)), changeDigest: sha256(JSON.stringify(input.change)), rulesDigest: sha256(JSON.stringify(rules)), repositoryId: workspace.repositoryId, runId: workspace.runId, workspace: workspace.directory, sourceDigests,
     targets: supported ? targets : [], snippets: supported ? snippets : [], instructions: rule?.transformation ?? null, warnings: [...new Set(warnings)], supported };
   issuedContexts.set(result, { workspace, canonical: structuredClone(result) });

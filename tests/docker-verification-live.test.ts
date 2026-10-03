@@ -34,13 +34,15 @@ describe('real Docker release proof', () => {
       const patch = await applyCandidate(workspace, context, await new DeterministicPatchGenerator().generate(context));
       expect(patch.status).toBe('PATCH_READY_FOR_VALIDATION');
       const resulting = await readFile(path.join(workspace.directory, 'src/billing.ts'), 'utf8');
+      const resultingTest = await readFile(path.join(workspace.directory, 'src/billing.test.ts'), 'utf8');
       const commands = buildVerificationWorkspaceCommands('docker-migration-proof', files);
       provisioning = await provisionVerificationDependencies(files, commands);
       const report = await verifyPatchedFixture(patch, commands, new DockerSandbox(), { workspace: workspace.directory, dependencyProvisioning: provisioning });
       expect(report.status, JSON.stringify(report)).toBe('VERIFICATION_PASSED');
       expect(report.steps.map((step) => [step.stage, step.exitCode])).toEqual([['INSTALL', 0], ['BUILD', 0], ['TYPECHECK', 0], ['TEST', 0]]);
-      expect(await findWorkspaceContentDrift(workspace, { 'src/billing.ts': resulting })).toEqual([]);
-      const evidence = createVerificationEvidence({ repositoryId: 'docker-migration-proof', baselineSha: 'a'.repeat(40), changeId: change.id, patchDigest: computeCanonicalPatchDigest({ 'src/billing.ts': resulting }), proofLevel: 'EXECUTION_VERIFIED', patchApplied: true, typecheckPassed: report.summary.typecheckPassed, testsPassed: report.summary.testPassed, contractPassed: patch.validation.every((item) => item.passed), verificationId: report.verificationId, verificationStatus: report.status, verificationReportDigest: crypto.createHash('sha256').update(JSON.stringify(report)).digest('hex'), targetFiles: ['src/billing.ts'], sourceDigests: { 'src/billing.ts': patch.files[0]!.originalDigest }, resultingDigests: { 'src/billing.ts': patch.files[0]!.patchedDigest! } });
+      expect(await findWorkspaceContentDrift(workspace, { 'src/billing.ts': resulting, 'src/billing.test.ts': resultingTest })).toEqual([]);
+      const patchContent = { 'src/billing.ts': resulting, 'src/billing.test.ts': resultingTest };
+      const evidence = createVerificationEvidence({ repositoryId: 'docker-migration-proof', baselineSha: 'a'.repeat(40), changeId: change.id, patchDigest: computeCanonicalPatchDigest(patchContent), proofLevel: 'EXECUTION_VERIFIED', patchApplied: true, typecheckPassed: report.summary.typecheckPassed, testsPassed: report.summary.testPassed, contractPassed: patch.validation.every((item) => item.passed), verificationId: report.verificationId, verificationStatus: report.status, verificationReportDigest: crypto.createHash('sha256').update(JSON.stringify(report)).digest('hex'), targetFiles: patch.files.map((file) => file.path), sourceDigests: Object.fromEntries(patch.files.map((file) => [file.path, file.originalDigest])), resultingDigests: Object.fromEntries(patch.files.map((file) => [file.path, file.patchedDigest!])) });
       validatePersistedMigrationEvidence(JSON.stringify({ baselineSha: evidence.baselineSha, patchDigest: evidence.patchDigest, report, evidence }), evidence);
       expect(resulting).toContain('discounts:'); expect(resulting).not.toContain('--- a/');
 
@@ -55,7 +57,7 @@ describe('real Docker release proof', () => {
       if (provisioning) await cleanupProvisionedDependencies(provisioning);
       await cleanupPatchWorkspace(workspace);
     }
-  }, 300000);
+  }, 480000);
 
   it.runIf(realDocker)('provisions npm artifacts and runs its offline stages in the same isolated container', async () => {
     const names = ['package.json', 'package-lock.json', 'tsconfig.json', 'src/index.ts', 'src/index.test.ts'];
