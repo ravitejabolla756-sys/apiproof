@@ -9,6 +9,7 @@ import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import * as proposalService from '../apps/web/src/lib/server/proposal-service.js';
 import { enqueueMigrationProposal } from '../apps/web/src/lib/server/proposal-verification-jobs.js';
 import { processOneMigrationVerificationJob } from '../apps/web/src/lib/server/migration-verification-worker.js';
 import { publishVerificationWorkerHeartbeat } from '../apps/web/src/lib/server/verification-worker-registry.js';
@@ -383,6 +384,52 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
         patch_diff: null,
         verification_report: null,
       });
+    });
+
+    it('clears stale artifacts for an existing failed job even when migration status was normalized to planned', async () => {
+      const { user, migration, baselineSha } = await setupFixture();
+      await markWorkerReady();
+      const first = await enqueueMigrationProposal(migration.id, user.id);
+
+      db.prepare(`UPDATE migration_verification_jobs
+        SET status = 'failed', attempt_count = 1, error_category = 'VERIFICATION_TEST_FAILED', error_message = 'old verifier result'
+        WHERE id = ?`).run(first.jobId);
+      db.prepare(`UPDATE migrations SET status = 'planned', patch_digest = 'old-digest',
+        patch_content = ?, patch_diff = 'old diff', verification_report = ? WHERE id = ?`).run(
+        JSON.stringify({ 'src/services/billing.ts': 'old source-only patch' }),
+        JSON.stringify({ schemaVersion: '1.0', targetFiles: ['src/services/billing.ts'] }),
+        migration.id,
+      );
+
+      const regeneratedPatch = {
+        'src/services/billing.ts': 'current source patch',
+        'tests/billing.test.ts': 'current related assertion patch',
+      };
+      const regeneratedReport = JSON.stringify({ schemaVersion: '1.0', targetFiles: Object.keys(regeneratedPatch) });
+      const proposal = vi.spyOn(proposalService, 'createGitHubProposal').mockImplementation(async () => {
+        db.prepare(`UPDATE migrations SET status = 'pr_created', patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = ? WHERE id = ?`).run(
+          'current-two-file-digest', JSON.stringify(regeneratedPatch), 'current two-file diff', regeneratedReport, migration.id,
+        );
+        return { pullRequestId: 'pr_current', number: 1, title: 'current', url: 'https://github.com/example/pr/1', branchName: 'apiproof/current', baseBranch: 'main', state: 'draft', humanReviewRequired: true, autoMergeEnabled: false, patchDigest: 'current-two-file-digest', createdAt: new Date().toISOString() };
+      });
+
+      try {
+        const retry = await enqueueMigrationProposal(migration.id, user.id);
+        expect(retry).toEqual({ jobId: first.jobId, status: 'verification_in_progress' });
+        expect(db.prepare('SELECT id, attempt_count, status FROM migration_verification_jobs WHERE migration_id = ?').get(migration.id)).toEqual({ id: first.jobId, attempt_count: 0, status: 'pending' });
+        expect(db.prepare('SELECT id, baseline_sha, status, patch_digest, patch_content, patch_diff, verification_report FROM migrations WHERE id = ?').get(migration.id)).toEqual({ id: migration.id, baseline_sha: baselineSha, status: 'planned', patch_digest: null, patch_content: null, patch_diff: null, verification_report: null });
+
+        await expect(processOneMigrationVerificationJob('test-docker-worker')).resolves.toBe(true);
+        expect(proposal).toHaveBeenCalledTimes(1);
+        expect(db.prepare('SELECT id, attempt_count, status FROM migration_verification_jobs WHERE migration_id = ?').get(migration.id)).toEqual({ id: first.jobId, attempt_count: 1, status: 'completed' });
+        const final = db.prepare('SELECT id, baseline_sha, patch_digest, patch_content FROM migrations WHERE id = ?').get(migration.id) as { id: string; baseline_sha: string; patch_digest: string; patch_content: string };
+        expect(final.id).toBe(migration.id);
+        expect(final.baseline_sha).toBe(baselineSha);
+        expect(JSON.parse(final.patch_content)).toEqual(regeneratedPatch);
+        expect(final.patch_digest).toBe('current-two-file-digest');
+      } finally {
+        proposal.mockRestore();
+      }
     });
 
     it('regenerates a failed legacy patch with no job row before running verification', async () => {

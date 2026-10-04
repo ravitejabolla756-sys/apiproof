@@ -80,7 +80,7 @@ export async function enqueueMigrationProposal(migrationId: string, userId: stri
 async function invalidateFailedMigrationArtifacts(db: Pick<DatabaseAdapter, 'execute'>, migrationId: string): Promise<void> {
   await db.execute(`UPDATE migrations SET status = 'planned', patch_digest = NULL, patch_content = NULL,
     patch_diff = NULL, verification_report = NULL
-    WHERE id = ? AND status IN ('verification_unavailable', 'verification_failed')
+    WHERE id = ? AND status <> 'pr_created'
       AND NOT EXISTS (SELECT 1 FROM pull_requests WHERE migration_id = ?)`, [migrationId, migrationId]);
 }
 
