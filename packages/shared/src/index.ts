@@ -11,6 +11,9 @@ export * from './contracts.js';
 export * from './compatibility.js';
 export * from './change-ingestion.js';
 export * from './usage-ir.js';
+export * from './migration-v2.js';
+export * from './verification-v2.js';
+export * from './github-check-v2.js';
 export * from './compatibility-proof.js';
 
 /** Safe errors carry fixed messages; raw parser errors may contain customer code. */
