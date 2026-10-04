@@ -297,6 +297,9 @@ export async function fetchRemoteRepositoryFiles(
   const filesMap = new Map<string, string>();
   const filesToFetch = tree.filter((file) =>
     file === 'package.json' ||
+    file === 'pnpm-lock.yaml' ||
+    file === 'package-lock.json' ||
+    file === 'yarn.lock' ||
     (/\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i.test(file) &&
       !file.split('/').some((p) => EXCLUDED_DIRECTORIES.has(p) || p.startsWith('.')))
   );
