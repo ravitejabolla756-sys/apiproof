@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDockerProcessEnvironment } from '../packages/core/src/verification/docker-process.js';
+import { buildDockerProcessArgs, buildDockerProcessEnvironment } from '../packages/core/src/verification/docker-process.js';
 
 describe('Docker CLI subprocess environment', () => {
   it('preserves Docker Desktop context/config and home discovery without forwarding secrets', () => {
@@ -24,5 +24,15 @@ describe('Docker CLI subprocess environment', () => {
       HOMEPATH: '\\Users\\dev',
       CI: 'true',
     });
+  });
+
+  it('passes the selected context explicitly to Docker instead of relying on CLI discovery', () => {
+    expect(buildDockerProcessArgs(['image', 'inspect', 'node:22.14.0-alpine3.21'], {
+      DOCKER_CONTEXT: 'desktop-linux',
+    })).toEqual(['--context', 'desktop-linux', 'image', 'inspect', 'node:22.14.0-alpine3.21']);
+  });
+
+  it('leaves normal Docker context discovery intact when no context is configured', () => {
+    expect(buildDockerProcessArgs(['info'], {})).toEqual(['info']);
   });
 });

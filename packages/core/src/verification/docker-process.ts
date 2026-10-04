@@ -25,6 +25,15 @@ export function buildDockerProcessEnvironment(
   return environment;
 }
 
+/** Select the configured Docker context explicitly for every CLI invocation. */
+export function buildDockerProcessArgs(
+  args: readonly string[],
+  source: NodeJS.ProcessEnv = process.env,
+): string[] {
+  const context = source.DOCKER_CONTEXT?.trim();
+  return context ? ['--context', context, ...args] : [...args];
+}
+
 export interface DockerProcessResult {
   code: number | null;
   timedOut: boolean;
@@ -41,9 +50,10 @@ export async function runDockerProcess(dockerPath: string, args: readonly string
 }): Promise<DockerProcessResult> {
   const started = Date.now();
   return await new Promise((resolve) => {
-    const child = spawn(dockerPath, [...args], {
+    const environment = buildDockerProcessEnvironment({ ...process.env, PATH: options.path ?? process.env.PATH ?? '' });
+    const child = spawn(dockerPath, buildDockerProcessArgs(args, environment), {
       cwd: options.cwd,
-      env: buildDockerProcessEnvironment({ ...process.env, PATH: options.path ?? process.env.PATH ?? '' }),
+      env: environment,
       shell: false, windowsHide: true,
     });
     let stdout = Buffer.alloc(0); let stderr = Buffer.alloc(0);
