@@ -8,6 +8,8 @@ export * from './planning.js';
 export * from './patching.js';
 export * from './verification.js';
 export * from './contracts.js';
+export * from './compatibility.js';
+export * from './change-ingestion.js';
 
 /** Safe errors carry fixed messages; raw parser errors may contain customer code. */
 export { AnalysisError } from './errors.js';

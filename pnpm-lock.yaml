@@ -129,6 +129,9 @@ importers:
       '@apiproof/core':
         specifier: workspace:*
         version: link:../core
+      '@apiproof/providers':
+        specifier: workspace:*
+        version: link:../providers
       '@apiproof/shared':
         specifier: workspace:*
         version: link:../shared

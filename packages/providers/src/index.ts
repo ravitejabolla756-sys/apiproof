@@ -4,3 +4,8 @@ export { TwilioProvider } from './twilio/index.js';
 export { loadTwilioRegistry, validateRegistryChange as validateTwilioRegistryChange } from './twilio/registry.js';
 export { DISCOVERY_PROVIDERS, DISCOVERY_PROVIDER_REGISTRY, PROVIDER_CATALOG_SUMMARY, compileProviderRegistry, validateProviderDefinitions } from './discovery-registry.js';
 export type { ProviderDefinition, ProviderCapability, ProviderCategory, ProviderRegistry, PackagePrefixIndex, DomainLookupIndex, ProviderCatalogSummary } from './discovery-registry.js';
+export { compileProductionChangeRegistry, PRODUCTION_COMPATIBILITY_REGISTRY } from './compatibility-registry.js';
+export type { ProductionChangeRegistry } from './compatibility-registry.js';
+export { compileCandidateChangeRegistry, sourceHasUpdated, promoteCandidateToReviewed } from './change-ingestion-registry.js';
+export type { CandidateChangeRegistry } from './change-ingestion-registry.js';
+export { OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
