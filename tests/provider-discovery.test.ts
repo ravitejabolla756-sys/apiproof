@@ -173,4 +173,13 @@ fetch('https://api.anthropic.com/v1/messages');`,
     expect(saved.discovery.providers).toHaveLength(1);
     expect(saved.discovery.providers[0]?.providerId).toBe('openai');
   });
+
+  it('persists normalized usage IR separately from legacy compatibility evidence', () => {
+    const compatibility = { schemaVersion: 1 as const, providers: [] };
+    const usageIR = [{ id: 'usage-2', language: 'typescript' as const, providerId: 'openai', packageName: 'openai', declaredVersion: '^4.0.0', resolvedVersion: '4.2.0', versionSource: 'lockfile' as const, versionConfidence: 'exact' as const, operation: 'responses.create', parameters: [], responseFields: [], authEvidence: [], dynamic: false, location: { file: 'src/ai.ts', line: 4, column: 1 }, confidence: 0.95, evidence: [{ kind: 'sdk-call' as const, detail: 'responses.create', file: 'src/ai.ts', line: 4, provenance: 'static-source' as const }] }];
+    const saved = scanResultWithDiscovery(compatibility, [], usageIR);
+    expect(saved.usageIR).toEqual(usageIR);
+    expect(saved.usageIRTruncated).toBe(false);
+    expect(saved.providers).toEqual([]);
+  });
 });

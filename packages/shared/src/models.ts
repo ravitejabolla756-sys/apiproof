@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Text, SymbolPath, ChangeRuleSchema, ChangeTypeSchema, EvidenceSourceSchema, ReviewSchema, ReasonCodeSchema } from './change-rules.js';
+import { NormalizedUsageIRSchema } from './usage-ir.js';
 
 export const ApiChangeSchema = z.strictObject({
   provider: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),
@@ -52,6 +53,9 @@ export const LocationSchema = z.strictObject({
   end: z.strictObject({ line: z.number().int().positive(), column: z.number().int().positive() }),
 });
 export type CodeLocation = z.infer<typeof LocationSchema>;
+
+export const SupportedLanguageSchema = z.enum(['typescript', 'javascript', 'python', 'go', 'java', 'kotlin', 'csharp', 'ruby', 'rust']);
+export type SupportedLanguage = z.infer<typeof SupportedLanguageSchema>;
 
 export const ArgumentFactSchema = z.strictObject({
   index: z.number().int().nonnegative(), complete: z.boolean(),
@@ -107,10 +111,12 @@ export type Diagnostic = z.infer<typeof DiagnosticSchema>;
 export const ScanResultSchema = z.strictObject({
   schemaVersion: z.enum(['1.0', '1.1', '1.2']),
   provider: z.string(),
-  language: z.literal('typescript'),
+  language: SupportedLanguageSchema,
   providerUsed: z.boolean(),
   dependencies: z.array(DependencyFindingSchema),
   usages: z.array(UsageFindingSchema),
+  /** Optional language-neutral projection; legacy consumers continue using `usages`. */
+  usageIR: z.array(NormalizedUsageIRSchema).optional(),
   diagnostics: z.array(DiagnosticSchema),
   coverage: z.strictObject({
     scope: z.literal('supported-static-patterns'),

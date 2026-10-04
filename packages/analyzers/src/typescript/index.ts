@@ -5,6 +5,7 @@ import { TOOL_VERSION } from '@apiproof/shared';
 import { RepositorySnapshot } from './repository.js';
 import { detectDependencies } from './dependencies.js';
 import { detectUsages } from './usages.js';
+import { normalizeCompatibilityUsage, usageFindingToCompatibilityUsage } from './usage-ir.js';
 
 export class TypeScriptRepositoryAnalyzer implements RepositoryAnalyzer {
   readonly language = 'typescript' as const;
@@ -26,10 +27,18 @@ export class TypeScriptRepositoryAnalyzer implements RepositoryAnalyzer {
       if (program.getSyntacticDiagnostics(source.compilerNode).length) snapshot.warn('SYNTAX_ERROR', 'TypeScript contains syntax errors; findings may be incomplete.', source.getFilePath().replace('/repository/', ''));
     }
     const usages = detectUsages(sources, provider, snapshot);
+    const dependency = dependencies.find((item) => item.packageName === provider.packageName);
+    const declaredVersion = dependency?.declarations[0]?.range ?? null;
+    const resolvedVersion = dependency?.versionResolution?.version ?? dependency?.installedVersion ?? dependency?.lockedVersion ?? null;
+    const versionSource = dependency?.versionResolution?.source ?? (dependency?.installedVersion ? 'installed' : dependency?.lockedVersion ? 'lockfile' : declaredVersion ? 'package-json' : 'unknown');
+    const versionConfidence = resolvedVersion ? 'exact' : declaredVersion ? 'declared-only' : 'unknown';
+    const usageIR = usages.map((usage) => normalizeCompatibilityUsage(usageFindingToCompatibilityUsage(usage, provider.packageName), {
+      language: 'typescript', declaredVersion, resolvedVersion, versionSource, versionConfidence,
+    }));
     return {
       schemaVersion: '1.2', provider: provider.id, language: 'typescript',
       providerUsed: dependencies.length > 0 || usages.length > 0,
-      dependencies, usages, diagnostics: snapshot.diagnostics,
+      dependencies, usages, usageIR, diagnostics: snapshot.diagnostics,
       coverage: {
         scope: 'supported-static-patterns', filesAnalyzed: sources.length,
         filesSkipped: snapshot.skipped, complete: snapshot.diagnostics.length === 0,
