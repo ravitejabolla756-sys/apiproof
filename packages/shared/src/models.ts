@@ -31,6 +31,12 @@ export const ApiChangeSchema = z.strictObject({
   review: ReviewSchema.optional(),
   versionScope: z.enum(['sdk', 'api-and-sdk']).optional(),
   assumptions: z.array(Text).max(20).optional(),
+  languageStrategies: z.array(z.strictObject({
+    language: z.enum(['typescript', 'javascript', 'python', 'go', 'java', 'kotlin', 'csharp', 'ruby', 'rust']),
+    adapterId: z.string().min(1).max(128),
+    detectionRuleId: z.string().min(1).max(128),
+    migrationStrategyId: z.string().min(1).max(128),
+  })).max(20).optional(),
 }).refine((change) => change.provenance !== 'official' || change.sourceUrl !== undefined, {
   message: 'Official changes require a source URL.', path: ['sourceUrl'],
 });

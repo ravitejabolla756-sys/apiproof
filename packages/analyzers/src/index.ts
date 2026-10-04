@@ -7,3 +7,18 @@ export type { NormalizedCompatibilityInput } from './typescript/compatibility.js
 export { normalizeCompatibilityUsage, normalizedUsageToCompatibilityUsage, usageFindingToCompatibilityUsage } from './typescript/usage-ir.js';
 export type { UsageIRContext } from './typescript/usage-ir.js';
 export { evaluateRegisteredCompatibility, evaluateRegisteredNormalizedCompatibility } from './typescript/compatibility.js';
+export { PythonRepositoryAnalyzer } from './python/index.js';
+export { PythonRepositorySnapshot } from './python/repository.js';
+export type { PythonProviderDescriptor } from './python/index.js';
+export { GoRepositoryAnalyzer } from './go/index.js';
+export { GoRepositorySnapshot } from './go/repository.js';
+export type { GoProviderDescriptor } from './go/index.js';
+export { MultiLanguageRepositoryAnalyzer } from './multi-language.js';
+export type { LanguageRepositoryAnalyzer, RepositoryInput } from './multi-language.js';
+export { detectRepositoryLanguages } from './multi-language.js';
+export type { LanguageEvidence } from './multi-language.js';
+export type { LanguageScan, DetectedLanguageScan } from './multi-language.js';
+export { JvmRepositoryAnalyzer, JavaRepositoryAnalyzer, KotlinRepositoryAnalyzer } from './jvm/index.js';
+export type { JvmProviderDescriptor } from './jvm/index.js';
+export { CSharpRepositoryAnalyzer } from './dotnet/index.js';
+export type { DotnetProviderDescriptor } from './dotnet/index.js';

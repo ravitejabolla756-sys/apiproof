@@ -8,6 +8,7 @@ export * from './planning.js';
 export * from './patching.js';
 export * from './verification.js';
 export * from './contracts.js';
+export * from './intelligence.js';
 export * from './compatibility.js';
 export * from './change-ingestion.js';
 export * from './usage-ir.js';
