@@ -45,10 +45,43 @@ function isVitestSpyFactory(node: ts.Expression | undefined): boolean {
   return isVitestSpyFactory(factory.body);
 }
 
+function hoistedSpyProperties(node: ts.Expression | undefined): Set<string> {
+  if (!node || !ts.isCallExpression(node) || !ts.isPropertyAccessExpression(node.expression)
+    || !ts.isIdentifier(node.expression.expression) || node.expression.expression.text !== 'vi'
+    || node.expression.name.text !== 'hoisted' || node.arguments.length !== 1) return new Set<string>();
+  const factory = node.arguments[0];
+  if (!factory || (!ts.isArrowFunction(factory) && !ts.isFunctionExpression(factory))) return new Set<string>();
+  const returned = ts.isBlock(factory.body)
+    ? (() => {
+      const statement = factory.body.statements.length === 1 ? factory.body.statements[0] : undefined;
+      return statement && ts.isReturnStatement(statement) ? statement.expression : undefined;
+    })()
+    : factory.body;
+  const object = returned && ts.isParenthesizedExpression(returned) ? returned.expression : returned;
+  if (!object || !ts.isObjectLiteralExpression(object)) return new Set<string>();
+  const properties = new Set<string>();
+  for (const property of object.properties) {
+    if (ts.isPropertyAssignment(property) && propertyName(property.name) && isVitestSpyFactory(property.initializer)) {
+      properties.add(propertyName(property.name)!);
+    }
+  }
+  return properties;
+}
+
 function locallyDeclaredVitestSpies(parsed: ts.SourceFile): Set<string> {
   const spies = new Set<string>();
   const visit = (node: ts.Node): void => {
-    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && isVitestSpyFactory(node.initializer)) spies.add(node.name.text);
+    if (ts.isVariableDeclaration(node)) {
+      if (ts.isIdentifier(node.name) && isVitestSpyFactory(node.initializer)) spies.add(node.name.text);
+      if (ts.isObjectBindingPattern(node.name)) {
+        const properties = hoistedSpyProperties(node.initializer);
+        for (const element of node.name.elements) {
+          if (!ts.isIdentifier(element.name)) continue;
+          const property = element.propertyName ? propertyName(element.propertyName) : element.name.text;
+          if (property && properties.has(property)) spies.add(element.name.text);
+        }
+      }
+    }
     ts.forEachChild(node, visit);
   };
   visit(parsed);
@@ -59,6 +92,10 @@ function hasMockSpyAtProviderPath(node: ts.Node, path: string[], providerPath: r
   const visit = (child: ts.Node, currentPath: string[]): boolean => {
     if (ts.isParenthesizedExpression(child)) return visit(child.expression, currentPath);
     if (ts.isArrowFunction(child) || ts.isFunctionExpression(child)) return visit(child.body, currentPath);
+    if (ts.isCallExpression(child) && ts.isPropertyAccessExpression(child.expression)
+      && child.expression.name.text === 'mockImplementation' && child.arguments.length === 1) {
+      return visit(child.arguments[0]!, currentPath);
+    }
     if (ts.isBlock(child)) return child.statements.some((statement) => visit(statement, currentPath));
     if (ts.isReturnStatement(child)) return Boolean(child.expression && visit(child.expression, currentPath));
     if (ts.isClassExpression(child)) return child.members.some((member) => visit(member, currentPath));

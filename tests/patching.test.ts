@@ -133,6 +133,30 @@ describe('workspace and model trust boundary', () => {
       await cleanupPatchWorkspace(workspace);
     }
   });
+  it('matches the historical Testimonal hoisted Stripe mock without authorizing unrelated spies', async () => {
+    const files = {
+      'package.json': '{"name":"testimonal-baseline","dependencies":{"stripe":"17.7.0"}}',
+      'src/services/billing.ts': "import Stripe from 'stripe';\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? 'sk_test_fixture');\nexport async function createSubscription(customerId: string, priceId: string, couponId: string) {\n  return stripe.subscriptions.create({ customer: customerId, items: [{ price: priceId }], coupon: couponId } as never);\n}\n",
+      'tests/billing.test.ts': "import { expect, it, vi } from 'vitest';\nconst { mockSubscriptionsCreate, mockCustomersCreate, unrelatedSpy, similarlyNamedSpy } = vi.hoisted(() => ({\n  mockSubscriptionsCreate: vi.fn(),\n  mockCustomersCreate: vi.fn(),\n  unrelatedSpy: vi.fn(),\n  similarlyNamedSpy: vi.fn(),\n}));\nvi.mock('stripe', () => ({ default: vi.fn().mockImplementation(() => ({\n  subscriptions: { create: mockSubscriptionsCreate, update: similarlyNamedSpy },\n  customers: { create: mockCustomersCreate },\n})) }));\nvi.mock('other-provider', () => ({ default: vi.fn().mockImplementation(() => ({\n  subscriptions: { create: unrelatedSpy },\n})) }));\nit('matches the migrated request', () => {\n  expect(mockSubscriptionsCreate).toHaveBeenCalledWith({ customer: 'cust_99', items: [{ price: 'price_abc' }], coupon: 'PROMO2026' });\n  expect(mockSubscriptionsCreate).toHaveBeenLastCalledWith({ coupon: 'SPRING50' });\n  expect(mockCustomersCreate).toHaveBeenCalledWith({ coupon: 'CUSTOMER_ONLY' });\n  expect(unrelatedSpy).toHaveBeenCalledWith({ coupon: 'UNRELATED_PROVIDER' });\n  expect(similarlyNamedSpy).toHaveBeenCalledWith({ coupon: 'WRONG_STRIPE_METHOD' });\n});\n",
+    };
+    const workspace = await createSourcePatchWorkspace('testimonal-baseline', files);
+    try {
+      const changeRecord = registry.find((candidate) => candidate.id === 'stripe-subscription-coupon-removed')!;
+      const planning = await proof.planningInput(workspace.directory, changeRecord);
+      const context = await buildPatchContext(workspace, planning, deterministicPlan(planning));
+      const patch = await applyCandidate(workspace, context, await new DeterministicPatchGenerator().generate(context));
+      expect(patch.status).toBe('PATCH_READY_FOR_VALIDATION');
+      expect(patch.files.map((file) => file.path)).toEqual(['src/services/billing.ts', 'tests/billing.test.ts']);
+      const testResult = await readFile(path.join(workspace.directory, 'tests/billing.test.ts'), 'utf8');
+      expect(testResult).toContain("discounts: [{ coupon: 'PROMO2026' }]");
+      expect(testResult).toContain("discounts: [{ coupon: 'SPRING50' }]");
+      expect(testResult).toContain("coupon: 'CUSTOMER_ONLY'");
+      expect(testResult).toContain("coupon: 'UNRELATED_PROVIDER'");
+      expect(testResult).toContain("coupon: 'WRONG_STRIPE_METHOD'");
+    } finally {
+      await cleanupPatchWorkspace(workspace);
+    }
+  });
   it('parses TS and TSX without running code and rejects malformed syntax', () => {
     expect(syntaxValid('src/a.ts', "throw new Error('must never run');")).toBe(true);
     expect(syntaxValid('src/a.tsx', 'const view = <div />;')).toBe(true);
