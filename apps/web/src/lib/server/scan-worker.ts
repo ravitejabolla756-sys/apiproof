@@ -18,15 +18,15 @@ import { getDatabase } from './db/index.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
-import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
-import { StripeProvider, TwilioProvider } from '@apiproof/providers';
+import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders } from '@apiproof/analyzers';
+import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import type { ApiProvider } from '@apiproof/core';
 import type { ScanResult } from '@apiproof/shared';
 import { loadProviderRegistry } from './registry-utils.js';
 import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
-
+import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
@@ -380,7 +380,6 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     // 6. Build snapshot and detect providers
     const snapshot = RepositorySnapshot.fromMemory(repo.name, filesMap);
     const analyzer = new TypeScriptRepositoryAnalyzer();
-
     const providersToAnalyze: Array<{ id: 'stripe' | 'twilio'; provider: ApiProvider }> = [];
     const pkgContent = filesMap.get('package.json');
     if (pkgContent) {
@@ -416,8 +415,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       sourceDigest: string;
     }> = [];
 
-    let totalFilesAnalyzed = 0;
-    let inputDigest = snapshot.digest();
+    let totalFilesAnalyzed = 0, inputDigest = snapshot.digest();
     const compatibilityResults: ScanResult[] = [];
 
     for (const { id: provId, provider } of providersToAnalyze) {
@@ -459,6 +457,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
     // 8. Persist findings idempotently + finalize scan
     const completedAt = new Date().toISOString(), newlyCreatedFindingIds: string[] = [];
+    const discoveredProviders = discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
 
@@ -528,12 +527,11 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             completed_at = ?
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
-        JSON.stringify(summarizeScanCompatibility(compatibilityResults)), completedAt, scanId]);
+        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders)), completedAt, scanId]);
 
-      const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?
-      `, [repoStatus, completedAt, repo.id]);
+      `, [collectedFindings.length > 0 ? 'affected' : 'healthy', completedAt, repo.id]);
 
       // Mark the scan request as completed
       await tx.execute(`

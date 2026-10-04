@@ -2,7 +2,7 @@ import path from 'node:path';
 import semver from 'semver';
 import { Project, SyntaxKind, ts } from 'ts-morph';
 import type { CallExpression, Node } from 'ts-morph';
-import type { ProviderDefinition, ProviderCapability } from '@apiproof/providers';
+import type { ProviderDefinition, ProviderCapability, ProviderRegistry } from '@apiproof/providers';
 import { packageRoot, resolvePackageVersions } from './provider-versions.js';
 import type { PackageVersionInfo, ProviderVersionConfidence, ProviderVersionSource } from './provider-versions.js';
 
@@ -44,16 +44,6 @@ const SOURCE_FILE = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
 const MANIFEST = /(^|\/)package\.json$/;
 const SECTIONS = ['dependencies', 'devDependencies'] as const;
 
-function packageMatch(name: string, definition: ProviderDefinition): boolean {
-  return definition.packageIdentifiers.some((identifier) => name === identifier || name.startsWith(`${identifier}/`))
-    || (definition.packagePrefixes ?? []).some((prefix) => name.startsWith(prefix) && name.length > prefix.length);
-}
-
-function domainMatch(host: string, domain: string): boolean {
-  if (domain.startsWith('*.')) return host.endsWith(domain.slice(1)) && host.length > domain.length - 1;
-  return host === domain || host.endsWith(`.${domain}`);
-}
-
 function position(node: Node, file: string): Pick<ProviderDiscoveryEvidence, 'file' | 'line' | 'column'> {
   const point = node.getSourceFile().getLineAndColumnAtPos(node.getStart());
   return { file, line: point.line, column: point.column };
@@ -90,8 +80,18 @@ function httpArgument(call: CallExpression): Node | undefined {
 
 /** Static discovery only: no runtime execution, secret values, or change-rule inference. */
 export function discoverProviders(
-  files: ReadonlyMap<string, string>, definitions: readonly ProviderDefinition[],
+  files: ReadonlyMap<string, string>, registry: ProviderRegistry,
 ): ProviderDiscoveryResult[] {
+  const packageCandidates = (name: string): ProviderDefinition[] => {
+    const names = name.startsWith('@') ? [name, name.split('/').slice(0, 2).join('/')] : [name, name.split('/')[0] ?? name];
+    const candidates: ProviderDefinition[] = [];
+    const seen = new Set<string>();
+    for (const lookupName of names) {
+      for (const definition of registry.exactPackageIndex.get(lookupName) ?? []) if (!seen.has(definition.id)) { seen.add(definition.id); candidates.push(definition); }
+    }
+    for (const definition of registry.packagePrefixIndex.lookup(name)) if (!seen.has(definition.id)) { seen.add(definition.id); candidates.push(definition); }
+    return candidates;
+  };
   const byId = new Map<string, { definition: ProviderDefinition; evidence: ProviderDiscoveryEvidence[] }>();
   const packageVersions = resolvePackageVersions(files);
   const versionsByPackage = new Map<string, PackageVersionInfo>();
@@ -122,7 +122,7 @@ export function discoverProviders(
       if (!dependencies || typeof dependencies !== 'object' || Array.isArray(dependencies)) continue;
       for (const [name, range] of Object.entries(dependencies)) {
         if (typeof range !== 'string') continue;
-        for (const definition of definitions) if (packageMatch(name, definition)) {
+        for (const definition of packageCandidates(name)) {
           const version = versionFor(definition, name);
           add(definition, { detectionKind: 'package', ...manifestPosition(content, file, name, range), identifier: name,
             packageName: name, ...versionFields(version, range) });
@@ -140,7 +140,7 @@ export function discoverProviders(
     const source = project.createSourceFile(`/repository/${file.replaceAll('\\', '/')}`, content);
     const normalizedFile = path.posix.normalize(file.replaceAll('\\', '/'));
     const checkPackage = (name: string, kind: 'import' | 'require', node: Node): void => {
-      for (const definition of definitions) if (packageMatch(name, definition)) {
+      for (const definition of packageCandidates(name)) {
         const packageName = packageRoot(name, definition.packageIdentifiers, definition.packagePrefixes);
         const version = versionsByPackage.get(packageName);
         add(definition, { detectionKind: kind, ...position(node, normalizedFile), identifier: name, packageName, ...versionFields(version) });
@@ -165,19 +165,16 @@ export function discoverProviders(
             if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
             host = url.hostname.toLowerCase();
           } catch { return; }
-          for (const definition of definitions) for (const domain of definition.apiDomains) {
-            if (domainMatch(host, domain)) {
-              add(definition, { detectionKind: 'http-url', ...position(argument!, normalizedFile), identifier: host, apiDomain: host });
-              break;
-            }
-          }
+          for (const definition of registry.domainIndex.lookup(host)) add(definition, {
+            detectionKind: 'http-url', ...position(argument!, normalizedFile), identifier: host, apiDomain: host,
+          });
         }
       }
       if (node.isKind(SyntaxKind.PropertyAccessExpression)) {
         const expression = node.getExpression().getText();
         if (expression !== 'process.env' && expression !== 'import.meta.env') return;
         const identifier = node.getName();
-        for (const definition of definitions) if (definition.environmentVariables.includes(identifier)) {
+        for (const definition of registry.environmentVariableIndex.get(identifier) ?? []) {
           add(definition, { detectionKind: 'environment-variable', ...position(node, normalizedFile), identifier });
         }
       }

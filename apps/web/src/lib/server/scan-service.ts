@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import fs from 'node:fs';
-import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/analyzers';
-import { StripeProvider, TwilioProvider } from '@apiproof/providers';
+import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders } from '@apiproof/analyzers';
+import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import {
   type ApiProvider,
   type GitHubAppSourceControlProvider,
@@ -14,6 +14,7 @@ import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles 
 import { loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
+import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -160,6 +161,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
     // 4. Construct RepositorySnapshot
     const snapshot = RepositorySnapshot.fromMemory(repo.name, filesMap);
     const analyzer = new TypeScriptRepositoryAnalyzer();
+    const discoveredProviders = discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
 
     // 5. Detect providers from package.json
     const providersToAnalyze: Array<{ id: 'stripe' | 'twilio'; provider: ApiProvider }> = [];
@@ -322,7 +324,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             completed_at = ?
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
-        JSON.stringify(summarizeScanCompatibility(compatibilityResults)), new Date().toISOString(), scanId]);
+        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders)), new Date().toISOString(), scanId]);
 
       // 9. Update repository status
       const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';
