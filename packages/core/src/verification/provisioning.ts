@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { buildVerificationWorkspaceCommands, type VerificationWorkspaceCommands } from './workspace.js';
 import { VERIFICATION_DOCKER_IMAGE } from './sandbox.js';
-import { runDockerProcess } from './docker-process.js';
+import { resolveDockerPath, runDockerProcess } from './docker-process.js';
 import { FINALIZE_ARTIFACTS_SCRIPT } from './artifact-integrity.js';
 import { assertVerificationWorkspaceBounds } from '../patching/workspace.js';
 
@@ -42,7 +42,7 @@ export async function provisionVerificationDependencies(
   if (JSON.stringify(canonical) !== JSON.stringify(commands)) throw new Error('VERIFICATION_PROVISIONING_POLICY_REJECTED: Commands do not match captured metadata.');
   const root = path.join(os.tmpdir(), `apiproof-provision-${randomUUID()}`);
   const name = `apiproof-provision-${randomUUID()}`;
-  const dockerPath = options.dockerPath ?? 'docker';
+  const dockerPath = options.dockerPath ?? resolveDockerPath();
   let completed = false;
   try {
   await mkdir(root, { recursive: true });

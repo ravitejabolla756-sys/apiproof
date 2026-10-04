@@ -1,11 +1,11 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { assertLiveWriteConfig, buildDockerProcessArgs, buildDockerProcessEnvironment, loadGitHubAppConfig, VERIFICATION_DOCKER_IMAGE } from '@apiproof/core';
+import { assertLiveWriteConfig, buildDockerProcessArgs, buildDockerProcessEnvironment, loadGitHubAppConfig, resolveDockerPath, VERIFICATION_DOCKER_IMAGE } from '@apiproof/core';
 
 const execFileAsync = promisify(execFile);
 
 async function dockerCheck(args: string[]): Promise<string> {
-  const dockerPath = process.env.DOCKER_PATH?.trim() || 'docker';
+  const dockerPath = resolveDockerPath();
   const dockerEnv = buildDockerProcessEnvironment();
   const { stdout } = await execFileAsync(dockerPath, buildDockerProcessArgs(args, dockerEnv), {
     cwd: process.cwd(),
@@ -34,8 +34,11 @@ export async function probeDockerVerificationRuntime(): Promise<void> {
   }
   if (engine.trim() !== 'linux') throw new Error('VERIFICATION_DOCKER_LINUX_ENGINE_UNAVAILABLE');
   try {
-    await dockerCheck(['image', 'inspect', VERIFICATION_DOCKER_IMAGE]);
-  } catch {
-    throw new Error('VERIFICATION_PINNED_IMAGE_UNAVAILABLE');
+    // Full inspection JSON can exceed the bounded subprocess buffer on Docker
+    // Desktop. Request only the ID; never pull or substitute another image.
+    const imageId = await dockerCheck(['image', 'inspect', VERIFICATION_DOCKER_IMAGE, '--format', '{{.Id}}']);
+    if (!/^sha256:[a-f0-9]{64}$/.test(imageId.trim())) throw new Error('Invalid Docker image ID');
+  } catch (cause) {
+    throw new Error('VERIFICATION_PINNED_IMAGE_UNAVAILABLE', { cause });
   }
 }

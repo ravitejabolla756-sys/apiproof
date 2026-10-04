@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { VerificationLimits, VerificationStage } from '@apiproof/shared';
 import { VerificationLimitsSchema } from '@apiproof/shared';
 import type { DependencyProvisioning } from './provisioning.js';
-import { runDockerProcess, type DockerProcessResult } from './docker-process.js';
+import { resolveDockerPath, runDockerProcess, type DockerProcessResult } from './docker-process.js';
 import { ARTIFACT_DIGEST_SCRIPT } from './artifact-integrity.js';
 
 export interface SandboxExecutionRequest { stage: VerificationStage['stage']; cwd: string; argv: readonly string[]; env: Readonly<Record<string,string>>; limits: VerificationLimits; dependencyProvisioning?: DependencyProvisioning }
@@ -25,7 +25,7 @@ export function buildDockerRunArgs(request: SandboxExecutionRequest, limits: Ver
   return args;
 }
 export class DockerSandbox implements ExecutionSandbox {
-  constructor(private readonly dockerPath='docker') {}
+  constructor(private readonly dockerPath=resolveDockerPath()) {}
   async run(request: SandboxExecutionRequest): Promise<VerificationStage> {
     const limits = VerificationLimitsSchema.parse(request.limits);
     const name = `apiproof-verification-${randomUUID()}`;

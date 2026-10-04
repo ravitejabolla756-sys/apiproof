@@ -1,13 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildDockerRunArgs, DockerSandbox } from '../packages/core/src/verification/sandbox.js';
 import { runDockerProcess } from '../packages/core/src/verification/docker-process.js';
+import type * as DockerProcess from '../packages/core/src/verification/docker-process.js';
 
-vi.mock('../packages/core/src/verification/docker-process.js', () => ({ runDockerProcess: vi.fn() }));
+vi.mock('../packages/core/src/verification/docker-process.js', async (importOriginal) => ({ ...await importOriginal<typeof DockerProcess>(), runDockerProcess: vi.fn() }));
 const requests = (['INSTALL', 'BUILD', 'TYPECHECK', 'TEST'] as const).map((stage) => ({ stage, cwd: 'controlled-workspace', argv: ['node', '-e', 'process.exit(0)'], env: {}, limits: { timeoutMs: 90000, memoryMb: 768, maxOutputBytes: 65536, cpu: 'bounded' } }));
 const execution = (code: number, stdout = '') => ({ code, stdout, stderr: '', durationMs: 1, timedOut: false, stdoutTruncated: false, stderrTruncated: false });
 
 beforeEach(() => vi.resetAllMocks());
+afterEach(() => vi.unstubAllEnvs());
 describe('Docker CLI sequence control-plane regression', () => {
+  it('uses the configured executable for execution and cleanup', async () => {
+    vi.stubEnv('DOCKER_PATH', 'C:\\Program Files\\Docker\\docker.exe');
+    vi.mocked(runDockerProcess).mockResolvedValue(execution(0));
+    await new DockerSandbox().runSequence(requests);
+    expect(vi.mocked(runDockerProcess).mock.calls.length).toBeGreaterThan(2);
+    expect(vi.mocked(runDockerProcess).mock.calls.every(([binary]) => binary === process.env.DOCKER_PATH)).toBe(true);
+  });
   it('mounts package artifacts read-only and keeps dependency/project bookkeeping container-local', () => {
     const args = buildDockerRunArgs({ ...requests[0]!, dependencyProvisioning: { packageManager: 'pnpm', root: 'controlled-artifacts', inputDigest: 'a'.repeat(64), artifactDigest: 'b'.repeat(64) } }, requests[0]!.limits);
     expect(args).toContain('type=bind,src=controlled-artifacts,dst=/provisioned-dependencies,readonly=true');

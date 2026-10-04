@@ -1,5 +1,10 @@
 import { spawn } from 'node:child_process';
 
+/** Trusted worker configuration; never taken from repository contents. */
+export function resolveDockerPath(source: NodeJS.ProcessEnv = process.env): string {
+  return source.DOCKER_PATH?.trim() || 'docker';
+}
+
 const DOCKER_ENV_KEYS = [
   'PATH',
   'DOCKER_CONTEXT',
