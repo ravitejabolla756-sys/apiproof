@@ -28,7 +28,85 @@ function isRelatedTestFile(testFile: string, sourceFile: string): boolean {
   return isTestFile(testFile) && fileStem(testFile) === fileStem(sourceFile);
 }
 
-function assertionObjects(call: ts.CallExpression, sourceSymbol: string): ts.ObjectLiteralExpression[] {
+function propertyName(name: ts.PropertyName): string | undefined {
+  return ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name) ? name.text : undefined;
+}
+
+function isVitestSpyFactory(node: ts.Expression | undefined): boolean {
+  if (!node || !ts.isCallExpression(node) || !ts.isPropertyAccessExpression(node.expression) || !ts.isIdentifier(node.expression.expression) || node.expression.expression.text !== 'vi') return false;
+  if (node.expression.name.text === 'fn') return node.arguments.length === 0;
+  if (node.expression.name.text !== 'hoisted' || node.arguments.length !== 1) return false;
+  const factory = node.arguments[0];
+  if (!factory || (!ts.isArrowFunction(factory) && !ts.isFunctionExpression(factory))) return false;
+  if (ts.isBlock(factory.body)) {
+    const returns = factory.body.statements.filter(ts.isReturnStatement);
+    return returns.length === 1 && returns[0]!.expression !== undefined && isVitestSpyFactory(returns[0]!.expression);
+  }
+  return isVitestSpyFactory(factory.body);
+}
+
+function locallyDeclaredVitestSpies(parsed: ts.SourceFile): Set<string> {
+  const spies = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && isVitestSpyFactory(node.initializer)) spies.add(node.name.text);
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  return spies;
+}
+
+function hasMockSpyAtProviderPath(node: ts.Node, path: string[], providerPath: readonly string[], spy: string): boolean {
+  const visit = (child: ts.Node, currentPath: string[]): boolean => {
+    if (ts.isParenthesizedExpression(child)) return visit(child.expression, currentPath);
+    if (ts.isArrowFunction(child) || ts.isFunctionExpression(child)) return visit(child.body, currentPath);
+    if (ts.isBlock(child)) return child.statements.some((statement) => visit(statement, currentPath));
+    if (ts.isReturnStatement(child)) return Boolean(child.expression && visit(child.expression, currentPath));
+    if (ts.isClassExpression(child)) return child.members.some((member) => visit(member, currentPath));
+    if (ts.isObjectLiteralExpression(child)) {
+      return child.properties.some((property) => {
+        if (!ts.isPropertyAssignment(property) || !propertyName(property.name)) return false;
+        const nextPath = [...currentPath, propertyName(property.name)!];
+        if (nextPath.length >= providerPath.length
+          && nextPath.slice(-providerPath.length).every((part, index) => part === providerPath[index])
+          && ts.isIdentifier(property.initializer) && property.initializer.text === spy) return true;
+        return visit(property.initializer, nextPath);
+      });
+    }
+    if (ts.isPropertyDeclaration(child) && child.name && propertyName(child.name) && child.initializer) {
+      const nextPath = [...currentPath, propertyName(child.name)!];
+      if (nextPath.length >= providerPath.length
+        && nextPath.slice(-providerPath.length).every((part, index) => part === providerPath[index])
+        && ts.isIdentifier(child.initializer) && child.initializer.text === spy) return true;
+      return visit(child.initializer, nextPath);
+    }
+    return false;
+  };
+  return visit(node, path);
+}
+
+/**
+ * A named test spy is eligible only when it is locally declared as a Vitest spy
+ * and bound to the exact Stripe member path by a literal vi.mock('stripe') factory.
+ */
+function stripeMockSpiesFor(parsed: ts.SourceFile, sourceSymbol: string): Set<string> {
+  const providerPath = sourceSymbol.split('.').filter(Boolean);
+  if (!providerPath.length) return new Set<string>();
+  const declared = locallyDeclaredVitestSpies(parsed);
+  const matches = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+      && ts.isIdentifier(node.expression.expression) && node.expression.expression.text === 'vi'
+      && node.expression.name.text === 'mock' && node.arguments.length >= 2
+      && ts.isStringLiteral(node.arguments[0]!) && node.arguments[0]!.text === 'stripe') {
+      for (const spy of declared) if (hasMockSpyAtProviderPath(node.arguments[1]!, [], providerPath, spy)) matches.add(spy);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  return matches;
+}
+
+function assertionObjects(call: ts.CallExpression, sourceSymbol: string, authorizedMockSpies: ReadonlySet<string>): ts.ObjectLiteralExpression[] {
   if (!ts.isPropertyAccessExpression(call.expression)) return [];
   if (!new Set(['toHaveBeenCalledWith', 'toHaveBeenLastCalledWith', 'toHaveBeenNthCalledWith', 'toMatchObject']).has(call.expression.name.text)) return [];
   const expectation = call.expression.expression;
@@ -36,7 +114,8 @@ function assertionObjects(call: ts.CallExpression, sourceSymbol: string): ts.Obj
   if (!sourceMethod || !ts.isCallExpression(expectation) || !ts.isIdentifier(expectation.expression) || expectation.expression.text !== 'expect') return [];
   const actual = expectation.arguments[0];
   const actualMethod = actual && ts.isPropertyAccessExpression(actual) ? actual.name.text : actual && ts.isIdentifier(actual) ? actual.text : undefined;
-  if (actualMethod !== sourceMethod) return [];
+  const isAuthorizedMockSpy = actual !== undefined && ts.isIdentifier(actual) && authorizedMockSpies.has(actual.text);
+  if (actualMethod !== sourceMethod && !isAuthorizedMockSpy) return [];
   const first = call.arguments[0];
   if (first && ts.isObjectLiteralExpression(first)) return [first];
   const containing = first && ts.isCallExpression(first) ? first.arguments[0] : undefined;
@@ -51,6 +130,7 @@ export function testAssertionTargetsFor(file: string, source: string, input: Pla
   const semantics = input.change.id === 'stripe-subscription-coupon-removed' ? ({ kind: 'singleton-discount', paths: ['coupon'], destination: 'discounts' } as PatchTransformation) : undefined;
   if (!isStripeCouponMigration(input, semantics) || !isRelatedTestFile(file, sourceFile) || !/^\s*coupon\s*:/.test(sourceTarget.expected)) return [];
   const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const authorizedMockSpies = stripeMockSpiesFor(parsed, sourceTarget.symbol);
   const targets: AuthorizedTarget[] = [];
   const seen = new Set<string>();
   const add = (node: ts.PropertyAssignment): void => {
@@ -63,7 +143,7 @@ export function testAssertionTargetsFor(file: string, source: string, input: Pla
   };
   const visit = (node: ts.Node): void => {
     if (ts.isCallExpression(node)) {
-      for (const object of assertionObjects(node, sourceTarget.symbol)) {
+      for (const object of assertionObjects(node, sourceTarget.symbol, authorizedMockSpies)) {
         const properties = object.properties.filter(ts.isPropertyAssignment);
         if (properties.some((property) => !ts.isIdentifier(property.name))) continue;
         const coupon = properties.filter((property) => property.name.getText(parsed) === 'coupon');

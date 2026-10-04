@@ -113,7 +113,7 @@ describe('workspace and model trust boundary', () => {
     const files = {
       'package.json': '{"name":"test-aware-stripe","dependencies":{"stripe":"17.7.0"}}',
       'src/services/billing.ts': "import Stripe from 'stripe';\nconst client = new Stripe('');\nexport function createSubscription(couponId: string) {\n  return client.subscriptions.create({ customer: 'cus_controlled', coupon: couponId });\n}\n",
-      'tests/billing.test.ts': "import { expect, it, vi } from 'vitest';\nconst create = vi.fn();\nconst other = vi.fn();\nvi.mock('stripe', () => ({ default: class { subscriptions = { create }; } }));\nit('matches the migrated request', () => {\n  expect(create).toHaveBeenCalledWith({ customer: 'cus_controlled', coupon: 'PROMO2026' });\n  expect(create).toHaveBeenLastCalledWith({ coupon: 'SPRING50' });\n  expect(other).toHaveBeenCalledWith({ coupon: 'UNRELATED' });\n  expect({ coupon: 'UNRELATED' }).toEqual({ coupon: 'UNRELATED' });\n});\n",
+      'tests/billing.test.ts': "import { expect, it, vi } from 'vitest';\nconst mockSubscriptionsCreate = vi.fn();\nconst mockCustomersCreate = vi.fn();\nvi.mock('stripe', () => ({ default: class { subscriptions = { create: mockSubscriptionsCreate }; customers = { create: mockCustomersCreate }; } }));\nit('matches the migrated request', () => {\n  expect(mockSubscriptionsCreate).toHaveBeenCalledWith({ customer: 'cus_controlled', coupon: 'PROMO2026' });\n  expect(mockSubscriptionsCreate).toHaveBeenLastCalledWith({ coupon: 'SPRING50' });\n  expect(mockCustomersCreate).toHaveBeenCalledWith({ coupon: 'UNRELATED' });\n  expect({ coupon: 'UNRELATED' }).toEqual({ coupon: 'UNRELATED' });\n});\n",
     };
     const workspace = await createSourcePatchWorkspace('test-aware-stripe', files);
     try {
@@ -127,7 +127,7 @@ describe('workspace and model trust boundary', () => {
       const testResult = await readFile(path.join(workspace.directory, 'tests/billing.test.ts'), 'utf8');
       expect(testResult).toContain("discounts: [{ coupon: 'PROMO2026' }]");
       expect(testResult).toContain("discounts: [{ coupon: 'SPRING50' }]");
-      expect(testResult).toContain("expect(other).toHaveBeenCalledWith({ coupon: 'UNRELATED' })");
+      expect(testResult).toContain("expect(mockCustomersCreate).toHaveBeenCalledWith({ coupon: 'UNRELATED' })");
       expect(testResult).toContain("expect({ coupon: 'UNRELATED' }).toEqual({ coupon: 'UNRELATED' })");
     } finally {
       await cleanupPatchWorkspace(workspace);
