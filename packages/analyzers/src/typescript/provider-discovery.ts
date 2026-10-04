@@ -38,6 +38,8 @@ export interface ProviderDiscoveryResult {
   evidence: ProviderDiscoveryEvidence[];
   apiDomains: string[];
   capability: ProviderCapability;
+  capabilities: ProviderCapability[];
+  category: ProviderDefinition['category'];
 }
 
 const SOURCE_FILE = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
@@ -201,6 +203,8 @@ export function discoverProviders(
       locations: evidence.map(({ file, line, column }) => ({ file, line, column })),
       evidence, apiDomains: [...new Set(evidence.flatMap((item) => item.apiDomain ? [item.apiDomain] : []))],
       capability: definition.capability,
+      capabilities: [...definition.capabilities],
+      category: definition.category,
     };
   });
 }

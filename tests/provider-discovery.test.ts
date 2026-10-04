@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { DISCOVERY_PROVIDERS, DISCOVERY_PROVIDER_REGISTRY, compileProviderRegistry, validateProviderDefinitions } from '@apiproof/providers';
+import { DISCOVERY_PROVIDERS, DISCOVERY_PROVIDER_REGISTRY, PROVIDER_CATALOG_SUMMARY, compileProviderRegistry, validateProviderDefinitions } from '@apiproof/providers';
 import { discoverProviders, resolvePackageVersions } from '@apiproof/analyzers';
 import { scanResultWithDiscovery } from '../apps/web/src/lib/server/scan-discovery-evidence.js';
 
 const scan = (files: Record<string, string>) => discoverProviders(new Map(Object.entries(files)), DISCOVERY_PROVIDER_REGISTRY);
 
 describe('provider registry and TS/JS discovery', () => {
-  it('has ten unique discovery definitions, with no change intelligence', () => {
-    expect(DISCOVERY_PROVIDERS).toHaveLength(10);
+  it('has a unique catalog with discovery and generic version awareness only', () => {
+    expect(DISCOVERY_PROVIDERS.length).toBeGreaterThanOrEqual(50);
     expect(() => validateProviderDefinitions(DISCOVERY_PROVIDERS)).not.toThrow();
-    expect(DISCOVERY_PROVIDERS.every((item) => item.capability === 'discovery')).toBe(true);
+    expect(new Set(DISCOVERY_PROVIDERS.map((item) => item.id)).size).toBe(DISCOVERY_PROVIDERS.length);
+    expect(DISCOVERY_PROVIDERS.every((item) => item.displayName && item.capabilities.includes('discovery'))).toBe(true);
+    expect(DISCOVERY_PROVIDERS.filter((item) => item.packageIdentifiers.length || item.packagePrefixes?.length).every((item) => item.capabilities.includes('versionAware'))).toBe(true);
+    expect(DISCOVERY_PROVIDERS.every((item) => item.packageIdentifiers.length + (item.packagePrefixes?.length ?? 0) + item.apiDomains.length + item.environmentVariables.length > 0)).toBe(true);
+    expect(PROVIDER_CATALOG_SUMMARY).toHaveLength(DISCOVERY_PROVIDERS.length);
   });
 
   it('compiles exact package, prefix, environment, and domain indexes', () => {
@@ -27,7 +31,7 @@ describe('provider registry and TS/JS discovery', () => {
   });
 
   it('allows explicitly shared identifiers and preserves stable ordering', () => {
-    const first = { id: 'alpha', displayName: 'Alpha', packageIdentifiers: ['shared-sdk'], apiDomains: ['alpha.example.com'], environmentVariables: ['ALPHA_KEY'], documentation: { url: 'https://alpha.example.com' }, capability: 'discovery' as const, allowSharedIdentifiers: true };
+    const first = { id: 'alpha', displayName: 'Alpha', category: 'AI / Models' as const, packageIdentifiers: ['shared-sdk'], apiDomains: ['alpha.example.com'], environmentVariables: ['ALPHA_KEY'], documentation: { url: 'https://alpha.example.com' }, capability: 'discovery' as const, capabilities: ['discovery', 'versionAware'] as const, allowSharedIdentifiers: true };
     const second = { ...first, id: 'beta', displayName: 'Beta', apiDomains: ['beta.example.com'], environmentVariables: ['BETA_KEY'] };
     const registry = compileProviderRegistry([second, first]);
     expect(registry.exactPackageIndex.get('shared-sdk')?.map((item) => item.id)).toEqual(['alpha', 'beta']);
@@ -35,7 +39,7 @@ describe('provider registry and TS/JS discovery', () => {
   });
 
   it('rejects duplicate, malformed, empty, and ambiguous registry definitions', () => {
-    const base = { id: 'valid', displayName: 'Valid', packageIdentifiers: ['valid-sdk'], apiDomains: ['valid.example.com'], environmentVariables: ['VALID_KEY'], documentation: { url: 'https://valid.example.com' }, capability: 'discovery' as const };
+    const base = { id: 'valid', displayName: 'Valid', category: 'AI / Models' as const, packageIdentifiers: ['valid-sdk'], apiDomains: ['valid.example.com'], environmentVariables: ['VALID_KEY'], documentation: { url: 'https://valid.example.com' }, capability: 'discovery' as const, capabilities: ['discovery', 'versionAware'] as const };
     expect(() => validateProviderDefinitions([base, { ...base }])).toThrow('INVALID_PROVIDER_ID');
     expect(() => validateProviderDefinitions([{ ...base, id: 'bad id' }])).toThrow('INVALID_PROVIDER_ID');
     expect(() => validateProviderDefinitions([{ ...base, packageIdentifiers: [''] }])).toThrow('INVALID_PROVIDER_PACKAGE');
@@ -46,7 +50,13 @@ describe('provider registry and TS/JS discovery', () => {
   });
 
   it.each(DISCOVERY_PROVIDERS)('detects $displayName from its registered package', (definition) => {
-    const results = scan({ 'package.json': JSON.stringify({ dependencies: { [definition.packageIdentifiers[0]!]: '1.0.0' } }) });
+    const packageName = definition.packageIdentifiers[0];
+    const files = packageName
+      ? { 'package.json': JSON.stringify({ dependencies: { [packageName]: '1.0.0' } }) }
+      : definition.environmentVariables[0]
+        ? { 'src/provider.ts': `const key = process.env.${definition.environmentVariables[0]};` }
+        : { 'src/provider.ts': `fetch('https://${(definition.apiDomains[0] ?? '').replace(/^\*\./, 'api.')}');` };
+    const results = scan(files);
     expect(results.map((item) => item.providerId)).toEqual([definition.id]);
   });
 
