@@ -35,10 +35,17 @@ interface CompatibilityRepository {
   analysisEvidenceAvailable: boolean;
   integrations: Array<{
     provider: string;
+    providerName?: string;
     detected: boolean;
     usageCount: number | null;
     mappedSymbolCount: number | null;
     reviewedChangeCount: number;
+    packageName?: string | null;
+    declaredVersion?: string | null;
+    resolvedVersion?: string | null;
+    versionConfidence?: string | null;
+    capability?: string | null;
+    capabilities?: string[];
   }>;
   openFindingCount: number;
   findings: CompatibilityFinding[];
@@ -202,7 +209,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {currentRepo.integrations.map((integration) => {
                 const reviewed = integration.reviewedChangeCount > 0;
-                const providerName = integration.provider.split(/[-_]/).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+                const providerName = integration.providerName ?? integration.provider.split(/[-_]/).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
                 return (
                   <div key={integration.provider} className={`space-y-1 rounded-xl border p-3 ${currentRepo.openFindingCount > 0 && currentRepo.findings.some((finding) => finding.provider === integration.provider && (finding.status === "open" || finding.status === "affected")) ? "border-[#F8D7DA] bg-[#FDF2F2]" : reviewed ? "border-[#C6E1FA] bg-[#EBF3FC]" : "border-[#E8E8E5] bg-white"}`}>
                     <div className="flex items-center justify-between gap-2">
@@ -216,6 +223,12 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
                     <div className="text-[11px] text-[#686868]">
                       {integration.mappedSymbolCount === null ? "Mapping evidence unavailable" : integration.mappedSymbolCount > 0 ? `${integration.mappedSymbolCount} mapped symbols` : "No mapped symbols"}
                     </div>
+                    {(integration.resolvedVersion || integration.declaredVersion || integration.capability) && (
+                      <div className="border-t border-[#E8E8E5] pt-1 text-[10px] text-[#686868]">
+                        <div>{integration.resolvedVersion ?? integration.declaredVersion ?? "Version unavailable"}</div>
+                        <div className="font-medium uppercase">{integration.capability ?? "discovery"}</div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

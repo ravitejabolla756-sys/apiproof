@@ -11,6 +11,7 @@ export * from './contracts.js';
 export * from './compatibility.js';
 export * from './change-ingestion.js';
 export * from './usage-ir.js';
+export * from './compatibility-proof.js';
 
 /** Safe errors carry fixed messages; raw parser errors may contain customer code. */
 export { AnalysisError } from './errors.js';

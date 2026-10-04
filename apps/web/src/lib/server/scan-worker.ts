@@ -21,7 +21,7 @@ import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider 
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders } from '@apiproof/analyzers';
 import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import type { ApiProvider } from '@apiproof/core';
-import type { ScanResult } from '@apiproof/shared';
+import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { loadProviderRegistry } from './registry-utils.js';
 import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
 import { logger } from './logger.js';
@@ -527,7 +527,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             completed_at = ?
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
-        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders)), completedAt, scanId]);
+        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []))), completedAt, scanId]);
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?

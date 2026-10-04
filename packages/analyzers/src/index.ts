@@ -6,3 +6,4 @@ export { evaluateNormalizedCompatibility } from './typescript/compatibility.js';
 export type { NormalizedCompatibilityInput } from './typescript/compatibility.js';
 export { normalizeCompatibilityUsage, normalizedUsageToCompatibilityUsage, usageFindingToCompatibilityUsage } from './typescript/usage-ir.js';
 export type { UsageIRContext } from './typescript/usage-ir.js';
+export { evaluateRegisteredCompatibility, evaluateRegisteredNormalizedCompatibility } from './typescript/compatibility.js';

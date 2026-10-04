@@ -422,10 +422,38 @@ describe('Phase 4 — Asynchronous Scan Worker', () => {
     expect(scan?.completed_at).toBeTruthy();
     expect(JSON.parse(scan?.raw_result ?? 'null')).toMatchObject({
       schemaVersion: 1,
+      usageIR: expect.any(Array),
+      usageIRTruncated: false,
       providers: expect.arrayContaining([
         expect.objectContaining({ provider: 'stripe', detected: false, usageCount: 0, mappedSymbolCount: 0 }),
       ]),
     });
+  });
+
+  it('persists one discovery-only provider without creating a breaking-change finding', async () => {
+    const { workspaceId, userId } = await createWorkspaceWithInstallation('discovery@example.com', 'inst_discovery');
+    const repoId = await createRepository(workspaceId, userId);
+    const sha = crypto.randomBytes(20).toString('hex');
+    await createScanRequest(workspaceId, repoId, sha);
+    mockFetchRemoteFiles.mockResolvedValueOnce({
+      headSha: sha, defaultBranch: 'main', files: new Map([
+        ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0' } })],
+        ['src/client.ts', "import OpenAI from 'openai';"],
+      ]),
+    });
+
+    const result = await processPendingGitHubScans({ batchSize: 1 });
+    expect(result.results[0]?.status).toBe('completed');
+    expect(result.results[0]?.findingsCount).toBe(0);
+    const scan = await getDatabase().queryOne<{ raw_result: string; findings_count: number }>(
+      'SELECT raw_result, findings_count FROM scans WHERE id = ?', [result.results[0]?.scanId]
+    );
+    expect(scan?.findings_count).toBe(0);
+    const raw = JSON.parse(scan?.raw_result ?? 'null') as { usageIR: unknown[]; discovery: { providers: Array<{ providerId: string; evidence: unknown[] }> } };
+    expect(Array.isArray(raw.usageIR)).toBe(true);
+    expect(raw.discovery.providers).toHaveLength(1);
+    expect(raw.discovery.providers[0]?.providerId).toBe('openai');
+    expect(raw.discovery.providers[0]?.evidence).toHaveLength(2);
   });
 
   // -------------------------------------------------------------------------

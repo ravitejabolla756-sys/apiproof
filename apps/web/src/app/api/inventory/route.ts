@@ -4,7 +4,7 @@
  * GET /api/inventory
  *
  * Returns real server-backed API provider rule registry state.
- * Reflects supported API providers (Stripe, Twilio) and active breaking change rules.
+ * Reflects the complete provider catalog and active reviewed breaking-change rules.
  */
 
 import { NextResponse } from 'next/server';

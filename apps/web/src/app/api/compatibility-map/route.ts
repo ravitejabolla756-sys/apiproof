@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
+import { evaluateRegisteredNormalizedCompatibility } from '@apiproof/analyzers';
+import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
+import { buildCompatibilityProofSnapshot } from '@apiproof/shared';
 import { getCurrentUser } from '../../../lib/server/auth.js';
 import { getDatabase } from '../../../lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../../../lib/server/workspace-service.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
-import { parseScanCompatibilityEvidence } from '../../../lib/server/scan-compatibility-evidence.js';
+import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
 
 type SupportedProvider = 'stripe' | 'twilio';
 
@@ -112,14 +115,17 @@ export async function GET(req: Request) {
   const responseRepositories = await Promise.all(repositories.map(async (repository) => {
     const findings = findingsByRepository.get(repository.id) ?? [];
     const evidence = parseScanCompatibilityEvidence(repository.completed_scan_raw_result);
+    const discovery = parseScanDiscoveryEvidence(repository.completed_scan_raw_result);
+    const usageIR = parseScanUsageIR(repository.completed_scan_raw_result);
     const findingProviders = [...new Set(findings.map((finding) => finding.provider))]
       .filter((provider): provider is SupportedProvider => provider === 'stripe' || provider === 'twilio');
     const providersWithEvidence = new Set(evidence?.providers.filter((item) => item.detected).map((item) => item.provider) ?? []);
-    const providerIds = [...new Set([...providersWithEvidence, ...findingProviders])];
+    const providerIds = [...new Set([...providersWithEvidence, ...findingProviders, ...(discovery?.providers.map((item) => item.providerId) ?? [])])];
 
     const integrations = await Promise.all(providerIds.map(async (provider) => {
+      const discovered = discovery?.providers.find((item) => item.providerId === provider);
       const analysis = evidence?.providers.find((item) => item.provider === provider && item.detected);
-      const changes = await loadProviderRegistry(provider);
+      const changes = provider === 'stripe' || provider === 'twilio' ? await loadProviderRegistry(provider) : [];
       const matchedChangeIds = new Set(findings
         .filter((finding) => finding.provider === provider)
         .map((finding) => finding.change_id));
@@ -134,8 +140,17 @@ export async function GET(req: Request) {
         provider,
         detected: true,
         usageCount: analysis?.usageCount ?? null,
-        mappedSymbolCount: analysis?.mappedSymbolCount ?? null,
+        mappedSymbolCount: analysis?.mappedSymbolCount ?? discovered?.evidenceCount ?? null,
         reviewedChangeCount: reviewedChanges.length,
+        ...(discovered ? {
+          providerName: discovered.providerName,
+          packageName: discovered.packageName,
+          declaredVersion: discovered.declaredVersion,
+          resolvedVersion: discovered.resolvedVersion,
+          versionConfidence: discovered.versionConfidence,
+          capability: discovered.capability,
+          capabilities: discovered.capabilities,
+        } : {}),
       };
     }));
 
@@ -157,6 +172,16 @@ export async function GET(req: Request) {
       } : null,
     }));
 
+    const compatibilityProofs = usageIR && repository.completed_scan_id && repository.completed_scan_sha
+      ? buildCompatibilityProofSnapshot({
+        repositoryId: repository.id,
+        baselineSha: repository.completed_scan_sha,
+        scanId: repository.completed_scan_id,
+        results: [...new Set(usageIR.map((usage) => usage.providerId))].flatMap((providerId) =>
+          evaluateRegisteredNormalizedCompatibility({ providerId, usageIR: usageIR.filter((usage) => usage.providerId === providerId), completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY)),
+      })
+      : [];
+
     return {
       id: repository.id,
       owner: repository.owner,
@@ -176,6 +201,7 @@ export async function GET(req: Request) {
       integrations,
       openFindingCount: findings.filter((finding) => finding.status === 'open' || finding.status === 'affected').length,
       findings: mappedFindings,
+      ...(compatibilityProofs.length > 0 ? { compatibilityProofs } : {}),
     };
   }));
 

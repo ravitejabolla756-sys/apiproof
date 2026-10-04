@@ -7,7 +7,7 @@ import {
   type ApiProvider,
   type GitHubAppSourceControlProvider,
 } from '@apiproof/core';
-import type { ScanResult } from '@apiproof/shared';
+import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
@@ -324,7 +324,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             completed_at = ?
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
-        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders)), new Date().toISOString(), scanId]);
+        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []))), new Date().toISOString(), scanId]);
 
       // 9. Update repository status
       const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';

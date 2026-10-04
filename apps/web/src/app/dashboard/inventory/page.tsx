@@ -20,6 +20,8 @@ interface ProviderInventoryItem {
   rulesCount: number;
   description: string;
   rules: InventoryRule[];
+  capability?: "discovery" | "compatibility";
+  capabilities?: string[];
 }
 
 export default function ApiInventoryPage() {
@@ -111,6 +113,14 @@ export default function ApiInventoryPage() {
               <p className="text-xs text-[#686868] leading-relaxed">
                 {item.description}
               </p>
+
+              <div className="flex flex-wrap items-center gap-1.5" aria-label="Provider capabilities">
+                {(item.capabilities ?? (item.capability ? [item.capability] : [])).map((capability) => (
+                  <span key={capability} className="rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2 py-0.5 text-[10px] font-medium text-[#686868]">
+                    {capability}
+                  </span>
+                ))}
+              </div>
 
               <div className="pt-3 border-t border-[#E8E8E5] space-y-3">
                 <div className="flex items-center justify-between text-xs">
