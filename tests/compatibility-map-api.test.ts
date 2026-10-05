@@ -35,6 +35,7 @@ interface CompatibilityMapTestPayload {
       migration: { id: string; status: string | null } | null;
       pullRequest: { id: string; number: number | null; state: string | null } | null;
     }>;
+    compatibilityProofs?: Array<Record<string, unknown>>;
   }>;
 }
 
@@ -161,6 +162,36 @@ describe('GET /api/compatibility-map', () => {
       mappedSymbolCount: new Set(analyzerResult.usages.filter((usage) => usage.kind !== 'import').map((usage) => usage.symbol)).size,
       reviewedChangeCount: 0,
     }]);
+  });
+
+  it('returns an Anthropic production-registry proof with evidence and reason codes', async () => {
+    const user = await createUserWithSession('map-anthropic-proof@example.com', 'Strong-password-1!', 'Anthropic Proof User');
+    await createRepository(user.user.id, 'repo_map_anthropic', 'anthropic-proof-repository');
+    const rawResult = JSON.stringify({ usageIR: [{
+      id: 'anthropic-opus-retirement-use', language: 'typescript', providerId: 'anthropic',
+      declaredVersion: null, resolvedVersion: null, versionSource: 'unknown', versionConfidence: 'unknown',
+      model: 'claude-opus-4-1-20250805', parameters: [], responseFields: [], authEvidence: [], dynamic: false,
+      location: { file: 'src/assistant.ts', line: 17, column: 5, symbol: 'model' }, confidence: 0.99,
+      evidence: [{ kind: 'sdk-call', detail: 'model', file: 'src/assistant.ts', line: 17, provenance: 'static-source' }],
+    }] });
+    await createScan('repo_map_anthropic', 'scan_anthropic_proof', 'completed', NOW, rawResult);
+
+    const response = await getMap(user.session.id);
+    const repository = (await response.json() as CompatibilityMapTestPayload).repositories[0]!;
+    expect(repository.compatibilityProofs).toHaveLength(1);
+    expect(repository.compatibilityProofs?.[0]).toMatchObject({
+      providerId: 'anthropic',
+      changeId: 'anthropic-claude-opus-4-1-retirement-2026-08-05',
+      status: 'AFFECTED',
+      matchedModel: 'claude-opus-4-1-20250805',
+      exactFile: 'src/assistant.ts',
+      exactLine: 17,
+      removalAt: '2026-08-05',
+      officialSourceUrl: 'https://docs.anthropic.com/en/docs/about-claude/model-deprecations',
+      reasonCodes: ['VERSION_NOT_CONSTRAINED', 'MATCHED_STATIC_USAGE'],
+      reviewStatus: 'reviewed',
+      provenance: 'official',
+    });
   });
 
   it('associates findings, migration status, and Draft PR state through their real database relationships', async () => {

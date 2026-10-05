@@ -6,7 +6,7 @@ const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates[0]!;
 const action = (overrides: Record<string, unknown> = {}) => ({
   decision: 'approve-for-promotion-review', reviewer: 'local-human-reviewer', reviewedAt: '2026-10-05',
   notes: 'Reviewed the captured official evidence; verify SDK scope separately before production promotion.',
-  sourceFingerprint: candidate.sourceFingerprint, candidateFingerprint: fingerprintCandidate(candidate), ...overrides,
+  sourceFingerprint: candidate.sourceFingerprint, evidenceFingerprint: candidate.evidenceFingerprint, candidateFingerprint: fingerprintCandidate(candidate), ...overrides,
 });
 
 describe('local candidate review workflow', () => {

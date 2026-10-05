@@ -46,13 +46,17 @@ describe('local OpenAI production-promotion proof', () => {
     ['unaffected', 'openai', 'gpt-4.1', true, 'NOT_AFFECTED'],
     ['dynamic', 'openai', undefined, false, 'NEEDS_REVIEW'],
     ['unrelated-model', 'openai', 'gpt-4o', true, 'NOT_AFFECTED'],
-    ['unrelated-provider', 'anthropic', 'gpt-4.5-preview', true, 'NEEDS_REVIEW'],
+    ['different provider and model', 'anthropic', 'gpt-4.5-preview', true, 'NOT_AFFECTED'],
   ] as const)('evaluates %s with no cross-scope claim', (id, providerId, model, staticEvidence, expected) => {
     const result = evaluateRegisteredNormalizedCompatibility({ providerId, usageIR: [usage(id, providerId, model, staticEvidence)], completeEvidence: !staticEvidence ? false : true }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(result).toHaveLength(providerId === 'openai' ? 2 : 0);
+    expect(result).toHaveLength(providerId === 'openai' ? 2 : providerId === 'anthropic' ? 1 : 0);
     const modelResult = result.find((item) => item.changeId === modelRecord.changeId);
     if (modelResult) expect(modelResult.status).toBe(expected);
-    if (id === 'unrelated-provider') expect(result).toEqual([]);
+    if (providerId === 'anthropic') {
+      expect(result[0]?.providerId).toBe('anthropic');
+      expect(result[0]?.status).toBe('NOT_AFFECTED');
+      expect(result.some((item) => item.changeId.startsWith('openai-'))).toBe(false);
+    }
   });
 
   it('evaluates both OpenAI rules without duplicate or conflicting findings', () => {
