@@ -8,4 +8,8 @@ export { compileProductionChangeRegistry, PRODUCTION_COMPATIBILITY_REGISTRY } fr
 export type { ProductionChangeRegistry } from './compatibility-registry.js';
 export { compileCandidateChangeRegistry, sourceHasUpdated, promoteCandidateToReviewed } from './change-ingestion-registry.js';
 export type { CandidateChangeRegistry } from './change-ingestion-registry.js';
+export { fingerprintCandidate, reviewCandidate } from './candidate-review.js';
+export { buildProviderIntelligenceCoverage } from './coverage-report.js';
+export type { ProviderIntelligenceCoverage } from './coverage-report.js';
+export { exportCandidateBundle, importCandidateBundle } from './candidate-bundle.js';
 export { OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';

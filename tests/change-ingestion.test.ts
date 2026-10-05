@@ -6,7 +6,7 @@ import { COMPATIBILITY_FIXTURES } from './fixtures/compatibility-fixtures.js';
 const candidate = (overrides: Record<string, unknown> = {}) => ({
   candidateId: 'candidate-openai-1', providerId: 'openai', sourceUrl: 'https://platform.openai.com/docs', sourceType: 'official-documentation',
   sourceFingerprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', discoveredAt: '2026-01-01', state: 'needs_review',
-  payload: { changeId: 'candidate-openai-1', title: COMPATIBILITY_FIXTURES[0]!.title, description: COMPATIBILITY_FIXTURES[0]!.description, changeType: COMPATIBILITY_FIXTURES[0]!.changeType, affectedPackages: [...COMPATIBILITY_FIXTURES[0]!.affectedPackages], affectedVersionRange: COMPATIBILITY_FIXTURES[0]!.affectedVersionRange, apiOperationPatterns: [...COMPATIBILITY_FIXTURES[0]!.apiOperationPatterns], affectedParameters: [...COMPATIBILITY_FIXTURES[0]!.affectedParameters], affectedResponseFields: [...COMPATIBILITY_FIXTURES[0]!.affectedResponseFields], affectedEndpoints: [...COMPATIBILITY_FIXTURES[0]!.affectedEndpoints], affectedModels: [...COMPATIBILITY_FIXTURES[0]!.affectedModels], severity: COMPATIBILITY_FIXTURES[0]!.severity },
+  payload: { changeId: 'candidate-openai-1', title: COMPATIBILITY_FIXTURES[0]!.title, description: COMPATIBILITY_FIXTURES[0]!.description, changeType: COMPATIBILITY_FIXTURES[0]!.changeType, applicabilityScope: { dimensions: ['provider', 'package', 'package_version', 'operation', 'parameter'] }, affectedPackages: [...COMPATIBILITY_FIXTURES[0]!.affectedPackages], affectedVersionRange: COMPATIBILITY_FIXTURES[0]!.affectedVersionRange, apiOperationPatterns: [...COMPATIBILITY_FIXTURES[0]!.apiOperationPatterns], affectedParameters: [...COMPATIBILITY_FIXTURES[0]!.affectedParameters], affectedResponseFields: [...COMPATIBILITY_FIXTURES[0]!.affectedResponseFields], affectedEndpoints: [...COMPATIBILITY_FIXTURES[0]!.affectedEndpoints], affectedModels: [...COMPATIBILITY_FIXTURES[0]!.affectedModels], severity: COMPATIBILITY_FIXTURES[0]!.severity },
   auditTrail: [
     { state: 'discovered', at: '2026-01-01', actor: 'source-adapter', note: 'Candidate captured from an official source.' },
     { state: 'normalized', at: '2026-01-01', actor: 'candidate-normalizer', note: 'Candidate facts normalized.' },
@@ -27,7 +27,7 @@ describe('candidate change ingestion', () => {
     const registry = compileCandidateChangeRegistry([candidate()]);
     expect(registry.candidates).toHaveLength(1);
     expect(registry.byCandidateId.get('candidate-openai-1')?.state).toBe('needs_review');
-    expect(registry.bySourceFingerprint.has('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')).toBe(true);
+    expect(registry.bySourceFingerprint.get('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')).toHaveLength(1);
     expect(registry.byProvider.get('openai')).toHaveLength(1);
     expect(registry.byPackage.get('openai')).toHaveLength(1);
     expect(registry.byOperation.get('chat.completions.create')).toHaveLength(1);
@@ -45,6 +45,13 @@ describe('candidate change ingestion', () => {
     const registry = compileCandidateChangeRegistry([corroborating, candidate()]);
     expect(registry.byProposedChangeId.get('candidate-openai-1')?.map((item) => item.candidateId)).toEqual(['candidate-openai-1', 'candidate-openai-2']);
     expect(registry.byCandidateId.size).toBe(2);
+  });
+
+  it('allows multiple candidates from the same full source while rejecting cross-source fingerprint conflicts', () => {
+    const sameSource = candidate({ candidateId: 'candidate-openai-2', sourceFingerprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' });
+    const registry = compileCandidateChangeRegistry([candidate(), sameSource]);
+    expect(registry.bySourceFingerprint.get('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')).toHaveLength(2);
+    expect(() => compileCandidateChangeRegistry([candidate(), candidate({ candidateId: 'candidate-openai-2', sourceUrl: 'https://platform.openai.com/changelog', sourceFingerprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' })])).toThrow('CANDIDATE_SOURCE_FINGERPRINT_CONFLICT');
   });
 
   it('keeps captured official candidates in the review queue, never the production registry', () => {
@@ -114,7 +121,7 @@ describe('candidate change ingestion', () => {
     const reviewedAudit = { state: 'reviewed', at: '2026-01-02', actor: 'human-reviewer', note: 'Human review completed.' } as const;
     const reviewed = candidate({
       state: 'reviewed', auditTrail: [...candidate().auditTrail, reviewedAudit],
-      payload: { ...candidate().payload, affectedVersionRange: undefined, changeType: 'endpoint_removed', apiOperationPatterns: ['beta.assistants'], affectedParameters: [] },
+      payload: { ...candidate().payload, applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedVersionRange: undefined, changeType: 'endpoint_removed', apiOperationPatterns: ['beta.assistants'], affectedParameters: [], affectedEndpoints: ['/v1/assistants'] },
     });
     const record = promoteCandidateToReviewed(reviewed, { status: 'reviewed', reviewer: 'Human reviewer', reviewerKind: 'human', reviewedAt: '2026-01-02', notes: 'Reviewed against the official source.' }, [{ url: 'https://platform.openai.com/docs', summary: 'Official source reference.', accessedAt: '2026-01-02' }]);
     expect(record.affectedVersionRange).toBeUndefined();

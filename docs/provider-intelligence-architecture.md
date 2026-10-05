@@ -191,3 +191,27 @@ provider discovery and `O(changed inputs + candidate matches)` for incremental
 planning. The remaining scaling work is measuring graph/evidence storage costs
 on representative repository snapshots and adding conflict diagnostics as the
 reviewed change registry gains real records.
+
+## Adding a real provider change safely
+
+1. Capture only an official provider source with its canonical URL, source type,
+   access date, and content fingerprint.
+2. Normalize only facts stated by that source. Leave SDK package, version range,
+   operation, severity, and replacement fields unknown when the source does not
+   prove them.
+3. Ingest the record into the candidate registry with state `needs_review`.
+4. Generate affected, unaffected, and uncertain fixtures through normalized IR;
+   fixtures remain test-only and never enter production APIs.
+5. A human explicitly reviews the source and candidate fingerprints, records a
+   decision and notes, and only then may a separate promotion action create a
+   reviewed production record.
+6. If the same URL receives a different fingerprint, return
+   `SOURCE_UPDATED_REVIEW_REQUIRED` and require review again.
+
+The local candidate preview is labeled `candidate-unreviewed` and always points
+to `MANUAL_REVIEW`; it is not a compatibility claim. Production compatibility
+results can only come from the reviewed, official-source registry.
+
+Candidate review bundles use a stable schema-versioned JSON export/import format
+for local handoff. Import always recompiles the candidate registry and never
+loads records into the production compatibility registry.
