@@ -1,6 +1,7 @@
 import semver from 'semver';
 import { CandidateChangeSchema, CandidateReviewSchema, ReviewedCompatibilityChangeSchema, validateApplicabilityScope } from '@apiproof/shared';
-import type { CandidateChange, CandidateReview, ReviewedCompatibilityChange } from '@apiproof/shared';
+import type { CandidateChange, CandidateReview, ReviewedCompatibilityChange, SourceUpdateStatus } from '@apiproof/shared';
+import { fingerprintCandidate } from './candidate-review.js';
 import { DISCOVERY_PROVIDERS } from './discovery-registry.js';
 
 export interface CandidateChangeRegistry {
@@ -71,7 +72,21 @@ export function compileCandidateChangeRegistry(inputs: readonly unknown[], provi
 }
 
 export function sourceHasUpdated(previous: CandidateChange, incoming: CandidateChange): boolean {
-  return previous.candidateId === incoming.candidateId && previous.sourceUrl === incoming.sourceUrl && previous.sourceFingerprint !== incoming.sourceFingerprint;
+  return previous.candidateId === incoming.candidateId && previous.sourceUrl === incoming.sourceUrl
+    && (previous.documentFingerprint ?? previous.sourceFingerprint) !== (incoming.documentFingerprint ?? incoming.sourceFingerprint);
+}
+
+/** Classifies a source refresh without treating a changed document as changed evidence. */
+export function classifySourceUpdate(previousInput: unknown, incomingInput: unknown | null): SourceUpdateStatus {
+  const previous = CandidateChangeSchema.parse(previousInput);
+  if (!incomingInput) return 'SOURCE_UNAVAILABLE_REVIEW_REQUIRED';
+  const incoming = CandidateChangeSchema.parse(incomingInput);
+  if (!incoming.documentFingerprint || !incoming.evidenceFingerprint || !incoming.sourceEvidence) return 'SOURCE_UNAVAILABLE_REVIEW_REQUIRED';
+  if (!previous.evidenceFingerprint || !previous.sourceEvidence) return 'SOURCE_UNAVAILABLE_REVIEW_REQUIRED';
+  const previousDocument = previous.documentFingerprint ?? previous.sourceFingerprint;
+  if (previousDocument === incoming.documentFingerprint && previous.evidenceFingerprint === incoming.evidenceFingerprint) return 'SOURCE_UNCHANGED';
+  if (previousDocument !== incoming.documentFingerprint && previous.evidenceFingerprint === incoming.evidenceFingerprint) return 'DOCUMENT_UPDATED_EVIDENCE_UNCHANGED';
+  return 'EVIDENCE_UPDATED_REVIEW_REQUIRED';
 }
 
 type EvidenceReference = ReviewedCompatibilityChange['evidence'][number];
@@ -82,7 +97,26 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
   const review = CandidateReviewSchema.parse(reviewInput) as CandidateReview;
   if (candidate.state !== 'reviewed') throw new Error(`CANDIDATE_NOT_READY_FOR_PROMOTION:${candidate.candidateId}`);
   if (review.reviewerKind !== 'human') throw new Error(`CANDIDATE_HUMAN_REVIEW_REQUIRED:${candidate.candidateId}`);
-  if (!candidate.auditTrail.some((entry) => entry.state === 'reviewed')) throw new Error(`CANDIDATE_REVIEW_AUDIT_MISSING:${candidate.candidateId}`);
+  const reviewAudit = [...candidate.auditTrail].reverse().find((entry) => entry.state === 'reviewed');
+  if (!reviewAudit) throw new Error(`CANDIDATE_REVIEW_AUDIT_MISSING:${candidate.candidateId}`);
+  if (candidate.evidenceFingerprint) {
+    const expectedDocumentFingerprint = candidate.documentFingerprint ?? candidate.sourceFingerprint;
+    const binding = reviewAudit.reviewBinding;
+    if (!binding) throw new Error(`CANDIDATE_REVIEW_BINDING_MISSING:${candidate.candidateId}`);
+    if (reviewAudit.actor !== review.reviewer || reviewAudit.at !== review.reviewedAt || reviewAudit.note !== review.notes) {
+      throw new Error(`CANDIDATE_REVIEW_METADATA_MISMATCH:${candidate.candidateId}`);
+    }
+    if (binding.documentFingerprint !== expectedDocumentFingerprint || review.documentFingerprint !== expectedDocumentFingerprint) {
+      throw new Error(`CANDIDATE_REVIEW_SOURCE_FINGERPRINT_MISMATCH:${candidate.candidateId}`);
+    }
+    if (binding.evidenceFingerprint !== candidate.evidenceFingerprint || review.evidenceFingerprint !== candidate.evidenceFingerprint) {
+      throw new Error(`CANDIDATE_REVIEW_EVIDENCE_FINGERPRINT_MISMATCH:${candidate.candidateId}`);
+    }
+    const currentCandidateFingerprint = fingerprintCandidate(candidate);
+    if (binding.candidateFingerprint !== currentCandidateFingerprint || review.candidateFingerprint !== currentCandidateFingerprint) {
+      throw new Error(`CANDIDATE_REVIEW_CANDIDATE_FINGERPRINT_MISMATCH:${candidate.candidateId}`);
+    }
+  }
   if (candidate.sourceFingerprintBasis !== 'full-body') throw new Error(`CANDIDATE_FULL_SOURCE_REQUIRED:${candidate.candidateId}`);
   if (!evidence.some((item) => item.url === candidate.sourceUrl)) throw new Error(`CANDIDATE_SOURCE_NOT_IN_EVIDENCE:${candidate.candidateId}`);
   const payload = candidate.payload;
@@ -101,6 +135,17 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
     affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [],
     affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], authOrHeaderPatterns: payload.authOrHeaderPatterns ?? [],
     enumMetadata: payload.enumMetadata, apiVersionMetadata: payload.apiVersionMetadata, replacement: payload.replacement,
-    severity: payload.severity, review: { status: review.status, reviewer: review.reviewer, reviewedAt: review.reviewedAt, provenance: 'official' }, evidence,
+    severity: payload.severity,
+    review: {
+      status: review.status,
+      reviewer: review.reviewer,
+      reviewedAt: review.reviewedAt,
+      provenance: 'official',
+      ...(candidate.evidenceFingerprint && review.notes ? { notes: review.notes } : {}),
+      ...(candidate.evidenceFingerprint && review.documentFingerprint ? { documentFingerprint: review.documentFingerprint } : {}),
+      ...(candidate.evidenceFingerprint && review.evidenceFingerprint ? { evidenceFingerprint: review.evidenceFingerprint } : {}),
+      ...(candidate.evidenceFingerprint && review.candidateFingerprint ? { candidateFingerprint: review.candidateFingerprint } : {}),
+    },
+    evidence,
   });
 }

@@ -6,7 +6,7 @@ export { DISCOVERY_PROVIDERS, DISCOVERY_PROVIDER_REGISTRY, PROVIDER_CATALOG_SUMM
 export type { ProviderDefinition, ProviderCapability, ProviderCategory, ProviderRegistry, PackagePrefixIndex, DomainLookupIndex, ProviderCatalogSummary } from './discovery-registry.js';
 export { compileProductionChangeRegistry, PRODUCTION_COMPATIBILITY_REGISTRY } from './compatibility-registry.js';
 export type { ProductionChangeRegistry } from './compatibility-registry.js';
-export { compileCandidateChangeRegistry, sourceHasUpdated, promoteCandidateToReviewed } from './change-ingestion-registry.js';
+export { classifySourceUpdate, compileCandidateChangeRegistry, sourceHasUpdated, promoteCandidateToReviewed } from './change-ingestion-registry.js';
 export type { CandidateChangeRegistry } from './change-ingestion-registry.js';
 export { fingerprintCandidate, reviewCandidate } from './candidate-review.js';
 export { buildProviderIntelligenceCoverage } from './coverage-report.js';
