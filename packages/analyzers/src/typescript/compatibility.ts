@@ -71,18 +71,23 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   if (dimensions.has('parameter') && (!usage.parameter || !change.affectedParameters.includes(usage.parameter))) return 'no-match';
   const parameterCondition = usage.parameter ? change.parameterConditions?.find((condition) => condition.parameter === usage.parameter) : undefined;
   const parameterMatch: UsageMatch = !parameterCondition ? 'match' : parameterConditionMatch(parameterCondition, usage);
-  const responseMatch = !dimensions.has('response_field') || Boolean(usage.responseField && change.affectedResponseFields.includes(usage.responseField));
+  const responseFieldMatch: UsageMatch = !dimensions.has('response_field') ? 'match'
+    : usage.responseField && change.affectedResponseFields.includes(usage.responseField) ? 'match'
+      : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
   const modelMatch = !dimensions.has('model') || Boolean(usage.model && change.affectedModels.includes(usage.model));
   const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
   const apiVersionMatch = !dimensions.has('api_version') || Boolean(usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion);
   const authMatch = !dimensions.has('auth_or_header') || Boolean(usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader));
-  if (!targetMatch || !responseMatch || !modelMatch || !resourceMatch || !apiVersionMatch || !authMatch) return 'no-match';
-  return parameterMatch;
+  if (!targetMatch || !modelMatch || !resourceMatch || !apiVersionMatch || !authMatch) return 'no-match';
+  if (responseFieldMatch === 'no-match' || parameterMatch === 'no-match') return 'no-match';
+  if (responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
+  return 'match';
 }
 
 /** Deterministic compatibility evaluation. It never infers impact from names alone. */
 export function evaluateCompatibility(input: CompatibilityInput, rawChange: unknown, policy: CompatibilityPolicy): CompatibilityResult {
   const change = ReviewedCompatibilityChangeSchema.parse(rawChange);
+  const dimensions = new Set(change.applicabilityScope.dimensions);
   const version = versionAssessment(input, change);
   const matchedById = new Map<string, CompatibilityUsage>();
   const uncertainById = new Map<string, CompatibilityUsage>();
@@ -107,7 +112,14 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     reasonCodes.push(version.assessment === 'in-range' ? 'VERSION_IN_AFFECTED_RANGE' : 'VERSION_NOT_CONSTRAINED', matched.some((usage) => usage.parameterValueStatus === 'disallowed') ? 'MATCHED_DISALLOWED_PARAMETER_VALUE' : 'MATCHED_STATIC_USAGE');
   } else if ((version.assessment === 'in-range' || version.assessment === 'not-constrained') && matched.length === 0 && uncertain.length === 0 && input.completeEvidence) { status = 'NOT_AFFECTED'; reasonCodes.push('CHANGED_API_NOT_USED'); }
   else if (matched.length === 0 && uncertain.length === 0 && input.completeEvidence && version.assessment !== 'declared-only' && version.assessment !== 'unknown') { status = 'NOT_AFFECTED'; reasonCodes.push('CHANGED_API_NOT_USED'); }
-  else { status = 'NEEDS_REVIEW'; if (version.assessment === 'declared-only' || version.assessment === 'unknown') reasonCodes.push('VERSION_UNKNOWN'); if ([...matched, ...uncertain].some((usage) => !usage.static || usage.confidence < 0.8)) reasonCodes.push('INSUFFICIENT_STATIC_EVIDENCE'); if (uncertain.length > 0) reasonCodes.push('PARAMETER_VALUE_UNRESOLVED'); if (matched.length === 0 && uncertain.length === 0) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH'); }
+  else {
+    status = 'NEEDS_REVIEW';
+    if (version.assessment === 'declared-only' || version.assessment === 'unknown') reasonCodes.push('VERSION_UNKNOWN');
+    if ([...matched, ...uncertain].some((usage) => !usage.static || usage.confidence < 0.8)) reasonCodes.push('INSUFFICIENT_STATIC_EVIDENCE');
+    if (uncertain.some((usage) => dimensions.has('response_field') && !usage.responseField)) reasonCodes.push('RESPONSE_FIELD_UNRESOLVED');
+    if (uncertain.some((usage) => usage.parameter && change.parameterConditions?.some((condition) => condition.parameter === usage.parameter))) reasonCodes.push('PARAMETER_VALUE_UNRESOLVED');
+    if (matched.length === 0 && uncertain.length === 0) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');
+  }
   if (reasonCodes.length === 0) reasonCodes.push('INSUFFICIENT_STATIC_EVIDENCE');
   const versionSource = input.versionSource ?? (input.resolvedVersion ? 'lockfile' : input.declaredVersion ? 'package-json' : 'unknown');
   const versionConfidence = input.versionConfidence ?? (input.resolvedVersion ? 'exact' : input.declaredVersion ? 'declared-only' : 'unknown');
@@ -120,6 +132,7 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     declaredVersion: input.declaredVersion ?? null, resolvedVersion: input.resolvedVersion ?? null, versionSource, versionConfidence,
     changeTitle: change.title, changeType: change.changeType, officialSourceUrl: change.officialSourceUrl,
     publishedAt: change.publishedAt ?? null, effectiveAt: change.effectiveAt ?? null, removalAt: change.removalAt ?? null,
+    severity: change.severity, replacement: change.replacement,
     matchedUsages: matched, evidence, reasonCodes, officialSourceReference: change.officialSourceUrl,
     usageAssessment, exactFile: primaryUsage?.location.file ?? null, exactLine: primaryUsage?.location.line ?? null,
     exactSymbol: primaryUsage?.location.symbol ?? primaryUsage?.operation ?? null,

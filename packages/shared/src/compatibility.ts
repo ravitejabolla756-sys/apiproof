@@ -123,7 +123,11 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
   }
   if (change.changeType === 'response_field_removed') {
     require('response_field', change.affectedResponseFields.length > 0);
-    require('operation', change.apiOperationPatterns.length > 0 || change.affectedEndpoints.length > 0 || change.affectedResources.length > 0);
+    const targetDimensions: ApplicabilityDimension[] = ['operation', 'endpoint', 'resource'];
+    if (!targetDimensions.some((dimension) => dimensions.has(dimension))) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:${targetDimensions.join('|')}`);
+    if (dimensions.has('operation')) require('operation', change.apiOperationPatterns.length > 0);
+    if (dimensions.has('endpoint')) require('endpoint', change.affectedEndpoints.length > 0);
+    if (dimensions.has('resource')) require('resource', change.affectedResources.length > 0);
   }
   if (change.changeType === 'api_version_retired') require('api_version', Boolean(change.apiVersionMetadata?.version));
   if (change.changeType === 'enum_changed') require('enum', Boolean(change.enumMetadata));
@@ -171,6 +175,8 @@ export const CompatibilityResultSchema = z.strictObject({
   versionConfidence: z.enum(['exact', 'declared-only', 'unknown']),
   changeTitle: z.string(), changeType: CompatibilityChangeTypeSchema,
   officialSourceUrl: z.string().url(), publishedAt: z.string().nullable(), effectiveAt: z.string().nullable(), removalAt: z.string().nullable(),
+  severity: CompatibilitySeveritySchema.optional(),
+  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
   versionAssessment: VersionAssessmentSchema, matchedUsages: z.array(CompatibilityUsageSchema),
   usageAssessment: z.enum(['matched', 'not-used', 'uncertain', 'not-applicable']),
   exactFile: z.string().nullable(), exactLine: z.number().int().positive().nullable(), exactSymbol: z.string().nullable(),

@@ -38,8 +38,8 @@ export function usageFindingToCompatibilityUsage(usage: UsageFinding, packageNam
     id: usage.id, providerId: usage.provider, packageName,
     operation: isOperation ? usage.symbol : undefined, parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
     endpoint: usage.kind === 'resource' && usage.symbol.startsWith('http') ? usage.symbol : undefined,
-    responseField: isResponse ? usage.response?.fieldPath : undefined,
-    evidenceKind: usage.kind === 'import' ? 'import' : usage.kind === 'resource' && usage.symbol.startsWith('http') ? 'http' : usage.kind === 'resource' ? 'environment' : 'sdk', confidence: usage.confidence, static: true,
+    responseField: isResponse && usage.response?.fieldPath ? usage.response.fieldPath : undefined,
+    evidenceKind: usage.kind === 'import' ? 'import' : usage.kind === 'resource' && usage.symbol.startsWith('http') ? 'http' : usage.kind === 'resource' ? 'environment' : 'sdk', confidence: usage.confidence, static: usage.dynamic !== true,
     location: { file: usage.location.file, line: usage.location.start.line, column: usage.location.start.column, symbol: usage.symbol },
   };
 }

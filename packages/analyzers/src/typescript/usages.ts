@@ -39,7 +39,7 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
   for (const node of resolver.mutatedProviderNodes) snapshot.warn('MUTATED_BINDING', 'A provider binding is reassigned; usages through it cannot be resolved reliably.', location(node).file);
   const usages = new Map<string, UsageFinding>();
   const add = (node: Node, kind: UsageFinding['kind'], symbol: string, binding: Binding,
-    details: Pick<UsageFinding, 'arguments' | 'response' | 'semantics'> = {}) => {
+    details: Pick<UsageFinding, 'arguments' | 'response' | 'semantics' | 'dynamic'> = {}) => {
     const loc = location(node);
     const id = createHash('sha256').update(JSON.stringify([provider.id, kind, symbol, loc])).digest('hex').slice(0, 24);
     usages.set(id, { id, provider: provider.id, kind, symbol, location: loc, context: context(node),
@@ -93,7 +93,11 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
       if (Node.isElementAccessExpression(node)) {
         const base = resolver.resolve(node.getExpression());
         if (base?.kind === 'client' && !resolver.resolve(node)) snapshot.warn('DYNAMIC_MEMBER', 'Computed provider member cannot be resolved statically.', location(node).file);
-        if (!response && responses.resolve(node.getExpression())) snapshot.warn('DYNAMIC_RESPONSE_FIELD', 'Computed response field cannot be resolved statically.', location(node).file);
+        const responseBase = !response ? responses.resolve(node.getExpression()) : undefined;
+        if (responseBase) {
+          snapshot.warn('DYNAMIC_RESPONSE_FIELD', 'Computed response field cannot be resolved statically.', location(node).file);
+          add(node, 'response-field', '<dynamic-response-field>', responseBase.binding, { response: { ...responseBase.response, fieldPath: '' }, dynamic: true });
+        }
       }
       const parent = node.getParent();
       if ((Node.isPropertyAccessExpression(parent) || Node.isElementAccessExpression(parent) || Node.isCallExpression(parent) || Node.isNewExpression(parent)) && parent.getExpression() === node) continue;

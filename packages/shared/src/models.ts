@@ -89,6 +89,7 @@ export const UsageFindingSchema = z.strictObject({
     fieldPath: z.string(), originLocation: LocationSchema,
     callbackLocation: LocationSchema.optional(),
   }).optional(),
+  dynamic: z.boolean().optional(),
 });
 export type UsageFinding = z.infer<typeof UsageFindingSchema>;
 
