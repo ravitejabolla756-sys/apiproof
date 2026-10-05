@@ -2,6 +2,7 @@ import semver from 'semver';
 import { ReviewedCompatibilityChangeSchema, validateApplicabilityScope } from '@apiproof/shared';
 import type { ReviewedCompatibilityChange } from '@apiproof/shared';
 import { DISCOVERY_PROVIDERS } from './discovery-registry.js';
+import { LOCAL_REVIEWED_PRODUCTION_RECORDS } from './local-reviewed-production-records.js';
 
 export interface ProductionChangeRegistry {
   readonly changes: readonly ReviewedCompatibilityChange[];
@@ -49,4 +50,4 @@ export function compileProductionChangeRegistry(inputs: readonly unknown[], prov
 }
 
 /** No production records are asserted until manual source review supplies them. */
-export const PRODUCTION_COMPATIBILITY_REGISTRY = compileProductionChangeRegistry([]);
+export const PRODUCTION_COMPATIBILITY_REGISTRY = compileProductionChangeRegistry(LOCAL_REVIEWED_PRODUCTION_RECORDS);

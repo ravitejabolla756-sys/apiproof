@@ -13,3 +13,4 @@ export { buildProviderIntelligenceCoverage } from './coverage-report.js';
 export type { ProviderIntelligenceCoverage } from './coverage-report.js';
 export { exportCandidateBundle, importCandidateBundle } from './candidate-bundle.js';
 export { OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
+export { LOCAL_REVIEWED_PRODUCTION_RECORDS } from './local-reviewed-production-records.js';

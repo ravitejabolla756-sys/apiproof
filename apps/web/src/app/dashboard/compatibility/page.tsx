@@ -14,6 +14,10 @@ type ReviewedChange = {
   effectiveAt: string | null;
   removalAt: string | null;
   severity: string;
+  applicabilityScope: { dimensions: string[] };
+  affectedModels: string[];
+  reviewer: string;
+  reviewedAt: string;
 };
 
 type CompatibilityProofResponse = {
@@ -86,6 +90,12 @@ export default function CompatibilityPage() {
                 <div><dt className="text-[10px] font-semibold uppercase text-[#686868]">Effective</dt><dd className="mt-1 text-[#111111]">{change.effectiveAt ?? "Not specified"}</dd></div>
                 <div><dt className="text-[10px] font-semibold uppercase text-[#686868]">Removal</dt><dd className="mt-1 text-[#111111]">{change.removalAt ?? "Not specified"}</dd></div>
               </dl>
+              <div className="rounded-xl border border-purple-100 bg-purple-50/60 p-3 text-[#3B236B]">
+                <p className="font-semibold">Authoritative scope</p>
+                <p className="mt-1 font-mono text-[11px]">{change.applicabilityScope.dimensions.join(" + ")}</p>
+                {change.affectedModels.length > 0 && <p className="mt-1">Model: <span className="font-mono">{change.affectedModels.join(", ")}</span></p>}
+                <p className="mt-1 text-[10px]">Reviewed by {change.reviewer} on {change.reviewedAt}</p>
+              </div>
               <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-purple-700 hover:underline">
                 Official source <ExternalLink className="h-3.5 w-3.5" />
               </a>

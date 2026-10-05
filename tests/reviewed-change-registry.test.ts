@@ -45,7 +45,8 @@ describe('production reviewed change registry', () => {
   });
 
   it('does not claim compatibility for discovery-only providers without reviewed changes', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(0);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(1);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.has('cloudflare')).toBe(false);
   });
 
