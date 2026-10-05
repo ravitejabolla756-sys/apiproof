@@ -14,13 +14,16 @@ export function normalizeCompatibilityUsage(usage: CompatibilityUsage, context: 
   const operation = usage.operation;
   const segments = operation?.split('.').filter(Boolean) ?? [];
   const endpoint = usage.endpoint;
+  const resource = usage.resource ?? segments[0];
   return NormalizedUsageIRSchema.parse({
     id: usage.id, language: context.language ?? 'typescript', providerId: usage.providerId, packageName: usage.packageName,
     declaredVersion: context.declaredVersion ?? null, resolvedVersion: context.resolvedVersion ?? null,
     versionSource: context.versionSource ?? (context.resolvedVersion ? 'lockfile' : context.declaredVersion ? 'package-json' : 'unknown'),
     versionConfidence: context.versionConfidence ?? (context.resolvedVersion ? 'exact' : context.declaredVersion ? 'declared-only' : 'unknown'),
-    operation, resource: segments[0], method: segments.at(-1), endpoint, model: usage.model,
-    parameters: usage.parameter ? [usage.parameter] : [], responseFields: usage.responseField ? [usage.responseField] : [],
+    operation, resource, method: segments.at(-1), endpoint, model: usage.model,
+    parameters: usage.parameter ? [usage.parameter] : [],
+    parameterValues: usage.parameter ? [{ parameter: usage.parameter, ...(usage.parameterValue !== undefined ? { value: usage.parameterValue } : {}), ...(usage.parameterValueStatus ? { status: usage.parameterValueStatus } : {}) }] : [],
+    responseFields: usage.responseField ? [usage.responseField] : [],
     authEvidence: [], dynamic: !usage.static, location: usage.location, confidence: usage.confidence,
     evidence: [{ kind: usage.evidenceKind === 'http' ? 'http-call' : usage.evidenceKind === 'import' ? 'import' : usage.evidenceKind === 'environment' ? 'environment' : 'sdk-call', detail: operation ?? endpoint ?? usage.parameter ?? usage.responseField ?? usage.evidenceKind, file: usage.location.file, line: usage.location.line, provenance: 'static-source' }],
   });
@@ -46,7 +49,9 @@ export function normalizedUsageToCompatibilityUsage(usage: NormalizedUsageIR): C
   const evidenceKind = usage.evidence[0]?.kind;
   return {
     id: usage.id, providerId: usage.providerId, packageName: usage.packageName,
-    operation: usage.operation, model: usage.model, parameter: usage.parameters[0], responseField: usage.responseFields[0], endpoint: usage.endpoint,
+    operation: usage.operation, model: usage.model, parameter: usage.parameters[0], responseField: usage.responseFields[0], endpoint: usage.endpoint, resource: usage.resource,
+    ...(usage.parameterValues?.[0]?.value !== undefined ? { parameterValue: usage.parameterValues[0].value } : {}),
+    ...(usage.parameterValues?.[0]?.status ? { parameterValueStatus: usage.parameterValues[0].status } : {}),
     evidenceKind: evidenceKind === 'http-call' ? 'http' : evidenceKind === 'import' ? 'import' : evidenceKind === 'environment' ? 'environment' : 'sdk',
     confidence: usage.confidence, static: !usage.dynamic, location: usage.location,
   };

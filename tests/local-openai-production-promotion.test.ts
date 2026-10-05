@@ -49,7 +49,7 @@ describe('local OpenAI production-promotion proof', () => {
     ['different provider and model', 'anthropic', 'gpt-4.5-preview', true, 'NOT_AFFECTED'],
   ] as const)('evaluates %s with no cross-scope claim', (id, providerId, model, staticEvidence, expected) => {
     const result = evaluateRegisteredNormalizedCompatibility({ providerId, usageIR: [usage(id, providerId, model, staticEvidence)], completeEvidence: !staticEvidence ? false : true }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(result).toHaveLength(providerId === 'openai' ? 2 : providerId === 'anthropic' ? 1 : 0);
+    expect(result).toHaveLength(providerId === 'openai' ? 2 : providerId === 'anthropic' ? 2 : 0);
     const modelResult = result.find((item) => item.changeId === modelRecord.changeId);
     if (modelResult) expect(modelResult.status).toBe(expected);
     if (providerId === 'anthropic') {

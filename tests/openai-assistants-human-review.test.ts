@@ -117,7 +117,7 @@ describe('OpenAI Assistants explicit local human review', () => {
     expect(projectedRecord.evidence[0]?.url).toBe(SOURCE_URL);
     expect(projectedRegistry.byChangeId.get(CHANGE_ID)).toEqual(projectedRecord);
 
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(3);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(4);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has(CHANGE_ID)).toBe(true);
     const gpt45 = PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.get('openai-gpt-4-5-preview-removal-2025-07-14');
     expect(gpt45).toMatchObject({
@@ -169,8 +169,8 @@ describe('OpenAI Assistants explicit local human review', () => {
     const unrelatedProviderResults = evaluateRegisteredNormalizedCompatibility({
       providerId: 'anthropic', usageIR: [unrelatedProviderUsage], completeEvidence: true,
     }, projectedRegistry);
-    expect(unrelatedProviderResults).toHaveLength(1);
-    expect(unrelatedProviderResults[0]).toMatchObject({ providerId: 'anthropic', status: 'NOT_AFFECTED' });
+    expect(unrelatedProviderResults).toHaveLength(2);
+    expect(unrelatedProviderResults.every((item) => item.providerId === 'anthropic' && item.status === 'NOT_AFFECTED')).toBe(true);
     expect(unrelatedProviderResults.some((item) => item.changeId.startsWith('openai-'))).toBe(false);
   });
 

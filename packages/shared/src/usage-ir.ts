@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { JsonPrimitiveSchema } from './compatibility.js';
 
 export const UsageLanguageSchema = z.enum(['typescript', 'javascript', 'python', 'go', 'java', 'kotlin', 'csharp']);
 export type UsageLanguage = z.infer<typeof UsageLanguageSchema>;
@@ -16,6 +17,7 @@ export const NormalizedUsageIRSchema = z.strictObject({
   versionConfidence: z.enum(['exact', 'declared-only', 'unknown']),
   operation: z.string().optional(), resource: z.string().optional(), method: z.string().optional(),
   endpoint: z.string().optional(), model: z.string().optional(), parameters: z.array(z.string()),
+  parameterValues: z.array(z.strictObject({ parameter: z.string().min(1), value: JsonPrimitiveSchema.optional(), status: z.enum(['allowed', 'disallowed', 'unknown']).optional() })).optional(),
   responseFields: z.array(z.string()), authEvidence: z.array(z.string()), apiVersion: z.string().optional(),
   dynamic: z.boolean(), location: z.strictObject({ file: z.string(), line: z.number().int().positive(), column: z.number().int().positive(), symbol: z.string().optional() }),
   confidence: z.number().min(0).max(1), evidence: z.array(NormalizedUsageEvidenceSchema).min(1),

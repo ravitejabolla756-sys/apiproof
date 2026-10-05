@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { CompatibilityChangeTypeSchema, CompatibilitySourceTypeSchema } from './compatibility.js';
+import { CompatibilityChangeTypeSchema, CompatibilityParameterConditionSchema, CompatibilitySourceTypeSchema } from './compatibility.js';
 import type { CompatibilitySourceType } from './compatibility.js';
 
 /** Immutable input used to detect an official source update without retaining its body. */
@@ -83,6 +83,7 @@ const CandidatePayloadSchema = z.strictObject({
   applicabilityScope: z.object({ dimensions: z.array(z.enum(['provider', 'package', 'package_version', 'model', 'endpoint', 'operation', 'parameter', 'response_field', 'api_version', 'auth_or_header', 'enum', 'resource'])).min(1).max(12) }).optional(),
   affectedPackages: z.array(z.string().min(1)).max(50).optional(), affectedVersionRange: z.string().min(1).optional(),
   apiOperationPatterns: z.array(z.string().min(1)).max(30).optional(), affectedParameters: z.array(z.string().min(1)).max(30).optional(),
+  parameterConditions: z.array(CompatibilityParameterConditionSchema).max(30).optional(),
   affectedResponseFields: z.array(z.string().min(1)).max(30).optional(), affectedEndpoints: z.array(z.string().min(1)).max(30).optional(),
   affectedModels: z.array(z.string().min(1)).max(30).optional(),
   affectedResources: z.array(z.string().min(1)).max(30).optional(), authOrHeaderPatterns: z.array(z.string().min(1)).max(30).optional(),

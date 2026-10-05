@@ -89,7 +89,7 @@ describe('Anthropic official candidate review preparation', () => {
       candidateFingerprint: LOCAL_ANTHROPIC_OPUS_4_1_REVIEW_ACTION.candidateFingerprint,
     });
     expect(candidate.state).toBe('needs_review');
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
   });
 
   it('passes the strict promotion validator without mutating production', () => {
@@ -117,7 +117,7 @@ describe('Anthropic official candidate review preparation', () => {
     expect(reviewedTestProjection.affectedVersionRange).toBeUndefined();
     expect(reviewedTestProjection.apiOperationPatterns).toEqual([]);
     expect(reviewedTestProjection.affectedEndpoints).toEqual([]);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.get(CANDIDATE_ID)?.review).toMatchObject({
       status: 'reviewed',
       reviewer: 'Ravi Teja',
@@ -155,7 +155,7 @@ describe('Anthropic official candidate review preparation', () => {
       evidenceFingerprint: candidate.evidenceFingerprint,
       candidateFingerprint: fingerprintCandidate(candidate),
     });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
   });
 
   it('classifies the old stored record honestly before refresh', () => {
@@ -187,7 +187,7 @@ describe('Anthropic official candidate review preparation', () => {
   it('does not create an Anthropic claim for another provider and does not mutate OpenAI rules', () => {
     const unrelated = evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [usage({ providerId: 'github' })], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
     expect(unrelated).toHaveLength(0);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(JSON.stringify(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai'))).toBe(openAiRecordsBefore);
   });
 
@@ -198,9 +198,9 @@ describe('Anthropic official candidate review preparation', () => {
     ['dynamic model', usage({ id: 'registered-dynamic', model: undefined, static: false, confidence: 0.4 }), 'NEEDS_REVIEW'],
   ] as const)('evaluates %s through the actual local production registry', (_label, item, expected) => {
     const results = evaluateRegisteredNormalizedCompatibility({ providerId: 'anthropic', usageIR: [item], completeEvidence: expected !== 'NEEDS_REVIEW' }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(results).toHaveLength(1);
-    expect(results[0]?.changeId).toBe(CANDIDATE_ID);
-    expect(results[0]?.status).toBe(expected);
+    const result = results.find((item) => item.changeId === CANDIDATE_ID);
+    expect(result).toBeDefined();
+    expect(result?.status).toBe(expected);
   });
 
   it('generates Compatibility Proof snapshots without exposing the projection in production', () => {
@@ -243,16 +243,16 @@ describe('Anthropic official candidate review preparation', () => {
   it('keeps registry ordering stable and produces one proof per reviewed change without conflicts', () => {
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
+      'anthropic-opus-4-7-parameter-restrictions',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     const results = evaluateRegisteredNormalizedCompatibility({ providerId: 'anthropic', usageIR: [usage()], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(results).toHaveLength(1);
-    expect(results[0]?.reasonCodes).toEqual(['VERSION_NOT_CONSTRAINED', 'MATCHED_STATIC_USAGE']);
+    const result = results.find((item) => item.changeId === CANDIDATE_ID);
+    expect(result?.reasonCodes).toEqual(['VERSION_NOT_CONSTRAINED', 'MATCHED_STATIC_USAGE']);
     const proof = buildCompatibilityProofSnapshot({ repositoryId: 'anthropic-production-fixture', baselineSha: 'b'.repeat(40), scanId: 'anthropic-production-proof', results, mode: 'test' });
-    expect(proof).toHaveLength(1);
-    expect(proof[0]).toMatchObject({ changeId: CANDIDATE_ID, status: 'AFFECTED', reasonCodes: results[0]?.reasonCodes, provenance: 'official' });
+    expect(proof.find((item) => item?.changeId === CANDIDATE_ID)).toMatchObject({ changeId: CANDIDATE_ID, status: 'AFFECTED', reasonCodes: result?.reasonCodes, provenance: 'official' });
   });
 });

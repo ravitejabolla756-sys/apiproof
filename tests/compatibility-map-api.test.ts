@@ -178,8 +178,8 @@ describe('GET /api/compatibility-map', () => {
 
     const response = await getMap(user.session.id);
     const repository = (await response.json() as CompatibilityMapTestPayload).repositories[0]!;
-    expect(repository.compatibilityProofs).toHaveLength(1);
-    expect(repository.compatibilityProofs?.[0]).toMatchObject({
+    expect(repository.compatibilityProofs).toHaveLength(2);
+    expect(repository.compatibilityProofs?.find((proof) => proof.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({
       providerId: 'anthropic',
       changeId: 'anthropic-claude-opus-4-1-retirement-2026-08-05',
       status: 'AFFECTED',

@@ -123,7 +123,7 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
   if (!payload.changeType || !payload.applicabilityScope || !payload.severity) {
     throw new Error(`CANDIDATE_INCOMPLETE_FOR_PROMOTION:${candidate.candidateId}`);
   }
-  const applicability = { ...payload, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages, affectedVersionRange: payload.affectedVersionRange, apiOperationPatterns: payload.apiOperationPatterns ?? [], affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [], affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], apiVersionMetadata: payload.apiVersionMetadata, enumMetadata: payload.enumMetadata };
+  const applicability = { ...payload, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages, affectedVersionRange: payload.affectedVersionRange, apiOperationPatterns: payload.apiOperationPatterns ?? [], affectedParameters: payload.affectedParameters ?? [], parameterConditions: payload.parameterConditions, affectedResponseFields: payload.affectedResponseFields ?? [], affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], apiVersionMetadata: payload.apiVersionMetadata, enumMetadata: payload.enumMetadata };
   validateApplicabilityScope(applicability as never);
   if (payload.affectedVersionRange && !semver.validRange(payload.affectedVersionRange)) throw new Error(`CANDIDATE_INVALID_VERSION_RANGE:${candidate.candidateId}`);
   return ReviewedCompatibilityChangeSchema.parse({
@@ -133,6 +133,7 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
     sourceType: candidate.sourceType, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages,
     ...(payload.affectedVersionRange ? { affectedVersionRange: payload.affectedVersionRange } : {}), apiOperationPatterns: payload.apiOperationPatterns ?? [],
     affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [],
+    ...(payload.parameterConditions ? { parameterConditions: payload.parameterConditions } : {}),
     affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], authOrHeaderPatterns: payload.authOrHeaderPatterns ?? [],
     enumMetadata: payload.enumMetadata, apiVersionMetadata: payload.apiVersionMetadata, replacement: payload.replacement,
     severity: payload.severity,

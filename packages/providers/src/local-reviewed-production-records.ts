@@ -6,6 +6,8 @@ import {
   LOCAL_REVIEWED_OPENAI_ASSISTANTS_REVIEW,
   LOCAL_REVIEWED_ANTHROPIC_OPUS_4_1_CANDIDATE,
   LOCAL_REVIEWED_ANTHROPIC_OPUS_4_1_REVIEW,
+  LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE,
+  LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
@@ -70,6 +72,16 @@ const reviewedAnthropicOpusRecord = promoteCandidateToReviewed(
   }],
 );
 
+const reviewedAnthropicParameterRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE,
+  LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE.sourceUrl,
+    summary: 'Anthropic documents temperature, top_p, and top_k non-default values returning HTTP 400 for Claude Opus 4.7 and later models and Claude Mythos Preview; omit them and use prompting.',
+    accessedAt: LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW.reviewedAt,
+  }],
+);
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -96,5 +108,21 @@ if (reviewedAssistantsRecord.providerId !== 'openai'
   throw new Error('LOCAL_REVIEWED_ASSISTANTS_FACTS_INVALID:openai-assistants-api-sunset-2026-08-26');
 }
 
+if (reviewedAnthropicParameterRecord.providerId !== 'anthropic'
+  || reviewedAnthropicParameterRecord.changeId !== 'anthropic-opus-4-7-parameter-restrictions'
+  || reviewedAnthropicParameterRecord.applicabilityScope.dimensions.join(',') !== 'provider,model,parameter'
+  || reviewedAnthropicParameterRecord.affectedModels.join(',') !== 'claude-opus-4-7,claude-mythos-preview'
+  || reviewedAnthropicParameterRecord.affectedParameters.join(',') !== 'temperature,top_p,top_k'
+  || reviewedAnthropicParameterRecord.parameterConditions?.map((condition) => `${condition.parameter}:${condition.predicate}`).join(',') !== 'temperature:non-default,top_p:non-default,top_k:non-default'
+  || reviewedAnthropicParameterRecord.severity !== 'high'
+  || reviewedAnthropicParameterRecord.affectedPackages !== undefined
+  || reviewedAnthropicParameterRecord.affectedVersionRange !== undefined
+  || reviewedAnthropicParameterRecord.apiOperationPatterns.length !== 0
+  || reviewedAnthropicParameterRecord.affectedEndpoints.length !== 0
+  || !reviewedAnthropicParameterRecord.description.includes('Claude Opus 4.7 and later')
+  || !reviewedAnthropicParameterRecord.evidence.some((source) => source.summary.includes('HTTP 400'))) {
+  throw new Error('LOCAL_REVIEWED_ANTHROPIC_PARAMETER_FACTS_INVALID:anthropic-opus-4-7-parameter-restrictions');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord] as const;

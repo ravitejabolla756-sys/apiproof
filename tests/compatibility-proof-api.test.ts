@@ -20,7 +20,7 @@ describe('GET /api/compatibility-proof', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   });
 
-  it('exposes the three reviewed local records with their scopes and provenance', async () => {
+  it('exposes the four reviewed local records with their scopes and provenance', async () => {
     const { session } = await createUserWithSession('compatibility-proof-api@example.com', 'Strong-password-1!', 'Proof API User');
     const response = await GET(new Request('http://localhost/api/compatibility-proof', { headers: { cookie: `apiproof_session=${session.id}` } }));
     expect(response.status).toBe(200);
@@ -28,11 +28,12 @@ describe('GET /api/compatibility-proof', () => {
     expect(body.claimsAvailable).toBe(true);
     expect(body.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
+      'anthropic-opus-4-7-parameter-restrictions',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
-    expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({
       providerId: 'anthropic',
       changeType: 'model_retired',

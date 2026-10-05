@@ -58,3 +58,31 @@ export const LOCAL_REVIEWED_ANTHROPIC_OPUS_4_1_REVIEW = CandidateReviewSchema.pa
   evidenceFingerprint: LOCAL_ANTHROPIC_OPUS_4_1_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_ANTHROPIC_OPUS_4_1_REVIEW_ACTION.candidateFingerprint,
 });
+
+const ANTHROPIC_PARAMETER_CANDIDATE_ID = 'anthropic-opus-4-7-parameter-restrictions';
+const anthropicParameterCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(ANTHROPIC_PARAMETER_CANDIDATE_ID);
+if (!anthropicParameterCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${ANTHROPIC_PARAMETER_CANDIDATE_ID}`);
+
+/** Explicit human review for the parameter restriction; production insertion remains a separate local-registry step. */
+export const LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-05',
+  notes: "I verified the complete official Anthropic model-deprecations source and confirmed that the candidate-specific evidence is unchanged: temperature, top_p, and top_k are restricted to non-default values for Claude Opus 4.7 and later models and Claude Mythos Preview, with HTTP 400 behavior and guidance to omit the parameters and use prompting. I approve only deterministic applicability supported by the normalized candidate. I do not assert numeric default values, SDK package, SDK version, SDK method, endpoint, unsupported model aliases, or guessed identifiers for future models covered by 'and later'.",
+  sourceFingerprint: '963a809d2191441ef8c2bcbfbdab4071fccc129394b48af249249bccecc4594c',
+  evidenceFingerprint: '4b7fec20394d52ac8c69563bff460509c0873fff225ecbc9489982ef45ab6948',
+  candidateFingerprint: '6f4b69347a030bfb7dfc28d039eb50ac93e6ca4c931294f776aa548dc9ae64dc',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE = reviewCandidate(anthropicParameterCandidate, LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.candidateFingerprint,
+});
