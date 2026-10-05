@@ -42,7 +42,7 @@ describe('generic compatibility engine', () => {
   it('treats reviewed API-level changes without an SDK-version range as applicable when static usage is proven', () => {
     const apiChange = {
       ...change(), changeId: 'api-level-removal', changeType: 'endpoint_removed' as const,
-      affectedVersionRange: undefined, apiOperationPatterns: ['beta.assistants'], affectedParameters: [],
+      applicabilityScope: { dimensions: ['provider', 'operation'] }, affectedVersionRange: undefined, apiOperationPatterns: ['beta.assistants'], affectedParameters: [],
     };
     const result = evaluateCompatibility({ providerId: 'openai', usages: [usage({ operation: 'beta.assistants.create', parameter: undefined })], completeEvidence: true }, apiChange, policy);
     expect(result.status).toBe('AFFECTED');
@@ -52,7 +52,7 @@ describe('generic compatibility engine', () => {
 
   it('matches raw HTTP endpoint evidence and model constraints without weakening SDK operation matching', () => {
     const endpointChange = {
-      ...change(), changeId: 'endpoint-and-model', affectedParameters: [], apiOperationPatterns: [],
+      ...change(), changeId: 'endpoint-and-model', applicabilityScope: { dimensions: ['provider', 'endpoint', 'model'] }, affectedParameters: [], apiOperationPatterns: [],
       affectedEndpoints: ['https://api.openai.com/v1/assistants'], affectedModels: ['legacy-model'],
     };
     const matching = usage({ operation: undefined, endpoint: 'https://api.openai.com/v1/assistants/asst_123', model: 'legacy-model' });
@@ -80,10 +80,11 @@ describe('generic compatibility engine', () => {
   });
 
   it('accepts alias/import-resolved and raw HTTP evidence without provider-specific branches', () => {
-    const alias = usage({ id: 'alias', evidenceKind: 'import', operation: 'chat.completions.create', packageName: undefined });
+    const alias = usage({ id: 'alias', evidenceKind: 'import', operation: 'chat.completions.create' });
+    const httpChange = { ...change(), changeId: 'http-parameter-removal', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedPackages: undefined, apiOperationPatterns: [], affectedParameters: [], affectedEndpoints: ['chat.completions.create'] };
     const http = usage({ id: 'http', evidenceKind: 'http', packageName: undefined, operation: undefined, endpoint: 'chat.completions.create' });
     expect(evaluateCompatibility({ providerId: 'openai', resolvedVersion: '4.2.0', usages: [alias], completeEvidence: true }, change(), policy).status).toBe('AFFECTED');
-    expect(evaluateCompatibility({ providerId: 'openai', resolvedVersion: '4.2.0', usages: [http], completeEvidence: true }, change(), policy).status).toBe('AFFECTED');
+    expect(evaluateCompatibility({ providerId: 'openai', resolvedVersion: '4.2.0', usages: [http], completeEvidence: true }, httpChange, policy).status).toBe('AFFECTED');
   });
 
   it('isolates unrelated providers and rejects discovery-only providers', () => {

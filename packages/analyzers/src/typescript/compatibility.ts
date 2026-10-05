@@ -49,15 +49,18 @@ function matchesPattern(value: string | undefined, patterns: readonly string[]):
 
 function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage): boolean {
   if (usage.providerId !== change.providerId) return false;
-  if (usage.packageName && !change.affectedPackages.includes(usage.packageName)) return false;
+  const dimensions = new Set(change.applicabilityScope.dimensions);
+  if (dimensions.has('package') && (!usage.packageName || !change.affectedPackages?.includes(usage.packageName))) return false;
   // SDK operation and raw HTTP endpoint are alternate ways to prove the same
   // API target. Parameters, models, and response fields remain conjunctive.
-  const hasTargetScope = change.apiOperationPatterns.length > 0 || change.affectedEndpoints.length > 0;
-  const targetMatch = !hasTargetScope || matchesPattern(usage.operation ?? usage.endpoint, change.apiOperationPatterns) || matchesPattern(usage.endpoint, change.affectedEndpoints);
-  const parameterMatch = change.affectedParameters.length === 0 || Boolean(usage.parameter && change.affectedParameters.includes(usage.parameter));
-  const responseMatch = change.affectedResponseFields.length === 0 || Boolean(usage.responseField && change.affectedResponseFields.includes(usage.responseField));
-  const modelMatch = change.affectedModels.length === 0 || Boolean(usage.model && change.affectedModels.includes(usage.model));
-  return targetMatch && parameterMatch && responseMatch && modelMatch;
+  const targetMatch = (!dimensions.has('operation') && !dimensions.has('endpoint')) || (dimensions.has('operation') && matchesPattern(usage.operation, change.apiOperationPatterns)) || (dimensions.has('endpoint') && matchesPattern(usage.endpoint, change.affectedEndpoints));
+  const parameterMatch = !dimensions.has('parameter') || Boolean(usage.parameter && change.affectedParameters.includes(usage.parameter));
+  const responseMatch = !dimensions.has('response_field') || Boolean(usage.responseField && change.affectedResponseFields.includes(usage.responseField));
+  const modelMatch = !dimensions.has('model') || Boolean(usage.model && change.affectedModels.includes(usage.model));
+  const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
+  const apiVersionMatch = !dimensions.has('api_version') || Boolean(usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion);
+  const authMatch = !dimensions.has('auth_or_header') || Boolean(usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader));
+  return targetMatch && parameterMatch && responseMatch && modelMatch && resourceMatch && apiVersionMatch && authMatch;
 }
 
 /** Deterministic compatibility evaluation. It never infers impact from names alone. */

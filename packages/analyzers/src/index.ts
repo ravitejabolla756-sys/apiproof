@@ -1,12 +1,13 @@
 export { TypeScriptRepositoryAnalyzer } from './typescript/index.js';
 export { RepositorySnapshot } from './typescript/repository.js';
-export { evaluateCompatibility } from './typescript/compatibility.js';
-export type { CompatibilityInput, CompatibilityPolicy } from './typescript/compatibility.js';
-export { evaluateNormalizedCompatibility } from './typescript/compatibility.js';
-export type { NormalizedCompatibilityInput } from './typescript/compatibility.js';
+export { discoverProviders } from './typescript/provider-discovery.js';
+export type { ProviderDiscoveryResult, ProviderDiscoveryEvidence, ProviderDetectionKind } from './typescript/provider-discovery.js';
+export { resolvePackageVersions, packageRoot } from './typescript/provider-versions.js';
+export type { PackageVersionInfo, ProviderVersionSource, ProviderVersionConfidence } from './typescript/provider-versions.js';
+export { evaluateCompatibility, evaluateNormalizedCompatibility, evaluateRegisteredCompatibility, evaluateRegisteredNormalizedCompatibility } from './typescript/compatibility.js';
+export type { CompatibilityInput, NormalizedCompatibilityInput, CompatibilityPolicy } from './typescript/compatibility.js';
 export { normalizeCompatibilityUsage, normalizedUsageToCompatibilityUsage, usageFindingToCompatibilityUsage } from './typescript/usage-ir.js';
 export type { UsageIRContext } from './typescript/usage-ir.js';
-export { evaluateRegisteredCompatibility, evaluateRegisteredNormalizedCompatibility } from './typescript/compatibility.js';
 export { PythonRepositoryAnalyzer } from './python/index.js';
 export { PythonRepositorySnapshot } from './python/repository.js';
 export type { PythonProviderDescriptor } from './python/index.js';

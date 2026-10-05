@@ -1,12 +1,12 @@
 import semver from 'semver';
-import { CandidateChangeSchema, CandidateReviewSchema, ReviewedCompatibilityChangeSchema } from '@apiproof/shared';
+import { CandidateChangeSchema, CandidateReviewSchema, ReviewedCompatibilityChangeSchema, validateApplicabilityScope } from '@apiproof/shared';
 import type { CandidateChange, CandidateReview, ReviewedCompatibilityChange } from '@apiproof/shared';
 import { DISCOVERY_PROVIDERS } from './discovery-registry.js';
 
 export interface CandidateChangeRegistry {
   readonly candidates: readonly CandidateChange[];
   readonly byCandidateId: ReadonlyMap<string, CandidateChange>;
-  readonly bySourceFingerprint: ReadonlyMap<string, CandidateChange>;
+  readonly bySourceFingerprint: ReadonlyMap<string, readonly CandidateChange[]>;
   readonly byProvider: ReadonlyMap<string, readonly CandidateChange[]>;
   readonly byPackage: ReadonlyMap<string, readonly CandidateChange[]>;
   readonly byOperation: ReadonlyMap<string, readonly CandidateChange[]>;
@@ -43,7 +43,7 @@ export function compileCandidateChangeRegistry(inputs: readonly unknown[], provi
   const allowedProviders = new Set(providerIds);
   const candidates = inputs.map((input) => CandidateChangeSchema.parse(input)).sort(candidateSort);
   const byCandidateId = new Map<string, CandidateChange>();
-  const bySourceFingerprint = new Map<string, CandidateChange>();
+  const bySourceFingerprint = new Map<string, CandidateChange[]>();
   const byProvider = new Map<string, CandidateChange[]>();
   const byPackage = new Map<string, CandidateChange[]>();
   const byOperation = new Map<string, CandidateChange[]>();
@@ -57,9 +57,11 @@ export function compileCandidateChangeRegistry(inputs: readonly unknown[], provi
     if (!allowedProviders.has(candidate.providerId)) throw new Error(`CANDIDATE_UNKNOWN_PROVIDER:${candidate.providerId}`);
     validateCandidateAuditTrail(candidate);
     if (byCandidateId.has(candidate.candidateId)) throw new Error(`CANDIDATE_DUPLICATE_ID:${candidate.candidateId}`);
-    if (bySourceFingerprint.has(candidate.sourceFingerprint)) throw new Error(`CANDIDATE_DUPLICATE_SOURCE:${candidate.sourceFingerprint}`);
+    const sameSource = bySourceFingerprint.get(candidate.sourceFingerprint) ?? [];
+    if (sameSource.some((existing) => existing.sourceUrl !== candidate.sourceUrl)) throw new Error(`CANDIDATE_SOURCE_FINGERPRINT_CONFLICT:${candidate.sourceFingerprint}`);
     byCandidateId.set(candidate.candidateId, candidate);
-    bySourceFingerprint.set(candidate.sourceFingerprint, candidate);
+    sameSource.push(candidate);
+    bySourceFingerprint.set(candidate.sourceFingerprint, sameSource);
     add(byProvider, candidate.providerId, candidate);
     for (const packageName of candidate.payload.affectedPackages ?? []) add(byPackage, packageName, candidate);
     for (const operation of candidate.payload.apiOperationPatterns ?? []) add(byOperation, operation, candidate);
@@ -81,20 +83,23 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
   if (candidate.state !== 'reviewed') throw new Error(`CANDIDATE_NOT_READY_FOR_PROMOTION:${candidate.candidateId}`);
   if (review.reviewerKind !== 'human') throw new Error(`CANDIDATE_HUMAN_REVIEW_REQUIRED:${candidate.candidateId}`);
   if (!candidate.auditTrail.some((entry) => entry.state === 'reviewed')) throw new Error(`CANDIDATE_REVIEW_AUDIT_MISSING:${candidate.candidateId}`);
+  if (candidate.sourceFingerprintBasis !== 'full-body') throw new Error(`CANDIDATE_FULL_SOURCE_REQUIRED:${candidate.candidateId}`);
   if (!evidence.some((item) => item.url === candidate.sourceUrl)) throw new Error(`CANDIDATE_SOURCE_NOT_IN_EVIDENCE:${candidate.candidateId}`);
   const payload = candidate.payload;
-  if (!payload.changeType || !payload.affectedPackages?.length || !payload.severity) {
+  if (!payload.changeType || !payload.applicabilityScope || !payload.severity) {
     throw new Error(`CANDIDATE_INCOMPLETE_FOR_PROMOTION:${candidate.candidateId}`);
   }
+  const applicability = { ...payload, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages, affectedVersionRange: payload.affectedVersionRange, apiOperationPatterns: payload.apiOperationPatterns ?? [], affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [], affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], apiVersionMetadata: payload.apiVersionMetadata, enumMetadata: payload.enumMetadata };
+  validateApplicabilityScope(applicability as never);
   if (payload.affectedVersionRange && !semver.validRange(payload.affectedVersionRange)) throw new Error(`CANDIDATE_INVALID_VERSION_RANGE:${candidate.candidateId}`);
   return ReviewedCompatibilityChangeSchema.parse({
     providerId: candidate.providerId, changeId: payload.changeId ?? candidate.candidateId, title: payload.title,
     description: payload.description, changeType: payload.changeType, publishedAt: payload.publishedAt,
     effectiveAt: payload.effectiveAt, removalAt: payload.removalAt, officialSourceUrl: candidate.sourceUrl,
-    sourceType: candidate.sourceType, affectedPackages: payload.affectedPackages,
+    sourceType: candidate.sourceType, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages,
     ...(payload.affectedVersionRange ? { affectedVersionRange: payload.affectedVersionRange } : {}), apiOperationPatterns: payload.apiOperationPatterns ?? [],
     affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [],
-    affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [],
+    affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], authOrHeaderPatterns: payload.authOrHeaderPatterns ?? [],
     enumMetadata: payload.enumMetadata, apiVersionMetadata: payload.apiVersionMetadata, replacement: payload.replacement,
     severity: payload.severity, review: { status: review.status, reviewer: review.reviewer, reviewedAt: review.reviewedAt, provenance: 'official' }, evidence,
   });

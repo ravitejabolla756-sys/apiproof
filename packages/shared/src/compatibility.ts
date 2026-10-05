@@ -7,11 +7,43 @@ export const CompatibilityChangeTypeSchema = z.enum([
 ]);
 export type CompatibilityChangeType = z.infer<typeof CompatibilityChangeTypeSchema>;
 
+export const CompatibilitySeveritySchema = z.enum(['low', 'medium', 'high', 'critical']);
+export type CompatibilitySeverity = z.infer<typeof CompatibilitySeveritySchema>;
+
+/** Generic policy default; a human review still has to bind the resulting value. */
+export function defaultSeverityForChangeType(changeType: CompatibilityChangeType): CompatibilitySeverity {
+  switch (changeType) {
+    case 'model_retired':
+    case 'method_removed':
+    case 'endpoint_removed':
+    case 'api_version_retired':
+      return 'high';
+    case 'parameter_removed':
+    case 'parameter_renamed':
+    case 'parameter_required':
+    case 'method_renamed':
+    case 'response_field_removed':
+    case 'enum_changed':
+      return 'medium';
+  }
+}
+
 export const CompatibilitySourceTypeSchema = z.enum([
   'official-documentation', 'official-changelog', 'official-advisory', 'official-api-reference',
   'release-notes', 'migration-guide', 'deprecation-notice', 'api-specification', 'sdk-release', 'provider-announcement',
 ]);
 export type CompatibilitySourceType = z.infer<typeof CompatibilitySourceTypeSchema>;
+
+export const ApplicabilityDimensionSchema = z.enum([
+  'provider', 'package', 'package_version', 'model', 'endpoint', 'operation', 'parameter',
+  'response_field', 'api_version', 'auth_or_header', 'enum', 'resource',
+]);
+export type ApplicabilityDimension = z.infer<typeof ApplicabilityDimensionSchema>;
+export const ApplicabilityScopeSchema = z.strictObject({ dimensions: z.array(ApplicabilityDimensionSchema).min(1).max(12) }).superRefine((scope, ctx) => {
+  if (new Set(scope.dimensions).size !== scope.dimensions.length) ctx.addIssue({ code: 'custom', message: 'Applicability dimensions must be unique.', path: ['dimensions'] });
+  if (!scope.dimensions.includes('provider')) ctx.addIssue({ code: 'custom', message: 'Provider is always an authoritative applicability dimension.', path: ['dimensions'] });
+});
+export type ApplicabilityScope = z.infer<typeof ApplicabilityScopeSchema>;
 
 export const CompatibilityReviewSchema = z.strictObject({
   status: z.enum(['draft', 'reviewed', 'verified']), reviewer: z.string().min(1),
@@ -25,20 +57,62 @@ export const ReviewedCompatibilityChangeSchema = z.strictObject({
   changeType: CompatibilityChangeTypeSchema, publishedAt: z.iso.date().optional(),
   effectiveAt: z.iso.date().optional(), removalAt: z.iso.date().optional(),
   officialSourceUrl: z.url(), sourceType: CompatibilitySourceTypeSchema,
-  affectedPackages: z.array(z.string().min(1)).min(1), affectedVersionRange: z.string().min(1).optional(),
+  applicabilityScope: ApplicabilityScopeSchema,
+  affectedPackages: z.array(z.string().min(1)).max(50).optional(), affectedVersionRange: z.string().min(1).optional(),
   apiOperationPatterns: z.array(z.string().min(1)).max(30),
   affectedParameters: z.array(z.string().min(1)).max(30),
   affectedResponseFields: z.array(z.string().min(1)).max(30),
   affectedEndpoints: z.array(z.string().min(1)).max(30),
   affectedModels: z.array(z.string().min(1)).max(30),
+  affectedResources: z.array(z.string().min(1)).max(30),
+  authOrHeaderPatterns: z.array(z.string().min(1)).max(30),
   enumMetadata: z.strictObject({ name: z.string().min(1), removedValues: z.array(z.string().min(1)), addedValues: z.array(z.string().min(1)) }).optional(),
   apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional() }).optional(),
   replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), model: z.string().optional() }).optional(),
-  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  severity: CompatibilitySeveritySchema,
   review: CompatibilityReviewSchema,
   evidence: z.array(z.strictObject({ url: z.url(), summary: z.string().min(1).max(2_000), accessedAt: z.iso.date() })).min(1),
 });
 export type ReviewedCompatibilityChange = z.infer<typeof ReviewedCompatibilityChangeSchema>;
+
+export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityChange, 'changeType' | 'applicabilityScope' | 'affectedPackages' | 'affectedVersionRange' | 'apiOperationPatterns' | 'affectedParameters' | 'affectedResponseFields' | 'affectedEndpoints' | 'affectedModels' | 'affectedResources' | 'authOrHeaderPatterns' | 'apiVersionMetadata' | 'enumMetadata'>): void {
+  const dimensions = new Set(change.applicabilityScope.dimensions);
+  const require = (dimension: ApplicabilityDimension, condition: boolean): void => {
+    if (!dimensions.has(dimension)) throw new Error(`APPLICABILITY_SCOPE_DIMENSION_REQUIRED:${dimension}`);
+    if (!condition) throw new Error(`APPLICABILITY_SCOPE_VALUE_REQUIRED:${dimension}`);
+  };
+  if (change.changeType === 'model_retired') require('model', change.affectedModels.length > 0);
+  if (change.changeType === 'endpoint_removed') require('endpoint', change.affectedEndpoints.length > 0);
+  if (change.changeType === 'method_removed' || change.changeType === 'method_renamed') {
+    require('package', Boolean(change.affectedPackages?.length));
+    require('package_version', Boolean(change.affectedVersionRange));
+    require('operation', change.apiOperationPatterns.length > 0);
+  }
+  if (change.changeType === 'parameter_removed' || change.changeType === 'parameter_renamed' || change.changeType === 'parameter_required') {
+    require('operation', change.apiOperationPatterns.length > 0);
+    require('parameter', change.affectedParameters.length > 0);
+  }
+  if (change.changeType === 'response_field_removed') {
+    require('response_field', change.affectedResponseFields.length > 0);
+    require('operation', change.apiOperationPatterns.length > 0 || change.affectedEndpoints.length > 0 || change.affectedResources.length > 0);
+  }
+  if (change.changeType === 'api_version_retired') require('api_version', Boolean(change.apiVersionMetadata?.version));
+  if (change.changeType === 'enum_changed') require('enum', Boolean(change.enumMetadata));
+  if (dimensions.has('package')) require('package', Boolean(change.affectedPackages?.length));
+  if (dimensions.has('package_version')) {
+    require('package', Boolean(change.affectedPackages?.length));
+    require('package_version', Boolean(change.affectedVersionRange));
+  }
+  if (dimensions.has('operation')) require('operation', change.apiOperationPatterns.length > 0);
+  if (dimensions.has('parameter')) require('parameter', change.affectedParameters.length > 0);
+  if (dimensions.has('response_field')) require('response_field', change.affectedResponseFields.length > 0);
+  if (dimensions.has('endpoint')) require('endpoint', change.affectedEndpoints.length > 0);
+  if (dimensions.has('model')) require('model', change.affectedModels.length > 0);
+  if (dimensions.has('resource')) require('resource', change.affectedResources.length > 0);
+  if (dimensions.has('api_version')) require('api_version', Boolean(change.apiVersionMetadata?.version));
+  if (dimensions.has('auth_or_header')) require('auth_or_header', change.authOrHeaderPatterns.length > 0);
+  if (dimensions.has('enum')) require('enum', Boolean(change.enumMetadata));
+}
 
 export const CompatibilityStatusSchema = z.enum(['AFFECTED', 'NOT_AFFECTED', 'NEEDS_REVIEW']);
 export type CompatibilityStatus = z.infer<typeof CompatibilityStatusSchema>;
@@ -48,7 +122,7 @@ export type VersionAssessment = z.infer<typeof VersionAssessmentSchema>;
 export const CompatibilityUsageSchema = z.strictObject({
   id: z.string().min(1), providerId: z.string().min(1), packageName: z.string().min(1).optional(),
   operation: z.string().optional(), model: z.string().optional(), parameter: z.string().optional(), responseField: z.string().optional(),
-  endpoint: z.string().optional(), evidenceKind: z.enum(['sdk', 'http', 'import', 'environment']),
+  endpoint: z.string().optional(), resource: z.string().optional(), apiVersion: z.string().optional(), authOrHeader: z.string().optional(), evidenceKind: z.enum(['sdk', 'http', 'import', 'environment']),
   confidence: z.number().min(0).max(1), static: z.boolean(),
   location: z.strictObject({ file: z.string().min(1), line: z.number().int().positive(), column: z.number().int().positive(), symbol: z.string().optional() }),
 });

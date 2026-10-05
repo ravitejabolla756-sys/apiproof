@@ -1,5 +1,5 @@
 import semver from 'semver';
-import { ReviewedCompatibilityChangeSchema } from '@apiproof/shared';
+import { ReviewedCompatibilityChangeSchema, validateApplicabilityScope } from '@apiproof/shared';
 import type { ReviewedCompatibilityChange } from '@apiproof/shared';
 import { DISCOVERY_PROVIDERS } from './discovery-registry.js';
 
@@ -21,6 +21,7 @@ const sortChanges = (changes: ReviewedCompatibilityChange[]): ReviewedCompatibil
 export function compileProductionChangeRegistry(inputs: readonly unknown[], providerIds: readonly string[] = DISCOVERY_PROVIDERS.map((provider) => provider.id)): ProductionChangeRegistry {
   const allowedProviders = new Set(providerIds);
   const parsed = inputs.map((input) => ReviewedCompatibilityChangeSchema.parse(input));
+  for (const change of parsed) validateApplicabilityScope(change);
   const byChangeId = new Map<string, ReviewedCompatibilityChange>();
   for (const change of parsed) {
     if (!allowedProviders.has(change.providerId)) throw new Error(`COMPATIBILITY_UNKNOWN_PROVIDER:${change.providerId}`);
@@ -40,7 +41,7 @@ export function compileProductionChangeRegistry(inputs: readonly unknown[], prov
   };
   for (const change of parsed) {
     add(byProvider, change.providerId, change);
-    for (const packageName of change.affectedPackages) add(byPackage, packageName, change);
+    for (const packageName of change.affectedPackages ?? []) add(byPackage, packageName, change);
     for (const operation of change.apiOperationPatterns) add(byOperation, operation, change);
   }
   for (const map of [byProvider, byPackage, byOperation]) for (const [key, list] of map) map.set(key, sortChanges(list));
