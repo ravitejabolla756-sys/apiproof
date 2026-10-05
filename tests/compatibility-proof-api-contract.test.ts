@@ -3,8 +3,13 @@ import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY, PRODUCTION_COMPATIBILITY_REGISTRY }
 
 describe('production compatibility proof API contract', () => {
   it('exposes the explicitly reviewed OpenAI record through the production registry', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has('openai-gpt-4-5-preview-removal-2025-07-14')).toBe(true);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has('openai-assistants-api-sunset-2026-08-26')).toBe(true);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).toEqual([
+      'openai-assistants-api-sunset-2026-08-26',
+      'openai-gpt-4-5-preview-removal-2025-07-14',
+    ]);
   });
 
   it('can only expose records sourced from the production registry', () => {
@@ -16,7 +21,7 @@ describe('production compatibility proof API contract', () => {
 
   it('never exposes a captured review-queue candidate as a production proof record', () => {
     for (const candidate of OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates) {
-      if (candidate.candidateId === 'openai-gpt-4-5-preview-removal-2025-07-14') continue;
+      if (candidate.candidateId === 'openai-gpt-4-5-preview-removal-2025-07-14' || candidate.candidateId === 'openai-assistants-api-sunset-2026-08-26') continue;
       expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has(candidate.candidateId)).toBe(false);
       expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes.some((change) => change.changeId === candidate.payload.changeId)).toBe(false);
     }

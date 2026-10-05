@@ -20,7 +20,8 @@ export async function GET(request: Request): Promise<NextResponse> {
     changeType: change.changeType, officialSourceUrl: change.officialSourceUrl,
     publishedAt: change.publishedAt ?? null, effectiveAt: change.effectiveAt ?? null, removalAt: change.removalAt ?? null,
     severity: change.severity, reviewStatus: change.review.status, provenance: change.review.provenance,
-    applicabilityScope: change.applicabilityScope, affectedModels: change.affectedModels,
+    applicabilityScope: change.applicabilityScope, affectedModels: change.affectedModels ?? [], affectedResources: change.affectedResources ?? [],
+    replacement: change.replacement ?? null,
     reviewer: change.review.reviewer, reviewedAt: change.review.reviewedAt,
   }));
   return NextResponse.json({

@@ -16,6 +16,8 @@ type ReviewedChange = {
   severity: string;
   applicabilityScope: { dimensions: string[] };
   affectedModels: string[];
+  affectedResources: string[];
+  replacement?: { model?: string; resources?: string[] } | null;
   reviewer: string;
   reviewedAt: string;
 };
@@ -94,6 +96,9 @@ export default function CompatibilityPage() {
                 <p className="font-semibold">Authoritative scope</p>
                 <p className="mt-1 font-mono text-[11px]">{change.applicabilityScope.dimensions.join(" + ")}</p>
                 {change.affectedModels.length > 0 && <p className="mt-1">Model: <span className="font-mono">{change.affectedModels.join(", ")}</span></p>}
+                {change.affectedResources.length > 0 && <p className="mt-1">Resource: <span className="font-mono">{change.affectedResources.join(", ")}</span></p>}
+                {change.replacement?.model && <p className="mt-1">Replacement model: <span className="font-mono">{change.replacement.model}</span></p>}
+                {change.replacement?.resources && change.replacement.resources.length > 0 && <p className="mt-1">Replacement resources: <span className="font-mono">{change.replacement.resources.join(", ")}</span></p>}
                 <p className="mt-1 text-[10px]">Reviewed by {change.reviewer} on {change.reviewedAt}</p>
               </div>
               <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-purple-700 hover:underline">

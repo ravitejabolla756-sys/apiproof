@@ -45,8 +45,12 @@ describe('production reviewed change registry', () => {
   });
 
   it('does not claim compatibility for discovery-only providers without reviewed changes', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(1);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')?.map((change) => change.changeId)).toEqual([
+      'openai-assistants-api-sunset-2026-08-26',
+      'openai-gpt-4-5-preview-removal-2025-07-14',
+    ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.has('cloudflare')).toBe(false);
   });
 

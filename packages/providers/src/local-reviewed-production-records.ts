@@ -1,6 +1,7 @@
 import { defaultSeverityForChangeType } from '@apiproof/shared';
 import { fingerprintCandidate, reviewCandidate } from './candidate-review.js';
 import { promoteCandidateToReviewed } from './change-ingestion-registry.js';
+import { LOCAL_REVIEWED_OPENAI_ASSISTANTS_CANDIDATE, LOCAL_REVIEWED_OPENAI_ASSISTANTS_REVIEW } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
 const CANDIDATE_ID = 'openai-gpt-4-5-preview-removal-2025-07-14';
@@ -37,9 +38,34 @@ if (promotionInput.providerId !== 'openai'
   throw new Error(`LOCAL_REVIEWED_OPENAI_FACTS_INVALID:${CANDIDATE_ID}`);
 }
 
-/** Explicitly reviewed local record; this is the only record enabled here. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [promoteCandidateToReviewed(
+const reviewedGpt45Record = promoteCandidateToReviewed(
   promotionInput,
   { status: 'reviewed', reviewer: reviewAction.reviewer, reviewerKind: 'human', reviewedAt: reviewAction.reviewedAt, notes: reviewAction.notes },
   [{ url: candidate.sourceUrl, summary: 'Official OpenAI deprecation source.', accessedAt: reviewAction.reviewedAt }],
-)] as const;
+);
+
+const assistantsSourceUrl = 'https://developers.openai.com/api/docs/deprecations';
+const reviewedAssistantsRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_OPENAI_ASSISTANTS_CANDIDATE,
+  LOCAL_REVIEWED_OPENAI_ASSISTANTS_REVIEW,
+  [{
+    url: assistantsSourceUrl,
+    summary: 'Official source states the Assistants API removal date and names the Responses API and Conversations API as replacements.',
+    accessedAt: LOCAL_REVIEWED_OPENAI_ASSISTANTS_REVIEW.reviewedAt,
+  }],
+);
+
+if (reviewedAssistantsRecord.providerId !== 'openai'
+  || reviewedAssistantsRecord.applicabilityScope.dimensions.join(',') !== 'provider,resource'
+  || reviewedAssistantsRecord.affectedResources?.join(',') !== 'Assistants API'
+  || reviewedAssistantsRecord.removalAt !== '2026-08-26'
+  || reviewedAssistantsRecord.replacement?.resources?.join(',') !== 'Responses API,Conversations API'
+  || reviewedAssistantsRecord.affectedPackages !== undefined
+  || reviewedAssistantsRecord.affectedVersionRange !== undefined
+  || reviewedAssistantsRecord.apiOperationPatterns.length !== 0
+  || reviewedAssistantsRecord.affectedEndpoints.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_ASSISTANTS_FACTS_INVALID:openai-assistants-api-sunset-2026-08-26');
+}
+
+/** Explicitly reviewed local records; insertion into an external production store remains separate. */
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord] as const;
