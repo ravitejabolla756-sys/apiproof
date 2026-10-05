@@ -45,7 +45,7 @@ describe('production reviewed change registry', () => {
   });
 
   it('does not claim compatibility for discovery-only providers without reviewed changes', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(4);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(5);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')?.map((change) => change.changeId)).toEqual([
       'openai-assistants-api-sunset-2026-08-26',
@@ -54,6 +54,9 @@ describe('production reviewed change registry', () => {
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')?.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
+    ]);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')?.map((change) => change.changeId)).toEqual([
+      'github-organization-security-fields-removed-2026-04-21',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.has('cloudflare')).toBe(false);
   });

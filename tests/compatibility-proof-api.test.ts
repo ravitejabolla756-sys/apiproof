@@ -20,7 +20,7 @@ describe('GET /api/compatibility-proof', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   });
 
-  it('exposes the four reviewed local records with their scopes and provenance', async () => {
+  it('exposes the five reviewed local records with their scopes and provenance', async () => {
     const { session } = await createUserWithSession('compatibility-proof-api@example.com', 'Strong-password-1!', 'Proof API User');
     const response = await GET(new Request('http://localhost/api/compatibility-proof', { headers: { cookie: `apiproof_session=${session.id}` } }));
     expect(response.status).toBe(200);
@@ -29,11 +29,13 @@ describe('GET /api/compatibility-proof', () => {
     expect(body.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
+      'github-organization-security-fields-removed-2026-04-21',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
+    expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(1);
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({
       providerId: 'anthropic',
       changeType: 'model_retired',
@@ -65,6 +67,23 @@ describe('GET /api/compatibility-proof', () => {
       affectedModels: ['gpt-4.5-preview'],
       affectedResources: [],
       replacement: { model: 'gpt-4.1' },
+    });
+    expect(body.changes.find((change) => change.changeId === 'github-organization-security-fields-removed-2026-04-21')).toMatchObject({
+      providerId: 'github', changeType: 'response_field_removed',
+      applicabilityScope: { dimensions: ['provider', 'resource', 'response_field'] },
+      affectedResources: ['get an organization and update an organization REST API endpoints'],
+      affectedResponseFields: [
+        'advanced_security_enabled_for_new_repositories', 'dependabot_alerts_enabled_for_new_repositories',
+        'dependabot_security_updates_enabled_for_new_repositories', 'dependency_graph_enabled_for_new_repositories',
+        'secret_scanning_enabled_for_new_repositories', 'secret_scanning_push_protection_enabled_for_new_repositories',
+        'secret_scanning_validity_checks_enabled',
+      ],
+      removalAt: '2026-04-21', severity: 'medium', replacement: { resources: ['GitHub Code Security configurations'] },
+      officialSourceUrl: 'https://github.blog/changelog/2026-03-24-upcoming-deprecation-of-security-related-organization-api-fields/',
+      reviewer: 'Ravi Teja', reviewedAt: '2026-10-06', reviewStatus: 'reviewed', provenance: 'official',
+      documentFingerprint: '53a3e3e386510ad229d78b9ccca3eac343c43596d5e9dd14e79b5a74dc0e9d5a',
+      evidenceFingerprint: '58adfc89004241550723c3891f29953e65d03dd752d974932fbc61d54e05c78f',
+      candidateFingerprint: '59bb233364fafa44ab4bff7177300bc507a7478ae84f0d7cf001d9522eb9a708',
     });
   });
 });

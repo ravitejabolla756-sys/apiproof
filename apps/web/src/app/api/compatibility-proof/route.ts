@@ -21,8 +21,12 @@ export async function GET(request: Request): Promise<NextResponse> {
     publishedAt: change.publishedAt ?? null, effectiveAt: change.effectiveAt ?? null, removalAt: change.removalAt ?? null,
     severity: change.severity, reviewStatus: change.review.status, provenance: change.review.provenance,
     applicabilityScope: change.applicabilityScope, affectedModels: change.affectedModels ?? [], affectedResources: change.affectedResources ?? [],
+    affectedResponseFields: change.affectedResponseFields ?? [],
     replacement: change.replacement ?? null,
     reviewer: change.review.reviewer, reviewedAt: change.review.reviewedAt,
+    documentFingerprint: change.review.documentFingerprint ?? null,
+    evidenceFingerprint: change.review.evidenceFingerprint ?? null,
+    candidateFingerprint: change.review.candidateFingerprint ?? null,
   }));
   return NextResponse.json({
     ok: true, claimsAvailable: changes.length > 0, proofs: [], changes,

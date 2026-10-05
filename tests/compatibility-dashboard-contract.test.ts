@@ -8,8 +8,10 @@ describe('compatibility dashboard reviewed-rule contract', () => {
   it('renders model and resource scoped reviewed rules from the proof API shape', () => {
     expect(dashboardSource).toContain('affectedModels: string[]');
     expect(dashboardSource).toContain('affectedResources: string[]');
+    expect(dashboardSource).toContain('affectedResponseFields: string[]');
     expect(dashboardSource).toContain('change.affectedModels');
     expect(dashboardSource).toContain('change.affectedResources');
+    expect(dashboardSource).toContain('change.affectedResponseFields');
     expect(dashboardSource).toContain('change.replacement?.model');
     expect(dashboardSource).toContain('change.replacement.resources');
   });

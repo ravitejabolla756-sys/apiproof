@@ -185,7 +185,7 @@ describe('Anthropic official candidate review preparation', () => {
   });
 
   it('does not create an Anthropic claim for another provider and does not mutate OpenAI rules', () => {
-    const unrelated = evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [usage({ providerId: 'github' })], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
+    const unrelated = evaluateRegisteredNormalizedCompatibility({ providerId: 'cloudflare', usageIR: [usage({ providerId: 'cloudflare' })], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
     expect(unrelated).toHaveLength(0);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(JSON.stringify(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai'))).toBe(openAiRecordsBefore);
@@ -244,6 +244,7 @@ describe('Anthropic official candidate review preparation', () => {
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
+      'github-organization-security-fields-removed-2026-04-21',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
     ]);

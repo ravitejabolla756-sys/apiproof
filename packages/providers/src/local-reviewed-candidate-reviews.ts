@@ -86,3 +86,31 @@ export const LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW = CandidateRevie
   evidenceFingerprint: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION.candidateFingerprint,
 });
+
+const GITHUB_ORGANIZATION_SECURITY_CANDIDATE_ID = 'github-organization-security-fields-removed-2026-04-21';
+const githubOrganizationSecurityCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(GITHUB_ORGANIZATION_SECURITY_CANDIDATE_ID);
+if (!githubOrganizationSecurityCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${GITHUB_ORGANIZATION_SECURITY_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local decision; production insertion is performed by the local reviewed-record registry. */
+export const LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-06',
+  notes: 'I verified the official GitHub changelog. I approve authoritative applicability at provider + resource + response_field scope for the seven exact organization REST API response fields listed by GitHub. The source identifies GitHub Code Security configurations as the replacement. I do not assert an Octokit package, package version, SDK method, endpoint path, GraphQL applicability, or API-version scope.',
+  sourceFingerprint: '53a3e3e386510ad229d78b9ccca3eac343c43596d5e9dd14e79b5a74dc0e9d5a',
+  evidenceFingerprint: '58adfc89004241550723c3891f29953e65d03dd752d974932fbc61d54e05c78f',
+  candidateFingerprint: '59bb233364fafa44ab4bff7177300bc507a7478ae84f0d7cf001d9522eb9a708',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_CANDIDATE = reviewCandidate(githubOrganizationSecurityCandidate, LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.candidateFingerprint,
+});

@@ -8,6 +8,8 @@ import {
   LOCAL_REVIEWED_ANTHROPIC_OPUS_4_1_REVIEW,
   LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE,
   LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW,
+  LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_CANDIDATE,
+  LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
@@ -82,6 +84,16 @@ const reviewedAnthropicParameterRecord = promoteCandidateToReviewed(
   }],
 );
 
+const reviewedGithubOrganizationSecurityRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_CANDIDATE,
+  LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_CANDIDATE.sourceUrl,
+    summary: 'GitHub removes seven organization REST API response fields on April 21, 2026 and directs integrations to GitHub Code Security configurations.',
+    accessedAt: LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW.reviewedAt,
+  }],
+);
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -124,5 +136,21 @@ if (reviewedAnthropicParameterRecord.providerId !== 'anthropic'
   throw new Error('LOCAL_REVIEWED_ANTHROPIC_PARAMETER_FACTS_INVALID:anthropic-opus-4-7-parameter-restrictions');
 }
 
+if (reviewedGithubOrganizationSecurityRecord.providerId !== 'github'
+  || reviewedGithubOrganizationSecurityRecord.changeId !== 'github-organization-security-fields-removed-2026-04-21'
+  || reviewedGithubOrganizationSecurityRecord.changeType !== 'response_field_removed'
+  || reviewedGithubOrganizationSecurityRecord.publishedAt !== '2026-03-24'
+  || reviewedGithubOrganizationSecurityRecord.removalAt !== '2026-04-21'
+  || reviewedGithubOrganizationSecurityRecord.severity !== 'medium'
+  || reviewedGithubOrganizationSecurityRecord.applicabilityScope.dimensions.join(',') !== 'provider,resource,response_field'
+  || reviewedGithubOrganizationSecurityRecord.affectedResponseFields.length !== 7
+  || reviewedGithubOrganizationSecurityRecord.replacement?.resources?.join(',') !== 'GitHub Code Security configurations'
+  || reviewedGithubOrganizationSecurityRecord.affectedPackages !== undefined
+  || reviewedGithubOrganizationSecurityRecord.affectedVersionRange !== undefined
+  || reviewedGithubOrganizationSecurityRecord.apiOperationPatterns.length !== 0
+  || reviewedGithubOrganizationSecurityRecord.affectedEndpoints.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_GITHUB_FACTS_INVALID:github-organization-security-fields-removed-2026-04-21');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord] as const;
