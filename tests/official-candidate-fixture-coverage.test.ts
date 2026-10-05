@@ -46,8 +46,10 @@ describe('official candidate fixture coverage', () => {
     }
   });
 
-  it('keeps the Assistants candidate uncertain because source scope is not proven', () => {
+  it('keeps the Assistants candidate pending despite its now-proven resource scope', () => {
     const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get('openai-assistants-api-sunset-2026-08-26')!;
+    expect(candidate.payload.applicabilityScope).toEqual({ dimensions: ['provider', 'resource'] });
+    expect(candidate.payload.affectedResources).toEqual(['Assistants API']);
     expect(candidate.payload.apiOperationPatterns).toBeUndefined();
     expect(candidate.payload.affectedPackages).toBeUndefined();
     expect(candidate.state).toBe('needs_review');

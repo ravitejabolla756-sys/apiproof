@@ -25,16 +25,15 @@ const reviewedTestProjection: ReviewedCompatibilityChange = {
   removalAt: candidate.payload.removalAt,
   officialSourceUrl: candidate.sourceUrl,
   sourceType: candidate.sourceType,
-  applicabilityScope: { dimensions: ['provider', 'operation'] },
-  // These test-only fields deliberately model the human-reviewed SDK mapping
-  // that the official deprecation notice itself does not establish.
-  affectedPackages: ['openai'],
-  apiOperationPatterns: ['beta.assistants'],
+  applicabilityScope: { dimensions: ['provider', 'resource'] },
+  // The official source proves the resource but does not establish SDK fields.
+  affectedPackages: undefined,
+  apiOperationPatterns: [],
   affectedParameters: candidate.payload.affectedParameters ?? [],
   affectedResponseFields: candidate.payload.affectedResponseFields ?? [],
   affectedEndpoints: candidate.payload.affectedEndpoints ?? [],
   affectedModels: candidate.payload.affectedModels ?? [],
-  affectedResources: [], authOrHeaderPatterns: [],
+  affectedResources: ['Assistants API'], authOrHeaderPatterns: [],
   replacement: candidate.payload.replacement,
   severity: 'high',
   review: { status: 'reviewed', reviewer: 'test-only human-review simulation', reviewedAt: '2026-10-05', provenance: 'official' },
@@ -52,6 +51,7 @@ const usage = (overrides: Partial<CompatibilityUsage> = {}) =>
     id: 'openai-assistants-usage',
     providerId: 'openai',
     packageName: 'openai',
+    resource: 'Assistants API',
     operation: 'beta.assistants.create',
     evidenceKind: 'sdk',
     confidence: 0.99,
@@ -67,15 +67,16 @@ describe('real OpenAI candidate compatibility proof', () => {
       state: 'needs_review',
       sourceType: 'deprecation-notice',
       sourceUrl: 'https://developers.openai.com/api/docs/deprecations',
-      sourceFingerprint: '43a958b451b0eb3578988d263341f8ed4a4a7f260e96d5cd5ed89abaf30ba522',
-      payload: { publishedAt: '2025-08-20', removalAt: '2026-08-26' },
+      sourceFingerprint: '8073f6e0f1b66dd6424f8686e270e7bc3f745912a208091223fe2ad6263fb77a',
+      documentFingerprint: '8073f6e0f1b66dd6424f8686e270e7bc3f745912a208091223fe2ad6263fb77a',
+      payload: { removalAt: '2026-08-26', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Assistants API'], severity: 'high' },
     });
     expect(() => compileProductionChangeRegistry(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates)).toThrow();
   });
 
   it('proves affected, not-affected, and needs-review outcomes from normalized IR in test context only', () => {
     const affected = evaluateNormalizedCompatibility({ providerId: 'openai', usageIR: [usage()], completeEvidence: true }, reviewedTestProjection, policy);
-    const unaffected = evaluateNormalizedCompatibility({ providerId: 'openai', usageIR: [usage({ id: 'responses-usage', operation: 'responses.create', location: { file: 'src/responses.ts', line: 22, column: 3, symbol: 'client.responses.create' } })], completeEvidence: true }, reviewedTestProjection, policy);
+    const unaffected = evaluateNormalizedCompatibility({ providerId: 'openai', usageIR: [usage({ id: 'responses-usage', resource: 'Responses API', operation: 'responses.create', location: { file: 'src/responses.ts', line: 22, column: 3, symbol: 'client.responses.create' } })], completeEvidence: true }, reviewedTestProjection, policy);
     const uncertain = evaluateNormalizedCompatibility({ providerId: 'openai', usageIR: [usage({ id: 'dynamic-assistants-usage', confidence: 0.4, static: false })], completeEvidence: false }, reviewedTestProjection, policy);
 
     expect(affected).toMatchObject({ status: 'AFFECTED', versionAssessment: 'not-constrained', exactFile: 'src/assistants.ts', exactLine: 18, reasonCodes: ['VERSION_NOT_CONSTRAINED', 'MATCHED_STATIC_USAGE'] });

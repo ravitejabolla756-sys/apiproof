@@ -48,6 +48,10 @@ export type ApplicabilityScope = z.infer<typeof ApplicabilityScopeSchema>;
 export const CompatibilityReviewSchema = z.strictObject({
   status: z.enum(['draft', 'reviewed', 'verified']), reviewer: z.string().min(1),
   reviewedAt: z.iso.date(), provenance: z.enum(['official', 'synthetic']),
+  notes: z.string().min(1).max(2_000).optional(),
+  documentFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  evidenceFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  candidateFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
 });
 
 export const ReviewedCompatibilityChangeSchema = z.strictObject({
@@ -68,7 +72,7 @@ export const ReviewedCompatibilityChangeSchema = z.strictObject({
   authOrHeaderPatterns: z.array(z.string().min(1)).max(30),
   enumMetadata: z.strictObject({ name: z.string().min(1), removedValues: z.array(z.string().min(1)), addedValues: z.array(z.string().min(1)) }).optional(),
   apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional() }).optional(),
-  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), model: z.string().optional() }).optional(),
+  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
   severity: CompatibilitySeveritySchema,
   review: CompatibilityReviewSchema,
   evidence: z.array(z.strictObject({ url: z.url(), summary: z.string().min(1).max(2_000), accessedAt: z.iso.date() })).min(1),
@@ -82,7 +86,11 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
     if (!condition) throw new Error(`APPLICABILITY_SCOPE_VALUE_REQUIRED:${dimension}`);
   };
   if (change.changeType === 'model_retired') require('model', change.affectedModels.length > 0);
-  if (change.changeType === 'endpoint_removed') require('endpoint', change.affectedEndpoints.length > 0);
+  if (change.changeType === 'endpoint_removed') {
+    const targetDimensions: ApplicabilityDimension[] = ['endpoint', 'operation', 'resource'];
+    const targetDimension = targetDimensions.find((dimension) => dimensions.has(dimension));
+    if (!targetDimension) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:${targetDimensions.join('|')}`);
+  }
   if (change.changeType === 'method_removed' || change.changeType === 'method_renamed') {
     require('package', Boolean(change.affectedPackages?.length));
     require('package_version', Boolean(change.affectedVersionRange));

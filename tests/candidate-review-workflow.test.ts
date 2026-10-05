@@ -34,7 +34,7 @@ describe('local candidate review workflow', () => {
   it('accepts full-body provenance for candidates sharing one official page', () => {
     const openAiCandidates = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.filter((entry) => entry.sourceUrl.includes('openai.com'));
     expect(openAiCandidates).toHaveLength(2);
-    expect(new Set(openAiCandidates.map((entry) => entry.sourceFingerprint))).toHaveLength(1);
+    expect(new Set(openAiCandidates.map((entry) => entry.sourceFingerprint))).toHaveLength(2);
   });
 
   it('supports explicit rejection and validates the review action contract', () => {

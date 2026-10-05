@@ -1,4 +1,5 @@
-import type { CandidateChange } from '@apiproof/shared';
+import { fingerprintCandidateEvidence } from '@apiproof/shared';
+import type { CandidateChange, CandidateSourceEvidence } from '@apiproof/shared';
 import { compileCandidateChangeRegistry } from './change-ingestion-registry.js';
 
 /**
@@ -8,7 +9,12 @@ import { compileCandidateChangeRegistry } from './change-ingestion-registry.js';
  * Fingerprints are captured from the complete official response body using
  * the shared canonical URL + NUL + UTF-8 body algorithm.
  */
-type CandidateInput = Pick<CandidateChange, 'candidateId' | 'providerId' | 'sourceUrl' | 'sourceType' | 'sourceFingerprint' | 'discoveredAt' | 'payload'> & { evidenceNote: string };
+type CandidateInput = Pick<CandidateChange, 'candidateId' | 'providerId' | 'sourceUrl' | 'sourceType' | 'sourceFingerprint' | 'discoveredAt' | 'payload'> & {
+  evidenceNote: string;
+  documentFingerprint?: string;
+  evidenceFingerprint?: string;
+  sourceEvidence?: CandidateSourceEvidence;
+};
 
 const SOURCE_TITLES: Readonly<Record<string, string>> = {
   'openai-assistants-api-sunset-2026-08-26': 'Deprecations | OpenAI API',
@@ -42,9 +48,14 @@ const SEVERITY_BASES: Readonly<Record<string, string>> = Object.fromEntries(
 
 const makeCandidate = (input: CandidateInput): CandidateChange => {
   const { evidenceNote, ...candidate } = input;
+  const documentFingerprint = candidate.documentFingerprint ?? SOURCE_FINGERPRINTS[candidate.sourceUrl] ?? candidate.sourceFingerprint;
+  const evidenceFingerprint = candidate.evidenceFingerprint ?? (candidate.sourceEvidence ? fingerprintCandidateEvidence(candidate.sourceEvidence) : undefined);
   return {
   ...candidate,
-  sourceFingerprint: SOURCE_FINGERPRINTS[candidate.sourceUrl] ?? candidate.sourceFingerprint,
+  sourceFingerprint: documentFingerprint,
+  documentFingerprint,
+  ...(candidate.sourceEvidence ? { sourceEvidence: candidate.sourceEvidence } : {}),
+  ...(evidenceFingerprint ? { evidenceFingerprint } : {}),
   sourceFingerprintBasis: 'full-body',
   payload: { ...candidate.payload, applicabilityScope: candidate.payload.applicabilityScope ?? (candidate.payload.affectedModels?.length ? { dimensions: ['provider', 'model'] as const } : candidate.payload.affectedEndpoints?.length ? { dimensions: ['provider', 'endpoint'] as const } : { dimensions: ['provider'] as const }), sourceTitle: SOURCE_TITLES[candidate.candidateId], sourceFacts: [candidate.payload.description], unknowns: [...(UNKNOWN_FIELDS[candidate.candidateId] ?? [])], severityBasis: SEVERITY_BASES[candidate.candidateId] },
   state: 'needs_review',
@@ -57,7 +68,7 @@ const makeCandidate = (input: CandidateInput): CandidateChange => {
 };
 
 export const OFFICIAL_CHANGE_CANDIDATES: readonly CandidateChange[] = [
-  makeCandidate({ candidateId: 'openai-assistants-api-sunset-2026-08-26', providerId: 'openai', sourceUrl: 'https://developers.openai.com/api/docs/deprecations', sourceType: 'deprecation-notice', sourceFingerprint: '3a387018d47b0a201e3f4da10d302de14fd59d1eedd7c3da8ebed08819d09c77', discoveredAt: '2026-10-04', evidenceNote: 'Captured the official OpenAI deprecations page and its exact-content fingerprint.', payload: { changeId: 'openai-assistants-api-sunset-2026-08-26', title: 'OpenAI Assistants API sunset', description: 'OpenAI documents a 2025-08-20 Assistants API deprecation notice and removal from the API on 2026-08-26. OpenAI names the Responses API and Conversations API as the recommended replacement. The official source does not establish an SDK package, SDK operation, or version scope; those fields remain unknown pending human review.', changeType: 'endpoint_removed', publishedAt: '2025-08-20', removalAt: '2026-08-26' } }),
+  makeCandidate({ candidateId: 'openai-assistants-api-sunset-2026-08-26', providerId: 'openai', sourceUrl: 'https://developers.openai.com/api/docs/deprecations', sourceType: 'deprecation-notice', sourceFingerprint: '3a387018d47b0a201e3f4da10d302de14fd59d1eedd7c3da8ebed08819d09c77', documentFingerprint: '8073f6e0f1b66dd6424f8686e270e7bc3f745912a208091223fe2ad6263fb77a', discoveredAt: '2026-10-05', evidenceNote: 'Refreshed the official OpenAI deprecations page and extracted the Assistants API evidence section.', sourceEvidence: { providerId: 'openai', sourceUrl: 'https://developers.openai.com/api/docs/deprecations', sourceTitle: 'Deprecations | OpenAI API', sourceLocator: 'section:2025-08-20: Assistants API', claims: [{ key: 'sectionDate', value: '2025-08-20' }, { key: 'notificationDate', value: '2025-08-26' }, { key: 'resource', value: 'Assistants API' }, { key: 'removalAt', value: '2026-08-26' }, { key: 'replacement', value: 'Responses API' }, { key: 'replacement', value: 'Conversations API' }, { key: 'migrationGuide', value: 'Assistants to Conversations' }] }, payload: { changeId: 'openai-assistants-api-sunset-2026-08-26', title: 'OpenAI Assistants API sunset', description: 'OpenAI documents the Assistants API deprecation and removal from the API on 2026-08-26. The source names the Responses API and Conversations API as replacements. The source-specific section date is 2025-08-20 and its notification sentence says August 26, 2025; these dates are preserved separately. The source does not establish an SDK package, SDK operation, version scope, or endpoint path.', changeType: 'endpoint_removed', removalAt: '2026-08-26', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Assistants API'], replacement: { resources: ['Responses API', 'Conversations API'] }, severity: 'high' } }),
   makeCandidate({ candidateId: 'openai-gpt-4-5-preview-removal-2025-07-14', providerId: 'openai', sourceUrl: 'https://developers.openai.com/api/docs/deprecations', sourceType: 'deprecation-notice', sourceFingerprint: '5512654c236518dd76e7a58586bda5ce14d9b70effdf26e1a8cf0b6523165c6f', discoveredAt: '2026-10-05', evidenceNote: 'Captured the official OpenAI deprecations entry for gpt-4.5-preview.', payload: { changeId: 'openai-gpt-4-5-preview-removal-2025-07-14', title: 'OpenAI gpt-4.5-preview model removal', description: 'OpenAI documents that gpt-4.5-preview was deprecated and removed from the API on 2025-07-14, with gpt-4.1 as the recommended replacement. SDK package and version applicability are not stated.', changeType: 'model_retired', publishedAt: '2025-04-14', removalAt: '2025-07-14', affectedModels: ['gpt-4.5-preview'] } }),
   makeCandidate({ candidateId: 'anthropic-claude-opus-4-1-retirement-2026-08-05', providerId: 'anthropic', sourceUrl: 'https://docs.anthropic.com/en/docs/about-claude/model-deprecations', sourceType: 'deprecation-notice', sourceFingerprint: '761c74841eb6b70ed746273dff5dd242c0555f21a2dd6fa84e5c0ff1f30661fe', discoveredAt: '2026-10-05', evidenceNote: 'Captured Anthropic’s official model-deprecations table entry for claude-opus-4-1-20250805.', payload: { changeId: 'anthropic-claude-opus-4-1-retirement-2026-08-05', title: 'Anthropic Claude Opus 4.1 retirement', description: 'Anthropic lists claude-opus-4-1-20250805 as retired, deprecated June 5, 2026, with a tentative retirement date of August 5, 2026. The source lists the replacement model but does not establish an SDK version range.', changeType: 'model_retired', publishedAt: '2026-06-05', removalAt: '2026-08-05', affectedModels: ['claude-opus-4-1-20250805'] } }),
   makeCandidate({ candidateId: 'anthropic-opus-4-7-parameter-restrictions', providerId: 'anthropic', sourceUrl: 'https://docs.anthropic.com/en/docs/about-claude/model-deprecations', sourceType: 'deprecation-notice', sourceFingerprint: '32aa9f7fad9f4caa59fc6e14f74ddabbbace010f12ffc2bf053eff3db4fa1495', discoveredAt: '2026-10-05', evidenceNote: 'Captured Anthropic’s official API parameter deprecation section for Claude Opus 4.7 and later.', payload: { changeId: 'anthropic-opus-4-7-parameter-restrictions', title: 'Anthropic Claude Opus 4.7 parameter restrictions', description: 'Anthropic states that temperature, top_p, and top_k are deprecated for Claude Opus 4.7 and later and that non-default values return HTTP 400. SDK package and version applicability are not stated.', changeType: 'parameter_removed', affectedModels: ['claude-opus-4-7'], affectedParameters: ['temperature', 'top_p', 'top_k'], severity: 'high' } }),
