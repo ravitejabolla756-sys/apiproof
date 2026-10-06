@@ -101,11 +101,16 @@ describe('GitHub synchronous SBOM endpoint candidate', () => {
   it('does not claim unrelated providers and leaves the actual production registry unchanged', () => {
     const unrelatedProvider = evaluateRegisteredNormalizedCompatibility({ providerId: 'openai', usageIR: [normalize(usage({ providerId: 'openai' }))], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
     expect(unrelatedProvider.some((result) => result.changeId === CHANGE_ID)).toBe(false);
-    expect(evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [normalize(usage())], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY).some((result) => result.changeId === CHANGE_ID)).toBe(false);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(5);
+    expect(evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [normalize(usage())], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY).some((result) => result.changeId === CHANGE_ID)).toBe(true);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(6);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
+  });
+
+  it('evaluates the inserted rule through the actual production registry without crossing the response-field rule', () => {
+    const results = evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [normalize(usage())], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
+    expect(results.filter((result) => result.status === 'AFFECTED').map((result) => result.changeId)).toEqual([CHANGE_ID]);
   });
 
   it('preserves proof evidence for affected, unaffected, and uncertain outcomes', () => {

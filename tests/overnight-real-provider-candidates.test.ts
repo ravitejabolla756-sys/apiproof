@@ -109,17 +109,17 @@ describe('overnight real provider candidate projections', () => {
     expect(auth.status).toBe('AFFECTED');
   });
 
-  it('generates official-source proof snapshots and preserves the five-rule production registry', () => {
+  it('generates official-source proof snapshots and preserves the six-rule production registry', () => {
     const affected = evaluate('twilio-regional-api-domain-removal-2026-04-28', usage('twilio', { endpoint: 'https://api.ie1.twilio.com/v1/Messages' }));
     const notAffected = evaluate('twilio-regional-api-domain-removal-2026-04-28', usage('twilio', { endpoint: 'https://api.twilio.com/v1/Messages' }));
     const needsReview = evaluate('twilio-regional-api-domain-removal-2026-04-28', usage('twilio', { endpoint: undefined, static: false, confidence: 0.4 }));
     const proofs = [affected, notAffected, needsReview].flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'overnight-provider-fixture', baselineSha: 'b'.repeat(40), scanId: `overnight-proof-${index}`, results: [result], mode: 'test' }));
     expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
     expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'twilio', changeId: 'twilio-regional-api-domain-removal-2026-04-28', severity: 'high', reviewStatus: 'reviewed', provenance: 'official', replacement: { domain: 'api.twilio.com' } });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(5);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(6);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has('twilio-regional-api-domain-removal-2026-04-28')).toBe(false);
   });
 

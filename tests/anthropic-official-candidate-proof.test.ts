@@ -245,6 +245,7 @@ describe('Anthropic official candidate review preparation', () => {
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
       'github-organization-security-fields-removed-2026-04-21',
+      'github-synchronous-sbom-endpoint-removal-2026-11-13',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
     ]);

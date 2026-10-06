@@ -114,3 +114,31 @@ export const LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW = CandidateRevie
   evidenceFingerprint: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_GITHUB_ORGANIZATION_SECURITY_REVIEW_ACTION.candidateFingerprint,
 });
+
+const GITHUB_SYNCHRONOUS_SBOM_CANDIDATE_ID = 'github-synchronous-sbom-endpoint-removal-2026-11-13';
+const githubSynchronousSbomCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(GITHUB_SYNCHRONOUS_SBOM_CANDIDATE_ID);
+if (!githubSynchronousSbomCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${GITHUB_SYNCHRONOUS_SBOM_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-06',
+  notes: 'I verified the official GitHub changelog for synchronous SBOM API removal. I approve authoritative applicability at provider + endpoint scope for /{owner}/{repo}/dependency-graph/sbom only. The documented replacement is /{owner}/{repo}/dependency-graph/sbom/generate-report using asynchronous report generation. I do not assert an Octokit package, package version, SDK method, GraphQL applicability, or API-version scope.',
+  sourceFingerprint: 'f509f8d68a1bd919c655c0d367a998f233829c53a5c4e7431cd9b45bea1d16f0',
+  evidenceFingerprint: '4fa080a36ae032f8b589028bbc74233d8aa43a6a1625bc2037d85f9b1cd5f81f',
+  candidateFingerprint: 'd88ec47a8f030ce6f4e318c70ddc6880ee310ac8c6c107ee8e5af06c94680bec',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_CANDIDATE = reviewCandidate(githubSynchronousSbomCandidate, LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.candidateFingerprint,
+});

@@ -161,10 +161,10 @@ describe('GitHub organization security response-field candidate', () => {
   it('evaluates the actual production registry without cross-provider claims', () => {
     const exact = evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [normalize(usage({ responseField: REMOVED_FIELDS[0] }))], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
     const dynamic = evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [normalize(usage({ responseField: undefined, static: false, confidence: 0.5 }))], completeEvidence: false }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(exact).toHaveLength(1);
-    expect(exact[0]).toMatchObject({ changeId: CHANGE_ID, status: 'AFFECTED', severity: 'medium', removalAt: '2026-04-21', replacement: { resources: ['GitHub Code Security configurations'] } });
-    expect(dynamic).toHaveLength(1);
-    expect(dynamic[0]?.status).toBe('NEEDS_REVIEW');
+    expect(exact.filter((result) => result.changeId === CHANGE_ID)).toHaveLength(1);
+    expect(exact.find((result) => result.changeId === CHANGE_ID)).toMatchObject({ changeId: CHANGE_ID, status: 'AFFECTED', severity: 'medium', removalAt: '2026-04-21', replacement: { resources: ['GitHub Code Security configurations'] } });
+    expect(dynamic.filter((result) => result.changeId === CHANGE_ID)).toHaveLength(1);
+    expect(dynamic.find((result) => result.changeId === CHANGE_ID)?.status).toBe('NEEDS_REVIEW');
   });
 
   it('deduplicates repeated evidence while preserving multiple distinct removed fields', () => {
@@ -173,8 +173,9 @@ describe('GitHub organization security response-field candidate', () => {
       normalize(usage({ id: 'b', responseField: REMOVED_FIELDS[1], location: { file: 'src/github.ts', line: 31, column: 3 } })),
       normalize(usage({ id: 'a', responseField: REMOVED_FIELDS[0], location: { file: 'src/github.ts', line: 30, column: 3 } })),
     ], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(results).toHaveLength(1);
-    const result = results[0]!;
+    const matchingResults = results.filter((result) => result.changeId === CHANGE_ID);
+    expect(matchingResults).toHaveLength(1);
+    const result = matchingResults[0]!;
     expect(result.status).toBe('AFFECTED');
     expect(result.matchedUsages).toHaveLength(2);
     const proof = buildCompatibilityProofSnapshot({ repositoryId: 'github-response-field-fixture', baselineSha: 'a'.repeat(40), scanId: 'github-response-field-proof', results: [result], mode: 'test' });
@@ -182,11 +183,11 @@ describe('GitHub organization security response-field candidate', () => {
   });
 
   it('keeps the four existing reviewed records unchanged and inserts exactly one GitHub rule', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(5);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(6);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has(CHANGE_ID)).toBe(true);
-    expect(new Set(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).size).toBe(5);
+    expect(new Set(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).size).toBe(6);
   });
 });

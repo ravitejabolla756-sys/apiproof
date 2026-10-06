@@ -10,6 +10,8 @@ import {
   LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW,
   LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_CANDIDATE,
   LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW,
+  LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_CANDIDATE,
+  LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
@@ -94,6 +96,16 @@ const reviewedGithubOrganizationSecurityRecord = promoteCandidateToReviewed(
   }],
 );
 
+const reviewedGithubSynchronousSbomRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_CANDIDATE,
+  LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_CANDIDATE.sourceUrl,
+    summary: 'GitHub deprecated the synchronous SBOM REST endpoint and documents asynchronous report generation with a pollable report URL.',
+    accessedAt: LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW.reviewedAt,
+  }],
+);
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -152,5 +164,20 @@ if (reviewedGithubOrganizationSecurityRecord.providerId !== 'github'
   throw new Error('LOCAL_REVIEWED_GITHUB_FACTS_INVALID:github-organization-security-fields-removed-2026-04-21');
 }
 
+if (reviewedGithubSynchronousSbomRecord.providerId !== 'github'
+  || reviewedGithubSynchronousSbomRecord.changeId !== 'github-synchronous-sbom-endpoint-removal-2026-11-13'
+  || reviewedGithubSynchronousSbomRecord.changeType !== 'endpoint_removed'
+  || reviewedGithubSynchronousSbomRecord.publishedAt !== '2026-05-12'
+  || reviewedGithubSynchronousSbomRecord.removalAt !== '2026-11-13'
+  || reviewedGithubSynchronousSbomRecord.severity !== 'high'
+  || reviewedGithubSynchronousSbomRecord.applicabilityScope.dimensions.join(',') !== 'provider,endpoint'
+  || reviewedGithubSynchronousSbomRecord.affectedEndpoints.join(',') !== '/{owner}/{repo}/dependency-graph/sbom'
+  || reviewedGithubSynchronousSbomRecord.replacement?.endpoint !== '/{owner}/{repo}/dependency-graph/sbom/generate-report'
+  || reviewedGithubSynchronousSbomRecord.affectedPackages !== undefined
+  || reviewedGithubSynchronousSbomRecord.affectedVersionRange !== undefined
+  || reviewedGithubSynchronousSbomRecord.apiOperationPatterns.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_GITHUB_SBOM_FACTS_INVALID:github-synchronous-sbom-endpoint-removal-2026-11-13');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord] as const;

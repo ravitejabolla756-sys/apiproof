@@ -20,7 +20,7 @@ describe('GET /api/compatibility-proof', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   });
 
-  it('exposes the five reviewed local records with their scopes and provenance', async () => {
+  it('exposes the six reviewed local records with their scopes and provenance', async () => {
     const { session } = await createUserWithSession('compatibility-proof-api@example.com', 'Strong-password-1!', 'Proof API User');
     const response = await GET(new Request('http://localhost/api/compatibility-proof', { headers: { cookie: `apiproof_session=${session.id}` } }));
     expect(response.status).toBe(200);
@@ -30,12 +30,13 @@ describe('GET /api/compatibility-proof', () => {
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
       'github-organization-security-fields-removed-2026-04-21',
+      'github-synchronous-sbom-endpoint-removal-2026-11-13',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
-    expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(2);
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({
       providerId: 'anthropic',
       changeType: 'model_retired',
@@ -84,6 +85,18 @@ describe('GET /api/compatibility-proof', () => {
       documentFingerprint: '53a3e3e386510ad229d78b9ccca3eac343c43596d5e9dd14e79b5a74dc0e9d5a',
       evidenceFingerprint: '58adfc89004241550723c3891f29953e65d03dd752d974932fbc61d54e05c78f',
       candidateFingerprint: '59bb233364fafa44ab4bff7177300bc507a7478ae84f0d7cf001d9522eb9a708',
+    });
+    expect(body.changes.find((change) => change.changeId === 'github-synchronous-sbom-endpoint-removal-2026-11-13')).toMatchObject({
+      providerId: 'github', changeType: 'endpoint_removed',
+      applicabilityScope: { dimensions: ['provider', 'endpoint'] },
+      affectedEndpoints: ['/{owner}/{repo}/dependency-graph/sbom'],
+      replacement: { endpoint: '/{owner}/{repo}/dependency-graph/sbom/generate-report' },
+      publishedAt: '2026-05-12', removalAt: '2026-11-13', severity: 'high',
+      officialSourceUrl: 'https://github.blog/changelog/2026-05-12-synchronous-sbom-api-deprecated/',
+      reviewer: 'Ravi Teja', reviewedAt: '2026-10-06', reviewStatus: 'reviewed', provenance: 'official',
+      documentFingerprint: 'f509f8d68a1bd919c655c0d367a998f233829c53a5c4e7431cd9b45bea1d16f0',
+      evidenceFingerprint: '4fa080a36ae032f8b589028bbc74233d8aa43a6a1625bc2037d85f9b1cd5f81f',
+      candidateFingerprint: 'd88ec47a8f030ce6f4e318c70ddc6880ee310ac8c6c107ee8e5af06c94680bec',
     });
   });
 });
