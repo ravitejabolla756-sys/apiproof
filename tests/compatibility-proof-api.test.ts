@@ -34,13 +34,14 @@ describe('GET /api/compatibility-proof', () => {
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
       'supabase-management-logs-all-removal-2026-09-23',
+      'supabase-openapi-anon-key-access-2026-03-11',
       'twilio-regional-api-domain-removal-2026-04-28',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'twilio')).toHaveLength(1);
-    expect(body.changes.filter((change) => change.providerId === 'supabase')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'supabase')).toHaveLength(2);
     expect(body.changes.find((change) => change.changeId === 'supabase-management-logs-all-removal-2026-09-23')).toMatchObject({
       providerId: 'supabase',
       changeType: 'endpoint_removed',
@@ -48,6 +49,15 @@ describe('GET /api/compatibility-proof', () => {
       affectedEndpoints: ['analytics/endpoints/logs.all'],
       replacement: { endpoint: 'analytics/endpoints/logs' },
       removalAt: '2026-09-23',
+      severity: 'high',
+    });
+    expect(body.changes.find((change) => change.changeId === 'supabase-openapi-anon-key-access-2026-03-11')).toMatchObject({
+      providerId: 'supabase',
+      changeType: 'parameter_required',
+      applicabilityScope: { dimensions: ['provider', 'endpoint', 'auth_or_header'] },
+      affectedEndpoints: ['/rest/v1/'],
+      authOrHeaderPatterns: ['anon key'],
+      effectiveAt: '2026-03-11',
       severity: 'high',
     });
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({

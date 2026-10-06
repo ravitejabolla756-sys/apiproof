@@ -22,11 +22,12 @@ describe('Anthropic Opus 4.7 production rule', () => {
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
       'supabase-management-logs-all-removal-2026-09-23',
+      'supabase-openapi-anon-key-access-2026-03-11',
       'twilio-regional-api-domain-removal-2026-04-28',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(8);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
   });
 
   it('evaluates the actual registry for exact, absent, allowed, unknown, Mythos, unrelated, and dynamic cases', () => {

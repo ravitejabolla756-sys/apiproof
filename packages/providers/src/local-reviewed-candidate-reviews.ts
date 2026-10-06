@@ -198,3 +198,31 @@ export const LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW = CandidateReviewSchema.par
   evidenceFingerprint: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.candidateFingerprint,
 });
+
+const SUPABASE_OPENAPI_ANON_KEY_CANDIDATE_ID = 'supabase-openapi-anon-key-access-2026-03-11';
+const supabaseOpenApiAnonKeyCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(SUPABASE_OPENAPI_ANON_KEY_CANDIDATE_ID);
+if (!supabaseOpenApiAnonKeyCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${SUPABASE_OPENAPI_ANON_KEY_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-06',
+  notes: 'I verified the official Supabase changelog for removal of OpenAPI access using the anon key. I approve authoritative applicability at provider + endpoint + auth_or_header scope for OpenAPI access at /rest/v1/ when the credential class is anon key. Service-role and new secret API keys remain allowed. I do not assert SDK package, SDK version, SDK method, or an undocumented literal header representation.',
+  sourceFingerprint: 'f8cc1c82fdef5b686930280bd95860dc7413c45a5e6d1db8edf2744a8c110f96',
+  evidenceFingerprint: 'e162ea328b8db825a739fce6174efaa03637d86ef408ea81a173988886b7ff6c',
+  candidateFingerprint: '33b4ebe9cdfef34571301ccfb2cd4e764fd0fe28564260c5066a8661dec2cfa5',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_CANDIDATE = reviewCandidate(supabaseOpenApiAnonKeyCandidate, LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.candidateFingerprint,
+});

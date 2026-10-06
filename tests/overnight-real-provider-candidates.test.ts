@@ -121,12 +121,43 @@ describe('overnight real provider candidate projections', () => {
 
   it('proves Supabase OpenAPI anon-key restriction with auth uncertainty', () => {
     const endpoint = '/rest/v1/';
-    expect(evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'anon key' })).status).toBe('AFFECTED');
-    expect(evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'secret API key' })).status).toBe('NOT_AFFECTED');
+    const affected = evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'anon key' }));
+    expect(affected.status).toBe('AFFECTED');
+    expect(evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'service-role key' })).status).toBe('NOT_AFFECTED');
+    expect(evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'new secret API key' })).status).toBe('NOT_AFFECTED');
     expect(evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint: '/rest/v1/users', authOrHeader: 'anon key' })).status).toBe('NOT_AFFECTED');
     const dynamic = evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: undefined, static: false, confidence: 0.4 }));
     expect(dynamic.status).toBe('NEEDS_REVIEW');
     expect(dynamic.reasonCodes).toContain('AUTH_OR_HEADER_UNRESOLVED');
+    const unresolvedEndpoint = evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint: undefined, authOrHeader: 'anon key', static: false, confidence: 0.4 }));
+    expect(unresolvedEndpoint.status).toBe('NEEDS_REVIEW');
+    expect(unresolvedEndpoint.reasonCodes).toContain('ENDPOINT_UNRESOLVED');
+    const projection = reviewProjection('supabase-openapi-anon-key-access-2026-03-11');
+    expect(projection.candidate.state).toBe('needs_review');
+    expect(projection.reviewedCandidate.state).toBe('reviewed');
+    expect(projection.record).toMatchObject({
+      effectiveAt: '2026-03-11',
+      applicabilityScope: { dimensions: ['provider', 'endpoint', 'auth_or_header'] },
+      affectedEndpoints: ['/rest/v1/'],
+      authOrHeaderPatterns: ['anon key'],
+      review: {
+        reviewer: 'Ravi Teja',
+        reviewedAt: '2026-10-06',
+        documentFingerprint: 'f8cc1c82fdef5b686930280bd95860dc7413c45a5e6d1db8edf2744a8c110f96',
+        evidenceFingerprint: 'e162ea328b8db825a739fce6174efaa03637d86ef408ea81a173988886b7ff6c',
+        candidateFingerprint: '33b4ebe9cdfef34571301ccfb2cd4e764fd0fe28564260c5066a8661dec2cfa5',
+      },
+    });
+    expect(projection.candidate.sourceEvidence.claims).toEqual(expect.arrayContaining([
+      { key: 'publishedAt', value: '2026-02-17' },
+      { key: 'deprecationStart', value: '2026-03-11' },
+      { key: 'rollout', value: 'Existing projects blocked April 8, 2026' },
+    ]));
+    expect(projection.record.authOrHeaderPatterns).not.toContain('Authorization');
+    const proofResults = [affected, evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'service-role key' })), dynamic];
+    const proofs = proofResults.flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'supabase-openapi-fixture', baselineSha: 'a'.repeat(40), scanId: `supabase-openapi-proof-${index}`, results: [result], mode: 'test' }));
+    expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
+    expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'supabase', changeId: 'supabase-openapi-anon-key-access-2026-03-11', severity: 'high', reviewStatus: 'reviewed', provenance: 'official' });
   });
 
   it.each(['typescript', 'python'] as const)('preserves domain and auth semantics in %s normalized IR', (language) => {
@@ -147,12 +178,12 @@ describe('overnight real provider candidate projections', () => {
     const proofs = [affected, notAffected, needsReview].flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'overnight-provider-fixture', baselineSha: 'b'.repeat(40), scanId: `overnight-proof-${index}`, results: [result], mode: 'test' }));
     expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
     expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'twilio', changeId: 'twilio-regional-api-domain-removal-2026-04-28', severity: 'high', reviewStatus: 'reviewed', provenance: 'official', replacement: { domain: 'api.twilio.com' } });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(8);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')).toHaveLength(1);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has('twilio-regional-api-domain-removal-2026-04-28')).toBe(true);
   });
 

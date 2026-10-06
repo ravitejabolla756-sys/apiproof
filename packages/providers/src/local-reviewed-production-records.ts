@@ -16,6 +16,8 @@ import {
   LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW,
   LOCAL_REVIEWED_SUPABASE_LOGS_ALL_CANDIDATE,
   LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW,
+  LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_CANDIDATE,
+  LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
@@ -131,6 +133,16 @@ const reviewedSupabaseLogsAllRecord = promoteCandidateToReviewed(
   }],
 );
 
+const reviewedSupabaseOpenApiAnonKeyRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_CANDIDATE,
+  LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_CANDIDATE.sourceUrl,
+    summary: 'Supabase restricts OpenAPI access at /rest/v1/ for the anon key; service-role and new secret API keys remain allowed while ordinary Data API requests are unaffected.',
+    accessedAt: LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW.reviewedAt,
+  }],
+);
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -235,5 +247,19 @@ if (reviewedSupabaseLogsAllRecord.providerId !== 'supabase'
   throw new Error('LOCAL_REVIEWED_SUPABASE_FACTS_INVALID:supabase-management-logs-all-removal-2026-09-23');
 }
 
+if (reviewedSupabaseOpenApiAnonKeyRecord.providerId !== 'supabase'
+  || reviewedSupabaseOpenApiAnonKeyRecord.changeId !== 'supabase-openapi-anon-key-access-2026-03-11'
+  || reviewedSupabaseOpenApiAnonKeyRecord.effectiveAt !== '2026-03-11'
+  || reviewedSupabaseOpenApiAnonKeyRecord.applicabilityScope.dimensions.join(',') !== 'provider,endpoint,auth_or_header'
+  || reviewedSupabaseOpenApiAnonKeyRecord.affectedEndpoints.join(',') !== '/rest/v1/'
+  || reviewedSupabaseOpenApiAnonKeyRecord.authOrHeaderPatterns.join(',') !== 'anon key'
+  || reviewedSupabaseOpenApiAnonKeyRecord.replacement?.authOrHeader !== 'service_role key or new secret API key'
+  || reviewedSupabaseOpenApiAnonKeyRecord.severity !== 'high'
+  || reviewedSupabaseOpenApiAnonKeyRecord.affectedPackages !== undefined
+  || reviewedSupabaseOpenApiAnonKeyRecord.affectedVersionRange !== undefined
+  || reviewedSupabaseOpenApiAnonKeyRecord.apiOperationPatterns.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_SUPABASE_OPENAPI_FACTS_INVALID:supabase-openapi-anon-key-access-2026-03-11');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedSupabaseLogsAllRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord] as const;

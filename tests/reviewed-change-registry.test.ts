@@ -45,7 +45,7 @@ describe('production reviewed change registry', () => {
   });
 
   it('does not claim compatibility for discovery-only providers without reviewed changes', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(8);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')?.map((change) => change.changeId)).toEqual([
       'openai-assistants-api-sunset-2026-08-26',
@@ -64,6 +64,7 @@ describe('production reviewed change registry', () => {
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')?.map((change) => change.changeId)).toEqual([
       'supabase-management-logs-all-removal-2026-09-23',
+      'supabase-openapi-anon-key-access-2026-03-11',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.has('cloudflare')).toBe(false);
   });
