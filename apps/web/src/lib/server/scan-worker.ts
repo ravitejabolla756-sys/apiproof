@@ -18,7 +18,7 @@ import { getDatabase } from './db/index.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
-import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders } from '@apiproof/analyzers';
+import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders, runProductizationScan } from '@apiproof/analyzers';
 import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import type { ApiProvider } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
@@ -27,6 +27,8 @@ import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWo
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
+import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
+import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
@@ -379,10 +381,14 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
     // 6. Build snapshot and detect providers
     const snapshot = RepositorySnapshot.fromMemory(repo.name, filesMap);
+    const productizationEnabled = providerIntelligenceV1Enabled();
+    const productization = productizationEnabled
+      ? await runProductizationScan({ repositoryId: repo.id, baselineSha: headSha, scanId, files: filesMap })
+      : null;
     const analyzer = new TypeScriptRepositoryAnalyzer();
     const providersToAnalyze: Array<{ id: 'stripe' | 'twilio'; provider: ApiProvider }> = [];
     const pkgContent = filesMap.get('package.json');
-    if (pkgContent) {
+    if (!productizationEnabled && pkgContent) {
       try {
         const pkg = JSON.parse(pkgContent) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
         const deps = { ...pkg.dependencies, ...pkg.devDependencies };
@@ -392,31 +398,21 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         // unparseable package.json — still run with no providers (yields empty findings)
       }
     }
-    if (providersToAnalyze.length === 0) {
+    if (!productizationEnabled && providersToAnalyze.length === 0) {
       providersToAnalyze.push({ id: 'stripe', provider: new StripeProvider() });
     }
 
     // 7. Run AST analysis
-    const collectedFindings: Array<{
-      id: string;
-      changeId: string;
-      provider: string;
-      title: string;
-      description: string;
-      severity: string;
-      confidence: number;
-      filePath: string;
-      lineNumber: number;
-      symbol: string;
-      reason: string;
-      reasonCodes: string[];
-      evidence: unknown[];
-      sourceSnippet: string;
-      sourceDigest: string;
-    }> = [];
+    const collectedFindings: ProductizationFinding[] = [];
 
     let totalFilesAnalyzed = 0, inputDigest = snapshot.digest();
     const compatibilityResults: ScanResult[] = [];
+
+    if (productization) {
+      totalFilesAnalyzed = productization.metrics.analyzedFiles;
+      inputDigest = productization.baselineSha;
+      collectedFindings.push(...productizationFindings(productization));
+    }
 
     for (const { id: provId, provider } of providersToAnalyze) {
       const scanResult = await analyzer.analyze(snapshot, provider.descriptor);
@@ -457,7 +453,10 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
     // 8. Persist findings idempotently + finalize scan
     const completedAt = new Date().toISOString(), newlyCreatedFindingIds: string[] = [];
-    const discoveredProviders = discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
+    const discoveredProviders = productization?.discoveries ?? discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
+    const persistedScanResult = productization
+      ? { schemaVersion: 2, productization: { baselineSha: productization.baselineSha, languages: productization.languages, discoveries: productization.discoveries, usageIR: productization.usageIR, compatibilityResults: productization.compatibilityResults, proofs: productization.proofs, truncated: false } }
+      : scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []));
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
 
@@ -527,7 +526,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             completed_at = ?
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
-        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []))), completedAt, scanId]);
+        JSON.stringify(persistedScanResult), completedAt, scanId]);
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?

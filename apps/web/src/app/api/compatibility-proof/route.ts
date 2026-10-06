@@ -22,6 +22,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     severity: change.severity, reviewStatus: change.review.status, provenance: change.review.provenance,
     applicabilityScope: change.applicabilityScope, affectedModels: change.affectedModels ?? [], affectedResources: change.affectedResources ?? [],
     affectedEndpoints: change.affectedEndpoints ?? [], affectedDomains: change.affectedDomains ?? [], authOrHeaderPatterns: change.authOrHeaderPatterns ?? [],
+    affectedParameters: change.affectedParameters ?? [],
     affectedResponseFields: change.affectedResponseFields ?? [],
     replacement: change.replacement ?? null,
     reviewer: change.review.reviewer, reviewedAt: change.review.reviewedAt,

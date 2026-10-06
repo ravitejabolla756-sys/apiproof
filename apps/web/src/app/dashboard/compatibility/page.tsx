@@ -18,7 +18,11 @@ type ReviewedChange = {
   affectedModels: string[];
   affectedResources: string[];
   affectedResponseFields: string[];
-  replacement?: { model?: string; resources?: string[] } | null;
+  affectedEndpoints: string[];
+  affectedDomains: string[];
+  authOrHeaderPatterns: string[];
+  affectedParameters: string[];
+  replacement?: { model?: string; endpoint?: string; domain?: string; authOrHeader?: string; parameter?: string; resources?: string[] } | null;
   reviewer: string;
   reviewedAt: string;
 };
@@ -99,8 +103,15 @@ export default function CompatibilityPage() {
                 {change.affectedModels.length > 0 && <p className="mt-1">Model: <span className="font-mono">{change.affectedModels.join(", ")}</span></p>}
                 {change.affectedResources.length > 0 && <p className="mt-1">Resource: <span className="font-mono">{change.affectedResources.join(", ")}</span></p>}
                 {change.affectedResponseFields.length > 0 && <p className="mt-1">Removed response fields: <span className="font-mono">{change.affectedResponseFields.join(", ")}</span></p>}
+                {change.affectedParameters.length > 0 && <p className="mt-1">Parameter: <span className="font-mono">{change.affectedParameters.join(", ")}</span></p>}
+                {change.affectedEndpoints.length > 0 && <p className="mt-1">Endpoint: <span className="font-mono">{change.affectedEndpoints.join(", ")}</span></p>}
+                {change.affectedDomains.length > 0 && <p className="mt-1">Domain: <span className="font-mono">{change.affectedDomains.join(", ")}</span></p>}
+                {change.authOrHeaderPatterns.length > 0 && <p className="mt-1">Credential/auth evidence: <span className="font-mono">{change.authOrHeaderPatterns.join(", ")}</span></p>}
                 {change.replacement?.model && <p className="mt-1">Replacement model: <span className="font-mono">{change.replacement.model}</span></p>}
                 {change.replacement?.resources && change.replacement.resources.length > 0 && <p className="mt-1">Replacement resources: <span className="font-mono">{change.replacement.resources.join(", ")}</span></p>}
+                {change.replacement?.endpoint && <p className="mt-1">Replacement endpoint: <span className="font-mono">{change.replacement.endpoint}</span></p>}
+                {change.replacement?.domain && <p className="mt-1">Replacement domain: <span className="font-mono">{change.replacement.domain}</span></p>}
+                {change.replacement?.parameter && <p className="mt-1">Replacement parameter: <span className="font-mono">{change.replacement.parameter}</span></p>}
                 <p className="mt-1 text-[10px]">Reviewed by {change.reviewer} on {change.reviewedAt}</p>
               </div>
               <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-purple-700 hover:underline">
