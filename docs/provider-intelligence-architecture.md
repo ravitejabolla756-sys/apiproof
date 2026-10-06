@@ -212,6 +212,14 @@ The local candidate preview is labeled `candidate-unreviewed` and always points
 to `MANUAL_REVIEW`; it is not a compatibility claim. Production compatibility
 results can only come from the reviewed, official-source registry.
 
+Compatibility applicability is evidence-scoped and provider-neutral. Endpoint
+rules compare normalized route identities; domain rules normalize URL
+hostnames and require exact matches unless an explicit `*.` suffix pattern is
+reviewed, so deceptive suffixes do not match. Auth/header rules preserve the
+credential or header evidence separately and return `NEEDS_REVIEW` when it is
+dynamic or unresolved. Dynamic endpoint, domain, operation, and auth evidence
+fails closed rather than becoming an affected or unaffected claim.
+
 Candidate review bundles use a stable schema-versioned JSON export/import format
 for local handoff. Import always recompiles the candidate registry and never
 loads records into the production compatibility registry.

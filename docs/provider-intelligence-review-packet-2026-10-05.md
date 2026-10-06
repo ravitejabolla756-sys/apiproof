@@ -15,11 +15,23 @@ Official source facts, MY OWL normalization, and unknown fields are kept separat
 | Anthropic | `anthropic-claude-opus-4-1-retirement-2026-08-05` | [Model deprecations](https://docs.anthropic.com/en/docs/about-claude/model-deprecations) | model retired | deprecated 2026-06-05; retired 2026-08-05 | SDK/package/version |
 | Anthropic | `anthropic-opus-4-7-parameter-restrictions` | [Model deprecations](https://docs.anthropic.com/en/docs/about-claude/model-deprecations) | parameter removed/rejected | no date stated | SDK/package/version and exact request-shape mapping |
 | GitHub | `github-organization-security-fields-removed-2026-04-21` | [Security field deprecation](https://github.blog/changelog/2026-03-24-upcoming-deprecation-of-security-related-organization-api-fields/) | response fields removed | published 2026-03-24; removed 2026-04-21 | SDK/package/version |
-| GitHub | `github-synchronous-sbom-endpoint-removal-2026-11-13` | [Synchronous SBOM deprecation](https://github.blog/changelog/2026-05-12-synchronous-sbom-api-deprecated/) | endpoint removed | published 2026-05-12; removed 2026-11-13 | SDK/package/version |
-| Twilio | `twilio-regional-api-domain-removal-2026-04-28` | [Regional domain deprecation](https://www.twilio.com/en-us/changelog/deprecation-of-region-specific-twilio-api-domain-patterns) | endpoint/domain removed | published 2026-02-04; removed 2026-04-28 | exact SDK constructor mapping |
-| Twilio | `twilio-studio-engagements-endpoint-deprecated` | [Studio REST API](https://www.twilio.com/docs/studio/rest-api) | endpoint removed | no date stated | exact removal date and package/version |
-| Supabase | `supabase-management-logs-all-removal-2026-09-23` | [Breaking changes](https://supabase.com/changelog?types=breaking-change) | endpoint removed | removed 2026-09-23 | exact canonical URL and package/version |
-| Supabase | `supabase-openapi-anon-key-access-2026-03-11` | [OpenAPI anon-key change](https://supabase.com/changelog/42949-breaking-change-removing-access-to-openapi-spec-via-the-anon-key) | authentication parameter required | effective 2026-03-11 | package/version and exact auth-header representation |
+| GitHub | `github-synchronous-sbom-endpoint-removal-2026-11-13` | [Synchronous SBOM deprecation](https://github.blog/changelog/2026-05-12-synchronous-sbom-api-deprecated/) | provider + endpoint removed | published 2026-05-12; removed 2026-11-13 | SDK/package/version, GraphQL, API version |
+| Twilio | `twilio-regional-api-domain-removal-2026-04-28` | [Regional domain deprecation](https://www.twilio.com/en-us/changelog/deprecation-of-region-specific-twilio-api-domain-patterns) | provider + domain removed | published 2026-02-04; removed 2026-04-28 | SDK package/version and constructor mapping |
+| Twilio | `twilio-studio-engagements-endpoint-deprecated` | [Studio REST API](https://www.twilio.com/docs/studio/rest-api) | provider + endpoint removed | no current removal date stated | SDK package/version and exact removal date |
+| Supabase | `supabase-management-logs-all-removal-2026-09-23` | [logs.all migration](https://supabase.com/changelog/48235-migration-of-supabase-management-api-logs-all-analytics-endpoint-to-logs-endpoint) | provider + endpoint removed | published 2026-07-23; removed 2026-09-23 | package/version |
+| Supabase | `supabase-openapi-anon-key-access-2026-03-11` | [OpenAPI anon-key change](https://supabase.com/changelog/42949-breaking-change-removing-access-to-openapi-spec-via-the-anon-key) | provider + endpoint + auth/header restriction | published 2026-02-17; rollout began 2026-03-11 | package/version and literal header representation |
+
+## Overnight refresh fingerprints
+
+These records remain `needs_review` and are not in the production registry.
+
+| Candidate | Document fingerprint | Evidence fingerprint | Candidate fingerprint |
+|---|---|---|---|
+| `github-synchronous-sbom-endpoint-removal-2026-11-13` | `f509f8d68a1bd919c655c0d367a998f233829c53a5c4e7431cd9b45bea1d16f0` | `4fa080a36ae032f8b589028bbc74233d8aa43a6a1625bc2037d85f9b1cd5f81f` | `d88ec47a8f030ce6f4e318c70ddc6880ee310ac8c6c107ee8e5af06c94680bec` |
+| `twilio-regional-api-domain-removal-2026-04-28` | `c21edcc6438491332e641f4f6706ce98830d191009c326555af7bc728d7719ed` | `d6219d4929018c959dbd916b38773325cc8ce3a709f7ddb8d68dc5a3e838e3d6` | `6646a65d4ac5bd2ed3f549013766ed95beedd5bfc4c7b5c78ab0c4a117bb0143` |
+| `twilio-studio-engagements-endpoint-deprecated` | `659fda69acef4282bcce9ff6046fedcc76473e307eedd2fef6fbbcb0314713b3` | `0501efa9e9427c234e8450893c1208645f90f7fa35a6475635fb9a9196835ad6` | `699aabd98ad389d1ff0a39b8a4bfac0df78dbaf544850c96697dd88cf7abc1e7` |
+| `supabase-management-logs-all-removal-2026-09-23` | `1cd6ddf38800302ff4df662b1dc5cab8dd171a848647ad223150efc0a2fc29c8` | `b6f56792e51270c86280e4a8b5e619d1f871b9dc91ea0cd86379c971a2de9f23` | `39f2f68655b0713137fe5ce81101af481fd2914c78c698752e042e88466fbd4e` |
+| `supabase-openapi-anon-key-access-2026-03-11` | `f8cc1c82fdef5b686930280bd95860dc7413c45a5e6d1db8edf2744a8c110f96` | `e162ea328b8db825a739fce6174efaa03637d86ef408ea81a173988886b7ff6c` | `33b4ebe9cdfef34571301ccfb2cd4e764fd0fe28564260c5066a8661dec2cfa5` |
 
 ## Normalization and machine-testability
 
