@@ -11,7 +11,7 @@ const reviewedProjection = (candidate: CandidateChange): ReviewedCompatibilityCh
   effectiveAt: candidate.payload.effectiveAt, removalAt: candidate.payload.removalAt, officialSourceUrl: candidate.sourceUrl, sourceType: candidate.sourceType,
   applicabilityScope: candidate.payload.applicabilityScope ?? { dimensions: ['provider', 'package'] }, affectedPackages: candidate.payload.affectedPackages ?? [packageFor(candidate)], affectedVersionRange: candidate.payload.affectedVersionRange,
   apiOperationPatterns: candidate.payload.apiOperationPatterns ?? [], affectedParameters: candidate.payload.affectedParameters ?? [],
-  affectedResponseFields: candidate.payload.affectedResponseFields ?? [], affectedEndpoints: candidate.payload.affectedEndpoints ?? [],
+  affectedResponseFields: candidate.payload.affectedResponseFields ?? [], affectedEndpoints: candidate.payload.affectedEndpoints ?? [], affectedDomains: candidate.payload.affectedDomains ?? [],
   affectedModels: candidate.payload.affectedModels ?? [], affectedResources: candidate.payload.affectedResources ?? [], authOrHeaderPatterns: candidate.payload.authOrHeaderPatterns ?? [], enumMetadata: candidate.payload.enumMetadata, apiVersionMetadata: candidate.payload.apiVersionMetadata,
   replacement: candidate.payload.replacement, severity: candidate.payload.severity ?? 'high',
   review: { status: 'reviewed', reviewer: 'test-only candidate projection', reviewedAt: '2026-10-05', provenance: 'official' },
@@ -20,11 +20,14 @@ const reviewedProjection = (candidate: CandidateChange): ReviewedCompatibilityCh
 
 const usageFor = (candidate: CandidateChange, id: string, changed: boolean, dynamic = false): CompatibilityUsage => {
   const payload = candidate.payload;
-  const usage: CompatibilityUsage = { id, providerId: candidate.providerId, packageName: packageFor(candidate), evidenceKind: payload.affectedEndpoints?.length ? 'http' : 'sdk', confidence: dynamic ? 0.4 : 0.95, static: !dynamic, location: { file: `fixtures/${candidate.candidateId}/${id}.ts`, line: 10, column: 1 } };
+  const usage: CompatibilityUsage = { id, providerId: candidate.providerId, packageName: packageFor(candidate), evidenceKind: payload.affectedEndpoints?.length || payload.affectedDomains?.length ? 'http' : 'sdk', confidence: dynamic ? 0.4 : 0.95, static: !dynamic, location: { file: `fixtures/${candidate.candidateId}/${id}.ts`, line: 10, column: 1 } };
   if (changed) {
     usage.endpoint = payload.affectedEndpoints?.[0];
+    usage.domain = payload.affectedDomains?.[0];
     usage.model = payload.affectedModels?.[0];
+    usage.resource = payload.affectedResources?.[0];
     usage.parameter = payload.affectedParameters?.[0];
+    usage.authOrHeader = payload.authOrHeaderPatterns?.[0];
     usage.responseField = payload.affectedResponseFields?.[0];
   } else {
     usage.operation = 'unrelated.operation';
@@ -32,7 +35,7 @@ const usageFor = (candidate: CandidateChange, id: string, changed: boolean, dyna
   return usage;
 };
 
-const candidatesWithConcreteScope = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.filter((candidate) => candidate.payload.applicabilityScope?.dimensions.includes('model') || candidate.payload.applicabilityScope?.dimensions.includes('endpoint'));
+const candidatesWithConcreteScope = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.filter((candidate) => candidate.payload.applicabilityScope?.dimensions.some((dimension) => ['model', 'endpoint', 'domain', 'resource'].includes(dimension)));
 
 describe('official candidate fixture coverage', () => {
   it('covers affected, unaffected, and uncertain outcomes for every concretely scoped candidate', () => {

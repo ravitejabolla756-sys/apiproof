@@ -36,7 +36,7 @@ export type CompatibilitySourceType = z.infer<typeof CompatibilitySourceTypeSche
 
 export const ApplicabilityDimensionSchema = z.enum([
   'provider', 'package', 'package_version', 'model', 'endpoint', 'operation', 'parameter',
-  'response_field', 'api_version', 'auth_or_header', 'enum', 'resource',
+  'response_field', 'api_version', 'auth_or_header', 'domain', 'enum', 'resource',
 ]);
 export type ApplicabilityDimension = z.infer<typeof ApplicabilityDimensionSchema>;
 export const ApplicabilityScopeSchema = z.strictObject({ dimensions: z.array(ApplicabilityDimensionSchema).min(1).max(12) }).superRefine((scope, ctx) => {
@@ -83,19 +83,20 @@ export const ReviewedCompatibilityChangeSchema = z.strictObject({
   parameterConditions: z.array(CompatibilityParameterConditionSchema).max(30).optional(),
   affectedResponseFields: z.array(z.string().min(1)).max(30),
   affectedEndpoints: z.array(z.string().min(1)).max(30),
+  affectedDomains: z.array(z.string().min(1)).max(30).optional(),
   affectedModels: z.array(z.string().min(1)).max(30),
   affectedResources: z.array(z.string().min(1)).max(30),
   authOrHeaderPatterns: z.array(z.string().min(1)).max(30),
   enumMetadata: z.strictObject({ name: z.string().min(1), removedValues: z.array(z.string().min(1)), addedValues: z.array(z.string().min(1)) }).optional(),
   apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional() }).optional(),
-  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
+  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), domain: z.string().optional(), authOrHeader: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
   severity: CompatibilitySeveritySchema,
   review: CompatibilityReviewSchema,
   evidence: z.array(z.strictObject({ url: z.url(), summary: z.string().min(1).max(2_000), accessedAt: z.iso.date() })).min(1),
 });
 export type ReviewedCompatibilityChange = z.infer<typeof ReviewedCompatibilityChangeSchema>;
 
-export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityChange, 'changeType' | 'applicabilityScope' | 'affectedPackages' | 'affectedVersionRange' | 'apiOperationPatterns' | 'affectedParameters' | 'parameterConditions' | 'affectedResponseFields' | 'affectedEndpoints' | 'affectedModels' | 'affectedResources' | 'authOrHeaderPatterns' | 'apiVersionMetadata' | 'enumMetadata'>): void {
+export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityChange, 'changeType' | 'applicabilityScope' | 'affectedPackages' | 'affectedVersionRange' | 'apiOperationPatterns' | 'affectedParameters' | 'parameterConditions' | 'affectedResponseFields' | 'affectedEndpoints' | 'affectedDomains' | 'affectedModels' | 'affectedResources' | 'authOrHeaderPatterns' | 'apiVersionMetadata' | 'enumMetadata'>): void {
   const dimensions = new Set(change.applicabilityScope.dimensions);
   const require = (dimension: ApplicabilityDimension, condition: boolean): void => {
     if (!dimensions.has(dimension)) throw new Error(`APPLICABILITY_SCOPE_DIMENSION_REQUIRED:${dimension}`);
@@ -103,7 +104,7 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
   };
   if (change.changeType === 'model_retired') require('model', change.affectedModels.length > 0);
   if (change.changeType === 'endpoint_removed') {
-    const targetDimensions: ApplicabilityDimension[] = ['endpoint', 'operation', 'resource'];
+    const targetDimensions: ApplicabilityDimension[] = ['endpoint', 'domain', 'operation', 'resource'];
     const targetDimension = targetDimensions.find((dimension) => dimensions.has(dimension));
     if (!targetDimension) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:${targetDimensions.join('|')}`);
   }
@@ -113,11 +114,14 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
     require('operation', change.apiOperationPatterns.length > 0);
   }
   if (change.changeType === 'parameter_removed' || change.changeType === 'parameter_renamed' || change.changeType === 'parameter_required') {
-    require('parameter', change.affectedParameters.length > 0);
-    const targetDimensions: ApplicabilityDimension[] = ['operation', 'endpoint', 'resource', 'model'];
+    if (dimensions.has('parameter')) require('parameter', change.affectedParameters.length > 0);
+    if (dimensions.has('auth_or_header')) require('auth_or_header', change.authOrHeaderPatterns.length > 0);
+    if (!dimensions.has('parameter') && !dimensions.has('auth_or_header')) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:parameter|auth_or_header`);
+    const targetDimensions: ApplicabilityDimension[] = ['operation', 'endpoint', 'resource', 'model', 'domain'];
     if (!targetDimensions.some((dimension) => dimensions.has(dimension))) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:${targetDimensions.join('|')}`);
     if (dimensions.has('operation')) require('operation', change.apiOperationPatterns.length > 0);
     if (dimensions.has('endpoint')) require('endpoint', change.affectedEndpoints.length > 0);
+    if (dimensions.has('domain')) require('domain', Boolean(change.affectedDomains?.length));
     if (dimensions.has('resource')) require('resource', change.affectedResources.length > 0);
     if (dimensions.has('model')) require('model', change.affectedModels.length > 0);
   }
@@ -140,6 +144,7 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
   if (dimensions.has('parameter')) require('parameter', change.affectedParameters.length > 0);
   if (dimensions.has('response_field')) require('response_field', change.affectedResponseFields.length > 0);
   if (dimensions.has('endpoint')) require('endpoint', change.affectedEndpoints.length > 0);
+  if (dimensions.has('domain')) require('domain', Boolean(change.affectedDomains?.length));
   if (dimensions.has('model')) require('model', change.affectedModels.length > 0);
   if (dimensions.has('resource')) require('resource', change.affectedResources.length > 0);
   if (dimensions.has('api_version')) require('api_version', Boolean(change.apiVersionMetadata?.version));
@@ -159,7 +164,7 @@ export type VersionAssessment = z.infer<typeof VersionAssessmentSchema>;
 
 export const CompatibilityUsageSchema = z.strictObject({
   id: z.string().min(1), providerId: z.string().min(1), packageName: z.string().min(1).optional(),
-  operation: z.string().optional(), model: z.string().optional(), parameter: z.string().optional(), responseField: z.string().optional(),
+  operation: z.string().optional(), model: z.string().optional(), parameter: z.string().optional(), responseField: z.string().optional(), domain: z.string().optional(),
   parameterValue: JsonPrimitiveSchema.optional(), parameterValueStatus: z.enum(['allowed', 'disallowed', 'unknown']).optional(),
   endpoint: z.string().optional(), resource: z.string().optional(), apiVersion: z.string().optional(), authOrHeader: z.string().optional(), evidenceKind: z.enum(['sdk', 'http', 'import', 'environment']),
   confidence: z.number().min(0).max(1), static: z.boolean(),
@@ -176,7 +181,7 @@ export const CompatibilityResultSchema = z.strictObject({
   changeTitle: z.string(), changeType: CompatibilityChangeTypeSchema,
   officialSourceUrl: z.string().url(), publishedAt: z.string().nullable(), effectiveAt: z.string().nullable(), removalAt: z.string().nullable(),
   severity: CompatibilitySeveritySchema.optional(),
-  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
+  replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), domain: z.string().optional(), authOrHeader: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
   versionAssessment: VersionAssessmentSchema, matchedUsages: z.array(CompatibilityUsageSchema),
   usageAssessment: z.enum(['matched', 'not-used', 'uncertain', 'not-applicable']),
   exactFile: z.string().nullable(), exactLine: z.number().int().positive().nullable(), exactSymbol: z.string().nullable(),

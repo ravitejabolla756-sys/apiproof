@@ -11,6 +11,7 @@ export interface CandidateChangeRegistry {
   readonly byProvider: ReadonlyMap<string, readonly CandidateChange[]>;
   readonly byPackage: ReadonlyMap<string, readonly CandidateChange[]>;
   readonly byOperation: ReadonlyMap<string, readonly CandidateChange[]>;
+  readonly byDomain: ReadonlyMap<string, readonly CandidateChange[]>;
   /** Multiple official sources may corroborate one eventual production change. */
   readonly byProposedChangeId: ReadonlyMap<string, readonly CandidateChange[]>;
 }
@@ -48,6 +49,7 @@ export function compileCandidateChangeRegistry(inputs: readonly unknown[], provi
   const byProvider = new Map<string, CandidateChange[]>();
   const byPackage = new Map<string, CandidateChange[]>();
   const byOperation = new Map<string, CandidateChange[]>();
+  const byDomain = new Map<string, CandidateChange[]>();
   const byProposedChangeId = new Map<string, CandidateChange[]>();
   const add = (index: Map<string, CandidateChange[]>, key: string, candidate: CandidateChange): void => {
     const entries = index.get(key) ?? [];
@@ -66,9 +68,10 @@ export function compileCandidateChangeRegistry(inputs: readonly unknown[], provi
     add(byProvider, candidate.providerId, candidate);
     for (const packageName of candidate.payload.affectedPackages ?? []) add(byPackage, packageName, candidate);
     for (const operation of candidate.payload.apiOperationPatterns ?? []) add(byOperation, operation, candidate);
+    for (const domain of candidate.payload.affectedDomains ?? []) add(byDomain, domain.toLowerCase(), candidate);
     add(byProposedChangeId, candidate.payload.changeId ?? candidate.candidateId, candidate);
   }
-  return { candidates, byCandidateId, bySourceFingerprint, byProvider, byPackage, byOperation, byProposedChangeId };
+  return { candidates, byCandidateId, bySourceFingerprint, byProvider, byPackage, byOperation, byDomain, byProposedChangeId };
 }
 
 export function sourceHasUpdated(previous: CandidateChange, incoming: CandidateChange): boolean {
@@ -123,7 +126,7 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
   if (!payload.changeType || !payload.applicabilityScope || !payload.severity) {
     throw new Error(`CANDIDATE_INCOMPLETE_FOR_PROMOTION:${candidate.candidateId}`);
   }
-  const applicability = { ...payload, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages, affectedVersionRange: payload.affectedVersionRange, apiOperationPatterns: payload.apiOperationPatterns ?? [], affectedParameters: payload.affectedParameters ?? [], parameterConditions: payload.parameterConditions, affectedResponseFields: payload.affectedResponseFields ?? [], affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], apiVersionMetadata: payload.apiVersionMetadata, enumMetadata: payload.enumMetadata };
+  const applicability = { ...payload, applicabilityScope: payload.applicabilityScope, affectedPackages: payload.affectedPackages, affectedVersionRange: payload.affectedVersionRange, apiOperationPatterns: payload.apiOperationPatterns ?? [], affectedParameters: payload.affectedParameters ?? [], parameterConditions: payload.parameterConditions, affectedResponseFields: payload.affectedResponseFields ?? [], affectedEndpoints: payload.affectedEndpoints ?? [], affectedDomains: payload.affectedDomains ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], apiVersionMetadata: payload.apiVersionMetadata, enumMetadata: payload.enumMetadata };
   validateApplicabilityScope(applicability as never);
   if (payload.affectedVersionRange && !semver.validRange(payload.affectedVersionRange)) throw new Error(`CANDIDATE_INVALID_VERSION_RANGE:${candidate.candidateId}`);
   return ReviewedCompatibilityChangeSchema.parse({
@@ -134,7 +137,7 @@ export function promoteCandidateToReviewed(candidateInput: unknown, reviewInput:
     ...(payload.affectedVersionRange ? { affectedVersionRange: payload.affectedVersionRange } : {}), apiOperationPatterns: payload.apiOperationPatterns ?? [],
     affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [],
     ...(payload.parameterConditions ? { parameterConditions: payload.parameterConditions } : {}),
-    affectedEndpoints: payload.affectedEndpoints ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], authOrHeaderPatterns: payload.authOrHeaderPatterns ?? [],
+    affectedEndpoints: payload.affectedEndpoints ?? [], affectedDomains: payload.affectedDomains ?? [], affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [], authOrHeaderPatterns: payload.authOrHeaderPatterns ?? [],
     enumMetadata: payload.enumMetadata, apiVersionMetadata: payload.apiVersionMetadata, replacement: payload.replacement,
     severity: payload.severity,
     review: {

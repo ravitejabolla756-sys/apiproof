@@ -47,6 +47,29 @@ function matchesPattern(value: string | undefined, patterns: readonly string[]):
   return Boolean(value && patterns.some((pattern) => value === pattern || value.startsWith(`${pattern}.`) || value.startsWith(`${pattern}/`)));
 }
 
+function matchesEndpointPattern(value: string | undefined, patterns: readonly string[]): boolean {
+  return Boolean(value && patterns.some((pattern) => value === pattern || (!pattern.includes('{') && value.startsWith(`${pattern}/`))));
+}
+
+function hostnameFromValue(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = value.includes('://') ? new URL(value) : undefined;
+    const hostname = url?.hostname ?? (value.includes('/') ? undefined : value);
+    return hostname?.toLowerCase().replace(/\.$/, '') || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function matchesDomainPattern(value: string | undefined, patterns: readonly string[]): boolean {
+  const hostname = hostnameFromValue(value);
+  return Boolean(hostname && patterns.some((pattern) => {
+    const normalized = pattern.toLowerCase().replace(/^\*\./, '').replace(/\.$/, '');
+    return pattern.startsWith('*.') ? hostname === normalized || hostname.endsWith(`.${normalized}`) : hostname === normalized;
+  }));
+}
+
 type UsageMatch = 'match' | 'no-match' | 'uncertain';
 
 function parameterConditionMatch(condition: CompatibilityParameterCondition, usage: CompatibilityUsage): UsageMatch {
@@ -67,7 +90,18 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   if (dimensions.has('package') && (!usage.packageName || !change.affectedPackages?.includes(usage.packageName))) return 'no-match';
   // SDK operation and raw HTTP endpoint are alternate ways to prove the same
   // API target. Parameters, models, and response fields remain conjunctive.
-  const targetMatch = (!dimensions.has('operation') && !dimensions.has('endpoint')) || (dimensions.has('operation') && matchesPattern(usage.operation, change.apiOperationPatterns)) || (dimensions.has('endpoint') && matchesPattern(usage.endpoint, change.affectedEndpoints));
+  // A dynamic or low-confidence target cannot prove non-applicability; it is
+  // retained as uncertainty so compatibility evaluation fails closed.
+  const operationMatch: UsageMatch = !dimensions.has('operation') ? 'no-match'
+    : matchesPattern(usage.operation, change.apiOperationPatterns) ? 'match'
+      : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
+  const endpointMatch: UsageMatch = !dimensions.has('endpoint') ? 'no-match'
+    : matchesEndpointPattern(usage.endpoint, change.affectedEndpoints) ? 'match'
+      : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
+  const targetMatches = [operationMatch, endpointMatch].filter((match) => match !== 'no-match');
+  const targetMatch: UsageMatch = !dimensions.has('operation') && !dimensions.has('endpoint') ? 'match'
+    : targetMatches.includes('match') ? 'match'
+      : targetMatches.includes('uncertain') ? 'uncertain' : 'no-match';
   if (dimensions.has('parameter') && (!usage.parameter || !change.affectedParameters.includes(usage.parameter))) return 'no-match';
   const parameterCondition = usage.parameter ? change.parameterConditions?.find((condition) => condition.parameter === usage.parameter) : undefined;
   const parameterMatch: UsageMatch = !parameterCondition ? 'match' : parameterConditionMatch(parameterCondition, usage);
@@ -77,10 +111,15 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const modelMatch = !dimensions.has('model') || Boolean(usage.model && change.affectedModels.includes(usage.model));
   const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
   const apiVersionMatch = !dimensions.has('api_version') || Boolean(usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion);
-  const authMatch = !dimensions.has('auth_or_header') || Boolean(usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader));
-  if (!targetMatch || !modelMatch || !resourceMatch || !apiVersionMatch || !authMatch) return 'no-match';
+  const authMatch: UsageMatch = !dimensions.has('auth_or_header') ? 'match'
+    : usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader) ? 'match'
+      : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
+  const domainMatch: UsageMatch = !dimensions.has('domain') ? 'match'
+    : matchesDomainPattern(usage.domain ?? usage.endpoint, change.affectedDomains ?? []) ? 'match'
+      : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
+  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || !modelMatch || !resourceMatch || !apiVersionMatch) return 'no-match';
   if (responseFieldMatch === 'no-match' || parameterMatch === 'no-match') return 'no-match';
-  if (responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
+  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
   return 'match';
 }
 
@@ -116,6 +155,10 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     status = 'NEEDS_REVIEW';
     if (version.assessment === 'declared-only' || version.assessment === 'unknown') reasonCodes.push('VERSION_UNKNOWN');
     if ([...matched, ...uncertain].some((usage) => !usage.static || usage.confidence < 0.8)) reasonCodes.push('INSUFFICIENT_STATIC_EVIDENCE');
+    if (uncertain.some((usage) => dimensions.has('endpoint') && !usage.endpoint)) reasonCodes.push('ENDPOINT_UNRESOLVED');
+    if (uncertain.some((usage) => dimensions.has('operation') && !usage.operation)) reasonCodes.push('OPERATION_UNRESOLVED');
+    if (uncertain.some((usage) => dimensions.has('domain') && (!usage.domain && !usage.endpoint || !usage.static || usage.confidence < 0.8))) reasonCodes.push('DOMAIN_UNRESOLVED');
+    if (uncertain.some((usage) => dimensions.has('auth_or_header') && !usage.authOrHeader)) reasonCodes.push('AUTH_OR_HEADER_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('response_field') && !usage.responseField)) reasonCodes.push('RESPONSE_FIELD_UNRESOLVED');
     if (uncertain.some((usage) => usage.parameter && change.parameterConditions?.some((condition) => condition.parameter === usage.parameter))) reasonCodes.push('PARAMETER_VALUE_UNRESOLVED');
     if (matched.length === 0 && uncertain.length === 0) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');
