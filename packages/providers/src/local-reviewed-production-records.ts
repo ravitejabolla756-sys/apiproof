@@ -14,6 +14,8 @@ import {
   LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW,
   LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_CANDIDATE,
   LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW,
+  LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE,
+  LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_REVIEW,
   LOCAL_REVIEWED_SUPABASE_LOGS_ALL_CANDIDATE,
   LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW,
   LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_CANDIDATE,
@@ -143,6 +145,16 @@ const reviewedSupabaseOpenApiAnonKeyRecord = promoteCandidateToReviewed(
   }],
 );
 
+const reviewedTwilioStudioEngagementsRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE,
+  LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE.sourceUrl,
+    summary: 'Twilio documents that Engagements were renamed to Executions; /Engagements is deprecated and no longer functions, and /Executions is the replacement.',
+    accessedAt: LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_REVIEW.reviewedAt,
+  }],
+);
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -261,5 +273,21 @@ if (reviewedSupabaseOpenApiAnonKeyRecord.providerId !== 'supabase'
   throw new Error('LOCAL_REVIEWED_SUPABASE_OPENAPI_FACTS_INVALID:supabase-openapi-anon-key-access-2026-03-11');
 }
 
+if (reviewedTwilioStudioEngagementsRecord.providerId !== 'twilio'
+  || reviewedTwilioStudioEngagementsRecord.changeId !== 'twilio-studio-engagements-endpoint-deprecated'
+  || reviewedTwilioStudioEngagementsRecord.changeType !== 'endpoint_removed'
+  || reviewedTwilioStudioEngagementsRecord.publishedAt !== undefined
+  || reviewedTwilioStudioEngagementsRecord.effectiveAt !== undefined
+  || reviewedTwilioStudioEngagementsRecord.removalAt !== undefined
+  || reviewedTwilioStudioEngagementsRecord.applicabilityScope.dimensions.join(',') !== 'provider,endpoint'
+  || reviewedTwilioStudioEngagementsRecord.affectedEndpoints.join(',') !== '/Engagements'
+  || reviewedTwilioStudioEngagementsRecord.replacement?.endpoint !== '/Executions'
+  || reviewedTwilioStudioEngagementsRecord.severity !== 'high'
+  || reviewedTwilioStudioEngagementsRecord.affectedPackages !== undefined
+  || reviewedTwilioStudioEngagementsRecord.affectedVersionRange !== undefined
+  || reviewedTwilioStudioEngagementsRecord.apiOperationPatterns.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_TWILIO_STUDIO_FACTS_INVALID:twilio-studio-engagements-endpoint-deprecated');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedTwilioStudioEngagementsRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord] as const;

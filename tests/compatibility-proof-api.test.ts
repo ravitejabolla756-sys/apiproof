@@ -36,11 +36,12 @@ describe('GET /api/compatibility-proof', () => {
       'supabase-management-logs-all-removal-2026-09-23',
       'supabase-openapi-anon-key-access-2026-03-11',
       'twilio-regional-api-domain-removal-2026-04-28',
+      'twilio-studio-engagements-endpoint-deprecated',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(2);
-    expect(body.changes.filter((change) => change.providerId === 'twilio')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'twilio')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'supabase')).toHaveLength(2);
     expect(body.changes.find((change) => change.changeId === 'supabase-management-logs-all-removal-2026-09-23')).toMatchObject({
       providerId: 'supabase',
@@ -58,6 +59,17 @@ describe('GET /api/compatibility-proof', () => {
       affectedEndpoints: ['/rest/v1/'],
       authOrHeaderPatterns: ['anon key'],
       effectiveAt: '2026-03-11',
+      severity: 'high',
+    });
+    expect(body.changes.find((change) => change.changeId === 'twilio-studio-engagements-endpoint-deprecated')).toMatchObject({
+      providerId: 'twilio',
+      changeType: 'endpoint_removed',
+      applicabilityScope: { dimensions: ['provider', 'endpoint'] },
+      affectedEndpoints: ['/Engagements'],
+      replacement: { endpoint: '/Executions' },
+      publishedAt: null,
+      effectiveAt: null,
+      removalAt: null,
       severity: 'high',
     });
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({

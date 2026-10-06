@@ -57,7 +57,7 @@ describe('Anthropic Opus 4.7 human review', () => {
 
   it('passes promotion validation and is represented by the local production registry', () => {
     expect(reviewedRecord.changeId).toBe(CANDIDATE_ID);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has(CANDIDATE_ID)).toBe(true);
   });
 

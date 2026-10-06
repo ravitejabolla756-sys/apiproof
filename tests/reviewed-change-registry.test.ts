@@ -45,7 +45,7 @@ describe('production reviewed change registry', () => {
   });
 
   it('does not claim compatibility for discovery-only providers without reviewed changes', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')?.map((change) => change.changeId)).toEqual([
       'openai-assistants-api-sunset-2026-08-26',
@@ -61,6 +61,7 @@ describe('production reviewed change registry', () => {
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')?.map((change) => change.changeId)).toEqual([
       'twilio-regional-api-domain-removal-2026-04-28',
+      'twilio-studio-engagements-endpoint-deprecated',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')?.map((change) => change.changeId)).toEqual([
       'supabase-management-logs-all-removal-2026-09-23',

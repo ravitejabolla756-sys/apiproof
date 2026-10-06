@@ -48,7 +48,11 @@ function matchesPattern(value: string | undefined, patterns: readonly string[]):
 }
 
 function matchesEndpointPattern(value: string | undefined, patterns: readonly string[]): boolean {
-  return Boolean(value && patterns.some((pattern) => value === pattern || (!pattern.includes('{') && value.startsWith(`${pattern}/`))));
+  // Route identities and operation-like endpoints are exact. Preserve the
+  // established raw-URL base-route behavior for URLs with a concrete path,
+  // while never broadening templated or symbolic endpoint identifiers.
+  return Boolean(value && patterns.some((pattern) => value === pattern
+    || (pattern.includes('://') && !pattern.includes('{') && value.startsWith(`${pattern}/`))));
 }
 
 function hostnameFromValue(value: string | undefined): string | undefined {

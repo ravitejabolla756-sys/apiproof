@@ -102,7 +102,7 @@ describe('GitHub synchronous SBOM endpoint candidate', () => {
     const unrelatedProvider = evaluateRegisteredNormalizedCompatibility({ providerId: 'openai', usageIR: [normalize(usage({ providerId: 'openai' }))], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
     expect(unrelatedProvider.some((result) => result.changeId === CHANGE_ID)).toBe(false);
     expect(evaluateRegisteredNormalizedCompatibility({ providerId: 'github', usageIR: [normalize(usage())], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY).some((result) => result.changeId === CHANGE_ID)).toBe(true);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);

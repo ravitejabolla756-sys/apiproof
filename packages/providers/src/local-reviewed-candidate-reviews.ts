@@ -226,3 +226,31 @@ export const LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW = CandidateReviewSc
   evidenceFingerprint: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_SUPABASE_OPENAPI_ANON_KEY_REVIEW_ACTION.candidateFingerprint,
 });
+
+const TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE_ID = 'twilio-studio-engagements-endpoint-deprecated';
+const twilioStudioEngagementsCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE_ID);
+if (!twilioStudioEngagementsCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-06',
+  notes: 'I verified the official Twilio Studio REST API documentation. I approve authoritative applicability for the deprecated/nonfunctional Engagements resource and the documented Executions replacement. I do not assert a removal date, publication date, SDK package, SDK version, SDK method, or other metadata that Twilio does not explicitly establish.',
+  sourceFingerprint: '05d8a88476bf4182c9569e42b96932d9c0036294d6da28426d28c6c0451d7a80',
+  evidenceFingerprint: '0501efa9e9427c234e8450893c1208645f90f7fa35a6475635fb9a9196835ad6',
+  candidateFingerprint: '699aabd98ad389d1ff0a39b8a4bfac0df78dbaf544850c96697dd88cf7abc1e7',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_CANDIDATE = reviewCandidate(twilioStudioEngagementsCandidate, LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.candidateFingerprint,
+});

@@ -16,7 +16,7 @@ const reviewInputs = {
     notes: 'I verified the official Twilio changelog and approve authoritative applicability at provider + domain scope for the seven exact deprecated regional API domains. I do not assert an SDK package, SDK version, SDK method, or credential mapping.',
   },
   'twilio-studio-engagements-endpoint-deprecated': {
-    sourceFingerprint: '659fda69acef4282bcce9ff6046fedcc76473e307eedd2fef6fbbcb0314713b3', evidenceFingerprint: '0501efa9e9427c234e8450893c1208645f90f7fa35a6475635fb9a9196835ad6', candidateFingerprint: '699aabd98ad389d1ff0a39b8a4bfac0df78dbaf544850c96697dd88cf7abc1e7',
+    sourceFingerprint: '05d8a88476bf4182c9569e42b96932d9c0036294d6da28426d28c6c0451d7a80', evidenceFingerprint: '0501efa9e9427c234e8450893c1208645f90f7fa35a6475635fb9a9196835ad6', candidateFingerprint: '699aabd98ad389d1ff0a39b8a4bfac0df78dbaf544850c96697dd88cf7abc1e7',
     notes: 'I verified the official Twilio Studio REST API documentation and approve authoritative applicability at provider + endpoint scope for the deprecated /Engagements endpoint and /Executions replacement. I do not assert an SDK package, SDK version, or additional endpoint scope.',
   },
   'supabase-management-logs-all-removal-2026-09-23': {
@@ -178,11 +178,11 @@ describe('overnight real provider candidate projections', () => {
     const proofs = [affected, notAffected, needsReview].flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'overnight-provider-fixture', baselineSha: 'b'.repeat(40), scanId: `overnight-proof-${index}`, results: [result], mode: 'test' }));
     expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
     expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'twilio', changeId: 'twilio-regional-api-domain-removal-2026-04-28', severity: 'high', reviewStatus: 'reviewed', provenance: 'official', replacement: { domain: 'api.twilio.com' } });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(9);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has('twilio-regional-api-domain-removal-2026-04-28')).toBe(true);
   });
