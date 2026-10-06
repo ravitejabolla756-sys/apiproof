@@ -51,8 +51,15 @@ function matchesEndpointPattern(value: string | undefined, patterns: readonly st
   // Route identities and operation-like endpoints are exact. Preserve the
   // established raw-URL base-route behavior for URLs with a concrete path,
   // while never broadening templated or symbolic endpoint identifiers.
-  return Boolean(value && patterns.some((pattern) => value === pattern
-    || (pattern.includes('://') && !pattern.includes('{') && value.startsWith(`${pattern}/`))));
+  return Boolean(value && patterns.some((pattern) => {
+    if (value === pattern) return true;
+    if (pattern.includes('{')) {
+      const expected = pattern.split('/');
+      const actual = value.split('/');
+      return expected.length === actual.length && expected.every((segment, index) => /^\{[^/]+\}$/.test(segment) || segment === actual[index]);
+    }
+    return pattern.includes('://') && value.startsWith(`${pattern}/`);
+  }));
 }
 
 function hostnameFromValue(value: string | undefined): string | undefined {
@@ -112,7 +119,9 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const responseFieldMatch: UsageMatch = !dimensions.has('response_field') ? 'match'
     : usage.responseField && change.affectedResponseFields.includes(usage.responseField) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  const modelMatch = !dimensions.has('model') || Boolean(usage.model && change.affectedModels.includes(usage.model));
+  const modelMatch: UsageMatch = !dimensions.has('model') ? 'match'
+    : usage.model && change.affectedModels.includes(usage.model) ? 'match'
+      : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
   const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
   const apiVersionMatch = !dimensions.has('api_version') || Boolean(usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion);
   const authMatch: UsageMatch = !dimensions.has('auth_or_header') ? 'match'
@@ -121,9 +130,9 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const domainMatch: UsageMatch = !dimensions.has('domain') ? 'match'
     : matchesDomainPattern(usage.domain ?? usage.endpoint, change.affectedDomains ?? []) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || !modelMatch || !resourceMatch || !apiVersionMatch) return 'no-match';
+  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || !resourceMatch || !apiVersionMatch) return 'no-match';
   if (responseFieldMatch === 'no-match' || parameterMatch === 'no-match') return 'no-match';
-  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
+  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
   return 'match';
 }
 

@@ -18,6 +18,7 @@ export * from './github-check-v2.js';
 export * from './incremental-graph-v2.js';
 export * from './compatibility-proof.js';
 export * from './candidate-compatibility-preview.js';
+export * from './sanitized-ai.js';
 
 /** Safe errors carry fixed messages; raw parser errors may contain customer code. */
 export { AnalysisError } from './errors.js';

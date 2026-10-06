@@ -19,6 +19,8 @@ export type { LanguageRepositoryAnalyzer, RepositoryInput } from './multi-langua
 export { detectRepositoryLanguages } from './multi-language.js';
 export type { LanguageEvidence } from './multi-language.js';
 export type { LanguageScan, DetectedLanguageScan } from './multi-language.js';
+export { runProductizationScan } from './productization.js';
+export type { ProductizationPrivacyContract, ProductizationScanResult, ProductizationLanguage } from './productization.js';
 export { JvmRepositoryAnalyzer, JavaRepositoryAnalyzer, KotlinRepositoryAnalyzer } from './jvm/index.js';
 export type { JvmProviderDescriptor } from './jvm/index.js';
 export { CSharpRepositoryAnalyzer } from './dotnet/index.js';
