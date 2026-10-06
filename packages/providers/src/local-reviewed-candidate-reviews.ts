@@ -142,3 +142,31 @@ export const LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW = CandidateReviewSche
   evidenceFingerprint: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_GITHUB_SYNCHRONOUS_SBOM_REVIEW_ACTION.candidateFingerprint,
 });
+
+const TWILIO_REGIONAL_DOMAIN_CANDIDATE_ID = 'twilio-regional-api-domain-removal-2026-04-28';
+const twilioRegionalDomainCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(TWILIO_REGIONAL_DOMAIN_CANDIDATE_ID);
+if (!twilioRegionalDomainCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${TWILIO_REGIONAL_DOMAIN_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-06',
+  notes: 'I verified the official Twilio changelog and migration guide. I approve provider + domain applicability for the seven exact deprecated regional API hosts. The replacement is api.twilio.com. I do not assert SDK package, SDK version, SDK constructor, SDK method, or broader wildcard hostname applicability.',
+  sourceFingerprint: 'c21edcc6438491332e641f4f6706ce98830d191009c326555af7bc728d7719ed',
+  evidenceFingerprint: 'd6219d4929018c959dbd916b38773325cc8ce3a709f7ddb8d68dc5a3e838e3d6',
+  candidateFingerprint: '6646a65d4ac5bd2ed3f549013766ed95beedd5bfc4c7b5c78ab0c4a117bb0143',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_CANDIDATE = reviewCandidate(twilioRegionalDomainCandidate, LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.candidateFingerprint,
+});

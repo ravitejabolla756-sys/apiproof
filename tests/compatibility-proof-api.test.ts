@@ -20,7 +20,7 @@ describe('GET /api/compatibility-proof', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   });
 
-  it('exposes the six reviewed local records with their scopes and provenance', async () => {
+  it('exposes the seven reviewed local records with their scopes and provenance', async () => {
     const { session } = await createUserWithSession('compatibility-proof-api@example.com', 'Strong-password-1!', 'Proof API User');
     const response = await GET(new Request('http://localhost/api/compatibility-proof', { headers: { cookie: `apiproof_session=${session.id}` } }));
     expect(response.status).toBe(200);
@@ -33,10 +33,12 @@ describe('GET /api/compatibility-proof', () => {
       'github-synchronous-sbom-endpoint-removal-2026-11-13',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'twilio-regional-api-domain-removal-2026-04-28',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(2);
+    expect(body.changes.filter((change) => change.providerId === 'twilio')).toHaveLength(1);
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({
       providerId: 'anthropic',
       changeType: 'model_retired',
@@ -97,6 +99,17 @@ describe('GET /api/compatibility-proof', () => {
       documentFingerprint: 'f509f8d68a1bd919c655c0d367a998f233829c53a5c4e7431cd9b45bea1d16f0',
       evidenceFingerprint: '4fa080a36ae032f8b589028bbc74233d8aa43a6a1625bc2037d85f9b1cd5f81f',
       candidateFingerprint: 'd88ec47a8f030ce6f4e318c70ddc6880ee310ac8c6c107ee8e5af06c94680bec',
+    });
+    expect(body.changes.find((change) => change.changeId === 'twilio-regional-api-domain-removal-2026-04-28')).toMatchObject({
+      providerId: 'twilio', changeType: 'endpoint_removed',
+      applicabilityScope: { dimensions: ['provider', 'domain'] },
+      affectedDomains: ['api.ie1.twilio.com', 'api.au1.twilio.com', 'api.br1.twilio.com', 'api.de1.twilio.com', 'api.jp1.twilio.com', 'api.sg1.twilio.com', 'api.us2.twilio.com'],
+      replacement: { domain: 'api.twilio.com' },
+      publishedAt: '2026-02-04', removalAt: '2026-04-28', severity: 'high',
+      reviewer: 'Ravi Teja', reviewedAt: '2026-10-06', reviewStatus: 'reviewed', provenance: 'official',
+      documentFingerprint: 'c21edcc6438491332e641f4f6706ce98830d191009c326555af7bc728d7719ed',
+      evidenceFingerprint: 'd6219d4929018c959dbd916b38773325cc8ce3a709f7ddb8d68dc5a3e838e3d6',
+      candidateFingerprint: '6646a65d4ac5bd2ed3f549013766ed95beedd5bfc4c7b5c78ab0c4a117bb0143',
     });
   });
 });

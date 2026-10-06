@@ -12,6 +12,8 @@ import {
   LOCAL_REVIEWED_GITHUB_ORGANIZATION_SECURITY_REVIEW,
   LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_CANDIDATE,
   LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW,
+  LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_CANDIDATE,
+  LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
@@ -106,6 +108,17 @@ const reviewedGithubSynchronousSbomRecord = promoteCandidateToReviewed(
   }],
 );
 
+const reviewedTwilioRegionalDomainRecordBase = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_CANDIDATE,
+  LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_CANDIDATE.sourceUrl,
+    summary: 'Twilio documents seven deprecated regional API domains and directs applications to api.twilio.com.',
+    accessedAt: LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW.reviewedAt,
+  }],
+);
+const reviewedTwilioRegionalDomainRecord = { ...reviewedTwilioRegionalDomainRecordBase, publishedAt: '2026-02-04' };
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -179,5 +192,20 @@ if (reviewedGithubSynchronousSbomRecord.providerId !== 'github'
   throw new Error('LOCAL_REVIEWED_GITHUB_SBOM_FACTS_INVALID:github-synchronous-sbom-endpoint-removal-2026-11-13');
 }
 
+if (reviewedTwilioRegionalDomainRecord.providerId !== 'twilio'
+  || reviewedTwilioRegionalDomainRecord.changeId !== 'twilio-regional-api-domain-removal-2026-04-28'
+  || reviewedTwilioRegionalDomainRecord.changeType !== 'endpoint_removed'
+  || reviewedTwilioRegionalDomainRecord.publishedAt !== '2026-02-04'
+  || reviewedTwilioRegionalDomainRecord.removalAt !== '2026-04-28'
+  || reviewedTwilioRegionalDomainRecord.severity !== 'high'
+  || reviewedTwilioRegionalDomainRecord.applicabilityScope.dimensions.join(',') !== 'provider,domain'
+  || reviewedTwilioRegionalDomainRecord.affectedDomains?.join(',') !== 'api.ie1.twilio.com,api.au1.twilio.com,api.br1.twilio.com,api.de1.twilio.com,api.jp1.twilio.com,api.sg1.twilio.com,api.us2.twilio.com'
+  || reviewedTwilioRegionalDomainRecord.replacement?.domain !== 'api.twilio.com'
+  || reviewedTwilioRegionalDomainRecord.affectedPackages !== undefined
+  || reviewedTwilioRegionalDomainRecord.affectedVersionRange !== undefined
+  || reviewedTwilioRegionalDomainRecord.apiOperationPatterns.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_TWILIO_FACTS_INVALID:twilio-regional-api-domain-removal-2026-04-28');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord] as const;
