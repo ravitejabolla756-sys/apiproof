@@ -108,6 +108,17 @@ describe('overnight real provider candidate projections', () => {
     expect(evaluate('supabase-management-logs-all-removal-2026-09-23', usage('supabase', { endpoint: undefined, static: false, confidence: 0.4 })).status).toBe('NEEDS_REVIEW');
   });
 
+  it('keeps Supabase logs.all endpoint matching exact and fail-closed', () => {
+    const id = 'supabase-management-logs-all-removal-2026-09-23' as const;
+    for (const endpoint of ['analytics/endpoints/logs.all.extra', 'prefix-logs.all', 'analytics/endpoints/logs?next=logs.all', 'analytics/endpoints/other/logs.all']) {
+      expect(evaluate(id, usage('supabase', { endpoint })).status).toBe('NOT_AFFECTED');
+    }
+    const reviewed = reviewProjection(id);
+    expect(reviewed.candidate.state).toBe('needs_review');
+    expect(reviewed.reviewedCandidate.state).toBe('reviewed');
+    expect(reviewed.record.evidence.some((source) => source.summary.includes('ClickHouse SQL'))).toBe(true);
+  });
+
   it('proves Supabase OpenAPI anon-key restriction with auth uncertainty', () => {
     const endpoint = '/rest/v1/';
     expect(evaluate('supabase-openapi-anon-key-access-2026-03-11', usage('supabase', { endpoint, authOrHeader: 'anon key' })).status).toBe('AFFECTED');
@@ -136,11 +147,12 @@ describe('overnight real provider candidate projections', () => {
     const proofs = [affected, notAffected, needsReview].flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'overnight-provider-fixture', baselineSha: 'b'.repeat(40), scanId: `overnight-proof-${index}`, results: [result], mode: 'test' }));
     expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
     expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'twilio', changeId: 'twilio-regional-api-domain-removal-2026-04-28', severity: 'high', reviewStatus: 'reviewed', provenance: 'official', replacement: { domain: 'api.twilio.com' } });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(7);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(8);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')).toHaveLength(1);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')).toHaveLength(1);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has('twilio-regional-api-domain-removal-2026-04-28')).toBe(true);
   });
 

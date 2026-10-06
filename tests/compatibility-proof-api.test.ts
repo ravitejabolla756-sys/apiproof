@@ -33,12 +33,23 @@ describe('GET /api/compatibility-proof', () => {
       'github-synchronous-sbom-endpoint-removal-2026-11-13',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'supabase-management-logs-all-removal-2026-09-23',
       'twilio-regional-api-domain-removal-2026-04-28',
     ]);
     expect(body.changes.filter((change) => change.providerId === 'openai')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'anthropic')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'twilio')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'supabase')).toHaveLength(1);
+    expect(body.changes.find((change) => change.changeId === 'supabase-management-logs-all-removal-2026-09-23')).toMatchObject({
+      providerId: 'supabase',
+      changeType: 'endpoint_removed',
+      applicabilityScope: { dimensions: ['provider', 'endpoint'] },
+      affectedEndpoints: ['analytics/endpoints/logs.all'],
+      replacement: { endpoint: 'analytics/endpoints/logs' },
+      removalAt: '2026-09-23',
+      severity: 'high',
+    });
     expect(body.changes.find((change) => change.changeId === 'anthropic-claude-opus-4-1-retirement-2026-08-05')).toMatchObject({
       providerId: 'anthropic',
       changeType: 'model_retired',

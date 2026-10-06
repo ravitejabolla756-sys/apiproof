@@ -170,3 +170,31 @@ export const LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW = CandidateReviewSchem
   evidenceFingerprint: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_TWILIO_REGIONAL_DOMAIN_REVIEW_ACTION.candidateFingerprint,
 });
+
+const SUPABASE_LOGS_ALL_CANDIDATE_ID = 'supabase-management-logs-all-removal-2026-09-23';
+const supabaseLogsAllCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(SUPABASE_LOGS_ALL_CANDIDATE_ID);
+if (!supabaseLogsAllCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${SUPABASE_LOGS_ALL_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-06',
+  notes: 'I verified the official Supabase changelog for removal of the Management API analytics/endpoints/logs.all operation. I approve authoritative applicability at provider + endpoint scope for logs.all only. The documented replacement is analytics/endpoints/logs and requires ClickHouse SQL. I do not assert SDK package, SDK version, SDK method, or undocumented endpoint variants.',
+  sourceFingerprint: '1cd6ddf38800302ff4df662b1dc5cab8dd171a848647ad223150efc0a2fc29c8',
+  evidenceFingerprint: 'b6f56792e51270c86280e4a8b5e619d1f871b9dc91ea0cd86379c971a2de9f23',
+  candidateFingerprint: '39f2f68655b0713137fe5ce81101af481fd2914c78c698752e042e88466fbd4e',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_SUPABASE_LOGS_ALL_CANDIDATE = reviewCandidate(supabaseLogsAllCandidate, LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_SUPABASE_LOGS_ALL_REVIEW_ACTION.candidateFingerprint,
+});

@@ -248,6 +248,7 @@ describe('Anthropic official candidate review preparation', () => {
       'github-synchronous-sbom-endpoint-removal-2026-11-13',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'supabase-management-logs-all-removal-2026-09-23',
       'twilio-regional-api-domain-removal-2026-04-28',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);

@@ -14,6 +14,8 @@ import {
   LOCAL_REVIEWED_GITHUB_SYNCHRONOUS_SBOM_REVIEW,
   LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_CANDIDATE,
   LOCAL_REVIEWED_TWILIO_REGIONAL_DOMAIN_REVIEW,
+  LOCAL_REVIEWED_SUPABASE_LOGS_ALL_CANDIDATE,
+  LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
 
@@ -119,6 +121,16 @@ const reviewedTwilioRegionalDomainRecordBase = promoteCandidateToReviewed(
 );
 const reviewedTwilioRegionalDomainRecord = { ...reviewedTwilioRegionalDomainRecordBase, publishedAt: '2026-02-04' };
 
+const reviewedSupabaseLogsAllRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_SUPABASE_LOGS_ALL_CANDIDATE,
+  LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_SUPABASE_LOGS_ALL_CANDIDATE.sourceUrl,
+    summary: 'Supabase removes analytics/endpoints/logs.all and directs integrations to analytics/endpoints/logs using ClickHouse SQL.',
+    accessedAt: LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW.reviewedAt,
+  }],
+);
+
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
   || reviewedAnthropicOpusRecord.applicabilityScope.dimensions.join(',') !== 'provider,model'
@@ -207,5 +219,21 @@ if (reviewedTwilioRegionalDomainRecord.providerId !== 'twilio'
   throw new Error('LOCAL_REVIEWED_TWILIO_FACTS_INVALID:twilio-regional-api-domain-removal-2026-04-28');
 }
 
+if (reviewedSupabaseLogsAllRecord.providerId !== 'supabase'
+  || reviewedSupabaseLogsAllRecord.changeId !== 'supabase-management-logs-all-removal-2026-09-23'
+  || reviewedSupabaseLogsAllRecord.changeType !== 'endpoint_removed'
+  || reviewedSupabaseLogsAllRecord.publishedAt !== '2026-07-23'
+  || reviewedSupabaseLogsAllRecord.removalAt !== '2026-09-23'
+  || reviewedSupabaseLogsAllRecord.severity !== 'high'
+  || reviewedSupabaseLogsAllRecord.applicabilityScope.dimensions.join(',') !== 'provider,endpoint'
+  || reviewedSupabaseLogsAllRecord.affectedEndpoints.join(',') !== 'analytics/endpoints/logs.all'
+  || reviewedSupabaseLogsAllRecord.replacement?.endpoint !== 'analytics/endpoints/logs'
+  || reviewedSupabaseLogsAllRecord.affectedPackages !== undefined
+  || reviewedSupabaseLogsAllRecord.affectedVersionRange !== undefined
+  || reviewedSupabaseLogsAllRecord.apiOperationPatterns.length !== 0
+  || !reviewedSupabaseLogsAllRecord.evidence.some((source) => source.summary.includes('ClickHouse SQL'))) {
+  throw new Error('LOCAL_REVIEWED_SUPABASE_FACTS_INVALID:supabase-management-logs-all-removal-2026-09-23');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedSupabaseLogsAllRecord] as const;
