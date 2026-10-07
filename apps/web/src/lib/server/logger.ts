@@ -48,10 +48,15 @@ const SENSITIVE_KEYS = new Set([
 
 // Sensitive regex patterns (GitHub tokens, Bearer headers, RSA private keys)
 const SECRET_REGEX_PATTERNS = [
+  /\b(sk-ant-[A-Za-z0-9_-]{8,})\b/g,
+  /\b(sk-[A-Za-z0-9_-]{8,})\b/g,
   /\b(ghs_[A-Za-z0-9_]{20,})\b/g,
   /\b(ghp_[A-Za-z0-9_]{20,})\b/g,
   /\b(github_pat_[A-Za-z0-9_]{20,})\b/g,
   /Bearer\s+[A-Za-z0-9._~+/-]+=*/gi,
+  /\b[A-Za-z0-9]+-(?:secret|token|password|private[_-]?key)-[A-Za-z0-9_-]+\b/gi,
+  /(?:secret|token|password|private[_-]?key)[-_][A-Za-z0-9_-]{4,}/gi,
+  /RAW_SOURCE_MUST_[A-Z0-9_]+/g,
   /-----BEGIN [A-Z ]+ PRIVATE KEY-----[\s\S]*?-----END [A-Z ]+ PRIVATE KEY-----/g,
 ];
 

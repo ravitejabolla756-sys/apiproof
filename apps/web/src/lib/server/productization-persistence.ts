@@ -1,7 +1,8 @@
 import type { ProductizationScanResult } from '@apiproof/analyzers';
 
-const MAX_JSON_BYTES = 1_500_000;
+export const PRODUCTIZATION_MAX_JSON_BYTES = 1_500_000;
 const SAFE_IDENTIFIER = /^[A-Za-z0-9_.$/@:{}[\]#?&=+%~*'"-]{1,300}$/;
+const UNSAFE_VALUE_PATTERN = /(?:sk-[A-Za-z0-9_-]{8,}|sk-ant-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9_]{8,}|(?:secret|token|password|private[_-]?key)[-_][A-Za-z0-9_-]{4,}|RAW_SOURCE_MUST_)/i;
 
 export function safeFailureCode(error: unknown, fallback: string): string {
   const value = error instanceof Error ? error.message : '';
@@ -9,7 +10,7 @@ export function safeFailureCode(error: unknown, fallback: string): string {
 }
 
 function safeString(value: unknown, fallback = '[redacted]'): string {
-  if (typeof value !== 'string' || value.length > 300 || /(?:sk-[A-Za-z0-9_-]{8,}|sk-ant-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9_]{8,}|-----BEGIN|RAW_SOURCE_MUST_NOT_LEAK)/i.test(value)) return fallback;
+  if (typeof value !== 'string' || value.length > 300 || /-----BEGIN/i.test(value) || UNSAFE_VALUE_PATTERN.test(value)) return fallback;
   return SAFE_IDENTIFIER.test(value) ? value : fallback;
 }
 
@@ -72,7 +73,7 @@ export function boundedProductizationProjection(scan: ProductizationScanResult):
     truncated: false,
   };
   const bytes = Buffer.byteLength(JSON.stringify(projection), 'utf8');
-  if (bytes > MAX_JSON_BYTES) throw new Error('PROVIDER_INTELLIGENCE_EVIDENCE_LIMIT');
+  if (bytes > PRODUCTIZATION_MAX_JSON_BYTES) throw new Error('PROVIDER_INTELLIGENCE_EVIDENCE_LIMIT');
   return projection;
 }
 
@@ -82,6 +83,6 @@ export function parseBoundedProductizationProjection(raw: unknown): Record<strin
   const projection = item.productization && typeof item.productization === 'object' ? item.productization as Record<string, unknown> : item;
   if (projection.schemaVersion !== 2 || !Array.isArray(projection.compatibilityResults) || !Array.isArray(projection.proofs)) return null;
   const json = JSON.stringify(projection);
-  if (Buffer.byteLength(json, 'utf8') > MAX_JSON_BYTES) return null;
+  if (Buffer.byteLength(json, 'utf8') > PRODUCTIZATION_MAX_JSON_BYTES) return null;
   return projection;
 }
