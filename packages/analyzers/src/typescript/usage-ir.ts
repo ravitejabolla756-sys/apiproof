@@ -45,12 +45,13 @@ export function usageFindingToCompatibilityUsage(usage: UsageFinding, packageNam
   const isResponse = usage.kind === 'response-field';
   const isOperation = usage.kind === 'method' || usage.kind === 'construction' || usage.kind === 'resource';
   const parameter = usage.arguments?.flatMap((argument) => argument.properties.map((property) => property.path))[0];
+  const unresolvedModel = usage.arguments?.some((argument) => argument.properties.some((property) => property.path === 'model' && property.literalHash === undefined)) ?? false;
   return {
     id: usage.id, providerId: usage.provider, packageName,
     operation: isOperation ? usage.symbol : undefined, parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
     endpoint: usage.kind === 'resource' && usage.symbol.startsWith('http') ? usage.symbol : undefined,
     responseField: isResponse && usage.response?.fieldPath ? usage.response.fieldPath : undefined,
-    evidenceKind: usage.kind === 'import' ? 'import' : usage.kind === 'resource' && usage.symbol.startsWith('http') ? 'http' : usage.kind === 'resource' ? 'environment' : 'sdk', confidence: usage.confidence, static: usage.dynamic !== true && (usage.arguments?.every((argument) => argument.complete) ?? true),
+    evidenceKind: usage.kind === 'import' ? 'import' : usage.kind === 'resource' && usage.symbol.startsWith('http') ? 'http' : usage.kind === 'resource' ? 'environment' : 'sdk', confidence: usage.confidence, static: usage.dynamic !== true && !unresolvedModel && (usage.arguments?.every((argument) => argument.complete) ?? true),
     location: { file: usage.location.file, line: usage.location.start.line, column: usage.location.start.column, symbol: usage.symbol },
   };
 }

@@ -25,6 +25,14 @@ import { GET as getProof } from '../apps/web/src/app/api/repositories/[id]/scans
 const DB_PATH = path.resolve('.tmp/provider-intelligence-worker-e2e.db');
 const fetchFiles = vi.mocked(fetchRemoteRepositoryFiles);
 const RAW_MARKER = 'RAW_SOURCE_MUST_NEVER_LEAK_987654321';
+const FINAL_RAW_MARKER = 'RAW_SOURCE_FINAL_PRIVACY_MARKER_123456';
+const FINAL_SECRETS = [
+  'sk-test-openai-final-123456',
+  'sk-ant-test-final-123456',
+  'twilio-final-secret-123456',
+  'supabase-final-secret-123456',
+  'ghp_final_fake_secret_123456',
+];
 const id = (prefix: string) => `${prefix}_${crypto.randomBytes(6).toString('hex')}`;
 
 async function fixture(email: string, suffix: string): Promise<{ workspaceId: string; repositoryId: string; sessionId: string }> {
@@ -51,7 +59,7 @@ describe('enabled provider-intelligence worker path', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
     initDatabase(DB_PATH);
   });
-  afterEach(() => { delete process.env.PROVIDER_INTELLIGENCE_V1_ENABLED; closeDatabase(); if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH); vi.clearAllMocks(); });
+  afterEach(() => { delete process.env.PROVIDER_INTELLIGENCE_V1_ENABLED; closeDatabase(); if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH); fetchFiles.mockReset(); vi.clearAllMocks(); });
 
   it('proves affected persistence and privacy through the real worker', async () => {
     const { workspaceId, repositoryId, sessionId } = await fixture('worker-ts@example.com', 'ts');
@@ -91,12 +99,182 @@ describe('enabled provider-intelligence worker path', () => {
     const multi = await fixture('worker-five@example.com', 'five'); const multiSha = 'c'.repeat(40); await enqueue(multi.workspaceId, multi.repositoryId, multiSha);
     fetchFiles.mockResolvedValueOnce({ headSha: multiSha, defaultBranch: 'main', files: new Map([
       ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0', '@anthropic-ai/sdk': '0.30.0', '@octokit/rest': '21.0.0', twilio: '5.0.0', '@supabase/supabase-js': '2.0.0' } })],
-      ['src/providers.ts', "import OpenAI from 'openai'; import Anthropic from '@anthropic-ai/sdk'; import { Octokit } from '@octokit/rest'; import twilio from 'twilio'; import { createClient } from '@supabase/supabase-js'; const ai = new OpenAI(); const claude = new Anthropic(); const octokit = new Octokit(); ai.chat.completions.create({ model: 'gpt-4.5-preview', messages: [] }); claude.messages.create({ model: 'claude-opus-4-1-20250805', max_tokens: 10, messages: [] }); octokit.request('GET /{owner}/{repo}/dependency-graph/sbom', {}); fetch('https://api.ie1.twilio.com/2010-04-01/Accounts'); createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);"],
+      ['src/providers.ts', `import OpenAI from 'openai'; import Anthropic from '@anthropic-ai/sdk'; import { Octokit } from '@octokit/rest'; import twilio from 'twilio'; import { createClient } from '@supabase/supabase-js';
+const ai = new OpenAI(); const claude = new Anthropic(); const octokit = new Octokit();
+const dynamicModel = process.env.ANTHROPIC_MODEL; const dynamicEndpoint = process.env.GITHUB_ENDPOINT;
+ai.chat.completions.create({ model: 'gpt-4.5-preview', messages: [] });
+claude.messages.create({ model: 'claude-opus-4-1-20250805', max_tokens: 10, messages: [] });
+claude.messages.create({ model: dynamicModel, max_tokens: 10, messages: [] });
+octokit.request('GET /{owner}/{repo}/dependency-graph/sbom', {});
+octokit.request(dynamicEndpoint, {});
+fetch('https://api.ie1.twilio.com/2010-04-01/Accounts');
+createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);`],
     ]) });
     const multiResult = await processPendingGitHubScans({ batchSize: 1 });
     const multiRow = await getDatabase().queryOne<{ raw_result: string }>('SELECT raw_result FROM scans WHERE repository_id = ?', [multi.repositoryId]);
     const persisted = JSON.parse(multiRow?.raw_result ?? 'null') as { productization: { discoveries: Array<{ providerId: string }> } };
     expect(multiResult.jobsCompleted).toBe(1); expect(persisted.productization.discoveries.map((item) => item.providerId)).toEqual(['anthropic', 'github', 'openai', 'supabase', 'twilio']);
+    const scanId = multiResult.results[0]?.scanId;
+    expect(scanId).toBeTruthy();
+    const headers = { cookie: `apiproof_session=${multi.sessionId}` };
+    const proofResponse = await getProof(new Request('http://localhost', { headers }), { params: Promise.resolve({ id: multi.repositoryId, scanId: scanId! }) });
+    const inventoryResponse = await getInventory(new Request(`http://localhost/api/inventory?repositoryId=${multi.repositoryId}`, { headers }));
+    const mapResponse = await getMap(new Request('http://localhost/api/compatibility-map', { headers }));
+    const proofBody = await proofResponse.json() as { productization: { baselineSha: string; scanId: string; proofs: Array<Record<string, unknown>> } };
+    const inventoryBody = await inventoryResponse.json() as { productization: { baselineSha: string; scanId: string; proofs: Array<Record<string, unknown>> } };
+    const mapBody = await mapResponse.json() as { repositories: Array<{ latestCompletedScan: { id: string; baselineSha: string }; compatibilityProofs: Array<Record<string, unknown>> }> };
+    expect(proofResponse.status).toBe(200); expect(inventoryResponse.status).toBe(200); expect(mapResponse.status).toBe(200);
+    const mapRepo = mapBody.repositories.find((repo) => repo.latestCompletedScan.id === scanId);
+    expect(mapRepo).toBeDefined();
+    const normalize = (items: Array<Record<string, unknown>>) => items.map((item) => [item.providerId, item.changeId, item.status, item.exactFile ?? null, item.exactLine ?? null, item.officialSourceUrl ?? null]).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+    const expected = normalize(proofBody.productization.proofs);
+    expect(inventoryBody.productization.scanId).toBe(scanId); expect(inventoryBody.productization.baselineSha).toBe(multiSha);
+    expect(proofBody.productization.scanId).toBe(scanId); expect(proofBody.productization.baselineSha).toBe(multiSha);
+    expect(normalize(inventoryBody.productization.proofs)).toEqual(expected);
+    expect(normalize(mapRepo!.compatibilityProofs)).toEqual(expected);
+    expect(new Set(expected.map(([provider]) => provider))).toEqual(new Set(['anthropic', 'github', 'openai', 'supabase', 'twilio']));
+    expect(new Set(expected.map(([, changeId]) => changeId)).size).toBe(expected.length);
+    expect(expected.some(([, , status]) => status === 'AFFECTED')).toBe(true);
+    expect(expected.some(([, , status]) => status === 'NEEDS_REVIEW')).toBe(true);
+    expect(proofBody.productization.proofs.every((item) => item.reviewStatus === 'reviewed' && item.provenance === 'official' && typeof item.officialSourceUrl === 'string')).toBe(true);
+  });
+
+  it('completes the final secret/source privacy matrix through the enabled worker', async () => {
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    const output: string[] = [];
+    console.log = (...args: unknown[]) => { output.push(args.map(String).join(' ')); };
+    console.warn = (...args: unknown[]) => { output.push(args.map(String).join(' ')); };
+    console.error = (...args: unknown[]) => { output.push(args.map(String).join(' ')); };
+    try {
+      const scenarios: Array<{ name: string; files: Map<string, string>; sha: string; fetchError?: Error }> = [
+        {
+          name: 'typescript-success', sha: '1'.repeat(40), files: new Map([
+            ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0' } })],
+            ['src/client.ts', `// ${FINAL_RAW_MARKER}\nconst secrets = ${JSON.stringify(FINAL_SECRETS)};\nimport OpenAI from 'openai'; const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); client.chat.completions.create({ model: 'gpt-4.1', messages: [] });`],
+            ['src/unrelated.ts', `export const marker = '${FINAL_RAW_MARKER}';`],
+          ]),
+        },
+        {
+          name: 'python-success', sha: '2'.repeat(40), files: new Map([
+            ['requirements.txt', 'openai==1.0.0\n'],
+            ['src/main.py', `# ${FINAL_RAW_MARKER}\nsecrets = ${JSON.stringify(FINAL_SECRETS)}\nfrom openai import OpenAI\nclient = OpenAI()\nclient.chat.completions.create(model='gpt-4.1', messages=[])`],
+          ]),
+        },
+        {
+          name: 'dynamic-review', sha: '3'.repeat(40), files: new Map([
+            ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0' } })],
+            ['src/dynamic.ts', `const value = process.env.OPENAI_MODEL; const token = '${FINAL_SECRETS[0]}'; import OpenAI from 'openai'; const client = new OpenAI(); client.chat.completions.create({ model: value, messages: [] });`],
+          ]),
+        },
+        {
+          name: 'malformed-repository', sha: '4'.repeat(40), files: new Map([
+            ['package.json', '{ malformed json'],
+            ['README.md', FINAL_RAW_MARKER],
+          ]),
+        },
+        {
+          name: 'fetch-failure', sha: '5'.repeat(40), files: new Map(), fetchError: new Error(FINAL_SECRETS[4]),
+        },
+      ];
+      const matrix: Array<Record<string, unknown>> = [];
+      for (const scenario of scenarios) {
+        const current = await fixture(`worker-final-${scenario.name}@example.com`, scenario.name);
+        await enqueue(current.workspaceId, current.repositoryId, scenario.sha);
+        if (scenario.fetchError) fetchFiles.mockRejectedValueOnce(scenario.fetchError);
+        else fetchFiles.mockResolvedValueOnce({ headSha: scenario.sha, defaultBranch: 'main', files: scenario.files });
+        const result = await processPendingGitHubScans({ batchSize: 1 });
+        const row = await getDatabase().queryOne<{ raw_result: string | null; error_message: string | null }>('SELECT raw_result, error_message FROM scans WHERE repository_id = ?', [current.repositoryId]);
+        const body = `${row?.raw_result ?? ''} ${row?.error_message ?? ''}`;
+        const headers = { cookie: `apiproof_session=${current.sessionId}` };
+        for (const response of [
+          await getInventory(new Request(`http://localhost/api/inventory?repositoryId=${current.repositoryId}`, { headers })),
+          await getMap(new Request('http://localhost/api/compatibility-map', { headers })),
+        ]) {
+          const responseBody = JSON.stringify(await response.json());
+          for (const secret of FINAL_SECRETS) expect(responseBody).not.toContain(secret);
+          expect(responseBody).not.toContain(FINAL_RAW_MARKER);
+        }
+        for (const secret of FINAL_SECRETS) expect(body).not.toContain(secret);
+        expect(body).not.toContain(FINAL_RAW_MARKER);
+        expect(output.join('\n')).not.toContain(FINAL_SECRETS.find((secret) => scenario.fetchError?.message === secret) ?? '\u0000');
+        expect(output.join('\n')).not.toContain(FINAL_RAW_MARKER);
+        expect(result.results[0]?.status).toMatch(/completed|failed|skipped/);
+        originalLog(`FINAL_MATRIX_ROW ${scenario.name} ${JSON.stringify({ result: result.results[0]?.status, rawHasNeedsReview: body.includes('NEEDS_REVIEW'), rawHasAffected: body.includes('AFFECTED') })}`);
+        if (scenario.name === 'dynamic-review') {
+          expect(body).toContain('NEEDS_REVIEW');
+          expect(body).not.toContain('"status":"AFFECTED"');
+        }
+        matrix.push({ scenario: scenario.name, result: result.results[0]?.status, secretPersisted: false, secretInApi: false, secretInLogs: false, rawSourcePersisted: false, rawSourceInApi: false, rawSourceInLogs: false });
+      }
+      console.log(`PROVIDER_INTELLIGENCE_FINAL_PRIVACY_MATRIX ${JSON.stringify(matrix)}`);
+      expect(matrix).toHaveLength(scenarios.length);
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
+    }
+  });
+
+  it('fails safely and reaches a terminal state when persistence rejects the completed projection', async () => {
+    const current = await fixture('worker-persistence-failure@example.com', 'persistence-failure');
+    const sha = '6'.repeat(40);
+    await enqueue(current.workspaceId, current.repositoryId, sha);
+    fetchFiles.mockResolvedValueOnce({ headSha: sha, defaultBranch: 'main', files: new Map([
+      ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0' } })],
+      ['src/client.ts', "import OpenAI from 'openai'; const client = new OpenAI(); client.chat.completions.create({ model: 'gpt-4.1', messages: [] });"],
+    ]) });
+    const db = getDatabase();
+    const originalTransaction = db.transaction.bind(db);
+    const transaction = vi.spyOn(db, 'transaction')
+      .mockImplementationOnce((operation) => originalTransaction(operation))
+      .mockRejectedValueOnce(new Error('twilio-final-secret-123456'));
+    const originalError = console.error;
+    const logs: string[] = [];
+    console.error = (...args: unknown[]) => { logs.push(args.map(String).join(' ')); };
+    try {
+      const result = await processPendingGitHubScans({ batchSize: 1 });
+      const scan = await db.queryOne<{ status: string; error_message: string | null }>('SELECT status, error_message FROM scans WHERE repository_id = ?', [current.repositoryId]);
+      const job = await db.queryOne<{ status: string; last_error_category: string | null; last_error_message: string | null }>('SELECT status, last_error_category, last_error_message FROM github_scan_requests WHERE repository_id = ?', [current.repositoryId]);
+      expect(result.jobsFailed).toBe(1);
+      expect(result.results[0]?.error).toBe('SCAN_EXECUTION_FAILED');
+      expect(scan?.status).toBe('failed');
+      expect(job?.status).toBe('failed');
+      expect(job?.last_error_category).toBe('SCAN_EXECUTION_FAILED');
+      expect(scan?.error_message).toBe('SCAN_EXECUTION_FAILED');
+      expect(job?.last_error_message).toBe('SCAN_EXECUTION_FAILED');
+      expect(logs.join('\n')).not.toContain('twilio-final-secret-123456');
+    } finally {
+      console.error = originalError;
+      transaction.mockRestore();
+    }
+  });
+
+  it('classifies malformed, lockfile, unsupported-language, and missing-baseline worker cases without fabricated findings', async () => {
+    const scenarios = [
+      { name: 'malformed-package', sha: '7'.repeat(40), files: new Map([['package.json', '{ bad'], ['README.md', 'fixture']]), expected: 'completed' },
+      { name: 'malformed-lockfile', sha: '8'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['pnpm-lock.yaml', 'not: [valid'], ['README.md', 'fixture']]), expected: 'failed' },
+      { name: 'missing-lockfile', sha: '9'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['README.md', 'fixture']]), expected: 'failed' },
+      { name: 'unsupported-only', sha: 'a'.repeat(40), files: new Map([['README.md', 'fixture'], ['main.rb', 'puts "unsupported"']]), expected: 'completed' },
+      { name: 'mixed-supported-unsupported', sha: 'b'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['src/client.ts', "import OpenAI from 'openai'; const client = new OpenAI(); client.chat.completions.create({ model: 'gpt-4.1', messages: [] });"], ['main.rb', 'puts "unsupported"']]), expected: 'completed' },
+      { name: 'missing-baseline', sha: '', files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })]]), expected: 'failed' },
+    ] as const;
+    const matrix: Array<Record<string, unknown>> = [];
+    for (const scenario of scenarios) {
+      const current = await fixture(`worker-failure-${scenario.name}@example.com`, scenario.name);
+      await enqueue(current.workspaceId, current.repositoryId, scenario.sha);
+      fetchFiles.mockResolvedValueOnce({ headSha: scenario.sha, defaultBranch: 'main', files: scenario.files });
+      const result = await processPendingGitHubScans({ batchSize: 1 });
+      const job = await getDatabase().queryOne<{ status: string; last_error_category: string | null }>('SELECT status, last_error_category FROM github_scan_requests WHERE repository_id = ?', [current.repositoryId]);
+      const findingCount = await getDatabase().queryOne<{ count: number }>('SELECT COUNT(*) as count FROM findings WHERE repository_id = ?', [current.repositoryId]);
+      expect(result.results[0]?.status).toBe(scenario.expected);
+      expect(job?.status).toBe(scenario.expected === 'failed' ? 'failed' : 'completed');
+      expect(findingCount?.count ?? 0).toBe(0);
+      matrix.push({ scenario: scenario.name, classification: scenario.expected === 'failed' ? 'SCAN_FAILED' : 'SAFE_EMPTY_RESULT', terminal: true, fabricatedAffected: false, safeErrorCode: job?.last_error_category ?? null });
+    }
+    expect(matrix).toHaveLength(scenarios.length);
+    console.log(`PROVIDER_INTELLIGENCE_FAILURE_MATRIX ${JSON.stringify(matrix)}`);
   });
 
   it('measures the real enabled worker path across bounded small, medium, and large fixtures', async () => {
