@@ -15,3 +15,25 @@ export function getPullRequestStateLabel(state: string | null | undefined): stri
     default: return 'PR state unavailable';
   }
 }
+
+export interface CompatibilityProofTarget {
+  matchedModel?: string | null;
+  matchedResource?: string | null;
+  matchedEndpoint?: string | null;
+  matchedDomain?: string | null;
+  matchedParameter?: string | null;
+  matchedResponseField?: string | null;
+  matchedAuthOrHeader?: string | null;
+}
+
+/** Returns the first authoritative target across every supported applicability dimension. */
+export function getProofMatchedTarget(proof: CompatibilityProofTarget): string {
+  return proof.matchedModel
+    ?? proof.matchedResource
+    ?? proof.matchedEndpoint
+    ?? proof.matchedDomain
+    ?? proof.matchedParameter
+    ?? proof.matchedResponseField
+    ?? proof.matchedAuthOrHeader
+    ?? 'No exact target match';
+}
