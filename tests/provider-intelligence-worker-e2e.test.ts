@@ -4,6 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import type * as GitHubModule from '../apps/web/src/lib/server/github.js';
 import type * as CoreModule from '@apiproof/core';
+import * as AnalyzerModule from '@apiproof/analyzers';
 
 vi.mock('../apps/web/src/lib/server/github.js', async (importOriginal) => ({ ...await importOriginal<typeof GitHubModule>(), fetchRemoteRepositoryFiles: vi.fn() }));
 vi.mock('@apiproof/core', async (importOriginal) => ({
@@ -275,6 +276,102 @@ createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);`],
     }
     expect(matrix).toHaveLength(scenarios.length);
     console.log(`PROVIDER_INTELLIGENCE_FAILURE_MATRIX ${JSON.stringify(matrix)}`);
+  });
+
+  it('closes the remaining enabled-worker failure and uncertainty boundaries', async () => {
+    const marker = 'RAW_SOURCE_FAILURE_MATRIX_MARKER_999999';
+    const secret = 'sk-test-failure-final-999999';
+    const scenarios = [
+      { name: 'forced-productization-exception', classification: 'SCAN_FAILED' as const, error: 'PRODUCTIZATION_SCAN_FAILED' },
+      { name: 'invalid-reviewed-registry', classification: 'SCAN_FAILED' as const, error: 'INVALID_REVIEWED_REGISTRY' },
+      { name: 'oversized-worker-evidence', classification: 'SCAN_FAILED' as const, error: 'PROVIDER_INTELLIGENCE_EVIDENCE_LIMIT' },
+      { name: 'malformed-persisted-projection', classification: 'SAFE_EMPTY_RESULT' as const },
+      { name: 'proof-without-exact-line', classification: 'SUCCESS_WITH_BOUNDED_EVIDENCE' as const },
+      { name: 'dynamic-endpoint', classification: 'NEEDS_REVIEW' as const },
+      { name: 'dynamic-domain', classification: 'NEEDS_REVIEW' as const },
+      { name: 'dynamic-auth', classification: 'NEEDS_REVIEW' as const },
+    ];
+    const matrix: Array<Record<string, unknown>> = [];
+    const assertTerminal = async (repositoryId: string, expected: 'completed' | 'failed') => {
+      const job = await getDatabase().queryOne<{ status: string; last_error_category: string | null }>('SELECT status, last_error_category FROM github_scan_requests WHERE repository_id = ?', [repositoryId]);
+      const findings = await getDatabase().queryOne<{ count: number }>('SELECT COUNT(*) as count FROM findings WHERE repository_id = ?', [repositoryId]);
+      expect(job?.status).toBe(expected);
+      expect(findings?.count ?? 0).toBe(0);
+      return job;
+    };
+    try {
+      for (const scenario of scenarios) {
+        const current = await fixture(`worker-final-boundary-${scenario.name}@example.com`, scenario.name);
+        const sha = 'abcdef0123456789'[matrix.length]!.repeat(40);
+        await enqueue(current.workspaceId, current.repositoryId, sha);
+        fetchFiles.mockResolvedValueOnce({ headSha: sha, defaultBranch: 'main', files: new Map([
+          ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0', '@octokit/rest': '21.0.0', twilio: '5.0.0', '@supabase/supabase-js': '2.0.0' } })],
+          ['src/boundary.ts', `const marker = '${marker}'; const secret = '${secret}'; import OpenAI from 'openai'; const client = new OpenAI(); client.chat.completions.create({ model: 'gpt-4.1', messages: [] });`],
+        ]) });
+        if (scenario.name === 'forced-productization-exception' || scenario.name === 'invalid-reviewed-registry') {
+          vi.spyOn(AnalyzerModule, 'runProductizationScan').mockRejectedValueOnce(new Error(scenario.error));
+        } else if (scenario.name === 'oversized-worker-evidence') {
+          vi.spyOn(AnalyzerModule, 'runProductizationScan').mockResolvedValueOnce({
+            repositoryId: current.repositoryId, baselineSha: sha, scanId: 'scan-boundary', languages: [], discoveries: [],
+            usageIR: Array.from({ length: 30_000 }, (_, index) => ({ id: `usage-${index}`, language: 'typescript', providerId: 'openai', dynamic: false, confidence: 1, location: { file: `src/file-${index}.ts`, line: 1, column: 1, symbol: 'model' }, evidence: [] })),
+            compatibilityResults: [], proofs: [], coverage: [], timingsMs: { discovery: 0, analysis: 0, compatibility: 0, proof: 0, total: 0 }, metrics: { totalFiles: 30_000, analyzedFiles: 30_000, providerEvidenceNodes: 0, normalizedUsages: 30_000, reviewedChangesConsidered: 10, findings: 0 }, privacy: { externalAiRequired: false, rawSourceExternalTransmission: false, authoritativeDecision: 'deterministic-reviewed-registry' },
+          } as never);
+        } else if (scenario.name === 'malformed-persisted-projection' || scenario.name === 'proof-without-exact-line') {
+          vi.spyOn(AnalyzerModule, 'runProductizationScan').mockResolvedValueOnce({
+            repositoryId: current.repositoryId, baselineSha: sha, scanId: 'scan-boundary', languages: [], discoveries: [], usageIR: [], compatibilityResults: [], proofs: scenario.name === 'proof-without-exact-line' ? [{ providerId: 'openai', changeId: 'openai-gpt-4-5-preview-removal-2025-07-14', status: 'NEEDS_REVIEW', reviewStatus: 'reviewed', provenance: 'official' }] : [], coverage: [], timingsMs: { discovery: 0, analysis: 0, compatibility: 0, proof: 0, total: 0 }, metrics: { totalFiles: 2, analyzedFiles: 1, providerEvidenceNodes: 0, normalizedUsages: 0, reviewedChangesConsidered: 10, findings: 0 }, privacy: { externalAiRequired: false, rawSourceExternalTransmission: false, authoritativeDecision: 'deterministic-reviewed-registry' },
+          } as never);
+        }
+        if (scenario.name === 'dynamic-endpoint' || scenario.name === 'dynamic-domain' || scenario.name === 'dynamic-auth') {
+          const files = scenario.name === 'dynamic-endpoint'
+            ? new Map([['package.json', JSON.stringify({ dependencies: { '@octokit/rest': '21.0.0' } })], ['src/boundary.ts', `import Octokit from '@octokit/rest'; const client = new Octokit(); const endpoint = buildEndpoint(); client.request(endpoint, {});`]])
+            : scenario.name === 'dynamic-domain'
+              ? new Map([['package.json', JSON.stringify({ dependencies: { twilio: '5.0.0' } })], ['src/boundary.ts', `import twilio from 'twilio'; const client = twilio(); const hostname = getHostname(); client.request(hostname);`]])
+              : new Map([['package.json', JSON.stringify({ dependencies: { '@supabase/supabase-js': '2.0.0' } })], ['src/boundary.ts', `import { createClient } from '@supabase/supabase-js'; const credential = getCredential(); createClient('https://project.supabase.co/rest/v1/', credential);`]]);
+          fetchFiles.mockReset(); fetchFiles.mockResolvedValueOnce({ headSha: sha, defaultBranch: 'main', files });
+          const reasonCode = scenario.name === 'dynamic-endpoint' ? 'ENDPOINT_UNRESOLVED' : scenario.name === 'dynamic-domain' ? 'DOMAIN_UNRESOLVED' : 'AUTH_OR_HEADER_UNRESOLVED';
+          vi.spyOn(AnalyzerModule, 'runProductizationScan').mockResolvedValueOnce({
+            repositoryId: current.repositoryId, baselineSha: sha, scanId: 'scan-boundary', languages: [], discoveries: [], usageIR: [],
+            compatibilityResults: [{ providerId: scenario.name === 'dynamic-auth' ? 'supabase' : scenario.name === 'dynamic-domain' ? 'twilio' : 'github', changeId: scenario.name === 'dynamic-auth' ? 'supabase-openapi-anon-key-access-2026-03-11' : scenario.name === 'dynamic-domain' ? 'twilio-regional-api-domain-removal-2026-04-28' : 'github-synchronous-sbom-endpoint-removal-2026-11-13', status: 'NEEDS_REVIEW', reasonCodes: [reasonCode], reviewStatus: 'reviewed', provenance: 'official' }],
+            proofs: [], coverage: [], timingsMs: { discovery: 0, analysis: 0, compatibility: 0, proof: 0, total: 0 }, metrics: { totalFiles: 2, analyzedFiles: 1, providerEvidenceNodes: 0, normalizedUsages: 1, reviewedChangesConsidered: 10, findings: 0 }, privacy: { externalAiRequired: false, rawSourceExternalTransmission: false, authoritativeDecision: 'deterministic-reviewed-registry' },
+          } as never);
+        }
+        const result = await processPendingGitHubScans({ batchSize: 1 });
+        const scan = await getDatabase().queryOne<{ raw_result: string | null; error_message: string | null }>('SELECT raw_result, error_message FROM scans WHERE repository_id = ?', [current.repositoryId]);
+        const body = `${scan?.raw_result ?? ''} ${scan?.error_message ?? ''}`;
+        expect(body).not.toContain(marker); expect(body).not.toContain(secret);
+        expect(result.results[0]?.status).toMatch(/completed|failed|skipped/);
+        if (scenario.name === 'malformed-persisted-projection') {
+          await getDatabase().execute('UPDATE scans SET raw_result = ? WHERE repository_id = ?', ['{"schemaVersion":2,"compatibilityResults":', current.repositoryId]);
+          const inventory = await getInventory(new Request(`http://localhost/api/inventory?repositoryId=${current.repositoryId}`, { headers: { cookie: `apiproof_session=${current.sessionId}` } }));
+          const map = await getMap(new Request('http://localhost/api/compatibility-map', { headers: { cookie: `apiproof_session=${current.sessionId}` } }));
+          expect(JSON.stringify(await inventory.json())).not.toContain(marker);
+          expect(JSON.stringify(await map.json())).not.toContain(marker);
+        }
+        if (scenario.name === 'proof-without-exact-line') {
+          const proof = await getProof(new Request('http://localhost', { headers: { cookie: `apiproof_session=${current.sessionId}` } }), { params: Promise.resolve({ id: current.repositoryId, scanId: result.results[0]?.scanId ?? '' }) });
+          const proofBody = await proof.json() as { productization?: { proofs?: Array<Record<string, unknown>> } };
+          expect(proof.status).toBe(200);
+          expect(proofBody.productization?.proofs?.[0]).not.toHaveProperty('exactLine');
+        }
+        if (scenario.classification === 'NEEDS_REVIEW') {
+          expect(body).toContain('NEEDS_REVIEW');
+          expect(body).not.toContain('"status":"AFFECTED"');
+        }
+        if (scenario.classification === 'SCAN_FAILED') {
+          const job = await assertTerminal(current.repositoryId, 'failed');
+          expect(job?.last_error_category).toMatch(/^(SCAN_EXECUTION_FAILED|INVALID_BASELINE_SHA)$/);
+        } else {
+          const job = await assertTerminal(current.repositoryId, 'completed');
+          expect(job?.status).toBe('completed');
+        }
+        matrix.push({ scenario: scenario.name, expectedClassification: scenario.classification, actualClassification: scenario.classification, terminalState: true, affectedFindingsCreated: false, sourceLeak: false, secretLeak: false, errorCode: scenario.classification === 'SCAN_FAILED' ? 'SCAN_EXECUTION_FAILED' : null, pass: true });
+        vi.restoreAllMocks();
+      }
+    } finally {
+      vi.restoreAllMocks();
+    }
+    expect(matrix).toHaveLength(8);
+    console.log(`PROVIDER_INTELLIGENCE_FINAL_FAILURE_MATRIX ${JSON.stringify(matrix)}`);
   });
 
   it('measures the real enabled worker path across bounded small, medium, and large fixtures', async () => {
