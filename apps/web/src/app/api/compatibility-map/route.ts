@@ -208,7 +208,7 @@ export async function GET(req: Request) {
         findingsCount: Number(repository.completed_scan_findings_count ?? 0),
         completedAt: repository.completed_scan_at,
       } : null,
-      analysisEvidenceAvailable: evidence !== null,
+      analysisEvidenceAvailable: evidence !== null || productization !== null,
       integrations,
       openFindingCount: findings.filter((finding) => finding.status === 'open' || finding.status === 'affected').length,
       findings: mappedFindings,
