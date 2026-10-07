@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service';
+import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
 
 const headers = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -22,8 +23,6 @@ export async function GET(req: Request, props: { params: Promise<{ id: string; s
   );
   if (!scan) return NextResponse.json({ error: 'Scan not found' }, { status: 404, headers });
   const raw: unknown = (() => { try { return scan.raw_result ? JSON.parse(scan.raw_result) : null; } catch { return null; } })();
-  const projection = raw && typeof raw === 'object' && 'productization' in raw
-    ? (raw as { productization: unknown }).productization
-    : null;
+  const projection = parseBoundedProductizationProjection(raw);
   return NextResponse.json({ ok: true, repositoryId: access.repository.id, scanId: scan.id, baselineSha: scan.sha, status: scan.status, productization: projection }, { headers });
 }

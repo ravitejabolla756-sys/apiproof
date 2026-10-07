@@ -10,6 +10,10 @@
 import { NextResponse } from 'next/server';
 import { DISCOVERY_PROVIDERS } from '@apiproof/providers';
 import { loadProviderRegistry } from '@/lib/server/registry-utils.js';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { getDatabase } from '@/lib/server/db/index.js';
+import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
+import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
 
 export interface ProviderInventoryItem {
   id: string;
@@ -28,7 +32,7 @@ export interface ProviderInventoryItem {
   capabilities?: string[];
 }
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: Request): Promise<NextResponse> {
   try {
     const stripeRules = await loadProviderRegistry('stripe');
     const twilioRules = await loadProviderRegistry('twilio');
@@ -78,6 +82,22 @@ export async function GET(): Promise<NextResponse> {
         rules: [],
       })),
     ];
+
+    const url = new URL(req.url);
+    const repositoryId = url?.searchParams.get('repositoryId');
+    if (repositoryId) {
+      const user = await getCurrentUser(req!);
+      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      let access;
+      try { access = await requireRepositoryAccess(repositoryId, user.id); } catch { return NextResponse.json({ error: 'Repository not found' }, { status: 404 }); }
+      const scanId = url?.searchParams.get('scanId');
+      const db = getDatabase();
+      const scan = await db.queryOne<{ id: string; sha: string; raw_result: string | null }>(scanId
+        ? 'SELECT id, sha, raw_result FROM scans WHERE id = ? AND repository_id = ? AND status = \'completed\''
+        : 'SELECT id, sha, raw_result FROM scans WHERE repository_id = ? AND status = \'completed\' ORDER BY COALESCE(completed_at, started_at) DESC, id DESC LIMIT 1', scanId ? [scanId, access.repository.id] : [access.repository.id]);
+      const projection = parseBoundedProductizationProjection(scan ? (() => { try { return scan.raw_result ? JSON.parse(scan.raw_result) : null; } catch { return null; } })() : null);
+      return NextResponse.json({ ok: true, repositoryId: access.repository.id, scanId: scan?.id ?? null, baselineSha: scan?.sha ?? null, productization: projection }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+    }
 
     return NextResponse.json({
       ok: true,

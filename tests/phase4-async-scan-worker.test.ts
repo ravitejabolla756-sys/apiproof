@@ -179,6 +179,7 @@ describe('Phase 4 — Asynchronous Scan Worker', () => {
   });
 
   afterEach(() => {
+    delete process.env.PROVIDER_INTELLIGENCE_V1_ENABLED;
     try { closeDatabase(); } catch { /* ignore */ }
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }

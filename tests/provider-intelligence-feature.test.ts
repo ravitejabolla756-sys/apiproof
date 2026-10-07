@@ -7,5 +7,7 @@ describe('Provider Intelligence V1 server feature boundary', () => {
     expect(providerIntelligenceV1Enabled({ PROVIDER_INTELLIGENCE_V1_ENABLED: 'false' })).toBe(false);
     expect(providerIntelligenceV1Enabled({ PROVIDER_INTELLIGENCE_V1_ENABLED: 'true' })).toBe(true);
     expect(providerIntelligenceV1Enabled({ PROVIDER_INTELLIGENCE_V1_ENABLED: 'TRUE' })).toBe(false);
+    expect(providerIntelligenceV1Enabled({ PROVIDER_INTELLIGENCE_V1_ENABLED: '1' })).toBe(false);
+    expect(providerIntelligenceV1Enabled({ PROVIDER_INTELLIGENCE_V1_ENABLED: 'yes' })).toBe(false);
   });
 });

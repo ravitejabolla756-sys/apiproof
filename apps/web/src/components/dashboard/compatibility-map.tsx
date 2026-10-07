@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { StatusPill } from "@/components/ui/status-pill";
+import { StatusPill, type StatusVariant } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel, getRegistryCoverageDescription, getRegistryCoverageLabel } from "@/lib/compatibility-map-labels";
-import { AlertTriangle, ArrowUpRight, CheckCircle2, GitBranch, Layers, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, GitBranch, Layers, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 
 interface CompatibilityFinding {
   id: string;
@@ -49,10 +49,29 @@ interface CompatibilityRepository {
   }>;
   openFindingCount: number;
   findings: CompatibilityFinding[];
+  compatibilityProofs?: Array<{
+    providerId: string;
+    changeId: string;
+    status: string;
+    changeTitle?: string;
+    severity?: string;
+    exactFile?: string | null;
+    exactLine?: number | null;
+    matchedModel?: string | null;
+    matchedEndpoint?: string | null;
+    matchedParameter?: string | null;
+    officialSourceUrl?: string;
+    removalAt?: string | null;
+    reasonCodes?: string[];
+  }>;
 }
 
 interface CompatibilityMapResponse {
   repositories: CompatibilityRepository[];
+}
+
+function proofStatusVariant(status: string): StatusVariant {
+  return status === "AFFECTED" ? "affected" : status === "NOT_AFFECTED" ? "healthy" : "warning";
 }
 
 export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
@@ -254,6 +273,20 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
                 {finding.migration && <span>Migration: {finding.migration.status ?? "unknown"}</span>}
                 {finding.pullRequest && <span>PR: {finding.pullRequest.state ?? "unknown"} #{finding.pullRequest.number ?? "—"}</span>}
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {currentRepo.compatibilityProofs && currentRepo.compatibilityProofs.length > 0 && (
+        <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-white p-4">
+          <div className="flex items-center gap-2 font-semibold text-[#111111]"><ShieldCheck className="h-3.5 w-3.5 text-purple-700" />Repository-bound compatibility proofs</div>
+          {currentRepo.compatibilityProofs.map((proof) => (
+            <div key={proof.changeId} className="space-y-1 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium text-[#111111]">{proof.changeTitle ?? proof.changeId}</span><StatusPill status={proofStatusVariant(proof.status)} label={proof.status} /></div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[#686868]"><span>{proof.providerId}</span>{proof.severity && <span>{proof.severity}</span>}{proof.removalAt && <span>Deadline {proof.removalAt}</span>}{proof.exactFile && <span>{proof.exactFile}:{proof.exactLine ?? "?"}</span>}</div>
+              <div className="font-mono text-[10px] text-[#686868]">{proof.matchedModel ?? proof.matchedEndpoint ?? proof.matchedParameter ?? "No exact target match"}</div>
+              {proof.reasonCodes && <div className="text-[10px] text-[#686868]">{proof.reasonCodes.join(" · ")}</div>}
             </div>
           ))}
         </div>

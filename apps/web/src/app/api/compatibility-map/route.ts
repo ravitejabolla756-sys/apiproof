@@ -7,6 +7,7 @@ import { getDatabase } from '../../../lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../../../lib/server/workspace-service.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
 import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
+import { parseBoundedProductizationProjection } from '../../../lib/server/productization-persistence.js';
 
 type SupportedProvider = 'stripe' | 'twilio';
 
@@ -114,22 +115,30 @@ export async function GET(req: Request) {
 
   const responseRepositories = await Promise.all(repositories.map(async (repository) => {
     const findings = findingsByRepository.get(repository.id) ?? [];
+    const rawScan: unknown = (() => { try { return repository.completed_scan_raw_result ? JSON.parse(repository.completed_scan_raw_result) : null; } catch { return null; } })();
+    const productization = parseBoundedProductizationProjection(rawScan);
     const evidence = parseScanCompatibilityEvidence(repository.completed_scan_raw_result);
     const discovery = parseScanDiscoveryEvidence(repository.completed_scan_raw_result);
     const usageIR = parseScanUsageIR(repository.completed_scan_raw_result);
     const findingProviders = [...new Set(findings.map((finding) => finding.provider))]
       .filter((provider): provider is SupportedProvider => provider === 'stripe' || provider === 'twilio');
     const providersWithEvidence = new Set(evidence?.providers.filter((item) => item.detected).map((item) => item.provider) ?? []);
-    const providerIds = [...new Set([...providersWithEvidence, ...findingProviders, ...(discovery?.providers.map((item) => item.providerId) ?? [])])];
+    const productizationProviders = Array.isArray(productization?.discoveries) ? productization.discoveries.flatMap((item) => item && typeof item === 'object' && typeof (item as { providerId?: unknown }).providerId === 'string' ? [(item as { providerId: string }).providerId] : []) : [];
+    const providerIds = [...new Set([...providersWithEvidence, ...findingProviders, ...(discovery?.providers.map((item) => item.providerId) ?? []), ...productizationProviders])];
 
     const integrations = await Promise.all(providerIds.map(async (provider) => {
-      const discovered = discovery?.providers.find((item) => item.providerId === provider);
+      const discovered = productizationProviders.length
+        ? (productization?.discoveries as Array<{ providerId: string; providerName?: string; packageName?: string | null; declaredVersion?: string | null; resolvedVersion?: string | null; versionConfidence?: string; capabilities?: string[]; capability?: string }>).find((item) => item.providerId === provider)
+        : discovery?.providers.find((item) => item.providerId === provider);
       const analysis = evidence?.providers.find((item) => item.provider === provider && item.detected);
       const changes = provider === 'stripe' || provider === 'twilio' ? await loadProviderRegistry(provider) : [];
       const matchedChangeIds = new Set(findings
         .filter((finding) => finding.provider === provider)
         .map((finding) => finding.change_id));
       const matchedChanges = changes.filter((change) => matchedChangeIds.has(change.id));
+      const productizationReviewedCount = Array.isArray(productization?.compatibilityResults)
+        ? productization.compatibilityResults.filter((item) => item && typeof item === 'object' && (item as { providerId?: unknown }).providerId === provider).length
+        : 0;
       const reviewedChanges = matchedChanges.filter((change) =>
         change.review?.status === 'reviewed' &&
         change.review.reviewer.trim().length > 0 &&
@@ -140,8 +149,8 @@ export async function GET(req: Request) {
         provider,
         detected: true,
         usageCount: analysis?.usageCount ?? null,
-        mappedSymbolCount: analysis?.mappedSymbolCount ?? discovered?.evidenceCount ?? null,
-        reviewedChangeCount: reviewedChanges.length,
+        mappedSymbolCount: analysis?.mappedSymbolCount ?? ('evidenceCount' in (discovered ?? {}) ? (discovered as { evidenceCount?: number }).evidenceCount ?? null : null),
+        reviewedChangeCount: productizationReviewedCount || reviewedChanges.length,
         ...(discovered ? {
           providerName: discovered.providerName,
           packageName: discovered.packageName,
@@ -172,7 +181,9 @@ export async function GET(req: Request) {
       } : null,
     }));
 
-    const compatibilityProofs = usageIR && repository.completed_scan_id && repository.completed_scan_sha
+    const compatibilityProofs = productization && Array.isArray(productization.proofs)
+      ? productization.proofs
+      : usageIR && repository.completed_scan_id && repository.completed_scan_sha
       ? buildCompatibilityProofSnapshot({
         repositoryId: repository.id,
         baselineSha: repository.completed_scan_sha,

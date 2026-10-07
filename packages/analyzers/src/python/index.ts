@@ -1,7 +1,7 @@
 import semver from 'semver';
 import type { RepositoryAnalyzer, ProviderDescriptor } from '@apiproof/core';
-import type { DependencyFinding, ScanResult, UsageFinding } from '@apiproof/shared';
-import { TOOL_VERSION } from '@apiproof/shared';
+import type { ArgumentFact, DependencyFinding, ScanResult, UsageFinding } from '@apiproof/shared';
+import { literalHash, TOOL_VERSION } from '@apiproof/shared';
 import { PythonRepositorySnapshot } from './repository.js';
 import { normalizeCompatibilityUsage } from '../typescript/usage-ir.js';
 import { usageFindingToCompatibilityUsage } from '../typescript/usage-ir.js';
@@ -62,10 +62,10 @@ function dependencyFor(snapshot: PythonRepositorySnapshot, provider: PythonProvi
   });
 }
 
-function addUsage(usages: UsageFinding[], file: string, content: string, offset: number, provider: PythonProviderDescriptor, symbol: string, kind: UsageFinding['kind'], basis: 'import-binding' | 'require-binding' | 'type-annotation' = 'import-binding', semantics: UsageFinding['semantics'] = 'invocation'): void {
+function addUsage(usages: UsageFinding[], file: string, content: string, offset: number, provider: PythonProviderDescriptor, symbol: string, kind: UsageFinding['kind'], basis: 'import-binding' | 'require-binding' | 'type-annotation' = 'import-binding', semantics: UsageFinding['semantics'] = 'invocation', argumentFacts?: ArgumentFact[]): void {
   const line = lineNumber(content, offset);
   const loc = location(file, line, offset - content.lastIndexOf('\n', offset - 1), symbol);
-  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location: loc, context: { function: null, class: null }, evidence: { binding: loc, basis }, confidence: kind === 'method' ? 0.9 : 0.98 });
+  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location: loc, context: { function: null, class: null }, evidence: { binding: loc, basis }, confidence: kind === 'method' ? 0.9 : 0.98, ...(argumentFacts ? { arguments: argumentFacts } : {}) });
 }
 
 function detectUsages(snapshot: PythonRepositorySnapshot, provider: PythonProviderDescriptor): UsageFinding[] {
@@ -89,10 +89,23 @@ function detectUsages(snapshot: PythonRepositorySnapshot, provider: PythonProvid
     }
     for (const alias of [...aliases]) {
       const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      for (const match of content.matchAll(new RegExp(`\\b([A-Za-z_]\\w*)\\s*=\\s*${escapedAlias}\\s*\\(`, 'g'))) aliases.add(match[1]!);
+    }
+    for (const alias of [...aliases]) {
+      const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       for (const match of content.matchAll(new RegExp(`\\b([A-Za-z_]\\w*)\\s*=\\s*${escapedAlias}\\.[A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*\\s*\\(`, 'g'))) if (match[1]) aliases.add(match[1]);
     }
     for (const alias of aliases) {
-      for (const match of content.matchAll(new RegExp(`\\b${alias}\\.([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)\\s*\\(`, 'g'))) addUsage(usages, file, content, match.index ?? 0, provider, match[0].replace(/\s*\($/, ''), 'method');
+      for (const match of content.matchAll(new RegExp(`\\b${alias}\\.([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)\\s*\\(`, 'g'))) {
+        const offset = match.index ?? 0;
+        const lineEnd = content.indexOf('\n', offset) === -1 ? content.length : content.indexOf('\n', offset);
+        const callText = content.slice(offset, lineEnd);
+        const modelMatch = callText.match(/\bmodel\s*=\s*(["'])([^"']+)\1/);
+        const model = modelMatch?.[2];
+        const modelProperty = { path: 'model', location: location(file, lineNumber(content, offset), Math.max(1, offset - content.lastIndexOf('\n', offset - 1)), 'model'), ...(model ? { literalHash: literalHash(model) } : {}) };
+        const facts: ArgumentFact[] = [{ index: 0, complete: Boolean(model), properties: [modelProperty] }];
+        addUsage(usages, file, content, offset, provider, match[0].replace(/\s*\($/, ''), 'method', 'import-binding', 'invocation', facts);
+      }
     }
     for (const domain of provider.apiDomains ?? []) {
       const escaped = domain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

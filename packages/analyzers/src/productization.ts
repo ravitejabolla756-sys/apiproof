@@ -3,6 +3,7 @@ import type { CompatibilityProof, NormalizedUsageIR, ScanResult, SupportedLangua
 import { DISCOVERY_PROVIDER_REGISTRY, PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import type { ProviderDefinition } from '@apiproof/providers';
 import type { ProviderDescriptor } from '@apiproof/core';
+import { literalHash } from '@apiproof/shared';
 import { buildReviewedRuleCoverage } from '@apiproof/providers';
 import { TypeScriptRepositoryAnalyzer } from './typescript/index.js';
 import { discoverProviders, type ProviderDiscoveryResult } from './typescript/provider-discovery.js';
@@ -10,6 +11,7 @@ import { RepositorySnapshot } from './typescript/repository.js';
 import { detectRepositoryLanguages } from './multi-language.js';
 import { evaluateRegisteredNormalizedCompatibility } from './typescript/compatibility.js';
 import { PythonRepositoryAnalyzer, type PythonProviderDescriptor } from './python/index.js';
+import { normalizeCompatibilityUsage, usageFindingToCompatibilityUsage } from './typescript/usage-ir.js';
 
 export interface ProductizationPrivacyContract {
   externalAiRequired: false;
@@ -45,6 +47,15 @@ const descriptorFor = (discovery: ProviderDiscoveryResult) => ({
 
 const normalizedVersionSource = (source: ProviderDiscoveryResult['versionSource']): NormalizedUsageIR['versionSource'] =>
   source === 'pnpm-lock' || source === 'package-lock' || source === 'yarn-lock' ? 'lockfile' : source;
+
+function reviewedModelForUsage(usage: ScanResult['usages'][number], providerId: string): string | undefined {
+  const modelProperties = usage.arguments?.flatMap((argument) => argument.properties.filter((property) => property.path === 'model')) ?? [];
+  if (modelProperties.length === 0) return undefined;
+  const candidates = PRODUCTION_COMPATIBILITY_REGISTRY.changes
+    .filter((change) => change.providerId === providerId && change.applicabilityScope.dimensions.includes('model'))
+    .flatMap((change) => [...change.affectedModels, ...(change.replacement?.model ? [change.replacement.model] : [])]);
+  return candidates.find((candidate) => modelProperties.some((property) => property.literalHash === literalHash(candidate)));
+}
 
 /**
  * Production-shaped local scan path. It consumes only a repository snapshot,
@@ -89,13 +100,18 @@ export async function runProductizationScan(input: {
   }
   const usageIR = scans.flatMap((scan) => {
     const discovery = discoveries.find((item) => item.providerId === scan.provider);
-    return (scan.usageIR ?? []).map((usage) => ({
-      ...usage,
-      declaredVersion: discovery?.declaredVersion ?? usage.declaredVersion,
-      resolvedVersion: discovery?.resolvedVersion ?? usage.resolvedVersion,
-      versionSource: discovery ? normalizedVersionSource(discovery.versionSource) : usage.versionSource,
-      versionConfidence: discovery?.versionConfidence ?? usage.versionConfidence,
-    }));
+    return scan.usages.map((finding) => {
+      const base = usageFindingToCompatibilityUsage(finding, discovery?.packageName ?? scan.provider);
+      const reviewedModel = reviewedModelForUsage(finding, scan.provider);
+      const normalized = normalizeCompatibilityUsage(reviewedModel ? { ...base, model: reviewedModel } : base, { language: scan.language as 'typescript' | 'python' });
+      return {
+        ...normalized,
+        declaredVersion: discovery?.declaredVersion ?? normalized.declaredVersion,
+        resolvedVersion: discovery?.resolvedVersion ?? normalized.resolvedVersion,
+        versionSource: discovery ? normalizedVersionSource(discovery.versionSource) : normalized.versionSource,
+        versionConfidence: discovery?.versionConfidence ?? normalized.versionConfidence,
+      };
+    });
   });
   const analysisMs = Date.now() - analysisStarted;
   const compatibilityStarted = Date.now();

@@ -29,6 +29,8 @@ import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
+import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
+import { extractSourceSnippet } from './scan-snippet.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
@@ -236,17 +238,6 @@ async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
 // Per-job execution
 // ---------------------------------------------------------------------------
 
-function extractSourceSnippet(fileContent: string, lineNumber: number, contextLines = 3): string {
-  const lines = fileContent.split('\n');
-  const start = Math.max(0, lineNumber - contextLines - 1);
-  const end = Math.min(lines.length, lineNumber + contextLines);
-  return lines.slice(start, end).map((line, idx) => {
-    const currentLineNum = start + idx + 1;
-    const marker = currentLineNum === lineNumber ? '>' : ' ';
-    return `${marker} ${currentLineNum.toString().padStart(4, ' ')} | ${line}`;
-  }).join('\n');
-}
-
 /**
  * Executes a single scan job for a claimed github_scan_requests row.
  *
@@ -339,6 +330,11 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     };
   }
 
+  if (providerIntelligenceV1Enabled() && !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(job.commit_sha)) {
+    await markScanWorkerJobFailed(db, job, 'INVALID_BASELINE_SHA', 'INVALID_BASELINE_SHA');
+    return { scanRequestId: job.id, repositoryId: repo.id, commitSha: job.commit_sha, status: 'failed', error: 'INVALID_BASELINE_SHA' };
+  }
+
   await db.execute(existingScan
     ? `UPDATE scans SET status = 'running', error_message = NULL, started_at = ? WHERE id = ?`
     : `INSERT INTO scans (id, repository_id, sha, status, provider, started_at)
@@ -366,16 +362,16 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       }
     } catch (fetchErr) {
       // Fail the job — do not fall back to fixture for async webhook-triggered scans
-      const errorMsg = fetchErr instanceof Error ? fetchErr.message : 'SOURCE_FETCH_FAILED';
-      await failScan(db, scanId, errorMsg);
-      const category = errorMsg.startsWith('GITHUB_') ? 'GITHUB_NETWORK' : 'SOURCE_FETCH_FAILED';
-      await markScanWorkerJobFailed(db, job, category, errorMsg, { repositoryFullName: repo.full_name, durationMs: Date.now() - startedAtMs });
+      const errorCode = safeFailureCode(fetchErr, 'SOURCE_FETCH_FAILED');
+      await failScan(db, scanId, errorCode);
+      const category = errorCode.startsWith('GITHUB_') ? 'GITHUB_NETWORK' : 'SOURCE_FETCH_FAILED';
+      await markScanWorkerJobFailed(db, job, category, errorCode, { repositoryFullName: repo.full_name, durationMs: Date.now() - startedAtMs });
       return {
         scanRequestId: job.id,
         repositoryId: repo.id,
         commitSha: job.commit_sha,
         status: 'failed',
-        error: errorMsg,
+        error: errorCode,
       };
     }
 
@@ -455,7 +451,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     const completedAt = new Date().toISOString(), newlyCreatedFindingIds: string[] = [];
     const discoveredProviders = productization?.discoveries ?? discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
     const persistedScanResult = productization
-      ? { schemaVersion: 2, productization: { baselineSha: productization.baselineSha, languages: productization.languages, discoveries: productization.discoveries, usageIR: productization.usageIR, compatibilityResults: productization.compatibilityResults, proofs: productization.proofs, truncated: false } }
+      ? { schemaVersion: 2, productization: boundedProductizationProjection(productization) }
       : scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []));
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
@@ -561,9 +557,9 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       findingsCount: collectedFindings.length,
     };
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown scan worker error';
-    await failScan(db, scanId, errorMsg);
-    await markScanWorkerJobFailed(db, job, 'SCAN_EXECUTION_FAILED', errorMsg, {
+    const errorCode = safeFailureCode(error, 'SCAN_EXECUTION_FAILED');
+    await failScan(db, scanId, errorCode);
+    await markScanWorkerJobFailed(db, job, 'SCAN_EXECUTION_FAILED', errorCode, {
       repositoryFullName: repo.full_name,
       durationMs: Date.now() - startedAtMs,
     });
@@ -572,7 +568,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       repositoryId: repo.id,
       commitSha: job.commit_sha,
       status: 'failed',
-      error: errorMsg,
+      error: errorCode,
     };
   }
 }
