@@ -78,6 +78,24 @@ describe('GET /api/repositories', () => {
     expect(body).not.toHaveProperty('githubAppConnection');
 
     const { GET: getRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+    await db.execute(`
+      INSERT INTO scans (id, repository_id, sha, status, provider, files_analyzed, findings_count, started_at, completed_at)
+      VALUES (?, ?, ?, 'completed', 'openai', ?, 1, ?, ?)
+    `, ['scan_a', 'repo_a', 'a'.repeat(40), 3, now, now]);
+    const repositoryResponse = await getRepository(
+      new Request('http://localhost/api/repositories/repo_a', {
+        headers: { cookie: `apiproof_session=${ownerA.session.id}` },
+      }),
+      { params: Promise.resolve({ id: 'repo_a' }) },
+    );
+    const repositoryBody = await repositoryResponse.json() as {
+      scans: Array<Record<string, unknown>>;
+    };
+    expect(repositoryResponse.status).toBe(200);
+    expect(repositoryBody.scans[0]).toMatchObject({ files_analyzed: 3 });
+    expect(repositoryBody.scans[0]).not.toHaveProperty('analyzed_files');
+    expect(repositoryBody.scans[0]).not.toHaveProperty('total_files');
+
     const foreignRepositoryResponse = await getRepository(
       new Request('http://localhost/api/repositories/repo_b', {
         headers: { cookie: `apiproof_session=${ownerA.session.id}` },

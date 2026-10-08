@@ -32,8 +32,7 @@ interface ScanRecord {
   id: string;
   sha: string;
   status: string;
-  total_files: number;
-  analyzed_files: number;
+  files_analyzed: number;
   findings_count: number;
   started_at: string;
   completed_at: string | null;
@@ -394,7 +393,7 @@ export default function RepositoryDetailPage({
                       </span>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      {s.analyzed_files} / {s.total_files}
+                      {s.files_analyzed}
                     </td>
                     <td className="py-2.5 px-3 font-mono font-semibold">
                       {s.findings_count}

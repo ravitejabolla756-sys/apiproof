@@ -90,6 +90,69 @@ describe('enabled provider-intelligence worker path', () => {
     }
   });
 
+  it('persists an affected finding for the exact responses.create staging fixture shape', async () => {
+    const { workspaceId, repositoryId } = await fixture('worker-openai-responses@example.com', 'openai-responses');
+    const sha = 'd'.repeat(40);
+    await enqueue(workspaceId, repositoryId, sha);
+    fetchFiles.mockResolvedValueOnce({
+      headSha: sha,
+      defaultBranch: 'main',
+      files: new Map([
+        ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0' } })],
+        ['src/index.ts', `import OpenAI from 'openai';
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function run() {
+  await client.responses.create({
+    model: 'gpt-4.5-preview',
+    input: 'MY OWL staging compatibility fixture'
+  });
+}
+
+void run;`],
+      ]),
+    });
+
+    const result = await processPendingGitHubScans({ batchSize: 1 });
+    const scanId = result.results[0]?.scanId;
+    const row = await getDatabase().queryOne<{ raw_result: string; findings_count: number }>(
+      'SELECT raw_result, findings_count FROM scans WHERE repository_id = ?',
+      [repositoryId],
+    );
+    const findings = await getDatabase().query<{ provider: string; change_id: string; status: string; file_path: string; line_number: number }>(
+      'SELECT provider, change_id, status, file_path, line_number FROM findings WHERE scan_id = ? ORDER BY provider, change_id',
+      [scanId],
+    );
+
+    expect(result.jobsCompleted).toBe(1);
+    expect(row?.findings_count).toBeGreaterThan(0);
+    const persisted = JSON.parse(row?.raw_result ?? 'null') as {
+      productization?: {
+        compatibilityResults?: Array<Record<string, unknown>>;
+        proofs?: Array<Record<string, unknown>>;
+      };
+    };
+    const matches = [...(persisted.productization?.compatibilityResults ?? []), ...(persisted.productization?.proofs ?? [])];
+    expect(matches).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        providerId: 'openai',
+        changeId: 'openai-gpt-4-5-preview-removal-2025-07-14',
+        status: 'AFFECTED',
+        matchedModel: 'gpt-4.5-preview',
+        exactFile: 'src/index.ts',
+      }),
+    ]));
+    expect(findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        provider: 'openai',
+        change_id: 'openai-gpt-4-5-preview-removal-2025-07-14',
+        status: 'open',
+        file_path: 'src/index.ts',
+      }),
+    ]));
+  });
+
   it('proves Python model applicability and five-provider discovery through the same worker', async () => {
     const python = await fixture('worker-python@example.com', 'python'); const pySha = 'b'.repeat(40); await enqueue(python.workspaceId, python.repositoryId, pySha);
     fetchFiles.mockResolvedValueOnce({ headSha: pySha, defaultBranch: 'main', files: new Map([['requirements.txt', 'openai==1.0.0\n'], ['src/main.py', "from openai import OpenAI\nclient = OpenAI()\nclient.chat.completions.create(model='gpt-4.5-preview', messages=[])\n"]]) });
