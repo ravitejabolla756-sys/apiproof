@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import { AnalysisError } from '@apiproof/shared';
-import { allowedPatchPath, assertPlainPath, fail, sha256 } from './policy.js';
+import { allowedPatchPath, assertPlainPath, fail, fixtureSha256, sha256 } from './policy.js';
 
 export const patchToolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../');
 export const patchCorpusRoot = path.join(patchToolRoot, 'evaluation-patches');
@@ -109,7 +109,7 @@ export async function createPatchWorkspace(repository: string): Promise<PatchWor
   for (const [file, digest] of Object.entries(expected)) {
     if (!allowedPatchPath(file) && !['package.json', 'package-lock.json'].includes(file)) fail('FIXTURE_MANIFEST_PATH');
     const bytes = await readFile(path.join(originalDirectory, file));
-    if (bytes.length > 1_048_576 || bytes.includes(0) || sha256(bytes) !== digest) fail('FIXTURE_DIGEST_MISMATCH');
+    if (bytes.length > 1_048_576 || bytes.includes(0) || fixtureSha256(bytes) !== digest) fail('FIXTURE_DIGEST_MISMATCH');
     snapshot[file] = bytes.toString('utf8');
   }
   // Create ancestors one at a time and validate before descending; never follow a preexisting junction.

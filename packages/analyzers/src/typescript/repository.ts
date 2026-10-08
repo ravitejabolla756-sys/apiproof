@@ -32,7 +32,7 @@ export class RepositorySnapshot {
       if (norm === 'package.json' || norm.endsWith('/package.json')) snapshot.manifests.push(norm);
       if (sourceExtension.test(norm)) {
         snapshot.sources.set(norm, content);
-        snapshot.hashes.set(norm, createHash('sha256').update(content).digest('hex'));
+        snapshot.hashes.set(norm, createHash('sha256').update(content.replace(/\r\n/g, '\n')).digest('hex'));
       }
     }
     if (!snapshot.manifests.includes('package.json')) {
@@ -93,8 +93,9 @@ export class RepositorySnapshot {
         }
         this.bytes += length;
         const content = buffer.subarray(0, length);
-        this.hashes.set(relative, createHash('sha256').update(content).digest('hex'));
-        return new TextDecoder('utf-8', { fatal: true }).decode(content);
+        const text = new TextDecoder('utf-8', { fatal: true }).decode(content);
+        this.hashes.set(relative, createHash('sha256').update(text.replace(/\r\n/g, '\n')).digest('hex'));
+        return text;
       } finally { await handle.close(); }
     } catch {
       this.warn('UNREADABLE_FILE', 'File could not be read as UTF-8.', relative);

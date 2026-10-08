@@ -5,7 +5,7 @@ export class GoRepositorySnapshot {
   readonly diagnostics: { code: string; message: string; file?: string }[] = [];
 
   private constructor(readonly files: ReadonlyMap<string, string>) {
-    for (const [file, content] of files) this.hashes.set(file, createHash('sha256').update(content).digest('hex'));
+    for (const [file, content] of files) this.hashes.set(file, createHash('sha256').update(content.replace(/\r\n/g, '\n')).digest('hex'));
   }
 
   static fromMemory(files: ReadonlyMap<string, string> | Record<string, string>): GoRepositorySnapshot {

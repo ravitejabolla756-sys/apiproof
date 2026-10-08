@@ -4,6 +4,11 @@ import path from 'node:path';
 import { AnalysisError } from '@apiproof/shared';
 
 export const sha256 = (text: string | Buffer): string => createHash('sha256').update(text).digest('hex');
+/** Fixture manifests are authored from canonical LF text; preserve byte-exact hashing elsewhere. */
+export const fixtureSha256 = (text: string | Buffer): string => {
+  const normalized = (Buffer.isBuffer(text) ? text.toString('utf8') : text).replace(/\r\n/g, '\n');
+  return sha256(normalized);
+};
 export function fail(code: string): never { throw new AnalysisError(code, `Phase 4 patch safety check failed: ${code}.`); }
 export function allowedPatchPath(file: string): boolean {
   return /^(?:src|tests|__tests__)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+(?:\.(?:test|spec))?\.tsx?$/.test(file)
