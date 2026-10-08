@@ -10,9 +10,13 @@ import { SqliteDatabaseAdapter } from '../apps/web/src/lib/server/db/sqlite-adap
 import {
   bootstrapStagingDatabase,
   readStagingBootstrapConfig,
+  STAGING_DATABASE_NAME,
+  STAGING_DATABASE_SESSION_USER,
+  STAGING_DATABASE_URL_USERNAME,
   STAGING_REPOSITORY,
   verifyStagingDatabaseIdentity,
 } from '../apps/web/src/lib/server/db/staging-bootstrap.js';
+import type { DatabaseAdapter } from '../apps/web/src/lib/server/db/types.js';
 import { verifyPassword } from '../apps/web/src/lib/server/auth.js';
 
 const tempPaths: string[] = [];
@@ -37,9 +41,9 @@ function stagingEnvironment(): NodeJS.ProcessEnv {
   return {
     APIPROOF_STAGING_BOOTSTRAP: 'true',
     APIPROOF_SKIP_DEFAULT_SEED: 'true',
-    APIPROOF_STAGING_DATABASE_URL: 'postgresql://postgres.stagingref:secret@aws-0-ap-south-1.pooler.supabase.com/postgres',
-    APIPROOF_STAGING_EXPECTED_DB_USER: 'postgres.stagingref',
-    APIPROOF_STAGING_EXPECTED_DB_NAME: 'postgres',
+    APIPROOF_STAGING_DATABASE_URL: `postgresql://${STAGING_DATABASE_URL_USERNAME}:secret@aws-0-ap-south-1.pooler.supabase.com/${STAGING_DATABASE_NAME}`,
+    APIPROOF_STAGING_EXPECTED_URL_USERNAME: STAGING_DATABASE_URL_USERNAME,
+    APIPROOF_STAGING_EXPECTED_DB_NAME: STAGING_DATABASE_NAME,
     APIPROOF_STAGING_USER_EMAIL: 'staging@example.invalid',
     APIPROOF_STAGING_USER_PASSWORD: 'test-only-input',
     APIPROOF_STAGING_USER_NAME: 'Staging User',
@@ -113,8 +117,13 @@ describe('safe staging database seed policy', () => {
     })).toThrow('generic database variables must be unset');
     expect(() => readStagingBootstrapConfig({
       ...stagingEnvironment(),
-      APIPROOF_STAGING_EXPECTED_DB_USER: 'postgres.otherref',
-    })).toThrow('URL database identity');
+      APIPROOF_STAGING_EXPECTED_URL_USERNAME: 'postgres.otherref',
+    })).toThrow('exact staging project identity');
+    expect(() => readStagingBootstrapConfig({
+      ...stagingEnvironment(),
+      APIPROOF_STAGING_DATABASE_URL: 'postgresql://postgres.otherref:secret@aws-0-ap-south-1.pooler.supabase.com/postgres',
+      APIPROOF_STAGING_EXPECTED_URL_USERNAME: 'postgres.otherref',
+    })).toThrow('exact staging project identity');
     expect(() => readStagingBootstrapConfig({
       ...stagingEnvironment(),
       APIPROOF_STAGING_DATABASE_URL: 'postgresql://user:secret@example.invalid/postgres',
@@ -125,15 +134,21 @@ describe('safe staging database seed policy', () => {
     const config = readStagingBootstrapConfig(stagingEnvironment());
     const matchingDb = {
       engine: 'postgres',
-      queryOne: async () => ({ database_name: 'postgres', database_user: 'postgres.stagingref' }),
-    } as never;
+      queryOne: async () => ({ database_name: STAGING_DATABASE_NAME, database_user: STAGING_DATABASE_SESSION_USER }),
+    } as unknown as DatabaseAdapter;
     await expect(verifyStagingDatabaseIdentity(matchingDb, config)).resolves.toBeUndefined();
 
     const mismatchedDb = {
       engine: 'postgres',
-      queryOne: async () => ({ database_name: 'postgres', database_user: 'postgres.productionref' }),
-    } as never;
+      queryOne: async () => ({ database_name: STAGING_DATABASE_NAME, database_user: 'postgres.productionref' }),
+    } as unknown as DatabaseAdapter;
     await expect(verifyStagingDatabaseIdentity(mismatchedDb, config)).rejects.toThrow('connected database identity');
+
+    const mismatchedDatabase = {
+      engine: 'postgres',
+      queryOne: async () => ({ database_name: 'production', database_user: STAGING_DATABASE_SESSION_USER }),
+    } as unknown as DatabaseAdapter;
+    await expect(verifyStagingDatabaseIdentity(mismatchedDatabase, config)).rejects.toThrow('connected database identity');
   });
 
   it('bootstraps only the controlled staging identity and fixture repository idempotently', async () => {

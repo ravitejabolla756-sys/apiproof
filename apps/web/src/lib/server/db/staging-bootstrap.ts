@@ -10,9 +10,14 @@ export const STAGING_REPOSITORY = Object.freeze({
   defaultBranch: 'main',
 });
 
+export const STAGING_DATABASE_URL_USERNAME = 'postgres.elzkxgfsciivlrejujwb';
+export const STAGING_DATABASE_SESSION_USER = 'postgres';
+export const STAGING_DATABASE_NAME = 'postgres';
+
 export interface StagingBootstrapConfig {
   databaseUrl: string;
-  databaseUser: string;
+  databaseUrlUsername: string;
+  databaseSessionUser: string;
   databaseName: string;
   userEmail: string;
   userPassword: string;
@@ -72,12 +77,15 @@ export function readStagingBootstrapConfig(environment: NodeJS.ProcessEnv = proc
 
   const databaseUrl = required(environment, 'APIPROOF_STAGING_DATABASE_URL');
   const parsed = parseStagingDatabaseUrl(databaseUrl);
-  const databaseUser = required(environment, 'APIPROOF_STAGING_EXPECTED_DB_USER');
-  const databaseName = required(environment, 'APIPROOF_STAGING_EXPECTED_DB_NAME');
+  const expectedUrlUsername = required(environment, 'APIPROOF_STAGING_EXPECTED_URL_USERNAME');
+  const expectedDatabaseName = required(environment, 'APIPROOF_STAGING_EXPECTED_DB_NAME');
   const urlUser = decode(parsed.username);
   const urlDatabase = decode(parsed.pathname.slice(1));
-  if (urlUser !== databaseUser || urlDatabase !== databaseName) {
-    throw new Error('STAGING_BOOTSTRAP_REFUSED: URL database identity does not match the expected staging identity');
+  if (expectedUrlUsername !== STAGING_DATABASE_URL_USERNAME || urlUser !== STAGING_DATABASE_URL_USERNAME) {
+    throw new Error('STAGING_BOOTSTRAP_REFUSED: URL username does not match the exact staging project identity');
+  }
+  if (expectedDatabaseName !== STAGING_DATABASE_NAME || urlDatabase !== STAGING_DATABASE_NAME) {
+    throw new Error('STAGING_BOOTSTRAP_REFUSED: URL database name does not match the expected staging identity');
   }
 
   const githubAccountLogin = required(environment, 'APIPROOF_STAGING_GITHUB_ACCOUNT_LOGIN');
@@ -92,8 +100,9 @@ export function readStagingBootstrapConfig(environment: NodeJS.ProcessEnv = proc
 
   return {
     databaseUrl,
-    databaseUser,
-    databaseName,
+    databaseUrlUsername: urlUser,
+    databaseSessionUser: STAGING_DATABASE_SESSION_USER,
+    databaseName: STAGING_DATABASE_NAME,
     userEmail: required(environment, 'APIPROOF_STAGING_USER_EMAIL').toLowerCase(),
     userPassword: required(environment, 'APIPROOF_STAGING_USER_PASSWORD'),
     userName: required(environment, 'APIPROOF_STAGING_USER_NAME'),
@@ -112,7 +121,7 @@ export async function verifyStagingDatabaseIdentity(
   const identity = await db.queryOne<{ database_name: string; database_user: string }>(
     'SELECT current_database() AS database_name, current_user AS database_user',
   );
-  if (!identity || identity.database_name !== config.databaseName || identity.database_user !== config.databaseUser) {
+  if (!identity || identity.database_name !== config.databaseName || identity.database_user !== config.databaseSessionUser) {
     throw new Error('STAGING_BOOTSTRAP_REFUSED: connected database identity does not match the expected staging identity');
   }
 }
