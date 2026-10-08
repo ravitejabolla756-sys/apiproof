@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { Node, SyntaxKind } from 'ts-morph';
 import type { SourceFile } from 'ts-morph';
 import type { ProviderDescriptor } from '@apiproof/core';
-import type { UsageFinding } from '@apiproof/shared';
+import type { HeaderEvidence, UsageFinding } from '@apiproof/shared';
 import { BindingResolver } from './bindings.js';
 import type { Binding } from './bindings.js';
 import type { RepositorySnapshot } from './repository.js';
@@ -10,6 +10,7 @@ import { location } from './locations.js';
 import { extractArguments } from './arguments.js';
 import { ResponseResolver } from './responses.js';
 import { memberSemantics } from './semantics.js';
+import { isSensitiveHeaderName, matchesProviderDomain, resolveApiVersion } from '../http-metadata.js';
 
 function context(node: Node): UsageFinding['context'] {
   let functionName: string | null = null;
@@ -28,6 +29,80 @@ function context(node: Node): UsageFinding['context'] {
     if (className === null && (Node.isClassDeclaration(ancestor) || Node.isClassExpression(ancestor))) className = ancestor.getName() ?? '<anonymous>';
   }
   return { function: functionName, class: className };
+}
+
+function staticString(node: Node | undefined): string | undefined {
+  if (!node) return undefined;
+  if (node.isKind(SyntaxKind.StringLiteral) || node.isKind(SyntaxKind.NoSubstitutionTemplateLiteral)) return node.getLiteralValue();
+  return undefined;
+}
+
+function resolveObjectLiteral(node: Node | undefined, seen = new Set<Node>()): Node | undefined {
+  if (!node || seen.has(node)) return undefined;
+  seen.add(node);
+  if (Node.isObjectLiteralExpression(node)) return node;
+  if (Node.isParenthesizedExpression(node)) return resolveObjectLiteral(node.getExpression(), seen);
+  if (Node.isIdentifier(node)) {
+    const declaration = node.getSymbol()?.getDeclarations().find((item) => Node.isVariableDeclaration(item))
+      ?? node.getSourceFile().getVariableDeclaration(node.getText());
+    if (declaration && Node.isVariableDeclaration(declaration)) return resolveObjectLiteral(declaration.getInitializer(), seen);
+  }
+  return undefined;
+}
+
+function propertyInitializer(object: Node | undefined, name: string): Node | undefined {
+  const literal = resolveObjectLiteral(object);
+  if (!literal || !Node.isObjectLiteralExpression(literal)) return undefined;
+  const property = literal.getProperties().find((item) => {
+    if (Node.isShorthandPropertyAssignment(item)) return item.getName() === name;
+    if (!Node.isPropertyAssignment(item)) return false;
+    const propertyName = item.getNameNode();
+    return Node.isIdentifier(propertyName) ? propertyName.getText() === name : staticString(propertyName) === name;
+  });
+  if (!property) return undefined;
+  if (Node.isPropertyAssignment(property)) return property.getInitializer();
+  return Node.isShorthandPropertyAssignment(property) ? property.getNameNode() : undefined;
+}
+
+function headerEvidence(object: Node | undefined, provider: ProviderDescriptor): HeaderEvidence[] {
+  const literal = resolveObjectLiteral(object);
+  if (!literal || !Node.isObjectLiteralExpression(literal)) {
+    return object ? [{ name: '<dynamic-header-set>', static: false, redacted: true, location: location(object) }] : [];
+  }
+  const authoritative = new Set((provider.apiVersionHeaders ?? []).map((name) => name.toLowerCase()));
+  const evidence: HeaderEvidence[] = [];
+  for (const property of literal.getProperties()) {
+    if (!Node.isPropertyAssignment(property)) {
+      if (Node.isSpreadAssignment(property)) evidence.push({ name: '<dynamic-header-set>', static: false, redacted: true, location: location(property) });
+      continue;
+    }
+    const propertyName = property.getNameNode();
+    const name = Node.isComputedPropertyName(propertyName) ? '<dynamic-header-name>' : (Node.isIdentifier(propertyName) ? propertyName.getText() : staticString(propertyName));
+    if (!name) {
+      evidence.push({ name: '<dynamic-header-name>', static: false, redacted: true, location: location(propertyName) });
+      continue;
+    }
+    const value = staticString(property.getInitializer());
+    const staticValue = value !== undefined;
+    const safeValue = staticValue && authoritative.has(name.toLowerCase()) && !isSensitiveHeaderName(name);
+    evidence.push({ name, ...(safeValue ? { value } : {}), static: staticValue, redacted: staticValue && !safeValue, location: location(propertyName) });
+  }
+  return evidence;
+}
+
+function httpRequest(call: Node, provider: ProviderDescriptor): { endpoint: string; headers: HeaderEvidence[]; apiVersion?: string; dynamic: boolean } | undefined {
+  if (!Node.isCallExpression(call)) return undefined;
+  const expression = call.getExpression().getText();
+  const isFetch = expression === 'fetch';
+  const isAxios = expression === 'axios' || /^axios\.(?:get|post|put|patch|delete|head|request)$/.test(expression);
+  if (!isFetch && !isAxios) return undefined;
+  const argumentsList = call.getArguments();
+  const endpoint = staticString(isAxios && expression === 'axios.request' ? propertyInitializer(argumentsList[0], 'url') : argumentsList[0]);
+  if (!endpoint || !matchesProviderDomain(endpoint, provider.apiDomains ?? [])) return undefined;
+  const config = isAxios && expression === 'axios.request' ? argumentsList[0] : argumentsList[1];
+  const headers = headerEvidence(propertyInitializer(config, 'headers'), provider);
+  const version = resolveApiVersion(headers, provider.apiVersionHeaders ?? []);
+  return { endpoint, headers, ...(version.apiVersion ? { apiVersion: version.apiVersion } : {}), dynamic: version.dynamic };
 }
 
 export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor, snapshot: RepositorySnapshot): UsageFinding[] {
@@ -51,6 +126,14 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
       snapshot.warn('UNRESOLVED_IMPORT_ALIAS', 'A local-style module alias cannot be resolved without customer configuration.', location(node).file);
     }
     if (Node.isCallExpression(node)) {
+      const request = httpRequest(node, provider);
+      if (request) {
+        const loc = location(node);
+        const id = createHash('sha256').update(JSON.stringify([provider.id, 'resource', request.endpoint, loc])).digest('hex').slice(0, 24);
+        usages.set(id, { id, provider: provider.id, kind: 'resource', semantics: 'invocation', symbol: request.endpoint, location: loc, context: context(node),
+          evidence: { binding: loc, basis: 'import-binding' }, confidence: request.dynamic ? 0.6 : 0.95,
+          ...(request.headers.length ? { headers: request.headers } : {}), ...(request.apiVersion ? { apiVersion: request.apiVersion } : {}), ...(request.dynamic ? { dynamic: true } : {}) });
+      }
       const callee = node.getExpression();
       if (!resolver.resolve(callee) && node.getArguments().some((argument) => {
         const response = responses.resolve(argument);

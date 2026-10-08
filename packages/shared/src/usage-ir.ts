@@ -10,6 +10,14 @@ export const NormalizedUsageEvidenceSchema = z.strictObject({
   provenance: z.enum(['static-source', 'manifest', 'lockfile', 'configuration']),
 });
 
+export const NormalizedHeaderEvidenceSchema = z.strictObject({
+  name: z.string().min(1).max(200),
+  value: z.string().max(200).optional(),
+  static: z.boolean(),
+  redacted: z.boolean(),
+  location: z.strictObject({ file: z.string(), line: z.number().int().positive(), column: z.number().int().positive() }),
+});
+
 export const NormalizedUsageIRSchema = z.strictObject({
   id: z.string().min(1), language: UsageLanguageSchema, providerId: z.string().min(1),
   packageName: z.string().min(1).optional(), declaredVersion: z.string().nullable(), resolvedVersion: z.string().nullable(),
@@ -19,6 +27,7 @@ export const NormalizedUsageIRSchema = z.strictObject({
   endpoint: z.string().optional(), domain: z.string().optional(), model: z.string().optional(), parameters: z.array(z.string()),
   parameterValues: z.array(z.strictObject({ parameter: z.string().min(1), value: JsonPrimitiveSchema.optional(), status: z.enum(['allowed', 'disallowed', 'unknown']).optional() })).optional(),
   responseFields: z.array(z.string()), authEvidence: z.array(z.string()), authOrHeader: z.string().optional(), apiVersion: z.string().optional(),
+  headerEvidence: z.array(NormalizedHeaderEvidenceSchema).max(100).optional(),
   dynamic: z.boolean(), location: z.strictObject({ file: z.string(), line: z.number().int().positive(), column: z.number().int().positive(), symbol: z.string().optional() }),
   confidence: z.number().min(0).max(1), evidence: z.array(NormalizedUsageEvidenceSchema).min(1),
 });

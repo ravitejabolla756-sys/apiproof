@@ -29,6 +29,7 @@ const usageFor = (candidate: CandidateChange, id: string, changed: boolean, dyna
     usage.parameter = payload.affectedParameters?.[0];
     usage.authOrHeader = payload.authOrHeaderPatterns?.[0];
     usage.responseField = payload.affectedResponseFields?.[0];
+    usage.apiVersion = payload.apiVersionMetadata?.version;
   } else {
     usage.operation = 'unrelated.operation';
   }

@@ -15,4 +15,5 @@ export { buildReviewedRuleCoverage } from './first-ten-coverage.js';
 export type { ReviewedRuleCoverage } from './first-ten-coverage.js';
 export { exportCandidateBundle, importCandidateBundle } from './candidate-bundle.js';
 export { OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
+export { EXPANSION_OFFICIAL_CHANGE_CANDIDATES } from './expansion-change-candidates.js';
 export { LOCAL_REVIEWED_PRODUCTION_RECORDS } from './local-reviewed-production-records.js';

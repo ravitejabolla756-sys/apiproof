@@ -19,6 +19,7 @@ type ReviewedChange = {
   affectedResources: string[];
   affectedResponseFields: string[];
   affectedEndpoints: string[];
+  apiVersionMetadata: { version: string; replacement?: string } | null;
   affectedDomains: string[];
   authOrHeaderPatterns: string[];
   affectedParameters: string[];
@@ -105,6 +106,7 @@ export default function CompatibilityPage() {
                 {change.affectedResponseFields.length > 0 && <p className="mt-1">Removed response fields: <span className="font-mono">{change.affectedResponseFields.join(", ")}</span></p>}
                 {change.affectedParameters.length > 0 && <p className="mt-1">Parameter: <span className="font-mono">{change.affectedParameters.join(", ")}</span></p>}
                 {change.affectedEndpoints.length > 0 && <p className="mt-1">Endpoint: <span className="font-mono">{change.affectedEndpoints.join(", ")}</span></p>}
+                {change.apiVersionMetadata && <p className="mt-1">API version: <span className="font-mono">{change.apiVersionMetadata.version}</span>{change.apiVersionMetadata.replacement ? <> → <span className="font-mono">{change.apiVersionMetadata.replacement}</span></> : null}</p>}
                 {change.affectedDomains.length > 0 && <p className="mt-1">Domain: <span className="font-mono">{change.affectedDomains.join(", ")}</span></p>}
                 {change.authOrHeaderPatterns.length > 0 && <p className="mt-1">Credential/auth evidence: <span className="font-mono">{change.authOrHeaderPatterns.join(", ")}</span></p>}
                 {change.replacement?.model && <p className="mt-1">Replacement model: <span className="font-mono">{change.replacement.model}</span></p>}

@@ -60,6 +60,16 @@ export const LocationSchema = z.strictObject({
 });
 export type CodeLocation = z.infer<typeof LocationSchema>;
 
+/** Sanitized request-header evidence. Values are retained only for safe, authoritative metadata. */
+export const HeaderEvidenceSchema = z.strictObject({
+  name: z.string().min(1).max(200),
+  value: z.string().max(200).optional(),
+  static: z.boolean(),
+  redacted: z.boolean(),
+  location: LocationSchema,
+});
+export type HeaderEvidence = z.infer<typeof HeaderEvidenceSchema>;
+
 export const SupportedLanguageSchema = z.enum(['typescript', 'javascript', 'python', 'go', 'java', 'kotlin', 'csharp', 'ruby', 'rust']);
 export type SupportedLanguage = z.infer<typeof SupportedLanguageSchema>;
 
@@ -89,6 +99,8 @@ export const UsageFindingSchema = z.strictObject({
     fieldPath: z.string(), originLocation: LocationSchema,
     callbackLocation: LocationSchema.optional(),
   }).optional(),
+  headers: z.array(HeaderEvidenceSchema).max(100).optional(),
+  apiVersion: z.string().min(1).max(200).optional(),
   dynamic: z.boolean().optional(),
 });
 export type UsageFinding = z.infer<typeof UsageFindingSchema>;

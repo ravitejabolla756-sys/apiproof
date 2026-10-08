@@ -13,14 +13,24 @@ const usage = (overrides: Partial<CompatibilityUsage> = {}): CompatibilityUsage 
 });
 
 describe('Anthropic Opus 4.7 production rule', () => {
-  it('has deterministic four-record ordering and two Anthropic records', () => {
+  it('has deterministic production ordering and two Anthropic records', () => {
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
+      'aws-cloudwatch-evidently-end-of-support-2025-10-16',
+      'clerk-api-2026-05-12-metadata-fields-removed',
+      'cloudflare-service-key-auth-removal-2026-09-30',
+      'elevenlabs-v1-model-removal-2026-07-09',
+      'firebase-instance-id-server-apis-decommission-2027-09-29',
       'github-organization-security-fields-removed-2026-04-21',
       'github-synchronous-sbom-endpoint-removal-2026-11-13',
+      'google-cloud-api-registry-mcp-shutdown-2026-07-30',
+      'groq-models-decommissioned-2026-09-21',
+      'launchdarkly-api-version-20220603-eol-2025-04-15',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'shopify-checkout-api-shutdown-2025-04-01',
+      'slack-files-upload-removal-2025-11-12',
       'supabase-management-logs-all-removal-2026-09-23',
       'supabase-openapi-anon-key-access-2026-03-11',
       'twilio-regional-api-domain-removal-2026-04-28',
@@ -28,7 +38,7 @@ describe('Anthropic Opus 4.7 production rule', () => {
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(20);
   });
 
   it('evaluates the actual registry for exact, absent, allowed, unknown, Mythos, unrelated, and dynamic cases', () => {

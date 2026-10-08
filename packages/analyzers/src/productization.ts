@@ -12,6 +12,7 @@ import { detectRepositoryLanguages } from './multi-language.js';
 import { evaluateRegisteredNormalizedCompatibility } from './typescript/compatibility.js';
 import { PythonRepositoryAnalyzer, type PythonProviderDescriptor } from './python/index.js';
 import { normalizeCompatibilityUsage, usageFindingToCompatibilityUsage } from './typescript/usage-ir.js';
+import { matchesProviderDomain } from './http-metadata.js';
 
 export interface ProductizationPrivacyContract {
   externalAiRequired: false;
@@ -36,13 +37,18 @@ export interface ProductizationScanResult {
 
 function pythonProviderDefinitions(files: ReadonlyMap<string, string>, definitions: readonly ProviderDefinition[]): ProviderDefinition[] {
   const metadata = [...files].filter(([file]) => /(^|\/)(?:requirements(?:-[^/]+)?\.txt|pyproject\.toml|poetry\.lock|uv\.lock)$/.test(file)).map(([, content]) => content.toLowerCase()).join('\n');
-  return definitions.filter((definition) => definition.packageIdentifiers.some((name) => metadata.includes(name.toLowerCase())));
+  const source = [...files].filter(([file]) => /\.py$/i.test(file)).map(([, content]) => content).join('\n');
+  const urls = [...source.matchAll(/https?:\/\/[^\s"'`)]+/g)].map((match) => match[0]);
+  return definitions.filter((definition) => definition.packageIdentifiers.some((name) => metadata.includes(name.toLowerCase()))
+    || urls.some((url) => definition.apiDomains.some((domain) => matchesProviderDomain(url, [domain]))));
 }
 
 const descriptorFor = (discovery: ProviderDiscoveryResult) => ({
   id: discovery.providerId,
   packageName: discovery.packageName ?? discovery.evidence.find((item) => item.packageName)?.packageName ?? discovery.providerId,
   constructorExports: [] as readonly string[],
+  apiDomains: discovery.apiDomains,
+  apiVersionHeaders: discovery.apiVersionHeaders,
 });
 
 const normalizedVersionSource = (source: ProviderDiscoveryResult['versionSource']): NormalizedUsageIR['versionSource'] =>
@@ -95,6 +101,7 @@ export async function runProductizationScan(input: {
       packageNames: definition.packageIdentifiers,
       constructorExports: [],
       apiDomains: definition.apiDomains,
+      ...(definition.apiVersionHeaders ? { apiVersionHeaders: definition.apiVersionHeaders } : {}),
       environmentVariables: definition.environmentVariables,
     } satisfies PythonProviderDescriptor as ProviderDescriptor));
   }

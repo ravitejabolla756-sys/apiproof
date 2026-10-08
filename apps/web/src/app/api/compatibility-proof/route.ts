@@ -24,6 +24,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     affectedEndpoints: change.affectedEndpoints ?? [], affectedDomains: change.affectedDomains ?? [], authOrHeaderPatterns: change.authOrHeaderPatterns ?? [],
     affectedParameters: change.affectedParameters ?? [],
     affectedResponseFields: change.affectedResponseFields ?? [],
+    apiVersionMetadata: change.apiVersionMetadata ?? null,
     replacement: change.replacement ?? null,
     reviewer: change.review.reviewer, reviewedAt: change.review.reviewedAt,
     documentFingerprint: change.review.documentFingerprint ?? null,

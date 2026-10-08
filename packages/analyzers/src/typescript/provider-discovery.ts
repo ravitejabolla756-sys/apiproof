@@ -37,6 +37,7 @@ export interface ProviderDiscoveryResult {
   locations: Array<{ file: string; line: number; column: number }>;
   evidence: ProviderDiscoveryEvidence[];
   apiDomains: string[];
+  apiVersionHeaders: string[];
   capability: ProviderCapability;
   capabilities: ProviderCapability[];
   category: ProviderDefinition['category'];
@@ -201,7 +202,7 @@ export function discoverProviders(
       detectionKind: [...new Set(evidence.map((item) => item.detectionKind))],
       files: [...new Set(evidence.map((item) => item.file))],
       locations: evidence.map(({ file, line, column }) => ({ file, line, column })),
-      evidence, apiDomains: [...new Set(evidence.flatMap((item) => item.apiDomain ? [item.apiDomain] : []))],
+      evidence, apiDomains: [...new Set(evidence.flatMap((item) => item.apiDomain ? [item.apiDomain] : []))], apiVersionHeaders: [...definition.apiVersionHeaders ?? []],
       capability: definition.capability,
       capabilities: [...definition.capabilities],
       category: definition.category,

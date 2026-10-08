@@ -9,6 +9,8 @@ export interface ProviderDefinition {
   readonly packageIdentifiers: readonly string[];
   readonly packagePrefixes?: readonly string[];
   readonly apiDomains: readonly string[];
+  /** Header names whose static values may authoritatively identify an API version. */
+  readonly apiVersionHeaders?: readonly string[];
   readonly environmentVariables: readonly string[];
   readonly documentation: { readonly url: string; readonly changelogUrl?: string };
   readonly capability: ProviderCapability;
@@ -44,6 +46,7 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'anthropic', displayName: 'Anthropic', category: 'AI / Models', packageIdentifiers: ['@anthropic-ai/sdk'], apiDomains: ['api.anthropic.com'], environmentVariables: ['ANTHROPIC_API_KEY'], documentation: { url: 'https://docs.anthropic.com/' } }),
   discoveryProvider({ id: 'google-gemini', displayName: 'Google Gemini', category: 'AI / Models', packageIdentifiers: ['@google/genai', '@google/generative-ai'], apiDomains: ['generativelanguage.googleapis.com'], environmentVariables: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'], documentation: { url: 'https://ai.google.dev/gemini-api/docs' } }),
   discoveryProvider({ id: 'cohere', displayName: 'Cohere', category: 'AI / Models', packageIdentifiers: ['cohere-ai'], apiDomains: ['api.cohere.com'], environmentVariables: ['COHERE_API_KEY'], documentation: { url: 'https://docs.cohere.com/' } }),
+  discoveryProvider({ id: 'deepgram', displayName: 'Deepgram', category: 'AI / Models', packageIdentifiers: ['@deepgram/sdk'], apiDomains: ['api.deepgram.com'], environmentVariables: ['DEEPGRAM_API_KEY'], documentation: { url: 'https://developers.deepgram.com/' } }),
   discoveryProvider({ id: 'mistral', displayName: 'Mistral', category: 'AI / Models', packageIdentifiers: ['@mistralai/mistralai'], apiDomains: ['api.mistral.ai'], environmentVariables: ['MISTRAL_API_KEY'], documentation: { url: 'https://docs.mistral.ai/' } }),
   discoveryProvider({ id: 'groq', displayName: 'Groq', category: 'AI / Models', packageIdentifiers: ['groq-sdk'], apiDomains: ['api.groq.com'], environmentVariables: ['GROQ_API_KEY'], documentation: { url: 'https://console.groq.com/docs' } }),
   discoveryProvider({ id: 'together-ai', displayName: 'Together AI', category: 'AI / Models', packageIdentifiers: ['together-ai'], apiDomains: ['api.together.xyz'], environmentVariables: ['TOGETHER_API_KEY'], documentation: { url: 'https://docs.together.ai/' } }),
@@ -76,6 +79,7 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'sentry', displayName: 'Sentry', category: 'Developer Platforms', packageIdentifiers: ['@sentry/node', '@sentry/browser', '@sentry/nextjs'], apiDomains: ['sentry.io'], environmentVariables: ['SENTRY_DSN', 'SENTRY_AUTH_TOKEN'], documentation: { url: 'https://docs.sentry.io/' } }),
   discoveryProvider({ id: 'datadog', displayName: 'Datadog', category: 'Developer Platforms', packageIdentifiers: ['dd-trace', '@datadog/datadog-api-client'], apiDomains: ['api.datadoghq.com'], environmentVariables: ['DD_API_KEY', 'DD_APPLICATION_KEY'], documentation: { url: 'https://docs.datadoghq.com/api/' } }),
   discoveryProvider({ id: 'new-relic', displayName: 'New Relic', category: 'Developer Platforms', packageIdentifiers: ['newrelic'], apiDomains: ['api.newrelic.com'], environmentVariables: ['NEW_RELIC_LICENSE_KEY', 'NEW_RELIC_API_KEY'], documentation: { url: 'https://docs.newrelic.com/docs/apis/' } }),
+  discoveryProvider({ id: 'elasticsearch', displayName: 'Elasticsearch', category: 'Developer Platforms', packageIdentifiers: ['@elastic/elasticsearch'], apiDomains: ['elastic.co'], environmentVariables: ['ELASTIC_CLOUD_ID', 'ELASTIC_API_KEY'], documentation: { url: 'https://www.elastic.co/docs' } }),
 
   discoveryProvider({ id: 'twilio', displayName: 'Twilio', category: 'Communications', packageIdentifiers: ['twilio'], apiDomains: ['api.twilio.com'], environmentVariables: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN'], documentation: { url: 'https://www.twilio.com/docs' } }),
   discoveryProvider({ id: 'sendgrid', displayName: 'SendGrid', category: 'Communications', packageIdentifiers: ['@sendgrid/mail'], apiDomains: ['api.sendgrid.com'], environmentVariables: ['SENDGRID_API_KEY'], documentation: { url: 'https://docs.sendgrid.com/' } }),
@@ -83,6 +87,11 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'postmark', displayName: 'Postmark', category: 'Communications', packageIdentifiers: ['postmark'], apiDomains: ['api.postmarkapp.com'], environmentVariables: ['POSTMARK_SERVER_TOKEN'], documentation: { url: 'https://postmarkapp.com/developer' } }),
   discoveryProvider({ id: 'resend', displayName: 'Resend', category: 'Communications', packageIdentifiers: ['resend'], apiDomains: ['api.resend.com'], environmentVariables: ['RESEND_API_KEY'], documentation: { url: 'https://resend.com/docs' } }),
   discoveryProvider({ id: 'slack', displayName: 'Slack', category: 'Communications', packageIdentifiers: ['@slack/web-api', '@slack/bolt'], apiDomains: ['slack.com'], environmentVariables: ['SLACK_BOT_TOKEN', 'SLACK_APP_TOKEN'], documentation: { url: 'https://api.slack.com/docs' } }),
+  discoveryProvider({ id: 'atlassian', displayName: 'Atlassian', category: 'Developer Platforms', packageIdentifiers: ['@atlaskit/api'], apiDomains: ['atlassian.net'], environmentVariables: ['ATLASSIAN_API_TOKEN'], documentation: { url: 'https://developer.atlassian.com/' } }),
+  discoveryProvider({ id: 'linear', displayName: 'Linear', category: 'Developer Platforms', packageIdentifiers: ['@linear/sdk'], apiDomains: ['linear.app', 'mcp.linear.app'], environmentVariables: ['LINEAR_API_KEY'], documentation: { url: 'https://linear.app/developers' } }),
+  discoveryProvider({ id: 'launchdarkly', displayName: 'LaunchDarkly', category: 'Developer Platforms', packageIdentifiers: ['launchdarkly-node-server-sdk'], apiDomains: ['launchdarkly.com', 'app.launchdarkly.com'], apiVersionHeaders: ['LD-API-Version'], environmentVariables: ['LAUNCHDARKLY_SDK_KEY'], documentation: { url: 'https://launchdarkly.com/docs' } }),
+  discoveryProvider({ id: 'snowflake', displayName: 'Snowflake', category: 'Analytics / Data', packageIdentifiers: ['snowflake-sdk'], apiDomains: ['snowflakecomputing.com'], environmentVariables: ['SNOWFLAKE_ACCOUNT'], documentation: { url: 'https://docs.snowflake.com/' } }),
+  discoveryProvider({ id: 'databricks', displayName: 'Databricks', category: 'Analytics / Data', packageIdentifiers: ['databricks-sql-connector'], apiDomains: ['databricks.com'], environmentVariables: ['DATABRICKS_HOST', 'DATABRICKS_TOKEN'], documentation: { url: 'https://docs.databricks.com/' } }),
   discoveryProvider({ id: 'discord', displayName: 'Discord', category: 'Communications', packageIdentifiers: ['discord.js'], apiDomains: ['discord.com'], environmentVariables: ['DISCORD_TOKEN'], documentation: { url: 'https://discord.com/developers/docs' } }),
 
   discoveryProvider({ id: 'paypal', displayName: 'PayPal', category: 'Payments / Fintech', packageIdentifiers: ['@paypal/checkout-server-sdk', '@paypal/paypal-server-sdk'], apiDomains: ['api-m.paypal.com'], environmentVariables: ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'], documentation: { url: 'https://developer.paypal.com/api/rest/' } }),
@@ -105,6 +114,7 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'workos', displayName: 'WorkOS', category: 'Identity', packageIdentifiers: ['@workos-inc/node'], apiDomains: ['api.workos.com'], environmentVariables: ['WORKOS_API_KEY', 'WORKOS_CLIENT_ID'], documentation: { url: 'https://workos.com/docs' } }),
 
   discoveryProvider({ id: 'segment', displayName: 'Segment', category: 'Analytics / Data', packageIdentifiers: ['@segment/analytics-node', '@segment/analytics-next'], apiDomains: ['api.segment.io'], environmentVariables: ['SEGMENT_WRITE_KEY'], documentation: { url: 'https://segment.com/docs/' } }),
+  discoveryProvider({ id: 'elevenlabs', displayName: 'ElevenLabs', category: 'AI / Models', packageIdentifiers: ['@elevenlabs/elevenlabs-js'], apiDomains: ['api.elevenlabs.io'], environmentVariables: ['ELEVENLABS_API_KEY'], documentation: { url: 'https://elevenlabs.io/docs' } }),
   discoveryProvider({ id: 'mixpanel', displayName: 'Mixpanel', category: 'Analytics / Data', packageIdentifiers: ['mixpanel'], apiDomains: ['api.mixpanel.com'], environmentVariables: ['MIXPANEL_TOKEN', 'MIXPANEL_PROJECT_TOKEN'], documentation: { url: 'https://docs.mixpanel.com/' } }),
   discoveryProvider({ id: 'amplitude', displayName: 'Amplitude', category: 'Analytics / Data', packageIdentifiers: ['@amplitude/analytics-node', '@amplitude/analytics-browser'], apiDomains: ['api2.amplitude.com'], environmentVariables: ['AMPLITUDE_API_KEY'], documentation: { url: 'https://www.docs.developers.amplitude.com/' } }),
 ];
@@ -183,6 +193,9 @@ export function validateProviderDefinitions(definitions: readonly ProviderDefini
       const owners = domains.get(normalized) ?? [];
       if (owners.length && !(definition.allowSharedIdentifiers && owners.every((owner) => owner.allowSharedIdentifiers))) throw new Error(`DUPLICATE_PROVIDER_DOMAIN:${domain}`);
       owners.push(definition); domains.set(normalized, owners);
+    }
+    for (const header of definition.apiVersionHeaders ?? []) {
+      if (!/^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/.test(header)) throw new Error(`INVALID_PROVIDER_API_VERSION_HEADER:${header}`);
     }
     for (const variable of definition.environmentVariables) {
       if (!/^[A-Z][A-Z0-9_]*$/.test(variable)) throw new Error(`INVALID_PROVIDER_ENVIRONMENT_VARIABLE:${variable}`);

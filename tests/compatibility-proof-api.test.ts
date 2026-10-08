@@ -20,7 +20,7 @@ describe('GET /api/compatibility-proof', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   });
 
-  it('exposes the seven reviewed local records with their scopes and provenance', async () => {
+  it('exposes the fifteen reviewed local providers with their scopes and provenance', async () => {
     const { session } = await createUserWithSession('compatibility-proof-api@example.com', 'Strong-password-1!', 'Proof API User');
     const response = await GET(new Request('http://localhost/api/compatibility-proof', { headers: { cookie: `apiproof_session=${session.id}` } }));
     expect(response.status).toBe(200);
@@ -29,10 +29,20 @@ describe('GET /api/compatibility-proof', () => {
     expect(body.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
+      'aws-cloudwatch-evidently-end-of-support-2025-10-16',
+      'clerk-api-2026-05-12-metadata-fields-removed',
+      'cloudflare-service-key-auth-removal-2026-09-30',
+      'elevenlabs-v1-model-removal-2026-07-09',
+      'firebase-instance-id-server-apis-decommission-2027-09-29',
       'github-organization-security-fields-removed-2026-04-21',
       'github-synchronous-sbom-endpoint-removal-2026-11-13',
+      'google-cloud-api-registry-mcp-shutdown-2026-07-30',
+      'groq-models-decommissioned-2026-09-21',
+      'launchdarkly-api-version-20220603-eol-2025-04-15',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'shopify-checkout-api-shutdown-2025-04-01',
+      'slack-files-upload-removal-2025-11-12',
       'supabase-management-logs-all-removal-2026-09-23',
       'supabase-openapi-anon-key-access-2026-03-11',
       'twilio-regional-api-domain-removal-2026-04-28',
@@ -43,6 +53,23 @@ describe('GET /api/compatibility-proof', () => {
     expect(body.changes.filter((change) => change.providerId === 'github')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'twilio')).toHaveLength(2);
     expect(body.changes.filter((change) => change.providerId === 'supabase')).toHaveLength(2);
+    expect(body.changes.filter((change) => change.providerId === 'shopify')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'launchdarkly')).toHaveLength(1);
+    expect(body.changes.filter((change) => change.providerId === 'cloudflare')).toHaveLength(1);
+    expect(body.changes.find((change) => change.changeId === 'launchdarkly-api-version-20220603-eol-2025-04-15')).toMatchObject({
+      providerId: 'launchdarkly', changeType: 'api_version_retired', removalAt: '2025-04-15', severity: 'high',
+      applicabilityScope: { dimensions: ['provider', 'api_version'] },
+      apiVersionMetadata: { version: '20220603', replacement: '20240415' },
+      reviewStatus: 'reviewed', reviewer: 'Ravi Teja', reviewedAt: '2026-10-08', provenance: 'official',
+    });
+    expect(body.changes.find((change) => change.changeId === 'shopify-checkout-api-shutdown-2025-04-01')).toMatchObject({
+      providerId: 'shopify', changeType: 'endpoint_removed',
+      applicabilityScope: { dimensions: ['provider', 'resource'] },
+      affectedResources: ['Storefront Checkout mutations', 'REST Checkout endpoints'],
+      replacement: { resources: ['Storefront Cart API', 'Checkout Sheet Kit'] },
+      publishedAt: '2025-03-02', removalAt: '2025-04-01', severity: 'high',
+      reviewStatus: 'reviewed', provenance: 'official', reviewer: 'Ravi Teja', reviewedAt: '2026-10-08',
+    });
     expect(body.changes.find((change) => change.changeId === 'supabase-management-logs-all-removal-2026-09-23')).toMatchObject({
       providerId: 'supabase',
       changeType: 'endpoint_removed',

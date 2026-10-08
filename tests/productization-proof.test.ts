@@ -44,7 +44,7 @@ const repository = {
 describe('productization proof v1', () => {
   it('runs the local snapshot through discovery, IR, reviewed registry, and proof', async () => {
     const result = await runProductizationScan({ repositoryId: 'realistic-multi-provider', scanId: 'scan-001', files: repository });
-    expect(result.coverage).toHaveLength(10);
+    expect(result.coverage).toHaveLength(20);
     expect(result.discoveries.map((item) => item.providerId)).toEqual(['anthropic', 'github', 'openai', 'supabase', 'twilio']);
     expect(result.languages.find((item) => item.language === 'typescript')?.evidence.length).toBe(5);
     expect(result.privacy).toEqual({ externalAiRequired: false, rawSourceExternalTransmission: false, authoritativeDecision: 'deterministic-reviewed-registry' });

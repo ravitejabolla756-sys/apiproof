@@ -254,3 +254,143 @@ export const LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_REVIEW = CandidateReviewSc
   evidenceFingerprint: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.evidenceFingerprint,
   candidateFingerprint: LOCAL_TWILIO_STUDIO_ENGAGEMENTS_REVIEW_ACTION.candidateFingerprint,
 });
+
+const SLACK_FILES_UPLOAD_CANDIDATE_ID = 'slack-files-upload-removal-2025-11-12';
+const slackFilesUploadCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(SLACK_FILES_UPLOAD_CANDIDATE_ID);
+if (!slackFilesUploadCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${SLACK_FILES_UPLOAD_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-08',
+  notes: 'I verified the official Slack changelog for the retirement of files.upload. I verified that files.upload is retired on 2025-11-12 and that Slack directs developers to the sequenced files.getUploadURLExternal followed by files.completeUploadExternal upload flow. I approve authoritative applicability at provider + operation scope only. I do not assert any SDK package, SDK version range, SDK-specific method mapping, endpoint path, model alias, or dynamically constructed operation.',
+  sourceFingerprint: '24840b8e5e4d093c41b747ba459cfb13444201061a6b1f3040df75da433cdd5f',
+  evidenceFingerprint: '7bcaa779622bea78c632c52a2296c7c41bd7aa373887a784866743e501f3b6e9',
+  candidateFingerprint: '2d53d350d578f37984e7a579512ecc9ea9512fdc006733000cd05e7ff2883372',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_SLACK_FILES_UPLOAD_CANDIDATE = reviewCandidate(slackFilesUploadCandidate, LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_SLACK_FILES_UPLOAD_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_SLACK_FILES_UPLOAD_REVIEW_ACTION.candidateFingerprint,
+});
+
+const SHOPIFY_CHECKOUT_API_CANDIDATE_ID = 'shopify-checkout-api-shutdown-2025-04-01';
+const shopifyCheckoutApiCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(SHOPIFY_CHECKOUT_API_CANDIDATE_ID);
+if (!shopifyCheckoutApiCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${SHOPIFY_CHECKOUT_API_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-08',
+  notes: 'I verified Shopify\'s official changelog for the shutdown of the Storefront Checkout mutations and REST Checkout endpoints on 2025-04-01. I verified the Storefront Cart API replacement and Checkout Sheet Kit guidance for mobile apps. I approve authoritative applicability at provider + resource scope for Storefront Checkout mutations and REST Checkout endpoints only. The source explicitly states this is unrelated to the checkout.liquid to Checkout Extensibility migration. I do not assert any npm package, package version, SDK method, endpoint path, GraphQL operation, checkout.liquid applicability, or unrelated Storefront/Admin API applicability.',
+  sourceFingerprint: '1f9fd1ff6fef62f1aeb3f77937865de9fab30c9051697ca2f68606cf16512379',
+  evidenceFingerprint: 'a00b491e6be2deda68588c345fb28ceecfe5f3dfa612fcdc0428439529d4eb10',
+  candidateFingerprint: '07edb79c844497651422e941eac1d62e269ee26ac466bcb48bd8336b1fe0cf0b',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_CANDIDATE = reviewCandidate(shopifyCheckoutApiCandidate, LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_SHOPIFY_CHECKOUT_API_REVIEW_ACTION.candidateFingerprint,
+});
+
+const LAUNCHDARKLY_API_VERSION_CANDIDATE_ID = 'launchdarkly-api-version-20220603-eol-2025-04-15';
+const launchDarklyApiVersionCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(LAUNCHDARKLY_API_VERSION_CANDIDATE_ID);
+if (!launchDarklyApiVersionCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${LAUNCHDARKLY_API_VERSION_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-08',
+  notes: 'I verified LaunchDarkly\'s official REST API version changelog. API version 20220603 is marked EOL on 2025-04-15, and 20240415 is identified as the current version. I approve authoritative applicability at provider + api_version scope only. I do not assert any SDK package, SDK version, SDK method, endpoint-specific applicability, client-library behavior, or undocumented API version. The previously rejected broad claim that all API versions except 20240415 retire on 2026-12-31 is not part of this review.',
+  sourceFingerprint: 'e7fc7da9aee943cb863b3f7dd995d452f8862a1373f0af3967cd3b3f23e55fda',
+  evidenceFingerprint: 'ef593fa2ae35eac21cabdc1e418361b7cfd7ba58c33f705399d885554346257d',
+  candidateFingerprint: '663aab621a5cfb1f53ec1b258499d41744f9c70308a1ee1b22c4a2e04108fdce',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_CANDIDATE = reviewCandidate(launchDarklyApiVersionCandidate, LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION.candidateFingerprint,
+});
+
+const AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE_ID = 'aws-cloudwatch-evidently-end-of-support-2025-10-16';
+const awsCloudWatchEvidentlyCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE_ID);
+if (!awsCloudWatchEvidentlyCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-08',
+  notes: "I verified AWS's official CloudWatch document history notice that support for Amazon CloudWatch Evidently ends on 2025-10-16 and that the console and Evidently resources become unavailable after end of support. I approve provider + resource applicability for Amazon CloudWatch Evidently only. I do not assert a replacement service, SDK package, SDK version, or SDK operation.",
+  sourceFingerprint: 'd9f090a6fe00ffdceb96b5faf24d3f987b167f1bc629a8958bc50c2d39b6c9e9',
+  evidenceFingerprint: '3f83aa108bfe8fadff63add43c523a99b5b971d916e8510b4b4060ca49d4f64c',
+  candidateFingerprint: 'b5d9edc8aa05ef59598bfe100656a3fe151af9c1b2f8111ddbf5e24f6b3c6d0d',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE = reviewCandidate(awsCloudWatchEvidentlyCandidate, LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_AWS_CLOUDWATCH_EVIDENTLY_REVIEW_ACTION.candidateFingerprint,
+});
+
+const CLOUDFLARE_SERVICE_KEY_CANDIDATE_ID = 'cloudflare-service-key-auth-removal-2026-09-30';
+const cloudflareServiceKeyCandidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(CLOUDFLARE_SERVICE_KEY_CANDIDATE_ID);
+if (!cloudflareServiceKeyCandidate) throw new Error(`LOCAL_REVIEWED_CANDIDATE_MISSING:${CLOUDFLARE_SERVICE_KEY_CANDIDATE_ID}`);
+
+/** Explicit user-supplied local review; production insertion remains a separate registry step. */
+export const LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION = {
+  decision: 'approve-for-promotion-review',
+  reviewer: 'Ravi Teja',
+  reviewedAt: '2026-10-08',
+  notes: "I verified Cloudflare's official API deprecation notice for removal of X-Auth-User-Service-Key on 2026-09-30 and the API Token replacement. I approve provider + auth_or_header applicability only for that exact header mechanism. I do not assert any endpoint, SDK package, SDK version, SDK method, or broader authentication behavior.",
+  sourceFingerprint: 'd42f07bfaf4882f46bf455cd5cecfba058794f9109d8985a3cfc591d189f92c9',
+  evidenceFingerprint: '9abd5f0455c3333c23638475e04813a8d20c21c153d5c85e7ab9abc300348ca8',
+  candidateFingerprint: 'e2d017c98bbd004f9101346c6f604102adc558cc468467ebf57dd92ae3f2abfb',
+} as const satisfies CandidateReviewAction;
+
+export const LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_CANDIDATE = reviewCandidate(cloudflareServiceKeyCandidate, LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION);
+
+export const LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_REVIEW = CandidateReviewSchema.parse({
+  status: 'reviewed',
+  reviewer: LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION.reviewer,
+  reviewerKind: 'human',
+  reviewedAt: LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION.reviewedAt,
+  notes: LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION.notes,
+  documentFingerprint: LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION.sourceFingerprint,
+  evidenceFingerprint: LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION.evidenceFingerprint,
+  candidateFingerprint: LOCAL_CLOUDFLARE_SERVICE_KEY_REVIEW_ACTION.candidateFingerprint,
+});

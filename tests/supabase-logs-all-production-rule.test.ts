@@ -23,7 +23,7 @@ const evaluate = (input: CompatibilityUsage) => evaluateRegisteredNormalizedComp
 
 describe('Supabase logs.all reviewed production rule', () => {
   it('inserts exactly one reviewed Supabase record with preserved metadata', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(20);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')).toHaveLength(2);
     const record = PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.get(CHANGE_ID);
     expect(record).toMatchObject({

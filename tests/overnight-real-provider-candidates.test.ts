@@ -178,7 +178,7 @@ describe('overnight real provider candidate projections', () => {
     const proofs = [affected, notAffected, needsReview].flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'overnight-provider-fixture', baselineSha: 'b'.repeat(40), scanId: `overnight-proof-${index}`, results: [result], mode: 'test' }));
     expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
     expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'twilio', changeId: 'twilio-regional-api-domain-removal-2026-04-28', severity: 'high', reviewStatus: 'reviewed', provenance: 'official', replacement: { domain: 'api.twilio.com' } });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(20);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);

@@ -1,0 +1,369 @@
+import { fingerprintCandidateEvidence } from '@apiproof/shared';
+import type { CandidateChange, CandidateSourceEvidence } from '@apiproof/shared';
+
+type ExpansionInput = Pick<CandidateChange, 'candidateId' | 'providerId' | 'sourceUrl' | 'sourceType' | 'discoveredAt' | 'payload'> & {
+  documentFingerprint: string;
+  evidence: CandidateSourceEvidence;
+  evidenceNote: string;
+};
+
+const makeExpansionCandidate = (input: ExpansionInput): CandidateChange => ({
+  candidateId: input.candidateId,
+  providerId: input.providerId,
+  sourceUrl: input.sourceUrl,
+  sourceType: input.sourceType,
+  sourceFingerprint: input.documentFingerprint,
+  documentFingerprint: input.documentFingerprint,
+  evidenceFingerprint: fingerprintCandidateEvidence(input.evidence),
+  sourceEvidence: input.evidence,
+  sourceFingerprintBasis: 'full-body',
+  discoveredAt: input.discoveredAt,
+  state: 'needs_review',
+  payload: {
+    ...input.payload,
+    sourceTitle: input.evidence.sourceTitle,
+    sourceFacts: [input.payload.description],
+    unknowns: [
+      'SDK package, SDK version, and SDK method applicability are not established by the captured source.',
+      'Runtime wrappers and dynamically constructed requests are not inferred.',
+    ],
+    severityBasis: 'Proposed severity reflects only the documented deprecation or removal; human review is required.',
+  },
+  auditTrail: [
+    { state: 'discovered', at: input.discoveredAt, actor: 'official-source-capture', note: input.evidenceNote },
+    { state: 'normalized', at: input.discoveredAt, actor: 'candidate-normalizer', note: 'Normalized only deterministic facts from the official source.' },
+    { state: 'needs_review', at: input.discoveredAt, actor: 'candidate-normalizer', note: 'Human review is required before promotion or compatibility claims.' },
+  ],
+});
+
+const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
+  makeExpansionCandidate({
+    candidateId: 'slack-files-upload-removal-2025-11-12', providerId: 'slack',
+    sourceUrl: 'https://api.slack.com/changelog/2024-04-a-better-way-to-upload-files-is-here-to-stay', sourceType: 'deprecation-notice',
+    documentFingerprint: '24840b8e5e4d093c41b747ba459cfb13444201061a6b1f3040df75da433cdd5f', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured the complete official Slack changelog article; its revised source states that files.upload sunset on November 12, 2025 and names the sequenced replacement methods.',
+    evidence: { providerId: 'slack', sourceUrl: 'https://api.slack.com/changelog/2024-04-a-better-way-to-upload-files-is-here-to-stay', sourceTitle: 'The files.upload method is retiring, to be replaced by sequenced Web API methods', sourceLocator: 'section:When does this happen?', claims: [
+      { key: 'operation', value: 'files.upload' }, { key: 'removalAt', value: '2025-11-12' },
+      { key: 'status', value: 'sunset and no longer accessible' }, { key: 'replacement', value: 'files.getUploadURLExternal and files.completeUploadExternal' },
+    ] },
+    payload: { changeId: 'slack-files-upload-removal-2025-11-12', title: 'Slack files.upload retirement', description: 'Slack documents that files.upload sunsets on November 12, 2025 and directs applications to files.getUploadURLExternal followed by files.completeUploadExternal.', changeType: 'method_removed', removalAt: '2025-11-12', applicabilityScope: { dimensions: ['provider', 'operation'] }, apiOperationPatterns: ['files.upload'], replacement: { operation: 'files.getUploadURLExternal and files.completeUploadExternal' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'okta-risk-provider-and-events-api-deprecation', providerId: 'okta',
+    sourceUrl: 'https://developer.okta.com/docs/release-notes/2025-okta-identity-engine/', sourceType: 'official-changelog',
+    documentFingerprint: '70c4fafb127102780aadcc4ff7df502a30e50afa00bdc63b75cc43634c813e64', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Okta official release notes identifying the Risk Provider and Risk Events APIs as deprecated and directing callers to SSF Security Event Tokens and the SSF Receiver API.',
+    evidence: { providerId: 'okta', sourceUrl: 'https://developer.okta.com/docs/release-notes/2025-okta-identity-engine/', sourceTitle: 'Okta Identity Engine API release notes 2025', sourceLocator: 'section:Risk Provider and Risk Events APIs are deprecated', claims: [
+      { key: 'status', value: 'deprecated' }, { key: 'resource', value: 'Risk Provider and Risk Events APIs' }, { key: 'replacement', value: 'SSF Security Event Tokens API and SSF Receiver API' },
+    ] },
+    payload: { changeId: 'okta-risk-provider-and-events-api-deprecation', title: 'Okta Risk APIs deprecation', description: 'Okta identifies the Risk Provider and Risk Events APIs as deprecated and documents SSF APIs as the migration path.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Risk Provider API', 'Risk Events API'], replacement: { resources: ['SSF Security Event Tokens API', 'SSF Receiver API'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'elevenlabs-v1-model-removal-2026-07-09', providerId: 'elevenlabs',
+    sourceUrl: 'https://elevenlabs.io/docs/changelog/2026/6/8', sourceType: 'official-changelog',
+    documentFingerprint: 'c0312e1ed9f33d5061dfb69c84cd77a2da33879e66de02efe1fc8d877ee24b3a', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched the complete ElevenLabs official changelog; the candidate-specific v1 model-removal evidence is unchanged.',
+    evidence: { providerId: 'elevenlabs', sourceUrl: 'https://elevenlabs.io/docs/changelog/2026/6/8', sourceTitle: 'June 8, 2026 | ElevenLabs Documentation', sourceLocator: 'section:Text to Speech and Speech to Text', claims: [
+      { key: 'removalAt', value: '2026-07-09' }, { key: 'models', value: 'eleven_monolingual_v1; eleven_multilingual_v1; scribe_v1' }, { key: 'replacement', value: 'eleven_multilingual_v2; scribe_v2; scribe_v2_realtime' },
+    ] },
+    payload: { changeId: 'elevenlabs-v1-model-removal-2026-07-09', title: 'ElevenLabs v1 model removal', description: 'ElevenLabs documents removal of v1 text-to-speech and speech-to-text models and names current replacements.', changeType: 'model_retired', removalAt: '2026-07-09', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['eleven_monolingual_v1', 'eleven_multilingual_v1', 'scribe_v1'], replacement: { model: 'eleven_multilingual_v2; scribe_v2; scribe_v2_realtime' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'paypal-invoicing-v1-endpoint-deprecation', providerId: 'paypal',
+    sourceUrl: 'https://developer.paypal.com/api/rest/', sourceType: 'official-api-reference',
+    documentFingerprint: 'b0dc8eb5ac50fa6df6d6eb678a6b36c6f1b9929a3ad0b6d5a2f6676c0dd1b954', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured the official PayPal REST API reference as a candidate source; exact endpoint/date applicability remains review-gated.',
+    evidence: { providerId: 'paypal', sourceUrl: 'https://developer.paypal.com/api/rest/', sourceTitle: 'PayPal REST APIs', sourceLocator: 'document:REST API reference', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'paypal-invoicing-v1-endpoint-deprecation', title: 'PayPal Invoicing API version review candidate', description: 'Official PayPal REST documentation is retained as a source candidate; endpoint and effective-date facts require manual review before promotion.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'netlify-api-lifecycle-review-candidate', providerId: 'netlify',
+    sourceUrl: 'https://docs.netlify.com/api/get-started/', sourceType: 'official-documentation',
+    documentFingerprint: '1b0d96666255b8c813bd8e01612d0b1b475244220ab5d12e3e7cba9e19cdd3e7', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Netlify official API documentation as a review candidate; no removal date or exact affected operation is inferred.',
+    evidence: { providerId: 'netlify', sourceUrl: 'https://docs.netlify.com/api/get-started/', sourceTitle: 'Netlify API documentation', sourceLocator: 'document:API getting started', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'netlify-api-lifecycle-review-candidate', title: 'Netlify API lifecycle review candidate', description: 'This candidate intentionally preserves unknown applicability until an official change record is manually reviewed.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'sentry-api-lifecycle-review-candidate', providerId: 'sentry',
+    sourceUrl: 'https://docs.sentry.io/api/', sourceType: 'official-api-reference',
+    documentFingerprint: '054026348d587f1935e1af325f5d694bc1948d9127dbaf20b31d1c37f762640c', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Sentry official API reference as a source candidate without inferring an undocumented removal or package scope.',
+    evidence: { providerId: 'sentry', sourceUrl: 'https://docs.sentry.io/api/', sourceTitle: 'Sentry API reference', sourceLocator: 'document:API reference', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'sentry-api-lifecycle-review-candidate', title: 'Sentry API lifecycle review candidate', description: 'Sentry API evidence is retained for manual review; no compatibility claim is enabled.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'segment-api-lifecycle-review-candidate', providerId: 'segment',
+    sourceUrl: 'https://segment.com/docs/', sourceType: 'official-documentation',
+    documentFingerprint: 'fe494ff9ea74f177696a421691fd3f6778602c0f2a3cbdb2567a635c75e16f83', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Segment official documentation as a source candidate; exact reviewed change facts remain unknown.',
+    evidence: { providerId: 'segment', sourceUrl: 'https://segment.com/docs/', sourceTitle: 'Segment documentation', sourceLocator: 'document:documentation root', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'segment-api-lifecycle-review-candidate', title: 'Segment API lifecycle review candidate', description: 'Segment documentation is retained for manual review and cannot produce a compatibility finding while applicability is unknown.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'cloudflare-service-key-auth-removal-2026-09-30', providerId: 'cloudflare',
+    sourceUrl: 'https://developers.cloudflare.com/fundamentals/api/reference/deprecations/', sourceType: 'deprecation-notice',
+    documentFingerprint: 'd42f07bfaf4882f46bf455cd5cecfba058794f9109d8985a3cfc591d189f92c9', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched the complete Cloudflare API deprecations page; the candidate-specific Service Key evidence is unchanged.',
+    evidence: { providerId: 'cloudflare', sourceUrl: 'https://developers.cloudflare.com/fundamentals/api/reference/deprecations/', sourceTitle: 'API deprecations', sourceLocator: 'section:Service Key Authentication', claims: [{ key: 'removalAt', value: '2026-09-30' }, { key: 'auth', value: 'X-Auth-User-Service-Key' }, { key: 'replacement', value: 'API Token' }] },
+    payload: { changeId: 'cloudflare-service-key-auth-removal-2026-09-30', title: 'Cloudflare Service Key authentication removal', description: 'Cloudflare documents removal of Service Key authentication and replacement with scoped API Tokens.', changeType: 'auth_or_header_removed', removalAt: '2026-09-30', applicabilityScope: { dimensions: ['provider', 'auth_or_header'] }, authOrHeaderPatterns: ['X-Auth-User-Service-Key'], replacement: { authOrHeader: 'API Token' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'adyen-api-lifecycle-review-candidate', providerId: 'adyen',
+    sourceUrl: 'https://docs.adyen.com/api-explorer/', sourceType: 'official-api-reference',
+    documentFingerprint: '96073acd29d2ca2854c42f2ba5edc44c98f6b881646df72eb4a4e10f51afb2d9', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Adyen official API Explorer as a review candidate; no undocumented removal or package applicability is inferred.',
+    evidence: { providerId: 'adyen', sourceUrl: 'https://docs.adyen.com/api-explorer/', sourceTitle: 'Adyen API Explorer', sourceLocator: 'document:API Explorer', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'adyen-api-lifecycle-review-candidate', title: 'Adyen API lifecycle review candidate', description: 'Adyen API evidence is retained for manual review; no compatibility claim is enabled.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'paddle-api-lifecycle-review-candidate', providerId: 'paddle',
+    sourceUrl: 'https://developer.paddle.com/', sourceType: 'official-documentation',
+    documentFingerprint: '980d88d8d72738e1e22aaee7f72125e63fd9bf4e5ac0ee31ddb4d29432bc110d', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Paddle official developer documentation as a review candidate; exact change applicability remains unknown until manual source review.',
+    evidence: { providerId: 'paddle', sourceUrl: 'https://developer.paddle.com/', sourceTitle: 'Paddle Developer Docs', sourceLocator: 'document:developer portal', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'paddle-api-lifecycle-review-candidate', title: 'Paddle API lifecycle review candidate', description: 'Paddle API evidence is retained for manual review; no compatibility claim is enabled.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'workos-api-lifecycle-review-candidate', providerId: 'workos',
+    sourceUrl: 'https://workos.com/docs', sourceType: 'official-documentation',
+    documentFingerprint: '38b90516efeaa35ed455640377bb58042d2e71bd4cd62bc2ebcf59c09a718260', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured WorkOS official documentation as a source candidate; exact change applicability remains unknown until manual source review.',
+    evidence: { providerId: 'workos', sourceUrl: 'https://workos.com/docs', sourceTitle: 'WorkOS Docs', sourceLocator: 'document:developer portal', claims: [{ key: 'candidateStatus', value: 'requires manual source review' }] },
+    payload: { changeId: 'workos-api-lifecycle-review-candidate', title: 'WorkOS API lifecycle review candidate', description: 'WorkOS API evidence is retained for manual review; no compatibility claim is enabled.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'clerk-api-2026-05-12-metadata-fields-removed', providerId: 'clerk', sourceUrl: 'https://clerk.com/docs/guides/development/upgrading/upgrade-guides/2026-05-12', sourceType: 'migration-guide',
+    documentFingerprint: 'cf740308c3f2777bc6915f7c1434152296360015c5c6d2f639b1f94b4837658a', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Clerk’s official API upgrade guide; the candidate-specific metadata-field removal evidence is unchanged.',
+    evidence: { providerId: 'clerk', sourceUrl: 'https://clerk.com/docs/guides/development/upgrading/upgrade-guides/2026-05-12', sourceTitle: 'Upgrade to API version 2026-05-12', sourceLocator: 'section:Backend endpoint changes', claims: [{ key: 'apiVersion', value: '2026-05-12' }, { key: 'parameter', value: 'public_metadata' }, { key: 'parameter', value: 'private_metadata' }, { key: 'parameter', value: 'unsafe_metadata' }, { key: 'replacement', value: 'dedicated metadata endpoints' }] },
+    payload: { changeId: 'clerk-api-2026-05-12-metadata-fields-removed', title: 'Clerk metadata fields removed from update endpoints', description: 'Clerk documents that API version 2026-05-12 removes metadata fields from general-purpose user and organization update endpoints and directs callers to dedicated metadata endpoints.', changeType: 'parameter_removed', effectiveAt: '2026-05-12', applicabilityScope: { dimensions: ['provider', 'endpoint', 'parameter'] }, affectedEndpoints: ['/v1/users/{user_id}', '/v1/organizations/{organization_id}', '/v1/me'], affectedParameters: ['public_metadata', 'private_metadata', 'unsafe_metadata'], replacement: { endpoint: 'dedicated metadata endpoints' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'groq-models-decommissioned-2026-09-21', providerId: 'groq', sourceUrl: 'https://console.groq.com/docs/deprecations', sourceType: 'deprecation-notice',
+    documentFingerprint: '6b520d47e8bc72484140c9eb498f30f456afe3d1756c4e2affc037fe1f5a1d07', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Groq’s official model deprecation history; the candidate-specific Compound model evidence is unchanged.',
+    evidence: { providerId: 'groq', sourceUrl: 'https://console.groq.com/docs/deprecations', sourceTitle: 'Model Deprecation - GroqDocs', sourceLocator: 'section:September 21, 2026', claims: [{ key: 'model', value: 'groq/compound' }, { key: 'model', value: 'groq/compound-mini' }, { key: 'removalAt', value: '2026-09-21' }, { key: 'status', value: 'decommissioned' }] },
+    payload: { changeId: 'groq-models-decommissioned-2026-09-21', title: 'Groq Compound model decommissioning', description: 'Groq documents that groq/compound and groq/compound-mini are decommissioned and requests to those model IDs are no longer supported.', changeType: 'model_retired', removalAt: '2026-09-21', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['groq/compound', 'groq/compound-mini'], severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'firebase-instance-id-server-apis-decommission-2027-09-29', providerId: 'firebase', sourceUrl: 'https://firebase.google.com/docs/cloud-messaging/troubleshooting', sourceType: 'deprecation-notice',
+    documentFingerprint: 'f2a9c271b91a2148c733bebb35274196c497f9a40fa062619fd94b3a31b3ee65', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Firebase’s official FCM deprecation notice; the candidate-specific InstanceId info API evidence is unchanged.',
+    evidence: { providerId: 'firebase', sourceUrl: 'https://firebase.google.com/docs/cloud-messaging/troubleshooting', sourceTitle: 'Firebase Cloud Messaging troubleshooting & FAQ', sourceLocator: 'section:FCM legacy API deprecations', claims: [{ key: 'endpoint', value: 'https://iid.googleapis.com/iid/info' }, { key: 'removalAt', value: '2027-09-29' }, { key: 'status', value: 'decommissioned' }, { key: 'replacementGuidance', value: 'upgrade Firebase Admin SDK' }] },
+    payload: { changeId: 'firebase-instance-id-server-apis-decommission-2027-09-29', title: 'Firebase InstanceId server API decommissioning', description: 'Firebase documents decommissioning of the InstanceId server APIs, including the InstanceId info API, on September 29, 2027.', changeType: 'endpoint_removed', removalAt: '2027-09-29', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['https://iid.googleapis.com/iid/info'], severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'google-cloud-api-registry-mcp-shutdown-2026-07-30', providerId: 'google-cloud', sourceUrl: 'https://docs.cloud.google.com/api-registry/release-notes', sourceType: 'release-notes',
+    documentFingerprint: 'e57f6568c8a4fecef9669740aa4c84fe6129afad6bba50064b76e1e454db8917', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Google Cloud API Registry release notes; the candidate-specific MCP shutdown evidence is unchanged.',
+    evidence: { providerId: 'google-cloud', sourceUrl: 'https://docs.cloud.google.com/api-registry/release-notes', sourceTitle: 'Cloud API Registry release notes', sourceLocator: 'section:July 30, 2026', claims: [{ key: 'resource', value: 'Model Context Protocol servers and tools' }, { key: 'removalAt', value: '2026-07-30' }, { key: 'status', value: 'shut down' }, { key: 'replacementGuidance', value: 'use supported MCP endpoints after enabling the API' }] },
+    payload: { changeId: 'google-cloud-api-registry-mcp-shutdown-2026-07-30', title: 'Google Cloud API Registry MCP shutdown', description: 'Google Cloud documents shutdown of API Registry support for retrieving, listing, enabling, and disabling MCP servers and tools on July 30, 2026.', changeType: 'endpoint_removed', removalAt: '2026-07-30', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['API Registry MCP servers and tools'], severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'mongodb-atlas-m2-m5-serverless-eol-2026-01-22', providerId: 'mongodb', sourceUrl: 'https://www.mongodb.com/docs/atlas/flex-migration/', sourceType: 'migration-guide',
+    documentFingerprint: 'ab5a10b04498f5f57019e97d2a8838e68828fdfe4dd8844b7b823e96f3a68a1d', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched MongoDB Atlas’s official Flex migration guide; the candidate-specific M2/M5 and Serverless EOL evidence is unchanged.',
+    evidence: { providerId: 'mongodb', sourceUrl: 'https://www.mongodb.com/docs/atlas/flex-migration/', sourceTitle: 'Migrate Programmatic Tools to Flex Clusters', sourceLocator: 'section:API Configuration', claims: [{ key: 'resource', value: 'M2/M5 clusters and Serverless instances' }, { key: 'removalAt', value: '2026-01-22' }, { key: 'status', value: 'end of life' }, { key: 'replacement', value: 'Flex clusters' }] },
+    payload: { changeId: 'mongodb-atlas-m2-m5-serverless-eol-2026-01-22', title: 'MongoDB Atlas M2/M5 and Serverless EOL', description: 'MongoDB documents that Atlas M2/M5 clusters and Serverless instances are no longer supported and directs programmatic tooling to Flex clusters.', changeType: 'endpoint_removed', removalAt: '2026-01-22', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Atlas M2/M5 clusters', 'Atlas Serverless instances'], replacement: { resources: ['Atlas Flex clusters'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'databricks-sql-legacy-api-deprecation-2026', providerId: 'databricks', sourceUrl: 'https://docs.databricks.com/aws/en/sql/dbsql-api-latest', sourceType: 'migration-guide',
+    documentFingerprint: '6c6064fbace8d2302293ca34e69c667071ea6ae41d62424be00b79a028837563', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Databricks SQL API migration documentation; the candidate-specific legacy API evidence is unchanged.',
+    evidence: { providerId: 'databricks', sourceUrl: 'https://docs.databricks.com/aws/en/sql/dbsql-api-latest', sourceTitle: 'Update to the latest Databricks SQL API version', sourceLocator: 'section:legacy API deprecation', claims: [{ key: 'endpoint', value: '/api/2.0/preview/sql/queries' }, { key: 'deprecatedResource', value: 'Permissions API' }, { key: 'deprecatedResource', value: 'Data Sources API' }, { key: 'replacement', value: 'Workspace API and latest SQL APIs' }] },
+    payload: { changeId: 'databricks-sql-legacy-api-deprecation-2026', title: 'Databricks SQL legacy API deprecation', description: 'Databricks documents deprecation of legacy SQL APIs and directs integrations to the latest Queries, Alerts, and Workspace APIs.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Databricks legacy SQL APIs'], replacement: { resources: ['latest Queries API', 'latest Alerts API', 'Workspace API'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'snowflake-sql-api-old-functionality-disabled-future', providerId: 'snowflake', sourceUrl: 'https://docs.snowflake.com/en/developer-guide/sql-api/sql-api-old', sourceType: 'official-documentation',
+    documentFingerprint: '7e22b23c8fd5a5c87bbac82eaaa7e11e9d52644caf2265855170416a24e9a2c3', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Snowflake’s deprecated SQL API documentation; the candidate-specific endpoint evidence is unchanged.',
+    evidence: { providerId: 'snowflake', sourceUrl: 'https://docs.snowflake.com/en/developer-guide/sql-api/sql-api-old', sourceTitle: 'Deprecated functionality', sourceLocator: 'section:Developer SQL API', claims: [{ key: 'endpoint', value: '/api/statements/statementHandle' }, { key: 'status', value: 'no longer supported and disabled in a future release' }, { key: 'replacement', value: 'current SQL API' }] },
+    payload: { changeId: 'snowflake-sql-api-old-functionality-disabled-future', title: 'Snowflake deprecated SQL API functionality', description: 'Snowflake documents that deprecated SQL API functionality is no longer supported and will be disabled in a future release; integrations should use the current SQL API.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/api/statements/', '/api/statements/statementHandle', '/api/statements/statementHandle/cancel'], severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'launchdarkly-api-version-20220603-eol-2025-04-15', providerId: 'launchdarkly', sourceUrl: 'https://launchdarkly.com/docs/api/', sourceType: 'official-documentation',
+    documentFingerprint: 'e7fc7da9aee943cb863b3f7dd995d452f8862a1373f0af3967cd3b3f23e55fda', discoveredAt: '2026-10-08', evidenceNote: 'Captured LaunchDarkly’s official API version table identifying 20220603 EOL on April 15, 2025 and 20240415 as the current replacement version.',
+    evidence: { providerId: 'launchdarkly', sourceUrl: 'https://launchdarkly.com/docs/api/', sourceTitle: 'REST API overview', sourceLocator: 'section:API version changelog', claims: [{ key: 'removalAt', value: '2025-04-15' }, { key: 'affectedApiVersion', value: '20220603' }, { key: 'replacementApiVersion', value: '20240415' }, { key: 'status', value: 'EOL' }] },
+    payload: { changeId: 'launchdarkly-api-version-20220603-eol-2025-04-15', title: 'LaunchDarkly API version 20220603 EOL', description: 'LaunchDarkly’s API version table marks version 20220603 EOL on April 15, 2025 and identifies 20240415 as the current API version.', changeType: 'api_version_retired', removalAt: '2025-04-15', applicabilityScope: { dimensions: ['provider', 'api_version'] }, apiVersionMetadata: { version: '20220603', replacement: '20240415' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'vercel-legacy-integration-webhook-endpoints-removal-2021-08-20', providerId: 'vercel', sourceUrl: 'https://vercel.com/changelog/sunsetting-ui-hooks-and-legacy-webhooks', sourceType: 'official-changelog',
+    documentFingerprint: '1311464e47144d9460deffb84a1020e6753516218dc42f92dc7c86c613852633', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Vercel’s official changelog; the candidate-specific legacy integration endpoint evidence is unchanged.',
+    evidence: { providerId: 'vercel', sourceUrl: 'https://vercel.com/changelog/sunsetting-ui-hooks-and-legacy-webhooks', sourceTitle: 'Sunsetting UI-Hooks and Legacy Webhooks', sourceLocator: 'article:2021-08-20', claims: [{ key: 'removalAt', value: '2021-08-20' }, { key: 'affectedEndpoint', value: '/v1/integrations/configuration/:id/metadata' }, { key: 'affectedEndpoint', value: '/v1/integrations/webhooks' }, { key: 'affectedEndpoint', value: '/v1/integrations/webhooks/:id' }] },
+    payload: { changeId: 'vercel-legacy-integration-webhook-endpoints-removal-2021-08-20', title: 'Vercel legacy integration webhook endpoint removal', description: 'Vercel documents removal of UI Hooks and manual integration webhook endpoints, including integration configuration metadata and webhook endpoints.', changeType: 'endpoint_removed', removalAt: '2021-08-20', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/v1/integrations/configuration/:id/metadata', '/v1/integrations/webhooks', '/v1/integrations/webhooks/:id'], severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'datadog-api-catalog-update-endpoint-deprecated', providerId: 'datadog', sourceUrl: 'https://docs.datadoghq.com/api/latest/api-management/update-an-api/', sourceType: 'official-documentation',
+    documentFingerprint: '68030db4b6e92b160aa7376c18168e85bf6b22bd3969cc4a89702eb0a375b895', discoveredAt: '2026-10-08', evidenceNote: 'Re-fetched Datadog’s official API reference; the candidate-specific deprecated API Catalog update endpoint evidence is unchanged.',
+    evidence: { providerId: 'datadog', sourceUrl: 'https://docs.datadoghq.com/api/latest/api-management/update-an-api/', sourceTitle: 'Update an API', sourceLocator: 'operation:PUT api catalog update', claims: [{ key: 'status', value: 'deprecated' }, { key: 'endpoint', value: 'PUT /api/v2/apicatalog/api/{id}/openapi' }] },
+    payload: { changeId: 'datadog-api-catalog-update-endpoint-deprecated', title: 'Datadog API Catalog update endpoint deprecation', description: 'Datadog marks the API Catalog OpenAPI update endpoint as deprecated in its official API reference; a removal date is not stated.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/api/v2/apicatalog/api/{id}/openapi'], severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'new-relic-rest-api-v1-superseded-by-v2', providerId: 'new-relic', sourceUrl: 'https://docs.newrelic.com/docs/apis/rest-api-v2/api-explorer-v2/introduction-new-relics-rest-api-explorer/', sourceType: 'official-documentation',
+    documentFingerprint: '0740d67d263179d32eab28f24f7c53e51e35e92aad05789da3675384e1b242fe', discoveredAt: '2026-10-08', evidenceNote: 'Captured New Relic’s official API Explorer documentation stating that REST API v2 replaces deprecated v1.',
+    evidence: { providerId: 'new-relic', sourceUrl: 'https://docs.newrelic.com/docs/apis/rest-api-v2/api-explorer-v2/introduction-new-relics-rest-api-explorer/', sourceTitle: 'Introduction to New Relic REST API Explorer', sourceLocator: 'section:Differences from API version 1', claims: [{ key: 'affectedApiVersion', value: 'REST API v1' }, { key: 'status', value: 'deprecated' }, { key: 'replacementApiVersion', value: 'REST API v2' }] },
+    payload: { changeId: 'new-relic-rest-api-v1-superseded-by-v2', title: 'New Relic REST API v1 superseded by v2', description: 'New Relic documents that REST API v2 replaces deprecated REST API v1 and provides different data names and commands.', changeType: 'api_version_retired', applicabilityScope: { dimensions: ['provider', 'api_version'] }, apiVersionMetadata: { version: 'REST API v1', replacement: 'REST API v2' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'shopify-checkout-api-shutdown-2025-04-01', providerId: 'shopify',
+    sourceUrl: 'https://shopify.dev/changelog/posts/checkout-apis-will-be-shut-down-april-1-2025', sourceType: 'official-changelog',
+    documentFingerprint: '1f9fd1ff6fef62f1aeb3f77937865de9fab30c9051697ca2f68606cf16512379', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured the complete official Shopify Checkout API shutdown changelog article and its migration guidance.',
+    evidence: { providerId: 'shopify', sourceUrl: 'https://shopify.dev/changelog/posts/checkout-apis-will-be-shut-down-april-1-2025', sourceTitle: 'Checkout APIs will be shut down April 1, 2025', sourceLocator: 'article:Checkout APIs will be shut down April 1, 2025', claims: [
+      { key: 'removalAt', value: '2025-04-01' }, { key: 'affectedResource', value: 'Storefront Checkout mutations' },
+      { key: 'affectedResource', value: 'REST Checkout endpoints' }, { key: 'replacementResource', value: 'Storefront Cart API' },
+      { key: 'replacementResource', value: 'Checkout Sheet Kit' }, { key: 'publishedAt', value: '2025-03-02' },
+      { key: 'scopeBoundary', value: 'Unrelated to the prior move from checkout.liquid to Checkout Extensibility' },
+    ] },
+    payload: { changeId: 'shopify-checkout-api-shutdown-2025-04-01', title: 'Shopify Checkout API shutdown', description: 'Shopify documents shutdown of deprecated Storefront Checkout mutations and REST Checkout endpoints and directs merchants to the Storefront Cart API or Checkout Sheet Kit.', changeType: 'endpoint_removed', publishedAt: '2025-03-02', removalAt: '2025-04-01', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Storefront Checkout mutations', 'REST Checkout endpoints'], replacement: { resources: ['Storefront Cart API', 'Checkout Sheet Kit'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'cloudflare-workers-kv-legacy-routes-2026-10-15', providerId: 'cloudflare',
+    sourceUrl: 'https://developers.cloudflare.com/changelog/post/2026-07-15-kv-legacy-namespace-routes-deprecation/', sourceType: 'deprecation-notice',
+    documentFingerprint: '01e0a1778217b537b6432ec736b800c8d237b8bbc763e8f7f55c878e716a2627', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched the official Cloudflare changelog; the candidate-specific Workers KV legacy route evidence is unchanged.',
+    evidence: { providerId: 'cloudflare', sourceUrl: 'https://developers.cloudflare.com/changelog/post/2026-07-15-kv-legacy-namespace-routes-deprecation/', sourceTitle: 'Workers KV legacy namespace routes deprecation', sourceLocator: 'article:2026-07-15', claims: [
+      { key: 'publishedAt', value: '2026-07-15' }, { key: 'removalAt', value: '2026-10-15' },
+      { key: 'affectedEndpoint', value: '/accounts/{account_id}/workers/namespaces/*' },
+      { key: 'replacementEndpoint', value: '/accounts/{account_id}/storage/kv/namespaces/*' },
+    ] },
+    payload: { changeId: 'cloudflare-workers-kv-legacy-routes-2026-10-15', title: 'Cloudflare Workers KV legacy namespace routes deprecation', description: 'Cloudflare documents retirement of legacy Workers KV namespace routes and directs callers to the storage/kv namespace routes.', changeType: 'endpoint_removed', publishedAt: '2026-07-15', removalAt: '2026-10-15', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/accounts/{account_id}/workers/namespaces/*'], replacement: { endpoint: '/accounts/{account_id}/storage/kv/namespaces/*' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'microsoft-azure-api-version-retirement-pre-2021-08-01-2024-06-01', providerId: 'microsoft-azure',
+    sourceUrl: 'https://learn.microsoft.com/en-us/azure/api-management/breaking-changes/api-version-retirement-sep-2023', sourceType: 'official-documentation',
+    documentFingerprint: '85d5856d6532f44067704f60631012041b6548c47f3a048dfeee25cce9cc0a86', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched the official Microsoft Azure API Management breaking-change page; the candidate-specific pre-2021-08-01 retirement evidence is unchanged.',
+    evidence: { providerId: 'microsoft-azure', sourceUrl: 'https://learn.microsoft.com/en-us/azure/api-management/breaking-changes/api-version-retirement-sep-2023', sourceTitle: 'API version retirement - Azure API Management', sourceLocator: 'section:API version retirement', claims: [
+      { key: 'effectiveAt', value: '2024-06-01' }, { key: 'affectedApiVersion', value: 'before 2021-08-01' },
+      { key: 'replacementApiVersion', value: '2021-08-01 or later' },
+    ] },
+    payload: { changeId: 'microsoft-azure-api-version-retirement-pre-2021-08-01-2024-06-01', title: 'Azure API version retirement', description: 'Microsoft documents retirement of Azure API Management API versions before 2021-08-01 and directs callers to 2021-08-01 or later.', changeType: 'api_version_retired', effectiveAt: '2024-06-01', applicabilityScope: { dimensions: ['provider', 'api_version'] }, apiVersionMetadata: { version: 'before 2021-08-01', replacement: '2021-08-01 or later' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'square-customer-cards-field-retired-2025-01-23', providerId: 'square',
+    sourceUrl: 'https://developer.squareup.com/docs/changelog/connect-logs/2025-01-23', sourceType: 'official-changelog',
+    documentFingerprint: '1df194b428312759a7a4f3d9e9a41c0e05f4739564c0f6d576d4ada3cf2f3b97', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched the official Square changelog; the candidate-specific Customer.cards retirement evidence is unchanged.',
+    evidence: { providerId: 'square', sourceUrl: 'https://developer.squareup.com/docs/changelog/connect-logs/2025-01-23', sourceTitle: 'Square APIs and SDKs: 2025-01-23 Changelog', sourceLocator: 'section:Customers API', claims: [
+      { key: 'apiVersion', value: '2025-01-23 and later' }, { key: 'resource', value: 'Customer object' }, { key: 'responseField', value: 'Customer.cards' },
+      { key: 'status', value: 'retired' }, { key: 'replacement', value: 'ListCards and ListGiftCards endpoints' },
+    ] },
+    payload: { changeId: 'square-customer-cards-field-retired-2025-01-23', title: 'Square Customer cards field retirement', description: 'Square documents that the Customer cards field is retired from the Customer object in API version 2025-01-23 and later and directs callers to ListCards and ListGiftCards.', changeType: 'response_field_removed', effectiveAt: '2025-01-23', applicabilityScope: { dimensions: ['provider', 'resource', 'response_field', 'api_version'] }, affectedResources: ['Customer object'], affectedResponseFields: ['Customer.cards'], apiVersionMetadata: { version: '2025-01-23 and later' }, replacement: { resources: ['ListCards', 'ListGiftCards'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'gitlab-subscription-api-endpoints-removal', providerId: 'gitlab',
+    sourceUrl: 'https://docs.gitlab.com/update/deprecations/', sourceType: 'official-documentation',
+    documentFingerprint: '4533eaf82beac9bc8ca8e26f3a1d24088a0f64218133b893d4a8a54d24302521', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched GitLab’s official deprecation page, including the current statement that the original removal milestone was removed and the change is being reassessed.',
+    evidence: { providerId: 'gitlab', sourceUrl: 'https://docs.gitlab.com/update/deprecations/', sourceTitle: 'Deprecations and removals by version', sourceLocator: 'section:Subscription related API endpoints in the public API are deprecated', claims: [
+      { key: 'status', value: 'deprecated and will be removed' }, { key: 'endpoint', value: 'PUT /api/v4/user/:id/credit_card_validation' }, { key: 'endpoint', value: 'POST /api/v4/namespaces/:namespace_id/minutes' }, { key: 'endpoint', value: 'PATCH /api/v4/namespaces/:previous_namespace_id/minutes/move/:target_namespace_id' }, { key: 'endpoint', value: 'GET /api/v4/namespaces/:namespace_id/subscription_add_on_purchase/:id' }, { key: 'endpoint', value: 'PUT /api/v4/namespaces/:namespace_id/subscription_add_on_purchase/:id' }, { key: 'endpoint', value: 'POST /api/v4/namespaces/:namespace_id/subscription_add_on_purchase/:id' }, { key: 'endpoint', value: 'POST /api/v4/namespaces/:id/gitlab_subscription' }, { key: 'endpoint', value: 'PUT /api/v4/namespaces/:id/gitlab_subscription' }, { key: 'endpoint', value: 'PUT /api/v4/namespaces/:id' },
+      { key: 'replacement', value: 'internal endpoints with JWT authentication' }, { key: 'impact', value: 'used internally; no expected customer impact' }, { key: 'milestoneStatus', value: 'removed from original milestone and being reassessed' },
+    ] },
+    payload: { changeId: 'gitlab-subscription-api-endpoints-removal', title: 'GitLab subscription API endpoint removal', description: 'GitLab documents that nine subscription-related public REST endpoints are deprecated and slated for removal; the source says they were used internally and replaced by internal JWT-authenticated endpoints. The current source also says the change was removed from its original milestone and is being reassessed, so no removal date or production-promotion conclusion is asserted.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['PUT /api/v4/user/:id/credit_card_validation', 'POST /api/v4/namespaces/:namespace_id/minutes', 'PATCH /api/v4/namespaces/:previous_namespace_id/minutes/move/:target_namespace_id', 'GET /api/v4/namespaces/:namespace_id/subscription_add_on_purchase/:id', 'PUT /api/v4/namespaces/:namespace_id/subscription_add_on_purchase/:id', 'POST /api/v4/namespaces/:namespace_id/subscription_add_on_purchase/:id', 'POST /api/v4/namespaces/:id/gitlab_subscription', 'PUT /api/v4/namespaces/:id/gitlab_subscription', 'PUT /api/v4/namespaces/:id'], replacement: { authOrHeader: 'internal JWT authentication' }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'discord-social-sdk-default-scopes-removal-2025-03-26', providerId: 'discord',
+    sourceUrl: 'https://discord.com/developers/docs/social-sdk/release_notes.html', sourceType: 'release-notes',
+    documentFingerprint: 'c99e0ddafa9cc77626fb9e83e489d03b32241b93ac8835dde1d95f27c9777fe0', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Discord’s official Social SDK release notes; the candidate-specific default-scopes removal evidence is unchanged.',
+    evidence: { providerId: 'discord', sourceUrl: 'https://discord.com/developers/docs/social-sdk/release_notes.html', sourceTitle: 'Release Notes | Discord Social SDK', sourceLocator: 'section:1.0 API Cleanup', claims: [
+      { key: 'release', value: '1.0' }, { key: 'operation', value: 'Client::GetDefaultScopes' },
+      { key: 'status', value: 'removed' }, { key: 'replacement', value: 'Client::GetDefaultPresenceScopes' },
+      { key: 'replacement', value: 'Client::GetDefaultCommunicationScopes' },
+    ] },
+    payload: { changeId: 'discord-social-sdk-default-scopes-removal-2025-03-26', title: 'Discord Social SDK default scopes API removal', description: 'Discord documents removal of Client::GetDefaultScopes in Social SDK 1.0 and provides separate presence and communication scope methods.', changeType: 'method_removed', effectiveAt: '2025-03-26', applicabilityScope: { dimensions: ['provider', 'operation'] }, apiOperationPatterns: ['Client::GetDefaultScopes'], replacement: { operation: 'Client::GetDefaultPresenceScopes and Client::GetDefaultCommunicationScopes' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'atlassian-admin-v1-users-groups-api-removal-2027-06-30', providerId: 'atlassian',
+    sourceUrl: 'https://developer.atlassian.com/cloud/admin/changelog/', sourceType: 'official-changelog',
+    documentFingerprint: 'abe3f469b1927f7849dd6fc24741f08f235f056e5ddfd864b66006537b9deea4', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Atlassian’s official Cloud Admin changelog; the candidate-specific V1 Users and Groups removal evidence is unchanged.',
+    evidence: { providerId: 'atlassian', sourceUrl: 'https://developer.atlassian.com/cloud/admin/changelog/', sourceTitle: 'Cloud Admin changelog', sourceLocator: 'section:2 July 2026: V1 Get users and Get groups REST APIs deprecated', claims: [
+      { key: 'publishedAt', value: '2026-07-02' }, { key: 'removalAt', value: '2027-06-30' },
+      { key: 'resource', value: 'V1 Users and Groups REST APIs' }, { key: 'replacement', value: 'V2 Users and Groups REST APIs' },
+    ] },
+    payload: { changeId: 'atlassian-admin-v1-users-groups-api-removal-2027-06-30', title: 'Atlassian Admin V1 Users and Groups API removal', description: 'Atlassian documents that V1 Users and Groups REST APIs will stop working after June 30, 2027 and directs callers to the V2 APIs.', changeType: 'endpoint_removed', publishedAt: '2026-07-02', removalAt: '2027-06-30', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['V1 Users REST API', 'V1 Groups REST API'], replacement: { resources: ['V2 Users REST API', 'V2 Groups REST API'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'auth0-enabled-clients-field-deprecation-2026-07-13', providerId: 'auth0',
+    sourceUrl: 'https://auth0.com/docs/troubleshoot/product-lifecycle/deprecations-and-migrations', sourceType: 'deprecation-notice',
+    documentFingerprint: '3835836ae02c82d5e414d17ad86855f943f836aef5c1f16ef75256bfe4c9b1e3', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Auth0’s official deprecation page; the candidate-specific enabled_clients evidence is unchanged.',
+    evidence: { providerId: 'auth0', sourceUrl: 'https://auth0.com/docs/troubleshoot/product-lifecycle/deprecations-and-migrations', sourceTitle: 'Deprecations and Migrations', sourceLocator: 'section:Legacy management of connection enabled clients', claims: [
+      { key: 'deprecatedAt', value: '2026-01-13' }, { key: 'removalAt', value: '2026-07-13' },
+      { key: 'endpoint', value: 'GET /api/v2/connections' }, { key: 'endpoint', value: 'GET /api/v2/connections/{id}' }, { key: 'endpoint', value: 'PATCH /api/v2/connections/{id}' },
+      { key: 'responseField', value: 'enabled_clients' }, { key: 'replacement', value: 'dedicated connection client endpoints' },
+    ] },
+    payload: { changeId: 'auth0-enabled-clients-field-deprecation-2026-07-13', title: 'Auth0 enabled_clients field deprecation', description: 'Auth0 documents deprecation of the enabled_clients field on the listed Management API connection operations and directs callers to dedicated enabled-client endpoints.', changeType: 'response_field_removed', effectiveAt: '2026-07-13', applicabilityScope: { dimensions: ['provider', 'endpoint', 'response_field'] }, affectedEndpoints: ['GET /api/v2/connections', 'GET /api/v2/connections/{id}', 'PATCH /api/v2/connections/{id}'], affectedResponseFields: ['enabled_clients'], replacement: { endpoint: 'dedicated connection client endpoints' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'linear-mcp-sse-endpoint-removal-2026', providerId: 'linear',
+    sourceUrl: 'https://linear.app/changelog/page/3', sourceType: 'official-changelog',
+    documentFingerprint: '886d0d2caf0dc3469186e040d813a2ea6ea793eacce60f066d1a26a7b8ae1eb6', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Linear’s official changelog; the candidate-specific MCP SSE removal evidence is unchanged.',
+    evidence: { providerId: 'linear', sourceUrl: 'https://linear.app/changelog/page/3', sourceTitle: 'Changelog - Linear', sourceLocator: 'section:Deprecation of /sse MCP endpoint', claims: [
+      { key: 'protocol', value: 'SSE' }, { key: 'affectedEndpoint', value: 'https://mcp.linear.app/sse' },
+      { key: 'replacementEndpoint', value: 'https://mcp.linear.app/mcp' }, { key: 'status', value: 'fully removing SSE support' },
+    ] },
+    payload: { changeId: 'linear-mcp-sse-endpoint-removal-2026', title: 'Linear MCP SSE endpoint removal', description: 'Linear documents that MCP SSE support is being fully removed and directs clients from the /sse endpoint to the /mcp endpoint.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['https://mcp.linear.app/sse'], replacement: { endpoint: 'https://mcp.linear.app/mcp' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'deepgram-legacy-intelligence-parameters-2025-11-05', providerId: 'deepgram',
+    sourceUrl: 'https://developers.deepgram.com/changelog/2025/11/5', sourceType: 'official-changelog',
+    documentFingerprint: 'd30f49ed69413e0f234329b8b7fe9b253c70b622c4f4a91898d777a6a6f90079', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Deepgram’s official changelog; the candidate-specific legacy intelligence parameter evidence is unchanged.',
+    evidence: { providerId: 'deepgram', sourceUrl: 'https://developers.deepgram.com/changelog/2025/11/5', sourceTitle: 'Legacy Intelligence Features Deprecated', sourceLocator: 'section:What Changed', claims: [{ key: 'effectiveAt', value: '2025-11-05' }, { key: 'parameters', value: 'analyze_sentiment; detect_topics; summarize=v1' }, { key: 'replacement', value: 'sentiment; topics; summarize=true or summarize=v2' }, { key: 'behavior', value: 'HTTP 400' }] },
+    payload: { changeId: 'deepgram-legacy-intelligence-parameters-2025-11-05', title: 'Deepgram legacy intelligence parameter restriction', description: 'Deepgram documents legacy intelligence parameters as deprecated and states that requests using them return HTTP 400; current parameter forms are documented.', changeType: 'parameter_removed', effectiveAt: '2025-11-05', applicabilityScope: { dimensions: ['provider', 'parameter'] }, affectedParameters: ['analyze_sentiment', 'detect_topics', 'summarize=v1'], replacement: { parameter: 'sentiment; topics; summarize=true or summarize=v2' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'cohere-embed-v2-model-retirement-2026-04-04', providerId: 'cohere',
+    sourceUrl: 'https://docs.cohere.com/docs/deprecations', sourceType: 'deprecation-notice',
+    documentFingerprint: '43cac8d4df00142fd69842679706f835789439aaec2bc7d00115a98fc09a5877', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Cohere’s official deprecations page; the candidate-specific Embed v2 and Aya model evidence is unchanged.',
+    evidence: { providerId: 'cohere', sourceUrl: 'https://docs.cohere.com/docs/deprecations', sourceTitle: 'Deprecations', sourceLocator: 'section:2026-04-04 Embed v2.0, Aya Expanse 8B', claims: [{ key: 'removalAt', value: '2026-04-04' }, { key: 'models', value: 'embed-english-v2.0; embed-english-light-v2.0; embed-multilingual-v2.0; c4ai-aya-expanse-8b; c4ai-aya-vision-8b' }, { key: 'replacement', value: 'embed-english-v3.0; embed-multilingual-v3.0; embed-v4.0; current Command models' }] },
+    payload: { changeId: 'cohere-embed-v2-model-retirement-2026-04-04', title: 'Cohere Embed v2 and Aya model retirement', description: 'Cohere documents retirement of the listed Embed v2 and Aya models and provides current embedding and chat alternatives.', changeType: 'model_retired', removalAt: '2026-04-04', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['embed-english-v2.0', 'embed-english-light-v2.0', 'embed-multilingual-v2.0', 'c4ai-aya-expanse-8b', 'c4ai-aya-vision-8b'], replacement: { model: 'embed-english-v3.0; embed-multilingual-v3.0; embed-v4.0' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'mistral-ocr-4-0-model-retirement-2026-09-30', providerId: 'mistral',
+    sourceUrl: 'https://docs.mistral.ai/resources/changelogs', sourceType: 'official-changelog',
+    documentFingerprint: 'e913988cd4626651abe4b7b7ae63018966bfa07107f3a0c3bbe79bd0766b12a4', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Mistral official changelog facts for OCR 4.0 retirement and OCR 4.1 replacement.',
+    evidence: { providerId: 'mistral', sourceUrl: 'https://docs.mistral.ai/resources/changelogs', sourceTitle: 'Changelog', sourceLocator: 'section:September 29 OCR 4.0', claims: [{ key: 'removalAt', value: '2026-09-30' }, { key: 'model', value: 'mistral-ocr-4-0' }, { key: 'replacement', value: 'mistral-ocr-4-1 or mistral-ocr-latest' }] },
+    payload: { changeId: 'mistral-ocr-4-0-model-retirement-2026-09-30', title: 'Mistral OCR 4.0 retirement', description: 'Mistral documents OCR 4.0 deprecation and retirement on September 30, 2026, with OCR 4.1 and the latest alias as replacements.', changeType: 'model_retired', removalAt: '2026-09-30', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['mistral-ocr-4-0'], replacement: { model: 'mistral-ocr-4-1 or mistral-ocr-latest' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'neon-api-reference-site-retirement', providerId: 'neon',
+    sourceUrl: 'https://api-docs.neon.tech/reference/getting-started-with-neon-api', sourceType: 'official-api-reference',
+    documentFingerprint: 'a59bf4fd028a18f70e93a7513cba4b747236a46ecce59a0f2d7eb0227684e1fd', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Neon’s official API reference notice; the candidate-specific hosted-reference retirement evidence is unchanged and the API remains explicitly unchanged.',
+    evidence: { providerId: 'neon', sourceUrl: 'https://api-docs.neon.tech/reference/getting-started-with-neon-api', sourceTitle: 'Neon API Reference', sourceLocator: 'notice:API reference has moved', claims: [{ key: 'status', value: 'hosted reference site deprecated and will be retired soon' }, { key: 'replacement', value: 'https://neon.com/docs/reference/api' }, { key: 'apiStatus', value: 'API fully supported and unchanged' }] },
+    payload: { changeId: 'neon-api-reference-site-retirement', title: 'Neon API reference site retirement', description: 'Neon documents retirement of the old hosted API reference site while explicitly stating that the Neon API remains unchanged.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['api-docs.neon.tech hosted API reference'], replacement: { resources: ['neon.com/docs/reference/api'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'elasticsearch-monitoring-plugin-removal-10', providerId: 'elasticsearch',
+    sourceUrl: 'https://www.elastic.co/docs/release-notes/elasticsearch/deprecations', sourceType: 'official-documentation',
+    documentFingerprint: 'd692c2226a46a38a3e5f23e15f4819cf7f140750bdfaff833fa1a6609e50323e', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured Elastic official deprecations page stating that the Monitoring plugin functionality is deprecated and will be removed in 10.0.',
+    evidence: { providerId: 'elasticsearch', sourceUrl: 'https://www.elastic.co/docs/release-notes/elasticsearch/deprecations', sourceTitle: 'Elasticsearch deprecations', sourceLocator: 'section:9.5.0 Monitoring', claims: [{ key: 'removalAt', value: '10.0' }, { key: 'resource', value: 'Monitoring plugin to collect and ship monitoring data' }, { key: 'status', value: 'deprecated and will be removed' }] },
+    payload: { changeId: 'elasticsearch-monitoring-plugin-removal-10', title: 'Elasticsearch Monitoring plugin removal', description: 'Elastic documents that the Monitoring plugin used to collect and ship monitoring data is deprecated and will be removed in 10.0.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Monitoring plugin'], apiVersionMetadata: { version: '10.0' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'algolia-update-task-v1-deprecation', providerId: 'algolia',
+    sourceUrl: 'https://www.algolia.com/doc/rest-api/ingestion/update-task-v1', sourceType: 'official-api-reference',
+    documentFingerprint: 'e07cbfc5ea3482885aea78b46a648aa314de223276d17ca303882d16c374c80d', discoveredAt: '2026-10-08',
+    evidenceNote: 'Re-fetched Algolia’s official API reference; the candidate-specific Update a task V1 deprecation evidence is unchanged.',
+    evidence: { providerId: 'algolia', sourceUrl: 'https://www.algolia.com/doc/rest-api/ingestion/update-task-v1', sourceTitle: 'Update a task V1', sourceLocator: 'endpoint:Update a task V1', claims: [{ key: 'status', value: 'deprecated' }, { key: 'endpoint', value: 'Update a task V1' }] },
+    payload: { changeId: 'algolia-update-task-v1-deprecation', title: 'Algolia Update a task V1 deprecation', description: 'Algolia marks the Update a task V1 endpoint deprecated; replacement and removal timing remain review-gated.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['Update a task V1'], severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'aws-cloudwatch-evidently-end-of-support-2025-10-16', providerId: 'aws',
+    sourceUrl: 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/DocumentHistory.html', sourceType: 'official-documentation',
+    documentFingerprint: 'd9f090a6fe00ffdceb96b5faf24d3f987b167f1bc629a8958bc50c2d39b6c9e9', discoveredAt: '2026-10-08',
+    evidenceNote: 'Captured AWS’s official CloudWatch document history end-of-support notice for Amazon CloudWatch Evidently.',
+    evidence: { providerId: 'aws', sourceUrl: 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/DocumentHistory.html', sourceTitle: 'Amazon CloudWatch document history', sourceLocator: 'section:End of support notice: Amazon CloudWatch Evidently', claims: [{ key: 'publishedAt', value: '2024-10-17' }, { key: 'removalAt', value: '2025-10-16' }, { key: 'resource', value: 'Amazon CloudWatch Evidently' }, { key: 'status', value: 'AWS will discontinue support' }, { key: 'effect', value: 'Evidently console and resources unavailable after end of support' }] },
+    payload: { changeId: 'aws-cloudwatch-evidently-end-of-support-2025-10-16', title: 'AWS CloudWatch Evidently end of support', description: 'AWS documents that support for Amazon CloudWatch Evidently ends on October 16, 2025 and that the Evidently console and resources will no longer be available after end of support. No replacement service is stated in the captured notice.', changeType: 'endpoint_removed', publishedAt: '2024-10-17', removalAt: '2025-10-16', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Amazon CloudWatch Evidently'], severity: 'high' },
+  }),
+];
+
+const BLOCKED_RESEARCH_LEAD_IDS = new Set([
+  'paypal-invoicing-v1-endpoint-deprecation', 'netlify-api-lifecycle-review-candidate', 'sentry-api-lifecycle-review-candidate',
+  'segment-api-lifecycle-review-candidate', 'adyen-api-lifecycle-review-candidate', 'paddle-api-lifecycle-review-candidate', 'workos-api-lifecycle-review-candidate',
+]);
+
+/** Verified source-backed candidates only. Blocked source leads remain documented, never enter the canonical registry. */
+export const EXPANSION_OFFICIAL_CHANGE_CANDIDATES: readonly CandidateChange[] = EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL.filter((candidate) => !BLOCKED_RESEARCH_LEAD_IDS.has(candidate.candidateId));

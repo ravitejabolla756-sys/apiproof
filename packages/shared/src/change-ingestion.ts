@@ -88,7 +88,7 @@ const CandidatePayloadSchema = z.strictObject({
   affectedModels: z.array(z.string().min(1)).max(30).optional(),
   affectedResources: z.array(z.string().min(1)).max(30).optional(), authOrHeaderPatterns: z.array(z.string().min(1)).max(30).optional(),
   enumMetadata: z.strictObject({ name: z.string().min(1), removedValues: z.array(z.string().min(1)), addedValues: z.array(z.string().min(1)) }).optional(),
-  apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional() }).optional(),
+  apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional(), headerNames: z.array(z.string().min(1)).max(20).optional() }).optional(),
   replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), domain: z.string().optional(), authOrHeader: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   sourceFacts: z.array(z.string().min(1).max(2_000)).min(1).optional(),

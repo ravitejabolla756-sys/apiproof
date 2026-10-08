@@ -4,6 +4,7 @@ export const CompatibilityChangeTypeSchema = z.enum([
   'parameter_removed', 'parameter_renamed', 'parameter_required',
   'method_removed', 'method_renamed', 'endpoint_removed', 'model_retired',
   'response_field_removed', 'enum_changed', 'api_version_retired',
+  'auth_or_header_removed',
 ]);
 export type CompatibilityChangeType = z.infer<typeof CompatibilityChangeTypeSchema>;
 
@@ -17,6 +18,7 @@ export function defaultSeverityForChangeType(changeType: CompatibilityChangeType
     case 'method_removed':
     case 'endpoint_removed':
     case 'api_version_retired':
+    case 'auth_or_header_removed':
       return 'high';
     case 'parameter_removed':
     case 'parameter_renamed':
@@ -88,7 +90,7 @@ export const ReviewedCompatibilityChangeSchema = z.strictObject({
   affectedResources: z.array(z.string().min(1)).max(30),
   authOrHeaderPatterns: z.array(z.string().min(1)).max(30),
   enumMetadata: z.strictObject({ name: z.string().min(1), removedValues: z.array(z.string().min(1)), addedValues: z.array(z.string().min(1)) }).optional(),
-  apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional() }).optional(),
+  apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional(), headerNames: z.array(z.string().min(1)).max(20).optional() }).optional(),
   replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), domain: z.string().optional(), authOrHeader: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
   severity: CompatibilitySeveritySchema,
   review: CompatibilityReviewSchema,
@@ -109,9 +111,9 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
     if (!targetDimension) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:${targetDimensions.join('|')}`);
   }
   if (change.changeType === 'method_removed' || change.changeType === 'method_renamed') {
-    require('package', Boolean(change.affectedPackages?.length));
-    require('package_version', Boolean(change.affectedVersionRange));
     require('operation', change.apiOperationPatterns.length > 0);
+    if (dimensions.has('package')) require('package', Boolean(change.affectedPackages?.length));
+    if (dimensions.has('package_version')) require('package_version', Boolean(change.affectedVersionRange));
   }
   if (change.changeType === 'parameter_removed' || change.changeType === 'parameter_renamed' || change.changeType === 'parameter_required') {
     if (dimensions.has('parameter')) require('parameter', change.affectedParameters.length > 0);
@@ -134,6 +136,7 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
     if (dimensions.has('resource')) require('resource', change.affectedResources.length > 0);
   }
   if (change.changeType === 'api_version_retired') require('api_version', Boolean(change.apiVersionMetadata?.version));
+  if (change.changeType === 'auth_or_header_removed') require('auth_or_header', change.authOrHeaderPatterns.length > 0);
   if (change.changeType === 'enum_changed') require('enum', Boolean(change.enumMetadata));
   if (dimensions.has('package')) require('package', Boolean(change.affectedPackages?.length));
   if (dimensions.has('package_version')) {
@@ -167,6 +170,7 @@ export const CompatibilityUsageSchema = z.strictObject({
   operation: z.string().optional(), model: z.string().optional(), parameter: z.string().optional(), responseField: z.string().optional(), domain: z.string().optional(),
   parameterValue: JsonPrimitiveSchema.optional(), parameterValueStatus: z.enum(['allowed', 'disallowed', 'unknown']).optional(),
   endpoint: z.string().optional(), resource: z.string().optional(), apiVersion: z.string().optional(), authOrHeader: z.string().optional(), evidenceKind: z.enum(['sdk', 'http', 'import', 'environment']),
+  headerEvidence: z.array(z.strictObject({ name: z.string().min(1), value: z.string().optional(), static: z.boolean(), redacted: z.boolean(), location: z.strictObject({ file: z.string(), line: z.number().int().positive(), column: z.number().int().positive() }) })).max(100).optional(),
   confidence: z.number().min(0).max(1), static: z.boolean(),
   location: z.strictObject({ file: z.string().min(1), line: z.number().int().positive(), column: z.number().int().positive(), symbol: z.string().optional() }),
 });

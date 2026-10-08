@@ -25,7 +25,7 @@ const evaluate = (input: CompatibilityUsage, language: 'typescript' | 'python' =
 
 describe('Supabase OpenAPI anon-key reviewed production rule', () => {
   it('inserts exactly one second reviewed Supabase rule with generic credential evidence', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(20);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('supabase')).toHaveLength(2);
     const record = PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.get(CHANGE_ID);
     expect(record).toMatchObject({

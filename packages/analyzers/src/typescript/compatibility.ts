@@ -123,16 +123,19 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
     : usage.model && change.affectedModels.includes(usage.model) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
   const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
-  const apiVersionMatch = !dimensions.has('api_version') || Boolean(usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion);
+  const apiVersionMatch: UsageMatch = !dimensions.has('api_version') ? 'match'
+    : usage.apiVersion && usage.apiVersion === change.apiVersionMetadata?.version
+      ? usage.static && usage.confidence >= 0.8 ? 'match' : 'uncertain'
+      : usage.apiVersion ? (!usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match') : 'uncertain';
   const authMatch: UsageMatch = !dimensions.has('auth_or_header') ? 'match'
     : usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
   const domainMatch: UsageMatch = !dimensions.has('domain') ? 'match'
     : matchesDomainPattern(usage.domain ?? usage.endpoint, change.affectedDomains ?? []) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || !resourceMatch || !apiVersionMatch) return 'no-match';
+  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || !resourceMatch || apiVersionMatch === 'no-match') return 'no-match';
   if (responseFieldMatch === 'no-match' || parameterMatch === 'no-match') return 'no-match';
-  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
+  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain' || apiVersionMatch === 'uncertain') return 'uncertain';
   return 'match';
 }
 
@@ -172,6 +175,7 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     if (uncertain.some((usage) => dimensions.has('operation') && !usage.operation)) reasonCodes.push('OPERATION_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('domain') && (!usage.domain && !usage.endpoint || !usage.static || usage.confidence < 0.8))) reasonCodes.push('DOMAIN_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('auth_or_header') && !usage.authOrHeader)) reasonCodes.push('AUTH_OR_HEADER_UNRESOLVED');
+    if (uncertain.some((usage) => dimensions.has('api_version') && !usage.apiVersion)) reasonCodes.push('API_VERSION_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('response_field') && !usage.responseField)) reasonCodes.push('RESPONSE_FIELD_UNRESOLVED');
     if (uncertain.some((usage) => usage.parameter && change.parameterConditions?.some((condition) => condition.parameter === usage.parameter))) reasonCodes.push('PARAMETER_VALUE_UNRESOLVED');
     if (matched.length === 0 && uncertain.length === 0) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');

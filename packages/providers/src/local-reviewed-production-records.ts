@@ -20,8 +20,19 @@ import {
   LOCAL_REVIEWED_SUPABASE_LOGS_ALL_REVIEW,
   LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_CANDIDATE,
   LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW,
+  LOCAL_REVIEWED_SLACK_FILES_UPLOAD_CANDIDATE,
+  LOCAL_REVIEWED_SLACK_FILES_UPLOAD_REVIEW,
+  LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_CANDIDATE,
+  LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_REVIEW,
+  LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_CANDIDATE,
+  LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_REVIEW,
+  LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE,
+  LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_REVIEW,
+  LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_CANDIDATE,
+  LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
+import { BATCH_7_REVIEWED_CANDIDATES } from './batch-7-reviewed-candidate-reviews.js';
 
 const CANDIDATE_ID = 'openai-gpt-4-5-preview-removal-2025-07-14';
 const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(CANDIDATE_ID);
@@ -154,6 +165,97 @@ const reviewedTwilioStudioEngagementsRecord = promoteCandidateToReviewed(
     accessedAt: LOCAL_REVIEWED_TWILIO_STUDIO_ENGAGEMENTS_REVIEW.reviewedAt,
   }],
 );
+
+const reviewedSlackFilesUploadRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_SLACK_FILES_UPLOAD_CANDIDATE,
+  LOCAL_REVIEWED_SLACK_FILES_UPLOAD_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_SLACK_FILES_UPLOAD_CANDIDATE.sourceUrl,
+    summary: 'Slack documents that files.upload sunsets on November 12, 2025 and directs applications to files.getUploadURLExternal followed by files.completeUploadExternal.',
+    accessedAt: LOCAL_REVIEWED_SLACK_FILES_UPLOAD_REVIEW.reviewedAt,
+  }],
+);
+
+const reviewedShopifyCheckoutApiRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_CANDIDATE,
+  LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_CANDIDATE.sourceUrl,
+    summary: 'Shopify shuts down Storefront Checkout mutations and REST Checkout endpoints on April 1, 2025 and directs applications to the Storefront Cart API or Checkout Sheet Kit for mobile apps.',
+    accessedAt: LOCAL_REVIEWED_SHOPIFY_CHECKOUT_API_REVIEW.reviewedAt,
+  }],
+);
+
+const reviewedLaunchDarklyApiVersionRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_CANDIDATE,
+  LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_CANDIDATE.sourceUrl,
+    summary: 'LaunchDarkly identifies REST API version 20220603 as EOL on April 15, 2025 and identifies 20240415 as the current API version.',
+    accessedAt: LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_REVIEW.reviewedAt,
+  }],
+);
+
+const reviewedAwsCloudWatchEvidentlyRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE,
+  LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_CANDIDATE.sourceUrl,
+    summary: 'AWS documents that support for Amazon CloudWatch Evidently ends on 2025-10-16 and that the Evidently console and resources become unavailable after end of support; no replacement service is stated in the captured notice.',
+    accessedAt: LOCAL_REVIEWED_AWS_CLOUDWATCH_EVIDENTLY_REVIEW.reviewedAt,
+  }],
+);
+
+const reviewedCloudflareServiceKeyRecord = promoteCandidateToReviewed(
+  LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_CANDIDATE,
+  LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_REVIEW,
+  [{
+    url: LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_CANDIDATE.sourceUrl,
+    summary: 'Cloudflare removes X-Auth-User-Service-Key authentication on 2026-09-30 and directs integrations to API Tokens.',
+    accessedAt: LOCAL_REVIEWED_CLOUDFLARE_SERVICE_KEY_REVIEW.reviewedAt,
+  }],
+);
+
+if (reviewedCloudflareServiceKeyRecord.providerId !== 'cloudflare'
+  || reviewedCloudflareServiceKeyRecord.changeId !== 'cloudflare-service-key-auth-removal-2026-09-30'
+  || reviewedCloudflareServiceKeyRecord.removalAt !== '2026-09-30'
+  || reviewedCloudflareServiceKeyRecord.severity !== 'high'
+  || reviewedCloudflareServiceKeyRecord.applicabilityScope.dimensions.join(',') !== 'provider,auth_or_header'
+  || reviewedCloudflareServiceKeyRecord.authOrHeaderPatterns?.join(',') !== 'X-Auth-User-Service-Key'
+  || reviewedCloudflareServiceKeyRecord.replacement?.authOrHeader !== 'API Token'
+  || reviewedCloudflareServiceKeyRecord.review.status !== 'reviewed'
+  || reviewedCloudflareServiceKeyRecord.review.reviewer !== 'Ravi Teja'
+  || reviewedCloudflareServiceKeyRecord.review.reviewedAt !== '2026-10-08'
+  || reviewedCloudflareServiceKeyRecord.review.provenance !== 'official'
+  || reviewedCloudflareServiceKeyRecord.review.documentFingerprint !== 'd42f07bfaf4882f46bf455cd5cecfba058794f9109d8985a3cfc591d189f92c9'
+  || reviewedCloudflareServiceKeyRecord.review.evidenceFingerprint !== '9abd5f0455c3333c23638475e04813a8d20c21c153d5c85e7ab9abc300348ca8'
+  || reviewedCloudflareServiceKeyRecord.review.candidateFingerprint !== 'e2d017c98bbd004f9101346c6f604102adc558cc468467ebf57dd92ae3f2abfb'
+  || reviewedCloudflareServiceKeyRecord.affectedPackages !== undefined
+  || reviewedCloudflareServiceKeyRecord.affectedVersionRange !== undefined
+  || reviewedCloudflareServiceKeyRecord.affectedEndpoints.length !== 0
+  || reviewedCloudflareServiceKeyRecord.apiOperationPatterns.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_CLOUDFLARE_FACTS_INVALID:cloudflare-service-key-auth-removal-2026-09-30');
+}
+
+if (reviewedAwsCloudWatchEvidentlyRecord.providerId !== 'aws'
+  || reviewedAwsCloudWatchEvidentlyRecord.changeId !== 'aws-cloudwatch-evidently-end-of-support-2025-10-16'
+  || reviewedAwsCloudWatchEvidentlyRecord.applicabilityScope.dimensions.join(',') !== 'provider,resource'
+  || reviewedAwsCloudWatchEvidentlyRecord.affectedResources?.join(',') !== 'Amazon CloudWatch Evidently'
+  || reviewedAwsCloudWatchEvidentlyRecord.removalAt !== '2025-10-16'
+  || reviewedAwsCloudWatchEvidentlyRecord.severity !== 'high'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.status !== 'reviewed'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.reviewer !== 'Ravi Teja'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.reviewedAt !== '2026-10-08'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.provenance !== 'official'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.documentFingerprint !== 'd9f090a6fe00ffdceb96b5faf24d3f987b167f1bc629a8958bc50c2d39b6c9e9'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.evidenceFingerprint !== '3f83aa108bfe8fadff63add43c523a99b5b971d916e8510b4b4060ca49d4f64c'
+  || reviewedAwsCloudWatchEvidentlyRecord.review.candidateFingerprint !== 'b5d9edc8aa05ef59598bfe100656a3fe151af9c1b2f8111ddbf5e24f6b3c6d0d'
+  || reviewedAwsCloudWatchEvidentlyRecord.affectedPackages !== undefined
+  || reviewedAwsCloudWatchEvidentlyRecord.affectedVersionRange !== undefined
+  || reviewedAwsCloudWatchEvidentlyRecord.apiOperationPatterns.length !== 0
+  || reviewedAwsCloudWatchEvidentlyRecord.affectedEndpoints.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_AWS_FACTS_INVALID:aws-cloudwatch-evidently-end-of-support-2025-10-16');
+}
 
 if (reviewedAnthropicOpusRecord.providerId !== 'anthropic'
   || reviewedAnthropicOpusRecord.changeId !== 'anthropic-claude-opus-4-1-retirement-2026-08-05'
@@ -289,5 +391,71 @@ if (reviewedTwilioStudioEngagementsRecord.providerId !== 'twilio'
   throw new Error('LOCAL_REVIEWED_TWILIO_STUDIO_FACTS_INVALID:twilio-studio-engagements-endpoint-deprecated');
 }
 
+if (reviewedSlackFilesUploadRecord.providerId !== 'slack'
+  || reviewedSlackFilesUploadRecord.changeId !== 'slack-files-upload-removal-2025-11-12'
+  || reviewedSlackFilesUploadRecord.changeType !== 'method_removed'
+  || reviewedSlackFilesUploadRecord.removalAt !== '2025-11-12'
+  || reviewedSlackFilesUploadRecord.severity !== 'high'
+  || reviewedSlackFilesUploadRecord.applicabilityScope.dimensions.join(',') !== 'provider,operation'
+  || reviewedSlackFilesUploadRecord.apiOperationPatterns.join(',') !== 'files.upload'
+  || reviewedSlackFilesUploadRecord.replacement?.operation !== 'files.getUploadURLExternal and files.completeUploadExternal'
+  || reviewedSlackFilesUploadRecord.review.status !== 'reviewed'
+  || reviewedSlackFilesUploadRecord.review.reviewer !== 'Ravi Teja'
+  || reviewedSlackFilesUploadRecord.review.reviewedAt !== '2026-10-08'
+  || reviewedSlackFilesUploadRecord.review.provenance !== 'official'
+  || reviewedSlackFilesUploadRecord.affectedPackages !== undefined
+  || reviewedSlackFilesUploadRecord.affectedVersionRange !== undefined
+  || reviewedSlackFilesUploadRecord.affectedEndpoints.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_SLACK_FACTS_INVALID:slack-files-upload-removal-2025-11-12');
+}
+
+if (reviewedShopifyCheckoutApiRecord.providerId !== 'shopify'
+  || reviewedShopifyCheckoutApiRecord.changeId !== 'shopify-checkout-api-shutdown-2025-04-01'
+  || reviewedShopifyCheckoutApiRecord.changeType !== 'endpoint_removed'
+  || reviewedShopifyCheckoutApiRecord.publishedAt !== '2025-03-02'
+  || reviewedShopifyCheckoutApiRecord.removalAt !== '2025-04-01'
+  || reviewedShopifyCheckoutApiRecord.severity !== 'high'
+  || reviewedShopifyCheckoutApiRecord.applicabilityScope.dimensions.join(',') !== 'provider,resource'
+  || reviewedShopifyCheckoutApiRecord.affectedResources.join(',') !== 'Storefront Checkout mutations,REST Checkout endpoints'
+  || reviewedShopifyCheckoutApiRecord.replacement?.resources?.join(',') !== 'Storefront Cart API,Checkout Sheet Kit'
+  || reviewedShopifyCheckoutApiRecord.review.status !== 'reviewed'
+  || reviewedShopifyCheckoutApiRecord.review.reviewer !== 'Ravi Teja'
+  || reviewedShopifyCheckoutApiRecord.review.reviewedAt !== '2026-10-08'
+  || reviewedShopifyCheckoutApiRecord.review.provenance !== 'official'
+  || reviewedShopifyCheckoutApiRecord.affectedPackages !== undefined
+  || reviewedShopifyCheckoutApiRecord.affectedVersionRange !== undefined
+  || reviewedShopifyCheckoutApiRecord.apiOperationPatterns.length !== 0
+  || reviewedShopifyCheckoutApiRecord.affectedEndpoints.length !== 0
+  || reviewedShopifyCheckoutApiRecord.review.notes?.includes('checkout.liquid to Checkout Extensibility migration') !== true) {
+  throw new Error('LOCAL_REVIEWED_SHOPIFY_FACTS_INVALID:shopify-checkout-api-shutdown-2025-04-01');
+}
+
+if (reviewedLaunchDarklyApiVersionRecord.providerId !== 'launchdarkly'
+  || reviewedLaunchDarklyApiVersionRecord.changeId !== 'launchdarkly-api-version-20220603-eol-2025-04-15'
+  || reviewedLaunchDarklyApiVersionRecord.changeType !== 'api_version_retired'
+  || reviewedLaunchDarklyApiVersionRecord.removalAt !== '2025-04-15'
+  || reviewedLaunchDarklyApiVersionRecord.severity !== 'high'
+  || reviewedLaunchDarklyApiVersionRecord.applicabilityScope.dimensions.join(',') !== 'provider,api_version'
+  || reviewedLaunchDarklyApiVersionRecord.apiVersionMetadata?.version !== '20220603'
+  || reviewedLaunchDarklyApiVersionRecord.apiVersionMetadata?.replacement !== '20240415'
+  || reviewedLaunchDarklyApiVersionRecord.review.status !== 'reviewed'
+  || reviewedLaunchDarklyApiVersionRecord.review.reviewer !== 'Ravi Teja'
+  || reviewedLaunchDarklyApiVersionRecord.review.reviewedAt !== '2026-10-08'
+  || reviewedLaunchDarklyApiVersionRecord.review.provenance !== 'official'
+  || reviewedLaunchDarklyApiVersionRecord.affectedPackages !== undefined
+  || reviewedLaunchDarklyApiVersionRecord.affectedVersionRange !== undefined
+  || reviewedLaunchDarklyApiVersionRecord.apiOperationPatterns.length !== 0
+  || reviewedLaunchDarklyApiVersionRecord.affectedEndpoints.length !== 0
+  || reviewedLaunchDarklyApiVersionRecord.affectedResources.length !== 0) {
+  throw new Error('LOCAL_REVIEWED_LAUNCHDARKLY_FACTS_INVALID:launchdarkly-api-version-20220603-eol-2025-04-15');
+}
+
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedTwilioStudioEngagementsRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [
+  reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord,
+  reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord,
+  reviewedTwilioStudioEngagementsRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord,
+  reviewedSlackFilesUploadRecord, reviewedShopifyCheckoutApiRecord, reviewedLaunchDarklyApiVersionRecord,
+  reviewedAwsCloudWatchEvidentlyRecord, reviewedCloudflareServiceKeyRecord,
+  ...BATCH_7_REVIEWED_CANDIDATES.map(({ productionProjection }) => productionProjection),
+] as const;

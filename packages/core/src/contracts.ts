@@ -7,6 +7,9 @@ export interface ProviderDescriptor {
   id: string;
   packageName: string;
   constructorExports: readonly string[];
+  /** Provider-neutral HTTP metadata used to interpret static request evidence. */
+  apiDomains?: readonly string[];
+  apiVersionHeaders?: readonly string[];
 }
 
 export interface ApiProvider {
