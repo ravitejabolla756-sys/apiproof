@@ -16,52 +16,18 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
+import { isAuthorizedInternalRequest } from '../../../../lib/server/internal-auth.js';
 
 // ---------------------------------------------------------------------------
 // Authorization helper
 // ---------------------------------------------------------------------------
-
-async function isAuthorized(request: NextRequest): Promise<boolean> {
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || cronSecret.trim().length === 0) {
-    // No secret configured → always reject to prevent accidental open access
-    return false;
-  }
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return false;
-  }
-
-  if (!authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  const providedSecret = authHeader.slice('Bearer '.length);
-
-  // Timing-safe comparison to prevent timing attacks
-  if (providedSecret.length !== cronSecret.length) {
-    return false;
-  }
-
-  try {
-    const { timingSafeEqual } = await import('node:crypto');
-    return timingSafeEqual(
-      Buffer.from(providedSecret, 'utf8'),
-      Buffer.from(cronSecret, 'utf8')
-    );
-  } catch {
-    return false;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 
 async function runWorker(request: NextRequest): Promise<NextResponse> {
-  if (!(await isAuthorized(request))) {
+  if (!isAuthorizedInternalRequest(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

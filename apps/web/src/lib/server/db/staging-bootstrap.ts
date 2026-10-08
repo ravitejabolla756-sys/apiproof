@@ -1,6 +1,10 @@
 import crypto from 'node:crypto';
 import { hashPassword } from '../auth.js';
 import type { DatabaseAdapter } from './types.js';
+import {
+  PREVIEW_STAGING_DATABASE_NAME,
+  PREVIEW_STAGING_DATABASE_URL_USERNAME,
+} from './preview-isolation.js';
 
 export const STAGING_REPOSITORY = Object.freeze({
   owner: 'ravitejabolla756-sys',
@@ -10,9 +14,9 @@ export const STAGING_REPOSITORY = Object.freeze({
   defaultBranch: 'main',
 });
 
-export const STAGING_DATABASE_URL_USERNAME = 'postgres.elzkxgfsciivlrejujwb';
+export const STAGING_DATABASE_URL_USERNAME = PREVIEW_STAGING_DATABASE_URL_USERNAME;
 export const STAGING_DATABASE_SESSION_USER = 'postgres';
-export const STAGING_DATABASE_NAME = 'postgres';
+export const STAGING_DATABASE_NAME = PREVIEW_STAGING_DATABASE_NAME;
 
 export interface StagingBootstrapConfig {
   databaseUrl: string;

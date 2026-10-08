@@ -10,6 +10,7 @@ import { SQLITE_VERIFICATION_WORKER_SCHEMA } from './verification-worker-migrati
 import { SQLITE_SLACK_SCHEMA } from './slack-migration.js';
 import { initializeSlackReliabilitySqlite } from './slack-reliability-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
+import { readPreviewStagingDatabaseConfig, PREVIEW_STAGING_ISOLATION_ENV } from './preview-isolation.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -37,9 +38,14 @@ export type ResolvedDatabaseConfig =
   | { type: 'postgres'; url: string }
   | { type: 'sqlite'; path: string };
 
-export function resolveDatabaseConfig(): ResolvedDatabaseConfig {
-  const dbUrl = process.env.DATABASE_URL || process.env.APIPROOF_DATABASE_URL;
-  const isProduction = process.env.NODE_ENV === 'production';
+export function resolveDatabaseConfig(environment: NodeJS.ProcessEnv = process.env): ResolvedDatabaseConfig {
+  if (environment[PREVIEW_STAGING_ISOLATION_ENV] === 'true') {
+    const staging = readPreviewStagingDatabaseConfig(environment);
+    return { type: 'postgres', url: staging.databaseUrl };
+  }
+
+  const dbUrl = environment.DATABASE_URL || environment.APIPROOF_DATABASE_URL;
+  const isProduction = environment.NODE_ENV === 'production';
 
   if (dbUrl && dbUrl.trim().length > 0) {
     return { type: 'postgres', url: dbUrl.trim() };
