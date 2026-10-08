@@ -6,6 +6,7 @@ import { passwordResetMigrations } from './password-reset-migration.js';
 import { verificationWorkerMigrations } from './verification-worker-migration.js';
 import { slackMigrations } from './slack-migration.js';
 import { slackReliabilityMigrations } from './slack-reliability-migration.js';
+import { skipDefaultSeed } from './seed-policy.js';
 
 export const migrations: Migration[] = [
   {
@@ -24,9 +25,10 @@ export const migrations: Migration[] = [
         await db.execute(ddl);
       }
 
-      // Check if users exist; if not, seed default user and fixture
+      // Preserve the existing local fixture by default. Staging can opt into
+      // schema-only migration and bootstrap its own records separately.
       const userCheck = await db.queryOne<{ id: string }>('SELECT id FROM users LIMIT 1');
-      if (!userCheck) {
+      if (!userCheck && !skipDefaultSeed()) {
         const userId = 'usr_pilot_developer';
         const now = new Date().toISOString();
         

@@ -16,6 +16,7 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
     "db:migrate": "pnpm --filter @apiproof/web db:migrate",
+    "db:bootstrap:staging": "tsx apps/web/scripts/bootstrap-staging.ts",
     "verification:worker": "tsx apps/web/scripts/verification-worker.ts"
   },
   "devDependencies": {

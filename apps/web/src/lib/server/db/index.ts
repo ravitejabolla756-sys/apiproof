@@ -9,6 +9,7 @@ import { SQLITE_SCHEMA } from './schema.js';
 import { SQLITE_VERIFICATION_WORKER_SCHEMA } from './verification-worker-migration.js';
 import { SQLITE_SLACK_SCHEMA } from './slack-migration.js';
 import { initializeSlackReliabilitySqlite } from './slack-reliability-migration.js';
+import { skipDefaultSeed } from './seed-policy.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -129,7 +130,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec(SQLITE_SLACK_SCHEMA);
   initializeSlackReliabilitySqlite(db);
 
-  seedDefaultUserAndFixtureSqlite(db);
+  if (!skipDefaultSeed()) seedDefaultUserAndFixtureSqlite(db);
 
   rawSqliteInstance = db;
   adapterInstance = new SqliteDatabaseAdapter(db);
