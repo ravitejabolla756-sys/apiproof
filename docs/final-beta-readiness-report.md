@@ -11,11 +11,12 @@ The local productization path is validated, including the exact OpenAI `response
 ## Local evidence
 
 - Branch: `provider-intelligence-staging-integration-v2`
-- Local checkpoint: `1e2a1f0` (`chore(beta): checkpoint staging readiness evidence`)
-- Full Vitest: 1,186 passed, 4 skipped; 137 files passed, 1 skipped.
+- Local checkpoint: `e4fcd34` (`fix(staging): enforce isolated Preview repository boundary`)
+- Full serial Vitest: 1,190 passed, 4 skipped; 138 files passed, 1 skipped.
 - Exact worker fixture: `client.responses.create` with `gpt-4.5-preview` persisted an OpenAI affected finding locally.
 - Scan History root cause fixed locally: the page read `analyzed_files` and `total_files`, while the API returned `files_analyzed`; the page now renders `files_analyzed`.
 - Typechecks: shared, core, providers, analyzers, and web passed.
+- CLI package typecheck also passed. The aggregate root `pnpm typecheck` still fails in `tsconfig.test.json` on existing workspace alias/test-contract errors; this is distinct from the passing package typechecks.
 - Lint: passed.
 - Web production build: passed; 56 static pages/routes generated. Non-fatal warnings concern optional `source-map-support` resolution and the Next.js ESLint plugin migration notice.
 
@@ -26,6 +27,8 @@ The local productization path is validated, including the exact OpenAI `response
 3. Obtain explicit approval for one staging-only enqueue and worker execution.
 4. Verify the persisted `AFFECTED` finding and authenticated proof response.
 5. Verify the corrected Scan History file-count display on the deployed UI before user-facing beta approval.
+
+6. Verify or harden the worker-level repository allowlist. The current worker path passes `allowAnyRepository: true` to the GitHub token provider, so database row authorization alone is not sufficient evidence for the required single-repository staging boundary.
 
 The local display contract is now corrected and covered by a repository-route regression; deployed UI verification remains outstanding.
 

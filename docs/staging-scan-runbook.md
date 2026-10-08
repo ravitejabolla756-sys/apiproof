@@ -27,6 +27,8 @@ CRON_SECRET=<present>
 
 Verify the active GitHub installation and repository rows are staging-only, active, and associated with the approved repository. Verify migrations and the required queue, scan, finding, installation, and repository tables exist. Do not reveal credentials or connection strings.
 
+Also verify that the deployed worker enforces the single approved repository boundary. The current source path passes `allowAnyRepository: true` to the GitHub token provider, so the repository row and installation association must not be treated as sufficient allowlist proof.
+
 ## Enqueue gate
 
 The worker requires an existing pending `github_scan_requests` row. Use exactly one of these, only after explicit approval:

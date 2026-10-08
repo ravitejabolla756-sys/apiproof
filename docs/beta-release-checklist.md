@@ -10,6 +10,7 @@
 - [ ] Staging schema and active repository/installation rows independently verified.
 - [ ] One approved staging scan executed and persisted.
 - [ ] No production target or database fallback observed during that scan.
+- [ ] Worker-level staging repository allowlist is independently verified; current source uses `allowAnyRepository: true` and must not be treated as an allowlist proof.
 
 ## Product evidence
 
@@ -25,6 +26,7 @@
 
 - [x] Full local Vitest suite passes.
 - [x] Package and web typechecks pass.
+- [ ] Root test-project typecheck passes; current failure is limited to existing workspace alias/test-contract errors after all package typechecks pass.
 - [x] Lint passes.
 - [x] Clean production-style build passes; local elevated run generated the complete web route set with non-fatal warnings only.
 - [ ] Security review has no unresolved remote-configuration blocker.

@@ -20,8 +20,9 @@ Updated: 2026-10-09
 - Preview’s effective staging database secret and absence of generic database fallback.
 - Active staging installation and repository authorization rows.
 - Presence of a pending scan request for the controlled fixture.
-- Actual deployed commit parity with local `f516f7b3b66fb6f28b425a6f26e92073c3b97362`.
+- Actual deployed commit parity with local `13617170c4528bcde0827b50b51499963000418e`.
+- Exact worker-level enforcement of the single approved staging repository. The current worker path passes `allowAnyRepository: true` when constructing the GitHub source provider; this must be verified or hardened before a live scan.
 
 ## Security blockers
 
-Do not execute a scan until the remote checks above are completed read-only. Do not expose a secret-bearing health or database diagnostic. Do not enable GitHub writes. Do not use a production database connection to create or inspect the queue item.
+Do not execute a scan until the remote checks above are completed read-only and the worker-level staging repository boundary is proven. Do not expose a secret-bearing health or database diagnostic. Do not enable GitHub writes. Do not use a production database connection to create or inspect the queue item.
