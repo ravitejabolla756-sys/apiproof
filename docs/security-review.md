@@ -21,6 +21,8 @@ Updated: 2026-10-09
 - Active staging installation and repository authorization rows.
 - Presence of a pending scan request for the controlled fixture.
 - Actual deployed commit parity with local `13617170c4528bcde0827b50b51499963000418e`.
+- Read-only Vercel inspection identifies the active branch Preview as `f516f7b3…`; it does not contain the local repository-isolation guard.
+- Vercel Deployment Protection is enabled with login required; no bypass secret value was recorded.
 - Exact worker-level enforcement of the single approved staging repository. The current worker path passes `allowAnyRepository: true` when constructing the GitHub source provider; this must be verified or hardened before a live scan.
 
 ## Security blockers

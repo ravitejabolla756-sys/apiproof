@@ -27,6 +27,8 @@ CRON_SECRET=<present>
 
 Verify the active GitHub installation and repository rows are staging-only, active, and associated with the approved repository. Verify migrations and the required queue, scan, finding, installation, and repository tables exist. Do not reveal credentials or connection strings.
 
+Before approving a scan, verify that the serving Preview is built from `e4fcd34` or later. The currently observed branch Preview is older (`f516f7b3…`) and must not be used.
+
 Also verify that the deployed worker enforces the single approved repository boundary. The current source path passes `allowAnyRepository: true` to the GitHub token provider, so the repository row and installation association must not be treated as sufficient allowlist proof.
 
 ## Enqueue gate

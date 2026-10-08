@@ -30,6 +30,8 @@ The local productization path is validated, including the exact OpenAI `response
 
 6. Verify or harden the worker-level repository allowlist. The current worker path passes `allowAnyRepository: true` to the GitHub token provider, so database row authorization alone is not sufficient evidence for the required single-repository staging boundary.
 
+The read-only Vercel deployment list currently shows the active branch Preview at `f516f7b3…`, not local checkpoint `e4fcd34`. This is a confirmed parity blocker.
+
 The local display contract is now corrected and covered by a repository-route regression; deployed UI verification remains outstanding.
 
 No production database, deployment, Vercel setting, GitHub repository write, remote scan, or remote enqueue was performed in this checkpoint.

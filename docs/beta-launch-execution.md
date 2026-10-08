@@ -16,7 +16,7 @@ Updated: 2026-10-09
 
 | Phase | Status | Evidence |
 | --- | --- | --- |
-| 1. Environment/security audit | BLOCKED | Local source audit passed; deployed environment values and remote rows were not available for read-only verification. |
+| 1. Environment/security audit | BLOCKED | Local source audit passed; Vercel read-only inspection identifies the active branch Preview as `f516f7b3…`, older than the local isolation checkpoint. Environment values and remote rows remain unverified. |
 | 2. Exact OpenAI fixture | READY_LOCAL / REMOTE_UNVERIFIED | Exact `responses.create` worker fixture now passes locally against the reviewed registry. The real GitHub fixture was not contacted. |
 | 3. Worker E2E | READY_LOCAL | Worker, persistence, proof, privacy, retry, and queue tests pass locally. |
 | 4. Live scan preparation | PENDING_APPROVAL | One pending queue request and worker invocation require explicit remote authorization. |
@@ -37,6 +37,7 @@ Updated: 2026-10-09
 - Production-style web build: passed; 56 static pages/routes generated. Non-fatal warnings concern optional `source-map-support` resolution and the Next.js ESLint plugin migration notice.
 - `git diff --check`: passed in the current checkout.
 - Source checkpoint: `e4fcd34`; the documentation checkpoint follows it in local history.
+- Vercel read-only check: Deployment Protection requires Vercel login; active Preview/local commit parity is disproven.
 
 ## Outstanding approvals and evidence
 
