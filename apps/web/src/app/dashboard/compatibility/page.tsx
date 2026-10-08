@@ -64,6 +64,7 @@ export default function CompatibilityPage() {
           <p className="mt-1 text-xs text-[#686868]">
             Reviewed upstream changes and repository-bound compatibility proofs.
           </p>
+          <p className="mt-2 inline-flex rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-purple-800">Public beta · 10 core providers</p>
         </div>
         <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />}>
           Refresh

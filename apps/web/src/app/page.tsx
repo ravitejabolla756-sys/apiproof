@@ -36,6 +36,7 @@ export default function HomePage() {
             href="/docs"
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-black/50 border border-white/15 backdrop-blur-md text-xs text-white transition-all shadow-lg group"
           >
+            <span className="px-2 py-0.5 rounded-full bg-[#D0F100] text-[10px] font-bold tracking-wider uppercase text-black">PUBLIC BETA</span>
             <span className="px-2 py-0.5 rounded-full bg-black text-[10px] font-bold tracking-wider uppercase text-white border border-white/10 font-mono">
               GITHUB APP
             </span>
@@ -52,8 +53,9 @@ export default function HomePage() {
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg text-slate-100 max-w-2xl font-normal leading-relaxed">
-            MY OWL detects breaking API and SDK changes, traces affected code through AST analysis, plans deterministic migrations, verifies the resulting code, and opens a GitHub Draft PR for human review.
+            Know when the APIs your code depends on are about to break. MY OWL checks repositories against reviewed provider deprecations and breaking changes, then shows the evidence for human review.
           </p>
+          <p className="text-xs sm:text-sm text-slate-200 max-w-xl leading-relaxed">Public beta with deep reviewed compatibility coverage for 10 core providers. Additional provider coverage is rolling out continuously.</p>
 
           {/* CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">

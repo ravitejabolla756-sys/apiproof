@@ -66,6 +66,7 @@ export default function ApiInventoryPage() {
           <p className="text-xs text-[#686868] mt-1">
             Server-registered third-party API SDK breaking change rules evaluated during AST repository scans.
           </p>
+          <p className="mt-2 inline-flex rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-purple-800">Public beta: 10 core providers · Internal reviewed registry: 15 providers / 20 rules</p>
         </div>
 
         <Button

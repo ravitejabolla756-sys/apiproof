@@ -11,10 +11,10 @@ export function ScanProgress() {
   const steps = [
     "Reading repository main branch...",
     "Indexing package dependencies & lockfiles...",
-    "Resolving AST SDK bindings (Twilio, Stripe, OpenAI)...",
-    "Matching against 11 reviewed API change rules...",
-    "Tracing 27 Twilio usages in Bavio-Ai-v1...",
-    "Scan Complete: 0 matching breaking changes (NOT_AFFECTED)",
+    "Resolving provider and API usage evidence...",
+    "Matching against reviewed compatibility rules...",
+    "Classifying evidence as AFFECTED, NOT_AFFECTED, or NEEDS_REVIEW...",
+    "Review complete: inspect the evidence-backed result",
   ];
 
   const handleStartScan = () => {

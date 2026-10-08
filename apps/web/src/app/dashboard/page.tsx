@@ -112,7 +112,7 @@ export default function DashboardOverviewPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wider text-[#686868]">
-              PRODUCTION WORKSPACE
+              PUBLIC BETA · 10 CORE PROVIDERS
             </div>
             <h1 className="text-3xl font-medium tracking-tight text-[#111111]">
               Welcome back.
@@ -120,6 +120,7 @@ export default function DashboardOverviewPage() {
             <p className="text-xs sm:text-sm text-[#686868] mt-1">
               {stats.connectedRepositories} {stats.connectedRepositories === 1 ? 'repository' : 'repositories'} monitored · {stats.scansCompleted} {stats.scansCompleted === 1 ? 'scan' : 'scans'} completed · {stats.openFindings} {stats.openFindings === 1 ? 'finding' : 'findings'} open
             </p>
+            <p className="mt-2 text-[11px] text-[#686868]">Reviewed compatibility is deterministic and evidence-linked. Additional provider coverage is rolling out continuously.</p>
           </div>
 
           <div className="flex items-center gap-3">

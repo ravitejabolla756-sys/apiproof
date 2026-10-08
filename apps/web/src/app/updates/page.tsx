@@ -7,6 +7,18 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 export default function UpdatesPage() {
   const updates = [
     {
+      date: "October 8, 2026",
+      title: "MY OWL Provider Intelligence — Public Beta",
+      description: "MY OWL now checks repositories against reviewed provider deprecations and breaking changes using deterministic, evidence-linked compatibility analysis.",
+      improvements: [
+        "AFFECTED, NOT_AFFECTED, and NEEDS_REVIEW states are shown explicitly",
+        "Official-source provenance is preserved for reviewed compatibility rules",
+        "Privacy-first local analysis avoids persisting raw repository source",
+        "Initial public beta coverage includes 10 core providers"
+      ],
+      footerNote: "Additional provider coverage is rolling out continuously."
+    },
+    {
       date: "March 28, 2026",
       title: "Deterministic AST Matching Engine v2.4",
       description: "We have upgraded our core Abstract Syntax Tree parser with sub-millisecond symbol resolution, parameter-level schema diffing, and support for complex TypeScript call-site expressions.",
@@ -52,7 +64,7 @@ export default function UpdatesPage() {
         "OpenAI completion-to-chatCompletions migration rule catalog",
         "Supabase auth helper deprecation and SSR cookie refactoring rules"
       ],
-      footerNote: "Monitored catalogs now cover over 50 vendor SDKs and API schemas."
+      footerNote: "Provider intelligence coverage continues to expand through reviewed, evidence-backed rules."
     }
   ];
 
