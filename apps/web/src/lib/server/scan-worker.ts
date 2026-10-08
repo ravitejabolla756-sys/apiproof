@@ -31,6 +31,7 @@ import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.j
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
 import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { extractSourceSnippet } from './scan-snippet.js';
+import { previewStagingRepositoryPolicyError } from './preview-repository-isolation.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
@@ -267,6 +268,9 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       error: 'REPOSITORY_NOT_FOUND',
     };
   }
+
+  const repositoryPolicyError = previewStagingRepositoryPolicyError({ githubRepositoryId: repo.github_repository_id, owner: repo.owner, name: repo.name });
+  if (repositoryPolicyError) { await markScanWorkerJobFailed(db, job, 'REPOSITORY_NOT_APPROVED', repositoryPolicyError); return { scanRequestId: job.id, repositoryId: repo.id, commitSha: job.commit_sha, status: 'failed', error: 'REPOSITORY_NOT_APPROVED' }; }
 
   const expectedRef = `refs/heads/${repo.default_branch}`;
   if (job.ref !== expectedRef) {
