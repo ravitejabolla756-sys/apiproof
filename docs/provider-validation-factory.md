@@ -12,6 +12,6 @@ Those cases use `evaluateRegisteredNormalizedCompatibility`, so they exercise th
 
 The command prints JSON by default. Pass `--markdown` for the human-readable matrix. Productization coverage is reported separately from engine coverage: a `PARTIAL` row means the existing analyzer did not prove that semantic shape from the generated source fixture. It is not converted into a synthetic `AFFECTED` result. This makes unsupported analyzer shapes visible for later, evidence-backed adapter work.
 
-The factory also checks that a positive usage under an unrelated provider produces no affected result and that duplicate usage identities are deduplicated by the production evaluator. It does not connect to PostgreSQL, call GitHub, invoke workers, or modify cloud state.
+The factory also checks that a positive usage under an unrelated provider produces no affected result and that duplicate usage identities are deduplicated by the production evaluator. It does not connect to PostgreSQL, call GitHub, invoke workers, or modify cloud state. Existing worker end-to-end tests remain the authoritative disposable-database persistence coverage.
 
 The bounded projection and finding projection are validated as local pure functions. Raw source text is not included in their report contract and secret-like values are not emitted.

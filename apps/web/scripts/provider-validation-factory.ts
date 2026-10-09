@@ -88,6 +88,22 @@ function sourcePackageName(provider: ProviderDefinition): string {
   return packageName.includes('*') ? packageName.replace('*', 'client') : packageName;
 }
 
+function memberExpression(base: string, member: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(member)
+    ? `${base}.${member}`
+    : `${base}[${JSON.stringify(member)}]`;
+}
+
+function pathExpression(base: string, path: string): string {
+  return path.split('.').filter(Boolean).reduce(memberExpression, base);
+}
+
+function objectProperty(name: string, value: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)
+    ? `${name}: ${value}`
+    : `[${JSON.stringify(name)}]: ${value}`;
+}
+
 function endpointValue(change: ReviewedCompatibilityChange): string | undefined {
   const endpoint = change.affectedEndpoints[0];
   if (!endpoint) return undefined;
@@ -98,14 +114,10 @@ function endpointValue(change: ReviewedCompatibilityChange): string | undefined 
 
 function providerUrl(provider: ProviderDefinition, change: ReviewedCompatibilityChange): string {
   const endpoint = endpointValue(change);
+  if (endpoint?.startsWith('http')) return endpoint;
   const domain = (change.affectedDomains?.[0] ?? provider.apiDomains[0] ?? 'api.invalid').replace(/^\*\./, 'project.');
   const path = endpoint && endpoint.startsWith('/') ? endpoint : '/v1/validation';
   return `https://${domain}${path}`;
-}
-
-function safeMember(value: string | undefined, fallback: string): string {
-  const member = value?.split(/[./]/).filter(Boolean).find((part) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(part));
-  return member ?? fallback;
 }
 
 function firstReplacement(change: ReviewedCompatibilityChange, dimension: string): string | undefined {
@@ -197,22 +209,27 @@ export function analyzerSource(provider: ProviderDefinition, change: ReviewedCom
     ...(dimensions.has('auth_or_header') && authHeader ? [`'${authHeader}': 'static-class-evidence'`] : []),
   ];
   if (usesHttpEvidence) {
+    const parameter = change.affectedParameters[0];
+    const bodyLine = dimensions.has('parameter') && parameter ? `, body: { ${objectProperty(parameter, '1')} }` : '';
     return {
       'package.json': JSON.stringify({ dependencies: { [packageName]: PACKAGE_VERSION } }),
-      [POSITIVE_FILE]: `import '${packageName}';\nexport async function validate() {\n  return fetch('${url}', { headers: { ${headerLines.join(', ')} } });\n}\n`,
+      [POSITIVE_FILE]: `import '${packageName}';\nexport async function validate() {\n  return fetch('${url}', { headers: { ${headerLines.join(', ')} }${bodyLine} });\n}\n`,
     };
   }
   const model = change.affectedModels[0];
   const parameter = change.affectedParameters[0];
-  const responseField = safeMember(change.affectedResponseFields[0], 'field');
-  const resource = safeMember(change.affectedResources[0], 'resource');
-  const operation = safeMember(change.apiOperationPatterns[0], 'create');
+  const responseField = change.affectedResponseFields[0] ?? 'field';
+  const resource = change.affectedResources[0] ?? 'messages';
+  const operation = change.apiOperationPatterns[0] ?? 'create';
   const properties = [
-    ...(model ? [`model: '${model}'`] : []),
-    ...(parameter ? [`${safeMember(parameter, 'parameter')}: 1`] : []),
+    ...(model ? [objectProperty('model', `'${model}'`)] : []),
+    ...(parameter ? [objectProperty(parameter, '1')] : []),
   ];
-  const call = `client.${resource}.${operation}({ ${properties.join(', ')} })`;
-  const response = dimensions.has('response_field') ? `const response = await ${call}; return response.${responseField};` : `return ${call};`;
+  const callTarget = dimensions.has('operation')
+    ? pathExpression('client', operation)
+    : pathExpression(pathExpression('client', resource), operation);
+  const call = `${callTarget}({ ${properties.join(', ')} })`;
+  const response = dimensions.has('response_field') ? `const response = await ${call}; return ${memberExpression('response', responseField)};` : `return ${call};`;
   return {
     'package.json': JSON.stringify({ dependencies: { [packageName]: PACKAGE_VERSION } }),
     [POSITIVE_FILE]: `import Client from '${packageName}';\nconst client = new Client({});\nexport async function validate() { ${response} }\n`,

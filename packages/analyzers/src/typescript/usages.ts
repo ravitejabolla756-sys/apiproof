@@ -90,7 +90,7 @@ function headerEvidence(object: Node | undefined, provider: ProviderDescriptor):
   return evidence;
 }
 
-function httpRequest(call: Node, provider: ProviderDescriptor): { endpoint: string; headers: HeaderEvidence[]; apiVersion?: string; dynamic: boolean } | undefined {
+function httpRequest(call: Node, provider: ProviderDescriptor, bindings: BindingResolver): { endpoint: string; headers: HeaderEvidence[]; arguments?: UsageFinding['arguments']; apiVersion?: string; dynamic: boolean } | undefined {
   if (!Node.isCallExpression(call)) return undefined;
   const expression = call.getExpression().getText();
   const isFetch = expression === 'fetch';
@@ -102,7 +102,9 @@ function httpRequest(call: Node, provider: ProviderDescriptor): { endpoint: stri
   const config = isAxios && expression === 'axios.request' ? argumentsList[0] : argumentsList[1];
   const headers = headerEvidence(propertyInitializer(config, 'headers'), provider);
   const version = resolveApiVersion(headers, provider.apiVersionHeaders ?? []);
-  return { endpoint, headers, ...(version.apiVersion ? { apiVersion: version.apiVersion } : {}), dynamic: version.dynamic };
+  const body = propertyInitializer(config, 'body') ?? propertyInitializer(config, 'data');
+  const argumentsFacts = body ? extractArguments([body], bindings) : undefined;
+  return { endpoint, headers, ...(argumentsFacts?.length ? { arguments: argumentsFacts } : {}), ...(version.apiVersion ? { apiVersion: version.apiVersion } : {}), dynamic: version.dynamic };
 }
 
 export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor, snapshot: RepositorySnapshot): UsageFinding[] {
@@ -126,13 +128,13 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
       snapshot.warn('UNRESOLVED_IMPORT_ALIAS', 'A local-style module alias cannot be resolved without customer configuration.', location(node).file);
     }
     if (Node.isCallExpression(node)) {
-      const request = httpRequest(node, provider);
+      const request = httpRequest(node, provider, resolver);
       if (request) {
         const loc = location(node);
         const id = createHash('sha256').update(JSON.stringify([provider.id, 'resource', request.endpoint, loc])).digest('hex').slice(0, 24);
         usages.set(id, { id, provider: provider.id, kind: 'resource', semantics: 'invocation', symbol: request.endpoint, location: loc, context: context(node),
           evidence: { binding: loc, basis: 'import-binding' }, confidence: request.dynamic ? 0.6 : 0.95,
-          ...(request.headers.length ? { headers: request.headers } : {}), ...(request.apiVersion ? { apiVersion: request.apiVersion } : {}), ...(request.dynamic ? { dynamic: true } : {}) });
+          ...(request.headers.length ? { headers: request.headers } : {}), ...(request.arguments ? { arguments: request.arguments } : {}), ...(request.apiVersion ? { apiVersion: request.apiVersion } : {}), ...(request.dynamic ? { dynamic: true } : {}) });
       }
       const callee = node.getExpression();
       if (!resolver.resolve(callee) && node.getArguments().some((argument) => {

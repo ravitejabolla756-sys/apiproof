@@ -26,13 +26,27 @@ describe('multi-provider validation factory', () => {
     expect(report.productionPersistence.rawSourcePresentInProjection).toBe(false);
     expect(report.privacy).toEqual({ rawSourceExternalTransmission: false, secretLikeValuesPresentInProjection: false });
     expect(report.counts.productizationCases).toBe(60);
+    expect(report.counts.productizationPasses).toBe(19);
+    expect(report.counts.productizationPartial).toBe(41);
     expect(report.rules.every((rule) => rule.productization[0]?.discovered)).toBe(true);
-    expect(report.rules.some((rule) => rule.productization[0]?.pass)).toBe(true);
-    expect(report.rules.some((rule) => rule.productization[0]?.status !== 'AFFECTED')).toBe(true);
-    expect(report.rules.find((rule) => rule.changeId === 'github-synchronous-sbom-endpoint-removal-2026-11-13')?.productization[0]?.pass).toBe(true);
-    expect(report.rules.find((rule) => rule.changeId === 'twilio-regional-api-domain-removal-2026-04-28')?.productization[0]?.pass).toBe(true);
-    expect(report.rules.find((rule) => rule.changeId === 'launchdarkly-api-version-20220603-eol-2025-04-15')?.productization[0]?.pass).toBe(true);
-    expect(report.rules.find((rule) => rule.changeId === 'cloudflare-service-key-auth-removal-2026-09-30')?.productization[0]?.pass).toBe(true);
+    expect(report.rules.filter((rule) => rule.productization[0]?.pass)).toHaveLength(19);
+    expect(report.rules.find((rule) => rule.changeId === 'anthropic-opus-4-7-parameter-restrictions')?.productization[0]?.status).toBe('NOT_AFFECTED');
+    for (const changeId of [
+      'aws-cloudwatch-evidently-end-of-support-2025-10-16',
+      'clerk-api-2026-05-12-metadata-fields-removed',
+      'firebase-instance-id-server-apis-decommission-2027-09-29',
+      'github-organization-security-fields-removed-2026-04-21',
+      'github-synchronous-sbom-endpoint-removal-2026-11-13',
+      'google-cloud-api-registry-mcp-shutdown-2026-07-30',
+      'launchdarkly-api-version-20220603-eol-2025-04-15',
+      'openai-assistants-api-sunset-2026-08-26',
+      'shopify-checkout-api-shutdown-2025-04-01',
+      'slack-files-upload-removal-2025-11-12',
+      'supabase-management-logs-all-removal-2026-09-23',
+      'cloudflare-service-key-auth-removal-2026-09-30',
+    ]) {
+      expect(report.rules.find((rule) => rule.changeId === changeId)?.productization[0]?.pass, changeId).toBe(true);
+    }
   });
 
   it('renders a stable human-readable matrix without source or secret values', async () => {

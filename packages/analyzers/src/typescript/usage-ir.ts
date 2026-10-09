@@ -53,7 +53,8 @@ export function usageFindingToCompatibilityUsage(usage: UsageFinding, packageNam
   const staticAuthHeader = usage.headers?.find((header) => header.static && !header.name.startsWith('<'))?.name;
   return {
     id: usage.id, providerId: usage.provider, packageName,
-    operation: isOperation ? usage.symbol : undefined, parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
+    operation: isOperation ? usage.symbol : isResponse ? usage.response?.originSymbol : undefined,
+    parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
     endpoint: usage.kind === 'resource' && usage.symbol.startsWith('http') ? usage.symbol : undefined,
     ...(usage.apiVersion ? { apiVersion: usage.apiVersion } : {}),
     ...(staticAuthHeader ? { authOrHeader: staticAuthHeader } : {}),

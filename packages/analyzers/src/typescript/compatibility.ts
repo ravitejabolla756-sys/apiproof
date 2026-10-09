@@ -54,19 +54,25 @@ function matchesEndpointPattern(value: string | undefined, patterns: readonly st
   if (!value) return false;
   const candidates = [value];
   try {
-    if (value.includes('://')) candidates.push(new URL(value).pathname);
+    if (value.includes('://')) {
+      const pathname = new URL(value).pathname;
+      candidates.push(pathname, pathname.replace(/^\/+/, ''));
+    }
   } catch {
     // Invalid URL values remain exact/symbolic candidates only.
   }
-  return patterns.some((pattern) => candidates.some((candidate) => {
-    if (candidate === pattern) return true;
-    if (pattern.includes('{')) {
-      const expected = pattern.split('/');
-      const actual = candidate.split('/');
-      return expected.length === actual.length && expected.every((segment, index) => /^\{[^/]+\}$/.test(segment) || segment === actual[index]);
-    }
-    return pattern.includes('://') && candidate.startsWith(`${pattern}/`);
-  }));
+  return patterns.some((pattern) => {
+    const patternCandidates = pattern.startsWith('/') ? [pattern, pattern.replace(/^\/+/, '')] : [pattern, `/${pattern}`];
+    return patternCandidates.some((patternCandidate) => candidates.some((candidate) => {
+      if (candidate === patternCandidate) return true;
+      if (patternCandidate.includes('{')) {
+        const expected = patternCandidate.split('/');
+        const actual = candidate.split('/');
+        return expected.length === actual.length && expected.every((segment, index) => /^\{[^/]+\}$/.test(segment) || segment === actual[index]);
+      }
+      return patternCandidate.includes('://') && candidate.startsWith(`${patternCandidate}/`);
+    }));
+  });
 }
 
 function hostnameFromValue(value: string | undefined): string | undefined {
