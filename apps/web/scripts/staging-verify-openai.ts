@@ -78,6 +78,7 @@ export class StagingVerificationError extends Error {
 
 type SafeFailureCode =
   | 'STAGING_DATABASE_AUTH_FAILED'
+  | 'STAGING_DATABASE_PERMISSION_FAILED'
   | 'STAGING_DATABASE_SCHEMA_FAILED'
   | 'STAGING_DATABASE_NETWORK_FAILED'
   | 'GITHUB_PRIVATE_KEY_INVALID'
@@ -122,7 +123,10 @@ export function classifyStagingVerificationError(error: unknown, fallback: SafeF
   if (hasKnownError(error, '28P01') || hasKnownError(error, '28000')) {
     return new StagingVerificationError('STAGING_DATABASE_AUTH_FAILED');
   }
-  if (['3D000', '42P01', '42703', '42P02', '42501'].some((token) => hasKnownError(error, token))) {
+  if (hasKnownError(error, '42501')) {
+    return new StagingVerificationError('STAGING_DATABASE_PERMISSION_FAILED');
+  }
+  if (['3D000', '42P01', '42703', '42P02'].some((token) => hasKnownError(error, token))) {
     return new StagingVerificationError('STAGING_DATABASE_SCHEMA_FAILED');
   }
   if (hasNetworkError(error)) {

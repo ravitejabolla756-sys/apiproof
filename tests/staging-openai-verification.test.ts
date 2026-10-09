@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { POSTGRES_SCHEMA } from '../apps/web/src/lib/server/db/schema.js';
 import {
   STAGING_OPENAI_TARGET,
   classifyStagingVerificationError,
@@ -54,6 +55,8 @@ describe('Windows staging OpenAI verification command', () => {
       .toMatchObject({ code: 'STAGING_DATABASE_AUTH_FAILED', message: 'STAGING_DATABASE_AUTH_FAILED' });
     expect(classifyStagingVerificationError({ code: '42P01', message: 'relation repositories does not exist' }, 'STAGING_DATABASE_READ_FAILED'))
       .toMatchObject({ code: 'STAGING_DATABASE_SCHEMA_FAILED', message: 'STAGING_DATABASE_SCHEMA_FAILED' });
+    expect(classifyStagingVerificationError({ code: '42501', message: 'permission denied for relation repositories' }, 'STAGING_DATABASE_READ_FAILED'))
+      .toMatchObject({ code: 'STAGING_DATABASE_PERMISSION_FAILED', message: 'STAGING_DATABASE_PERMISSION_FAILED' });
     expect(classifyStagingVerificationError({ code: 'ENOTFOUND', message: 'database.example secret' }, 'STAGING_DATABASE_READ_FAILED'))
       .toMatchObject({ code: 'STAGING_DATABASE_NETWORK_FAILED', message: 'STAGING_DATABASE_NETWORK_FAILED' });
     expect(classifyStagingVerificationError(new Error('GITHUB_PRIVATE_KEY_UNREADABLE: private key contents'), 'GITHUB_REPOSITORY_LOOKUP_FAILED'))
@@ -77,6 +80,25 @@ describe('Windows staging OpenAI verification command', () => {
     expect(validateStagingDatabaseUrl(databaseUrl).username).toBe(STAGING_OPENAI_TARGET.databaseUrlUsername);
     expect(() => validateStagingDatabaseUrl(databaseUrl.replace(STAGING_OPENAI_TARGET.databaseUrlUsername, 'postgres.otherref'))).toThrow('STAGING_PROJECT_REF_MISMATCH');
     expect(() => validateStagingDatabaseUrl(`${databaseUrl}?sslmode=disable`)).toThrow('STAGING_TLS_DISABLE_REFUSED');
+  });
+
+  it('keeps verifier SQL aligned with the canonical PostgreSQL schema', () => {
+    for (const table of ['github_installations', 'repositories', 'github_scan_requests']) {
+      expect(POSTGRES_SCHEMA).toContain(`CREATE TABLE IF NOT EXISTS ${table}`);
+    }
+    for (const column of [
+      'installation_id TEXT UNIQUE NOT NULL',
+      'account_login TEXT NOT NULL',
+      "status TEXT NOT NULL DEFAULT 'active'",
+      'owner TEXT NOT NULL',
+      'name TEXT NOT NULL',
+      'github_repository_id TEXT NOT NULL',
+      'default_branch TEXT NOT NULL',
+      'lifecycle TEXT NOT NULL DEFAULT \'active\'',
+      'commit_sha TEXT NOT NULL',
+    ]) {
+      expect(POSTGRES_SCHEMA).toContain(column);
+    }
   });
 
   it('performs only read-only PostgreSQL verification and enforces the exact records', async () => {
