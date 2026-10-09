@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   STAGING_OPENAI_TARGET,
+  normalizeMaskedInput,
   validateStagingDatabaseUrl,
   verifyStagingDatabase,
   verifyStagingOpenAI,
@@ -47,6 +48,11 @@ function githubProvider() {
 }
 
 describe('Windows staging OpenAI verification command', () => {
+  it('normalizes PowerShell paste control characters without exposing the URL', () => {
+    expect(normalizeMaskedInput(`\u0016${databaseUrl}\r\n`)).toBe(databaseUrl);
+    expect(normalizeMaskedInput('\u0016\r\n')).toBe('');
+  });
+
   it('accepts only the exact staging Supabase project identity and rejects disabled TLS', () => {
     expect(validateStagingDatabaseUrl(databaseUrl).username).toBe(STAGING_OPENAI_TARGET.databaseUrlUsername);
     expect(() => validateStagingDatabaseUrl(databaseUrl.replace(STAGING_OPENAI_TARGET.databaseUrlUsername, 'postgres.otherref'))).toThrow('STAGING_PROJECT_REF_MISMATCH');

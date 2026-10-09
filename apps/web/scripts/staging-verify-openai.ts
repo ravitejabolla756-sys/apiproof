@@ -96,6 +96,16 @@ export function validateStagingDatabaseUrl(databaseUrl: string): URL {
   return parsed;
 }
 
+export function normalizeMaskedInput(value: string): string {
+  return [...value]
+    .filter((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint >= 0x20 && codePoint !== 0x7f;
+    })
+    .join('')
+    .trim();
+}
+
 async function one<T>(client: ReadOnlyQueryClient, sql: string, params: unknown[] = []): Promise<T> {
   const result = await client.query<T>(sql, params);
   const row = result.rows[0];
@@ -238,7 +248,7 @@ async function readSecretPrompt(label: string): Promise<string> {
           if (character === '\u0003') { finishReject(new StagingVerificationError('SECURE_PROMPT_CANCELLED')); return; }
           if (character === '\r' || character === '\n') { finishResolve(); return; }
           if (character === '\b' || character === '\u007f') { value = value.slice(0, -1); continue; }
-          value += character;
+          if (character >= ' ' && character !== '\u007f') value += character;
         }
       };
       const onEnd = () => finishReject(new StagingVerificationError('SECURE_PROMPT_ENDED'));
@@ -252,13 +262,37 @@ async function readSecretPrompt(label: string): Promise<string> {
     if (previousEncoding) input.setEncoding(previousEncoding);
     defaultOutput.write('\n');
   }
-  if (!value.trim()) fail('SECURE_PROMPT_EMPTY');
-  return value.trim();
+  return normalizeMaskedInput(value);
+}
+
+async function readStagingDatabaseUrl(): Promise<string> {
+  const configured = process.env.APIPROOF_STAGING_DATABASE_URL?.trim();
+  if (configured) {
+    validateStagingDatabaseUrl(configured);
+    console.log('DATABASE_URL_INPUT_RECEIVED');
+    return configured;
+  }
+
+  while (true) {
+    const value = await readSecretPrompt('Staging database URL');
+    if (!value) {
+      console.error('DATABASE_URL_INPUT_EMPTY');
+      continue;
+    }
+    try {
+      validateStagingDatabaseUrl(value);
+      console.log('DATABASE_URL_INPUT_RECEIVED');
+      return value;
+    } catch (error) {
+      if (!(error instanceof StagingVerificationError)) throw error;
+      console.error('DATABASE_URL_INPUT_INVALID');
+    }
+  }
 }
 
 async function collectInput(): Promise<StagingOpenAIInput> {
   if (process.env.DATABASE_URL?.trim() || process.env.APIPROOF_DATABASE_URL?.trim()) fail('GENERIC_DATABASE_VARIABLE_REFUSED');
-  const databaseUrl = process.env.APIPROOF_STAGING_DATABASE_URL?.trim() || await readSecretPrompt('Staging database URL');
+  const databaseUrl = await readStagingDatabaseUrl();
   const appId = process.env.GITHUB_APP_ID?.trim() || await readLinePrompt('GitHub App ID');
   const installationId = process.env.GITHUB_INSTALLATION_ID?.trim() || await readLinePrompt('GitHub installation ID');
   const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.trim();
