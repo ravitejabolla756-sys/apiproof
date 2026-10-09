@@ -51,14 +51,21 @@ function matchesEndpointPattern(value: string | undefined, patterns: readonly st
   // Route identities and operation-like endpoints are exact. Preserve the
   // established raw-URL base-route behavior for URLs with a concrete path,
   // while never broadening templated or symbolic endpoint identifiers.
-  return Boolean(value && patterns.some((pattern) => {
-    if (value === pattern) return true;
+  if (!value) return false;
+  const candidates = [value];
+  try {
+    if (value.includes('://')) candidates.push(new URL(value).pathname);
+  } catch {
+    // Invalid URL values remain exact/symbolic candidates only.
+  }
+  return patterns.some((pattern) => candidates.some((candidate) => {
+    if (candidate === pattern) return true;
     if (pattern.includes('{')) {
       const expected = pattern.split('/');
-      const actual = value.split('/');
+      const actual = candidate.split('/');
       return expected.length === actual.length && expected.every((segment, index) => /^\{[^/]+\}$/.test(segment) || segment === actual[index]);
     }
-    return pattern.includes('://') && value.startsWith(`${pattern}/`);
+    return pattern.includes('://') && candidate.startsWith(`${pattern}/`);
   }));
 }
 
@@ -126,7 +133,8 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const apiVersionMatch: UsageMatch = !dimensions.has('api_version') ? 'match'
     : usage.apiVersion && usage.apiVersion === change.apiVersionMetadata?.version
       ? usage.static && usage.confidence >= 0.8 ? 'match' : 'uncertain'
-      : usage.apiVersion ? (!usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match') : 'uncertain';
+      : usage.apiVersion ? (!usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match')
+        : usage.evidenceKind === 'import' && usage.static && usage.confidence >= 0.8 ? 'no-match' : 'uncertain';
   const authMatch: UsageMatch = !dimensions.has('auth_or_header') ? 'match'
     : usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';

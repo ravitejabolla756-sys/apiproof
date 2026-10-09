@@ -50,11 +50,13 @@ export function usageFindingToCompatibilityUsage(usage: UsageFinding, packageNam
   const isOperation = usage.kind === 'method' || usage.kind === 'construction' || usage.kind === 'resource';
   const parameter = usage.arguments?.flatMap((argument) => argument.properties.map((property) => property.path))[0];
   const unresolvedModel = usage.arguments?.some((argument) => argument.properties.some((property) => property.path === 'model' && property.literalHash === undefined)) ?? false;
+  const staticAuthHeader = usage.headers?.find((header) => header.static && !header.name.startsWith('<'))?.name;
   return {
     id: usage.id, providerId: usage.provider, packageName,
     operation: isOperation ? usage.symbol : undefined, parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
     endpoint: usage.kind === 'resource' && usage.symbol.startsWith('http') ? usage.symbol : undefined,
     ...(usage.apiVersion ? { apiVersion: usage.apiVersion } : {}),
+    ...(staticAuthHeader ? { authOrHeader: staticAuthHeader } : {}),
     ...(usage.headers ? { headerEvidence: usage.headers.map((header) => ({
       name: header.name, ...(header.value !== undefined ? { value: header.value } : {}), static: header.static, redacted: header.redacted,
       location: { file: header.location.file, line: header.location.start.line, column: header.location.start.column },

@@ -43,11 +43,24 @@ function pythonProviderDefinitions(files: ReadonlyMap<string, string>, definitio
     || urls.some((url) => definition.apiDomains.some((domain) => matchesProviderDomain(url, [domain]))));
 }
 
+function reviewedEvidenceDomains(providerId: string): string[] {
+  return PRODUCTION_COMPATIBILITY_REGISTRY.changes.filter((change) => change.providerId === providerId).flatMap((change) => [
+    ...(change.affectedDomains ?? []),
+    ...change.affectedEndpoints.flatMap((endpoint) => {
+      try { return endpoint.startsWith('http') ? [new URL(endpoint).hostname] : []; } catch { return []; }
+    }),
+  ]);
+}
+
 const descriptorFor = (discovery: ProviderDiscoveryResult) => ({
   id: discovery.providerId,
   packageName: discovery.packageName ?? discovery.evidence.find((item) => item.packageName)?.packageName ?? discovery.providerId,
   constructorExports: [] as readonly string[],
-  apiDomains: discovery.apiDomains,
+  apiDomains: [...new Set([
+    ...DISCOVERY_PROVIDER_REGISTRY.definitions.find((definition) => definition.id === discovery.providerId)?.apiDomains ?? [],
+    ...discovery.apiDomains,
+    ...reviewedEvidenceDomains(discovery.providerId),
+  ])],
   apiVersionHeaders: discovery.apiVersionHeaders,
 });
 
