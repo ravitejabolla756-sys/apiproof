@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   STAGING_OPENAI_TARGET,
+  classifyStagingVerificationError,
   normalizeMaskedInput,
   validateStagingDatabaseUrl,
   verifyStagingDatabase,
@@ -48,6 +49,25 @@ function githubProvider() {
 }
 
 describe('Windows staging OpenAI verification command', () => {
+  it('maps infrastructure failures to safe reason codes without exposing messages', () => {
+    expect(classifyStagingVerificationError({ code: '28P01', message: 'password contains secret' }, 'STAGING_DATABASE_READ_FAILED'))
+      .toMatchObject({ code: 'STAGING_DATABASE_AUTH_FAILED', message: 'STAGING_DATABASE_AUTH_FAILED' });
+    expect(classifyStagingVerificationError({ code: '42P01', message: 'relation repositories does not exist' }, 'STAGING_DATABASE_READ_FAILED'))
+      .toMatchObject({ code: 'STAGING_DATABASE_SCHEMA_FAILED', message: 'STAGING_DATABASE_SCHEMA_FAILED' });
+    expect(classifyStagingVerificationError({ code: 'ENOTFOUND', message: 'database.example secret' }, 'STAGING_DATABASE_READ_FAILED'))
+      .toMatchObject({ code: 'STAGING_DATABASE_NETWORK_FAILED', message: 'STAGING_DATABASE_NETWORK_FAILED' });
+    expect(classifyStagingVerificationError(new Error('GITHUB_PRIVATE_KEY_UNREADABLE: private key contents'), 'GITHUB_REPOSITORY_LOOKUP_FAILED'))
+      .toMatchObject({ code: 'GITHUB_PRIVATE_KEY_INVALID', message: 'GITHUB_PRIVATE_KEY_INVALID' });
+    expect(classifyStagingVerificationError(new Error('GITHUB_AUTHENTICATION_FAILED'), 'GITHUB_REPOSITORY_LOOKUP_FAILED'))
+      .toMatchObject({ code: 'GITHUB_INSTALLATION_AUTHORIZATION_FAILED' });
+    expect(classifyStagingVerificationError(
+      Object.assign(new Error('GITHUB_AUTHENTICATION_FAILED'), { cause: Object.assign(new Error('fetch failed'), { code: 'ENOTFOUND' }) }),
+      'GITHUB_REPOSITORY_LOOKUP_FAILED',
+    )).toMatchObject({ code: 'GITHUB_NETWORK_FAILED' });
+    expect(classifyStagingVerificationError(new Error('GITHUB_REPOSITORY_NOT_FOUND'), 'GITHUB_REPOSITORY_LOOKUP_FAILED'))
+      .toMatchObject({ code: 'GITHUB_REPOSITORY_LOOKUP_FAILED' });
+  });
+
   it('normalizes PowerShell paste control characters without exposing the URL', () => {
     expect(normalizeMaskedInput(`\u0016${databaseUrl}\r\n`)).toBe(databaseUrl);
     expect(normalizeMaskedInput('\u0016\r\n')).toBe('');
@@ -75,6 +95,19 @@ describe('Windows staging OpenAI verification command', () => {
       .rejects.toMatchObject({ code: 'STAGING_SQL_IDENTITY_MISMATCH' });
   });
 
+  it('classifies database authentication and schema failures at their source', async () => {
+    const authPool = { async connect() { throw Object.assign(new Error('password authentication failed'), { code: '28P01' }); }, async query() {}, async end() {} } as unknown as ReadOnlyPool;
+    await expect(verifyStagingDatabase(authPool, databaseUrl, baseInput.installationId)).rejects.toMatchObject({ code: 'STAGING_DATABASE_AUTH_FAILED' });
+
+    const schemaPool = databasePool();
+    const originalQuery = schemaPool.query;
+    schemaPool.query = (async (sql: string, params?: unknown[]) => {
+      if (sql.includes('FROM repositories')) throw Object.assign(new Error('relation repositories does not exist'), { code: '42P01' });
+      return originalQuery(sql, params);
+    }) as ReadOnlyPool['query'];
+    await expect(verifyStagingDatabase(schemaPool, databaseUrl, baseInput.installationId)).rejects.toMatchObject({ code: 'STAGING_DATABASE_SCHEMA_FAILED' });
+  });
+
   it('verifies the exact OpenAI fixture through the read-only GitHub provider', async () => {
     const result = await verifyStagingOpenAI(baseInput, { pool: databasePool(), github: githubProvider() as never });
     expect(result.github).toMatchObject({ repositoryId: STAGING_OPENAI_TARGET.repositoryId, owner: STAGING_OPENAI_TARGET.owner, repository: STAGING_OPENAI_TARGET.repository, branch: 'main', fixtureSource: 'PASS', writes: 'BLOCKED' });
@@ -84,6 +117,16 @@ describe('Windows staging OpenAI verification command', () => {
   it('rejects a fixture without the exact static model usage', async () => {
     const provider = { ...githubProvider(), async readFile() { return 'client.responses.create({ model: process.env.MODEL });'; } };
     await expect(verifyStagingOpenAI(baseInput, { pool: databasePool(), github: provider as never })).rejects.toMatchObject({ code: 'OPENAI_FIXTURE_SOURCE_MISMATCH' });
+  });
+
+  it('classifies GitHub installation and fixture-read failures safely', async () => {
+    const unauthorizedProvider = { ...githubProvider(), async getRepository() { throw new Error('GITHUB_AUTHENTICATION_FAILED'); } };
+    await expect(verifyStagingOpenAI(baseInput, { pool: databasePool(), github: unauthorizedProvider as never }))
+      .rejects.toMatchObject({ code: 'GITHUB_INSTALLATION_AUTHORIZATION_FAILED' });
+
+    const missingFixtureProvider = { ...githubProvider(), async readFile() { throw new Error('GITHUB_FILE_NOT_FOUND'); } };
+    await expect(verifyStagingOpenAI(baseInput, { pool: databasePool(), github: missingFixtureProvider as never }))
+      .rejects.toMatchObject({ code: 'OPENAI_FIXTURE_FILE_MISSING' });
   });
 
   it('rejects invalid App credentials before any verification work', async () => {

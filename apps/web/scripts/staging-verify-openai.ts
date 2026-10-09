@@ -76,8 +76,83 @@ export class StagingVerificationError extends Error {
   }
 }
 
+type SafeFailureCode =
+  | 'STAGING_DATABASE_AUTH_FAILED'
+  | 'STAGING_DATABASE_SCHEMA_FAILED'
+  | 'STAGING_DATABASE_NETWORK_FAILED'
+  | 'GITHUB_PRIVATE_KEY_INVALID'
+  | 'GITHUB_INSTALLATION_AUTHORIZATION_FAILED'
+  | 'GITHUB_REPOSITORY_LOOKUP_FAILED'
+  | 'GITHUB_NETWORK_FAILED'
+  | 'OPENAI_FIXTURE_FILE_MISSING'
+  | 'OPENAI_FIXTURE_READ_FAILED'
+  | 'STAGING_DATABASE_READ_FAILED'
+  | 'OPENAI_PRE_SCAN_VERIFICATION_FAILED';
+
 function fail(code: string): never {
   throw new StagingVerificationError(code);
+}
+
+function errorProperty(error: unknown, property: 'code' | 'message'): string {
+  if (typeof error !== 'object' || error === null) return '';
+  const value = (error as Record<string, unknown>)[property];
+  return typeof value === 'string' ? value : '';
+}
+
+function hasKnownError(error: unknown, token: string): boolean {
+  const code = errorProperty(error, 'code');
+  const message = errorProperty(error, 'message');
+  return code === token || message.startsWith(token);
+}
+
+function hasNetworkError(error: unknown): boolean {
+  const code = errorProperty(error, 'code');
+  const direct = ['ECONNREFUSED', 'ECONNRESET', 'EAI_AGAIN', 'ENETUNREACH', 'ENOTFOUND', 'ETIMEDOUT'].includes(code)
+    || hasKnownError(error, 'GITHUB_TRANSPORT_FAILED')
+    || errorProperty(error, 'message') === 'fetch failed';
+  if (direct) return true;
+  if (typeof error !== 'object' || error === null) return false;
+  const cause = (error as { cause?: unknown }).cause;
+  return cause !== undefined && cause !== error && hasNetworkError(cause);
+}
+
+export function classifyStagingVerificationError(error: unknown, fallback: SafeFailureCode): StagingVerificationError {
+  if (error instanceof StagingVerificationError) return error;
+
+  if (hasKnownError(error, '28P01') || hasKnownError(error, '28000')) {
+    return new StagingVerificationError('STAGING_DATABASE_AUTH_FAILED');
+  }
+  if (['3D000', '42P01', '42703', '42P02', '42501'].some((token) => hasKnownError(error, token))) {
+    return new StagingVerificationError('STAGING_DATABASE_SCHEMA_FAILED');
+  }
+  if (hasNetworkError(error)) {
+    return new StagingVerificationError(
+      fallback.startsWith('STAGING_DATABASE_') ? 'STAGING_DATABASE_NETWORK_FAILED' : 'GITHUB_NETWORK_FAILED',
+    );
+  }
+  if (['GITHUB_PRIVATE_KEY_UNREADABLE', 'GITHUB_PRIVATE_KEY_ASYNC_REQUIRED'].some((token) => hasKnownError(error, token))) {
+    return new StagingVerificationError('GITHUB_PRIVATE_KEY_INVALID');
+  }
+  if (['GITHUB_AUTHENTICATION_FAILED', 'GITHUB_INSTALLATION_NOT_FOUND', 'GITHUB_INSTALLATION_APP_MISMATCH', 'GITHUB_AUTHORIZATION_FAILED']
+    .some((token) => hasKnownError(error, token))) {
+    return new StagingVerificationError('GITHUB_INSTALLATION_AUTHORIZATION_FAILED');
+  }
+  if (['GITHUB_REPOSITORY_NOT_FOUND', 'GITHUB_REPOSITORY_NOT_APPROVED', 'GITHUB_DEFAULT_BRANCH_NOT_FOUND', 'GITHUB_REPOSITORY_EMPTY', 'GITHUB_REF_NOT_FOUND', 'GITHUB_INVALID_RESPONSE']
+    .some((token) => hasKnownError(error, token))) {
+    return new StagingVerificationError('GITHUB_REPOSITORY_LOOKUP_FAILED');
+  }
+  if (hasKnownError(error, 'GITHUB_FILE_NOT_FOUND')) {
+    return new StagingVerificationError('OPENAI_FIXTURE_FILE_MISSING');
+  }
+  return new StagingVerificationError(fallback);
+}
+
+async function runGitHubRead<T>(operation: () => Promise<T>, fallback: SafeFailureCode): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    throw classifyStagingVerificationError(error, fallback);
+  }
 }
 
 export function validateStagingDatabaseUrl(databaseUrl: string): URL {
@@ -119,8 +194,9 @@ export async function verifyStagingDatabase(
   installationId: string,
 ): Promise<StagingDatabaseCheck> {
   validateStagingDatabaseUrl(databaseUrl);
-  const client = await pool.connect();
+  let client: ReadOnlyClient | undefined;
   try {
+    client = await pool.connect();
     await client.query('BEGIN');
     await client.query('SET TRANSACTION READ ONLY');
     const identity = await one<{ current_user: string; current_database: string }>(
@@ -166,11 +242,12 @@ export async function verifyStagingDatabase(
     await client.query('ROLLBACK');
     return result;
   } catch (error) {
-    try { await client.query('ROLLBACK'); } catch { /* preserve the safe failure code */ }
-    if (error instanceof StagingVerificationError) throw error;
-    throw new StagingVerificationError('STAGING_DATABASE_READ_FAILED');
+    if (client) {
+      try { await client.query('ROLLBACK'); } catch { /* preserve the safe failure code */ }
+    }
+    throw classifyStagingVerificationError(error, 'STAGING_DATABASE_READ_FAILED' as SafeFailureCode);
   } finally {
-    client.release?.();
+    client?.release?.();
   }
 }
 
@@ -193,15 +270,24 @@ export async function verifyStagingOpenAI(
   if (!input.privateKey && !input.privateKeyPath) fail('GITHUB_PRIVATE_KEY_INPUT_MISSING');
 
   const database = await verifyStagingDatabase(dependencies.pool, input.databaseUrl, input.installationId);
-  const identity = await dependencies.github.getRepository();
-  const head = await dependencies.github.getDefaultBranch();
+  const identity = await runGitHubRead(
+    () => dependencies.github.getRepository(),
+    'GITHUB_REPOSITORY_LOOKUP_FAILED',
+  );
+  const head = await runGitHubRead(
+    () => dependencies.github.getDefaultBranch(),
+    'GITHUB_REPOSITORY_LOOKUP_FAILED',
+  );
   if (identity.repositoryId !== STAGING_OPENAI_TARGET.repositoryId
     || identity.owner !== STAGING_OPENAI_TARGET.owner
     || identity.repository !== STAGING_OPENAI_TARGET.repository
     || head.name !== STAGING_OPENAI_TARGET.branch) fail('GITHUB_REPOSITORY_IDENTITY_MISMATCH');
   if (!/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(head.sha)) fail('GITHUB_COMMIT_SHA_INVALID');
 
-  const source = await dependencies.github.readFile('src/index.ts', head.sha);
+  const source = await runGitHubRead(
+    () => dependencies.github.readFile('src/index.ts', head.sha),
+    'OPENAI_FIXTURE_READ_FAILED',
+  );
   if (!fixtureMatches(source)) fail('OPENAI_FIXTURE_SOURCE_MISMATCH');
   if (dependencies.github.operationAllowed('CREATE_APIPROOF_BRANCH' as GitHubOperation)
     || dependencies.github.operationAllowed('CREATE_PULL_REQUEST' as GitHubOperation)) fail('GITHUB_WRITE_CAPABILITY_PRESENT');
@@ -343,7 +429,7 @@ async function main(): Promise<void> {
     console.log('GITHUB_WRITES=BLOCKED');
     console.log('OPENAI_PRE_SCAN_VERIFICATION=PASS');
   } catch (error) {
-    const code = error instanceof StagingVerificationError ? error.code : 'OPENAI_PRE_SCAN_VERIFICATION_FAILED';
+    const code = classifyStagingVerificationError(error, 'OPENAI_PRE_SCAN_VERIFICATION_FAILED').code;
     console.error(`OPENAI_PRE_SCAN_VERIFICATION=FAIL`);
     console.error(`REASON=${code}`);
     process.exitCode = 1;
