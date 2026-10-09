@@ -70,7 +70,10 @@ export interface StagingOpenAIVerificationResult {
 }
 
 export class StagingVerificationError extends Error {
-  constructor(readonly code: string) {
+  constructor(
+    readonly code: string,
+    readonly details: { stage?: string; sqlStateClass?: string } = {},
+  ) {
     super(code);
     this.name = 'StagingVerificationError';
   }
@@ -100,10 +103,32 @@ function errorProperty(error: unknown, property: 'code' | 'message'): string {
   return typeof value === 'string' ? value : '';
 }
 
+function errorChain(error: unknown): unknown[] {
+  const chain: unknown[] = [];
+  const seen = new Set<unknown>();
+  let current: unknown = error;
+  for (let depth = 0; depth < 4 && current !== undefined && current !== null && !seen.has(current); depth += 1) {
+    chain.push(current);
+    seen.add(current);
+    current = typeof current === 'object' ? (current as { cause?: unknown }).cause : undefined;
+  }
+  return chain;
+}
+
 function hasKnownError(error: unknown, token: string): boolean {
-  const code = errorProperty(error, 'code');
-  const message = errorProperty(error, 'message');
-  return code === token || message.startsWith(token);
+  return errorChain(error).some((item) => {
+    const code = errorProperty(item, 'code');
+    const message = errorProperty(item, 'message');
+    return code === token || message.startsWith(token);
+  });
+}
+
+function sqlStateClass(error: unknown): string | undefined {
+  for (const item of errorChain(error)) {
+    const code = errorProperty(item, 'code');
+    if (/^[0-9A-Z]{5}$/.test(code)) return code.slice(0, 2);
+  }
+  return undefined;
 }
 
 function hasNetworkError(error: unknown): boolean {
@@ -117,38 +142,54 @@ function hasNetworkError(error: unknown): boolean {
   return cause !== undefined && cause !== error && hasNetworkError(cause);
 }
 
-export function classifyStagingVerificationError(error: unknown, fallback: SafeFailureCode): StagingVerificationError {
-  if (error instanceof StagingVerificationError) return error;
+export function classifyStagingVerificationError(
+  error: unknown,
+  fallback: SafeFailureCode,
+  details: { stage?: string } = {},
+): StagingVerificationError {
+  const stateClass = sqlStateClass(error);
+  if (error instanceof StagingVerificationError) {
+    return new StagingVerificationError(error.code, {
+      ...error.details,
+      ...details,
+      ...(stateClass ? { sqlStateClass: stateClass } : {}),
+    });
+  }
+
+  const classified = (code: SafeFailureCode): StagingVerificationError => new StagingVerificationError(code, {
+    ...details,
+    ...(stateClass ? { sqlStateClass: stateClass } : {}),
+  });
 
   if (hasKnownError(error, '28P01') || hasKnownError(error, '28000')) {
-    return new StagingVerificationError('STAGING_DATABASE_AUTH_FAILED');
+    return classified('STAGING_DATABASE_AUTH_FAILED');
   }
   if (hasKnownError(error, '42501')) {
-    return new StagingVerificationError('STAGING_DATABASE_PERMISSION_FAILED');
+    return classified('STAGING_DATABASE_PERMISSION_FAILED');
   }
   if (['3D000', '42P01', '42703', '42P02'].some((token) => hasKnownError(error, token))) {
-    return new StagingVerificationError('STAGING_DATABASE_SCHEMA_FAILED');
+    return classified('STAGING_DATABASE_SCHEMA_FAILED');
   }
   if (hasNetworkError(error)) {
-    return new StagingVerificationError(
+    return classified(
       fallback.startsWith('STAGING_DATABASE_') ? 'STAGING_DATABASE_NETWORK_FAILED' : 'GITHUB_NETWORK_FAILED',
     );
   }
   if (['GITHUB_PRIVATE_KEY_UNREADABLE', 'GITHUB_PRIVATE_KEY_ASYNC_REQUIRED'].some((token) => hasKnownError(error, token))) {
-    return new StagingVerificationError('GITHUB_PRIVATE_KEY_INVALID');
+    return classified('GITHUB_PRIVATE_KEY_INVALID');
   }
   if (['GITHUB_AUTHENTICATION_FAILED', 'GITHUB_INSTALLATION_NOT_FOUND', 'GITHUB_INSTALLATION_APP_MISMATCH', 'GITHUB_AUTHORIZATION_FAILED']
     .some((token) => hasKnownError(error, token))) {
-    return new StagingVerificationError('GITHUB_INSTALLATION_AUTHORIZATION_FAILED');
+    return classified('GITHUB_INSTALLATION_AUTHORIZATION_FAILED');
   }
   if (['GITHUB_REPOSITORY_NOT_FOUND', 'GITHUB_REPOSITORY_NOT_APPROVED', 'GITHUB_DEFAULT_BRANCH_NOT_FOUND', 'GITHUB_REPOSITORY_EMPTY', 'GITHUB_REF_NOT_FOUND', 'GITHUB_INVALID_RESPONSE']
     .some((token) => hasKnownError(error, token))) {
-    return new StagingVerificationError('GITHUB_REPOSITORY_LOOKUP_FAILED');
+    return classified('GITHUB_REPOSITORY_LOOKUP_FAILED');
   }
   if (hasKnownError(error, 'GITHUB_FILE_NOT_FOUND')) {
-    return new StagingVerificationError('OPENAI_FIXTURE_FILE_MISSING');
+    return classified('OPENAI_FIXTURE_FILE_MISSING');
   }
-  return new StagingVerificationError(fallback);
+  return classified(fallback);
 }
 
 async function runGitHubRead<T>(operation: () => Promise<T>, fallback: SafeFailureCode): Promise<T> {
@@ -199,26 +240,35 @@ export async function verifyStagingDatabase(
 ): Promise<StagingDatabaseCheck> {
   validateStagingDatabaseUrl(databaseUrl);
   let client: ReadOnlyClient | undefined;
+  let stage = 'connect';
   try {
     client = await pool.connect();
+    stage = 'begin';
     await client.query('BEGIN');
+    stage = 'set_read_only';
     await client.query('SET TRANSACTION READ ONLY');
+    stage = 'identity';
     const identity = await one<{ current_user: string; current_database: string }>(
       client,
       'SELECT current_user AS current_user, current_database() AS current_database',
     );
+    stage = 'repositories_count';
     const repositories = await one<{ count: number | string }>(client, 'SELECT COUNT(*)::int AS count FROM repositories');
+    stage = 'repository_match';
     const exactRepository = await one<{ count: number | string }>(client, `
       SELECT COUNT(*)::int AS count FROM repositories
       WHERE owner = $1 AND name = $2 AND github_repository_id = $3
         AND default_branch = $4 AND lifecycle = 'active'
     `, [STAGING_OPENAI_TARGET.owner, STAGING_OPENAI_TARGET.repository, STAGING_OPENAI_TARGET.repositoryId, STAGING_OPENAI_TARGET.branch]);
+    stage = 'installations_count';
     const installations = await one<{ count: number | string }>(client, 'SELECT COUNT(*)::int AS count FROM github_installations');
+    stage = 'installation_match';
     const exactInstallation = await one<{ count: number | string }>(client, `
       SELECT COUNT(*)::int AS count
       FROM github_installations
       WHERE account_login = $1 AND installation_id = $2 AND status = 'active'
     `, [STAGING_OPENAI_TARGET.owner, installationId]);
+    stage = 'scan_queue';
     const queued = await one<{ count: number | string }>(client, `
       SELECT COUNT(*)::int AS count
       FROM github_scan_requests
@@ -243,13 +293,14 @@ export async function verifyStagingDatabase(
       || result.installationCount !== 1 || result.exactActiveInstallationCount !== 1
       || result.pendingOrProcessingCount !== 0) fail('STAGING_RECORD_GATE_FAILED');
 
+    stage = 'rollback';
     await client.query('ROLLBACK');
     return result;
   } catch (error) {
     if (client) {
       try { await client.query('ROLLBACK'); } catch { /* preserve the safe failure code */ }
     }
-    throw classifyStagingVerificationError(error, 'STAGING_DATABASE_READ_FAILED' as SafeFailureCode);
+    throw classifyStagingVerificationError(error, 'STAGING_DATABASE_READ_FAILED', { stage });
   } finally {
     client?.release?.();
   }
@@ -433,9 +484,11 @@ async function main(): Promise<void> {
     console.log('GITHUB_WRITES=BLOCKED');
     console.log('OPENAI_PRE_SCAN_VERIFICATION=PASS');
   } catch (error) {
-    const code = classifyStagingVerificationError(error, 'OPENAI_PRE_SCAN_VERIFICATION_FAILED').code;
+    const failure = classifyStagingVerificationError(error, 'OPENAI_PRE_SCAN_VERIFICATION_FAILED');
     console.error(`OPENAI_PRE_SCAN_VERIFICATION=FAIL`);
-    console.error(`REASON=${code}`);
+    console.error(`REASON=${failure.code}`);
+    if (failure.details.stage) console.error(`DATABASE_FAILURE_STAGE=${failure.details.stage}`);
+    if (failure.details.sqlStateClass) console.error(`DATABASE_SQLSTATE_CLASS=${failure.details.sqlStateClass}`);
     process.exitCode = 1;
   } finally {
     if (pool) await pool.end().catch(() => undefined);

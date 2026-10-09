@@ -119,7 +119,8 @@ describe('Windows staging OpenAI verification command', () => {
 
   it('classifies database authentication and schema failures at their source', async () => {
     const authPool = { async connect() { throw Object.assign(new Error('password authentication failed'), { code: '28P01' }); }, async query() {}, async end() {} } as unknown as ReadOnlyPool;
-    await expect(verifyStagingDatabase(authPool, databaseUrl, baseInput.installationId)).rejects.toMatchObject({ code: 'STAGING_DATABASE_AUTH_FAILED' });
+    await expect(verifyStagingDatabase(authPool, databaseUrl, baseInput.installationId))
+      .rejects.toMatchObject({ code: 'STAGING_DATABASE_AUTH_FAILED', details: { stage: 'connect', sqlStateClass: '28' } });
 
     const schemaPool = databasePool();
     const originalQuery = schemaPool.query;
@@ -127,7 +128,19 @@ describe('Windows staging OpenAI verification command', () => {
       if (sql.includes('FROM repositories')) throw Object.assign(new Error('relation repositories does not exist'), { code: '42P01' });
       return originalQuery(sql, params);
     }) as ReadOnlyPool['query'];
-    await expect(verifyStagingDatabase(schemaPool, databaseUrl, baseInput.installationId)).rejects.toMatchObject({ code: 'STAGING_DATABASE_SCHEMA_FAILED' });
+    await expect(verifyStagingDatabase(schemaPool, databaseUrl, baseInput.installationId))
+      .rejects.toMatchObject({ code: 'STAGING_DATABASE_SCHEMA_FAILED', details: { stage: 'repositories_count', sqlStateClass: '42' } });
+  });
+
+  it('retains the failing database stage and SQLSTATE class for unknown read errors', async () => {
+    const pool = databasePool();
+    const originalQuery = pool.query;
+    pool.query = (async (sql: string, params?: unknown[]) => {
+      if (sql.includes('FROM repositories')) throw Object.assign(new Error('password=secret'), { code: 'XX999' });
+      return originalQuery(sql, params);
+    }) as ReadOnlyPool['query'];
+    await expect(verifyStagingDatabase(pool, databaseUrl, baseInput.installationId))
+      .rejects.toMatchObject({ code: 'STAGING_DATABASE_READ_FAILED', message: 'STAGING_DATABASE_READ_FAILED', details: { stage: 'repositories_count', sqlStateClass: 'XX' } });
   });
 
   it('verifies the exact OpenAI fixture through the read-only GitHub provider', async () => {
