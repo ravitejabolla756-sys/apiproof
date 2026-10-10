@@ -6,6 +6,7 @@ import {
   getDefaultWorkspaceForUser,
   requireWorkspaceMember,
 } from '@/lib/server/workspace-service';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function GET(req: Request) {
   const noStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -62,13 +63,14 @@ export async function GET(req: Request) {
       totalCount: sanitizedRepositories.length,
     }, { headers: noStoreHeaders });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch repositories from GitHub.';
+    const message = error instanceof Error ? error.message : '';
     if (message.includes('GITHUB_AUTHENTICATION_FAILED')) {
       return NextResponse.json({
         error: 'GitHub authentication failed. Installation access may have been revoked.',
         code: 'GITHUB_AUTH_FAILED',
       }, { status: 502, headers: noStoreHeaders });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500, headers: noStoreHeaders });
+    logger.warn('github_repository_list_failed', { reasonCode: safeErrorCode(error, 'GITHUB_REPOSITORY_LIST_FAILED') }, error);
+    return NextResponse.json({ error: 'Unable to load GitHub repositories right now.', code: 'GITHUB_REPOSITORY_LIST_FAILED' }, { status: 500, headers: noStoreHeaders });
   }
 }

@@ -1,4 +1,5 @@
 import { getDatabase } from './db/index.js';
+import { logger } from './logger.js';
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -87,7 +88,7 @@ export async function checkRateLimit(
       throw new Error('RATE_LIMIT_STORE_UNAVAILABLE', { cause: err });
     }
     // In-memory fallback if database table is unavailable or busy
-    console.warn('Rate limiter database lookup failed, using memory fallback:', err);
+    logger.warn('rate_limit_store_unavailable_using_memory_fallback', undefined, err);
     const cached = inMemoryFallback.get(key);
     if (!cached || cached.resetAt <= now) {
       const resetAt = now + windowMs;

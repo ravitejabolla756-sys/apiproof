@@ -17,6 +17,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
 import { isAuthorizedInternalRequest } from '../../../../lib/server/internal-auth.js';
+import { logger } from '../../../../lib/server/logger.js';
 
 // ---------------------------------------------------------------------------
 // Authorization helper
@@ -64,7 +65,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       results: result.results,
     });
   } catch (error) {
-    console.error('[scan-worker-route] Unhandled error:', error);
+    logger.error('scan_worker_route_failed', undefined, error);
     return NextResponse.json({ ok: false, error: 'SCAN_WORKER_FAILED' }, { status: 500 });
   }
 }

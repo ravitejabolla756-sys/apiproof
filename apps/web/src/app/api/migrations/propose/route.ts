@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -18,9 +19,8 @@ export async function GET(req: Request) {
   try {
     const job = await getMigrationProposalJobStatus(validation.data, user.id);
     return NextResponse.json({ job }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Verification status unavailable.';
-    return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  } catch {
+    return NextResponse.json({ error: 'Verification status unavailable.', code: 'NOT_FOUND' }, { status: 404, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
   }
 }
 
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message, code: 'PLAN_LIMIT_EXCEEDED', metric: 'draft_prs' }, { status: 402 });
     }
     if (message.includes('not found') || message.includes('access denied')) {
-      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+      return NextResponse.json({ error: 'Migration not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
     }
     if (message.includes('GITHUB_REPOSITORY_EMPTY') || message.includes('GITHUB_DEFAULT_BRANCH_NOT_FOUND')) {
       return NextResponse.json({
@@ -84,18 +84,18 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
     if (message.includes('REPOSITORY_HEAD_DIVERGED')) {
-      return NextResponse.json({ error: message, code: 'REPOSITORY_HEAD_DIVERGED' }, { status: 409 });
+      return NextResponse.json({ error: 'Repository head changed; refresh and retry.', code: 'REPOSITORY_HEAD_DIVERGED' }, { status: 409 });
     }
     if (message.includes('BASELINE_SHA_REPOSITORY_MISMATCH')) {
-      return NextResponse.json({ error: message, code: 'BASELINE_SHA_REPOSITORY_MISMATCH' }, { status: 400 });
+      return NextResponse.json({ error: 'The selected baseline does not belong to this repository.', code: 'BASELINE_SHA_REPOSITORY_MISMATCH' }, { status: 400 });
     }
     if (message.includes('BASELINE_SHA_INVALID')) {
-      return NextResponse.json({ error: message, code: 'BASELINE_SHA_INVALID' }, { status: 400 });
+      return NextResponse.json({ error: 'The selected baseline is invalid.', code: 'BASELINE_SHA_INVALID' }, { status: 400 });
     }
     if (message.includes('VERIFICATION_EXECUTION_UNAVAILABLE')) {
       return NextResponse.json({ error: 'Secure verification execution is not currently available. No Draft PR was created.', code: 'VERIFICATION_EXECUTION_UNAVAILABLE' }, { status: 503 });
     }
-    console.error('Proposal generation failed:', error);
-    return NextResponse.json({ error: message, code: 'PROPOSAL_FAILED' }, { status: 500 });
+    logger.warn('migration_proposal_failed', { reasonCode: safeErrorCode(error, 'PROPOSAL_FAILED') }, error);
+    return NextResponse.json({ error: 'Unable to prepare this migration proposal right now.', code: 'PROPOSAL_FAILED' }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import {
   getDefaultWorkspaceForUser,
   requireWorkspaceMember,
 } from '@/lib/server/workspace-service';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -32,8 +33,8 @@ export async function GET(req: Request) {
     const installUrl = await getGitHubAppInstallUrl(user.id, workspaceId);
     return NextResponse.json({ url: installUrl, workspaceId });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to generate GitHub installation URL.';
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    logger.warn('github_install_url_generation_failed', { reasonCode: safeErrorCode(error, 'GITHUB_INSTALL_FAILED') }, error);
+    return NextResponse.json({ error: 'Unable to start GitHub installation right now.', code: 'GITHUB_INSTALL_FAILED' }, { status: 500 });
   }
 }
 

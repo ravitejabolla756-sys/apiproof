@@ -14,6 +14,7 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export interface ProviderInventoryItem {
   id: string;
@@ -105,7 +106,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       totalRulesCount: stripeRules.length + twilioRules.length,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load inventory';
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    logger.warn('inventory_load_failed', { reasonCode: safeErrorCode(error, 'INVENTORY_LOAD_FAILED') }, error);
+    return NextResponse.json({ ok: false, error: 'Unable to load inventory right now.', code: 'INVENTORY_LOAD_FAILED' }, { status: 500 });
   }
 }

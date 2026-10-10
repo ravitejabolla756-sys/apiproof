@@ -10,6 +10,7 @@ import {
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
 import { checkWorkspaceLimit, recordWorkspaceUsage } from '@/lib/server/billing/service';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const csrf = assertCsrfProtection(req);
@@ -63,7 +64,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     return NextResponse.json({ success: true, result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';
-    console.error('Scan execution error:', error);
+    logger.warn('repository_scan_execution_failed', { reasonCode: safeErrorCode(error, 'SCAN_FAILED') }, error);
     if (message.includes('GITHUB_REPOSITORY_EMPTY')) {
       return NextResponse.json({
         error: 'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan.',
@@ -82,6 +83,6 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         code: 'GITHUB_UNAUTHORIZED',
       }, { status: 403 });
     }
-    return NextResponse.json({ error: message, code: 'SCAN_FAILED' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to start the repository scan right now.', code: 'SCAN_FAILED' }, { status: 500 });
   }
 }

@@ -72,6 +72,12 @@ export function redactSecretString(str: string): string {
   return sanitized;
 }
 
+/** Return only an intentionally machine-readable public error code. */
+export function safeErrorCode(error: unknown, fallback: string): string {
+  const value = error instanceof Error ? error.message : '';
+  return /^[A-Z][A-Z0-9_]{2,80}$/.test(value) ? value : fallback;
+}
+
 /**
  * Deeply redacts sensitive keys and values from objects.
  */

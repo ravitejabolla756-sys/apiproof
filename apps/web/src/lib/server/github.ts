@@ -12,6 +12,7 @@ import {
   type GitHubRepoItem,
   type GitHubInstallationMetadata,
 } from '@apiproof/core';
+import { logger } from './logger.js';
 import { EXCLUDED_DIRECTORIES } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { getWorkspaceGitHubInstallation, type GitHubInstallationRecord } from './workspace-service.js';
@@ -248,7 +249,7 @@ export function getGitHubProvider(): GitHubAppSourceControlProvider | null {
     const transport = new FetchGitHubReadTransport();
     return new GitHubAppSourceControlProvider(config, tokenProvider, transport);
   } catch (error) {
-    console.error('Failed to initialize GitHubAppSourceControlProvider:', error);
+    logger.warn('github_provider_initialization_failed', undefined, error);
     return null;
   }
 }
@@ -339,7 +340,7 @@ export async function getAccessibleRepositoryInfo(): Promise<GitHubRepoSummary |
       sha: head.sha,
     };
   } catch (error) {
-    console.error('Error fetching accessible repository info from GitHub App:', error);
+    logger.warn('github_accessible_repository_lookup_failed', undefined, error);
     return null;
   }
 }

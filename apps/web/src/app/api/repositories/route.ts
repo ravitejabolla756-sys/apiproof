@@ -16,6 +16,7 @@ import {
   forbiddenCsrfResponse,
 } from '../../../lib/server/validation.js';
 import { checkWorkspaceLimit } from '../../../lib/server/billing/service.js';
+import { logger, safeErrorCode } from '../../../lib/server/logger.js';
 
 export async function GET(req: Request) {
   const privateNoStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -206,6 +207,7 @@ export async function POST(req: Request) {
     if (message.includes('idx_repositories_active_github_identity') || message.includes('unique constraint') || message.includes('duplicate key')) {
       return NextResponse.json({ error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED' }, { status: 409 });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    logger.warn('repository_connect_failed', { reasonCode: safeErrorCode(error, 'REPOSITORY_CONNECT_FAILED') }, error);
+    return NextResponse.json({ error: 'Unable to connect this repository right now.', code: 'REPOSITORY_CONNECT_FAILED' }, { status: 500 });
   }
 }

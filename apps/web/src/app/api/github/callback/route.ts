@@ -9,6 +9,7 @@ import {
   verifyGitHubAppInstallation,
 } from '@/lib/server/github.js';
 import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function GET(req: Request) {
   // 1. Authenticate APIProof session
@@ -65,8 +66,9 @@ export async function GET(req: Request) {
         code: 'UNKNOWN_INSTALLATION',
       }, { status: 400 });
     }
+    logger.warn('github_installation_validation_failed', { reasonCode: safeErrorCode(err, 'GITHUB_API_ERROR') }, err);
     return NextResponse.json({
-      error: `GitHub API error validating installation: ${errorMsg}`,
+      error: 'Unable to validate the GitHub installation right now.',
       code: 'GITHUB_API_ERROR',
     }, { status: 502 });
   }

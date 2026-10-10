@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getBillingProvider } from '@/lib/server/billing/provider';
 import { processBillingWebhookEvent } from '@/lib/server/billing/service';
+import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function POST(req: Request) {
   try {
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
     if (message.includes('INVALID_BILLING_SIGNATURE')) {
       return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
     }
-    return NextResponse.json({ error: 'Webhook processing failed', details: message }, { status: 400 });
+    logger.warn('billing_webhook_processing_failed', { reasonCode: safeErrorCode(err, 'BILLING_WEBHOOK_FAILED') }, err);
+    return NextResponse.json({ error: 'Webhook processing failed', code: 'BILLING_WEBHOOK_FAILED' }, { status: 400 });
   }
 }
