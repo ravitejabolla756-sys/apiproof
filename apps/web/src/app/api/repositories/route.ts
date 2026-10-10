@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   }
 
   // Rate limit: 20 repo connections per 10 minutes per user
-  const rateCheck = await checkRateLimit(`repo:connect:${user.id}`, 20, 10 * 60 * 1000);
+  const rateCheck = await checkRateLimit(`repo:connect:${user.id}`, 20, 10 * 60 * 1000, { failClosed: true });
   if (!rateCheck.allowed) {
     return rateLimitResponse(rateCheck.resetInMs);
   }

@@ -119,6 +119,29 @@ describe('password recovery', () => {
       .rejects.toThrow('RATE_LIMIT_STORE_UNAVAILABLE');
   });
 
+  it('fails closed for signup when the shared limiter store is unavailable', async () => {
+    await getDatabase().execute('DROP TABLE rate_limits');
+    const response = await authPost(new Request('https://apiproof.test/api/auth', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://apiproof.test', host: 'apiproof.test' },
+      body: JSON.stringify({ action: 'signup', email: 'signup-fail-closed@example.test', password: 'SecurePassword123!', name: 'Fail Closed' }),
+    }));
+
+    expect(response.status).toBe(500);
+    expect(await getDatabase().query('SELECT id FROM users WHERE email = ?', ['signup-fail-closed@example.test'])).toHaveLength(0);
+  });
+
+  it('fails closed for login when the shared limiter store is unavailable', async () => {
+    await getDatabase().execute('DROP TABLE rate_limits');
+    const response = await authPost(new Request('https://apiproof.test/api/auth', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://apiproof.test', host: 'apiproof.test' },
+      body: JSON.stringify({ action: 'login', email: 'login-fail-closed@example.test', password: 'SecurePassword123!' }),
+    }));
+
+    expect(response.status).toBe(500);
+  });
+
   it('generates a token link in the URL fragment and escapes user-controlled HTML', () => {
     configureMail();
     const message = buildPasswordResetMessage({ email: 'owner@example.test', name: '<script>alert(1)</script>', token: 'a'.repeat(43) });

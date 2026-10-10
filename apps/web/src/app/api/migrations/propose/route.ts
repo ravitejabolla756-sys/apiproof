@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   // Rate limit: 10 migration proposals per 5 minutes per user
-  const rateCheck = await checkRateLimit(`propose:${user.id}`, 10, 5 * 60 * 1000);
+  const rateCheck = await checkRateLimit(`propose:${user.id}`, 10, 5 * 60 * 1000, { failClosed: true });
   if (!rateCheck.allowed) {
     return rateLimitResponse(rateCheck.resetInMs);
   }

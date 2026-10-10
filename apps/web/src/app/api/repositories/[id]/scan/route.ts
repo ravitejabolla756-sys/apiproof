@@ -30,7 +30,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   }
 
   // Rate limit: 10 scans per 5 minutes per user
-  const rateCheck = await checkRateLimit(`scan:${user.id}:${idValidation.data}`, 10, 5 * 60 * 1000);
+  const rateCheck = await checkRateLimit(`scan:${user.id}:${idValidation.data}`, 10, 5 * 60 * 1000, { failClosed: true });
   if (!rateCheck.allowed) {
     return rateLimitResponse(rateCheck.resetInMs);
   }

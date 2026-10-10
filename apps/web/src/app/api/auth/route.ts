@@ -100,7 +100,7 @@ export async function POST(req: Request) {
 
     if (action === 'signup') {
       // Rate limit: 5 signups per 15 minutes per IP
-      const rateCheck = await checkRateLimit(`auth:signup:${clientIp}`, 5, 15 * 60 * 1000);
+      const rateCheck = await checkRateLimit(`auth:signup:${clientIp}`, 5, 15 * 60 * 1000, { failClosed: true });
       if (!rateCheck.allowed) {
         return rateLimitResponse(rateCheck.resetInMs);
       }
@@ -145,7 +145,7 @@ export async function POST(req: Request) {
       const { email, password } = validation.data;
 
       // Rate limit: 10 login attempts per 5 minutes per IP + email
-      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${email}`, 10, 5 * 60 * 1000);
+      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${email}`, 10, 5 * 60 * 1000, { failClosed: true });
       if (!rateCheck.allowed) {
         return rateLimitResponse(rateCheck.resetInMs);
       }

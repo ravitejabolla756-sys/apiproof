@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   // Rate limit: 20 migration plans per 5 minutes per user
-  const rateCheck = await checkRateLimit(`plan:${user.id}`, 20, 5 * 60 * 1000);
+  const rateCheck = await checkRateLimit(`plan:${user.id}`, 20, 5 * 60 * 1000, { failClosed: true });
   if (!rateCheck.allowed) {
     return rateLimitResponse(rateCheck.resetInMs);
   }
