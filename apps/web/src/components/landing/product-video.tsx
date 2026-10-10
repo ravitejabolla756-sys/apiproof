@@ -10,7 +10,7 @@ interface ProductVideoProps {
 
 export function ProductVideo({
   videoId,
-  posterTitle = "MY OWL End-to-End Migration Walkthrough"
+  posterTitle = "MY OWL Compatibility Detection Walkthrough"
 }: ProductVideoProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -60,10 +60,10 @@ export function ProductVideo({
 
         <div className="space-y-1">
           <p className="font-serif text-xl sm:text-2xl text-white font-normal tracking-tight">
-            See the deterministic migration engine in action.
+            See deterministic compatibility detection in action.
           </p>
           <p className="text-xs sm:text-sm text-slate-400 font-sans max-w-md mx-auto">
-            From upstream API deprecation to AST call-site isolation, verification, and a Draft PR.
+            From upstream API deprecation to AST call-site isolation and evidence-backed review.
           </p>
         </div>
       </div>
@@ -74,11 +74,11 @@ export function ProductVideo({
         <span className="text-slate-500 hidden sm:inline">→</span>
         <span className="text-slate-300">0:18 AST trace</span>
         <span className="text-slate-500 hidden sm:inline">→</span>
-        <span className="text-slate-300">0:32 Exact patch</span>
+        <span className="text-slate-300">0:32 Exact usage evidence</span>
         <span className="text-slate-500 hidden sm:inline">→</span>
         <span className="text-slate-300">0:40 4 Gates</span>
         <span className="text-slate-500 hidden sm:inline">→</span>
-        <span className="text-emerald-400 font-semibold">0:55 Draft PR</span>
+        <span className="text-emerald-400 font-semibold">0:55 Human review</span>
       </div>
     </div>
   );

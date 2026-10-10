@@ -48,19 +48,19 @@ export default function DocsPage() {
           desc: "Why package manifest presence does not mean broken code, and how AST symbol tracing eliminates 90% false positive noise."
         },
         {
-          title: "Deterministic Migration Plans",
-          slug: "migration-plans",
-          desc: "How context-bounded AST transformation rules synthesize minimal, syntax-safe code replacements."
+          title: "Detection-Only Beta Boundary",
+          slug: "detection-only-beta",
+          desc: "What the current read-only beta detects, what it proves, and which migration features remain unavailable."
         },
         {
-          title: "The 4-Gate Verification Harness",
-          slug: "verification-harness",
-          desc: "Deep dive into AST syntax validity, TypeScript compiler diagnostics, call-site scope checks, and test runner dry-runs."
+          title: "Compatibility Proof",
+          slug: "compatibility-proof",
+          desc: "How reviewed provider rules, reason codes, and exact usage evidence support an engineering decision."
         },
         {
-          title: "GitHub Draft Pull Requests",
-          slug: "draft-prs",
-          desc: "Why MY OWL stops at a Draft PR on an isolated branch rather than auto-merging into main."
+          title: "Read-Only GitHub Access",
+          slug: "github-read-only",
+          desc: "Why the current beta does not create branches, patches, or pull requests."
         }
       ]
     },
@@ -72,12 +72,12 @@ export default function DocsPage() {
         {
           title: "GitHub App Scopes & Least Privilege",
           slug: "github-scopes",
-          desc: "Detailed explanation of why we request contents:read and pull_requests:write, with zero main branch write access."
+          desc: "Detailed explanation of the read-only contents and metadata permissions used for AST analysis in the current beta."
         },
         {
-          title: "Isolated Branch Policy (apiproof/*)",
+          title: "Detection-Only Repository Policy",
           slug: "branch-policy",
-          desc: "How branch naming conventions prevent accidental collisions with developer branches."
+          desc: "How the beta avoids branches, patches, and pull requests while teams review compatibility evidence."
         },
         {
           title: "Repository Divergence Protection",
@@ -114,19 +114,19 @@ export default function DocsPage() {
       description: "Currently verified vendor catalogs and our active integration expansion roadmap.",
       articles: [
         {
-          title: "Stripe Node SDK Catalog",
+          title: "Reviewed Compatibility Registry",
           slug: "stripe-catalog",
-          desc: "Monitored subscription coupon parameters, customer creation payloads, and v17 to v18 migration rules."
+          desc: "The current beta exposes 20 reviewed rules across 15 providers with official-source provenance."
         },
         {
-          title: "Twilio Node SDK Catalog",
+          title: "Compatibility Proof Outcomes",
           slug: "twilio-catalog",
-          desc: "Monitored messaging service changes, toll-free verification schemas, and call recording API updates."
+          desc: "How AFFECTED, NOT_AFFECTED, and NEEDS_REVIEW results communicate exactly what repository evidence establishes."
         },
         {
-          title: "Planned Provider Roadmap",
+          title: "Reviewed Provider Coverage",
           slug: "roadmap-providers",
-          desc: "Upcoming support for OpenAI, GitHub Octokit, Supabase, Resend, and custom OpenAPI schema ingestion."
+          desc: "The current beta includes 15 reviewed providers and 20 reviewed compatibility rules; broader coverage is added only after evidence and human review."
         }
       ]
     }
@@ -157,7 +157,7 @@ export default function DocsPage() {
         <div className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
           <div className="flex items-center gap-3 text-slate-700">
             <Terminal className="w-4 h-4 text-[#004EE8]" />
-            <span>Core Model: Ingest → AST Trace → Deterministic Plan → 4 Gates → Draft PR</span>
+            <span>Core Model: Ingest → AST Trace → Compatibility Proof → Human Review</span>
           </div>
           <Link
             href="/how-it-works"

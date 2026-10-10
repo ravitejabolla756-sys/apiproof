@@ -367,6 +367,8 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // Requirement 8B: Proposal route maps GITHUB_REPOSITORY_EMPTY to HTTP 422
   // =========================================================================
   it('8B: proposal route maps GITHUB_REPOSITORY_EMPTY to HTTP 422 with sanitized actionable message', async () => {
+    vi.stubEnv('APIPROOF_ENABLE_MIGRATION_PROPOSALS', 'true');
+    vi.stubEnv('APIPROOF_ENABLE_LIVE_GITHUB_WRITE', 'true');
     const user = createUser('empty_route@example.com', 'Pass12345!', 'Empty Route Tester');
     const ws = await getDefaultWorkspaceForUser(user.id);
     const session = createSession(user.id);
@@ -405,26 +407,31 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
       body: JSON.stringify({ migrationId: migration.id }),
     });
 
-    const res = await proposeRoutePost(req);
-    expect(res.status).toBe(422);
-    const data = (await res.json()) as { code?: string; error?: string };
-    expect(data.code).toBe('REPOSITORY_EMPTY');
-    expect(data.error).toBe(
-      'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan before proposing a migration.'
-    );
-    spy.mockRestore();
+    try {
+      const res = await proposeRoutePost(req);
+      expect(res.status).toBe(422);
+      const data = (await res.json()) as { code?: string; error?: string };
+      expect(data.code).toBe('REPOSITORY_EMPTY');
+      expect(data.error).toBe(
+        'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan before proposing a migration.'
+      );
+      spy.mockRestore();
 
-    // Verify bad request validation still protects the route
-    const badReq = new Request('http://localhost:3000/api/migrations/propose', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        cookie: `apiproof_session=${session.id}`,
-      },
-      body: JSON.stringify({ migrationId: 'non_existent_id' }),
-    });
-    const badRes = await proposeRoutePost(badReq);
-    expect(badRes.status).toBe(404);
+      // Verify bad request validation still protects the route
+      const badReq = new Request('http://localhost:3000/api/migrations/propose', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `apiproof_session=${session.id}`,
+        },
+        body: JSON.stringify({ migrationId: 'non_existent_id' }),
+      });
+      const badRes = await proposeRoutePost(badReq);
+      expect(badRes.status).toBe(404);
+    } finally {
+      spy.mockRestore();
+      vi.unstubAllEnvs();
+    }
   });
 
   // =========================================================================

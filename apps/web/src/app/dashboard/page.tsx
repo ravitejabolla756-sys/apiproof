@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
 import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2 } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
+import { CURRENT_BETA_CAPABILITIES, DETECTION_ONLY_BETA_SHORT_MESSAGE } from "@/lib/beta-capabilities";
 
 interface OverviewData {
   workspace?: {
@@ -112,7 +113,7 @@ export default function DashboardOverviewPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wider text-[#686868]">
-              PUBLIC BETA · 10 CORE PROVIDERS
+              PUBLIC BETA · {CURRENT_BETA_CAPABILITIES.reviewedProviderCount} REVIEWED PROVIDERS · {CURRENT_BETA_CAPABILITIES.reviewedRuleCount} RULES
             </div>
             <h1 className="text-3xl font-medium tracking-tight text-[#111111]">
               Welcome back.
@@ -120,7 +121,7 @@ export default function DashboardOverviewPage() {
             <p className="text-xs sm:text-sm text-[#686868] mt-1">
               {stats.connectedRepositories} {stats.connectedRepositories === 1 ? 'repository' : 'repositories'} monitored · {stats.scansCompleted} {stats.scansCompleted === 1 ? 'scan' : 'scans'} completed · {stats.openFindings} {stats.openFindings === 1 ? 'finding' : 'findings'} open
             </p>
-            <p className="mt-2 text-[11px] text-[#686868]">Reviewed compatibility is deterministic and evidence-linked. Additional provider coverage is rolling out continuously.</p>
+            <p className="mt-2 text-[11px] text-[#686868]">Reviewed compatibility is deterministic and evidence-linked. {DETECTION_ONLY_BETA_SHORT_MESSAGE}</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -163,7 +164,7 @@ export default function DashboardOverviewPage() {
                 Getting Started with MY OWL
               </div>
               <h2 className="text-xl font-semibold mt-2 text-white">
-                4 Steps to Automate Breaking API Migration PRs
+                4 Steps to Review Breaking API Evidence
               </h2>
             </div>
             <Button
@@ -239,21 +240,21 @@ export default function DashboardOverviewPage() {
 
             {/* Step 4 */}
             <div className={`p-4 rounded-2xl border transition-all ${
-              stats.draftPrsCount > 0 || stats.openFindings > 0
+              stats.openFindings > 0
                 ? "bg-purple-900/40 border-emerald-500/40"
                 : "bg-purple-900/80 border-purple-700"
             }`}>
               <div className="flex items-center justify-between mb-2">
                 <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">4</span>
-                {stats.draftPrsCount > 0 ? (
+                {stats.openFindings > 0 ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Review & Draft PR</h4>
+              <h4 className="font-semibold text-white text-xs mb-1">Review Compatibility Proof</h4>
               <p className="text-purple-200 text-[11px] leading-relaxed">
-                Inspect findings, verify patch diffs, and create safe draft PRs.
+                Inspect findings, reason codes, and source evidence before deciding on your own remediation.
               </p>
             </div>
           </div>
@@ -295,7 +296,7 @@ export default function DashboardOverviewPage() {
                 </div>
                 <Link href={`/dashboard/findings/${data.criticalFinding.id}`}>
                   <Button size="sm" variant="outline" className="gap-1.5 text-xs bg-white">
-                    <span>Inspect Finding & Plan</span>
+                    <span>Inspect Compatibility Proof</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </Button>
                 </Link>

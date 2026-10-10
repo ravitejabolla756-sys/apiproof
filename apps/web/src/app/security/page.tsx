@@ -15,10 +15,10 @@ export default function SecurityPage() {
       icon: Key,
       title: "GitHub App Authentication & Scopes",
       tag: "LEAST PRIVILEGE",
-      description: "MY OWL connects via an official GitHub App rather than personal access tokens. Scopes are strictly restricted to read repository contents/metadata and write pull requests exclusively to isolated migration branches.",
+      description: "MY OWL connects via an official GitHub App rather than personal access tokens. The detection-only beta is restricted to read repository contents and metadata for compatibility analysis.",
       points: [
         "Repository Contents: Read-only access for ephemeral AST symbol parsing",
-        "Pull Requests: Write access exclusively for opening Draft PRs",
+        "Pull Requests: No access in the current detection-only beta",
         "Zero default branch (main/master) write permissions",
         "Revocable instantly through GitHub Organization Settings"
       ]
@@ -37,26 +37,26 @@ export default function SecurityPage() {
     },
     {
       icon: GitBranch,
-      title: "Controlled Write Safety Contract",
-      tag: "DRAFT-ONLY BOUNDARY",
-      description: "Every proposed modification is validated by a strict ControlledWriteRequest contract in core before any Git operation is executed. Direct commits to default branches are programmatically impossible.",
+      title: "Detection-Only Safety Contract",
+      tag: "READ-ONLY BOUNDARY",
+      description: "The current beta uses read-only GitHub access. Migration writes remain disabled, and direct commits to default branches are not attempted.",
       points: [
-        "Mandatory branch naming enforcement (apiproof/* or myowl/* prefix)",
-        "Forbidden path protection: blocks touching CI workflows or dotfiles",
-        "Strict single-use idempotency keys prevent duplicate PR creation",
-        "Opened strictly with draft: true requiring developer review"
+        "No branch, commit, check, patch, or pull-request operation is available",
+        "Repository access is limited to the selected repositories",
+        "Migration proposal routes fail closed unless separately authorized in a future release",
+        "Teams choose and apply remediation in their own workflow"
       ]
     },
     {
       icon: FileCheck,
       title: "Baseline Integrity & Divergence Protection",
       tag: "STATE GUARANTEE",
-      description: "Scans record the exact 40-character Git commit SHA of the target branch. If your default branch HEAD moves before a proposal is created, the system refuses to push.",
+      description: "Scans record the exact 40-character Git commit SHA of the target branch so compatibility evidence remains tied to the repository state that was analyzed.",
       points: [
         "Immutable baseline commit SHA pinned during AST analysis",
-        "Pre-write HEAD divergence verification against live GitHub repository",
-        "Fails closed with REPOSITORY_HEAD_DIVERGED if remote has moved",
-        "Cryptographically signed verification evidence bound to baseline SHA"
+        "Compatibility evidence includes the analyzed repository snapshot",
+        "A later rescan produces a new evidence record instead of modifying the repository",
+        "Reviewed rule provenance remains bound to the resulting proof"
       ]
     }
   ];
@@ -72,31 +72,31 @@ export default function SecurityPage() {
       operation: "Default Branch (main/master) Commits",
       capability: "Strictly forbidden",
       status: "Blocked",
-      detail: "MY OWL has no permissions to write directly to default branches. Proposals must target isolated branches."
+      detail: "MY OWL has no permissions to write directly to default branches and the current beta performs no repository writes."
     },
     {
       operation: "Auto-Merging Pull Requests",
       capability: "Strictly forbidden",
       status: "Blocked",
-      detail: "No auto-merge capability or permissions exist. Every proposal stops at a GitHub Draft PR for human review."
+      detail: "No auto-merge capability or permissions exist. The current beta does not create proposals or pull requests."
     },
     {
-      operation: "Branch Creation Scope",
-      capability: "apiproof/* and myowl/* only",
-      status: "Enforced",
-      detail: "Validated against canonical branch naming policy. Custom or unapproved branch prefixes are rejected."
+      operation: "Repository Writes",
+      capability: "Unavailable in current beta",
+      status: "Blocked",
+      detail: "Branch creation, patch application, checks, and pull requests are not available in the detection-only beta."
     },
     {
-      operation: "Patch Scope Boundary",
-      capability: "Affected file lines only",
-      status: "Enforced",
-      detail: "Rejects patches modifying files outside the target finding or touching workflow configuration files."
+      operation: "Compatibility Evidence Scope",
+      capability: "Exact detected usage location",
+      status: "Implemented",
+      detail: "Findings retain the affected file, line, provider rule, and reason codes needed for human remediation."
     },
     {
-      operation: "Pre-Proposal Verification",
-      capability: "4-gate compiler harness",
-      status: "Enforced",
-      detail: "Syntax check, TypeScript compiler diagnostics, scope boundaries, and dry-run tests must pass before PR creation."
+      operation: "Human Remediation",
+      capability: "Customer-controlled",
+      status: "Implemented",
+      detail: "MY OWL supplies evidence-linked compatibility findings; teams apply and verify their own changes."
     },
     {
       operation: "Data Persistence",
@@ -191,7 +191,7 @@ export default function SecurityPage() {
               Security Invariant Matrix
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 font-sans">
-              Strict execution boundaries enforced by our GitHub App write contracts and platform architecture.
+              Strict detection boundaries enforced by our read-only GitHub App permissions and platform architecture.
             </p>
           </div>
 
@@ -250,9 +250,9 @@ export default function SecurityPage() {
                 <li>• Repository identity (GitHub ID, full name, default branch name)</li>
                 <li>• Baseline commit SHA (40-char hex string)</li>
                 <li>• Finding metadata: file path, line number, AST symbol, and minimal source snippet around the affected call site</li>
-                <li>• Deterministic MigrationPlan JSON &amp; patch diff text</li>
-                <li>• Verification evidence digests &amp; execution reports</li>
-                <li>• Audit logs of scan events and proposal creations</li>
+                <li>• Compatibility Proof, reason codes, and reviewed source provenance</li>
+                <li>• Reviewed source provenance and compatibility-proof metadata</li>
+                <li>• Audit logs of scan events and evidence retrieval</li>
               </ul>
             </div>
 

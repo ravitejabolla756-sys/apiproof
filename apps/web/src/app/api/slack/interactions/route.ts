@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     return ack(result.text);
   } catch {
     // Never reflect provider payloads, signatures, state tokens, or internal errors to Slack.
-    return ack('MY OWL could not process this action safely. No Draft PR was created.');
+    return ack('MY OWL could not process this action safely. No repository changes were made.');
   }
 }
 

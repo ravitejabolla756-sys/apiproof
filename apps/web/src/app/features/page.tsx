@@ -31,78 +31,78 @@ export default function FeaturesPage() {
       ]
     },
     {
-      group: "MIGRATION",
-      tag: "DETERMINISTIC CODEGEN",
-      title: "Controlled Patch Generation",
-      summary: "Synthesizes minimal, context-bound code transformations derived from machine-readable migration rules against the exact baseline commit SHA.",
+      group: "ROADMAP",
+      tag: "NOT IN THE CURRENT BETA",
+      title: "Migration Assistance (Planned)",
+      summary: "Migration planning, patch generation, and pull request creation are deliberately unavailable in the detection-only beta.",
       features: [
         {
-          name: "Deterministic Migration Planning",
-          desc: "Generates structured MigrationPlan artifacts targeting specific AST nodes without asking an LLM to hallucinate arbitrary file rewrites."
+          name: "Evidence Before Automation",
+          desc: "The beta gives engineers the reviewed rule, exact usage, and source evidence needed to decide a migration themselves."
         },
         {
-          name: "Minimal Patch Diffing",
-          desc: "Modifies only the necessary lines and tokens. Avoids noisy full-file formatting or re-ordering of unrelated variables."
+          name: "No Repository Writes",
+          desc: "MY OWL does not create patches, branches, commits, or pull requests in the current beta."
         },
         {
-          name: "Exact Source Snapshot Handling",
-          desc: "Binds patches to the exact 40-character Git commit SHA of the default branch, preventing application against out-of-date source states."
+          name: "Future Capability Boundary",
+          desc: "Migration assistance will require a separate, explicitly authorized release and write-permission review."
         },
         {
-          name: "Whitespace & Code Style Preservation",
-          desc: "Maintains your project's single/double quotes, semicolon rules, tab/space indentation, and developer comments."
+          name: "Human-Owned Changes",
+          desc: "Your team remains responsible for choosing, testing, and applying any code change."
         }
       ]
     },
     {
-      group: "VERIFICATION",
-      tag: "ZERO-DEFECT HARNESS",
-      title: "4-Gate Compiler Verification",
-      summary: "Before any proposal is submitted to GitHub, every candidate migration must pass four deterministic pre-flight safety gates in an isolated runner.",
+      group: "PROOF",
+      tag: "REVIEWED COMPATIBILITY",
+      title: "Evidence-Linked Compatibility Proof",
+      summary: "Every finding links provider change facts to the matched repository usage and its reason codes.",
       features: [
         {
-          name: "Gate 1: AST Syntax Validity",
-          desc: "Verifies that the patched file parses cleanly into a valid syntax tree with zero compiler parsing errors."
+          name: "Official Source Provenance",
+          desc: "Reviewed rules retain official-source provenance and evidence fingerprints."
         },
         {
-          name: "Gate 2: TypeScript Compiler Diagnostics",
-          desc: "Executes `tsc --noEmit` validation against the patched code to ensure zero new type errors or broken interface contracts."
+          name: "Exact Usage Classification",
+          desc: "Static matching distinguishes affected, not-affected, and needs-review usage without guessing dynamic values."
         },
         {
-          name: "Gate 3: Call-Site Scope & Boundary Check",
-          desc: "Strictly enforces that modifications are confined to the intended target file and lines, rejecting forbidden files or repo-level scripts."
+          name: "Source Location Evidence",
+          desc: "Findings retain the exact repository file and line when the analyzer can establish it."
         },
         {
-          name: "Gate 4: Dry-Run Test Execution",
-          desc: "Executes your repository's automated test suite against the candidate patch to confirm that existing application behaviors remain intact."
+          name: "Human Review Boundary",
+          desc: "Compatibility findings inform a human decision; they do not change a repository."
         },
         {
-          name: "Execution-Bound Verification Evidence",
-          desc: "Generates a cryptographically signed verification evidence artifact that binds the repository ID, baseline SHA, change ID, and patch digest."
+          name: "Planned Migration Features",
+          desc: "Patch generation and execution-bound verification are retained for future authorized development, not exposed by this beta."
         }
       ]
     },
     {
       group: "GITHUB",
-      tag: "WRITE CONTRACT",
+      tag: "READ-ONLY BETA",
       title: "GitHub App Safety Boundaries",
-      summary: "Connects securely through an authorized GitHub App with strictly bounded permissions, isolated branches, and absolute zero auto-merge.",
+      summary: "Connects through an authorized read-only GitHub App for repository scanning and compatibility evidence.",
       features: [
         {
-          name: "Isolated Migration Branches",
-          desc: "Writes proposals exclusively to dedicated branches with canonical prefixes (`apiproof/*` or `myowl/*`), never touching main."
+          name: "Read-Only Repository Access",
+          desc: "The beta reads approved repository contents for scanning and does not write branches, commits, checks, or pull requests."
         },
         {
-          name: "GitHub Draft Pull Requests",
-          desc: "Submits proposals as GitHub Draft PRs (`draft: true`) accompanied by verification reports, side-by-side diffs, and upstream change rationale."
+          name: "No Pull Request Capability",
+          desc: "Draft Pull Request generation is unavailable until a future authorized release with separately reviewed write permissions."
         },
         {
-          name: "Zero Auto-Merge Policy",
-          desc: "MY OWL has zero auto-merge capability and zero auto-merge permissions. Human engineers retain total agency to review, test, and merge."
+          name: "No Auto-Merge Capability",
+          desc: "The beta cannot merge or modify customer code. Human engineers retain complete control of repository changes."
         },
         {
-          name: "Repository Divergence Protection",
-          desc: "If your default branch HEAD has moved since the scan was performed, MY OWL stops immediately and requires a fresh scan before proposing a patch."
+          name: "Approved Repository Scope",
+          desc: "Workspace authorization and repository allowlists keep scans scoped to repositories your workspace has connected."
         }
       ]
     },
@@ -114,11 +114,11 @@ export default function FeaturesPage() {
       features: [
         {
           name: "Workspace Multi-Tenancy",
-          desc: "Strict tenant isolation ensures repository configurations, scan results, and migration proposals are isolated to authorized workspace members."
+          desc: "Strict tenant isolation ensures repository configurations, scan results, and compatibility findings are isolated to authorized workspace members."
         },
         {
           name: "Finding Lifecycle Management",
-          desc: "Tracks breaking change findings across states (`open`, `planned`, `proposed`, `resolved`), maintaining history across re-scans."
+          desc: "Tracks reviewed compatibility findings and scan outcomes across re-scans."
         },
         {
           name: "Idempotent Scan & Worker Queues",
@@ -126,7 +126,7 @@ export default function FeaturesPage() {
         },
         {
           name: "Granular Activity Audit Logs",
-          desc: "Records every scan initiation, finding detection, migration synthesis, verification run, and GitHub proposal for compliance tracking."
+          desc: "Records scan initiation and finding detection for workspace auditability."
         }
       ]
     }
@@ -148,7 +148,7 @@ export default function FeaturesPage() {
             Developer Infrastructure for Breaking API Changes
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Everything implemented in MY OWL is grounded in compiler truth, deterministic patch generation, and strict pre-flight verification.
+            The current beta is grounded in compiler truth, reviewed provider evidence, and read-only compatibility detection.
           </p>
         </div>
 
@@ -203,7 +203,7 @@ export default function FeaturesPage() {
             Ready to protect your repositories from silent API breakage?
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-            Install the GitHub App in under a minute. Connect repositories, run an AST scan, and inspect verified migration proposals.
+            Install the GitHub App in under a minute. Connect repositories, run an AST scan, and inspect evidence-linked compatibility findings.
           </p>
           <div className="pt-2">
             <Link

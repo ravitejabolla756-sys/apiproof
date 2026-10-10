@@ -14,7 +14,7 @@ export default function UpdatesPage() {
         "AFFECTED, NOT_AFFECTED, and NEEDS_REVIEW states are shown explicitly",
         "Official-source provenance is preserved for reviewed compatibility rules",
         "Privacy-first local analysis avoids persisting raw repository source",
-        "Initial public beta coverage includes 10 core providers"
+        "Public beta coverage includes 15 reviewed providers and 20 evidence-linked compatibility rules"
       ],
       footerNote: "Additional provider coverage is rolling out continuously."
     },
@@ -32,24 +32,24 @@ export default function UpdatesPage() {
     },
     {
       date: "March 14, 2026",
-      title: "Four-Gate Migration Verification Pipeline",
-      description: "Every automated migration plan now executes through a strict 4-gate safety harness before any draft PR is created, ensuring proposed diffs never violate syntax, types, or tests.",
+      title: "Detection-Only Compatibility Review",
+      description: "The current public beta presents reviewed compatibility evidence for human review without modifying customer repositories.",
       improvements: [
-        "Gate 1: In-memory AST syntactic validity and indentation consistency check",
-        "Gate 2: TypeScript compiler diagnostic check ensuring zero type regressions",
-        "Gate 3: Call-site scope boundary verification ensuring isolated diffs",
-        "Gate 4: Isolated container dry-run test harness validation"
+        "Static and normalized usage evidence is retained with each compatibility finding",
+        "AFFECTED, NOT_AFFECTED, and NEEDS_REVIEW outcomes remain explicit",
+        "Official-source provenance binds reviewed provider rules to their evidence",
+        "Repository writes stay disabled while teams choose their own remediation"
       ],
-      footerNote: "Protects repositories against unsafe hallucinations and unexpected regressions."
+      footerNote: "Migration planning and Draft Pull Request capabilities remain planned for a future authorized release."
     },
     {
       date: "February 28, 2026",
       title: "GitHub App Granular Permissions & Webhook Scans",
-      description: "Our GitHub App integration now operates with strict least-privilege permissions: read-only repository tree access for AST analysis and write access strictly isolated to apiproof/* branches.",
+      description: "Our GitHub App integration uses strict least-privilege permissions: read-only repository tree access for AST analysis and no repository write operations in the beta.",
       improvements: [
         "Read-only code inspection with zero persistent repository code retention",
         "Automatic scan triggers on dependency lockfile and package.json commits",
-        "Instant draft PR creation with full diagnostic diffs and confidence scoring",
+        "Evidence-linked compatibility findings with deterministic reason codes",
         "Seamless repository selector supporting multi-repository organizations"
       ],
       footerNote: "Enhanced security controls for organizations with strict compliance requirements."
@@ -153,7 +153,7 @@ export default function UpdatesPage() {
             Stop silent API breakage before it reaches production.
           </h2>
           <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
-            Connect your repository in seconds. Read-only AST observation, deterministic migration planning, and safe draft PRs.
+            Connect your repository in seconds for read-only AST observation and evidence-linked compatibility findings.
           </p>
           <div className="pt-2">
             <Link

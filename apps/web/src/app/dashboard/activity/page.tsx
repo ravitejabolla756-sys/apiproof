@@ -37,7 +37,7 @@ export default function ActivityPage() {
             Workspace Audit Activity Log
           </h1>
           <p className="text-xs text-[#686868] mt-1">
-            Complete chronological record of repository scans, indexings, findings, and pull requests.
+            Complete chronological record of repository scans, indexing, findings, and compatibility evidence.
           </p>
         </div>
 
@@ -62,7 +62,7 @@ export default function ActivityPage() {
           <Activity className="w-8 h-8 text-purple-700 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No activity recorded yet</p>
           <p className="text-xs text-[#686868]">
-            Activity events will appear here as you connect repositories, run AST scans, and propose migrations.
+            Activity events will appear here as you connect repositories, run AST scans, and review compatibility findings.
           </p>
         </div>
       ) : (

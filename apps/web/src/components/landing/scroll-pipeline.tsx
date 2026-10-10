@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FileCode, GitPullRequest } from 'lucide-react';
+import { FileCode, ShieldCheck } from 'lucide-react';
 
 interface StageData {
   number: string;
@@ -28,17 +28,17 @@ const STAGES: StageData[] = [
   },
   {
     number: '03',
-    tag: 'PLANS MIGRATION',
-    headlinePart1: 'Plans the smallest',
-    headlinePart2: 'safe migration.',
-    copy: 'MY OWL maps the upstream change to the affected call site and proposes the smallest deterministic code transformation.',
+    tag: 'EXPLAINS EVIDENCE',
+    headlinePart1: 'Shows the exact',
+    headlinePart2: 'compatibility evidence.',
+    copy: 'MY OWL maps the reviewed upstream change to the affected call site and preserves the source evidence for human review.',
   },
   {
     number: '04',
-    tag: 'VERIFIES & OPENS PR',
-    headlinePart1: 'Verifies the migration',
-    headlinePart2: 'before it reaches review.',
-    copy: 'Four deterministic verification gates run before MY OWL opens a Draft PR.',
+    tag: 'KEEPS WRITES DISABLED',
+    headlinePart1: 'Keeps the decision',
+    headlinePart2: 'with your engineers.',
+    copy: 'The detection-only beta remains read-only and never creates patches, branches, or pull requests.',
   },
 ];
 
@@ -295,19 +295,19 @@ export function ScrollPipeline() {
                           </div>
                           <div>
                             <div className="font-bold text-[#000E29] text-xs sm:text-sm font-sans">
-                              Unified AST Patch
+                              Compatibility Proof
                             </div>
                             <div className="text-slate-400 text-[10px] sm:text-[11px] font-mono">
-                              1 insertion, 1 deletion
+                              Reviewed rule + matched usage
                             </div>
                           </div>
                           <div className="w-px h-7 sm:h-8 bg-slate-200 mx-0.5 sm:mx-1" />
                           <div className="space-y-0.5">
                             <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-blue-700 font-bold">
-                              ZERO AUTO-MERGE
+                              READ-ONLY BETA
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-sans">
-                              Preserves indentation &amp; style
+                              No repository writes
                             </div>
                           </div>
                         </div>
@@ -320,19 +320,19 @@ export function ScrollPipeline() {
                           </div>
                           <div>
                             <div className="font-bold text-[#000E29] text-xs sm:text-sm font-sans">
-                              4-Gate Compiler Harness
+                              Human Review Boundary
                             </div>
                             <div className="text-slate-400 text-[10px] sm:text-[11px] font-mono">
-                              Pre-flight Verification
+                              Engineering-owned remediation
                             </div>
                           </div>
                           <div className="w-px h-7 sm:h-8 bg-slate-200 mx-0.5 sm:mx-1" />
                           <div className="space-y-0.5">
                             <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-emerald-700 font-bold">
-                              DRAFT PR #142
+                              NO PULL REQUEST
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-sans">
-                              Isolated branch ready for review
+                              Migration proposals are planned
                             </div>
                           </div>
                         </div>
@@ -626,7 +626,7 @@ export function ScrollPipeline() {
               </div>
 
               {/* ================================================================= */}
-              {/* STAGE 03 VISUALIZATION: Migration Plan                            */}
+              {/* STAGE 03 VISUALIZATION: Compatibility proof                        */}
               {/* ================================================================= */}
               <div
                 aria-hidden={activeStep !== 2}
@@ -641,7 +641,7 @@ export function ScrollPipeline() {
                 {/* Header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/90 text-xs">
                   <div className="font-bold text-slate-500 tracking-wider text-[11px] uppercase">
-                    MIGRATION PLAN
+                    COMPATIBILITY PROOF
                   </div>
                   <div className="font-semibold text-[#000E29]">src/billing.ts:42</div>
                 </div>
@@ -649,16 +649,16 @@ export function ScrollPipeline() {
                 {/* BEFORE / AFTER Minimal Diff Display */}
                 <div className="space-y-0 divide-y divide-slate-100">
                   <div className="py-2.5 flex items-start justify-between gap-4">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-0.5 shrink-0 w-12">BEFORE</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-0.5 shrink-0 w-12">RULE</div>
                     <div className="text-rose-700 font-mono text-xs leading-relaxed bg-rose-50/60 px-2 py-1 flex-1">
-                      coupon: promoCouponId
+                      Stripe subscription coupon removal
                     </div>
                   </div>
 
                   <div className="py-2.5 flex items-start justify-between gap-4">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-0.5 shrink-0 w-12">AFTER</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-0.5 shrink-0 w-12">USAGE</div>
                     <div className="text-emerald-800 font-mono font-medium text-xs leading-relaxed bg-emerald-50/60 px-2 py-1 flex-1">
-                      discounts: [&#123; coupon: promoCouponId &#125;]
+                      subscriptions.create({'{'} coupon {'}'})
                     </div>
                   </div>
                 </div>
@@ -667,24 +667,24 @@ export function ScrollPipeline() {
                 <div className="pt-1 border-t border-slate-100 flex items-center gap-5 text-xs font-mono text-slate-500">
                   <span><span className="font-bold text-slate-800">1</span> file</span>
                   <span><span className="font-bold text-slate-800">1</span> call site</span>
-                  <span><span className="font-bold text-slate-800">1</span> patch</span>
+                  <span><span className="font-bold text-slate-800">1</span> matched usage</span>
                   <span><span className="font-bold text-emerald-700">0</span> unrelated</span>
                 </div>
 
-                {/* Branch & Safety Policy */}
+                {/* Beta safety policy */}
                 <div className="pt-2 flex items-center justify-between text-xs text-slate-600">
                   <div>
-                    Branch:{' '}
+                    Mode:{' '}
                     <span className="font-semibold text-slate-800">
-                      apiproof/stripe-v18-update
+                      detection-only
                     </span>
                   </div>
-                  <div className="text-emerald-700 font-semibold">Zero auto-merge</div>
+                  <div className="text-emerald-700 font-semibold">Zero repository writes</div>
                 </div>
               </div>
 
               {/* ================================================================= */}
-              {/* STAGE 04 VISUALIZATION: Exact Verification & Draft PR Ready       */}
+              {/* STAGE 04 VISUALIZATION: Human review boundary                      */}
               {/* ================================================================= */}
               <div
                 aria-hidden={activeStep !== 3}
@@ -697,65 +697,65 @@ export function ScrollPipeline() {
                 {/* Header: VERIFICATION · 4 / 4 PASSED */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/90 text-xs">
                   <div className="font-bold text-[#000E29] tracking-wider text-[11px] uppercase">
-                    VERIFICATION
+                    HUMAN REVIEW
                   </div>
                   <div
                     className={`font-bold transition-colors duration-300 ${
                       allPassed ? 'text-emerald-700' : 'text-slate-400'
                     }`}
                   >
-                    {allPassed ? '4 / 4 PASSED' : 'VERIFYING GATES...'}
+                    {allPassed ? 'EVIDENCE READY' : 'PREPARING EVIDENCE...'}
                   </div>
                 </div>
 
                 {/* Four Horizontal Rows */}
                 <div className="space-y-0 divide-y divide-slate-100 text-xs">
                   <div className="flex items-center justify-between py-2.5">
-                    <span className="text-slate-800 font-medium">1. AST Syntax</span>
+                      <span className="text-slate-800 font-medium">1. Provider Rule</span>
                     <span
                       className={`font-bold transition-colors duration-500 ${
                         gateAstPassed ? 'text-emerald-600' : 'text-slate-300'
                       }`}
                     >
-                      ✓ PASSED
+                      ✓ REVIEWED
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between py-2.5">
-                    <span className="text-slate-800 font-medium">2. TypeScript</span>
+                      <span className="text-slate-800 font-medium">2. Source Provenance</span>
                     <span
                       className={`font-bold transition-colors duration-500 ${
                         gateTsPassed ? 'text-emerald-600' : 'text-slate-300'
                       }`}
                     >
-                      ✓ PASSED
+                      ✓ BOUND
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between py-2.5">
-                    <span className="text-slate-800 font-medium">3. Call-site Scope</span>
+                      <span className="text-slate-800 font-medium">3. Exact Usage</span>
                     <span
                       className={`font-bold transition-colors duration-500 ${
                         gateScopePassed ? 'text-emerald-600' : 'text-slate-300'
                       }`}
                     >
-                      ✓ PASSED
+                      ✓ MATCHED
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between py-2.5">
-                    <span className="text-slate-800 font-medium">4. Dry-run Tests</span>
+                      <span className="text-slate-800 font-medium">4. Human Decision</span>
                     <span
                       className={`font-bold transition-colors duration-500 ${
                         gateTestPassed ? 'text-emerald-600' : 'text-slate-300'
                       }`}
                     >
-                      ✓ PASSED
+                      ✓ REQUIRED
                     </span>
                   </div>
                 </div>
 
-                {/* Draft PR Ready Section */}
+                {/* Detection-only result */}
                 <div
                   className={`pt-4 border-t border-slate-200/90 space-y-1.5 transition-all duration-300 ${
                     prReady ? 'opacity-100 translate-y-0' : 'opacity-40'
@@ -763,25 +763,25 @@ export function ScrollPipeline() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <GitPullRequest className="w-4 h-4 text-[#004EE8]" />
+                      <ShieldCheck className="w-4 h-4 text-[#004EE8]" />
                       <span className="font-bold text-[#000E29] text-sm uppercase tracking-wide">
-                        DRAFT PR READY
+                        DETECTION-ONLY BETA
                       </span>
                     </div>
-                    <span className="text-slate-500 font-bold text-xs">#142</span>
+                    <span className="text-slate-500 font-bold text-xs">READ ONLY</span>
                   </div>
 
                   <div className="text-xs font-sans font-medium text-slate-800 leading-normal">
-                    chore(deps): migrate Stripe customer creation to v18
+                    Your team decides and applies any remediation.
                   </div>
 
                   {/* Small Green State Pill */}
                   <div className="pt-2 flex items-center justify-between text-[11px]">
                     <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                      Verified · Draft only · No auto-merge
+                      Evidence linked · No patch · No pull request
                     </span>
-                    <span className="text-slate-400 font-mono">1 file changed (+1, -1)</span>
+                    <span className="text-slate-400 font-mono">0 files changed</span>
                   </div>
                 </div>
               </div>
@@ -795,7 +795,7 @@ export function ScrollPipeline() {
         <div className="relative z-20 max-w-7xl w-full mx-auto px-6 sm:px-12 pb-6 sm:pb-8 pt-4 flex items-center justify-between text-xs font-mono text-slate-400 border-t border-slate-100">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-slate-600">Zero auto-merge invariant</span>
+            <span className="text-slate-600">Zero repository writes</span>
             <span className="text-slate-300 hidden sm:inline">·</span>
             <span className="hidden sm:inline">Read-only AST observation</span>
           </div>

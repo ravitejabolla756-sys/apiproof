@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   FileCode2,
   CheckCircle2,
-  GitPullRequest,
   ShieldCheck,
   Zap,
 } from "lucide-react";
@@ -18,7 +17,7 @@ export function ProofTerminal() {
           <div>
             <h3 className="text-sm font-bold text-zinc-100">Live Change Intelligence Terminal</h3>
             <p className="text-[11px] text-zinc-500">
-              Deterministic AST tracing from vendor changelog to verified GitHub Draft PR
+              Deterministic AST tracing from vendor changelog to evidence-backed human review
             </p>
           </div>
         </div>
@@ -82,13 +81,13 @@ export function ProofTerminal() {
           </div>
         </div>
 
-        {/* PANEL 3: RIGHT - Verified Result */}
+        {/* PANEL 3: RIGHT - Compatibility Proof */}
         <div className="p-4 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-3">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-emerald-400 font-bold uppercase tracking-wider">
-              3. Verified Result
+              3. Compatibility Proof
             </span>
-            <span className="text-zinc-500">Draft PR #1</span>
+            <span className="text-zinc-500">Read-only beta</span>
           </div>
 
           <div className="p-3 rounded bg-zinc-950 border border-zinc-800/80 space-y-2 text-xs">
@@ -97,15 +96,15 @@ export function ProofTerminal() {
               <span className="font-bold text-rose-400">AFFECTED / 1 FILE</span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-400">Verification Gate</span>
+              <span className="text-zinc-400">Evidence Status</span>
               <span className="font-bold text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> 4/4 PASSED
+                <CheckCircle2 className="w-3 h-3" /> REVIEWED RULE
               </span>
             </div>
             <div className="pt-1.5 border-t border-zinc-900 flex items-center justify-between text-[11px]">
-              <span className="text-zinc-400">GitHub Action</span>
+              <span className="text-zinc-400">Repository Action</span>
               <span className="font-bold text-cyan-300 flex items-center gap-1">
-                <GitPullRequest className="w-3 h-3" /> Draft PR Opened
+                None — detection only
               </span>
             </div>
           </div>
@@ -116,7 +115,7 @@ export function ProofTerminal() {
       <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Zero False Positives — Verification chain enforces AST typechecks and unit tests before PR creation.</span>
+          <span>Read-only beta — reviewed evidence is shown for your engineering team to evaluate.</span>
         </div>
         <span className="text-[10px] text-emerald-400 font-bold uppercase">Human Review Mandatory</span>
       </div>

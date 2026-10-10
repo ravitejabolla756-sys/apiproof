@@ -10,8 +10,6 @@ import {
   GitBranch,
   Boxes,
   AlertTriangle,
-  FileCheck2,
-  GitPullRequest,
   Activity,
   Sliders,
   ChevronLeft,
@@ -63,8 +61,6 @@ export function Sidebar() {
       badge: openFindingsCount !== null && openFindingsCount > 0 ? String(openFindingsCount) : undefined,
       risk: openFindingsCount !== null && openFindingsCount > 0,
     },
-    { name: "Migrations", href: "/dashboard/migrations", icon: FileCheck2 },
-    { name: "Pull Requests", href: "/dashboard/pull-requests", icon: GitPullRequest },
   ];
 
   const secondaryNav = [

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
+import { DETECTION_ONLY_BETA_MESSAGE } from "@/lib/beta-capabilities";
 import { FileCheck2, CheckCircle2, GitPullRequest, Loader2, RefreshCw, ExternalLink } from "lucide-react";
 
 interface MigrationItem {
@@ -60,10 +61,10 @@ export default function MigrationsWorkbenchPage() {
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
             <FileCheck2 className="w-6 h-6 text-emerald-600" />
-            Migration Plans Workbench
+              Migration History (Unavailable in Beta)
           </h1>
           <p className="text-xs text-[#686868] mt-1">
-            Review migration plans here. Source patching and verification run against the exact repository baseline when you propose a Draft PR.
+            {DETECTION_ONLY_BETA_MESSAGE} Historical migration records remain visible for audit context only.
           </p>
         </div>
 
@@ -86,9 +87,9 @@ export default function MigrationsWorkbenchPage() {
       ) : migrations.length === 0 ? (
         <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
           <FileCheck2 className="w-8 h-8 text-emerald-600 mx-auto" />
-          <p className="font-semibold text-base text-[#111111]">No active migration plans yet</p>
+          <p className="font-semibold text-base text-[#111111]">Migration planning is unavailable in this beta</p>
           <p className="text-xs text-[#686868]">
-            Navigate to any finding and click &quot;Generate Migration Plan&quot; to synthesize deterministic AST refactors.
+            Open a finding to review its Compatibility Proof, source location, and reason codes.
           </p>
           <Link href="/dashboard/findings">
             <Button size="sm" variant="outline">
@@ -154,7 +155,7 @@ export default function MigrationsWorkbenchPage() {
                         ? 'All four verification gates executed successfully.'
                         : mig.lifecycle_state === 'Verification Failed'
                         ? 'Verification failed. Review the recorded failure before retrying.'
-                        : 'Successful execution evidence is not available. Verification is required before Draft PR proposal.'}
+                        : 'Migration verification is unavailable in the detection-only beta.'}
                     </p>
                   </div>
 
@@ -191,7 +192,7 @@ export default function MigrationsWorkbenchPage() {
                         </Button>
                       </Link>
                     )}
-                    <span className="text-[11px] font-semibold text-emerald-900">Review-Only Guard</span>
+                    <span className="text-[11px] font-semibold text-emerald-900">Historical record</span>
                   </div>
                 </div>
               </div>

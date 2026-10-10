@@ -35,7 +35,7 @@ export default function AboutPage() {
                 Modern applications rely on dozens of vendor APIs—from payment processors like Stripe to communications providers like Twilio and AI infrastructure providers like OpenAI. When a vendor updates their SDK or deprecates a parameter, software teams face a silent dilemma: spend hours auditing every call site manually, or risk breaking production.
               </p>
               <p>
-                MY OWL bridges this gap by indexing repository Abstract Syntax Trees (ASTs), matching reviewed vendor breaking change rules to actual symbol usages, and executing 4-gate verification pipelines before generating human-reviewable draft pull requests.
+                MY OWL bridges this gap by indexing repository Abstract Syntax Trees (ASTs) and matching reviewed vendor breaking change rules to actual symbol usages with evidence for human review.
               </p>
               <div className="pt-2">
                 <Link
@@ -90,7 +90,7 @@ export default function AboutPage() {
                   4-Gate Verification
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Every proposed migration is verified against syntactic validity, TypeScript compiler diagnostics, call-site scope boundaries, and isolated dry-run test execution.
+                  Every compatibility finding is bounded to reviewed provider evidence, repository usage, and an explicit affected, not-affected, or needs-review classification.
                 </p>
               </div>
               <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
@@ -107,11 +107,11 @@ export default function AboutPage() {
                   Human Sovereign Review
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  We never commit to your default branch. We never auto-merge. Automated changes are delivered as isolated GitHub Draft Pull Requests for engineers to inspect and approve.
+                  The current beta has read-only GitHub access. It never commits, creates branches, or opens pull requests for customer repositories.
                 </p>
               </div>
               <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
-                Draft PR boundary
+                Detection-only boundary
               </div>
             </div>
 
@@ -128,7 +128,7 @@ export default function AboutPage() {
             Stop silent API breakage before it reaches production.
           </h2>
           <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
-            Connect your repository in seconds. Read-only AST observation, deterministic migration planning, and safe draft PRs.
+            Connect your repository in seconds for read-only AST observation and evidence-linked compatibility findings.
           </p>
           <div className="pt-2">
             <Link

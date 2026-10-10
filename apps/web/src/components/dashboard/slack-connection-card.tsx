@@ -63,7 +63,7 @@ export function SlackConnectionCard() {
           <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Slack connected
         </span>}
       </div>
-      <p className="text-xs text-[#686868]">Receive new breaking-finding alerts by direct message. Draft PR requests still go through MY OWL verification and the production worker.</p>
+      <p className="text-xs text-[#686868]">Receive new breaking-finding alerts by direct message. This detection-only beta never creates patches or pull requests.</p>
       {error && <p role="alert" className="text-xs text-rose-700">{error}</p>}
       {status === null ? <div className="text-xs text-[#686868] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" />Checking Slack connection…</div> : status.connected ? (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] p-4">

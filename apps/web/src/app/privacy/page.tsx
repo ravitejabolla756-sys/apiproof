@@ -16,11 +16,11 @@ export default function PrivacyPage() {
     },
     {
       title: "3. How We Use Your Data",
-      content: "Collected metadata is used solely to: (a) identify when monitored vendor APIs release breaking changes affecting your installed packages; (b) trace whether your repository invokes deprecated or modified call sites; (c) generate 4-gate verified migration proposals and push isolated draft pull requests to your repositories; and (d) manage your subscription tier."
+      content: "Collected metadata is used solely to: (a) identify when monitored vendor APIs release breaking changes affecting your installed packages; (b) trace whether your repository invokes deprecated or modified call sites; (c) present evidence-linked compatibility findings for your engineering review; and (d) manage your subscription tier."
     },
     {
       title: "4. GitHub Permissions & Access Scopes",
-      content: "Our GitHub App requests read-only access to repository contents and issues for AST inspection, and write access restricted to opening Draft Pull Requests on isolated branches (apiproof/*). You maintain complete control over which repositories MY OWL can access, and permissions can be revoked at any time through your GitHub Settings."
+      content: "Our GitHub App requests read-only repository contents and metadata access for AST inspection. The current beta does not use write access to create branches, commits, checks, or pull requests. You maintain complete control over which repositories MY OWL can access, and permissions can be revoked at any time through your GitHub Settings."
     },
     {
       title: "5. Data Retention & Deletion",
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
             Protected repositories, verifiable safety.
           </h2>
           <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
-            Connect GitHub in seconds. Automatic AST impact detection, verified migration plans, and zero direct branch writes.
+            Connect GitHub in seconds for read-only AST impact detection and evidence-linked compatibility findings.
           </p>
           <div className="pt-2">
             <Link

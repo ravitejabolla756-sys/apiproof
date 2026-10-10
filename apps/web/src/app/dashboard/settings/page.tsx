@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
+import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 
@@ -39,7 +39,6 @@ interface BillingSummary {
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
   const [installation, setInstallation] = useState<GitHubInstallationInfo | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,54 +90,16 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleCheckout(planId: string) {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error || "Failed to initiate checkout session");
-      }
-      window.location.href = data.checkoutUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate checkout URL.");
-      setUpgrading(false);
-    }
-  }
-
-  async function handlePortal() {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/portal', {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (!res.ok || !data.portalUrl) {
-        throw new Error(data.error || "Failed to generate portal session");
-      }
-      window.location.href = data.portalUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate portal URL.");
-      setUpgrading(false);
-    }
-  }
-
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* HEADER */}
       <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
         <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
           <Sliders className="w-6 h-6 text-purple-700" />
-          Workspace Settings & Billing
+          Workspace Settings
         </h1>
         <p className="text-xs text-[#686868]">
-          Manage workspace subscriptions, usage quotas, safety policies, and GitHub App integrations.
+          Manage read-only beta access, scan usage, safety policies, and GitHub App integrations.
         </p>
       </div>
 
@@ -158,7 +119,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-purple-700" />
-                Subscription & Usage Quotas
+                Beta Access & Usage
               </h3>
               {billing && (
                 <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-semibold uppercase tracking-wider">
@@ -217,59 +178,24 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* METRIC 3: DRAFT PRS */}
+                  {/* METRIC 3: MIGRATION PROPOSALS */}
                   <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-2">
                     <div className="flex items-center justify-between text-[11px] text-[#686868]">
-                      <span>Draft PRs (Monthly)</span>
+                      <span>Migration proposals</span>
                       <span className="font-mono font-semibold text-[#111111]">
-                        {billing.metrics.draftPrs.current} / {billing.metrics.draftPrs.limit}
+                        Unavailable in beta
                       </span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
-                      <div
-                        className="h-full bg-indigo-600 rounded-full transition-all"
-                        style={{
-                          width: `${Math.min(
-                            100,
-                            (billing.metrics.draftPrs.current / billing.metrics.draftPrs.limit) * 100
-                          )}%`,
-                        }}
-                      />
+                      <div className="h-full bg-zinc-300 rounded-full w-0" />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-[#E8E8E5]">
                   <p className="text-[11px] text-[#686868]">
-                    Current billing period resets on{' '}
-                    <span className="font-mono font-medium text-[#111111]">
-                      {new Date(billing.subscription.currentPeriodEnd).toLocaleDateString()}
-                    </span>.
+                    The detection-only beta is free while pricing and migration capabilities are finalized.
                   </p>
-                  <div className="flex items-center gap-2">
-                    {billing.plan.id === 'free' ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCheckout('pro')}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                        <span>Upgrade to Pro ($49/mo)</span>
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handlePortal}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                        <span>Manage Customer Portal</span>
-                      </Button>
-                    )}
-                  </div>
                 </div>
               </div>
             ) : null}
@@ -305,7 +231,7 @@ export default function SettingsPage() {
                       {installation.accountType}
                     </span>
                   </div>
-                  <div className="text-[11px] text-[#686868]">Authorized for read-only AST scans & draft PR creation</div>
+                  <div className="text-[11px] text-[#686868]">Authorized for read-only AST scans and compatibility detection</div>
                 </div>
                 <Button
                   variant="outline"
@@ -352,8 +278,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
                   <div>
-                    <div className="font-medium text-xs text-[#111111]">Draft PRs only</div>
-                    <div className="text-[11px] text-[#686868]">Pull requests are created as drafts requiring human review</div>
+                    <div className="font-medium text-xs text-[#111111]">No repository writes</div>
+                    <div className="text-[11px] text-[#686868]">The beta does not create branches, patches, checks, or pull requests</div>
                   </div>
                   <Check className="w-4 h-4 text-emerald-600" />
                 </div>

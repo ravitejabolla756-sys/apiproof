@@ -21,31 +21,31 @@ export default function BlogPage() {
     },
     {
       category: "STATE INTEGRITY",
-      title: "Why migration baselines require exact commit SHAs",
+      title: "Why compatibility evidence records exact commit SHAs",
       readTime: "5 min read",
-      summary: "How Git branch head drift creates patch corruption, and why pinning an immutable 40-character baseline commit SHA prevents divergent proposals.",
+      summary: "How immutable 40-character baseline commit SHAs keep compatibility evidence tied to the exact repository state a team reviews.",
       codeSnippet: "HEAD_SHA = 7a3f89d1b0924e3c881023a9d20c56b7104e6721"
     },
     {
-      category: "DETERMINISTIC CODEGEN",
-      title: "Why deterministic patching matters over AI guessing",
+      category: "REMEDIATION ROADMAP",
+      title: "Why remediation remains a human decision in the beta",
       readTime: "6 min read",
-      summary: "Why prompting generic LLMs to rewrite entire source files causes formatting churn and hallucinated bugs, compared to bounded, rule-driven AST transformations that preserve your project's indentation and comments.",
-      codeSnippet: "DeterministicPatchGenerator: minimal unified diff (+1, -1)"
+      summary: "Why the current beta stops at evidence-linked findings: teams retain control of the remediation path while migration capabilities remain unavailable.",
+      codeSnippet: "DetectionOnlyBeta: evidence -> human remediation"
     },
     {
-      category: "VERIFICATION HARNESS",
-      title: "How MY OWL verifies migrations before creating a Draft PR",
+      category: "COMPATIBILITY PROOF",
+      title: "How MY OWL makes compatibility evidence reviewable",
       readTime: "8 min read",
-      summary: "A detailed breakdown of our 4-gate safety harness: AST syntax validity parsing, TypeScript compiler diagnostics, call-site boundary constraints, and dry-run test execution.",
-      codeSnippet: "GateHarness: [SyntaxValid, TscDiagnosticCheck, ScopeBoundary, TestRunner]"
+      summary: "A detailed breakdown of reviewed rules, normalized usage evidence, source locations, and reason codes that support an engineering decision.",
+      codeSnippet: "CompatibilityProof: [Rule, Evidence, ReasonCode, SourceLocation]"
     },
     {
       category: "SECURITY INVARIANTS",
-      title: "Why safe automation stops at the Draft PR instead of auto-merging",
+      title: "Why the detection-only beta makes no repository writes",
       readTime: "5 min read",
-      summary: "Examining our foundational architectural invariant: developer agency must remain sovereign. Why automated tools should never merge code or push directly to default branches.",
-      codeSnippet: "ControlledWrite: { branch: 'apiproof/*', draft: true, autoMerge: false }"
+      summary: "Examining our current beta boundary: developer agency remains sovereign because MY OWL does not create branches, patches, checks, or pull requests.",
+      codeSnippet: "ReadOnlyBeta: { repositoryWrites: false }"
     }
   ];
 
@@ -66,7 +66,7 @@ export default function BlogPage() {
             Technical Writing
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto">
-            Deep-dives into Abstract Syntax Tree analysis, deterministic patch generation, compiler verification gates, and Git write contracts.
+            Deep-dives into Abstract Syntax Tree analysis, compatibility evidence, provider rules, and read-only GitHub safety boundaries.
           </p>
         </div>
 

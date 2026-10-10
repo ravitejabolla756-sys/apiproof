@@ -7,6 +7,7 @@ import { LandingFooter } from "@/components/landing/footer";
 import { InteractiveHeroBackground } from "@/components/landing/interactive-hero-background";
 import { ScrollPipeline } from "@/components/landing/scroll-pipeline";
 import { ProductVideo } from "@/components/landing/product-video";
+import { CURRENT_BETA_CAPABILITIES, DETECTION_ONLY_BETA_MESSAGE } from "@/lib/beta-capabilities";
 import {
   ArrowRight,
   ChevronRight,
@@ -55,7 +56,7 @@ export default function HomePage() {
           <p className="text-base sm:text-lg text-slate-100 max-w-2xl font-normal leading-relaxed">
             Know when the APIs your code depends on are about to break. MY OWL checks repositories against reviewed provider deprecations and breaking changes, then shows the evidence for human review.
           </p>
-          <p className="text-xs sm:text-sm text-slate-200 max-w-xl leading-relaxed">Public beta with 15 reviewed providers and 20 evidence-linked compatibility rules. Availability depends on the deployed release and connected repository.</p>
+          <p className="text-xs sm:text-sm text-slate-200 max-w-xl leading-relaxed">Public beta with {CURRENT_BETA_CAPABILITIES.reviewedProviderCount} reviewed providers and {CURRENT_BETA_CAPABILITIES.reviewedRuleCount} evidence-linked compatibility rules. {DETECTION_ONLY_BETA_MESSAGE}</p>
 
           {/* CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
@@ -82,7 +83,7 @@ export default function HomePage() {
             </span>
             <span className="text-white/30 hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
-              <GitBranch className="w-3.5 h-3.5 text-blue-200" /> Isolated branch proposal
+              <GitBranch className="w-3.5 h-3.5 text-blue-200" /> Evidence-linked compatibility rules
             </span>
             <span className="text-white/30 hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
@@ -103,11 +104,9 @@ export default function HomePage() {
             <span className="text-white/30">→</span>
             <span className="text-slate-200">TRACE</span>
             <span className="text-white/30">→</span>
-            <span className="text-slate-200">PLAN</span>
+            <span className="text-slate-200">EXPLAIN</span>
             <span className="text-white/30">→</span>
-            <span className="text-slate-200">VERIFY</span>
-            <span className="text-white/30">→</span>
-            <span className="text-slate-200 font-semibold">PROPOSE</span>
+            <span className="text-slate-200 font-semibold">REVIEW</span>
           </div>
         </div>
       </section>
@@ -170,10 +169,10 @@ export default function HomePage() {
                 </span>
               </div>
               <h3 className="text-lg font-semibold text-[#000E29] tracking-tight">
-                What is the smallest safe migration?
+                Which exact usage needs attention?
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Translating vendor prose into a minimal, syntax-safe patch without touching untouched logic or introducing subtle regressions into production.
+                Linking reviewed provider evidence to exact repository usage so your engineering team can decide the next change safely.
               </p>
             </div>
           </div>
@@ -209,15 +208,15 @@ export default function HomePage() {
             </div>
 
             <div className="border-l-2 border-slate-300 pl-4 space-y-1">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">03 PLAN</span>
-              <div className="font-bold text-[#000E29] text-sm font-sans">Deterministic Patch</div>
-              <p className="text-slate-500 font-sans text-xs">Minimal diff synthesized</p>
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">03 EXPLAIN</span>
+              <div className="font-bold text-[#000E29] text-sm font-sans">Compatibility Proof</div>
+              <p className="text-slate-500 font-sans text-xs">Rule, source, and usage evidence</p>
             </div>
 
             <div className="border-l-2 border-emerald-500 pl-4 space-y-1">
-              <span className="text-[10px] text-emerald-700 uppercase tracking-widest font-bold">04 PROPOSE</span>
-              <div className="font-bold text-[#000E29] text-sm font-sans">Verified Draft PR</div>
-              <p className="text-slate-500 font-sans text-xs">4 gates passed, human review</p>
+              <span className="text-[10px] text-emerald-700 uppercase tracking-widest font-bold">04 REVIEW</span>
+              <div className="font-bold text-[#000E29] text-sm font-sans">Engineering Decision</div>
+              <p className="text-slate-500 font-sans text-xs">Human review remains required</p>
             </div>
           </div>
 
@@ -250,7 +249,7 @@ export default function HomePage() {
               See MY OWL work.
             </h2>
             <p className="text-sm sm:text-base text-slate-400 font-sans leading-relaxed">
-              From an upstream breaking change to a verified GitHub Draft PR.
+              From an upstream breaking change to evidence your team can review.
             </p>
           </div>
 
@@ -301,24 +300,24 @@ export default function HomePage() {
                 Predictable AST transformations.
               </h3>
               <p className="text-xs text-slate-600 font-sans leading-relaxed">
-                MY OWL does not prompt an LLM to guess what your code should look like. It applies validated, rule-driven code transforms against your exact source baseline.
+                MY OWL does not prompt an LLM to guess what your code should look like. This beta reports validated, rule-driven compatibility evidence against your exact source baseline.
               </p>
             </div>
 
             <div className="space-y-4 pt-2">
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest block pb-1">BEFORE</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest block pb-1">DETECTED USAGE</span>
                 <div className="text-rose-700 font-semibold bg-rose-50/70 p-2.5 rounded border border-rose-100">
-                  coupon: promoCouponId
+                  model: "gpt-4.5-preview"
                 </div>
               </div>
 
               <div className="text-center text-slate-400 font-bold">↓</div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest block pb-1">AFTER</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest block pb-1">REVIEWED RULE</span>
                 <div className="text-emerald-800 font-semibold bg-emerald-50/70 p-2.5 rounded border border-emerald-100">
-                  discounts: [&#123; coupon: promoCouponId &#125;]
+                  OpenAI model retirement · evidence linked
                 </div>
               </div>
             </div>
@@ -327,7 +326,7 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 07. SAFETY (Nothing Reaches Draft PR Without Verification)                */}
+      {/* 07. SAFETY (Detection-only public beta)                                    */}
       {/* ========================================================================= */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-b border-slate-200 space-y-12">
         <div className="max-w-3xl space-y-3">
@@ -335,10 +334,10 @@ export default function HomePage() {
             VERIFICATION BOUNDARY
           </p>
           <h2 className="font-serif text-3xl sm:text-4xl text-[#000E29] font-normal leading-snug">
-            Nothing reaches the Draft PR without verification.
+            Detection first. Engineering decisions stay with your team.
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            Every proposed patch must pass compiler and test verification before a branch is pushed.
+            The public beta is read-only: it reports reviewed compatibility evidence and never creates branches, patches, or pull requests.
           </p>
         </div>
 
@@ -382,13 +381,13 @@ export default function HomePage() {
 
           <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
             <span className="text-emerald-700 font-bold text-sm">✓</span>
-            <span className="font-bold text-emerald-900">DRAFT PR</span>
+            <span className="font-bold text-emerald-900">HUMAN REVIEW</span>
           </div>
         </div>
 
         {/* Core Invariant Statement */}
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-600 pt-2">
-          <span>Zero default-branch writes (<code className="text-slate-900">main</code> remains read-only)</span>
+          <span>Zero repository writes (<code className="text-slate-900">main</code> remains read-only)</span>
           <span>•</span>
           <span>Zero auto-merge (human review required)</span>
           <span>•</span>
@@ -403,32 +402,32 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="max-w-xl space-y-3">
             <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase font-mono">
-              SIMPLE DEVELOPER PRICING
+              DETECTION-ONLY BETA
             </p>
             <h2 className="font-serif text-4xl sm:text-5xl text-[#000E29] font-normal leading-tight">
-              Protected Repositories, No Noise
+              Evidence, Not Repository Writes
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-sans">
-              Scaled by the repositories you protect. Free during Developer Early Access.
+              Free during the public beta. Paid limits and migration capabilities are not active yet.
             </p>
           </div>
           <Link
             href="/pricing"
             className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 shrink-0 font-mono"
           >
-            <span>Compare full plan matrix</span>
+            <span>Read beta access details</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {/* 4 Clean Plan Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-          {/* Free */}
+          {/* Beta access */}
           <div className="p-7 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div>
-                <div className="text-sm font-semibold text-slate-800 font-sans">Free</div>
-                <div className="text-xs text-slate-500 font-sans">For individuals &amp; open source</div>
+                <div className="text-sm font-semibold text-slate-800 font-sans">Beta Access</div>
+                <div className="text-xs text-slate-500 font-sans">For approved beta users</div>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
@@ -437,15 +436,15 @@ export default function HomePage() {
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">3 repositories protected</span>
+                  <span className="font-semibold text-[#000E29]">Repository access subject to beta approval</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Unlimited AST scans</span>
+                  <span>Read-only AST scans</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>2 verified draft PRs / mo</span>
+                  <span>Reviewed compatibility evidence</span>
                 </div>
               </div>
             </div>
@@ -453,43 +452,39 @@ export default function HomePage() {
               href="/login"
               className="w-full py-2.5 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all font-sans"
             >
-              Get Started Free
+              Request Beta Access
             </Link>
           </div>
 
-          {/* Pro */}
+          {/* Provider coverage */}
           <div className="p-7 rounded-2xl bg-white border-2 border-[#004EE8] flex flex-col justify-between relative space-y-6 shadow-sm">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-slate-900 font-sans">Pro</div>
-                  <div className="text-xs text-slate-500 font-sans">For fast-moving teams</div>
+                  <div className="text-sm font-semibold text-slate-900 font-sans">Provider Coverage</div>
+                  <div className="text-xs text-slate-500 font-sans">Reviewed compatibility evidence</div>
                 </div>
                 <span className="px-2 py-0.5 rounded-full bg-[#004EE8] text-white text-[10px] font-bold tracking-wider uppercase font-mono">
-                  POPULAR
+                  CURRENT BETA
                 </span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-serif text-lg text-slate-400 line-through">$29/month</span>
-                <span className="sr-only">planned price</span>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                 <span className="text-xs text-slate-500 font-mono">/ mo</span>
               </div>
-              <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access · Free while open</div>
+              <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Reviewed rules only</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">15 repositories protected</span>
+                  <span className="font-semibold text-[#000E29]">{CURRENT_BETA_CAPABILITIES.reviewedProviderCount} reviewed providers</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Unlimited AST scans</span>
+                  <span>{CURRENT_BETA_CAPABILITIES.reviewedRuleCount} reviewed compatibility rules</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>20 verified draft PRs / mo</span>
+                  <span>AFFECTED, NOT_AFFECTED, and NEEDS_REVIEW outcomes</span>
                 </div>
               </div>
             </div>
@@ -497,38 +492,34 @@ export default function HomePage() {
               href="/login"
               className="w-full py-2.5 rounded-full bg-[#004EE8] hover:bg-[#003BB5] text-white text-xs font-semibold text-center transition-all font-sans shadow-sm"
             >
-              Start Pro Plan
+              Explore the Beta
             </Link>
           </div>
 
-          {/* Team */}
+          {/* Team review */}
           <div className="p-7 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div>
-                <div className="text-sm font-semibold text-slate-800 font-sans">Team</div>
-                <div className="text-xs text-slate-500 font-sans">For engineering orgs</div>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-serif text-lg text-slate-400 line-through">$99/month</span>
-                <span className="sr-only">planned price</span>
+                <div className="text-sm font-semibold text-slate-800 font-sans">Team Review</div>
+                <div className="text-xs text-slate-500 font-sans">Use evidence in your workflow</div>
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                 <span className="text-xs text-slate-500 font-mono">/ mo</span>
               </div>
-              <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access · Free while open</div>
+              <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">No paid quotas</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">50 repositories protected</span>
+                  <span className="font-semibold text-[#000E29]">Workspace-scoped findings</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Unlimited AST scans</span>
+                  <span>Compatibility Proof review</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>100 verified draft PRs / mo</span>
+                  <span>Human-owned remediation</span>
                 </div>
               </div>
             </div>
@@ -536,33 +527,33 @@ export default function HomePage() {
               href="/login"
               className="w-full py-2.5 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all font-sans"
             >
-              Start Team Plan
+              Join the Beta
             </Link>
           </div>
 
-          {/* Enterprise */}
+          {/* Future enterprise interest */}
           <div className="p-7 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div>
-                <div className="text-sm font-semibold text-slate-800 font-sans">Enterprise</div>
-                <div className="text-xs text-slate-500 font-sans">For security-sensitive scale</div>
+                <div className="text-sm font-semibold text-slate-800 font-sans">Future Enterprise</div>
+                <div className="text-xs text-slate-500 font-sans">Requirements intake only</div>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-serif text-2xl font-normal text-[#000E29]">$0 during Early Access</span>
+                <span className="font-serif text-2xl font-normal text-[#000E29]">Not priced yet</span>
               </div>
-              <div className="text-[10px] text-slate-500 font-mono">Custom plan · contact us</div>
+              <div className="text-[10px] text-slate-500 font-mono">Share future requirements</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">Unlimited repositories</span>
+                  <span className="font-semibold text-[#000E29]">No enterprise entitlement is active</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Custom AST migration rules</span>
+                  <span>Detection-only beta access</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Self-hosted test runners</span>
+                  <span>Migration capabilities are planned, not included</span>
                 </div>
               </div>
             </div>
@@ -588,7 +579,7 @@ export default function HomePage() {
           </h2>
 
           <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed font-sans">
-            Connect your repository in seconds. Read-only AST observation, deterministic migration planning, and verified draft PRs.
+            Connect your repository in seconds for read-only AST observation and evidence-linked compatibility findings.
           </p>
 
           <div className="pt-2">

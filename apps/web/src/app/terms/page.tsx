@@ -12,27 +12,27 @@ export default function TermsPage() {
     },
     {
       title: "2. Description of Service",
-      content: "MY OWL provides automated Abstract Syntax Tree (AST) analysis, upstream vendor breaking change monitoring, four-gate migration verification, and automated draft pull request generation for supported programming languages and vendor SDKs."
+      content: "MY OWL provides automated Abstract Syntax Tree (AST) analysis, upstream vendor breaking change monitoring, and evidence-linked compatibility findings for supported programming languages and provider rules. Migration proposals and Draft Pull Request generation are unavailable in the current beta."
     },
     {
-      title: "3. Human Review & Draft-Only Guarantee",
-      content: "All code patches and migration proposals produced by MY OWL are delivered solely as GitHub Draft Pull Requests on isolated branches (apiproof/*). MY OWL does not auto-merge code into your production or default branches. Customer retains sole responsibility for reviewing, testing, verifying, and merging any proposed changes into their codebases."
+      title: "3. Human Review & Detection-Only Boundary",
+      content: "The current beta uses read-only GitHub access and does not create code patches, branches, commits, or pull requests. Customer retains sole responsibility for reviewing, testing, and applying changes in their codebases."
     },
     {
       title: "4. Intellectual Property & Code Ownership",
-      content: "You retain all right, title, and interest in and to your source code, repositories, and software applications. MY OWL claims no intellectual property rights over any code analyzed or migration patches generated. We do not store your source code persistently, nor do we train generative AI models on your code."
+      content: "You retain all right, title, and interest in and to your source code, repositories, and software applications. MY OWL claims no intellectual property rights over code analyzed or compatibility evidence produced. We do not store your source code persistently, nor do we train generative AI models on your code."
     },
     {
       title: "5. GitHub App Scopes & Security Invariants",
-      content: "Customer grants MY OWL scoped permissions via GitHub OAuth and GitHub App installation to inspect repository manifests, parse files ephemerally for AST matching, and submit draft pull requests. Customer may revoke or modify repository access permissions at any time via GitHub organization settings."
+      content: "Customer grants MY OWL scoped permissions via GitHub OAuth and GitHub App installation to inspect repository manifests and parse files ephemerally for AST matching. The current beta does not request pull-request write access. Customer may revoke or modify repository access permissions at any time via GitHub organization settings."
     },
     {
       title: "6. Billing, Subscription Tiers & Cancellation",
-      content: "Paid tiers (such as Pro at $29/month, Team at $99/month, and Enterprise Custom) are billed in advance on a recurring monthly or annual basis. You may upgrade, downgrade, or cancel your subscription at any time through the billing dashboard. Cancellations take effect at the conclusion of the active billing period."
+      content: "The current public beta is free. Paid tiers and paid limits are not active during the beta and will be announced with updated terms before any charge is introduced."
     },
     {
       title: "7. Disclaimer of Warranties",
-      content: "THE SERVICE IS PROVIDED ON AN 'AS IS' AND 'AS AVAILABLE' BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. WHILE MY OWL APPLIES MULTI-GATE VERIFICATION HARNESSES, WE DO NOT GUARANTEE THAT ALL UPSTREAM BREAKING CHANGES WILL BE DETECTED OR THAT ALL PROPOSED PATCHES ARE FIT FOR SPECIFIC PRODUCTION ENVIRONMENTS WITHOUT HUMAN OVERSIGHT."
+      content: "THE SERVICE IS PROVIDED ON AN 'AS IS' AND 'AS AVAILABLE' BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. MY OWL DOES NOT GUARANTEE THAT ALL UPSTREAM BREAKING CHANGES WILL BE DETECTED; CUSTOMERS REMAIN RESPONSIBLE FOR REVIEWING, TESTING, AND APPLYING ANY REMEDIATION IN THEIR OWN ENVIRONMENTS."
     },
     {
       title: "8. Limitation of Liability",

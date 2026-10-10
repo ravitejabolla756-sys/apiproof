@@ -168,7 +168,7 @@ export default function ContactPage() {
             Protect your repositories from breaking API changes.
           </h2>
           <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
-            Connect GitHub in seconds. Read-only AST observation, deterministic migration planning, and safe draft PRs.
+            Connect GitHub in seconds for read-only AST observation and evidence-linked compatibility findings.
           </p>
           <div className="pt-2">
             <Link

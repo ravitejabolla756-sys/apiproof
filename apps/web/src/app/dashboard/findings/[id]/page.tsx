@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
 import { Button } from "@/components/ui/button";
+import { CURRENT_BETA_CAPABILITIES, DETECTION_ONLY_BETA_MESSAGE, DETECTION_ONLY_BETA_SHORT_MESSAGE } from "@/lib/beta-capabilities";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -121,6 +122,10 @@ export default function FindingDetailPage({
 
   async function handleGeneratePlan() {
     if (!finding) return;
+    if (!CURRENT_BETA_CAPABILITIES.migrationPlanningAvailable) {
+      setMessage({ text: DETECTION_ONLY_BETA_MESSAGE });
+      return;
+    }
     setPlanning(true);
     setMessage(null);
 
@@ -147,6 +152,10 @@ export default function FindingDetailPage({
 
   async function handleProposePR() {
     if (!migration) return;
+    if (!CURRENT_BETA_CAPABILITIES.draftPullRequestsAvailable) {
+      setMessage({ text: DETECTION_ONLY_BETA_MESSAGE });
+      return;
+    }
     setProposing(true);
     setMessage(null);
 
@@ -301,24 +310,24 @@ export default function FindingDetailPage({
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-purple-600 flex items-center justify-center text-[10px] font-bold text-purple-700">2</div>
                   )}
-                  2. Migration Planned
+                  2. Compatibility Evidence
                 </span>
                 <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-medium border ${
                   currentStep >= 2
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                     : 'bg-purple-50 text-purple-800 border-purple-200'
                 }`}>
-                  {currentStep >= 2 ? 'Verification Pending' : 'Next Action'}
+                   {currentStep >= 2 ? 'Evidence Available' : 'Detection Only'}
                 </span>
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 2 ? 'text-[#686868]' : 'text-purple-900'}`}>
                 {currentStep >= 2
-                  ? 'Deterministic migration plan is ready. Source patching and verification run when you propose a Draft PR.'
-                  : 'Click "Generate Migration Plan" to synthesize deterministic AST refactors.'}
+                   ? 'Compatibility evidence is available for your engineering review.'
+                   : DETECTION_ONLY_BETA_SHORT_MESSAGE}
               </p>
             </div>
 
-            {/* Step 3: Draft PR Created */}
+            {/* Step 3: Human remediation */}
             <div className={`p-3.5 rounded-xl border transition-all ${
               currentStep >= 3
                 ? 'bg-white border-[#D1EBE0] shadow-2xs'
@@ -333,7 +342,7 @@ export default function FindingDetailPage({
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-zinc-400 flex items-center justify-center text-[10px] font-bold text-zinc-600">3</div>
                   )}
-                  3. Draft PR Created
+                   3. Human Remediation
                 </span>
                 <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-medium border ${
                   currentStep >= 3
@@ -342,13 +351,13 @@ export default function FindingDetailPage({
                     ? 'bg-purple-50 text-purple-800 border-purple-200'
                     : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                 }`}>
-                  {currentStep >= 3 && migration?.pr_number ? `PR #${migration.pr_number}` : currentStep === 2 ? 'Verification Pending' : 'Pending Plan'}
+                   {currentStep >= 3 && migration?.pr_number ? 'Historical pull request' : 'Not available in beta'}
                 </span>
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 3 ? 'text-[#686868]' : 'text-zinc-600'}`}>
                 {currentStep >= 3
-                  ? 'Review the generated change on GitHub before human approval and merging.'
-                  : 'Open a safe review-only Draft PR to an isolated branch on GitHub.'}
+                   ? 'This historical record remains visible, but new pull requests are unavailable in the beta.'
+                   : 'Apply any remediation through your own engineering workflow.'}
               </p>
             </div>
           </div>
@@ -451,7 +460,15 @@ export default function FindingDetailPage({
               Migration Actions
             </h3>
 
-            {!migration ? (
+            {!CURRENT_BETA_CAPABILITIES.migrationPlanningAvailable ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2 text-xs text-amber-950">
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="w-4 h-4 text-amber-700" />
+                  Detection-only beta
+                </div>
+                <p className="leading-relaxed">{DETECTION_ONLY_BETA_MESSAGE} Use this finding&apos;s source evidence and reason codes to plan remediation in your existing engineering workflow.</p>
+              </div>
+            ) : !migration ? (
               <div className="space-y-3">
                 <p className="text-xs text-[#686868] leading-relaxed">
                   Generate a deterministic migration plan for this breaking change. Source patching and verification happen before a Draft PR is created.

@@ -17,7 +17,7 @@ export function LandingFooter() {
               </span>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
-              API change detection, migration planning, and safe draft pull requests.
+              Read-only API change detection and evidence-linked compatibility findings.
             </p>
           </div>
 

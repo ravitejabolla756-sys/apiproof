@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'MY OWL — Know when API changes break your code',
   description:
-    'MY OWL monitors API and SDK changes, maps them to actual usages in your repository, and prepares verified review-only migrations.',
+    'MY OWL monitors reviewed API changes, maps them to actual repository usage, and presents evidence-linked compatibility findings for human review.',
   icons: {
     icon: '/favicon.svg',
   },

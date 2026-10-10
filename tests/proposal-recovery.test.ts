@@ -272,6 +272,8 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       const session = createSession(user.id);
       await markWorkerReady();
       vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('APIPROOF_ENABLE_MIGRATION_PROPOSALS', 'true');
+      vi.stubEnv('APIPROOF_ENABLE_LIVE_GITHUB_WRITE', 'true');
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
@@ -303,6 +305,8 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       const { user, migration } = await setupFixture();
       const session = createSession(user.id);
       vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('APIPROOF_ENABLE_MIGRATION_PROPOSALS', 'true');
+      vi.stubEnv('APIPROOF_ENABLE_LIVE_GITHUB_WRITE', 'true');
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',

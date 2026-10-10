@@ -9,6 +9,7 @@ import {
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
 import { logger, safeErrorCode } from '@/lib/server/logger.js';
+import { migrationProposalsEnabled } from '@/lib/server/migration-proposal-capability.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -19,6 +20,16 @@ export async function POST(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  }
+
+  if (!migrationProposalsEnabled()) {
+    return NextResponse.json(
+      {
+        error: 'Migration planning is unavailable during the detection-only beta.',
+        code: 'MIGRATION_PROPOSALS_UNAVAILABLE',
+      },
+      { status: 503, headers: { 'Cache-Control': 'private, no-store, max-age=0' } },
+    );
   }
 
   // Rate limit: 20 migration plans per 5 minutes per user

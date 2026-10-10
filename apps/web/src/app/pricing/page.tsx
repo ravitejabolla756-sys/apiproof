@@ -15,28 +15,28 @@ export default function PricingPage() {
 
   const faqs = [
     {
-      q: "Why is pricing based on 'Repositories Protected' rather than scan credits?",
-      a: "API changes don't operate on artificial monthly tokens. You need continuous, deterministic protection for your repositories whenever an upstream dependency releases a breaking change or whenever your team pushes code. You only pay for the repositories you actively protect; scans within those repositories are unlimited."
+      q: "What does beta access cost?",
+      a: "The detection-only public beta is currently free. We do not publish paid plan limits or charge for usage during the beta."
     },
     {
       q: "What does Developer Early Access include?",
-      a: "During our public launch preview, all tiers are $0 with full access to AST scanning, deterministic migration planning, and verified draft PR generation. We want engineering teams to validate our zero-noise detection in their production workflows."
+      a: "During the public beta, all tiers are $0 and include read-only AST scanning plus evidence-linked compatibility findings. Migration planning and Draft Pull Request creation are not available in this beta."
     },
     {
       q: "What happens when an upstream API releases a breaking change?",
-      a: "MY OWL evaluates the new rule against connected repositories. If an affected call site is confirmed, MY OWL constructs a migration plan and runs its verification gates. A GitHub Draft PR is created only when you explicitly propose it and the deployment's protected GitHub write configuration is enabled."
+      a: "MY OWL evaluates reviewed compatibility rules against connected repositories and shows the affected usage, reason codes, and source evidence for your engineering team to review."
     },
     {
-      q: "Does MY OWL have permissions to auto-merge code?",
-      a: "Never. MY OWL has zero auto-merge capability and zero auto-merge permissions. It opens a GitHub Draft Pull Request marked draft: true on an isolated branch (apiproof/*). A human engineer on your team must review, test, and merge the change."
+      q: "Can MY OWL change or merge my code during this beta?",
+      a: "No. The current beta uses read-only GitHub access. It does not create branches, patches, or pull requests, and it cannot auto-merge code."
     },
     {
       q: "Can I connect private repositories?",
-      a: "Yes. Scans require repository contents read access for AST traversal. Draft PR proposals additionally require deployment-configured pull-request write access for isolated branches, and remain disabled unless the protected write gates are enabled. We never store your full source files on persistent disk."
+      a: "Yes. Scans require repository contents read access for AST traversal. The current beta does not request pull-request write access, and we never store your full source files on persistent disk."
     },
     {
       q: "What is included in the Enterprise plan?",
-      a: "Enterprise includes custom breaking change rules for internal microservices, self-hosted runner support for private VPCs, custom SLA, dedicated migration architect support, and organization-wide governance."
+      a: "Enterprise capabilities and pricing are not part of the current beta. Contact us only to share requirements for a future release."
     }
   ];
 
@@ -54,22 +54,22 @@ export default function PricingPage() {
           </div>
 
           <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
-            Protected Repositories, Predictable Pricing
+            Detection-Only Beta Access
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto">
-            Scaled by the repositories you protect. Unlimited AST scans, no artificial credit counters, and strict read-only safety guarantees.
+            Read-only AST scanning and evidence-linked compatibility findings. Paid plans, quotas, and migration capabilities are not active in this beta.
           </p>
         </div>
 
         {/* 4 PRICING CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
 
-          {/* Tier 1: Free */}
+          {/* Beta access */}
           <div className="rounded-[32px] bg-[#EFF1F5] p-7 md:p-8 flex flex-col justify-between border border-black/[0.04] space-y-6 shadow-xs">
             <div className="space-y-5">
               <div>
-                <div className="text-sm font-semibold text-slate-800">Free</div>
-                <div className="text-xs text-slate-500">For individuals &amp; side projects</div>
+                <div className="text-sm font-semibold text-slate-800">Beta Access</div>
+                <div className="text-xs text-slate-500">For approved public beta users</div>
               </div>
 
               <div className="space-y-0.5">
@@ -77,25 +77,25 @@ export default function PricingPage() {
                   <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                   <span className="text-xs text-slate-500 font-medium">/ month</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-medium font-mono">Always free</div>
+                <div className="text-[11px] text-slate-500 font-medium font-mono">No paid plan is active</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">3 repositories protected</span>
+                  <span className="font-semibold text-[#000E29]">Repository access subject to beta approval</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Unlimited AST scans</span>
+                  <span>Read-only AST scans</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>2 verified draft PRs / mo</span>
+                  <span>Evidence-linked compatibility findings</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>4-gate verification harness</span>
+                  <span>Human-owned remediation</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
@@ -108,56 +108,52 @@ export default function PricingPage() {
               href="/login"
               className="w-full py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all"
             >
-              Get Started Free
+              Request Beta Access
             </Link>
           </div>
 
-          {/* Tier 2: Pro (Popular) */}
+          {/* Provider coverage */}
           <div className="rounded-[32px] bg-[#EFF1F5] p-7 md:p-8 flex flex-col justify-between border-2 border-[#004EE8]/30 relative space-y-6 shadow-sm">
             <div className="space-y-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">Pro</div>
-                  <div className="text-xs text-slate-500">For fast-moving developers</div>
+                  <div className="text-sm font-semibold text-slate-900">Provider Coverage</div>
+                  <div className="text-xs text-slate-500">Reviewed compatibility evidence</div>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-[#004EE8] text-white text-[10px] font-bold tracking-wider uppercase font-mono">
-                  Popular
+                  CURRENT BETA
                 </span>
               </div>
 
               <div className="space-y-0.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-serif text-lg text-slate-400 line-through">$29/month</span>
-                  <span className="sr-only">planned price</span>
-                </div>
-                <div className="flex items-baseline gap-1">
                   <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                   <span className="text-xs text-slate-500 font-medium">/ month</span>
                 </div>
-                <div className="text-[11px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access</div>
-                <div className="text-[11px] text-slate-500">Free while Early Access is open.</div>
+                <div className="text-[11px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Reviewed coverage</div>
+                <div className="text-[11px] text-slate-500">Provider rules are reviewed before inclusion.</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">15 repositories protected</span>
+                  <span className="font-semibold text-[#000E29]">15 reviewed providers</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Unlimited AST scans</span>
+                  <span>20 reviewed compatibility rules</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Continuous webhook scans</span>
+                  <span>AFFECTED, NOT_AFFECTED, and NEEDS_REVIEW evidence</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>20 verified draft PRs / mo</span>
+                  <span>Exact source locations where available</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Priority email support</span>
+                  <span>Read-only repository analysis</span>
                 </div>
               </div>
             </div>
@@ -166,51 +162,47 @@ export default function PricingPage() {
               href="/login"
               className="w-full py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all shadow-sm"
             >
-              Start Pro Plan
+              Explore the Beta
             </Link>
           </div>
 
-          {/* Tier 3: Team */}
+          {/* Team review */}
           <div className="rounded-[32px] bg-[#EFF1F5] p-7 md:p-8 flex flex-col justify-between border border-black/[0.04] space-y-6 shadow-xs">
             <div className="space-y-5">
               <div>
-                <div className="text-sm font-semibold text-slate-800">Team</div>
-                <div className="text-xs text-slate-500">For engineering organizations</div>
+                <div className="text-sm font-semibold text-slate-800">Team Review</div>
+                <div className="text-xs text-slate-500">Bring findings to your existing workflow</div>
               </div>
 
               <div className="space-y-0.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-serif text-lg text-slate-400 line-through">$99/month</span>
-                  <span className="sr-only">planned price</span>
-                </div>
-                <div className="flex items-baseline gap-1">
                   <span className="font-serif text-4xl font-normal text-[#000E29]">$0</span>
                   <span className="text-xs text-slate-500 font-medium">/ month</span>
                 </div>
-                <div className="text-[11px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access</div>
-                <div className="text-[11px] text-slate-500">Free while Early Access is open.</div>
+                <div className="text-[11px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Detection only</div>
+                <div className="text-[11px] text-slate-500">No active paid quotas.</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">50 repositories protected</span>
+                  <span className="font-semibold text-[#000E29]">Workspace-scoped findings</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Unlimited AST scans</span>
+                  <span>Compatibility Proof review</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>100 verified draft PRs / mo</span>
+                  <span>Read-only GitHub access</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Multi-seat collaboration</span>
+                  <span>Human-owned remediation</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Slack / Discord notifications</span>
+                  <span>Pricing and quotas announced separately</span>
                 </div>
               </div>
             </div>
@@ -219,41 +211,41 @@ export default function PricingPage() {
               href="/login"
               className="w-full py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all"
             >
-              Start Team Plan
+              Join the Beta
             </Link>
           </div>
 
-          {/* Tier 4: Enterprise */}
+          {/* Future enterprise interest */}
           <div className="rounded-[32px] bg-[#EFF1F5] p-7 md:p-8 flex flex-col justify-between border border-black/[0.04] space-y-6 shadow-xs">
             <div className="space-y-5">
               <div>
-                <div className="text-sm font-semibold text-slate-800">Enterprise</div>
-                <div className="text-xs text-slate-500">For security-sensitive scale</div>
+                <div className="text-sm font-semibold text-slate-800">Future Enterprise</div>
+                <div className="text-xs text-slate-500">Requirements intake only</div>
               </div>
 
               <div className="space-y-0.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-serif text-2xl font-normal text-[#000E29]">$0 during Early Access</span>
+                  <span className="font-serif text-2xl font-normal text-[#000E29]">Not priced yet</span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-mono">Custom plan · contact us</div>
+                <div className="text-[11px] text-slate-500 font-mono">Share future requirements</div>
               </div>
 
               <div className="pt-2 border-t border-black/[0.06] space-y-2.5 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span className="font-semibold text-[#000E29]">Unlimited repositories</span>
+                  <span className="font-semibold text-[#000E29]">No enterprise entitlement is active</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Custom AST migration rules</span>
+                  <span>Detection-only beta access</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Self-hosted test runner runner</span>
+                  <span>Read-only beta boundaries remain in effect</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-black shrink-0" />
-                  <span>Dedicated migration architect</span>
+                  <span>Migration capabilities are planned, not included</span>
                 </div>
               </div>
             </div>
@@ -275,10 +267,10 @@ export default function PricingPage() {
               WHAT &apos;REPOSITORIES PROTECTED&apos; MEANS
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-normal">
-              Continuous Intelligence on Every Repository
+              What beta access means
             </h2>
             <p className="text-sm text-slate-300 leading-relaxed font-sans">
-              When a repository is protected by MY OWL, we maintain an AST symbol map of its dependencies and listen for upstream API breaking change announcements. Scans, re-scans, and AST analyses within that repository are completely unmetered.
+              The beta evaluates approved repository snapshots against reviewed compatibility rules and presents evidence for engineering review. It does not publish paid quotas, create patches, or perform repository writes.
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, FolderGit2, Boxes, AlertTriangle, FileCheck2, GitPullRequest, Settings, X, ChevronRight } from 'lucide-react';
+import { Search, FolderGit2, Boxes, AlertTriangle, Settings, X, ChevronRight } from 'lucide-react';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -84,8 +84,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     { name: 'Repositories', href: '/dashboard/repositories', icon: FolderGit2 },
     { name: 'API Inventory', href: '/dashboard/inventory', icon: Boxes },
     { name: 'Findings', href: '/dashboard/findings', icon: AlertTriangle },
-    { name: 'Migrations', href: '/dashboard/migrations', icon: FileCheck2 },
-    { name: 'Pull Requests', href: '/dashboard/pull-requests', icon: GitPullRequest },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
