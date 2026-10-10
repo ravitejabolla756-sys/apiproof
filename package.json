@@ -19,6 +19,7 @@
     "db:bootstrap:staging": "tsx apps/web/scripts/bootstrap-staging.ts",
     "staging:verify:openai": "tsx apps/web/scripts/staging-verify-openai.ts",
     "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation-all.ts",
+    "providers:validate:multi": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation-multi.ts",
     "verification:worker": "tsx apps/web/scripts/verification-worker.ts"
   },
   "devDependencies": {
