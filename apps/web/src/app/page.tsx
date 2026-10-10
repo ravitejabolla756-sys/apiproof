@@ -55,7 +55,7 @@ export default function HomePage() {
           <p className="text-base sm:text-lg text-slate-100 max-w-2xl font-normal leading-relaxed">
             Know when the APIs your code depends on are about to break. MY OWL checks repositories against reviewed provider deprecations and breaking changes, then shows the evidence for human review.
           </p>
-          <p className="text-xs sm:text-sm text-slate-200 max-w-xl leading-relaxed">Public beta with deep reviewed compatibility coverage for 10 core providers. Additional provider coverage is rolling out continuously.</p>
+          <p className="text-xs sm:text-sm text-slate-200 max-w-xl leading-relaxed">Public beta with 15 reviewed providers and 20 evidence-linked compatibility rules. Availability depends on the deployed release and connected repository.</p>
 
           {/* CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">

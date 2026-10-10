@@ -24,7 +24,7 @@ export default function PricingPage() {
     },
     {
       q: "What happens when an upstream API releases a breaking change?",
-      a: "MY OWL evaluates the new rule against all connected repositories. If your repository uses the package, our AST parser traverses your code to check for reachable call sites. If an affected call site is confirmed, MY OWL constructs a migration plan, verifies it through our 4-gate harness, and opens a GitHub Draft PR for your review."
+      a: "MY OWL evaluates the new rule against connected repositories. If an affected call site is confirmed, MY OWL constructs a migration plan and runs its verification gates. A GitHub Draft PR is created only when you explicitly propose it and the deployment's protected GitHub write configuration is enabled."
     },
     {
       q: "Does MY OWL have permissions to auto-merge code?",
@@ -32,7 +32,7 @@ export default function PricingPage() {
     },
     {
       q: "Can I connect private repositories?",
-      a: "Yes. Our GitHub App permissions are strictly scoped to repository contents (read-only for AST traversal) and pull requests (write access only to isolated branches). We never store your full source files on persistent disk."
+      a: "Yes. Scans require repository contents read access for AST traversal. Draft PR proposals additionally require deployment-configured pull-request write access for isolated branches, and remain disabled unless the protected write gates are enabled. We never store your full source files on persistent disk."
     },
     {
       q: "What is included in the Enterprise plan?",
