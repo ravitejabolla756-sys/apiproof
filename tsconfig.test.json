@@ -4,6 +4,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
+      "@/lib/server/*": ["./apps/web/src/lib/server/*"],
       "@/*": ["./apps/web/src/*"],
       "next/server": ["./apps/web/node_modules/next/server.d.ts"],
       "next/*": ["./apps/web/node_modules/next/*"]

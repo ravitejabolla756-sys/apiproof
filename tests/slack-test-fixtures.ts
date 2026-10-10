@@ -105,7 +105,7 @@ export async function linkedSlackMigration(realProposal = false) {
   return { ...fixture, migrationId, interactionId, proposal, binding: { ...fixture.binding, migration_id: migrationId } };
 }
 
-export function mockSlackSuccess() {
+export function mockSlackSuccess(): { calls: Array<{ url: string; body: Record<string, unknown> }>; fetchMock: ReturnType<typeof vi.fn> } {
   const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
   const fetchMock = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
     calls.push({ url: String(url), body: JSON.parse(String(init?.body)) as Record<string, unknown> });

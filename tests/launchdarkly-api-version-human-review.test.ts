@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateNormalizedCompatibility, PythonRepositoryAnalyzer, TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
+import { evaluateNormalizedCompatibility, PythonRepositoryAnalyzer, TypeScriptRepositoryAnalyzer, type PythonProviderDescriptor } from '@apiproof/analyzers';
 import { DISCOVERY_PROVIDERS, EXPANSION_OFFICIAL_CHANGE_CANDIDATES, PRODUCTION_COMPATIBILITY_REGISTRY, promoteCandidateToReviewed } from '@apiproof/providers';
 import { LOCAL_LAUNCHDARKLY_API_VERSION_REVIEW_ACTION, LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_CANDIDATE, LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_REVIEW } from '../packages/providers/src/local-reviewed-candidate-reviews.js';
 import type { NormalizedUsageIR } from '@apiproof/shared';
@@ -13,6 +13,7 @@ const provider = {
   apiDomains: ['launchdarkly.com', 'app.launchdarkly.com'],
   apiVersionHeaders: ['LD-API-Version'],
 };
+const pythonProvider: PythonProviderDescriptor = { ...provider, packageNames: ['requests'] };
 const policy = { compatibilityProviders: new Set(['launchdarkly']), requireOfficialProvenance: true };
 
 const reviewedRecord = promoteCandidateToReviewed(LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_CANDIDATE, LOCAL_REVIEWED_LAUNCHDARKLY_API_VERSION_REVIEW, [
@@ -90,7 +91,7 @@ describe('LaunchDarkly API-version human review', () => {
   it('produces equivalent Python and TypeScript results without persisting secrets', async () => {
     const python = await new PythonRepositoryAnalyzer().analyze({
       'src/client.py': 'import requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": "20220603"})\n',
-    }, { ...provider, packageNames: ['requests'] });
+    }, pythonProvider);
     expect(python.usageIR?.some((item) => item.apiVersion === '20220603' && !item.dynamic)).toBe(true);
     expect(evaluate(python.usageIR ?? [])).toMatchObject({ status: 'AFFECTED', changeId: CANDIDATE_ID });
     expect(JSON.stringify(python)).not.toMatch(/authorization|token|secret|api[-_]?key/i);

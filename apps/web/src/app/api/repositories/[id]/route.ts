@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
-import { requireRepositoryAccess } from '@/lib/server/workspace-service';
+import { getCurrentUser } from '../../../../lib/server/auth.js';
+import { getDatabase } from '../../../../lib/server/db.js';
+import { requireRepositoryAccess } from '../../../../lib/server/workspace-service.js';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;

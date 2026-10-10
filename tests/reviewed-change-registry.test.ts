@@ -4,10 +4,12 @@ import { compileProductionChangeRegistry, PRODUCTION_COMPATIBILITY_REGISTRY } fr
 import { evaluateRegisteredCompatibility } from '@apiproof/analyzers';
 import { COMPATIBILITY_FIXTURES } from './fixtures/compatibility-fixtures.js';
 
+const fixture = COMPATIBILITY_FIXTURES[0]!;
+
 const officialRecord = (overrides: Partial<ReviewedCompatibilityChange> = {}): ReviewedCompatibilityChange => ({
-  ...COMPATIBILITY_FIXTURES[0],
-  review: { ...COMPATIBILITY_FIXTURES[0]!.review, status: 'reviewed', provenance: 'official' },
-  evidence: [{ ...COMPATIBILITY_FIXTURES[0]!.evidence[0]!, url: COMPATIBILITY_FIXTURES[0]!.officialSourceUrl }],
+  ...fixture,
+  review: { ...fixture.review, status: 'reviewed', provenance: 'official' },
+  evidence: [{ ...fixture.evidence[0]!, url: fixture.officialSourceUrl }],
   publishedAt: '2025-01-01', effectiveAt: '2025-02-01', removalAt: '2025-03-01',
   ...overrides,
 });

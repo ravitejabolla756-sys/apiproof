@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateRegisteredNormalizedCompatibility, PythonRepositoryAnalyzer, TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
+import { evaluateRegisteredNormalizedCompatibility, PythonRepositoryAnalyzer, TypeScriptRepositoryAnalyzer, type PythonProviderDescriptor } from '@apiproof/analyzers';
 import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import type { NormalizedUsageIR } from '@apiproof/shared';
 
@@ -11,6 +11,7 @@ const provider = {
   apiDomains: ['launchdarkly.com', 'app.launchdarkly.com'],
   apiVersionHeaders: ['LD-API-Version'],
 };
+const pythonProvider: PythonProviderDescriptor = { ...provider, packageNames: ['requests'] };
 
 function evaluate(usageIR: readonly NormalizedUsageIR[], completeEvidence = true) {
   return evaluateRegisteredNormalizedCompatibility({ providerId: 'launchdarkly', usageIR, completeEvidence }, PRODUCTION_COMPATIBILITY_REGISTRY)
@@ -65,10 +66,10 @@ describe('LaunchDarkly API-version reviewed production rule', () => {
   it('keeps Python evidence equivalent and rejects cross-provider or duplicate evidence', async () => {
     const python = await new PythonRepositoryAnalyzer().analyze({
       'src/client.py': 'import requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": "20220603"})\n',
-    }, { ...provider, packageNames: ['requests'] });
+    }, pythonProvider);
     const dynamicPython = await new PythonRepositoryAnalyzer().analyze({
       'src/client.py': 'import os\nimport requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": os.getenv("LD_API_VERSION")})\n',
-    }, { ...provider, packageNames: ['requests'] });
+    }, pythonProvider);
     const usageIR = python.usageIR ?? [];
     expect(evaluate(usageIR)).toMatchObject({ status: 'AFFECTED', changeId: CHANGE_ID });
     expect(evaluate(dynamicPython.usageIR ?? [], false)).toMatchObject({ status: 'NEEDS_REVIEW', changeId: CHANGE_ID });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PythonRepositoryAnalyzer, TypeScriptRepositoryAnalyzer, evaluateNormalizedCompatibility } from '@apiproof/analyzers';
+import { PythonRepositoryAnalyzer, TypeScriptRepositoryAnalyzer, evaluateNormalizedCompatibility, type PythonProviderDescriptor } from '@apiproof/analyzers';
 import { DISCOVERY_PROVIDER_REGISTRY, EXPANSION_OFFICIAL_CHANGE_CANDIDATES, PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { ReviewedCompatibilityChangeSchema } from '@apiproof/shared';
 import type { NormalizedUsageIR } from '@apiproof/shared';
@@ -12,6 +12,7 @@ const provider: ProviderDescriptor = {
   apiDomains: ['launchdarkly.com', 'app.launchdarkly.com'],
   apiVersionHeaders: ['LD-API-Version'],
 };
+const pythonProvider: PythonProviderDescriptor = { ...provider, packageNames: ['requests'] };
 
 const candidate = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'launchdarkly-api-version-20220603-eol-2025-04-15')!;
 const reviewedProjection = ReviewedCompatibilityChangeSchema.parse({
@@ -39,8 +40,8 @@ const reviewedProjection = ReviewedCompatibilityChangeSchema.parse({
 
 const policy = { compatibilityProviders: new Set(['launchdarkly']), requireOfficialProvenance: true };
 
-function compatibility(scan: { usageIR?: readonly NormalizedUsageIR[] }) {
-  return evaluateNormalizedCompatibility({ providerId: 'launchdarkly', usageIR: scan.usageIR ?? [], completeEvidence: true }, reviewedProjection, policy);
+function compatibility(scan: { usageIR?: readonly unknown[] | undefined }) {
+  return evaluateNormalizedCompatibility({ providerId: 'launchdarkly', usageIR: (scan.usageIR ?? []) as readonly NormalizedUsageIR[], completeEvidence: true }, reviewedProjection, policy);
 }
 
 describe('generic API-version header extraction', () => {
@@ -107,9 +108,9 @@ describe('generic API-version header extraction', () => {
 
   it('extracts the equivalent static and dynamic Python requests evidence', async () => {
     const analyzer = new PythonRepositoryAnalyzer();
-    const affected = await analyzer.analyze({ 'src/client.py': 'import requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": "20220603"})\n' }, { ...provider, packageNames: ['requests'] });
-    const replacement = await analyzer.analyze({ 'src/client.py': 'import requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": "20240415"})\n' }, { ...provider, packageNames: ['requests'] });
-    const dynamic = await analyzer.analyze({ 'src/client.py': 'import os\nimport requests\nversion = os.getenv("LD_API_VERSION")\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": version})\n' }, { ...provider, packageNames: ['requests'] });
+    const affected = await analyzer.analyze({ 'src/client.py': 'import requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": "20220603"})\n' }, pythonProvider);
+    const replacement = await analyzer.analyze({ 'src/client.py': 'import requests\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": "20240415"})\n' }, pythonProvider);
+    const dynamic = await analyzer.analyze({ 'src/client.py': 'import os\nimport requests\nversion = os.getenv("LD_API_VERSION")\nrequests.get("https://api.launchdarkly.com/api/projects", headers={"LD-API-Version": version})\n' }, pythonProvider);
     expect(affected.usageIR?.some((item) => item.apiVersion === '20220603' && !item.dynamic)).toBe(true);
     expect(compatibility(affected).status).toBe('AFFECTED');
     expect(compatibility(replacement).status).toBe('NOT_AFFECTED');

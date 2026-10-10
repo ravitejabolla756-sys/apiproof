@@ -439,7 +439,13 @@ async function collectInput(): Promise<StagingOpenAIInput> {
   const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.trim();
   const privateKeyPath = process.env.GITHUB_APP_PRIVATE_KEY_PATH?.trim() || await readLinePrompt('Path to GitHub App private key');
   if (!privateKey && !privateKeyPath) fail('GITHUB_PRIVATE_KEY_INPUT_MISSING');
-  return { databaseUrl, appId, installationId, privateKey, privateKeyPath };
+  return {
+    databaseUrl,
+    appId,
+    installationId,
+    ...(privateKey ? { privateKey } : {}),
+    ...(privateKeyPath ? { privateKeyPath } : {}),
+  };
 }
 
 async function createPool(databaseUrl: string): Promise<ReadOnlyPool> {

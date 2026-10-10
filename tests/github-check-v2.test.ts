@@ -8,7 +8,7 @@ const usage = (overrides: Partial<CompatibilityUsage> = {}): CompatibilityUsage 
   location: { file: 'src/chat.ts', line: 12, column: 3, symbol: 'client.chat.completions.create' }, ...overrides,
 });
 
-const proof = (overrides: Partial<Parameters<typeof evaluateCompatibility>[0]> = {}) => evaluateCompatibility({ providerId: 'openai', packageName: 'openai', resolvedVersion: '4.2.0', usages: [usage()], completeEvidence: true, ...overrides }, COMPATIBILITY_FIXTURES[0], { compatibilityProviders: new Set(['openai']) });
+const proof = (overrides: Partial<Parameters<typeof evaluateCompatibility>[0]> = {}, usageOverrides: Partial<CompatibilityUsage> = {}) => evaluateCompatibility({ providerId: 'openai', packageName: 'openai', resolvedVersion: '4.2.0', usages: [usage(usageOverrides)], completeEvidence: true, ...overrides }, COMPATIBILITY_FIXTURES[0], { compatibilityProviders: new Set(['openai', 'anthropic']) });
 const base = (overrides: Partial<Parameters<typeof evaluateCompatibilityCheck>[0]> = {}) => ({ checkId: 'check-1', repositoryId: 'repo-1', baselineSha: 'a'.repeat(64), changedFiles: ['src/chat.ts'], proofs: [proof()], completeEvidence: true, ...overrides });
 
 describe('provider-neutral compatibility check projection', () => {
@@ -38,7 +38,7 @@ describe('provider-neutral compatibility check projection', () => {
 
   it('sorts findings deterministically and deduplicates changed files', () => {
     const first = proof();
-    const second = proof({ providerId: 'anthropic', id: 'u2', packageName: '@anthropic-ai/sdk' });
+    const second = proof({ providerId: 'anthropic' }, { providerId: 'anthropic', id: 'u2', packageName: '@anthropic-ai/sdk' });
     const result = evaluateCompatibilityCheck(base({ proofs: [second, first], changedFiles: ['z.ts', 'a.ts', 'z.ts'] }));
     expect(result.findings.map((finding) => finding.providerId)).toEqual(['anthropic', 'openai']);
     expect(result.changedFiles).toEqual(['a.ts', 'z.ts']);

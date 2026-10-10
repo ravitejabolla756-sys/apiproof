@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
-import { requireRepositoryAccess } from '@/lib/server/workspace-service';
-import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
+import { getCurrentUser } from '../../../../../../../lib/server/auth.js';
+import { getDatabase } from '../../../../../../../lib/server/db.js';
+import { requireRepositoryAccess } from '../../../../../../../lib/server/workspace-service.js';
+import { parseBoundedProductizationProjection } from '../../../../../../../lib/server/productization-persistence.js';
 
 const headers = { 'Cache-Control': 'private, no-store, max-age=0' };
 

@@ -460,7 +460,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
 
       const originalRun = FakeSandbox.prototype.run;
       const executedStages: string[] = [];
-      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockImplementation(async function (request) {
+      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockImplementation(async function (this: FakeSandbox, request) {
         const persisted = db.prepare('SELECT patch_digest, patch_content, verification_report FROM migrations WHERE id = ?').get(migration.id) as { patch_digest: string; patch_content: string; verification_report: string | null };
         expect(persisted.patch_digest).not.toBe('6076b19cd227d4bfa8246463198698dcfd0d22c8ee1802f0109b78f1d0e50b5f');
         expect(JSON.parse(persisted.patch_content)).toHaveProperty('src/billing.ts');

@@ -148,7 +148,7 @@ describe('overnight real provider candidate projections', () => {
         candidateFingerprint: '33b4ebe9cdfef34571301ccfb2cd4e764fd0fe28564260c5066a8661dec2cfa5',
       },
     });
-    expect(projection.candidate.sourceEvidence.claims).toEqual(expect.arrayContaining([
+    expect(projection.candidate.sourceEvidence?.claims).toEqual(expect.arrayContaining([
       { key: 'publishedAt', value: '2026-02-17' },
       { key: 'deprecationStart', value: '2026-03-11' },
       { key: 'rollout', value: 'Existing projects blocked April 8, 2026' },

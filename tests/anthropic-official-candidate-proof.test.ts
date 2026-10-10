@@ -162,6 +162,7 @@ describe('Anthropic official candidate review preparation', () => {
     expect(classifySourceUpdate(staleStoredCandidate, candidate)).toBe('SOURCE_UNAVAILABLE_REVIEW_REQUIRED');
     const previousWithEvidence = { ...staleStoredCandidate, sourceEvidence: candidate.sourceEvidence, evidenceFingerprint: candidate.evidenceFingerprint };
     expect(classifySourceUpdate(previousWithEvidence, candidate)).toBe('DOCUMENT_UPDATED_EVIDENCE_UNCHANGED');
+    if (!candidate.sourceEvidence) throw new Error('REFRESHED_ANTHROPIC_PROVENANCE_MISSING');
     const changedEvidence = { ...candidate, sourceEvidence: { ...candidate.sourceEvidence, claims: [...candidate.sourceEvidence.claims, { key: 'replacement', value: 'claude-opus-4-9' }] }, evidenceFingerprint: 'a'.repeat(64) };
     expect(classifySourceUpdate(previousWithEvidence, changedEvidence)).toBe('EVIDENCE_UPDATED_REVIEW_REQUIRED');
   });

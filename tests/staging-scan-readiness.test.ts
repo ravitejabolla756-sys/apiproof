@@ -60,7 +60,7 @@ describe('staging scan readiness endpoint', () => {
     setReadyEnvironment();
     const response = await GET(authorizedRequest());
     expect(response.status).toBe(200);
-    const body = await response.json();
+    const body = await response.json() as { scanReadiness: string; checks: { liveGithubWriteDisabled: boolean; genericDatabaseOverrideBlocked: boolean } };
     expect(body).toEqual({
       ok: true,
       status: 'verified',
@@ -85,7 +85,7 @@ describe('staging scan readiness endpoint', () => {
     process.env.DATABASE_URL = 'postgresql://production.invalid/postgres';
     const response = await GET(authorizedRequest());
     expect(response.status).toBe(503);
-    const body = await response.json();
+    const body = await response.json() as { scanReadiness: string; checks: { liveGithubWriteDisabled: boolean; genericDatabaseOverrideBlocked: boolean } };
     expect(body.scanReadiness).toBe('BLOCKED');
     expect(body.checks.liveGithubWriteDisabled).toBe(false);
     expect(body.checks.genericDatabaseOverrideBlocked).toBe(false);
@@ -97,7 +97,7 @@ describe('staging scan readiness endpoint', () => {
     process.env.APIPROOF_ENABLE_LIVE_GITHUB = 'false';
     const response = await GET(authorizedRequest());
     expect(response.status).toBe(503);
-    const body = await response.json();
+    const body = await response.json() as { scanReadiness: string; checks: { previewStagingIsolation: boolean; providerIntelligence: boolean; liveGithub: boolean; liveGithubWriteDisabled: boolean; genericDatabaseOverrideBlocked: boolean; databaseIdentity: boolean; repositoryIsolationGuard: boolean } };
     expect(body.scanReadiness).toBe('BLOCKED');
     expect(body.checks.liveGithub).toBe(false);
   });
@@ -109,7 +109,7 @@ describe('staging scan readiness endpoint', () => {
     queryOne.mockResolvedValue({ database_name: 'postgres', database_user: 'unexpected' });
     const response = await GET(authorizedRequest());
     expect(response.status).toBe(503);
-    const body = await response.json();
+    const body = await response.json() as { scanReadiness: string; checks: { previewStagingIsolation: boolean; providerIntelligence: boolean; liveGithub: boolean; liveGithubWriteDisabled: boolean; genericDatabaseOverrideBlocked: boolean; databaseIdentity: boolean; repositoryIsolationGuard: boolean } };
     expect(body.scanReadiness).toBe('BLOCKED');
     expect(body.checks.providerIntelligence).toBe(false);
     expect(body.checks.repositoryIsolationGuard).toBe(false);
