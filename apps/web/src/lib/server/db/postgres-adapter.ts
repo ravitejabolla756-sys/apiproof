@@ -4,22 +4,74 @@ import { translatePlaceholders } from './sql-utils.js';
 
 const { Pool } = pg;
 
+const DEFAULT_POOL_MAX = 10;
+const TRANSACTION_POOLER_MAX = 1;
+const MAX_POOL_SIZE = 100;
+
+export interface PostgresPoolConfigOptions {
+  environment?: NodeJS.ProcessEnv;
+  isLocal?: boolean;
+}
+
+/**
+ * Builds the pg configuration without retaining or logging the connection URL.
+ * Supabase transaction poolers use port 6543 and do not support named
+ * prepared statements; this adapter never supplies a query name.
+ */
+export function buildPostgresPoolConfig(
+  connectionString: string,
+  options: PostgresPoolConfigOptions = {},
+): pg.PoolConfig {
+  const parsed = new URL(connectionString);
+  const isLocal = options.isLocal ?? (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1');
+  const sslMode = parsed.searchParams.get('sslmode')?.toLowerCase();
+  const conflictingSslParameter = ['sslcert', 'sslkey', 'sslrootcert'].find((name) => parsed.searchParams.has(name));
+
+  if (conflictingSslParameter) {
+    throw new Error('POSTGRES_SSL_CONFIGURATION_CONFLICT');
+  }
+  if (!isLocal && sslMode === 'disable') {
+    throw new Error('POSTGRES_TLS_DISABLE_REFUSED');
+  }
+
+  // pg merges connection-string SSL options with the explicit ssl object. Remove
+  // sslmode so the adapter owns the TLS policy deterministically.
+  parsed.searchParams.delete('sslmode');
+  const sanitizedConnectionString = parsed.toString();
+  const transactionPooler = parsed.port === '6543';
+  const configuredMax = options.environment?.APIPROOF_PG_POOL_MAX?.trim();
+  const max = configuredMax ? Number(configuredMax) : transactionPooler ? TRANSACTION_POOLER_MAX : DEFAULT_POOL_MAX;
+  if (!Number.isInteger(max) || max < 1 || max > MAX_POOL_SIZE) {
+    throw new Error('POSTGRES_POOL_MAX_INVALID');
+  }
+
+  if (isLocal) {
+    return {
+      connectionString: sanitizedConnectionString,
+      max,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      ssl: false,
+    };
+  }
+
+  const ca = options.environment?.APIPROOF_PG_CA_CERT?.trim();
+  return {
+    connectionString: sanitizedConnectionString,
+    max,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 10_000,
+    ssl: ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true },
+  };
+}
+
 export class PostgresDatabaseAdapter implements DatabaseAdapter {
   readonly engine = 'postgres' as const;
   private pool: pg.Pool;
 
   constructor(connectionStringOrPool: string | pg.Pool) {
     if (typeof connectionStringOrPool === 'string') {
-      const isLocal = connectionStringOrPool.includes('localhost') || connectionStringOrPool.includes('127.0.0.1');
-      const sslModeDisable = connectionStringOrPool.includes('sslmode=disable');
-      
-      this.pool = new Pool({
-        connectionString: connectionStringOrPool,
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
-        ssl: sslModeDisable || isLocal ? false : { rejectUnauthorized: false },
-      });
+      this.pool = new Pool(buildPostgresPoolConfig(connectionStringOrPool));
     } else {
       this.pool = connectionStringOrPool;
     }

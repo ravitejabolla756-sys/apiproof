@@ -4,6 +4,7 @@ import {
   translatePlaceholders,
   resolveDatabaseConfig,
   PostgresDatabaseAdapter,
+  buildPostgresPoolConfig,
   SqliteDatabaseAdapter,
   runMigrations,
   type DatabaseAdapter,
@@ -78,6 +79,44 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
   });
 
   describe('3. PostgreSQL Adapter & Transaction Safety Model', () => {
+    it('uses a single connection for Supabase transaction pooler URLs by default', () => {
+      const config = buildPostgresPoolConfig(
+        'postgresql://postgres.projectref:secret@aws-0-region.pooler.supabase.com:6543/postgres',
+      );
+      expect(config.max).toBe(1);
+      expect(config.ssl).toEqual({ rejectUnauthorized: true });
+    });
+
+    it('allows a bounded explicit pool size without weakening TLS', () => {
+      const config = buildPostgresPoolConfig(
+        'postgresql://postgres.projectref:secret@aws-0-region.pooler.supabase.com:6543/postgres',
+        { environment: { APIPROOF_PG_POOL_MAX: '2', APIPROOF_PG_CA_CERT: 'trusted-ca' } },
+      );
+      expect(config.max).toBe(2);
+      expect(config.ssl).toEqual({ ca: 'trusted-ca', rejectUnauthorized: true });
+    });
+
+    it('rejects remote TLS disable and conflicting URL certificate settings', () => {
+      expect(() => buildPostgresPoolConfig(
+        'postgresql://postgres.projectref:secret@aws-0-region.pooler.supabase.com:6543/postgres?sslmode=disable',
+      )).toThrow('POSTGRES_TLS_DISABLE_REFUSED');
+      expect(() => buildPostgresPoolConfig(
+        'postgresql://postgres.projectref:secret@aws-0-region.pooler.supabase.com:6543/postgres?sslrootcert=/tmp/ca.pem',
+      )).toThrow('POSTGRES_SSL_CONFIGURATION_CONFLICT');
+    });
+
+    it('preserves explicit localhost development behavior', () => {
+      const config = buildPostgresPoolConfig('postgresql://localhost:5432/apiproof?sslmode=disable');
+      expect(config.ssl).toBe(false);
+    });
+
+    it('fails closed for invalid pool sizing', () => {
+      expect(() => buildPostgresPoolConfig(
+        'postgresql://postgres.projectref:secret@aws-0-region.pooler.supabase.com:6543/postgres',
+        { environment: { APIPROOF_PG_POOL_MAX: '0' } },
+      )).toThrow('POSTGRES_POOL_MAX_INVALID');
+    });
+
     it('manages transaction commits and rollbacks deterministically', async () => {
       const executedCommands: string[] = [];
       let released = false;

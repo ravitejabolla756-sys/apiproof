@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { generateMigrationForFinding } from '@/lib/server/planning-service';
-import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { generateMigrationForFinding } from '@/lib/server/planning-service.js';
+import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   assertCsrfProtection,
   validateSafeId,
   badRequestResponse,
   forbiddenCsrfResponse,
-} from '@/lib/server/validation';
+} from '@/lib/server/validation.js';
 import { logger, safeErrorCode } from '@/lib/server/logger.js';
 import { migrationProposalsEnabled } from '@/lib/server/migration-proposal-capability.js';
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const body = await req.json() as { findingId?: unknown };
     const idValidation = validateSafeId(body?.findingId, 'findingId');
     if (!idValidation.valid || !idValidation.data) {
       return badRequestResponse(idValidation.error || 'findingId is required.');
