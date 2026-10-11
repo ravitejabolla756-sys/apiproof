@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { queryOne, getDatabase } = vi.hoisted(() => {
+const { queryOne, getDatabase, loggerError } = vi.hoisted(() => {
   const queryOne = vi.fn();
+  const loggerError = vi.fn();
   const getDatabase = vi.fn(() => ({
     engine: 'postgres',
     queryOne,
   }));
-  return { queryOne, getDatabase };
+  return { queryOne, getDatabase, loggerError };
 });
 
 vi.mock('../apps/web/src/lib/server/db/index.js', () => ({
@@ -17,6 +18,10 @@ vi.mock('../apps/web/src/lib/server/db/index.js', () => ({
   }),
 }));
 
+vi.mock('../apps/web/src/lib/server/logger.js', () => ({
+  logger: { error: loggerError },
+}));
+
 import { GET } from '../apps/web/src/app/api/internal/staging-scan-readiness/route.js';
 
 const originalEnvironment = { ...process.env };
@@ -25,6 +30,7 @@ afterEach(() => {
   process.env = { ...originalEnvironment };
   queryOne.mockReset();
   getDatabase.mockClear();
+  loggerError.mockReset();
 });
 
 function setReadyEnvironment(): void {
@@ -54,6 +60,7 @@ describe('staging scan readiness endpoint', () => {
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: 'Unauthorized' });
     expect(getDatabase).not.toHaveBeenCalled();
+    expect(loggerError).not.toHaveBeenCalled();
   });
 
   it('returns READY with booleans only when every staging gate passes', async () => {
@@ -114,5 +121,86 @@ describe('staging scan readiness endpoint', () => {
     expect(body.checks.providerIntelligence).toBe(false);
     expect(body.checks.repositoryIsolationGuard).toBe(false);
     expect(body.checks.databaseIdentity).toBe(false);
+  });
+
+  it('logs only a fixed identity-mismatch category and stage', async () => {
+    setReadyEnvironment();
+    queryOne.mockResolvedValue({ database_name: 'postgres', database_user: 'unexpected' });
+    const response = await GET(authorizedRequest());
+    expect(response.status).toBe(503);
+    expect(loggerError).toHaveBeenCalledWith('MYOWL_STAGING_DB_DIAGNOSTIC', {
+      category: 'DB_IDENTITY_MISMATCH',
+      stage: 'identity-comparison',
+    });
+    expect(JSON.stringify(loggerError.mock.calls)).not.toContain('unexpected');
+    expect(JSON.stringify(loggerError.mock.calls)).not.toContain('postgresql://');
+  });
+
+  it('classifies TLS and authentication failures without logging raw errors', async () => {
+    setReadyEnvironment();
+    queryOne.mockRejectedValueOnce(Object.assign(new Error('secret password'), {
+      code: 'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+    }));
+    await GET(authorizedRequest());
+    expect(loggerError).toHaveBeenCalledWith('MYOWL_STAGING_DB_DIAGNOSTIC', {
+      category: 'DB_TLS_CERTIFICATE_UNTRUSTED',
+      stage: 'identity-query',
+    });
+
+    loggerError.mockReset();
+    queryOne.mockRejectedValueOnce(Object.assign(new Error('secret password'), { code: '28P01' }));
+    await GET(authorizedRequest());
+    expect(loggerError).toHaveBeenCalledWith('MYOWL_STAGING_DB_DIAGNOSTIC', {
+      category: 'DB_AUTHENTICATION_FAILED',
+      stage: 'identity-query',
+    });
+    expect(JSON.stringify(loggerError.mock.calls)).not.toContain('secret password');
+  });
+
+  it('classifies network, query, configuration, and unknown failures safely', async () => {
+    setReadyEnvironment();
+    for (const [code, category] of [
+      ['ETIMEDOUT', 'DB_CONNECTION_TIMEOUT'],
+      ['ENOTFOUND', 'DB_DNS_FAILED'],
+      ['ECONNREFUSED', 'DB_CONNECTION_REFUSED'],
+      ['ECONNRESET', 'DB_CONNECTION_RESET'],
+      ['EPIPE', 'DB_CONNECTION_OTHER'],
+      ['SOME_UNKNOWN_CODE', 'DB_QUERY_FAILED'],
+    ] as const) {
+      loggerError.mockReset();
+      queryOne.mockRejectedValueOnce(Object.assign(new Error('raw sensitive detail'), { code }));
+      await GET(authorizedRequest());
+      expect(loggerError).toHaveBeenCalledWith('MYOWL_STAGING_DB_DIAGNOSTIC', {
+        category,
+        stage: 'identity-query',
+      });
+    }
+    expect(JSON.stringify(loggerError.mock.calls)).not.toContain('raw sensitive detail');
+  });
+
+  it('classifies missing configuration and pool construction failures without changing the response contract', async () => {
+    setReadyEnvironment();
+    delete process.env.APIPROOF_DATABASE_URL;
+    const missingResponse = await GET(authorizedRequest());
+    expect(missingResponse.status).toBe(503);
+    expect(loggerError).toHaveBeenCalledWith('MYOWL_STAGING_DB_DIAGNOSTIC', {
+      category: 'DB_CONFIG_MISSING',
+      stage: 'configuration',
+    });
+
+    loggerError.mockReset();
+    setReadyEnvironment();
+    getDatabase.mockImplementationOnce(() => {
+      throw new Error('POSTGRES_TLS_DISABLE_REFUSED');
+    });
+    const constructionResponse = await GET(authorizedRequest());
+    expect(constructionResponse.status).toBe(503);
+    expect(loggerError).toHaveBeenCalledWith('MYOWL_STAGING_DB_DIAGNOSTIC', {
+      category: 'DB_CONFIG_INVALID',
+      stage: 'adapter-construction',
+    });
+    const body = await constructionResponse.json() as { checks: Record<string, boolean>; reason?: string };
+    expect(body).not.toHaveProperty('reason');
+    expect(JSON.stringify(loggerError.mock.calls)).not.toContain('POSTGRES_TLS_DISABLE_REFUSED');
   });
 });

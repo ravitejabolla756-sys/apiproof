@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { getDatabase, resolveDatabaseConfig } from '../../../../lib/server/db/index.js';
 import {
   readPreviewStagingDatabaseConfig,
-  verifyPreviewStagingDatabaseIdentity,
+  classifyPreviewStagingDatabaseError,
+  verifyPreviewStagingDatabaseIdentityDetailed,
 } from '../../../../lib/server/db/preview-isolation.js';
 import { isAuthorizedInternalRequest } from '../../../../lib/server/internal-auth.js';
 import { providerIntelligenceV1Enabled } from '../../../../lib/server/provider-intelligence-feature.js';
+import { logger } from '../../../../lib/server/logger.js';
 import {
   PREVIEW_STAGING_REPOSITORY,
   previewStagingRepositoryPolicyError,
@@ -50,14 +52,33 @@ export async function GET(request: Request): Promise<NextResponse> {
     && previewStagingRepositoryPolicyError(PREVIEW_STAGING_REPOSITORY, environment) === null;
 
   if (checks.previewStagingIsolation && checks.genericDatabaseOverrideBlocked) {
+    let failureStage: 'configuration' | 'adapter-construction' = 'configuration';
     try {
       const config = readPreviewStagingDatabaseConfig(environment);
       const resolved = resolveDatabaseConfig(environment);
-      if (resolved.type === 'postgres' && resolved.url === config.databaseUrl) {
-        checks.databaseIdentity = await verifyPreviewStagingDatabaseIdentity(getDatabase(), config);
+      if (resolved.type !== 'postgres' || resolved.url !== config.databaseUrl) {
+        logger.error('MYOWL_STAGING_DB_DIAGNOSTIC', {
+          category: 'DB_CONFIG_INVALID',
+          stage: failureStage,
+        });
+      } else {
+        failureStage = 'adapter-construction';
+        const db = getDatabase();
+        const identity = await verifyPreviewStagingDatabaseIdentityDetailed(db, config);
+        checks.databaseIdentity = identity.verified;
+        if (!identity.verified) {
+          logger.error('MYOWL_STAGING_DB_DIAGNOSTIC', {
+            category: identity.failureCategory ?? 'DB_FAILURE_UNCLASSIFIED',
+            stage: identity.failureStage ?? 'identity-query',
+          });
+        }
       }
-    } catch {
+    } catch (error) {
       checks.databaseIdentity = false;
+      logger.error('MYOWL_STAGING_DB_DIAGNOSTIC', {
+        category: classifyPreviewStagingDatabaseError(error, failureStage),
+        stage: failureStage,
+      });
     }
   }
 
