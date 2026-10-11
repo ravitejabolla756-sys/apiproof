@@ -65,13 +65,17 @@ export function buildPostgresPoolConfig(
   };
 }
 
+export function buildRuntimePostgresPoolConfig(connectionString: string): pg.PoolConfig {
+  return buildPostgresPoolConfig(connectionString, { environment: process.env });
+}
+
 export class PostgresDatabaseAdapter implements DatabaseAdapter {
   readonly engine = 'postgres' as const;
   private pool: pg.Pool;
 
   constructor(connectionStringOrPool: string | pg.Pool) {
     if (typeof connectionStringOrPool === 'string') {
-      this.pool = new Pool(buildPostgresPoolConfig(connectionStringOrPool));
+      this.pool = new Pool(buildRuntimePostgresPoolConfig(connectionStringOrPool));
     } else {
       this.pool = connectionStringOrPool;
     }
