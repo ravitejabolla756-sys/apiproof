@@ -196,5 +196,11 @@ describe('overnight provider expansion candidates', () => {
     for (const [candidateId, sourceFingerprint, evidenceFingerprint] of batch13Expected) {
       expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === candidateId)).toMatchObject({ candidateId, state: 'needs_review', sourceFingerprint, evidenceFingerprint });
     }
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'railway-config-as-code-hard-cutoff-2026-12-01')).toMatchObject({
+      candidateId: 'railway-config-as-code-hard-cutoff-2026-12-01', providerId: 'railway', state: 'needs_review',
+      sourceFingerprint: '3f978612ea295e4c4194eb3135e645bc6b219b38ca49d89efb93426b3a29676f',
+      evidenceFingerprint: 'c27764c3e375bbe1380aeac8beb2f8a48d7efd0cedeebff3292ce7da9180c386',
+      payload: { changeType: 'endpoint_removed', removalAt: '2026-12-01', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['railway.json', 'railway.toml Config as Code'] },
+    });
   });
 });
