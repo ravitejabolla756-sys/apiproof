@@ -103,6 +103,8 @@ does not hide application failures.
   PayPal, Chargebee, and Adyen lifecycle candidates
 - `da504e47d64a84b9b33dcf6041b56160e1c515d4` — Batch 10 Plaid, Postmark,
   Replicate, and WooCommerce lifecycle candidates
+- `17f86c1` — Batch 11 Hugging Face, PlanetScale, Upstash, and Paddle lifecycle
+  candidates
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO
