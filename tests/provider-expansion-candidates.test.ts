@@ -3,8 +3,8 @@ import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTR
 
 describe('overnight provider expansion candidates', () => {
   it('adds the verified official-source candidate set without changing production rules', () => {
-    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(38);
-    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(37);
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(40);
+    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(39);
     expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.candidateId)).size).toBe(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.state === 'needs_review')).toBe(true);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.sourceFingerprintBasis === 'full-body')).toBe(true);
@@ -93,6 +93,18 @@ describe('overnight provider expansion candidates', () => {
     expect(workos).toMatchObject({
       providerId: 'workos', state: 'needs_review',
       payload: { applicabilityScope: { dimensions: ['provider', 'resource', 'response_field'] }, affectedResponseFields: ['raw_attributes', 'job_title', 'username', 'emails'] },
+    });
+
+    const braintree = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'braintree-transparent-redirect-deprecation');
+    expect(braintree).toMatchObject({
+      providerId: 'braintree', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Transparent Redirect'] },
+    });
+
+    const digitalOcean = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'digitalocean-paperspace-core-api-retirement-2024-07-15');
+    expect(digitalOcean).toMatchObject({
+      providerId: 'digitalocean', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Paperspace Core API'] },
     });
   });
 });

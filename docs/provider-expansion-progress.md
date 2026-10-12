@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 67 | Provider identification metadata only |
-| Official candidate records | 48 | 10 existing records plus 38 expansion candidates |
-| Providers represented by candidate records | 42 | Candidates remain `needs_review` |
+| Official candidate records | 50 | 10 existing records plus 40 expansion candidates |
+| Providers represented by candidate records | 44 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -68,6 +68,13 @@ They require a separate human review before any production promotion.
 | Netlify | Cloud / Infrastructure | [Analytics v1 API notice](https://answers.netlify.com/t/analytics-v1-api-deprecation/46760); v1 retirement and 404 behavior | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 | WorkOS | Identity | [raw_attributes deprecation](https://workos.com/docs/deprecations/raw-attributes); `custom_attributes` replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 
+## Batch 04: legacy integration candidates
+
+| Provider | Category | Evidence | Rules | Fixtures | Tests | Status |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Braintree | Payments / Fintech | [Braintree SDK upgrade guide](https://developer.paypal.com/braintree/docs/reference/general/upgrade); Transparent Redirect replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+| DigitalOcean | Cloud / Infrastructure | [Paperspace Core API reference](https://docs.digitalocean.com/reference/paperspace/core/); legacy API unavailable since 2024-07-15 | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+
 The exact candidate IDs are:
 
 - `google-gemini-gemini-2-0-flash-shutdown-2026-06-01`
@@ -77,6 +84,8 @@ The exact candidate IDs are:
 - `hubspot-contact-lists-api-v1-sunset-2026-04-30`
 - `netlify-analytics-v1-endpoint-retirement-2021-11-22`
 - `workos-raw-attributes-fields-removed-2026-04-15`
+- `braintree-transparent-redirect-deprecation`
+- `digitalocean-paperspace-core-api-retirement-2024-07-15`
 
 No SDK package, SDK version, SDK method, credential, endpoint family beyond
 the captured target, or undocumented behavior is asserted by these records.
@@ -93,7 +102,7 @@ not reviewed production rules.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
 
-`adyen`, `braintree`, `chargebee`, `digitalocean`, `hugging-face`, `mailgun`,
+`adyen`, `chargebee`, `hugging-face`, `mailgun`,
 `mixpanel`, `paddle`, `paypal`, `perplexity`, `plaid`, `planetscale`, `postmark`,
 `railway`, `razorpay`, `redis`, `render`, `replicate`, `resend`, `segment`,
 `sendgrid`, `sentry`, `together-ai`, `upstash`, `woocommerce`.
@@ -108,8 +117,8 @@ are being added to close that numerical gap.
   remain 60/60; productization projection remains 19/20 positive with the
   documented Anthropic parameter limitation; reviewed production rules remain
   20.
-- Targeted candidate/provenance/promotion tests after Batch 03: 5 files,
-  23 tests passed.
+- Targeted candidate/provenance/promotion tests after Batch 04: 5 files,
+  25 tests passed.
 - The new candidates are lifecycle `needs_review` records and do not alter the
   reviewed registry, scanner behavior, staging configuration, or external
   repositories.

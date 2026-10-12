@@ -435,6 +435,28 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     ] },
     payload: { changeId: 'workos-raw-attributes-fields-removed-2026-04-15', title: 'WorkOS raw_attributes response-field removal', description: 'WorkOS documents that raw_attributes stops returning data on April 15, 2026 and that several legacy top-level Directory User fields are removed; integrations should use custom_attributes. The candidate does not assert SDK or endpoint-specific behavior beyond the documented response surfaces.', changeType: 'response_field_removed', effectiveAt: '2026-04-15', applicabilityScope: { dimensions: ['provider', 'resource', 'response_field'] }, affectedResources: ['Directory Users', 'Directory Groups', 'SSO Profiles'], affectedResponseFields: ['raw_attributes', 'job_title', 'username', 'emails'], replacement: { resources: ['custom_attributes'] }, severity: 'high' },
   }),
+  makeExpansionCandidate({
+    candidateId: 'braintree-transparent-redirect-deprecation', providerId: 'braintree',
+    sourceUrl: 'https://developer.paypal.com/braintree/docs/reference/general/upgrade', sourceType: 'deprecation-notice',
+    documentFingerprint: '75e925517dea20ea09f6a16b612ddf485c20ca7ad43aef4229a084269a75e87a', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched Braintree’s official upgrade guide and retained the documented Transparent Redirect replacement without asserting a removal date or SDK version.',
+    evidence: { providerId: 'braintree', sourceUrl: 'https://developer.paypal.com/braintree/docs/reference/general/upgrade', sourceTitle: 'Upgrade to Braintree SDKs', sourceLocator: 'section:Transparent Redirect', claims: [
+      { key: 'affectedIntegration', value: 'Transparent Redirect' }, { key: 'replacement', value: 'Braintree.js Drop-in integration' },
+      { key: 'status', value: 'legacy integration upgrade path' },
+    ] },
+    payload: { changeId: 'braintree-transparent-redirect-deprecation', title: 'Braintree Transparent Redirect legacy integration', description: 'Braintree’s official upgrade guide identifies Transparent Redirect as a legacy integration and directs applications to Braintree.js or Drop-in UI. No SDK package version or removal date is asserted.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Transparent Redirect'], replacement: { resources: ['Braintree.js', 'Drop-in UI'] }, severity: 'medium' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'digitalocean-paperspace-core-api-retirement-2024-07-15', providerId: 'digitalocean',
+    sourceUrl: 'https://docs.digitalocean.com/reference/paperspace/core/', sourceType: 'deprecation-notice',
+    documentFingerprint: 'ad67df58a0f76af13249009569d7e0da38489b6ad2a4c47540eca7fe5b6129df', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched DigitalOcean’s official Paperspace Core API reference and retained the exact legacy API retirement statement and new API direction.',
+    evidence: { providerId: 'digitalocean', sourceUrl: 'https://docs.digitalocean.com/reference/paperspace/core/', sourceTitle: 'Core API, CLI, and SDK Reference', sourceLocator: 'warning:Deprecated', claims: [
+      { key: 'removalAt', value: '2024-07-15' }, { key: 'affectedResource', value: 'Paperspace Core API endpoints' },
+      { key: 'status', value: 'deprecated and no longer available for Paperspace users' }, { key: 'replacement', value: 'new Paperspace API' },
+    ] },
+    payload: { changeId: 'digitalocean-paperspace-core-api-retirement-2024-07-15', title: 'DigitalOcean Paperspace Core API retirement', description: 'DigitalOcean documents that Paperspace Core API endpoints were deprecated and unavailable as of July 15, 2024, and directs applications to the new Paperspace API. The candidate does not generalize to DigitalOcean Core API or unrelated Paperspace products.', changeType: 'endpoint_removed', removalAt: '2024-07-15', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Paperspace Core API'], replacement: { resources: ['new Paperspace API'] }, severity: 'high' },
+  }),
 ];
 
 const BLOCKED_RESEARCH_LEAD_IDS = new Set([
