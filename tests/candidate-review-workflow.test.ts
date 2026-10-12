@@ -11,14 +11,14 @@ const action = (overrides: Record<string, unknown> = {}) => ({
 
 describe('local candidate review workflow', () => {
   it('keeps the candidate inventory attributable to official titles', () => {
-    expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates).toHaveLength(41);
+    expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates).toHaveLength(44);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => Boolean(entry.payload.sourceTitle))).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => (entry.payload.sourceFacts?.length ?? 0) > 0)).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => (entry.payload.unknowns?.length ?? 0) > 0)).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => Boolean(entry.payload.severityBasis))).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => entry.sourceFingerprintBasis === 'full-body')).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.filter((entry) => entry.providerId === 'openai' || entry.providerId === 'anthropic' || entry.providerId === 'github' || entry.providerId === 'twilio' || entry.providerId === 'supabase')).toHaveLength(10);
-    expect(new Set(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.map((entry) => entry.providerId)).size).toBe(35);
+    expect(new Set(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.map((entry) => entry.providerId)).size).toBe(38);
   });
 
   it('records an explicit review decision without entering the production registry', () => {

@@ -358,6 +358,39 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     evidence: { providerId: 'aws', sourceUrl: 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/DocumentHistory.html', sourceTitle: 'Amazon CloudWatch document history', sourceLocator: 'section:End of support notice: Amazon CloudWatch Evidently', claims: [{ key: 'publishedAt', value: '2024-10-17' }, { key: 'removalAt', value: '2025-10-16' }, { key: 'resource', value: 'Amazon CloudWatch Evidently' }, { key: 'status', value: 'AWS will discontinue support' }, { key: 'effect', value: 'Evidently console and resources unavailable after end of support' }] },
     payload: { changeId: 'aws-cloudwatch-evidently-end-of-support-2025-10-16', title: 'AWS CloudWatch Evidently end of support', description: 'AWS documents that support for Amazon CloudWatch Evidently ends on October 16, 2025 and that the Evidently console and resources will no longer be available after end of support. No replacement service is stated in the captured notice.', changeType: 'endpoint_removed', publishedAt: '2024-10-17', removalAt: '2025-10-16', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Amazon CloudWatch Evidently'], severity: 'high' },
   }),
+  makeExpansionCandidate({
+    candidateId: 'google-gemini-gemini-2-0-flash-shutdown-2026-06-01', providerId: 'google-gemini',
+    sourceUrl: 'https://ai.google.dev/gemini-api/docs/deprecations', sourceType: 'deprecation-notice',
+    documentFingerprint: '0f438681122abe6179bc65478447b5daccd590b1598ce951371b64def2d43290', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched the official Gemini API deprecations page and extracted the June 1, 2026 shutdown entry for the Gemini 2.0 Flash model family.',
+    evidence: { providerId: 'google-gemini', sourceUrl: 'https://ai.google.dev/gemini-api/docs/deprecations', sourceTitle: 'Gemini deprecations', sourceLocator: 'table:Gemini 2.0 models', claims: [
+      { key: 'models', value: 'gemini-2.0-flash; gemini-2.0-flash-001' }, { key: 'removalAt', value: '2026-06-01' },
+      { key: 'status', value: 'shut down' }, { key: 'replacement', value: 'gemini-3.6-flash' },
+    ] },
+    payload: { changeId: 'google-gemini-gemini-2-0-flash-shutdown-2026-06-01', title: 'Google Gemini 2.0 Flash shutdown', description: 'Google documents shutdown of gemini-2.0-flash and gemini-2.0-flash-001 on June 1, 2026 and recommends gemini-3.6-flash.', changeType: 'model_retired', removalAt: '2026-06-01', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['gemini-2.0-flash', 'gemini-2.0-flash-001'], replacement: { model: 'gemini-3.6-flash' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'bitbucket-teams-api-removal-2020-10-14', providerId: 'bitbucket',
+    sourceUrl: 'https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/', sourceType: 'deprecation-notice',
+    documentFingerprint: '947c30f29f8ee3800b0eef4993849ea34e1b2b099ef715bb9c9af46408b8f295', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched Atlassian’s official Bitbucket Cloud deprecation notice and retained only the exact teams endpoint family and workspace replacement.',
+    evidence: { providerId: 'bitbucket', sourceUrl: 'https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/', sourceTitle: 'Change notice: Deprecating /2.0/teams/ API endpoints', sourceLocator: 'section:What will happen if I do nothing?', claims: [
+      { key: 'removalAt', value: '2020-10-14' }, { key: 'affectedEndpoint', value: '/2.0/teams/' },
+      { key: 'replacementEndpoint', value: '/2.0/workspaces/' }, { key: 'removedProperty', value: 'owner' },
+    ] },
+    payload: { changeId: 'bitbucket-teams-api-removal-2020-10-14', title: 'Bitbucket teams API removal', description: 'Atlassian documents removal of the Bitbucket Cloud /2.0/teams/ endpoint family and directs integrations to the /2.0/workspaces/ endpoints. The candidate does not generalize to other deprecated user endpoints or the owner response property.', changeType: 'endpoint_removed', removalAt: '2020-10-14', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/2.0/teams/'], replacement: { endpoint: '/2.0/workspaces/' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'amplitude-user-privacy-api-v1-deprecation', providerId: 'amplitude',
+    sourceUrl: 'https://amplitude.com/docs/apis/analytics/user-privacy', sourceType: 'official-documentation',
+    documentFingerprint: '4f6b0a7f3868db8eafb4bfaf52b08a5588489e41fa7824f479a223372b6c1d63', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched the official Amplitude User Privacy API documentation and extracted the v1 endpoint and v2 replacement without asserting an SDK scope or removal date.',
+    evidence: { providerId: 'amplitude', sourceUrl: 'https://amplitude.com/docs/apis/analytics/user-privacy', sourceTitle: 'User Privacy API', sourceLocator: 'section:User Privacy API v2 is available', claims: [
+      { key: 'affectedEndpoint', value: '/api/2/deletions/users' }, { key: 'affectedApiVersion', value: 'User Privacy API v1' },
+      { key: 'status', value: 'v1 documented as legacy while v2 is available' }, { key: 'replacement', value: 'User Privacy API v2 at privacy.amplitude.com' },
+    ] },
+    payload: { changeId: 'amplitude-user-privacy-api-v1-deprecation', title: 'Amplitude User Privacy API v1 deprecation', description: 'Amplitude documents the User Privacy API v1 deletion endpoint and states that User Privacy API v2 is available at privacy.amplitude.com. No removal date is stated, so this remains a review-gated candidate.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/api/2/deletions/users'], replacement: { endpoint: 'User Privacy API v2 at privacy.amplitude.com' }, severity: 'medium' },
+  }),
 ];
 
 const BLOCKED_RESEARCH_LEAD_IDS = new Set([

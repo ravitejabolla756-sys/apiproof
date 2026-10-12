@@ -3,8 +3,8 @@ import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTR
 
 describe('overnight provider expansion candidates', () => {
   it('adds the verified official-source candidate set without changing production rules', () => {
-    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(31);
-    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(30);
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(34);
+    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(33);
     expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.candidateId)).size).toBe(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.state === 'needs_review')).toBe(true);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.sourceFingerprintBasis === 'full-body')).toBe(true);
@@ -49,6 +49,26 @@ describe('overnight provider expansion candidates', () => {
       applicabilityScope: { dimensions: ['provider', 'endpoint', 'response_field'] },
       affectedEndpoints: ['GET /api/v2/connections', 'GET /api/v2/connections/{id}', 'PATCH /api/v2/connections/{id}'],
       affectedResponseFields: ['enabled_clients'],
+    });
+  });
+
+  it('adds exact scopes for the next researched provider candidates without promoting them', () => {
+    const gemini = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'google-gemini-gemini-2-0-flash-shutdown-2026-06-01');
+    expect(gemini).toMatchObject({
+      providerId: 'google-gemini', state: 'needs_review',
+      payload: { changeType: 'model_retired', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['gemini-2.0-flash', 'gemini-2.0-flash-001'] },
+    });
+
+    const bitbucket = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'bitbucket-teams-api-removal-2020-10-14');
+    expect(bitbucket).toMatchObject({
+      providerId: 'bitbucket', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/2.0/teams/'] },
+    });
+
+    const amplitude = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'amplitude-user-privacy-api-v1-deprecation');
+    expect(amplitude).toMatchObject({
+      providerId: 'amplitude', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/api/2/deletions/users'] },
     });
   });
 });
