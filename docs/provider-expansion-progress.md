@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 67 | Provider identification metadata only |
-| Official candidate records | 44 | 10 existing records plus 34 expansion candidates |
-| Providers represented by candidate records | 38 | Candidates remain `needs_review` |
+| Official candidate records | 46 | 10 existing records plus 36 expansion candidates |
+| Providers represented by candidate records | 40 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -54,11 +54,20 @@ They require a separate human review before any production promotion.
 | Bitbucket | Developer Platforms | [Bitbucket teams API notice](https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-teams-deprecation/); `/2.0/teams/` to `/2.0/workspaces/` | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 | Amplitude | Analytics / Data | [User Privacy API](https://amplitude.com/docs/apis/analytics/user-privacy); v1 endpoint and v2 replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 
+## Batch 02: API lifecycle candidates
+
+| Provider | Category | Evidence | Rules | Fixtures | Tests | Status |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Salesforce | Commerce / CRM | [API End-of-Life Policy](https://developer.salesforce.com/docs/platform/api-rest/guide/api-rest-eol.html); Platform API versions 21.0 through 30.0 retired | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+| HubSpot | Commerce / CRM | [Contact Lists API v1 sunset](https://developers.hubspot.com/changelog/extension-contact-lists-api-v1-sunset-moved-to-april-30-2026); Lists v3 replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+
 The exact candidate IDs are:
 
 - `google-gemini-gemini-2-0-flash-shutdown-2026-06-01`
 - `bitbucket-teams-api-removal-2020-10-14`
 - `amplitude-user-privacy-api-v1-deprecation`
+- `salesforce-platform-api-v21-30-retirement-2025`
+- `hubspot-contact-lists-api-v1-sunset-2026-04-30`
 
 No SDK package, SDK version, SDK method, credential, endpoint family beyond
 the captured target, or undocumented behavior is asserted by these records.
@@ -91,8 +100,8 @@ are being added to close that numerical gap.
   remain 60/60; productization projection remains 19/20 positive with the
   documented Anthropic parameter limitation; reviewed production rules remain
   20.
-- Targeted candidate/provenance/promotion tests after Batch 01: 4 files,
-  19 tests passed.
+- Targeted candidate/provenance/promotion tests after Batch 02: 4 files,
+  21 tests passed.
 - The new candidates are lifecycle `needs_review` records and do not alter the
   reviewed registry, scanner behavior, staging configuration, or external
   repositories.

@@ -391,6 +391,28 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     ] },
     payload: { changeId: 'amplitude-user-privacy-api-v1-deprecation', title: 'Amplitude User Privacy API v1 deprecation', description: 'Amplitude documents the User Privacy API v1 deletion endpoint and states that User Privacy API v2 is available at privacy.amplitude.com. No removal date is stated, so this remains a review-gated candidate.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/api/2/deletions/users'], replacement: { endpoint: 'User Privacy API v2 at privacy.amplitude.com' }, severity: 'medium' },
   }),
+  makeExpansionCandidate({
+    candidateId: 'salesforce-platform-api-v21-30-retirement-2025', providerId: 'salesforce',
+    sourceUrl: 'https://developer.salesforce.com/docs/platform/api-rest/guide/api-rest-eol.html', sourceType: 'deprecation-notice',
+    documentFingerprint: 'ffdac17a4abaf43bf0200c06b1fbbe11ce801682344d397d1177e1ce1231784b', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched Salesforce’s official REST API end-of-life policy and retained the exact retired Platform API version range and 410 behavior.',
+    evidence: { providerId: 'salesforce', sourceUrl: 'https://developer.salesforce.com/docs/platform/api-rest/guide/api-rest-eol.html', sourceTitle: 'Salesforce API End-of-Life Policy', sourceLocator: 'table:Version Support Status and Version Retirement Info', claims: [
+      { key: 'apiVersions', value: '21.0 through 30.0' }, { key: 'status', value: 'retired and unavailable as of Summer 2025' },
+      { key: 'failure', value: 'REST API returns HTTP 410 GONE' }, { key: 'scope', value: 'REST API resource or operation under a retired API version' },
+    ] },
+    payload: { changeId: 'salesforce-platform-api-v21-30-retirement-2025', title: 'Salesforce Platform API versions 21.0 through 30.0 retirement', description: 'Salesforce documents that Platform API versions 21.0 through 30.0 are retired and unavailable as of Summer 2025; REST requests using a retired version return HTTP 410 GONE. The candidate does not assert SDK, SOAP, Bulk API, or a specific Salesforce client library.', changeType: 'api_version_retired', effectiveAt: '2025-06-01', applicabilityScope: { dimensions: ['provider', 'api_version'] }, apiVersionMetadata: { version: '21.0 through 30.0', replacement: 'supported Salesforce Platform API version' }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'hubspot-contact-lists-api-v1-sunset-2026-04-30', providerId: 'hubspot',
+    sourceUrl: 'https://developers.hubspot.com/changelog/extension-contact-lists-api-v1-sunset-moved-to-april-30-2026', sourceType: 'deprecation-notice',
+    documentFingerprint: 'bbd9073f0ad19b17ecd7415c5ee6f7eb63f820ff170c4529449ec3026554c451', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched HubSpot’s official extension notice and retained the Contact Lists API v1 sunset date, affected endpoint family, and Lists v3 migration target.',
+    evidence: { providerId: 'hubspot', sourceUrl: 'https://developers.hubspot.com/changelog/extension-contact-lists-api-v1-sunset-moved-to-april-30-2026', sourceTitle: 'Extension: Contact Lists API (v1) sunset moved to April 30, 2026', sourceLocator: 'section:What’s changing', claims: [
+      { key: 'removalAt', value: '2026-04-30' }, { key: 'affectedApi', value: 'Contact Lists API v1' },
+      { key: 'affectedEndpoints', value: 'POST /contacts/v1/lists; GET /contacts/v1/lists' }, { key: 'replacement', value: 'Lists v3 API' },
+    ] },
+    payload: { changeId: 'hubspot-contact-lists-api-v1-sunset-2026-04-30', title: 'HubSpot Contact Lists API v1 sunset', description: 'HubSpot documents that the Contact Lists API v1 endpoints are removed on April 30, 2026 and directs integrations to the Lists v3 API. The candidate does not generalize to unrelated Contacts API v1 reads or SDK package behavior.', changeType: 'endpoint_removed', removalAt: '2026-04-30', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['POST /contacts/v1/lists', 'GET /contacts/v1/lists'], replacement: { endpoint: 'Lists v3 API' }, severity: 'high' },
+  }),
 ];
 
 const BLOCKED_RESEARCH_LEAD_IDS = new Set([

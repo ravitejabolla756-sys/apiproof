@@ -3,8 +3,8 @@ import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTR
 
 describe('overnight provider expansion candidates', () => {
   it('adds the verified official-source candidate set without changing production rules', () => {
-    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(34);
-    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(33);
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(36);
+    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(35);
     expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.candidateId)).size).toBe(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.state === 'needs_review')).toBe(true);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.sourceFingerprintBasis === 'full-body')).toBe(true);
@@ -69,6 +69,18 @@ describe('overnight provider expansion candidates', () => {
     expect(amplitude).toMatchObject({
       providerId: 'amplitude', state: 'needs_review',
       payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['/api/2/deletions/users'] },
+    });
+
+    const salesforce = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'salesforce-platform-api-v21-30-retirement-2025');
+    expect(salesforce).toMatchObject({
+      providerId: 'salesforce', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'api_version'] }, apiVersionMetadata: { version: '21.0 through 30.0' } },
+    });
+
+    const hubspot = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'hubspot-contact-lists-api-v1-sunset-2026-04-30');
+    expect(hubspot).toMatchObject({
+      providerId: 'hubspot', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['POST /contacts/v1/lists', 'GET /contacts/v1/lists'] },
     });
   });
 });
