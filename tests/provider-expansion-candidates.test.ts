@@ -188,6 +188,12 @@ describe('overnight provider expansion candidates', () => {
       sourceFingerprint: 'f4325a92065c9f751ed6530310230c2d810da7a20a57657ea43336758a73ca03',
       evidenceFingerprint: 'd5489b1c718474a8fb0144c4122976436c1157c1a1d2a30060ad4e1f7a7b8132',
     });
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'perplexity-gemini-3-1-flash-lite-preview-retired')).toMatchObject({
+      candidateId: 'perplexity-gemini-3-1-flash-lite-preview-retired', state: 'needs_review', providerId: 'perplexity',
+      sourceFingerprint: 'e98cb1dfc959af15d65130bc1e21a8022d09d2dd761e3b4136a3091b1360af56',
+      evidenceFingerprint: '2222d53f0ac7fa70b86a8f3c6c57b7fa84d91b501336deed56bda3991db619aa',
+      payload: { changeType: 'model_retired', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['google/gemini-3.1-flash-lite-preview'], replacement: { model: 'google/gemini-3.1-flash-lite' }, severity: 'high' },
+    });
     const batch13Expected = [
       ['together-python-sdk-v2-files-retrieve-content-removed-2025-12-12', '4d36b4bb9006caed80c6993b44a49c82f30f5a8462beaf83ab7ada1b94fd1a56', '03a93b50d72c4e841805cadb8224bb510eb6076c393e707312cedadb3c39dcd7'],
       ['redis-cluster-slaves-renamed-redis-5-2020', 'cb0dbb6313b20d7f8ed57593fb9d8fc1e52a337db27643753c13500030ebe568', '32094247d6530d8c5bbe798fb1fcfa4f9e0163ec7c782699a45f0413ac118aa3'],

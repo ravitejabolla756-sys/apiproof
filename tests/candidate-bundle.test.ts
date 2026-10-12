@@ -6,7 +6,7 @@ describe('candidate bundle handoff', () => {
     const first = exportCandidateBundle(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates);
     const second = exportCandidateBundle([...OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates].reverse());
     expect(first).toBe(second);
-    expect(importCandidateBundle(first).candidates).toHaveLength(76);
+    expect(importCandidateBundle(first).candidates).toHaveLength(77);
     expect(importCandidateBundle(first).byCandidateId.get('openai-assistants-api-sunset-2026-08-26')?.state).toBe('needs_review');
   });
 
