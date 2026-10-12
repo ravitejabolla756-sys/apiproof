@@ -11,13 +11,13 @@ production compatibility registry.
 STARTING PROVIDERS: 15 reviewed providers; 67 discovery providers
 FINAL IMPLEMENTED PROVIDERS: 150 deterministic discovery identities
 FINAL REVIEWED PROVIDERS: 15
-TOTAL RULES: 20 reviewed production rules; 50 review-gated candidate records
-representing 44 provider IDs
+TOTAL RULES: 20 reviewed production rules; 52 review-gated candidate records
+representing 45 provider IDs
 AFFECTED FIXTURES: 19 productization-positive findings; the reviewed engine
 matrix is 60/60
 NOT_AFFECTED FIXTURES: Covered by the 60/60 reviewed engine matrix; no new
 production claim is inferred from discovery-only records
-NEEDS_REVIEW: 50 candidate records; all remain `needs_review`; the Anthropic
+NEEDS_REVIEW: 52 candidate records; all remain `needs_review`; the Anthropic
 parameter productization case remains explicitly partial
 BLOCKED: Human review and deterministic fixture work are still required before
 any candidate can become a reviewed production rule
@@ -45,11 +45,11 @@ compatibility rule, or production support.
 ## Evidence and review state
 
 The expansion batches added source-backed candidate records for Google Gemini,
-Bitbucket, Amplitude, Salesforce, HubSpot, Netlify, WorkOS, Braintree, and
-DigitalOcean, while retaining earlier candidates in the canonical candidate
-registry. Their source, evidence, applicability, fingerprints, and unknowns
-remain review-gated. No reviewer metadata or production-registry entry was
-fabricated.
+Bitbucket, Amplitude, Salesforce, HubSpot, Netlify, WorkOS, Braintree,
+DigitalOcean, and Zoom Phone. The Zoom batch covers legacy Phone endpoint
+families and v1 Call Logs with separate official changelog evidence. Their
+source, evidence, applicability, fingerprints, and unknowns remain
+review-gated. No reviewer metadata or production-registry entry was fabricated.
 
 The 15 reviewed providers and 20 reviewed rules remain unchanged. The known
 Anthropic parameter shape remains `NOT_AFFECTED (PARTIAL)` in productization;
@@ -84,6 +84,7 @@ does not hide application failures.
 - `481dbdc0364db8f9cf182f2a2b6e56f8783adc4a` — Batch 04 candidates
 - `ffb3e1d` — Batch 05 discovery catalog
 - `a774340` — Batch 06 discovery catalog completion
+- `6b8f680` — Batch 07 Zoom lifecycle candidates
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO
