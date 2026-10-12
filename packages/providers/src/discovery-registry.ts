@@ -1,3 +1,5 @@
+import { ADDITIONAL_DISCOVERY_PROVIDERS } from './additional-discovery-providers.js';
+
 /** Discovery metadata is deliberately separate from reviewed compatibility rules. */
 export type ProviderCapability = 'discovery' | 'versionAware' | 'compatibility' | 'migration' | 'verifiedMigration';
 export type ProviderCategory = 'AI / Models' | 'Cloud / Infrastructure' | 'Backend / Database' | 'Developer Platforms' | 'Communications' | 'Payments / Fintech' | 'Commerce / CRM' | 'Identity' | 'Analytics / Data';
@@ -117,6 +119,7 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'elevenlabs', displayName: 'ElevenLabs', category: 'AI / Models', packageIdentifiers: ['@elevenlabs/elevenlabs-js'], apiDomains: ['api.elevenlabs.io'], environmentVariables: ['ELEVENLABS_API_KEY'], documentation: { url: 'https://elevenlabs.io/docs' } }),
   discoveryProvider({ id: 'mixpanel', displayName: 'Mixpanel', category: 'Analytics / Data', packageIdentifiers: ['mixpanel'], apiDomains: ['api.mixpanel.com'], environmentVariables: ['MIXPANEL_TOKEN', 'MIXPANEL_PROJECT_TOKEN'], documentation: { url: 'https://docs.mixpanel.com/' } }),
   discoveryProvider({ id: 'amplitude', displayName: 'Amplitude', category: 'Analytics / Data', packageIdentifiers: ['@amplitude/analytics-node', '@amplitude/analytics-browser'], apiDomains: ['api2.amplitude.com'], environmentVariables: ['AMPLITUDE_API_KEY'], documentation: { url: 'https://www.docs.developers.amplitude.com/' } }),
+  ...ADDITIONAL_DISCOVERY_PROVIDERS,
 ];
 
 export interface ProviderCatalogSummary {

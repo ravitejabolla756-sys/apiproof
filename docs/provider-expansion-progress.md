@@ -14,13 +14,24 @@ candidates do not increase that count.
 | Starting reviewed providers | 15 | Baseline before this expansion run |
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
-| Discovery catalog providers | 67 | Provider identification metadata only |
+| Discovery catalog providers | 97 | Provider identification metadata only |
 | Official candidate records | 50 | 10 existing records plus 40 expansion candidates |
 | Providers represented by candidate records | 44 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
 code rewriting, and Draft PR generation are not implied by this inventory.
+
+## Batch 05: domain-only discovery expansion
+
+The discovery catalog now includes 30 additional official documentation-backed
+provider identities: Stripe, Airtable, Notion, Asana, Trello, monday.com,
+Pipedrive, Close, Gong, Intercom, Zendesk, Freshdesk, CockroachDB, Turso,
+Prisma, Hasura, Convex, Appwrite, Fauna, Fastly, Cloudinary, Fly.io, Heroku,
+Bitrise, CircleCI, Buildkite, Docker, PostHog, Mux, and Mapbox. These entries
+use only deterministic API-domain identification and are intentionally marked
+`discovery`; they do not claim package/version awareness, compatibility rules,
+deprecation evidence, or production support.
 
 ## Reviewed provider matrix
 
@@ -107,9 +118,10 @@ Discovery providers still without a reviewed rule or expansion candidate are:
 `railway`, `razorpay`, `redis`, `render`, `replicate`, `resend`, `segment`,
 `sendgrid`, `sentry`, `together-ai`, `upstash`, `woocommerce`.
 
-The discovery catalog currently contains 67 providers. Reaching a catalog of
+The discovery catalog currently contains 97 providers. Reaching a catalog of
 150 requires additional source-backed provider records; no name-only entries
-are being added to close that numerical gap.
+are being added to close that numerical gap. The 30 Batch 05 records are
+discovery-only and remain outside the reviewed compatibility registry.
 
 ## Validation evidence
 
