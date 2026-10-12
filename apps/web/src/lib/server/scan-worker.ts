@@ -23,18 +23,17 @@ import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@ap
 import type { ApiProvider } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { loadProviderRegistry } from './registry-utils.js';
-import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
+import { failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending } from './scan-worker-state.js';
+import { claimPendingJobs, type PendingScanRequest } from './scan-worker-queue.js';
+export { getScanWorkerMetrics } from './scan-worker-metrics.js';
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
-import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
+import { boundedProductizationProjection, parseBoundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { extractSourceSnippet } from './scan-snippet.js';
 import { previewStagingRepositoryPolicyError } from './preview-repository-isolation.js';
-// ---------------------------------------------------------------------------
-// Public types
-// ---------------------------------------------------------------------------
 
 export interface ScanWorkerOptions {
   /** Maximum number of jobs to claim and process in one invocation. Default: 5 */
@@ -62,68 +61,18 @@ export interface ScanWorkerResult {
   timedOut: boolean;
 }
 
-export interface ScanWorkerMetrics {
-  pendingJobs: number;
-  processingJobs: number;
-  completedJobs: number;
-  failedJobs: number;
-  totalScanRequests: number;
-  lastProcessedAt: string | null;
-}
-
-/**
- * Returns operational aggregate queue metrics for monitoring and worker health.
- * Aggregates counters safely without exposing workspace-specific data across tenants.
- */
-export async function getScanWorkerMetrics(): Promise<ScanWorkerMetrics> {
-  const db = getDatabase();
-  const counts = await db.query<{ status: string; count: number | string }>(`
-    SELECT status, COUNT(*) as count FROM github_scan_requests GROUP BY status
-  `);
-
-  const map: Record<string, number> = {
-    pending: 0,
-    processing: 0,
-    completed: 0,
-    failed: 0,
-  };
-
-  let total = 0;
-  for (const row of counts) {
-    const c = Number(row.count);
-    map[row.status] = c;
-    total += c;
+function hasPersistedProductization(rawResult: unknown): boolean {
+  if (!rawResult) return false;
+  try {
+    const parsed = typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult;
+    return parseBoundedProductizationProjection(parsed) !== null;
+  } catch {
+    return false;
   }
-
-  const lastJob = await db.queryOne<{ created_at: string }>(`
-    SELECT created_at FROM github_scan_requests WHERE status IN ('completed', 'failed') ORDER BY created_at DESC LIMIT 1
-  `);
-
-  return {
-    pendingJobs: map.pending ?? 0,
-    processingJobs: map.processing ?? 0,
-    completedJobs: map.completed ?? 0,
-    failedJobs: map.failed ?? 0,
-    totalScanRequests: total,
-    lastProcessedAt: lastJob?.created_at ?? null,
-  };
 }
-// ---------------------------------------------------------------------------
-// Internal types
-// ---------------------------------------------------------------------------
 
-interface PendingScanRequest {
-  id: string;
-  workspace_id: string;
-  repository_id: string;
-  commit_sha: string;
-  ref: string;
-  status: string;
-  delivery_id: string | null;
-  created_at: string;
-  attempt_count: number;
-  claimed_at: string | null;
-  lease_expires_at: string | null;
+function findingIdentity(finding: ProductizationFinding): string {
+  return [finding.provider, finding.changeId, finding.filePath, finding.symbol].join('\u001f');
 }
 
 interface RepositoryRow {
@@ -135,109 +84,6 @@ interface RepositoryRow {
   github_repository_id: string;
   default_branch: string;
 }
-
-// ---------------------------------------------------------------------------
-// Job claiming
-// ---------------------------------------------------------------------------
-
-/**
- * Claims up to `limit` pending scan requests atomically.
- * Also recovers expired leases. Legacy rows without a lease are recovered
- * only when their original creation timestamp is older than the safety window.
- *
- * PostgreSQL: uses SELECT ... FOR UPDATE SKIP LOCKED to avoid contention.
- * SQLite: uses transaction-isolated SELECT pending -> UPDATE claimed IDs.
- */
-async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
-  const db = getDatabase();
-  await ensureScanWorkerSchema(db);
-  const now = new Date();
-  const nowIso = now.toISOString();
-  const legacyStaleThreshold = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
-  const leaseExpiry = new Date(now.getTime() + 10 * 60 * 1000).toISOString();
-
-  if (db.engine === 'postgres') {
-    // PostgreSQL atomic claim using FOR UPDATE SKIP LOCKED
-    return await db.transaction(async (tx) => {
-      // Recover only expired leases. created_at is not a valid worker lease.
-      await tx.execute(`
-        UPDATE github_scan_requests
-        SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
-        WHERE status = 'processing' AND (
-          (lease_expires_at IS NOT NULL AND lease_expires_at < $1) OR
-          (lease_expires_at IS NULL AND created_at < $2)
-        )
-      `, [nowIso, legacyStaleThreshold]);
-
-      const rows = await tx.query<PendingScanRequest>(`
-        SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at,
-               attempt_count, claimed_at, lease_expires_at
-        FROM github_scan_requests
-        WHERE status = 'pending'
-        ORDER BY created_at ASC
-        LIMIT $1
-        FOR UPDATE SKIP LOCKED
-      `, [limit]);
-
-      if (rows.length === 0) {
-        return [];
-      }
-
-      const ids = rows.map((r) => r.id);
-      const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
-      await tx.execute(
-        `UPDATE github_scan_requests
-         SET status = 'processing', claimed_at = $${ids.length + 1}, lease_expires_at = $${ids.length + 2},
-             attempt_count = attempt_count + 1
-         WHERE id IN (${placeholders})`,
-        [...ids, nowIso, leaseExpiry]
-      );
-
-      return rows;
-    });
-  }
-
-  // SQLite: serialized write transaction — select pending IDs first, then update those exact IDs
-  return await withSqliteClaimLock(() => db.transaction(async (tx) => {
-    // Recover only expired leases. created_at is not a valid worker lease.
-    await tx.execute(`
-      UPDATE github_scan_requests
-      SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
-      WHERE status = 'processing' AND (
-        (lease_expires_at IS NOT NULL AND lease_expires_at < ?) OR
-        (lease_expires_at IS NULL AND created_at < ?)
-      )
-    `, [nowIso, legacyStaleThreshold]);
-
-    const rows = await tx.query<PendingScanRequest>(`
-      SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at,
-             attempt_count, claimed_at, lease_expires_at
-      FROM github_scan_requests
-      WHERE status = 'pending'
-      ORDER BY created_at ASC
-      LIMIT ?
-    `, [limit]);
-
-    if (rows.length === 0) {
-      return [];
-    }
-
-    const ids = rows.map((r) => r.id);
-    const placeholders = ids.map(() => '?').join(', ');
-    await tx.execute(
-      `UPDATE github_scan_requests
-       SET status = 'processing', claimed_at = ?, lease_expires_at = ?, attempt_count = attempt_count + 1
-       WHERE id IN (${placeholders})`,
-      [nowIso, leaseExpiry, ...ids]
-    );
-
-    return rows;
-  }));
-}
-
-// ---------------------------------------------------------------------------
-// Per-job execution
-// ---------------------------------------------------------------------------
 
 /**
  * Executes a single scan job for a claimed github_scan_requests row.
@@ -312,14 +158,15 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
   // 3. Reuse the durable scan row created by the webhook when possible.
   // This prevents retries/reconciliation from producing duplicate scan records.
-  const existingScan = await db.queryOne<{ id: string; status: string }>(`
-    SELECT id, status FROM scans
+  const existingScan = await db.queryOne<{ id: string; status: string; findings_count: number; raw_result: string | Record<string, unknown> | null }>(`
+    SELECT id, status, findings_count, raw_result FROM scans
     WHERE repository_id = ? AND sha = ?
-    ORDER BY started_at ASC LIMIT 1
+    ORDER BY started_at DESC LIMIT 1
   `, [repo.id, job.commit_sha]);
   const scanId = existingScan?.id ?? `scn_${crypto.randomBytes(12).toString('hex')}`;
 
-  if (existingScan?.status === 'completed') {
+  const existingProductization = existingScan?.status === 'completed' && hasPersistedProductization(existingScan.raw_result);
+  if (existingScan?.status === 'completed' && (!providerIntelligenceV1Enabled() || existingProductization)) {
     await db.execute(`
       UPDATE github_scan_requests
       SET status = 'completed', claimed_at = NULL, lease_expires_at = NULL
@@ -331,6 +178,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       commitSha: job.commit_sha,
       status: 'completed',
       scanId,
+      findingsCount: Number(existingScan.findings_count ?? 0),
     };
   }
 
@@ -388,7 +236,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     const analyzer = new TypeScriptRepositoryAnalyzer();
     const providersToAnalyze: Array<{ id: 'stripe' | 'twilio'; provider: ApiProvider }> = [];
     const pkgContent = filesMap.get('package.json');
-    if (!productizationEnabled && pkgContent) {
+    if (pkgContent) {
       try {
         const pkg = JSON.parse(pkgContent) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
         const deps = { ...pkg.dependencies, ...pkg.devDependencies };
@@ -408,10 +256,20 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     let totalFilesAnalyzed = 0, inputDigest = snapshot.digest();
     const compatibilityResults: ScanResult[] = [];
 
+    const findingKeys = new Set<string>();
+    const appendFindings = (findings: ProductizationFinding[]) => {
+      for (const finding of findings) {
+        const key = findingIdentity(finding);
+        if (findingKeys.has(key)) continue;
+        findingKeys.add(key);
+        collectedFindings.push(finding);
+      }
+    };
+
     if (productization) {
       totalFilesAnalyzed = productization.metrics.analyzedFiles;
       inputDigest = productization.baselineSha;
-      collectedFindings.push(...productizationFindings(productization));
+      appendFindings(productizationFindings(productization));
     }
 
     for (const { id: provId, provider } of providersToAnalyze) {
@@ -430,7 +288,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
           const fileRaw = filesMap.get(filePath) ?? '';
           const snippet = extractSourceSnippet(fileRaw, lineNumber);
 
-          collectedFindings.push({
+          appendFindings([{
             id: findingId,
             changeId: change.id,
             provider: provId,
@@ -446,7 +304,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
             evidence: impact.evidence,
             sourceSnippet: snippet,
             sourceDigest: crypto.createHash('sha256').update(fileRaw).digest('hex'),
-          });
+          }]);
         }
       }
     }

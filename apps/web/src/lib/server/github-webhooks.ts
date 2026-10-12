@@ -4,6 +4,7 @@ import {
   getGitHubInstallationByInstallationId,
   updateGitHubInstallationStatus,
 } from './workspace-service.js';
+import { enqueueRepositoryScan } from './scan-request-service.js';
 
 export interface WebhookResult {
   received: boolean;
@@ -444,33 +445,18 @@ export async function processGitHubWebhook(params: {
       return { received: true, handled: false, reason: 'missing_commit_sha' };
     }
 
-    // F. Scan Request Idempotency: Check if scan request already exists for (repository_id, commit_sha)
-    const existingReq = await db.queryOne<{ id: string }>(`
-      SELECT id FROM github_scan_requests WHERE repository_id = ? AND commit_sha = ?
-    `, [repo.id, commitSha]);
+    // F. Shared scan-request idempotency and durable queue insertion.
+    const scan = await enqueueRepositoryScan({
+      workspaceId: repo.workspace_id,
+      repositoryId: repo.id,
+      commitSha,
+      ref,
+      deliveryId,
+    });
 
-    if (existingReq) {
-      await recordWebhookDelivery(deliveryId, event, 'processed', now);
-      return { received: true, handled: true, replayed: true, scanRequestId: existingReq.id };
-    }
-
-    // G. Create durable scan request record
-    const scanRequestId = `req_${crypto.randomBytes(12).toString('hex')}`;
-    await db.execute(`
-      INSERT INTO github_scan_requests (id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at)
-      VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
-    `, [scanRequestId, repo.workspace_id, repo.id, commitSha, ref, deliveryId, now]);
-
-    // H. Also create durable pending scan row in scans table
-    const scanId = `scn_${crypto.randomBytes(12).toString('hex')}`;
-    await db.execute(`
-      INSERT INTO scans (id, repository_id, sha, status, provider, started_at)
-      VALUES (?, ?, ?, 'pending', 'multi-provider', ?)
-    `, [scanId, repo.id, commitSha, now]);
-
-    // I. Record activity event
-    const userId = await getWorkspaceUserId(repo.workspace_id);
-    if (userId) {
+    // G. Record activity only for the request that won the enqueue race.
+    const userId = scan.created ? await getWorkspaceUserId(repo.workspace_id) : null;
+    if (userId && scan.requestId) {
       await db.execute(`
         INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -489,8 +475,11 @@ export async function processGitHubWebhook(params: {
     return {
       received: true,
       handled: true,
-      scanRequestId,
-      status: 'pending',
+      scanRequestId: scan.requestId ?? undefined,
+      // Preserve the webhook contract's durable queue status vocabulary while
+      // the manual route exposes the friendlier `queued` state to the UI.
+      status: scan.state === 'queued' ? 'pending' : scan.state,
+      ...(scan.created ? {} : { replayed: true }),
     };
   }
 

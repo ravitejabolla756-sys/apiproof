@@ -77,10 +77,20 @@ export default function RepositoriesTablePage() {
         throw new Error(data.error || "Scan execution failed.");
       }
 
-      setScanMessage({
-        id: repoId,
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
-      });
+      if (data.state === "completed") {
+        setScanMessage({ id: repoId, text: "Scan complete. Repository results refreshed." });
+      } else {
+        setScanMessage({ id: repoId, text: "Scan queued. Waiting for the worker to finish..." });
+        for (let attempt = 0; attempt < 30; attempt += 1) {
+          await new Promise((resolve) => window.setTimeout(resolve, 2000));
+          const detailRes = await fetch(`/api/repositories/${repoId}`, { cache: "no-store" });
+          if (!detailRes.ok) break;
+          const detail = await detailRes.json();
+          const latestStatus = detail.scans?.[0]?.status;
+          if (latestStatus !== "pending" && latestStatus !== "running") break;
+        }
+        setScanMessage({ id: repoId, text: "Scan finished or is no longer active. Refreshing results." });
+      }
       await loadRepositories();
     } catch (err: unknown) {
       setScanMessage({ id: repoId, text: err instanceof Error ? err.message : String(err), error: true });

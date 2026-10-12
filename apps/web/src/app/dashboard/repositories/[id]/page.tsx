@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -64,9 +64,10 @@ export default function RepositoryDetailPage({
   const [findings, setFindings] = useState<FindingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [polling, setPolling] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       const res = await fetch(`/api/repositories/${id}`);
       if (res.ok) {
@@ -74,22 +75,32 @@ export default function RepositoryDetailPage({
         setRepo(json.repository);
         setScans(json.scans || []);
         setFindings(json.findings || []);
+        const latestStatus = json.scans?.[0]?.status;
+        const active = latestStatus === "pending" || latestStatus === "running";
+        setScanning(active);
+        setPolling(active);
       }
     } catch (err) {
       console.error("Failed to load repository detail:", err);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
-    loadData();
-  }, [id]);
+    void loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    if (!polling) return;
+    const timer = window.setInterval(() => void loadData(), 2000);
+    return () => window.clearInterval(timer);
+  }, [loadData, polling]);
 
   async function handleTriggerScan() {
     if (!repo) return;
     setScanning(true);
-    setMessage({ text: "Triggering AST compatibility scan against repository..." });
+    setMessage({ text: "Queueing AST compatibility scan against repository..." });
 
     try {
       const res = await fetch(`/api/repositories/${repo.id}/scan`, {
@@ -102,13 +113,15 @@ export default function RepositoryDetailPage({
       }
 
       setMessage({
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: data.state === "completed"
+          ? "Scan complete. Findings have been refreshed."
+          : "Scan queued. Results will appear here when the worker finishes.",
       });
       await loadData();
     } catch (err: unknown) {
       setMessage({ text: err instanceof Error ? err.message : String(err), error: true });
-    } finally {
       setScanning(false);
+      setPolling(false);
     }
   }
 

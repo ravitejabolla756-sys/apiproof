@@ -1,8 +1,10 @@
+import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { runRepositoryScan } from '@/lib/server/scan-service';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service';
+import { getDatabase } from '@/lib/server/db/index.js';
+import { enqueueRepositoryScan, resolveRepositoryHead } from '@/lib/server/scan-request-service.js';
 import {
   assertCsrfProtection,
   validateSafeId,
@@ -59,9 +61,40 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   }
 
   try {
-    const result = await runRepositoryScan(repo.id, user.id);
-    await recordWorkspaceUsage(workspaceId, 'scans');
-    return NextResponse.json({ success: true, result });
+    const head = await resolveRepositoryHead(repo);
+    const scan = await enqueueRepositoryScan({
+      workspaceId,
+      repositoryId: repo.id,
+      commitSha: head.commitSha,
+      ref: head.ref,
+    });
+
+    if (scan.created) {
+      await recordWorkspaceUsage(workspaceId, 'scans', `${repo.id}:${scan.commitSha}`);
+      await getDatabase().execute(`
+        INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [
+        `act_${crypto.randomBytes(10).toString('hex')}`,
+        user.id,
+        repo.id,
+        'scan_started',
+        'Scan Queued',
+        `AST compatibility scan queued for ${repo.full_name}.`,
+        new Date().toISOString(),
+      ]);
+    }
+
+    const status = scan.state === 'completed' ? 200 : 202;
+    return NextResponse.json({
+      success: true,
+      state: scan.state,
+      requestId: scan.requestId,
+      scanId: scan.scanId,
+      commitSha: scan.commitSha,
+      ref: scan.ref,
+      created: scan.created,
+    }, { status });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';
     logger.warn('repository_scan_execution_failed', { reasonCode: safeErrorCode(error, 'SCAN_FAILED') }, error);

@@ -184,9 +184,10 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             method: 'POST',
           });
           const scanData = await scanRes.json();
-          if (scanRes.ok && scanData.result) {
-            const count = scanData.result.findingsCount ?? 0;
-            setStatusMessage(`Initial scan completed: ${count} breaking change${count === 1 ? '' : 's'} identified.`);
+          if (scanRes.ok && scanData.state === 'completed') {
+            setStatusMessage('Initial scan completed. Repository findings are ready.');
+          } else if (scanRes.ok && (scanData.state === 'queued' || scanData.state === 'processing')) {
+            setStatusMessage('Repository connected. Initial scan queued for the compatibility worker.');
           } else {
             // Non-fatal: repo connected, scan failed gracefully
             setStatusMessage('Repository connected. Initial scan can be run from the repository workbench.');
