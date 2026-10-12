@@ -110,6 +110,7 @@ does not hide application failures.
   Replicate, and WooCommerce lifecycle candidates
 - `17f86c1` — Batch 11 Hugging Face, PlanetScale, Upstash, and Paddle lifecycle
   candidates
+- `f7c0d87` — Batch 12 Render legacy service sharing lifecycle candidate
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO
