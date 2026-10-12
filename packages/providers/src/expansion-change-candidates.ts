@@ -413,6 +413,28 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     ] },
     payload: { changeId: 'hubspot-contact-lists-api-v1-sunset-2026-04-30', title: 'HubSpot Contact Lists API v1 sunset', description: 'HubSpot documents that the Contact Lists API v1 endpoints are removed on April 30, 2026 and directs integrations to the Lists v3 API. The candidate does not generalize to unrelated Contacts API v1 reads or SDK package behavior.', changeType: 'endpoint_removed', removalAt: '2026-04-30', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['POST /contacts/v1/lists', 'GET /contacts/v1/lists'], replacement: { endpoint: 'Lists v3 API' }, severity: 'high' },
   }),
+  makeExpansionCandidate({
+    candidateId: 'netlify-analytics-v1-endpoint-retirement-2021-11-22', providerId: 'netlify',
+    sourceUrl: 'https://answers.netlify.com/t/analytics-v1-api-deprecation/46760', sourceType: 'deprecation-notice',
+    documentFingerprint: 'ff1d1f37150137ba60cb37d03d248c8dc7f2bec687c74a7f702779d8ebf79a5f', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched Netlify’s official support notice and retained the exact Analytics v1 endpoint retirement date and 404 behavior.',
+    evidence: { providerId: 'netlify', sourceUrl: 'https://answers.netlify.com/t/analytics-v1-api-deprecation/46760', sourceTitle: 'Analytics v1 API Deprecation', sourceLocator: 'post:Final update', claims: [
+      { key: 'removalAt', value: '2021-11-22' }, { key: 'affectedApi', value: 'Analytics v1 endpoints' },
+      { key: 'failure', value: 'v1 requests return 404 after retirement' }, { key: 'status', value: 'official Netlify support notice' },
+    ] },
+    payload: { changeId: 'netlify-analytics-v1-endpoint-retirement-2021-11-22', title: 'Netlify Analytics v1 endpoint retirement', description: 'Netlify’s official support notice states that Analytics v1 endpoints were deprecated on November 22, 2021 and return 404 after retirement. The candidate does not infer undocumented v2 behavior or SDK applicability.', changeType: 'endpoint_removed', removalAt: '2021-11-22', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['Analytics v1 API endpoints'], severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'workos-raw-attributes-fields-removed-2026-04-15', providerId: 'workos',
+    sourceUrl: 'https://workos.com/docs/deprecations/raw-attributes', sourceType: 'deprecation-notice',
+    documentFingerprint: 'f38203c77cd4c6ba6e4b74f40611924c38abcf3913a803ddba111ed4a28c064b', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched WorkOS’s official deprecation guide and retained only the documented response fields and event surfaces affected from April 15, 2026.',
+    evidence: { providerId: 'workos', sourceUrl: 'https://workos.com/docs/deprecations/raw-attributes', sourceTitle: 'Migrate from raw_attributes', sourceLocator: 'section:Overview', claims: [
+      { key: 'effectiveAt', value: '2026-04-15' }, { key: 'responseField', value: 'raw_attributes' },
+      { key: 'affectedResources', value: 'Directory Users, Directory Groups, SSO Profiles, related webhooks/events' }, { key: 'replacement', value: 'custom_attributes' },
+    ] },
+    payload: { changeId: 'workos-raw-attributes-fields-removed-2026-04-15', title: 'WorkOS raw_attributes response-field removal', description: 'WorkOS documents that raw_attributes stops returning data on April 15, 2026 and that several legacy top-level Directory User fields are removed; integrations should use custom_attributes. The candidate does not assert SDK or endpoint-specific behavior beyond the documented response surfaces.', changeType: 'response_field_removed', effectiveAt: '2026-04-15', applicabilityScope: { dimensions: ['provider', 'resource', 'response_field'] }, affectedResources: ['Directory Users', 'Directory Groups', 'SSO Profiles'], affectedResponseFields: ['raw_attributes', 'job_title', 'username', 'emails'], replacement: { resources: ['custom_attributes'] }, severity: 'high' },
+  }),
 ];
 
 const BLOCKED_RESEARCH_LEAD_IDS = new Set([

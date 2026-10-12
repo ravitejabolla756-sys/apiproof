@@ -3,8 +3,8 @@ import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES, OFFICIAL_CHANGE_CANDIDATE_REGISTR
 
 describe('overnight provider expansion candidates', () => {
   it('adds the verified official-source candidate set without changing production rules', () => {
-    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(36);
-    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(35);
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length).toBeGreaterThanOrEqual(38);
+    expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.providerId)).size).toBeGreaterThanOrEqual(37);
     expect(new Set(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.map((candidate) => candidate.candidateId)).size).toBe(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.state === 'needs_review')).toBe(true);
     expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.every((candidate) => candidate.sourceFingerprintBasis === 'full-body')).toBe(true);
@@ -81,6 +81,18 @@ describe('overnight provider expansion candidates', () => {
     expect(hubspot).toMatchObject({
       providerId: 'hubspot', state: 'needs_review',
       payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['POST /contacts/v1/lists', 'GET /contacts/v1/lists'] },
+    });
+
+    const netlify = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'netlify-analytics-v1-endpoint-retirement-2021-11-22');
+    expect(netlify).toMatchObject({
+      providerId: 'netlify', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['Analytics v1 API endpoints'] },
+    });
+
+    const workos = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'workos-raw-attributes-fields-removed-2026-04-15');
+    expect(workos).toMatchObject({
+      providerId: 'workos', state: 'needs_review',
+      payload: { applicabilityScope: { dimensions: ['provider', 'resource', 'response_field'] }, affectedResponseFields: ['raw_attributes', 'job_title', 'username', 'emails'] },
     });
   });
 });
