@@ -106,5 +106,19 @@ describe('overnight provider expansion candidates', () => {
       providerId: 'digitalocean', state: 'needs_review',
       payload: { applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Paperspace Core API'] },
     });
+
+    const zoomLegacy = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'zoom-phone-legacy-endpoints-sunset-2026-12-30');
+    expect(zoomLegacy).toMatchObject({
+      providerId: 'zoom', state: 'needs_review',
+      sourceFingerprint: 'b14b8906362e41f5ff118c1c910f0a299023e83083d7e7e39f430a1dbc678e36',
+      payload: { applicabilityScope: { dimensions: ['provider', 'resource'] }, removalAt: '2026-12-30', replacement: { resources: ['Zoom Number Management APIs'] } },
+    });
+
+    const zoomCallLogs = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'zoom-phone-v1-call-logs-deprecation-2026-05');
+    expect(zoomCallLogs).toMatchObject({
+      providerId: 'zoom', state: 'needs_review',
+      sourceFingerprint: '264c6e0bf8798f74626c82b8031556d5b932e0bcddc220fb9c106be0ed097198',
+      payload: { applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Zoom Phone v1 Call Logs APIs'], replacement: { resources: ['Zoom Phone v2 Call History APIs'] } },
+    });
   });
 });

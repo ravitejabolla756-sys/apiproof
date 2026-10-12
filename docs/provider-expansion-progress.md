@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 50 | 10 existing records plus 40 expansion candidates |
-| Providers represented by candidate records | 44 | Candidates remain `needs_review` |
+| Official candidate records | 52 | 10 existing records plus 42 expansion candidates |
+| Providers represented by candidate records | 45 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -93,6 +93,16 @@ They require a separate human review before any production promotion.
 | --- | --- | --- | ---: | ---: | ---: | --- |
 | Braintree | Payments / Fintech | [Braintree SDK upgrade guide](https://developer.paypal.com/braintree/docs/reference/general/upgrade); Transparent Redirect replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 | DigitalOcean | Cloud / Infrastructure | [Paperspace Core API reference](https://docs.digitalocean.com/reference/paperspace/core/); legacy API unavailable since 2024-07-15 | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+
+## Batch 07: Zoom Phone lifecycle candidates
+
+These candidates use two separate official Zoom changelog notices. They remain
+review-gated and do not add Zoom to the reviewed production registry.
+
+| Provider | Category | Evidence | Rules | Fixtures | Tests | Status |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Zoom | Communications | [Phone API endpoint deprecations](https://developers.zoom.us/changelog/phone/phone-api-endpoint-deprecations/); legacy phone-number, plan, cloud-peering, SMS-campaign, and settings endpoint families; migrate by 2026-06-30; full sunset 2026-12-30; Number Management APIs replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+| Zoom | Communications | [Call Log API deprecation](https://developers.zoom.us/changelog/phone/deprecation-of-call-log-apis-and-enhancements-to-call-history-apis/); v1 Call Logs APIs deprecated in May 2026; v2 Call History APIs replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 
 The exact candidate IDs are:
 

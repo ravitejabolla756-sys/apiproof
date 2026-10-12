@@ -292,6 +292,31 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     payload: { changeId: 'auth0-enabled-clients-field-deprecation-2026-07-13', title: 'Auth0 enabled_clients field deprecation', description: 'Auth0 documents deprecation of the enabled_clients field on the listed Management API connection operations and directs callers to dedicated enabled-client endpoints.', changeType: 'response_field_removed', effectiveAt: '2026-07-13', applicabilityScope: { dimensions: ['provider', 'endpoint', 'response_field'] }, affectedEndpoints: ['GET /api/v2/connections', 'GET /api/v2/connections/{id}', 'PATCH /api/v2/connections/{id}'], affectedResponseFields: ['enabled_clients'], replacement: { endpoint: 'dedicated connection client endpoints' }, severity: 'high' },
   }),
   makeExpansionCandidate({
+    candidateId: 'zoom-phone-legacy-endpoints-sunset-2026-12-30', providerId: 'zoom',
+    sourceUrl: 'https://developers.zoom.us/changelog/phone/phone-api-endpoint-deprecations/', sourceType: 'official-changelog',
+    documentFingerprint: 'b14b8906362e41f5ff118c1c910f0a299023e83083d7e7e39f430a1dbc678e36', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched Zoom’s official Phone API endpoint deprecation notice and retained the documented legacy resource families, migration deadline, full sunset date, and Number Management API replacement.',
+    evidence: { providerId: 'zoom', sourceUrl: 'https://developers.zoom.us/changelog/phone/phone-api-endpoint-deprecations/', sourceTitle: 'Phone API endpoint deprecations', sourceLocator: 'metadata:description', claims: [
+      { key: 'publishedAt', value: '2026-04-02' }, { key: 'updatedAt', value: '2026-05-26' },
+      { key: 'migrationDeadline', value: '2026-06-30' }, { key: 'removalAt', value: '2026-12-30' },
+      { key: 'affectedResources', value: 'phone numbers; plans; cloud peering; SMS campaigns; related settings' },
+      { key: 'replacement', value: 'Zoom Number Management APIs' },
+    ] },
+    payload: { changeId: 'zoom-phone-legacy-endpoints-sunset-2026-12-30', title: 'Zoom Phone legacy endpoint sunset', description: 'Zoom documents deprecation of legacy Phone API endpoint families for phone numbers, plans, cloud peering, SMS campaigns, and related settings. Integrations must migrate by June 30, 2026; deprecated endpoints are unsupported after that date and fully sunset on December 30, 2026. The documented replacement is the Number Management API family.', changeType: 'endpoint_removed', effectiveAt: '2026-06-30', removalAt: '2026-12-30', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Zoom Phone phone-number endpoints', 'Zoom Phone plan endpoints', 'Zoom Phone cloud-peering endpoints', 'Zoom Phone SMS-campaign endpoints', 'Zoom Phone settings endpoints'], replacement: { resources: ['Zoom Number Management APIs'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
+    candidateId: 'zoom-phone-v1-call-logs-deprecation-2026-05', providerId: 'zoom',
+    sourceUrl: 'https://developers.zoom.us/changelog/phone/deprecation-of-call-log-apis-and-enhancements-to-call-history-apis/', sourceType: 'official-changelog',
+    documentFingerprint: '264c6e0bf8798f74626c82b8031556d5b932e0bcddc220fb9c106be0ed097198', discoveredAt: '2026-10-13',
+    evidenceNote: 'Fetched Zoom’s official Call Logs and Call History changelog and retained the v1 Call Logs deprecation window and documented v2 Call History migration path without inventing a day-level removal date.',
+    evidence: { providerId: 'zoom', sourceUrl: 'https://developers.zoom.us/changelog/phone/deprecation-of-call-log-apis-and-enhancements-to-call-history-apis/', sourceTitle: 'Deprecation of Call Log APIs and enhancements to Call History APIs', sourceLocator: 'metadata:description', claims: [
+      { key: 'publishedAt', value: '2026-04-06' }, { key: 'releaseDate', value: '2026-05-28' },
+      { key: 'deprecatedAt', value: '2026-05' }, { key: 'affectedResource', value: 'Zoom Phone v1 Call Logs APIs' },
+      { key: 'replacement', value: 'Zoom Phone v2 Call History APIs' },
+    ] },
+    payload: { changeId: 'zoom-phone-v1-call-logs-deprecation-2026-05', title: 'Zoom Phone v1 Call Logs deprecation', description: 'Zoom documents that the v1 Call Logs APIs are deprecated in May 2026 and directs integrations to the newer v2 Call History APIs. The source does not provide a day-level removal date, so this remains a review-gated candidate.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Zoom Phone v1 Call Logs APIs'], replacement: { resources: ['Zoom Phone v2 Call History APIs'] }, severity: 'high' },
+  }),
+  makeExpansionCandidate({
     candidateId: 'linear-mcp-sse-endpoint-removal-2026', providerId: 'linear',
     sourceUrl: 'https://linear.app/changelog/page/3', sourceType: 'official-changelog',
     documentFingerprint: '886d0d2caf0dc3469186e040d813a2ea6ea793eacce60f066d1a26a7b8ae1eb6', discoveredAt: '2026-10-08',
