@@ -11,13 +11,13 @@ production compatibility registry.
 STARTING PROVIDERS: 15 reviewed providers; 67 discovery providers
 FINAL IMPLEMENTED PROVIDERS: 150 deterministic discovery identities
 FINAL REVIEWED PROVIDERS: 15
-TOTAL RULES: 20 reviewed production rules; 59 review-gated candidate records
-representing 52 provider IDs
+TOTAL RULES: 20 reviewed production rules; 64 review-gated candidate records
+representing 56 provider IDs
 AFFECTED FIXTURES: 19 productization-positive findings; the reviewed engine
 matrix is 60/60
 NOT_AFFECTED FIXTURES: Covered by the 60/60 reviewed engine matrix; no new
 production claim is inferred from discovery-only records
-NEEDS_REVIEW: 59 candidate records; all remain `needs_review`; the Anthropic
+NEEDS_REVIEW: 64 candidate records; all remain `needs_review`; the Anthropic
 parameter productization case remains explicitly partial
 BLOCKED: Human review and deterministic fixture work are still required before
 any candidate can become a reviewed production rule
@@ -53,8 +53,10 @@ source, evidence, applicability, fingerprints, and unknowns remain
 review-gated. No reviewer metadata or production-registry entry was fabricated.
 
 Batch 09 adds Mailgun, Sentry, PayPal, Chargebee, and Adyen API lifecycle
-candidates. Each remains `needs_review` and is outside the reviewed production
-registry pending human review and deterministic fixture work.
+candidates. Batch 10 adds two narrowly scoped Plaid API 2020-09-14 candidates,
+Postmark `/bounces/tags`, Replicate `cog.File`, and WooCommerce Legacy REST API
+lifecycle candidates. Each remains `needs_review` and is outside the reviewed
+production registry pending human review and deterministic fixture work.
 
 The 15 reviewed providers and 20 reviewed rules remain unchanged. The known
 Anthropic parameter shape remains `NOT_AFFECTED (PARTIAL)` in productization;
@@ -66,7 +68,7 @@ the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
 TEST RESULTS: `pnpm test -- --maxWorkers=1` passed with 146 test files passed,
 1 skipped, 1,319 tests passed, and 4 skipped.
 
-TARGETED TESTS: Batch 09 candidate, bundle, review-workflow, and promotion-gate
+TARGETED TESTS: Batch 10 candidate, bundle, review-workflow, and promotion-gate
 suites passed (4 files, 13 tests).
 
 TYPECHECK: PASS (`pnpm typecheck`)
@@ -90,6 +92,10 @@ does not hide application failures.
 - `a774340` — Batch 06 discovery catalog completion
 - `6b8f680` — Batch 07 Zoom lifecycle candidates
 - `9ec912b` — Batch 08 CircleCI and Intercom lifecycle candidates
+- `1496a41b2aabc587b0fdf3d213852b5a90830362` — Batch 09 Mailgun, Sentry,
+  PayPal, Chargebee, and Adyen lifecycle candidates
+- `de58a5c4e3ca55766350b843fea44d25f6ac1dab` — Batch 10 Plaid, Postmark,
+  Replicate, and WooCommerce lifecycle candidates
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO

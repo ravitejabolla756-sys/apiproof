@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 59 | 10 existing records plus 49 expansion candidates |
-| Providers represented by candidate records | 52 | Candidates remain `needs_review` |
+| Official candidate records | 64 | 10 existing records plus 54 expansion candidates |
+| Providers represented by candidate records | 56 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -138,9 +138,9 @@ not reviewed production rules.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
 
-`hugging-face`, `mixpanel`, `paddle`, `perplexity`, `plaid`, `planetscale`,
-`postmark`, `railway`, `razorpay`, `redis`, `render`, `replicate`, `resend`,
-`segment`, `sendgrid`, `together-ai`, `upstash`, `woocommerce`.
+`hugging-face`, `mixpanel`, `paddle`, `perplexity`, `planetscale`, `railway`,
+`razorpay`, `redis`, `render`, `resend`, `segment`, `sendgrid`, `together-ai`,
+`upstash`.
 
 ## Batch 09: communications, observability, payments, and billing API candidates
 
@@ -150,6 +150,16 @@ Issues, PayPal Invoicing v1 to v2, Chargebee item entitlements to Manage
 entitlements, and Adyen Terminal Management v1 `assignTerminals` to the
 documented reassign endpoint. These are candidates only; no provider was
 added to the reviewed production registry and no SDK scope was inferred.
+
+## Batch 10: payments, email, AI infrastructure, and commerce lifecycle candidates
+
+Batch 10 added five deterministic, review-gated candidates from official
+provider documentation and advisories: Plaid’s API 2020-09-14 `public_key`
+authentication removal and `country_codes` requirement, Postmark’s
+`/bounces/tags` deprecation, Replicate’s `cog.File` removal in the new Cog
+runtime, and WooCommerce’s Legacy REST API removal from core. These candidates
+remain limited to their documented API version, endpoint, parameter, or
+resource scopes and do not add providers to the reviewed production registry.
 
 The discovery catalog currently contains 150 providers. The Batch 05/06
 records are discovery-only and remain outside the reviewed compatibility
@@ -162,8 +172,8 @@ candidates and deterministic fixtures rather than adding more names.
   remain 60/60; productization projection remains 19/20 positive with the
   documented Anthropic parameter limitation; reviewed production rules remain
   20.
-- Targeted candidate/provenance/promotion tests after Batch 04: 5 files,
-  25 tests passed.
+- Targeted Batch 10 candidate/bundle/review/promotion tests: 4 files,
+  13 tests passed.
 - The new candidates are lifecycle `needs_review` records and do not alter the
   reviewed registry, scanner behavior, staging configuration, or external
   repositories.

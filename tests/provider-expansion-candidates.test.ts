@@ -134,5 +134,39 @@ describe('overnight provider expansion candidates', () => {
       sourceFingerprint: '0bde5904dfb4612004df81c868be2bb6f9391cfdc9568bff2ede7701832f7dbd',
       payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['POST /conversations/{id}/run_assignment_rules'], removalAt: '2026-12-31' },
     });
+
+    const plaidAuth = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'plaid-public-key-auth-removal-api-2020-09-14');
+    expect(plaidAuth).toMatchObject({
+      providerId: 'plaid', state: 'needs_review',
+      sourceFingerprint: '4146449358a1f8db3324f38f034d4b7ffeaede466f2d0bea629330a74bfe1ffa',
+      evidenceFingerprint: 'f29895ae53ef7c1c89939e7af525443273f7faeded820d609f4f417bc7acc544',
+      payload: { changeType: 'parameter_removed', applicabilityScope: { dimensions: ['provider', 'api_version', 'endpoint', 'parameter'] }, affectedParameters: ['public_key'] },
+    });
+
+    const plaidCountryCodes = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'plaid-institutions-country-codes-required-api-2020-09-14');
+    expect(plaidCountryCodes).toMatchObject({
+      providerId: 'plaid', state: 'needs_review',
+      evidenceFingerprint: 'a9ab87d5c984e12529554cbad62fa51e30c0b876b1c485fae69b63a34361450c',
+      payload: { changeType: 'parameter_required', applicabilityScope: { dimensions: ['provider', 'api_version', 'endpoint', 'parameter'] }, affectedParameters: ['country_codes'] },
+    });
+
+    const postmark = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'postmark-bounces-tags-endpoint-deprecation-2019-12-02');
+    expect(postmark).toMatchObject({
+      providerId: 'postmark', state: 'needs_review',
+      sourceFingerprint: '2085210af0bec50ef580292537f271e97e403b5b639e9ec41c477f9249cdc3df',
+      payload: { changeType: 'endpoint_removed', removalAt: '2019-12-02', affectedEndpoints: ['/bounces/tags'] },
+    });
+
+    const replicate = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'replicate-cog-file-api-removal-new-runtime-2025-07-21');
+    expect(replicate).toMatchObject({
+      providerId: 'replicate', state: 'needs_review',
+      payload: { changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['cog.File'] },
+    });
+
+    const woocommerce = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'woocommerce-legacy-rest-api-core-removal-9-0');
+    expect(woocommerce).toMatchObject({
+      providerId: 'woocommerce', state: 'needs_review',
+      payload: { changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Legacy REST API', 'legacy webhooks'] },
+    });
   });
 });
