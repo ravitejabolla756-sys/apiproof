@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 52 | 10 existing records plus 42 expansion candidates |
-| Providers represented by candidate records | 45 | Candidates remain `needs_review` |
+| Official candidate records | 54 | 10 existing records plus 44 expansion candidates |
+| Providers represented by candidate records | 47 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -103,6 +103,13 @@ review-gated and do not add Zoom to the reviewed production registry.
 | --- | --- | --- | ---: | ---: | ---: | --- |
 | Zoom | Communications | [Phone API endpoint deprecations](https://developers.zoom.us/changelog/phone/phone-api-endpoint-deprecations/); legacy phone-number, plan, cloud-peering, SMS-campaign, and settings endpoint families; migrate by 2026-06-30; full sunset 2026-12-30; Number Management APIs replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 | Zoom | Communications | [Call Log API deprecation](https://developers.zoom.us/changelog/phone/deprecation-of-call-log-apis-and-enhancements-to-call-history-apis/); v1 Call Logs APIs deprecated in May 2026; v2 Call History APIs replacement | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+
+## Batch 08: CI and customer-support API candidates
+
+| Provider | Category | Evidence | Rules | Fixtures | Tests | Status |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| CircleCI | CI/CD | [v1/v1.1 Trigger and Rerun API removal](https://circleci.com/changelog/deprecation-of-v1-and-v1-1-trigger-and-rerun-apis-february-1-2027/); ten exact endpoints removed 2027-02-01; v2/v3 replacements | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
+| Intercom | Customer Support | [Run Assignment Rules reference](https://developers.intercom.com/docs/references/2.8/rest-api/api.intercom.io/conversations/autoassignconversation); exact endpoint removed 2026-12-31 | 0 | 0 | Candidate and promotion-gate tests | NEEDS_REVIEW |
 
 The exact candidate IDs are:
 

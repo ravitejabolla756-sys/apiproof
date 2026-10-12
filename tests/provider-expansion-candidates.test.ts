@@ -120,5 +120,19 @@ describe('overnight provider expansion candidates', () => {
       sourceFingerprint: '264c6e0bf8798f74626c82b8031556d5b932e0bcddc220fb9c106be0ed097198',
       payload: { applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Zoom Phone v1 Call Logs APIs'], replacement: { resources: ['Zoom Phone v2 Call History APIs'] } },
     });
+
+    const circleCi = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'circleci-v1-trigger-rerun-api-removal-2027-02-01');
+    expect(circleCi).toMatchObject({
+      providerId: 'circleci', state: 'needs_review',
+      sourceFingerprint: '4cf20b30da99c918ade80e77815ccdf0c641780dc76d3042b2373d878fe92b3d',
+      payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, removalAt: '2027-02-01', affectedEndpoints: expect.arrayContaining(['POST /api/v1/project/:username/:repo/']) },
+    });
+
+    const intercom = EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'intercom-run-assignment-rules-endpoint-removal-2026-12-31');
+    expect(intercom).toMatchObject({
+      providerId: 'intercom', state: 'needs_review',
+      sourceFingerprint: '0bde5904dfb4612004df81c868be2bb6f9391cfdc9568bff2ede7701832f7dbd',
+      payload: { applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedEndpoints: ['POST /conversations/{id}/run_assignment_rules'], removalAt: '2026-12-31' },
+    });
   });
 });

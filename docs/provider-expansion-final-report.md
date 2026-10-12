@@ -11,13 +11,13 @@ production compatibility registry.
 STARTING PROVIDERS: 15 reviewed providers; 67 discovery providers
 FINAL IMPLEMENTED PROVIDERS: 150 deterministic discovery identities
 FINAL REVIEWED PROVIDERS: 15
-TOTAL RULES: 20 reviewed production rules; 52 review-gated candidate records
-representing 45 provider IDs
+TOTAL RULES: 20 reviewed production rules; 54 review-gated candidate records
+representing 47 provider IDs
 AFFECTED FIXTURES: 19 productization-positive findings; the reviewed engine
 matrix is 60/60
 NOT_AFFECTED FIXTURES: Covered by the 60/60 reviewed engine matrix; no new
 production claim is inferred from discovery-only records
-NEEDS_REVIEW: 52 candidate records; all remain `needs_review`; the Anthropic
+NEEDS_REVIEW: 54 candidate records; all remain `needs_review`; the Anthropic
 parameter productization case remains explicitly partial
 BLOCKED: Human review and deterministic fixture work are still required before
 any candidate can become a reviewed production rule
@@ -46,8 +46,9 @@ compatibility rule, or production support.
 
 The expansion batches added source-backed candidate records for Google Gemini,
 Bitbucket, Amplitude, Salesforce, HubSpot, Netlify, WorkOS, Braintree,
-DigitalOcean, and Zoom Phone. The Zoom batch covers legacy Phone endpoint
-families and v1 Call Logs with separate official changelog evidence. Their
+DigitalOcean, Zoom Phone, CircleCI, and Intercom. The Zoom batch covers legacy
+Phone endpoint families and v1 Call Logs; the latest batch covers CircleCI’s
+legacy trigger/rerun endpoints and Intercom’s assignment-rules endpoint. Their
 source, evidence, applicability, fingerprints, and unknowns remain
 review-gated. No reviewer metadata or production-registry entry was fabricated.
 

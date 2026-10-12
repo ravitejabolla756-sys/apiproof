@@ -1,40 +1,6 @@
-import { fingerprintCandidateEvidence } from '@apiproof/shared';
-import type { CandidateChange, CandidateSourceEvidence } from '@apiproof/shared';
-
-type ExpansionInput = Pick<CandidateChange, 'candidateId' | 'providerId' | 'sourceUrl' | 'sourceType' | 'discoveredAt' | 'payload'> & {
-  documentFingerprint: string;
-  evidence: CandidateSourceEvidence;
-  evidenceNote: string;
-};
-
-const makeExpansionCandidate = (input: ExpansionInput): CandidateChange => ({
-  candidateId: input.candidateId,
-  providerId: input.providerId,
-  sourceUrl: input.sourceUrl,
-  sourceType: input.sourceType,
-  sourceFingerprint: input.documentFingerprint,
-  documentFingerprint: input.documentFingerprint,
-  evidenceFingerprint: fingerprintCandidateEvidence(input.evidence),
-  sourceEvidence: input.evidence,
-  sourceFingerprintBasis: 'full-body',
-  discoveredAt: input.discoveredAt,
-  state: 'needs_review',
-  payload: {
-    ...input.payload,
-    sourceTitle: input.evidence.sourceTitle,
-    sourceFacts: [input.payload.description],
-    unknowns: [
-      'SDK package, SDK version, and SDK method applicability are not established by the captured source.',
-      'Runtime wrappers and dynamically constructed requests are not inferred.',
-    ],
-    severityBasis: 'Proposed severity reflects only the documented deprecation or removal; human review is required.',
-  },
-  auditTrail: [
-    { state: 'discovered', at: input.discoveredAt, actor: 'official-source-capture', note: input.evidenceNote },
-    { state: 'normalized', at: input.discoveredAt, actor: 'candidate-normalizer', note: 'Normalized only deterministic facts from the official source.' },
-    { state: 'needs_review', at: input.discoveredAt, actor: 'candidate-normalizer', note: 'Human review is required before promotion or compatibility claims.' },
-  ],
-});
+import type { CandidateChange } from '@apiproof/shared';
+import { makeExpansionCandidate } from './expansion-candidate-normalizer.js';
+import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_08 } from './expansion-change-candidates-batch-08.js';
 
 const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
   makeExpansionCandidate({
@@ -316,6 +282,7 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     ] },
     payload: { changeId: 'zoom-phone-v1-call-logs-deprecation-2026-05', title: 'Zoom Phone v1 Call Logs deprecation', description: 'Zoom documents that the v1 Call Logs APIs are deprecated in May 2026 and directs integrations to the newer v2 Call History APIs. The source does not provide a day-level removal date, so this remains a review-gated candidate.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Zoom Phone v1 Call Logs APIs'], replacement: { resources: ['Zoom Phone v2 Call History APIs'] }, severity: 'high' },
   }),
+  ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_08,
   makeExpansionCandidate({
     candidateId: 'linear-mcp-sse-endpoint-removal-2026', providerId: 'linear',
     sourceUrl: 'https://linear.app/changelog/page/3', sourceType: 'official-changelog',
