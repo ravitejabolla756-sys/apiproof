@@ -11,13 +11,13 @@ production compatibility registry.
 STARTING PROVIDERS: 15 reviewed providers; 67 discovery providers
 FINAL IMPLEMENTED PROVIDERS: 150 deterministic discovery identities
 FINAL REVIEWED PROVIDERS: 15
-TOTAL RULES: 20 reviewed production rules; 75 review-gated candidate records
-representing 63 provider IDs
+TOTAL RULES: 20 reviewed production rules; 76 review-gated candidate records
+representing 64 provider IDs
 AFFECTED FIXTURES: 19 productization-positive findings; the reviewed engine
 matrix is 60/60
 NOT_AFFECTED FIXTURES: Covered by the 60/60 reviewed engine matrix; no new
 production claim is inferred from discovery-only records
-NEEDS_REVIEW: 75 candidate records; all remain `needs_review`; the Anthropic
+NEEDS_REVIEW: 76 candidate records; all remain `needs_review`; the Anthropic
 parameter productization case remains explicitly partial
 BLOCKED: Human review and deterministic fixture work are still required before
 any candidate can become a reviewed production rule
@@ -76,6 +76,12 @@ Python SDK v2 removal of `client.files.retrieve_content`, Redis’s deprecated
 discontinued Triggers and Functions preview commands. They remain
 `needs_review` and outside the reviewed production registry.
 
+Batch 14 adds one Railway lifecycle candidate: Railway’s official Config as
+Code documentation sets a hard cutoff for existing `railway.json` and
+`railway.toml` configurations on 2026-12-01 and directs new configuration to
+Infrastructure as Code via `.railway/railway.ts`. It remains `needs_review`
+and outside the reviewed production registry.
+
 The 15 reviewed providers and 20 reviewed rules remain unchanged. The known
 Anthropic parameter shape remains `NOT_AFFECTED (PARTIAL)` in productization;
 the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
@@ -86,7 +92,7 @@ the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
 TEST RESULTS: `pnpm test -- --maxWorkers=1` passed with 146 test files passed,
 1 skipped, 1,319 tests passed, and 4 skipped.
 
-TARGETED TESTS: Batch 13 candidate, fixture-coverage, benchmark, bundle,
+TARGETED TESTS: Batch 14 candidate, fixture-coverage, benchmark, bundle,
 review-workflow, and promotion-gate suites passed (6 files, 16 tests).
 
 TYPECHECK: PASS (`pnpm typecheck`)
@@ -118,6 +124,7 @@ does not hide application failures.
   candidates
 - `f7c0d87` — Batch 12 Render legacy service sharing lifecycle candidate
 - `37d448e` — Batch 13 Together and Redis lifecycle candidates
+- `0274d13d58d3550f35d0d6acd1d82a082ba8d668` — Batch 14 Railway configuration lifecycle candidate
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO

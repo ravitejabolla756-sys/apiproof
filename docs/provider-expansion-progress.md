@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 75 | 10 existing records plus 65 expansion candidates |
-| Providers represented by candidate records | 63 | Candidates remain `needs_review` |
+| Official candidate records | 76 | 10 existing records plus 66 expansion candidates |
+| Providers represented by candidate records | 64 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -138,8 +138,7 @@ not reviewed production rules.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
 
-`mixpanel`, `perplexity`, `railway`, `razorpay`, `resend`, `segment`,
-`sendgrid`.
+`mixpanel`, `perplexity`, `razorpay`, `resend`, `segment`, `sendgrid`.
 
 ## Batch 09: communications, observability, payments, and billing API candidates
 
@@ -188,6 +187,15 @@ sources: Together Python SDK v2 removal of `client.files.retrieve_content`,
 Redis’s `CLUSTER SLAVES` to `CLUSTER REPLICAS` rename, and Redis Cloud’s
 discontinued Triggers and Functions preview commands. All remain
 `needs_review` and outside the reviewed production registry.
+
+## Batch 14: Railway configuration lifecycle candidate
+
+Batch 14 adds one deterministic, review-gated Railway candidate from the
+official Config as Code documentation: existing `railway.json` and
+`railway.toml` configurations have a hard cutoff on 2026-12-01 and Railway
+directs new configuration to Infrastructure as Code via `.railway/railway.ts`.
+The candidate remains `needs_review` and outside the reviewed production
+registry.
 
 The discovery catalog currently contains 150 providers. The Batch 05/06
 records are discovery-only and remain outside the reviewed compatibility
