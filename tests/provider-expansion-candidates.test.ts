@@ -183,5 +183,10 @@ describe('overnight provider expansion candidates', () => {
         candidateId, state: 'needs_review', sourceFingerprint, evidenceFingerprint,
       });
     }
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'render-legacy-service-sharing-deprecated-2025-07-15')).toMatchObject({
+      candidateId: 'render-legacy-service-sharing-deprecated-2025-07-15', state: 'needs_review', providerId: 'render',
+      sourceFingerprint: 'f4325a92065c9f751ed6530310230c2d810da7a20a57657ea43336758a73ca03',
+      evidenceFingerprint: 'd5489b1c718474a8fb0144c4122976436c1157c1a1d2a30060ad4e1f7a7b8132',
+    });
   });
 });

@@ -40,7 +40,7 @@ describe('provider expansion benchmark', () => {
       return [{ change, usage: base, expected: 'AFFECTED' as const }, { change, usage: wrong, expected: 'NOT_AFFECTED' as const }, { change, usage: dynamic, expected: 'NEEDS_REVIEW' as const }];
     });
     expect(cases).toHaveLength(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length * 3);
-    const results = cases.map(({ change, usage, expected }) => ({ expected, actual: evaluateNormalizedCompatibility({ providerId: usage.providerId, usageIR: [normalizeCompatibilityUsage(usage, { language: 'typescript', declaredVersion: benchmarkVersion(change), resolvedVersion: benchmarkVersion(change), versionSource: 'lockfile', versionConfidence: 'exact' })], completeEvidence: true }, change, { compatibilityProviders: new Set([usage.providerId]), requireOfficialProvenance: true }).status }));
+    const results = cases.map(({ change, usage, expected }) => ({ expected, actual: evaluateNormalizedCompatibility({ providerId: usage.providerId, usageIR: [normalizeCompatibilityUsage(usage, { language: 'typescript', declaredVersion: benchmarkVersion(change) ?? null, resolvedVersion: benchmarkVersion(change) ?? null, versionSource: 'lockfile', versionConfidence: 'exact' })], completeEvidence: true }, change, { compatibilityProviders: new Set([usage.providerId]), requireOfficialProvenance: true }).status }));
     expect(results.filter(({ expected, actual }) => expected !== actual)).toEqual([]);
   });
 });

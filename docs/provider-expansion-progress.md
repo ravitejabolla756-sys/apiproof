@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 71 | 10 existing records plus 61 expansion candidates |
-| Providers represented by candidate records | 60 | Candidates remain `needs_review` |
+| Official candidate records | 72 | 10 existing records plus 62 expansion candidates |
+| Providers represented by candidate records | 61 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -138,8 +138,8 @@ not reviewed production rules.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
 
-`mixpanel`, `perplexity`, `railway`, `razorpay`, `redis`, `render`, `resend`,
-`segment`, `sendgrid`, `together-ai`.
+`mixpanel`, `perplexity`, `railway`, `razorpay`, `redis`, `resend`, `segment`,
+`sendgrid`, `together-ai`.
 
 ## Batch 09: communications, observability, payments, and billing API candidates
 
@@ -172,6 +172,14 @@ legacy connection-string candidate preserves the documented brownout start but
 does not invent a final removal date; the Upstash candidate likewise preserves
 the absence of an exact shutdown date. All remain `needs_review` and outside
 the reviewed production registry.
+
+## Batch 12: Render access lifecycle candidate
+
+Batch 12 added one deterministic, review-gated Render candidate from the
+official changelog: legacy service sharing is deprecated, has no scheduled
+end-of-life date, and should be replaced by workspace membership and roles.
+The candidate remains `needs_review` and outside the reviewed production
+registry.
 
 The discovery catalog currently contains 150 providers. The Batch 05/06
 records are discovery-only and remain outside the reviewed compatibility
