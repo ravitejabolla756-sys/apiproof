@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 54 | 10 existing records plus 44 expansion candidates |
-| Providers represented by candidate records | 47 | Candidates remain `needs_review` |
+| Official candidate records | 59 | 10 existing records plus 49 expansion candidates |
+| Providers represented by candidate records | 52 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -138,10 +138,18 @@ not reviewed production rules.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
 
-`adyen`, `chargebee`, `hugging-face`, `mailgun`,
-`mixpanel`, `paddle`, `paypal`, `perplexity`, `plaid`, `planetscale`, `postmark`,
-`railway`, `razorpay`, `redis`, `render`, `replicate`, `resend`, `segment`,
-`sendgrid`, `sentry`, `together-ai`, `upstash`, `woocommerce`.
+`hugging-face`, `mixpanel`, `paddle`, `perplexity`, `plaid`, `planetscale`,
+`postmark`, `railway`, `razorpay`, `redis`, `render`, `replicate`, `resend`,
+`segment`, `sendgrid`, `together-ai`, `upstash`, `woocommerce`.
+
+## Batch 09: communications, observability, payments, and billing API candidates
+
+Batch 09 added five deterministic, review-gated candidates from official API
+references: Mailgun Events to Logs API, Sentry project issues to Organization
+Issues, PayPal Invoicing v1 to v2, Chargebee item entitlements to Manage
+entitlements, and Adyen Terminal Management v1 `assignTerminals` to the
+documented reassign endpoint. These are candidates only; no provider was
+added to the reviewed production registry and no SDK scope was inferred.
 
 The discovery catalog currently contains 150 providers. The Batch 05/06
 records are discovery-only and remain outside the reviewed compatibility

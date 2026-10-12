@@ -1,6 +1,7 @@
 import type { CandidateChange } from '@apiproof/shared';
 import { makeExpansionCandidate } from './expansion-candidate-normalizer.js';
 import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_08 } from './expansion-change-candidates-batch-08.js';
+import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_09 } from './expansion-change-candidates-batch-09.js';
 
 const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
   makeExpansionCandidate({
@@ -283,6 +284,7 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
     payload: { changeId: 'zoom-phone-v1-call-logs-deprecation-2026-05', title: 'Zoom Phone v1 Call Logs deprecation', description: 'Zoom documents that the v1 Call Logs APIs are deprecated in May 2026 and directs integrations to the newer v2 Call History APIs. The source does not provide a day-level removal date, so this remains a review-gated candidate.', changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Zoom Phone v1 Call Logs APIs'], replacement: { resources: ['Zoom Phone v2 Call History APIs'] }, severity: 'high' },
   }),
   ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_08,
+  ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_09,
   makeExpansionCandidate({
     candidateId: 'linear-mcp-sse-endpoint-removal-2026', providerId: 'linear',
     sourceUrl: 'https://linear.app/changelog/page/3', sourceType: 'official-changelog',
