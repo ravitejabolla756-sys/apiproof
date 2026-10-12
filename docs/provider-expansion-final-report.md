@@ -11,13 +11,13 @@ production compatibility registry.
 STARTING PROVIDERS: 15 reviewed providers; 67 discovery providers
 FINAL IMPLEMENTED PROVIDERS: 150 deterministic discovery identities
 FINAL REVIEWED PROVIDERS: 15
-TOTAL RULES: 20 reviewed production rules; 72 review-gated candidate records
-representing 61 provider IDs
+TOTAL RULES: 20 reviewed production rules; 75 review-gated candidate records
+representing 63 provider IDs
 AFFECTED FIXTURES: 19 productization-positive findings; the reviewed engine
 matrix is 60/60
 NOT_AFFECTED FIXTURES: Covered by the 60/60 reviewed engine matrix; no new
 production claim is inferred from discovery-only records
-NEEDS_REVIEW: 72 candidate records; all remain `needs_review`; the Anthropic
+NEEDS_REVIEW: 75 candidate records; all remain `needs_review`; the Anthropic
 parameter productization case remains explicitly partial
 BLOCKED: Human review and deterministic fixture work are still required before
 any candidate can become a reviewed production rule
@@ -69,6 +69,12 @@ Batch 12 adds one Render lifecycle candidate for the deprecated legacy service
 sharing mechanism. Render documents workspace membership and roles as the
 replacement, while explicitly providing no scheduled end-of-life date. It
 remains `needs_review` and outside the reviewed production registry.
+
+Batch 13 adds three lifecycle candidates for Together and Redis: the Together
+Python SDK v2 removal of `client.files.retrieve_content`, Redis’s deprecated
+`CLUSTER SLAVES` command and `CLUSTER REPLICAS` replacement, and Redis Cloud’s
+discontinued Triggers and Functions preview commands. They remain
+`needs_review` and outside the reviewed production registry.
 
 The 15 reviewed providers and 20 reviewed rules remain unchanged. The known
 Anthropic parameter shape remains `NOT_AFFECTED (PARTIAL)` in productization;

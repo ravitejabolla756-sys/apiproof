@@ -5,6 +5,7 @@ import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_09 } from './expansion-chang
 import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_10 } from './expansion-change-candidates-batch-10.js';
 import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_11 } from './expansion-change-candidates-batch-11.js';
 import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_12 } from './expansion-change-candidates-batch-12.js';
+import { EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_13 } from './expansion-change-candidates-batch-13.js';
 
 const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
   makeExpansionCandidate({
@@ -291,6 +292,7 @@ const EXPANSION_OFFICIAL_CHANGE_CANDIDATES_ALL: readonly CandidateChange[] = [
   ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_10,
   ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_11,
   ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_12,
+  ...EXPANSION_OFFICIAL_CHANGE_CANDIDATES_BATCH_13,
   makeExpansionCandidate({
     candidateId: 'linear-mcp-sse-endpoint-removal-2026', providerId: 'linear',
     sourceUrl: 'https://linear.app/changelog/page/3', sourceType: 'official-changelog',

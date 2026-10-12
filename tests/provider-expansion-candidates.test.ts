@@ -188,5 +188,13 @@ describe('overnight provider expansion candidates', () => {
       sourceFingerprint: 'f4325a92065c9f751ed6530310230c2d810da7a20a57657ea43336758a73ca03',
       evidenceFingerprint: 'd5489b1c718474a8fb0144c4122976436c1157c1a1d2a30060ad4e1f7a7b8132',
     });
+    const batch13Expected = [
+      ['together-python-sdk-v2-files-retrieve-content-removed-2025-12-12', '4d36b4bb9006caed80c6993b44a49c82f30f5a8462beaf83ab7ada1b94fd1a56', '03a93b50d72c4e841805cadb8224bb510eb6076c393e707312cedadb3c39dcd7'],
+      ['redis-cluster-slaves-renamed-redis-5-2020', 'cb0dbb6313b20d7f8ed57593fb9d8fc1e52a337db27643753c13500030ebe568', '32094247d6530d8c5bbe798fb1fcfa4f9e0163ec7c782699a45f0413ac118aa3'],
+      ['redis-cloud-triggers-functions-preview-discontinued-2024-05', '856e546243f4e7d5230aaa3d3842742bf58597b2ffa206a81c67f0c45bcd459c', '6260c442eeb28a1b072d026cc1e1436488a1ab37f13cac2e45349b9d7b0bded9'],
+    ] as const;
+    for (const [candidateId, sourceFingerprint, evidenceFingerprint] of batch13Expected) {
+      expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === candidateId)).toMatchObject({ candidateId, state: 'needs_review', sourceFingerprint, evidenceFingerprint });
+    }
   });
 });

@@ -26,6 +26,7 @@ const usageFor = (candidate: CandidateChange, id: string, changed: boolean, dyna
     usage.domain = payload.affectedDomains?.[0];
     usage.model = payload.affectedModels?.[0];
     usage.resource = payload.affectedResources?.[0];
+    usage.operation = payload.apiOperationPatterns?.[0];
     usage.parameter = payload.affectedParameters?.[0];
     usage.authOrHeader = payload.authOrHeaderPatterns?.[0];
     usage.responseField = payload.affectedResponseFields?.[0];
