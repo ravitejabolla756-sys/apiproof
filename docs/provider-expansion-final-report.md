@@ -11,13 +11,13 @@ production compatibility registry.
 STARTING PROVIDERS: 15 reviewed providers; 67 discovery providers
 FINAL IMPLEMENTED PROVIDERS: 150 deterministic discovery identities
 FINAL REVIEWED PROVIDERS: 15
-TOTAL RULES: 20 reviewed production rules; 77 review-gated candidate records
-representing 65 provider IDs
+TOTAL RULES: 20 reviewed production rules; 78 review-gated candidate records
+representing 66 provider IDs
 AFFECTED FIXTURES: 19 productization-positive findings; the reviewed engine
 matrix is 60/60
 NOT_AFFECTED FIXTURES: Covered by the 60/60 reviewed engine matrix; no new
 production claim is inferred from discovery-only records
-NEEDS_REVIEW: 77 candidate records; all remain `needs_review`; the Anthropic
+NEEDS_REVIEW: 78 candidate records; all remain `needs_review`; the Anthropic
 parameter productization case remains explicitly partial
 BLOCKED: Human review and deterministic fixture work are still required before
 any candidate can become a reviewed production rule
@@ -88,6 +88,12 @@ changelog](https://docs.perplexity.ai/docs/resources/changelog):
 `google/gemini-3.1-flash-lite` documented as the replacement. It remains
 `needs_review` and outside the reviewed production registry.
 
+Batch 16 adds one Mixpanel lifecycle candidate from the [official SDK
+changelog](https://raw.githubusercontent.com/mixpanel/mixpanel-headless/main/CHANGELOG.md):
+`mixpanel-headless` 0.2.0 sunsets JQL as a breaking change. It remains limited
+to the named package, version range, and operation, and remains `needs_review`
+outside the reviewed production registry.
+
 The 15 reviewed providers and 20 reviewed rules remain unchanged. The known
 Anthropic parameter shape remains `NOT_AFFECTED (PARTIAL)` in productization;
 the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
@@ -98,7 +104,7 @@ the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
 TEST RESULTS: `pnpm test -- --maxWorkers=1` passed with 146 test files passed,
 1 skipped, 1,319 tests passed, and 4 skipped.
 
-TARGETED TESTS: Batch 15 candidate, fixture-coverage, benchmark, bundle,
+TARGETED TESTS: Batch 16 candidate, fixture-coverage, benchmark, bundle,
 review-workflow, and promotion-gate suites passed (6 files, 16 tests).
 
 TYPECHECK: PASS (`pnpm typecheck`)
@@ -131,7 +137,7 @@ does not hide application failures.
 - `f7c0d87` — Batch 12 Render legacy service sharing lifecycle candidate
 - `37d448e` — Batch 13 Together and Redis lifecycle candidates
 - `0274d13d58d3550f35d0d6acd1d82a082ba8d668` — Batch 14 Railway configuration lifecycle candidate
-- Current local checkpoint — Batch 15 Perplexity model lifecycle candidate
+- Current local checkpoint — Batch 15 Perplexity and Batch 16 Mixpanel lifecycle candidates
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO
@@ -147,6 +153,6 @@ separate human-review workflow. No provider should be counted as reviewed or
 production-supported until those gates pass.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
-Mixpanel, Razorpay, Resend, Segment, and SendGrid. Their omission is
+Razorpay, Resend, Segment, and SendGrid. Their omission is
 intentional because this checkpoint did not establish defensible lifecycle
 evidence for them.

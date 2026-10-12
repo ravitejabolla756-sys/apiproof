@@ -15,8 +15,8 @@ candidates do not increase that count.
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
 | Discovery catalog providers | 150 | Provider identification metadata only |
-| Official candidate records | 77 | 10 existing records plus 67 expansion candidates |
-| Providers represented by candidate records | 65 | Candidates remain `needs_review` |
+| Official candidate records | 78 | 10 existing records plus 68 expansion candidates |
+| Providers represented by candidate records | 66 | Candidates remain `needs_review` |
 
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
@@ -138,7 +138,7 @@ not reviewed production rules.
 
 Discovery providers still without a reviewed rule or expansion candidate are:
 
-`mixpanel`, `razorpay`, `resend`, `segment`, `sendgrid`.
+`razorpay`, `resend`, `segment`, `sendgrid`.
 
 ## Batch 09: communications, observability, payments, and billing API candidates
 
@@ -206,6 +206,14 @@ longer supported; the documented replacement is
 `google/gemini-3.1-flash-lite`. The candidate is limited to provider + model
 scope and remains outside the reviewed production registry.
 
+## Batch 16: Mixpanel headless SDK lifecycle candidate
+
+Batch 16 adds one deterministic, review-gated Mixpanel candidate from the
+[official SDK changelog](https://raw.githubusercontent.com/mixpanel/mixpanel-headless/main/CHANGELOG.md):
+version 0.2.0 sunsets JQL as a breaking change. The candidate is limited to
+the `mixpanel-headless` package, version 0.2.0 and later, and the JQL operation;
+it remains outside the reviewed production registry.
+
 The discovery catalog currently contains 150 providers. The Batch 05/06
 records are discovery-only and remain outside the reviewed compatibility
 registry. Further expansion work should prioritize evidence-backed lifecycle
@@ -217,7 +225,7 @@ candidates and deterministic fixtures rather than adding more names.
   remain 60/60; productization projection remains 19/20 positive with the
   documented Anthropic parameter limitation; reviewed production rules remain
   20.
-- Batch 15 targeted candidate, fixture-coverage, bundle, review, benchmark, and
+- Batch 16 targeted candidate, fixture-coverage, bundle, review, benchmark, and
   promotion-gate tests: 6 files, 16 tests passed.
 - Full serial suite: 146 files passed, 1 skipped; 1,319 tests passed, 4 skipped.
 - Root typecheck, lint, and production build passed. The build retains only the

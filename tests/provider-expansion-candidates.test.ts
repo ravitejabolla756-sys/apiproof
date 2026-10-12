@@ -194,6 +194,12 @@ describe('overnight provider expansion candidates', () => {
       evidenceFingerprint: '2222d53f0ac7fa70b86a8f3c6c57b7fa84d91b501336deed56bda3991db619aa',
       payload: { changeType: 'model_retired', applicabilityScope: { dimensions: ['provider', 'model'] }, affectedModels: ['google/gemini-3.1-flash-lite-preview'], replacement: { model: 'google/gemini-3.1-flash-lite' }, severity: 'high' },
     });
+    expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === 'mixpanel-headless-jql-sunset-0-2-0')).toMatchObject({
+      candidateId: 'mixpanel-headless-jql-sunset-0-2-0', state: 'needs_review', providerId: 'mixpanel',
+      sourceFingerprint: 'ce358aad890edb5d4cb53c76adf2d1137a7f9af057bb8e0e815f93c30d1cb192',
+      evidenceFingerprint: 'dd50518b0f4f7e2926487f83422b8687c58c8bf2c37dc950a7ad0c60b1b8e549',
+      payload: { changeType: 'method_removed', applicabilityScope: { dimensions: ['provider', 'package', 'package_version', 'operation'] }, affectedPackages: ['mixpanel-headless'], affectedVersionRange: '>=0.2.0', apiOperationPatterns: ['JQL'], severity: 'high' },
+    });
     const batch13Expected = [
       ['together-python-sdk-v2-files-retrieve-content-removed-2025-12-12', '4d36b4bb9006caed80c6993b44a49c82f30f5a8462beaf83ab7ada1b94fd1a56', '03a93b50d72c4e841805cadb8224bb510eb6076c393e707312cedadb3c39dcd7'],
       ['redis-cluster-slaves-renamed-redis-5-2020', 'cb0dbb6313b20d7f8ed57593fb9d8fc1e52a337db27643753c13500030ebe568', '32094247d6530d8c5bbe798fb1fcfa4f9e0163ec7c782699a45f0413ac118aa3'],
