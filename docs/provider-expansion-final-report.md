@@ -99,6 +99,19 @@ Anthropic parameter shape remains `NOT_AFFECTED (PARTIAL)` in productization;
 the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
 `NEEDS_REVIEW` cases.
 
+The exact providers represented by the 78 review-gated candidate records are:
+
+Adyen, Algolia, Amplitude, Anthropic, Atlassian, Auth0, AWS, Bitbucket,
+Braintree, Chargebee, CircleCI, Clerk, Cloudflare, Cohere, Databricks,
+Datadog, Deepgram, DigitalOcean, Discord, Elasticsearch, ElevenLabs, Firebase,
+GitHub, GitLab, Google Cloud, Google Gemini, Groq, HubSpot, Hugging Face,
+Intercom, LaunchDarkly, Linear, Mailgun, Microsoft Azure, Mistral, Mixpanel,
+MongoDB, Neon, Netlify, New Relic, Okta, OpenAI, Paddle, PayPal, Perplexity,
+Plaid, PlanetScale, Postmark, Railway, Redis, Render, Replicate, Salesforce,
+Sentry, Shopify, Slack, Snowflake, Square, Supabase, Together AI, Twilio,
+Upstash, Vercel, WooCommerce, WorkOS, and Zoom. All remain `needs_review`;
+this list is not a production-support claim.
+
 ## Validation
 
 TEST RESULTS: `pnpm test -- --maxWorkers=1` passed with 146 test files passed,

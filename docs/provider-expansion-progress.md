@@ -18,6 +18,18 @@ candidates do not increase that count.
 | Official candidate records | 78 | 10 existing records plus 68 expansion candidates |
 | Providers represented by candidate records | 66 | Candidates remain `needs_review` |
 
+Exact candidate-provider coverage (66 provider IDs): Adyen, Algolia, Amplitude,
+Anthropic, Atlassian, Auth0, AWS, Bitbucket, Braintree, Chargebee, CircleCI,
+Clerk, Cloudflare, Cohere, Databricks, Datadog, Deepgram, DigitalOcean,
+Discord, Elasticsearch, ElevenLabs, Firebase, GitHub, GitLab, Google Cloud,
+Google Gemini, Groq, HubSpot, Hugging Face, Intercom, LaunchDarkly, Linear,
+Mailgun, Microsoft Azure, Mistral, Mixpanel, MongoDB, Neon, Netlify, New Relic,
+Okta, OpenAI, Paddle, PayPal, Perplexity, Plaid, PlanetScale, Postmark,
+Railway, Redis, Render, Replicate, Salesforce, Sentry, Shopify, Slack,
+Snowflake, Square, Supabase, Together AI, Twilio, Upstash, Vercel, WooCommerce,
+WorkOS, and Zoom. These providers remain review-gated and are not production
+compatibility support.
+
 The current production product remains deterministic, detection-only, and
 limited to the 15 reviewed providers / 20 reviewed rules. Migration planning,
 code rewriting, and Draft PR generation are not implied by this inventory.
