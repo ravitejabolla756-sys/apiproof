@@ -200,8 +200,11 @@ candidates and deterministic fixtures rather than adding more names.
   remain 60/60; productization projection remains 19/20 positive with the
   documented Anthropic parameter limitation; reviewed production rules remain
   20.
-- Targeted Batch 11 candidate/benchmark/bundle/review/promotion tests: 5 files,
-  14 tests passed.
+- Batch 13 targeted candidate, fixture-coverage, bundle, review, benchmark, and
+  promotion-gate tests: 6 files, 16 tests passed.
+- Full serial suite: 146 files passed, 1 skipped; 1,319 tests passed, 4 skipped.
+- Root typecheck, lint, and production build passed. The build retains only the
+  pre-existing optional `source-map-support` and Next.js ESLint plugin warnings.
 - The new candidates are lifecycle `needs_review` records and do not alter the
   reviewed registry, scanner behavior, staging configuration, or external
   repositories.

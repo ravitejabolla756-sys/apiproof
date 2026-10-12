@@ -86,8 +86,8 @@ the engine still preserves its authoritative `AFFECTED`, `NOT_AFFECTED`, and
 TEST RESULTS: `pnpm test -- --maxWorkers=1` passed with 146 test files passed,
 1 skipped, 1,319 tests passed, and 4 skipped.
 
-TARGETED TESTS: Batch 11 candidate, benchmark, bundle, review-workflow, and
-promotion-gate suites passed (5 files, 14 tests).
+TARGETED TESTS: Batch 13 candidate, fixture-coverage, benchmark, bundle,
+review-workflow, and promotion-gate suites passed (6 files, 16 tests).
 
 TYPECHECK: PASS (`pnpm typecheck`)
 LINT: PASS (`pnpm lint`)
@@ -117,6 +117,7 @@ does not hide application failures.
 - `17f86c1` — Batch 11 Hugging Face, PlanetScale, Upstash, and Paddle lifecycle
   candidates
 - `f7c0d87` — Batch 12 Render legacy service sharing lifecycle candidate
+- `37d448e` — Batch 13 Together and Redis lifecycle candidates
 
 PRODUCTION_TOUCHED=NO
 PRODUCTION_DB_TOUCHED=NO
