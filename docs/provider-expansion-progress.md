@@ -14,7 +14,7 @@ candidates do not increase that count.
 | Starting reviewed providers | 15 | Baseline before this expansion run |
 | Current reviewed providers | 15 | Unchanged; no new human review was fabricated |
 | Current reviewed compatibility rules | 20 | Unchanged production registry |
-| Discovery catalog providers | 97 | Provider identification metadata only |
+| Discovery catalog providers | 150 | Provider identification metadata only |
 | Official candidate records | 50 | 10 existing records plus 40 expansion candidates |
 | Providers represented by candidate records | 44 | Candidates remain `needs_review` |
 
@@ -32,6 +32,14 @@ Bitrise, CircleCI, Buildkite, Docker, PostHog, Mux, and Mapbox. These entries
 use only deterministic API-domain identification and are intentionally marked
 `discovery`; they do not claim package/version awareness, compatibility rules,
 deprecation evidence, or production support.
+
+## Batch 06: discovery catalog completion
+
+The catalog now reaches 150 deterministic provider identities after adding
+official documentation-backed domains across AI, cloud, databases, CI/CD,
+communications, payments, and commerce. These records are also discovery-only;
+the catalog count must not be read as compatibility coverage or a reviewed
+production-support claim.
 
 ## Reviewed provider matrix
 
@@ -118,10 +126,10 @@ Discovery providers still without a reviewed rule or expansion candidate are:
 `railway`, `razorpay`, `redis`, `render`, `replicate`, `resend`, `segment`,
 `sendgrid`, `sentry`, `together-ai`, `upstash`, `woocommerce`.
 
-The discovery catalog currently contains 97 providers. Reaching a catalog of
-150 requires additional source-backed provider records; no name-only entries
-are being added to close that numerical gap. The 30 Batch 05 records are
-discovery-only and remain outside the reviewed compatibility registry.
+The discovery catalog currently contains 150 providers. The Batch 05/06
+records are discovery-only and remain outside the reviewed compatibility
+registry. Further expansion work should prioritize evidence-backed lifecycle
+candidates and deterministic fixtures rather than adding more names.
 
 ## Validation evidence
 

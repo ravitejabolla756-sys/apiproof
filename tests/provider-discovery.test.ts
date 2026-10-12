@@ -7,7 +7,7 @@ const scan = (files: Record<string, string>) => discoverProviders(new Map(Object
 
 describe('provider registry and TS/JS discovery', () => {
   it('has a unique catalog with discovery and generic version awareness only', () => {
-    expect(DISCOVERY_PROVIDERS).toHaveLength(97);
+    expect(DISCOVERY_PROVIDERS).toHaveLength(150);
     expect(() => validateProviderDefinitions(DISCOVERY_PROVIDERS)).not.toThrow();
     expect(new Set(DISCOVERY_PROVIDERS.map((item) => item.id)).size).toBe(DISCOVERY_PROVIDERS.length);
     expect(DISCOVERY_PROVIDERS.every((item) => item.displayName && item.capabilities.includes('discovery'))).toBe(true);

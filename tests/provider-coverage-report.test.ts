@@ -4,7 +4,7 @@ import { buildProviderIntelligenceCoverage, buildReviewedRuleCoverage, DISCOVERY
 describe('provider intelligence coverage report', () => {
   it('reports candidate and reviewed coverage without inventing production capability', () => {
     const report = buildProviderIntelligenceCoverage(DISCOVERY_PROVIDERS, OFFICIAL_CHANGE_CANDIDATE_REGISTRY, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(report).toHaveLength(97);
+    expect(report).toHaveLength(150);
     expect(report.map((entry) => entry.providerId)).toEqual([...report].sort((a, b) => a.providerId.localeCompare(b.providerId, 'en')).map((entry) => entry.providerId));
     expect(report.find((entry) => entry.providerId === 'openai')).toMatchObject({ candidateChangeCount: 2, reviewedChangeCount: 2, migrationCount: 0, verifiedMigrationCount: 0 });
     expect(report.find((entry) => entry.providerId === 'anthropic')).toMatchObject({ candidateChangeCount: 2, reviewedChangeCount: 2 });
