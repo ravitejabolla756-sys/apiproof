@@ -9,6 +9,7 @@ const projection = (candidate: (typeof EXPANSION_OFFICIAL_CHANGE_CANDIDATES)[num
   return {
     providerId: candidate.providerId, changeId: payload.changeId ?? candidate.candidateId, title: payload.title, description: payload.description,
     changeType: payload.changeType!, applicabilityScope: payload.applicabilityScope!, officialSourceUrl: candidate.sourceUrl, sourceType: candidate.sourceType,
+    affectedPackages: payload.affectedPackages, affectedVersionRange: payload.affectedVersionRange,
     apiOperationPatterns: payload.apiOperationPatterns ?? [], affectedParameters: payload.affectedParameters ?? [], affectedResponseFields: payload.affectedResponseFields ?? [],
     affectedEndpoints: payload.affectedEndpoints ?? [], affectedDomains: payload.affectedDomains, affectedModels: payload.affectedModels ?? [], affectedResources: payload.affectedResources ?? [],
     authOrHeaderPatterns: payload.authOrHeaderPatterns ?? [], parameterConditions: payload.parameterConditions, apiVersionMetadata: payload.apiVersionMetadata, enumMetadata: payload.enumMetadata, replacement: payload.replacement, severity: payload.severity ?? 'medium',
@@ -18,9 +19,15 @@ const projection = (candidate: (typeof EXPANSION_OFFICIAL_CHANGE_CANDIDATES)[num
 };
 
 const targetOf = (change: ReviewedCompatibilityChange): Partial<CompatibilityUsage> => ({
+  packageName: change.affectedPackages?.[0],
   model: change.affectedModels[0], endpoint: change.affectedEndpoints[0], operation: change.apiOperationPatterns[0], parameter: change.affectedParameters[0],
   responseField: change.affectedResponseFields[0], resource: change.affectedResources[0], domain: change.affectedDomains?.[0], authOrHeader: change.authOrHeaderPatterns[0], apiVersion: change.apiVersionMetadata?.version,
 });
+
+const benchmarkVersion = (change: ReviewedCompatibilityChange): string | undefined => {
+  if (!change.affectedVersionRange) return undefined;
+  return change.affectedVersionRange.startsWith('>=') ? '2.0.0' : change.affectedVersionRange.startsWith('<') ? '0.181.0' : undefined;
+};
 
 describe('provider expansion benchmark', () => {
   it('covers three meaningful outcomes for every verified expansion candidate', () => {
@@ -33,7 +40,7 @@ describe('provider expansion benchmark', () => {
       return [{ change, usage: base, expected: 'AFFECTED' as const }, { change, usage: wrong, expected: 'NOT_AFFECTED' as const }, { change, usage: dynamic, expected: 'NEEDS_REVIEW' as const }];
     });
     expect(cases).toHaveLength(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.length * 3);
-    const results = cases.map(({ change, usage, expected }) => ({ expected, actual: evaluateNormalizedCompatibility({ providerId: usage.providerId, usageIR: [normalizeCompatibilityUsage(usage, { language: 'typescript' })], completeEvidence: true }, change, { compatibilityProviders: new Set([usage.providerId]), requireOfficialProvenance: true }).status }));
+    const results = cases.map(({ change, usage, expected }) => ({ expected, actual: evaluateNormalizedCompatibility({ providerId: usage.providerId, usageIR: [normalizeCompatibilityUsage(usage, { language: 'typescript', declaredVersion: benchmarkVersion(change), resolvedVersion: benchmarkVersion(change), versionSource: 'lockfile', versionConfidence: 'exact' })], completeEvidence: true }, change, { compatibilityProviders: new Set([usage.providerId]), requireOfficialProvenance: true }).status }));
     expect(results.filter(({ expected, actual }) => expected !== actual)).toEqual([]);
   });
 });

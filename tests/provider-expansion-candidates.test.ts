@@ -168,5 +168,20 @@ describe('overnight provider expansion candidates', () => {
       providerId: 'woocommerce', state: 'needs_review',
       payload: { changeType: 'endpoint_removed', applicabilityScope: { dimensions: ['provider', 'resource'] }, affectedResources: ['Legacy REST API', 'legacy webhooks'] },
     });
+
+    const batch11Expected = [
+      ['huggingface-hub-v2-deprecated-api-removals', '265960785887d32d4533398a220c575508512fa130c4d47738c515aa724831ec', '1fa58b30e83f59a0e7d9ed0d5bf6c4e0594bb38ca514e9506deafb23f0b74826'],
+      ['planetscale-legacy-connection-string-brownout-2024-09-03', 'b7c66274efa62f81e9b0930143493639906ee962bf9a8eca45810ce967e2fc59', '8574e076d9f883dc2190f64e62547621e29454b9d0867d9b382d02985d4780a6'],
+      ['planetscale-pscale-workflow-deprecation-2026-09-29', 'e0bff4aeab13244175ad9224827922ca23c32ca6dfd4a2c365330ae8dad982a3', '794732a382091cf0abbd282012973ec72d82a5933e6d14c820af704acedea6a2'],
+      ['planetscale-cli-pre-0-182-commands-removed-2024-07-01', '737f8661a18d80eac6854f47942f498384ac71174dabc4b607b22471737c505c', '719f1fbc065cdeae90c89b93a9e5c25f828695c1d1ec2a37d491770c9e69abc0'],
+      ['upstash-kafka-discontinuation-2025', 'f56c7fe7fefc9aacf3571140e3f7e53749fe467492a3124fbc6870ae95ae09d7', 'a95eff4ff7783f5c3ce851f4eecf0c876d847d20893ccc0017a0e561f51c26eb'],
+      ['paddle-stored-payment-method-id-deprecated', '6419b13fd15453d98b1b3ba19175154e2dfda160b5954906a988fb04c255e2e4', '4bf8382299f66e652e5007da145026e16a0d084ba4c64c7b5e2a1619f53f12ad'],
+      ['paddle-balance-report-type-deprecated', '1c86b636287037854eb63570d2a4e9fb4f06375142b55613556b09f2c0f608e5', 'fbbca93a49b25893574e5ee007068edd2e756a7efb93242266f90babd144fe06'],
+    ] as const;
+    for (const [candidateId, sourceFingerprint, evidenceFingerprint] of batch11Expected) {
+      expect(EXPANSION_OFFICIAL_CHANGE_CANDIDATES.find((item) => item.candidateId === candidateId)).toMatchObject({
+        candidateId, state: 'needs_review', sourceFingerprint, evidenceFingerprint,
+      });
+    }
   });
 });
