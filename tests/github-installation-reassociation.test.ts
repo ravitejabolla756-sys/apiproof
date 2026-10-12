@@ -114,6 +114,21 @@ describe('GitHub Installation Reassociation Hardening', () => {
     expect(allRows.length).toBe(1);
   });
 
+  it('accepts a valid GitHub callback without a same-host APIProof session cookie', async () => {
+    const { user } = await createUserWithSession('cross-host@example.com', 'Pass12345!', 'Cross Host');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, ws.id);
+
+    const req = new Request(`https://preview-callback.example/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&state=${state}`);
+    const res = await callbackGet(req);
+
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as CallbackSuccessData;
+    expect(data.success).toBe(true);
+    expect(data.workspaceId).toBe(ws.id);
+    expect(await getWorkspaceGitHubInstallation(ws.id)).not.toBeNull();
+  });
+
   it('redirects HTML OAuth completion with a no-store response for cross-tab refresh', async () => {
     const { user, session } = await createUserWithSession('html-callback@example.com', 'Pass12345!', 'HTML Callback');
     const ws = await getDefaultWorkspaceForUser(user.id);

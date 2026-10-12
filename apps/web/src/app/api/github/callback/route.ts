@@ -12,11 +12,11 @@ import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/work
 import { logger, safeErrorCode } from '@/lib/server/logger.js';
 
 export async function GET(req: Request) {
-  // 1. Authenticate APIProof session
+  // GitHub may return to a different preview host than the one that started
+  // installation, so the session cookie is not always present. The signed,
+  // persisted, single-use state is the OAuth capability; a matching session,
+  // when present, is still checked by inspectGitHubInstallationState.
   const user = await getCurrentUser(req);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized: Session required for installation callback.', code: 'UNAUTHORIZED' }, { status: 401 });
-  }
 
   const urlObj = new URL(req.url);
   const installationId = urlObj.searchParams.get('installation_id');
@@ -34,7 +34,7 @@ export async function GET(req: Request) {
   // 3 & 4. Validate state (bound to user and workspace, single-use, unexpired)
   // Ownership preflight must not consume the one-time state. A rejected
   // cross-workspace callback must remain retryable after authorized repair.
-  const stateVerification = await inspectGitHubInstallationState(state.trim(), user.id);
+  const stateVerification = await inspectGitHubInstallationState(state.trim(), user?.id);
   if (!stateVerification.valid || !stateVerification.workspaceId) {
     const code = stateVerification.errorCode === 'INVALID_STATE'
       ? 'INVALID_CALLBACK_STATE'
@@ -45,11 +45,16 @@ export async function GET(req: Request) {
     }, { status: 400 });
   }
 
+  const callbackUserId = stateVerification.userId;
+  if (!callbackUserId) {
+    return NextResponse.json({ error: 'Invalid callback state.', code: 'INVALID_CALLBACK_STATE' }, { status: 400 });
+  }
+
   const workspaceId = stateVerification.workspaceId;
 
   // Verify membership in resolved workspace
   try {
-    await requireWorkspaceMember(user.id, workspaceId);
+    await requireWorkspaceMember(callbackUserId, workspaceId);
   } catch {
     return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403 });
   }
@@ -84,7 +89,7 @@ export async function GET(req: Request) {
   if (existingRecord && existingRecord.workspace_id !== workspaceId) {
     // Reassociation requested: verify caller owns BOTH target workspace and existing workspace
     try {
-      await requireWorkspaceOwner(user.id, workspaceId);
+      await requireWorkspaceOwner(callbackUserId, workspaceId);
     } catch {
       return NextResponse.json({
         error: 'Action requires workspace owner privileges on target workspace.',
@@ -93,7 +98,7 @@ export async function GET(req: Request) {
     }
 
     try {
-      await requireWorkspaceOwner(user.id, existingRecord.workspace_id);
+      await requireWorkspaceOwner(callbackUserId, existingRecord.workspace_id);
     } catch {
       return NextResponse.json({
         error: 'This GitHub installation is already associated with another workspace.',
@@ -102,7 +107,7 @@ export async function GET(req: Request) {
     }
   }
 
-  const consumedState = await verifyAndConsumeGitHubInstallationState(state.trim(), user.id);
+  const consumedState = await verifyAndConsumeGitHubInstallationState(state.trim(), callbackUserId);
   if (!consumedState.valid || consumedState.workspaceId !== workspaceId) {
     return NextResponse.json({
       error: consumedState.error || 'Invalid callback state.',
@@ -154,7 +159,7 @@ export async function GET(req: Request) {
       VALUES (?, ?, 'github_connected', ?, ?, ?)
     `, [
       `act_${crypto.randomBytes(10).toString('hex')}`,
-      user.id,
+      callbackUserId,
       activityTitle,
       activityDesc,
       now,

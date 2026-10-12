@@ -134,8 +134,8 @@ export async function verifyAndConsumeGitHubInstallationState(
 /** Validate callback state without consuming it for ownership preflight. */
 export async function inspectGitHubInstallationState(
   state: string,
-  userId: string
-): Promise<{ valid: boolean; workspaceId?: string; error?: string; errorCode?: string }> {
+  userId?: string
+): Promise<{ valid: boolean; userId?: string; workspaceId?: string; error?: string; errorCode?: string }> {
   if (!state || typeof state !== 'string' || !state.includes('.')) {
     return { valid: false, error: 'Invalid callback state format.', errorCode: 'INVALID_STATE' };
   }
@@ -157,8 +157,10 @@ export async function inspectGitHubInstallationState(
   if (!row) return { valid: false, error: 'Callback state not recognized or expired.', errorCode: 'INVALID_STATE' };
   if (row.consumed_at !== null && row.consumed_at !== undefined) return { valid: false, error: 'Callback state has already been used.', errorCode: 'REUSED_STATE' };
   if (Number(row.expires_at) < Date.now()) return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
-  if (row.user_id !== userId) return { valid: false, error: 'Callback state does not belong to the authenticated user.', errorCode: 'STATE_USER_MISMATCH' };
-  return { valid: true, workspaceId: row.workspace_id };
+  if (userId && row.user_id !== userId) {
+    return { valid: false, error: 'Callback state does not belong to the authenticated user.', errorCode: 'STATE_USER_MISMATCH' };
+  }
+  return { valid: true, userId: row.user_id, workspaceId: row.workspace_id };
 }
 
 /**
