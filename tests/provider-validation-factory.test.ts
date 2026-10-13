@@ -26,11 +26,13 @@ describe('multi-provider validation factory', () => {
     expect(report.productionPersistence.rawSourcePresentInProjection).toBe(false);
     expect(report.privacy).toEqual({ rawSourceExternalTransmission: false, secretLikeValuesPresentInProjection: false });
     expect(report.counts.productizationCases).toBe(60);
-    expect(report.counts.productizationPasses).toBe(19);
-    expect(report.counts.productizationPartial).toBe(41);
+    expect(report.counts.productizationPasses).toBe(60);
+    expect(report.counts.productizationPartial).toBe(0);
+    expect(report.rules.flatMap((rule) => rule.productization).every((item) => item.status !== 'UNAVAILABLE')).toBe(true);
     expect(report.rules.every((rule) => rule.productization[0]?.discovered)).toBe(true);
-    expect(report.rules.filter((rule) => rule.productization[0]?.pass)).toHaveLength(19);
-    expect(report.rules.find((rule) => rule.changeId === 'anthropic-opus-4-7-parameter-restrictions')?.productization[0]?.status).toBe('NOT_AFFECTED');
+    expect(report.rules.filter((rule) => rule.productization[0]?.pass)).toHaveLength(20);
+    expect(report.rules.find((rule) => rule.changeId === 'anthropic-opus-4-7-parameter-restrictions')?.productization[0]?.status).toBe('AFFECTED');
+    expect(report.rules.find((rule) => rule.changeId === 'anthropic-opus-4-7-parameter-restrictions')?.productization[0]?.reasonCodes).not.toContain('PARAMETER_VALUE_UNRESOLVED');
     for (const changeId of [
       'aws-cloudwatch-evidently-end-of-support-2025-10-16',
       'clerk-api-2026-05-12-metadata-fields-removed',

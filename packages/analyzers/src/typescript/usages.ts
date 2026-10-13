@@ -37,6 +37,12 @@ function staticString(node: Node | undefined): string | undefined {
   return undefined;
 }
 
+function dynamicHttpEndpoint(node: Node | undefined, provider: ProviderDescriptor): string | undefined {
+  if (!node || !Node.isTemplateExpression(node)) return undefined;
+  const normalized = node.getText().slice(1, -1).replace(/\$\{[^}]+\}/g, 'dynamic');
+  return matchesProviderDomain(normalized, provider.apiDomains ?? []) ? normalized : undefined;
+}
+
 function resolveObjectLiteral(node: Node | undefined, seen = new Set<Node>()): Node | undefined {
   if (!node || seen.has(node)) return undefined;
   seen.add(node);
@@ -77,13 +83,14 @@ function headerEvidence(object: Node | undefined, provider: ProviderDescriptor):
       continue;
     }
     const propertyName = property.getNameNode();
-    const name = Node.isComputedPropertyName(propertyName) ? '<dynamic-header-name>' : (Node.isIdentifier(propertyName) ? propertyName.getText() : staticString(propertyName));
+    const dynamicName = Node.isComputedPropertyName(propertyName);
+    const name = dynamicName ? '<dynamic-header-name>' : (Node.isIdentifier(propertyName) ? propertyName.getText() : staticString(propertyName));
     if (!name) {
       evidence.push({ name: '<dynamic-header-name>', static: false, redacted: true, location: location(propertyName) });
       continue;
     }
     const value = staticString(property.getInitializer());
-    const staticValue = value !== undefined;
+    const staticValue = !dynamicName && value !== undefined;
     const safeValue = staticValue && authoritative.has(name.toLowerCase()) && !isSensitiveHeaderName(name);
     evidence.push({ name, ...(safeValue ? { value } : {}), static: staticValue, redacted: staticValue && !safeValue, location: location(propertyName) });
   }
@@ -97,14 +104,16 @@ function httpRequest(call: Node, provider: ProviderDescriptor, bindings: Binding
   const isAxios = expression === 'axios' || /^axios\.(?:get|post|put|patch|delete|head|request)$/.test(expression);
   if (!isFetch && !isAxios) return undefined;
   const argumentsList = call.getArguments();
-  const endpoint = staticString(isAxios && expression === 'axios.request' ? propertyInitializer(argumentsList[0], 'url') : argumentsList[0]);
+  const endpointNode = isAxios && expression === 'axios.request' ? propertyInitializer(argumentsList[0], 'url') : argumentsList[0];
+  const staticEndpoint = staticString(endpointNode);
+  const endpoint = staticEndpoint ?? dynamicHttpEndpoint(endpointNode, provider);
   if (!endpoint || !matchesProviderDomain(endpoint, provider.apiDomains ?? [])) return undefined;
   const config = isAxios && expression === 'axios.request' ? argumentsList[0] : argumentsList[1];
   const headers = headerEvidence(propertyInitializer(config, 'headers'), provider);
   const version = resolveApiVersion(headers, provider.apiVersionHeaders ?? []);
   const body = propertyInitializer(config, 'body') ?? propertyInitializer(config, 'data');
   const argumentsFacts = body ? extractArguments([body], bindings) : undefined;
-  return { endpoint, headers, ...(argumentsFacts?.length ? { arguments: argumentsFacts } : {}), ...(version.apiVersion ? { apiVersion: version.apiVersion } : {}), dynamic: version.dynamic };
+  return { endpoint, headers, ...(argumentsFacts?.length ? { arguments: argumentsFacts } : {}), ...(version.apiVersion ? { apiVersion: version.apiVersion } : {}), dynamic: staticEndpoint === undefined || version.dynamic || headers.some((header) => !header.static) };
 }
 
 export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor, snapshot: RepositorySnapshot): UsageFinding[] {

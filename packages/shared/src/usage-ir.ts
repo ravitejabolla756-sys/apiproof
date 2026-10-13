@@ -25,7 +25,7 @@ export const NormalizedUsageIRSchema = z.strictObject({
   versionConfidence: z.enum(['exact', 'declared-only', 'unknown']),
   operation: z.string().optional(), resource: z.string().optional(), method: z.string().optional(),
   endpoint: z.string().optional(), domain: z.string().optional(), model: z.string().optional(), parameters: z.array(z.string()),
-  parameterValues: z.array(z.strictObject({ parameter: z.string().min(1), value: JsonPrimitiveSchema.optional(), status: z.enum(['allowed', 'disallowed', 'unknown']).optional() })).optional(),
+  parameterValues: z.array(z.strictObject({ parameter: z.string().min(1), hash: z.string().regex(/^[a-f0-9]{64}$/).optional(), value: JsonPrimitiveSchema.optional(), status: z.enum(['allowed', 'disallowed', 'unknown']).optional() })).optional(),
   responseFields: z.array(z.string()), authEvidence: z.array(z.string()), authOrHeader: z.string().optional(), apiVersion: z.string().optional(),
   headerEvidence: z.array(NormalizedHeaderEvidenceSchema).max(100).optional(),
   dynamic: z.boolean(), location: z.strictObject({ file: z.string(), line: z.number().int().positive(), column: z.number().int().positive(), symbol: z.string().optional() }),

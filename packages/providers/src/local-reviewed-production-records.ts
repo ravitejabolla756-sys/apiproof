@@ -102,6 +102,10 @@ const reviewedAnthropicParameterRecord = promoteCandidateToReviewed(
     url: LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE.sourceUrl,
     summary: 'Anthropic documents temperature, top_p, and top_k non-default values returning HTTP 400 for Claude Opus 4.7 and later models and Claude Mythos Preview; omit them and use prompting.',
     accessedAt: LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW.reviewedAt,
+  }, {
+    url: 'https://platform.claude.com/docs/en/api/messages/create',
+    summary: 'Anthropic Messages API reference documents temperature default 1.0 and top_p default 0.99 for backwards compatibility on models released after Claude Opus 4.6; other values are rejected on affected models.',
+    accessedAt: LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW.reviewedAt,
   }],
 );
 

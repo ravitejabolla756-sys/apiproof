@@ -44,8 +44,8 @@ function providerFor(change: ReviewedCompatibilityChange) {
 
 function ambiguousAnthropicSource(source: string): string {
   const replaced = source
-    .replace(/temperature:\s*1\b/, 'temperature')
-    .replace(/\{\s*(model:\s*'[^']+'),\s*temperature\s*\}/, '{ temperature, $1 }');
+    .replace(/temperature:\s*[0-9]+(?:\.[0-9]+)?\b/, 'temperature')
+    .replace(/\{\s*(model:\s*["'][^"']+["']),\s*temperature\s*\}/, '{ temperature, $1 }');
   if (replaced === source || !replaced.includes('{ temperature, model:')) throw new Error('MULTI_PROVIDER_FIXTURE_ANTHROPIC_PARAMETER_PATTERN_MISSING');
   return replaced.replace(/^(import[^\n]+\n)/, '$1const temperature = Number(process.env.MY_OWL_AMBIGUOUS_TEMPERATURE ?? "1");\n');
 }

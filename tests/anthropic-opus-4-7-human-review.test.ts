@@ -20,7 +20,7 @@ const humanReviewInput = {
   notes: "I verified the complete official Anthropic model-deprecations source and confirmed that the candidate-specific evidence is unchanged: temperature, top_p, and top_k are restricted to non-default values for Claude Opus 4.7 and later models and Claude Mythos Preview, with HTTP 400 behavior and guidance to omit the parameters and use prompting. I approve only deterministic applicability supported by the normalized candidate. I do not assert numeric default values, SDK package, SDK version, SDK method, endpoint, unsupported model aliases, or guessed identifiers for future models covered by 'and later'.",
   sourceFingerprint: '963a809d2191441ef8c2bcbfbdab4071fccc129394b48af249249bccecc4594c',
   evidenceFingerprint: '4b7fec20394d52ac8c69563bff460509c0873fff225ecbc9489982ef45ab6948',
-  candidateFingerprint: '6f4b69347a030bfb7dfc28d039eb50ac93e6ca4c931294f776aa548dc9ae64dc',
+  candidateFingerprint: '2df8a119d2de79c2b42c25ecb774acb8680396c8f205b40b3157e2e0b5a627fb',
 };
 
 const reviewedCandidate = reviewCandidate(candidate, humanReviewInput);

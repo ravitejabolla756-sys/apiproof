@@ -112,10 +112,11 @@ function endpointValue(change: ReviewedCompatibilityChange): string | undefined 
   return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 }
 
-function providerUrl(provider: ProviderDefinition, change: ReviewedCompatibilityChange): string {
-  const endpoint = endpointValue(change);
+function providerUrl(provider: ProviderDefinition, change: ReviewedCompatibilityChange, kind: ValidationFixtureKind = 'affected'): string {
+  const endpoint = kind === 'affected' ? endpointValue(change) : fixtureValue(change, 'endpoint', kind);
   if (endpoint?.startsWith('http')) return endpoint;
-  const domain = (change.affectedDomains?.[0] ?? provider.apiDomains[0] ?? 'api.invalid').replace(/^\*\./, 'project.');
+  const domainValue = kind === 'affected' ? change.affectedDomains?.[0] : fixtureValue(change, 'domain', kind);
+  const domain = (domainValue ?? provider.apiDomains[0] ?? 'api.invalid').replace(/^\*\./, 'project.');
   const path = endpoint && endpoint.startsWith('/') ? endpoint : '/v1/validation';
   return `https://${domain}${path}`;
 }
@@ -147,6 +148,37 @@ function dimensionValue(change: ReviewedCompatibilityChange, dimension: string):
 
 function replacementOrSafeValue(change: ReviewedCompatibilityChange, dimension: string): string {
   return firstReplacement(change, dimension) ?? `unrelated-${change.providerId}-${dimension}`;
+}
+
+function fixtureValue(change: ReviewedCompatibilityChange, dimension: string, kind: ValidationFixtureKind): string | undefined {
+  if (kind === 'needs_review') return undefined;
+  return kind === 'affected' ? dimensionValue(change, dimension) : replacementOrSafeValue(change, dimension);
+}
+
+function dynamicValue(name: string): string {
+  return `(process.env.MY_OWL_VALIDATION_${name.toUpperCase()} ?? '')`;
+}
+
+function dynamicInterpolation(name: string): string {
+  return `\${${dynamicValue(name)}}`;
+}
+
+function dynamicProviderUrl(provider: ProviderDefinition, change: ReviewedCompatibilityChange): string {
+  const staticUrl = providerUrl(provider, change, 'affected');
+  let origin: string;
+  let hostname: string;
+  try {
+    const parsed = new URL(staticUrl);
+    origin = parsed.origin;
+    hostname = parsed.hostname;
+  } catch {
+    origin = 'https://api.invalid';
+    hostname = 'api.invalid';
+  }
+  const dimensions = new Set(change.applicabilityScope.dimensions);
+  if (dimensions.has('domain')) return `\`https://${dynamicInterpolation('domain')}.${hostname}/v1/validation\``;
+  if (dimensions.has('endpoint')) return `\`${origin}/${dynamicInterpolation('endpoint')}\``;
+  return JSON.stringify(staticUrl);
 }
 
 function parameterStatus(change: ReviewedCompatibilityChange, kind: ValidationFixtureKind): CompatibilityUsage['parameterValueStatus'] | undefined {
@@ -196,53 +228,77 @@ function evaluateEngineCase(change: ReviewedCompatibilityChange, kind: Validatio
     reasonCodes: result.reasonCodes, usageCount: result.matchedUsages.length, discovered: true, normalizedUsageCount: usageIR.length, proofCount: 0, findingCount: 0 };
 }
 
-export function analyzerSource(provider: ProviderDefinition, change: ReviewedCompatibilityChange): Record<string, string> {
+export function analyzerSourceForKind(provider: ProviderDefinition, change: ReviewedCompatibilityChange, kind: ValidationFixtureKind): Record<string, string> {
   const packageName = sourcePackageName(provider);
   const dimensions = new Set(change.applicabilityScope.dimensions);
   const usesHttpEvidence = dimensions.has('endpoint') || dimensions.has('domain') || dimensions.has('api_version') || dimensions.has('auth_or_header');
-  const url = providerUrl(provider, change);
+  const url = kind === 'needs_review' ? dynamicProviderUrl(provider, change) : providerUrl(provider, change, kind);
+  const urlExpression = kind === 'needs_review' ? url : JSON.stringify(url);
   const versionHeader = change.apiVersionMetadata?.headerNames?.[0] ?? provider.apiVersionHeaders?.[0] ?? 'x-api-version';
-  const versionValue = change.apiVersionMetadata?.version ?? 'validation-version';
-  const authHeader = change.authOrHeaderPatterns[0];
+  const versionValue = fixtureValue(change, 'api_version', kind) ?? dynamicValue('api_version');
+  const authHeader = fixtureValue(change, 'auth_or_header', kind);
   const headerLines = [
-    ...(dimensions.has('api_version') ? [`'${versionHeader}': '${versionValue}'`] : []),
-    ...(dimensions.has('auth_or_header') && authHeader ? [`'${authHeader}': 'static-class-evidence'`] : []),
+    ...(dimensions.has('api_version') ? [`'${versionHeader}': ${kind === 'needs_review' ? versionValue : JSON.stringify(versionValue)}`] : []),
+    ...(dimensions.has('auth_or_header') ? [kind === 'needs_review'
+      ? `[${dynamicValue('auth_header')}]: 'static-class-evidence'`
+      : `'${authHeader ?? change.authOrHeaderPatterns[0] ?? 'x-validation-auth'}': 'static-class-evidence'`] : []),
   ];
   if (usesHttpEvidence) {
-    const parameter = change.affectedParameters[0];
-    const bodyLine = dimensions.has('parameter') && parameter ? `, body: { ${objectProperty(parameter, '1')} }` : '';
+    const parameter = fixtureValue(change, 'parameter', kind) ?? (kind === 'needs_review' ? change.affectedParameters[0] : undefined);
+    const parameterExpression = parameter ?? change.affectedParameters[0];
+    const parameterValueExpression = kind === 'needs_review'
+      ? dynamicValue('parameter_value')
+      : change.parameterConditions?.length ? '0.5' : '1';
+    const bodyLine = dimensions.has('parameter') && parameterExpression
+      ? `, body: { ${objectProperty(parameterExpression, parameterValueExpression)} }` : '';
     return {
       'package.json': JSON.stringify({ dependencies: { [packageName]: PACKAGE_VERSION } }),
-      [POSITIVE_FILE]: `import '${packageName}';\nexport async function validate() {\n  return fetch('${url}', { headers: { ${headerLines.join(', ')} }${bodyLine} });\n}\n`,
+      [POSITIVE_FILE]: `import '${packageName}';\nexport async function validate() {\n  return fetch(${urlExpression}, { headers: { ${headerLines.join(', ')} }${bodyLine} });\n}\n`,
     };
   }
-  const model = change.affectedModels[0];
-  const parameter = change.affectedParameters[0];
-  const responseField = change.affectedResponseFields[0] ?? 'field';
-  const resource = change.affectedResources[0] ?? 'messages';
-  const operation = change.apiOperationPatterns[0] ?? 'create';
+  const model = dimensions.has('model')
+    ? fixtureValue(change, 'model', kind) ?? (kind === 'needs_review' ? change.affectedModels[0] : undefined)
+    : undefined;
+  const parameter = dimensions.has('parameter')
+    ? fixtureValue(change, 'parameter', kind) ?? (kind === 'needs_review' ? change.affectedParameters[0] : undefined)
+    : undefined;
+  const responseField = dimensions.has('response_field')
+    ? fixtureValue(change, 'response_field', kind) ?? dynamicValue('response_field')
+    : undefined;
+  const resource = dimensions.has('resource')
+    ? fixtureValue(change, 'resource', kind) ?? (kind === 'needs_review' ? dynamicValue('resource') : 'messages')
+    : change.affectedResources[0] ?? 'messages';
+  const operation = dimensions.has('operation')
+    ? fixtureValue(change, 'operation', kind) ?? (kind === 'needs_review' ? dynamicValue('operation') : 'create')
+    : change.apiOperationPatterns[0] ?? 'create';
+  const parameterValueExpression = kind === 'needs_review'
+    ? dynamicValue('parameter_value')
+    : change.parameterConditions?.length ? '0.5' : '1';
   const properties = [
-    ...(model ? [objectProperty('model', `'${model}'`)] : []),
-    ...(parameter ? [objectProperty(parameter, '1')] : []),
+    ...(model ? [objectProperty('model', kind === 'needs_review' ? dynamicValue('model') : JSON.stringify(model))] : []),
+    ...(parameter ? [objectProperty(parameter, parameterValueExpression)] : []),
   ];
   const callTarget = dimensions.has('operation')
-    ? pathExpression('client', operation)
-    : pathExpression(pathExpression('client', resource), operation);
+    ? (kind === 'needs_review' ? 'client[operation]' : pathExpression('client', operation))
+    : (kind === 'needs_review' ? 'client[resource][operation]' : pathExpression(pathExpression('client', resource), operation));
   const call = `${callTarget}({ ${properties.join(', ')} })`;
-  const response = dimensions.has('response_field') ? `const response = await ${call}; return ${memberExpression('response', responseField)};` : `return ${call};`;
+  const response = dimensions.has('response_field') ? `const response = await ${call}; return ${kind === 'needs_review' ? 'response[responseField]' : memberExpression('response', responseField ?? 'field')};` : `return ${call};`;
   return {
     'package.json': JSON.stringify({ dependencies: { [packageName]: PACKAGE_VERSION } }),
-    [POSITIVE_FILE]: `import Client from '${packageName}';\nconst client = new Client({});\nexport async function validate() { ${response} }\n`,
+    [POSITIVE_FILE]: `import Client from '${packageName}';\nconst client = new Client({});\n${kind === 'needs_review' ? `const model = ${dynamicValue('model')};\nconst parameterValue = ${dynamicValue('parameter_value')};\nconst responseField = ${dynamicValue('response_field')};\nconst resource = ${dynamicValue('resource')};\nconst operation = ${dynamicValue('operation')};\n` : ''}export async function validate() { ${response} }\n`,
   };
 }
 
+export function analyzerSource(provider: ProviderDefinition, change: ReviewedCompatibilityChange): Record<string, string> {
+  return analyzerSourceForKind(provider, change, 'affected');
+}
+
 async function evaluateProductizationCase(change: ReviewedCompatibilityChange, kind: ValidationFixtureKind): Promise<ProviderValidationCase> {
-  if (kind !== 'affected') {
-    return { providerId: change.providerId, changeId: change.changeId, layer: 'productization', kind, status: 'UNAVAILABLE', pass: false,
-      reasonCodes: ['PRODUCTIZATION_FIXTURE_NOT_EXECUTED'], usageCount: 0, discovered: false, normalizedUsageCount: 0, proofCount: 0, findingCount: 0,
-      note: 'The factory reserves productization execution for the source-backed positive fixture; negative and dynamic cases are evaluated by the production engine.' };
-  }
-  const scan = await runProductizationScan({ repositoryId: `provider-validation-${change.changeId}`, scanId: `validation-${change.changeId}`, files: analyzerSource(providerFor(change.providerId), change) });
+  const scan = await runProductizationScan({
+    repositoryId: `provider-validation-${change.changeId}-${kind}`,
+    scanId: `validation-${change.changeId}-${kind}`,
+    files: analyzerSourceForKind(providerFor(change.providerId), change, kind),
+  });
   const result = scan.compatibilityResults.find((item) => item.changeId === change.changeId);
   const projection = boundedProductizationProjection(scan);
   const projectedFindings = productizationFindings(scan);
@@ -255,7 +311,7 @@ async function evaluateProductizationCase(change: ReviewedCompatibilityChange, k
     && !serializedProjection.includes("import '");
   const findingsProjectionValid = projectedFindings.every((finding) => Boolean(finding.id && finding.changeId && finding.provider && finding.filePath && finding.reasonCodes.length));
   const rawSourcePresentInProjection = serializedProjection.includes('export async function validate') || serializedProjection.includes("import '");
-  const expected: ProviderValidationCase['status'] = 'AFFECTED';
+  const expected: ProviderValidationCase['status'] = kind === 'affected' ? 'AFFECTED' : kind === 'not_affected' ? 'NOT_AFFECTED' : 'NEEDS_REVIEW';
   const note = result?.status === expected && projection.schemaVersion === 2 ? undefined : 'Analyzer/productization coverage did not produce an affected result for this rule shape; engine evidence remains authoritative for this matrix case.';
   return { providerId: change.providerId, changeId: change.changeId, layer: 'productization', kind, status: result?.status ?? 'UNAVAILABLE', pass: result?.status === expected,
     reasonCodes: result?.reasonCodes ?? ['PRODUCTIZATION_RESULT_MISSING'], usageCount: result?.matchedUsages.length ?? 0, discovered: scan.discoveries.some((item) => item.providerId === change.providerId),
@@ -275,12 +331,9 @@ export async function runProviderValidationFactory(): Promise<ProviderValidation
   let findingsProjected = 0;
   for (const change of changes) {
     const engine = (['affected', 'not_affected', 'needs_review'] as const).map((kind) => evaluateEngineCase(change, kind));
-    const unavailableProductizationCase = (kind: 'not_affected' | 'needs_review'): ProviderValidationCase => ({
-      providerId: change.providerId, changeId: change.changeId, layer: 'productization' as const, kind, status: 'UNAVAILABLE' as const, pass: false,
-      reasonCodes: ['PRODUCTIZATION_FIXTURE_NOT_EXECUTED'], usageCount: 0, discovered: false, normalizedUsageCount: 0, proofCount: 0, findingCount: 0,
-      note: 'Negative and ambiguous cases are evaluated by the same production normalized evaluator above.'
-    });
-    const productization: ProviderValidationCase[] = [await evaluateProductizationCase(change, 'affected'), unavailableProductizationCase('not_affected'), unavailableProductizationCase('needs_review')];
+    const productization: ProviderValidationCase[] = await Promise.all(
+      (['affected', 'not_affected', 'needs_review'] as const).map((kind) => evaluateProductizationCase(change, kind)),
+    );
     const positiveUsage = normalizeCompatibilityUsage(usageFor(change, 'affected'), { language: 'typescript' });
     const wrongProviderUsage = normalizeCompatibilityUsage({ ...usageFor(change, 'affected'), id: `${change.changeId}:wrong-provider`, providerId: 'unrelated-provider' }, { language: 'typescript' });
     const wrongProviderResults = evaluateRegisteredNormalizedCompatibility({ providerId: 'unrelated-provider', usageIR: [wrongProviderUsage], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);

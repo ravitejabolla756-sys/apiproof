@@ -43,8 +43,8 @@ describe('Anthropic Opus 4.7 parameter candidate', () => {
     expect(candidate.state).toBe('needs_review');
     expect(candidate.payload.applicabilityScope).toEqual({ dimensions: ['provider', 'model', 'parameter'] });
     expect(candidate.payload.parameterConditions).toEqual([
-      { parameter: 'temperature', predicate: 'non-default' },
-      { parameter: 'top_p', predicate: 'non-default' },
+      { parameter: 'temperature', predicate: 'non-default', values: [1] },
+      { parameter: 'top_p', predicate: 'non-default', values: [0.99] },
       { parameter: 'top_k', predicate: 'non-default' },
     ]);
     expect(candidate.sourceEvidence?.sourceLocator).toBe('section:API parameter deprecations');

@@ -68,10 +68,10 @@ export const LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION = {
   decision: 'approve-for-promotion-review',
   reviewer: 'Ravi Teja',
   reviewedAt: '2026-10-05',
-  notes: "I verified the complete official Anthropic model-deprecations source and confirmed that the candidate-specific evidence is unchanged: temperature, top_p, and top_k are restricted to non-default values for Claude Opus 4.7 and later models and Claude Mythos Preview, with HTTP 400 behavior and guidance to omit the parameters and use prompting. I approve only deterministic applicability supported by the normalized candidate. I do not assert numeric default values, SDK package, SDK version, SDK method, endpoint, unsupported model aliases, or guessed identifiers for future models covered by 'and later'.",
+  notes: "I verified the complete official Anthropic model-deprecations source and the official Messages API reference. The deprecation source establishes the non-default restriction; the API reference establishes temperature 1.0 and top_p 0.99 as the backwards-compatible defaults. I approve deterministic applicability for those documented defaults while retaining review for dynamic values, unsupported model aliases, SDK package scope, SDK version, SDK method, endpoint, and future identifiers covered by 'and later'.",
   sourceFingerprint: '963a809d2191441ef8c2bcbfbdab4071fccc129394b48af249249bccecc4594c',
   evidenceFingerprint: '4b7fec20394d52ac8c69563bff460509c0873fff225ecbc9489982ef45ab6948',
-  candidateFingerprint: '6f4b69347a030bfb7dfc28d039eb50ac93e6ca4c931294f776aa548dc9ae64dc',
+  candidateFingerprint: '2df8a119d2de79c2b42c25ecb774acb8680396c8f205b40b3157e2e0b5a627fb',
 } as const satisfies CandidateReviewAction;
 
 export const LOCAL_REVIEWED_ANTHROPIC_OPUS_4_7_PARAMETER_CANDIDATE = reviewCandidate(anthropicParameterCandidate, LOCAL_ANTHROPIC_OPUS_4_7_PARAMETER_REVIEW_ACTION);

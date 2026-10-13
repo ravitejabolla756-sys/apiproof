@@ -168,6 +168,8 @@ export type VersionAssessment = z.infer<typeof VersionAssessmentSchema>;
 export const CompatibilityUsageSchema = z.strictObject({
   id: z.string().min(1), providerId: z.string().min(1), packageName: z.string().min(1).optional(),
   operation: z.string().optional(), model: z.string().optional(), parameter: z.string().optional(), responseField: z.string().optional(), domain: z.string().optional(),
+  /** Hash of a statically recovered literal; preserves the privacy contract while enabling source-backed comparisons. */
+  parameterValueHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   parameterValue: JsonPrimitiveSchema.optional(), parameterValueStatus: z.enum(['allowed', 'disallowed', 'unknown']).optional(),
   endpoint: z.string().optional(), resource: z.string().optional(), apiVersion: z.string().optional(), authOrHeader: z.string().optional(), evidenceKind: z.enum(['sdk', 'http', 'import', 'environment']),
   headerEvidence: z.array(z.strictObject({ name: z.string().min(1), value: z.string().optional(), static: z.boolean(), redacted: z.boolean(), location: z.strictObject({ file: z.string(), line: z.number().int().positive(), column: z.number().int().positive() }) })).max(100).optional(),

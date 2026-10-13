@@ -1,5 +1,5 @@
 import semver from 'semver';
-import { CompatibilityResultSchema, ReviewedCompatibilityChangeSchema } from '@apiproof/shared';
+import { CompatibilityResultSchema, ReviewedCompatibilityChangeSchema, literalHash } from '@apiproof/shared';
 import type { CompatibilityParameterCondition, CompatibilityResult, CompatibilityUsage, NormalizedUsageIR, ReviewedCompatibilityChange, VersionAssessment } from '@apiproof/shared';
 import type { ProductionChangeRegistry } from '@apiproof/providers';
 import { normalizedUsageToCompatibilityUsage } from './usage-ir.js';
@@ -101,6 +101,10 @@ function parameterConditionMatch(condition: CompatibilityParameterCondition, usa
   if (condition.predicate === 'non-default') {
     if (usage.parameterValueStatus === 'disallowed') return 'match';
     if (usage.parameterValueStatus === 'allowed') return 'no-match';
+    if (usage.parameterValueHash && condition.values?.length) {
+      const isDefault = condition.values.some((value) => literalHash(value) === usage.parameterValueHash);
+      return isDefault ? 'no-match' : 'match';
+    }
     return 'uncertain';
   }
   if (usage.parameterValue === undefined || !condition.values) return 'uncertain';
@@ -135,7 +139,13 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const modelMatch: UsageMatch = !dimensions.has('model') ? 'match'
     : usage.model && change.affectedModels.includes(usage.model) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
+  const resourceMatch: UsageMatch = !dimensions.has('resource')
+    ? 'match'
+    : usage.resource && change.affectedResources.includes(usage.resource)
+      ? 'match'
+      : usage.resource && (!usage.static || usage.confidence < 0.8)
+        ? 'uncertain'
+        : 'no-match';
   const apiVersionMatch: UsageMatch = !dimensions.has('api_version') ? 'match'
     : usage.apiVersion && usage.apiVersion === change.apiVersionMetadata?.version
       ? usage.static && usage.confidence >= 0.8 ? 'match' : 'uncertain'
@@ -147,9 +157,9 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const domainMatch: UsageMatch = !dimensions.has('domain') ? 'match'
     : matchesDomainPattern(usage.domain ?? usage.endpoint, change.affectedDomains ?? []) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || !resourceMatch || apiVersionMatch === 'no-match') return 'no-match';
+  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || resourceMatch === 'no-match' || apiVersionMatch === 'no-match') return 'no-match';
   if (responseFieldMatch === 'no-match' || parameterMatch === 'no-match') return 'no-match';
-  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain' || apiVersionMatch === 'uncertain') return 'uncertain';
+  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || resourceMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain' || apiVersionMatch === 'uncertain') return 'uncertain';
   return 'match';
 }
 
