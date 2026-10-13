@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
-import { getWorkspaceSubscription } from '@/lib/server/billing/service';
-import { getBillingProvider } from '@/lib/server/billing/provider';
+import { getCurrentUser } from '../../../../lib/server/auth.js';
+import { getDefaultWorkspaceForUser } from '../../../../lib/server/workspace-service.js';
+import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
+import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
+import { checkRateLimit, rateLimitResponse } from '../../../../lib/server/rate-limit.js';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '../../../../lib/server/validation.js';
 
 export async function POST(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const rateCheck = await checkRateLimit(`billing:portal:${user.id}`, 5, 15 * 60 * 1000, { failClosed: true });
+  if (!rateCheck.allowed) return rateLimitResponse(rateCheck.resetInMs);
 
   const workspace = await getDefaultWorkspaceForUser(user.id);
   const sub = await getWorkspaceSubscription(workspace.id);
