@@ -2,6 +2,12 @@
 
 Last updated: 2026-10-13
 
+Phase 2 checkpoint: 78 candidate records were reviewed for evidence,
+fingerprints, scope, and promotion readiness. No candidate was promoted because
+the required human review binding and candidate-specific real analyzer fixtures
+were not available. The canonical production registry remains 15 providers / 20
+rules. See `docs/candidate-promotion-final-report.md` for the complete result.
+
 This document is an engineering inventory, not a production-support claim. A
 provider is counted as reviewed only when its reviewed compatibility record is
 in `PRODUCTION_COMPATIBILITY_REGISTRY`. Discovery entries and review-gated
@@ -232,6 +238,11 @@ registry. Further expansion work should prioritize evidence-backed lifecycle
 candidates and deterministic fixtures rather than adding more names.
 
 ## Validation evidence
+
+- Phase 2 candidate assessment: 78 candidates inspected; 0 promoted; 78 remain
+  `needs_review`. No human reviewer metadata was fabricated. The four research
+  gaps (Razorpay, Resend, Segment, SendGrid) remain
+  `NO_DEFENSIBLE_RULE_FOUND` for the current deterministic analyzer scope.
 
 - `pnpm providers:validate:all --markdown`: existing 15-provider engine cases
   remain 60/60; productization projection remains 19/20 positive with the
