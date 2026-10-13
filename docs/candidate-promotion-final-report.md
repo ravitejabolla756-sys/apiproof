@@ -141,6 +141,23 @@ Scope distribution is also checked from the canonical registry: 22 endpoint,
 the remaining 20 mixed operation, parameter, domain, auth/header, enum, and
 response-field scopes. The canonical payload dimensions remain authoritative.
 
+### Exact disposition for every remaining candidate
+
+For **each of the 78 IDs listed above**, the exact disposition is:
+
+```text
+state = NEEDS_REVIEW
+reason = no persisted human review binding AND no candidate-specific real
+         AFFECTED, NOT_AFFECTED, and edge/dynamic source fixtures registered
+         with the actual TypeScript/Python analyzer and productization path
+```
+
+This is a candidate-level blocker, not a claim that its official source record
+is false. The generic test-only evaluator projection is intentionally excluded
+from that evidence. In addition, the Deepgram record has the independent
+structural blocker `APPLICABILITY_SCOPE_TARGET_REQUIRED`, because its payload
+does not identify a concrete operation, endpoint, resource, model, or domain.
+
 ## Deterministic fixture and analyzer status
 
 The current repository contains structural test-only projections for candidate
