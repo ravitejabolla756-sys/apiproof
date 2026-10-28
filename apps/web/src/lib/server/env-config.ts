@@ -7,6 +7,8 @@
  * - Prevents secret values from entering logs or client bundles.
  */
 
+import { getConfiguredFounderUserId, isLiveScanProtectionEnabled } from './founder-scan-authorization.js';
+
 export interface AppEnvConfig {
   nodeEnv: 'production' | 'development' | 'test';
   isProduction: boolean;
@@ -72,6 +74,9 @@ export function validateEnvConfig(env: Record<string, string | undefined> = proc
     }
     if (!appUrl || appUrl.trim().length === 0) {
       issues.push({ variable: 'NEXT_PUBLIC_APP_URL', message: 'NEXT_PUBLIC_APP_URL or APIPROOF_APP_URL must be set in production.' });
+    }
+    if (isLiveScanProtectionEnabled(env) && !getConfiguredFounderUserId(env)) {
+      issues.push({ variable: 'APIPROOF_FOUNDER_USER_ID', message: 'APIPROOF_FOUNDER_USER_ID must be set to a valid founder user ID when live GitHub scanning is enabled.' });
     }
   }
 

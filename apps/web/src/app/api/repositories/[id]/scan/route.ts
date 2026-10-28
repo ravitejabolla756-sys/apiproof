@@ -10,6 +10,8 @@ import {
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
 import { checkWorkspaceLimit, recordWorkspaceUsage } from '@/lib/server/billing/service';
+import { assertFounderScanAuthorization, FounderScanAuthorizationError } from '@/lib/server/founder-scan-authorization';
+import { safeFailureCode } from '@/lib/server/productization-persistence';
 
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const csrf = assertCsrfProtection(req);
@@ -26,6 +28,15 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  }
+
+  try {
+    assertFounderScanAuthorization(user.id);
+  } catch (error) {
+    if (error instanceof FounderScanAuthorizationError && error.code === 'FOUNDER_SCAN_ID_NOT_CONFIGURED') {
+      return NextResponse.json({ error: 'Live scan authorization is not configured.', code: error.code }, { status: 503 });
+    }
+    return NextResponse.json({ error: 'Live scans are restricted to the authorized founder account.', code: 'FOUNDER_SCAN_NOT_AUTHORIZED' }, { status: 403 });
   }
 
   // Rate limit: 10 scans per 5 minutes per user
@@ -63,7 +74,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     return NextResponse.json({ success: true, result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';
-    console.error('Scan execution error:', error);
+    console.error('Scan execution failed', { code: safeFailureCode(error, 'SCAN_FAILED') });
     if (message.includes('GITHUB_REPOSITORY_EMPTY')) {
       return NextResponse.json({
         error: 'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan.',
@@ -82,6 +93,6 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         code: 'GITHUB_UNAUTHORIZED',
       }, { status: 403 });
     }
-    return NextResponse.json({ error: message, code: 'SCAN_FAILED' }, { status: 500 });
+    return NextResponse.json({ error: 'Scan failed. Review the repository status and try again.', code: 'SCAN_FAILED' }, { status: 500 });
   }
 }

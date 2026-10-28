@@ -27,20 +27,17 @@ import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWo
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
-import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
+import { providerIntelligenceV1Enabled, workerRuntimeIdentity } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
 import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { extractSourceSnippet } from './scan-snippet.js';
+import { assertFounderRepositoryScope, assertFounderScanProtectionConfigured, getConfiguredFounderUserId } from './founder-scan-authorization.js';
+import { buildWorkerScope } from './scan-worker-scope.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
 
-export interface ScanWorkerOptions {
-  /** Maximum number of jobs to claim and process in one invocation. Default: 5 */
-  batchSize?: number | undefined;
-  /** Maximum wall-clock milliseconds for the entire invocation. Default: 50_000 */
-  timeoutMs?: number | undefined;
-}
+export interface ScanWorkerOptions { batchSize?: number | undefined; timeoutMs?: number | undefined; repositoryId?: string | undefined; }
 
 export interface ScanWorkerJobResult {
   scanRequestId: string;
@@ -107,6 +104,7 @@ export async function getScanWorkerMetrics(): Promise<ScanWorkerMetrics> {
     lastProcessedAt: lastJob?.created_at ?? null,
   };
 }
+
 // ---------------------------------------------------------------------------
 // Internal types
 // ---------------------------------------------------------------------------
@@ -147,7 +145,7 @@ interface RepositoryRow {
  * PostgreSQL: uses SELECT ... FOR UPDATE SKIP LOCKED to avoid contention.
  * SQLite: uses transaction-isolated SELECT pending -> UPDATE claimed IDs.
  */
-async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
+async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Promise<PendingScanRequest[]> {
   const db = getDatabase();
   await ensureScanWorkerSchema(db);
   const now = new Date();
@@ -159,24 +157,26 @@ async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
     // PostgreSQL atomic claim using FOR UPDATE SKIP LOCKED
     return await db.transaction(async (tx) => {
       // Recover only expired leases. created_at is not a valid worker lease.
+      const recoveryScope = buildWorkerScope('postgres', options, getConfiguredFounderUserId(), 3);
       await tx.execute(`
         UPDATE github_scan_requests
         SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
         WHERE status = 'processing' AND (
           (lease_expires_at IS NOT NULL AND lease_expires_at < $1) OR
           (lease_expires_at IS NULL AND created_at < $2)
-        )
-      `, [nowIso, legacyStaleThreshold]);
+        )${recoveryScope.sql}
+      `, [nowIso, legacyStaleThreshold, ...recoveryScope.params]);
 
+      const selectScope = buildWorkerScope('postgres', options, getConfiguredFounderUserId(), 2);
       const rows = await tx.query<PendingScanRequest>(`
         SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at,
                attempt_count, claimed_at, lease_expires_at
         FROM github_scan_requests
-        WHERE status = 'pending'
+        WHERE status = 'pending'${selectScope.sql}
         ORDER BY created_at ASC
         LIMIT $1
         FOR UPDATE SKIP LOCKED
-      `, [limit]);
+      `, [limit, ...selectScope.params]);
 
       if (rows.length === 0) {
         return [];
@@ -198,24 +198,25 @@ async function claimPendingJobs(limit: number): Promise<PendingScanRequest[]> {
 
   // SQLite: serialized write transaction — select pending IDs first, then update those exact IDs
   return await withSqliteClaimLock(() => db.transaction(async (tx) => {
+    const scope = buildWorkerScope('sqlite', options, getConfiguredFounderUserId(), 1);
     // Recover only expired leases. created_at is not a valid worker lease.
     await tx.execute(`
       UPDATE github_scan_requests
       SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
       WHERE status = 'processing' AND (
-        (lease_expires_at IS NOT NULL AND lease_expires_at < ?) OR
-        (lease_expires_at IS NULL AND created_at < ?)
-      )
-    `, [nowIso, legacyStaleThreshold]);
+          (lease_expires_at IS NOT NULL AND lease_expires_at < ?) OR
+          (lease_expires_at IS NULL AND created_at < ?)
+        )${scope.sql}
+    `, [nowIso, legacyStaleThreshold, ...scope.params]);
 
     const rows = await tx.query<PendingScanRequest>(`
       SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at,
              attempt_count, claimed_at, lease_expires_at
       FROM github_scan_requests
-      WHERE status = 'pending'
+      WHERE status = 'pending'${scope.sql}
       ORDER BY created_at ASC
       LIMIT ?
-    `, [limit]);
+    `, [...scope.params, limit]);
 
     if (rows.length === 0) {
       return [];
@@ -584,6 +585,8 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
  * Bounded by batchSize and timeoutMs to stay within function time limits.
  */
 export async function processPendingGitHubScans(options: ScanWorkerOptions = {}): Promise<ScanWorkerResult> {
+  logger.info('scan_worker_runtime', workerRuntimeIdentity());
+  assertFounderScanProtectionConfigured(); assertFounderRepositoryScope(options.repositoryId);
   const batchSize = Math.min(options.batchSize ?? 5, 20); // hard cap at 20
   const timeoutMs = Math.min(options.timeoutMs ?? 50_000, 270_000); // hard cap at 270s (Vercel Pro max)
   const deadline = Date.now() + timeoutMs;
@@ -591,7 +594,7 @@ export async function processPendingGitHubScans(options: ScanWorkerOptions = {})
   let timedOut = false;
 
   // Claim jobs atomically
-  const jobs = await claimPendingJobs(batchSize);
+  const jobs = await claimPendingJobs(batchSize, options);
 
   if (jobs.length === 0) {
     return {

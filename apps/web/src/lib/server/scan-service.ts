@@ -15,6 +15,7 @@ import { loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
+import { assertFounderScanAuthorization } from './founder-scan-authorization.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -53,6 +54,9 @@ export async function runRepositoryScan(
   userId: string,
   customProvider?: GitHubAppSourceControlProvider
 ): Promise<ScanExecutionResult> {
+  // Keep the live-scan boundary inside the service so alternate callers cannot
+  // bypass the route-level authorization check.
+  assertFounderScanAuthorization(userId);
   const db = getDatabase();
   
   // 1. Verify workspace repository access (central authorization / IDOR protection)

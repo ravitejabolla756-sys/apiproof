@@ -18,3 +18,5 @@ coverage/
 Thumbs.db
 .next/
 
+.vercel
+.env*.local

@@ -16,6 +16,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
+import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
+import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
 
 // ---------------------------------------------------------------------------
 // Authorization helper
@@ -68,12 +70,14 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
   let batchSize: number | undefined;
   let timeoutMs: number | undefined;
   let metricsOnly = false;
+  let repositoryId: string | undefined;
 
   try {
-    const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown };
+    const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown; repositoryId?: unknown };
     if (typeof body.batchSize === 'number') batchSize = body.batchSize;
     if (typeof body.timeoutMs === 'number') timeoutMs = body.timeoutMs;
     if (typeof body.metricsOnly === 'boolean') metricsOnly = body.metricsOnly;
+    if (typeof body.repositoryId === 'string' && /^[A-Za-z0-9_.-]{1,150}$/.test(body.repositoryId)) repositoryId = body.repositoryId;
   } catch {
     // No body or invalid JSON — use defaults
   }
@@ -84,7 +88,14 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ ok: true, metrics });
     }
 
-    const result = await processPendingGitHubScans({ batchSize, timeoutMs });
+    // A live/manual worker call must be narrowed to one repository. This also
+    // makes Vercel Cron fail closed until a separately approved scoped trigger
+    // exists, so a secret cannot drain unrelated tenant jobs.
+    if (isLiveScanProtectionEnabled() && !repositoryId) {
+      return NextResponse.json({ ok: false, error: 'REPOSITORY_SCOPE_REQUIRED', code: 'REPOSITORY_SCOPE_REQUIRED' }, { status: 400 });
+    }
+
+    const result = await processPendingGitHubScans({ batchSize, timeoutMs, repositoryId });
     const metrics = await getScanWorkerMetrics();
 
     return NextResponse.json({
@@ -98,7 +109,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       results: result.results,
     });
   } catch (error) {
-    console.error('[scan-worker-route] Unhandled error:', error);
+    console.error('[scan-worker-route] Unhandled error', { code: safeFailureCode(error, 'SCAN_WORKER_FAILED') });
     return NextResponse.json({ ok: false, error: 'SCAN_WORKER_FAILED' }, { status: 500 });
   }
 }

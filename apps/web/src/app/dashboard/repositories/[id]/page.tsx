@@ -135,6 +135,9 @@ export default function RepositoryDetailPage({
     );
   }
 
+  const latestScan = scans[0];
+  const latestScanIsActive = scanning || latestScan?.status === "pending" || latestScan?.status === "running";
+
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* BACK BUTTON */}
@@ -292,9 +295,31 @@ export default function RepositoryDetailPage({
 
         {findings.length === 0 ? (
           <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px] space-y-2">
-            <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
-            <p className="font-semibold text-sm text-[#111111]">No breaking changes detected</p>
-            <p className="text-xs text-[#686868]">Click &quot;Run AST Scan&quot; above to inspect the repository with the latest provider registries.</p>
+            {latestScanIsActive ? (
+              <>
+                <Loader2 className="w-6 h-6 text-purple-700 animate-spin mx-auto" />
+                <p className="font-semibold text-sm text-[#111111]">Scan in progress</p>
+                <p className="text-xs text-[#686868]">MY OWL is analyzing the latest repository snapshot. Findings will appear when the scan completes.</p>
+              </>
+            ) : latestScan?.status === "failed" ? (
+              <>
+                <AlertTriangle className="w-6 h-6 text-rose-600 mx-auto" />
+                <p className="font-semibold text-sm text-[#111111]">Scan failed</p>
+                <p className="text-xs text-[#686868]">The latest scan did not complete. Review the status above and retry when the repository connection is available.</p>
+              </>
+            ) : latestScan ? (
+              <>
+                <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
+                <p className="font-semibold text-sm text-[#111111]">No breaking changes detected</p>
+                <p className="text-xs text-[#686868]">The latest completed scan found no affected call sites in the reviewed provider rules.</p>
+              </>
+            ) : (
+              <>
+                <FileCode className="w-6 h-6 text-zinc-500 mx-auto" />
+                <p className="font-semibold text-sm text-[#111111]">No scan completed yet</p>
+                <p className="text-xs text-[#686868]">Run an AST scan to inspect the repository with the reviewed provider rules.</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -350,7 +375,7 @@ export default function RepositoryDetailPage({
                   </span>
                   <Link href={`/dashboard/findings/${finding.id}`}>
                     <Button size="sm" variant="primary" className="gap-1 text-xs font-medium">
-                      <span>Inspect & Migrate</span>
+                      <span>Inspect Evidence</span>
                       <ExternalLink className="w-3 h-3" />
                     </Button>
                   </Link>
