@@ -126,6 +126,10 @@ function seedDefaultUserAndFixtureSqlite(db: DatabaseSync): void {
  */
 export function initDatabase(dbPath?: string): DatabaseSync {
   const targetPath = dbPath ?? getDatabasePath();
+  const parentDir = path.dirname(targetPath);
+  if (parentDir && parentDir !== '.') {
+    fs.mkdirSync(parentDir, { recursive: true });
+  }
   const db = new DatabaseSync(targetPath);
 
   db.exec('PRAGMA journal_mode = WAL;');
