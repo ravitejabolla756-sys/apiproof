@@ -23,7 +23,6 @@ export default defineConfig({
     // These integration suites intentionally exercise process-level rollout
     // flags and database-path selection. Force one Vitest worker as well so
     // the shared process environment cannot diverge between test files.
-    minWorkers: 1,
     maxWorkers: 1,
   },
 });
