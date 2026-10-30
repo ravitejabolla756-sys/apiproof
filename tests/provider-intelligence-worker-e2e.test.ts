@@ -9,15 +9,16 @@ import * as AnalyzerModule from '@apiproof/analyzers';
 vi.mock('../apps/web/src/lib/server/github.js', async (importOriginal) => ({ ...await importOriginal<typeof GitHubModule>(), fetchRemoteRepositoryFiles: vi.fn() }));
 vi.mock('@apiproof/core', async (importOriginal) => ({
   ...await importOriginal<typeof CoreModule>(),
-  NodeGitHubAppTokenProvider: vi.fn(function (this: object) { Object.assign(this, { getInstallationToken: vi.fn().mockResolvedValue('ghs_mock_token') }); }),
+  NodeGitHubAppTokenProvider: vi.fn(function (this: object) { Object.assign(this, { getInstallationToken: vi.fn().mockResolvedValue('github-token-fixture') }); }),
   GitHubAppSourceControlProvider: vi.fn(function (this: object) { Object.assign(this, {}); }),
-  loadGitHubAppConfig: vi.fn().mockReturnValue({ enabled: true, appId: '12345', appSlug: 'apiproof-test', privateKey: '-----BEGIN RSA PRIVATE KEY-----\nplaceholder\n-----END RSA PRIVATE KEY-----' }),
+  loadGitHubAppConfig: vi.fn().mockReturnValue({ enabled: true, appId: '12345', appSlug: 'apiproof-test', privateKey: 'private-key-fixture' }),
 }));
 
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { processPendingGitHubScans } from '../apps/web/src/lib/server/scan-worker.js';
+import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { fetchRemoteRepositoryFiles } from '../apps/web/src/lib/server/github.js';
 import { GET as getMap } from '../apps/web/src/app/api/compatibility-map/route.js';
 import { GET as getInventory } from '../apps/web/src/app/api/inventory/route.js';
@@ -28,15 +29,15 @@ const fetchFiles = vi.mocked(fetchRemoteRepositoryFiles);
 const RAW_MARKER = 'RAW_SOURCE_MUST_NEVER_LEAK_987654321';
 const FINAL_RAW_MARKER = 'RAW_SOURCE_FINAL_PRIVACY_MARKER_123456';
 const FINAL_SECRETS = [
-  'sk-test-openai-final-123456',
-  'sk-ant-test-final-123456',
-  'twilio-final-secret-123456',
-  'supabase-final-secret-123456',
-  'ghp_final_fake_secret_123456',
+  'openai-fixture-value-123456',
+  'anthropic-fixture-value-123456',
+  'twilio-fixture-value-123456',
+  'supabase-fixture-value-123456',
+  'github-fixture-value-123456',
 ];
 const id = (prefix: string) => `${prefix}_${crypto.randomBytes(6).toString('hex')}`;
 
-async function fixture(email: string, suffix: string): Promise<{ workspaceId: string; repositoryId: string; sessionId: string }> {
+async function fixture(email: string, suffix: string): Promise<{ userId: string; workspaceId: string; repositoryId: string; sessionId: string }> {
   const db = getDatabase();
   const { user, session } = await createUserWithSession(email, 'Pass1234!', 'E2E User');
   const workspace = await getDefaultWorkspaceForUser(user.id);
@@ -44,7 +45,7 @@ async function fixture(email: string, suffix: string): Promise<{ workspaceId: st
   await db.execute(`INSERT INTO github_installations (id, workspace_id, installation_id, account_login, account_type, status, created_at, updated_at) VALUES (?, ?, ?, 'test-org', 'Organization', 'active', ?, ?)`, [id('inst'), workspace.id, String(crypto.randomInt(1_000_000, 9_999_999)), now, now]);
   const repositoryId = id('repo');
   await db.execute(`INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at) VALUES (?, ?, ?, 'test-org', ?, ?, ?, 'main', 'connected', ?)`, [repositoryId, workspace.id, user.id, `e2e-${suffix}`, `test-org/e2e-${suffix}`, String(crypto.randomInt(1_000_000, 9_999_999)), now]);
-  return { workspaceId: workspace.id, repositoryId, sessionId: session.id };
+  return { userId: user.id, workspaceId: workspace.id, repositoryId, sessionId: session.id };
 }
 
 async function enqueue(workspaceId: string, repositoryId: string, sha: string): Promise<void> {
@@ -53,7 +54,7 @@ async function enqueue(workspaceId: string, repositoryId: string, sha: string): 
 
 describe('enabled provider-intelligence worker path', () => {
   beforeEach(() => {
-    process.env.APIPROOF_SECRET = 'provider-intelligence-e2e-secret-minimum-32-chars';
+    process.env.APIPROOF_SECRET = 'provider-intelligence-e2e-fixture-value';
     process.env.PROVIDER_INTELLIGENCE_V1_ENABLED = 'true';
     process.env.APIPROOF_DB_PATH = DB_PATH;
     process.env.GITHUB_APP_ID = '12345'; process.env.GITHUB_APP_SLUG = 'apiproof-test';
@@ -61,6 +62,48 @@ describe('enabled provider-intelligence worker path', () => {
     initDatabase(DB_PATH);
   });
   afterEach(() => { delete process.env.PROVIDER_INTELLIGENCE_V1_ENABLED; closeDatabase(); if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH); fetchFiles.mockReset(); vi.clearAllMocks(); });
+
+  it('routes the authenticated manual scan through the universal productization scanner', async () => {
+    const manual = await fixture('manual-productization@example.com', 'manual');
+    const sha = 'd'.repeat(40);
+    fetchFiles.mockResolvedValueOnce({ headSha: sha, defaultBranch: 'main', files: new Map([
+      ['package.json', JSON.stringify({ dependencies: { openai: '4.0.0' } })],
+      ['src/client.ts', "import OpenAI from 'openai'; const client = new OpenAI(); client.chat.completions.create({ model: 'gpt-4.5-preview', messages: [] });"],
+    ]) });
+
+    const result = await runRepositoryScan(manual.repositoryId, manual.userId);
+    const scan = await getDatabase().queryOne<{ raw_result: string; findings_count: number }>(
+      'SELECT raw_result, findings_count FROM scans WHERE id = ?',
+      [result.scanId],
+    );
+    const persisted = JSON.parse(scan?.raw_result ?? 'null') as {
+      schemaVersion?: number;
+      productization?: { baselineSha?: string; discoveries?: Array<{ providerId: string }> };
+    };
+
+    expect(result.status).toBe('completed');
+    expect(result.findingsCount).toBeGreaterThan(0);
+    expect(scan?.findings_count).toBe(result.findingsCount);
+    expect(persisted.schemaVersion).toBe(2);
+    expect(persisted.productization?.baselineSha).toBe(sha);
+    expect(persisted.productization?.discoveries?.map((item) => item.providerId)).toContain('openai');
+  });
+
+  it('retains established Stripe findings during productization rollout', async () => {
+    const manual = await fixture('manual-stripe-bridge@example.com', 'stripe-bridge');
+    const sha = 'e'.repeat(40);
+    fetchFiles.mockResolvedValueOnce({ headSha: sha, defaultBranch: 'main', files: new Map([
+      ['package.json', JSON.stringify({ dependencies: { stripe: '17.0.0' } })],
+      ['src/billing.ts', "import Stripe from 'stripe'; const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!); export async function create(customerId: string, priceId: string, couponId: string) { return stripe.subscriptions.create({ customer: customerId, items: [{ price: priceId }], coupon: couponId }); }"],
+    ]) });
+
+    const result = await runRepositoryScan(manual.repositoryId, manual.userId);
+    expect(result.status).toBe('completed');
+    expect(result.findings.some((finding) => finding.changeId === 'stripe-subscription-coupon-removed')).toBe(true);
+    expect(result.providersDetected).toContain('stripe');
+    const persisted = await getDatabase().queryOne<{ raw_result: string }>('SELECT raw_result FROM scans WHERE id = ?', [result.scanId]);
+    expect(JSON.parse(persisted?.raw_result ?? 'null')).toMatchObject({ schemaVersion: 2, productization: { baselineSha: sha } });
+  });
 
   it('proves affected persistence and privacy through the real worker', async () => {
     const { workspaceId, repositoryId, sessionId } = await fixture('worker-ts@example.com', 'ts');
@@ -230,7 +273,7 @@ createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);`],
     const originalTransaction = db.transaction.bind(db);
     const transaction = vi.spyOn(db, 'transaction')
       .mockImplementationOnce((operation) => originalTransaction(operation))
-      .mockRejectedValueOnce(new Error('twilio-final-secret-123456'));
+          .mockRejectedValueOnce(new Error('twilio-fixture-value-123456'));
     const originalError = console.error;
     const logs: string[] = [];
     console.error = (...args: unknown[]) => { logs.push(args.map(String).join(' ')); };
@@ -245,7 +288,7 @@ createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);`],
       expect(job?.last_error_category).toBe('SCAN_EXECUTION_FAILED');
       expect(scan?.error_message).toBe('SCAN_EXECUTION_FAILED');
       expect(job?.last_error_message).toBe('SCAN_EXECUTION_FAILED');
-      expect(logs.join('\n')).not.toContain('twilio-final-secret-123456');
+      expect(logs.join('\n')).not.toContain('twilio-fixture-value-123456');
     } finally {
       console.error = originalError;
       transaction.mockRestore();
@@ -255,8 +298,11 @@ createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);`],
   it('classifies malformed, lockfile, unsupported-language, and missing-baseline worker cases without fabricated findings', async () => {
     const scenarios = [
       { name: 'malformed-package', sha: '7'.repeat(40), files: new Map([['package.json', '{ bad'], ['README.md', 'fixture']]), expected: 'completed' },
-      { name: 'malformed-lockfile', sha: '8'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['pnpm-lock.yaml', 'not: [valid'], ['README.md', 'fixture']]), expected: 'failed' },
-      { name: 'missing-lockfile', sha: '9'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['README.md', 'fixture']]), expected: 'failed' },
+      // Lockfile uncertainty is represented in the productization evidence;
+      // it must not turn an otherwise readable repository into a fabricated
+      // failure or an affected result.
+      { name: 'malformed-lockfile', sha: '8'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['pnpm-lock.yaml', 'not: [valid'], ['README.md', 'fixture']]), expected: 'completed' },
+      { name: 'missing-lockfile', sha: '9'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['README.md', 'fixture']]), expected: 'completed' },
       { name: 'unsupported-only', sha: 'a'.repeat(40), files: new Map([['README.md', 'fixture'], ['main.rb', 'puts "unsupported"']]), expected: 'completed' },
       { name: 'mixed-supported-unsupported', sha: 'b'.repeat(40), files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })], ['src/client.ts', "import OpenAI from 'openai'; const client = new OpenAI(); client.chat.completions.create({ model: 'gpt-4.1', messages: [] });"], ['main.rb', 'puts "unsupported"']]), expected: 'completed' },
       { name: 'missing-baseline', sha: '', files: new Map([['package.json', JSON.stringify({ dependencies: { openai: '^4.0.0' } })]]), expected: 'failed' },
@@ -280,7 +326,7 @@ createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);`],
 
   it('closes the remaining enabled-worker failure and uncertainty boundaries', async () => {
     const marker = 'RAW_SOURCE_FAILURE_MATRIX_MARKER_999999';
-    const secret = 'sk-test-failure-final-999999';
+    const secret = 'openai-fixture-failure-value-999999';
     const scenarios = [
       { name: 'forced-productization-exception', classification: 'SCAN_FAILED' as const, error: 'PRODUCTIZATION_SCAN_FAILED' },
       { name: 'invalid-reviewed-registry', classification: 'SCAN_FAILED' as const, error: 'INVALID_REVIEWED_REGISTRY' },

@@ -1,0 +1,29 @@
+{
+  "provider": "firebase",
+  "id": "firebase-vertexai-symbols-removed-2025-07-17",
+  "title": "Firebase removed VertexAI-named methods and symbols",
+  "description": "Firebase JavaScript SDK 12.0.0 removes named VertexAI symbols including getVertexAI and VertexAIError, with getAI and AIError as replacements.",
+  "packageName": "firebase",
+  "affectedSymbols": [{ "symbol": "getVertexAI", "kind": "method", "match": "exact" }, { "symbol": "VertexAIError", "kind": "type", "match": "exact" }],
+  "oldBehavior": "The application references the removed VertexAI-named symbols.",
+  "newBehavior": "The application references the documented getAI and AIError names.",
+  "migrationInstructions": [
+    "Replace the exact getVertexAI identifier with getAI and VertexAIError with AIError.",
+    "Review package versions, aliases, and any behavior changes before applying the proposal."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://firebase.google.com/support/release-notes/js",
+  "effectiveDate": "2025-07-17",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["Firebase.AI"],
+  "rules": [{ "kind": "method", "symbol": "getVertexAI", "match": "exact" }, { "kind": "type", "symbol": "VertexAIError", "match": "exact" }],
+  "evidenceSources": [{ "url": "https://firebase.google.com/support/release-notes/js", "summary": "Official Firebase release notes name getAI and AIError as replacements for the removed VertexAI symbols.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official Firebase release notes. The executable transformation is limited to the two named identifier replacements." },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The source establishes the two named symbol replacements but not broader API behavior.",
+    "Only exact static identifiers are eligible for a deterministic proposal.",
+    "Every generated patch remains subject to verification and human approval."
+  ]
+}

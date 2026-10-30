@@ -58,6 +58,172 @@
         "Agent-authored rule; independent human review and runtime verification remain required.",
         "Direct evidence-linked AST member or qualified type positions only. Preserve surrounding arguments and behavior for review."
       ]
+    },
+    "twilio-twiml-namespace-casing": {
+      "changeDigest": "a244ab6d668069113be3943a6025153db1ba36006f3c953c71c3cf456f06b491",
+      "transformation": {
+        "kind": "qualified-member-rename",
+        "from": "Twiml",
+        "to": "twiml",
+        "receiver": "twilio",
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://github.com/twilio/twilio-node/blob/main/CHANGES.md"
+      ],
+      "limitations": [
+        "Direct TypeScript call expressions of the form twilio.Twiml.<builder> only.",
+        "This changes the namespace casing and preserves the builder arguments; non-call references and aliased receivers remain review-only."
+      ]
+    },
+    "twilio-regional-api-domain-removal-2026-04-28": {
+      "changeDigest": "26e710fa7ae78142a6489be544410b0e8d72021422d155256374c2bc454a708e",
+      "transformation": {
+        "kind": "string-literal-rename-many",
+        "replacements": [
+          { "from": "api.ie1.twilio.com", "to": "api.twilio.com" },
+          { "from": "api.au1.twilio.com", "to": "api.twilio.com" },
+          { "from": "api.br1.twilio.com", "to": "api.twilio.com" },
+          { "from": "api.de1.twilio.com", "to": "api.twilio.com" },
+          { "from": "api.jp1.twilio.com", "to": "api.twilio.com" },
+          { "from": "api.sg1.twilio.com", "to": "api.twilio.com" },
+          { "from": "api.us2.twilio.com", "to": "api.twilio.com" }
+        ],
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://www.twilio.com/en-us/changelog/deprecation-of-region-specific-twilio-api-domain-patterns"
+      ],
+      "limitations": [
+        "Direct TypeScript or JavaScript string literals containing one of the seven reviewed regional domains only.",
+        "Dynamic URL construction and aliased configuration remain review-only."
+      ]
+    },
+    "twilio-studio-engagements-endpoint-deprecated": {
+      "changeDigest": "245d54a1c40f3939b1e0d288b540d5eda1af22d5a529ea7a983cbdca63099f0d",
+      "transformation": {
+        "kind": "string-literal-rename",
+        "from": "/Engagements",
+        "to": "/Executions",
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://www.twilio.com/docs/studio/rest-api"
+      ],
+      "limitations": [
+        "Direct TypeScript or JavaScript string literals containing /Engagements only.",
+        "Dynamic endpoint construction and code that depends on the changed response shape remain review-only."
+      ]
+    },
+    "github-synchronous-sbom-endpoint-removal-2026-11-13": {
+      "changeDigest": "181fe00e6d31602da9d22cae131da81cd3f8ae2c1b9afd2e148b30192c5bad8b",
+      "transformation": {
+        "kind": "string-literal-rename",
+        "from": "/{owner}/{repo}/dependency-graph/sbom",
+        "to": "/{owner}/{repo}/dependency-graph/sbom/generate-report",
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://github.blog/changelog/2026-05-12-synchronous-sbom-api-deprecated/"
+      ],
+      "limitations": [
+        "Direct TypeScript or JavaScript string literals containing the synchronous SBOM path only.",
+        "The replacement is asynchronous and requires response polling; behavioral changes remain review-only even when the path is rewritten."
+      ]
+    },
+    "supabase-management-logs-all-removal-2026-09-23": {
+      "changeDigest": "9fd6f89dee138471bb119cddd4d133f305657e7bce410c98aa213fb7dfb954ac",
+      "transformation": {
+        "kind": "string-literal-rename",
+        "from": "analytics/endpoints/logs.all",
+        "to": "analytics/endpoints/logs",
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://supabase.com/changelog/48235-migration-of-supabase-management-api-logs-all-analytics-endpoint-to-logs-endpoint"
+      ],
+      "limitations": [
+        "Direct TypeScript or JavaScript string literals containing analytics/endpoints/logs.all only.",
+        "ClickHouse SQL and query-shape changes remain review-only."
+      ]
+    },
+    "cloudflare-workers-kv-legacy-routes-2026-10-15": {
+      "changeDigest": "13cb8d669b8b124eb24204e4a79a25cadc5dd12d977e66cf74a2ef1f2d4e87c6",
+      "transformation": { "kind": "string-literal-rename", "from": "/accounts/{account_id}/workers/namespaces/", "to": "/accounts/{account_id}/storage/kv/namespaces/", "preserveArguments": true },
+      "sources": ["https://developers.cloudflare.com/kv/reference/rest-api/"],
+      "limitations": ["Direct TypeScript or JavaScript string literals containing the reviewed legacy route prefix only.", "Dynamic URL construction, aliases, authentication, and endpoint semantics remain review-only."]
+    },
+    "launchdarkly-api-version-20220603-eol-2025-04-15": {
+      "changeDigest": "7c18722108e1c0cfa64409ba16263ab44320c55449511a2c8d548daeae5d4dbe",
+      "transformation": { "kind": "api-version-literal-rename", "property": "apiVersion", "from": "20220603", "to": "20240415", "preserveArguments": true },
+      "sources": ["https://launchdarkly.com/docs/api/"],
+      "limitations": ["Direct TypeScript or JavaScript apiVersion string literals only.", "Dynamic version selection, headers, aliases, and endpoint behavior remain review-only."]
+    },
+    "openai-gpt-4-5-preview-removal-2025-07-14": {
+      "changeDigest": "fa1af649875b36d800ea841c2a198f9c71dbccf477a50dce40d2bcd04f2d1438",
+      "transformation": {
+        "kind": "model-literal-rename",
+        "property": "model",
+        "from": "gpt-4.5-preview",
+        "to": "gpt-4.1",
+        "preserveArguments": true
+      },
+      "sources": [
+        "https://developers.openai.com/api/docs/deprecations"
+      ],
+      "limitations": [
+        "Direct TypeScript or JavaScript object-literal model properties only.",
+        "Dynamic model variables, configuration lookups, template strings and non-model properties remain review-only.",
+        "The replacement is the official gpt-4.1 recommendation recorded in the reviewed change evidence."
+      ]
+    },
+    "sendgrid-v2-mail-send-migration-to-v3": {
+      "changeDigest": "a89604b2464bb52eb2f800aa464313b9510959aefd0197e274db1e72e5d3f4bb",
+      "transformation": { "kind": "string-literal-rename", "from": "/api/mail.send.json", "to": "/v3/mail/send", "preserveArguments": true },
+      "sources": ["https://www.twilio.com/docs/sendgrid/for-developers/sending-email/migrating-from-v2-to-v3-mail-send"],
+      "limitations": ["Direct TypeScript or JavaScript endpoint string literals only.", "Authentication, payload shape, response behavior, and dynamic URL construction remain review-only."]
+    },
+    "clerk-core-3-after-switch-organization-url-removed": {
+      "changeDigest": "8a73b1b83aade21c3dfc721852fd9bc8ecb22662f5e809b143b500165592da81",
+      "transformation": { "kind": "jsx-attribute-rename", "from": "afterSwitchOrganizationUrl", "to": "afterSelectOrganizationUrl", "preserveValue": true },
+      "sources": ["https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3"],
+      "limitations": ["Direct JSX attributes only; wrapper components, dynamic prop forwarding, and behavioral routing remain review-only."]
+    },
+    "firebase-vertexai-import-alias-removed-2025-07-17": {
+      "changeDigest": "8ba9b2950c80d1a3bddf672633b70a664a83a7bce94c7489b71791c474f19f82",
+      "transformation": { "kind": "import-specifier-rename", "from": "firebase/vertexai", "to": "firebase/ai", "preserveBindings": true },
+      "sources": ["https://firebase.google.com/support/release-notes/js"],
+      "limitations": ["Exact static import specifiers only; method names and SDK behavior remain review-only."]
+    },
+    "firebase-vertexai-symbols-removed-2025-07-17": {
+      "changeDigest": "caf21e4a5e6797e2da7409bdeba2d75f7227db8e5985af6049cba501befa759b",
+      "transformation": { "kind": "identifier-rename-many", "replacements": [{ "from": "getVertexAI", "to": "getAI" }, { "from": "VertexAIError", "to": "AIError" }], "preserveBindings": true },
+      "sources": ["https://firebase.google.com/support/release-notes/js"],
+      "limitations": ["The two named static identifiers only; package/version boundaries and broader behavior remain review-only."]
+    },
+    "elevenlabs-legacy-dubbing-endpoints-deprecated": {
+      "changeDigest": "6c16cce1b2848ebcc2d2f2ac868d35e3864d6b94f1e5b1c9dab8daee7bfa30ea",
+      "transformation": { "kind": "string-literal-rename", "from": "/v1/dubbing", "to": "/v1/dubbing/project", "preserveArguments": true },
+      "sources": ["https://elevenlabs.io/docs/changelog"],
+      "limitations": ["Direct TypeScript or JavaScript string literals only; request/response behavior and dynamic URLs remain review-only."]
+    },
+    "groq-qwen-3-6-27b-retired-2026-09-14": {
+      "changeDigest": "df801ae3c6ad3b78db6e495d1fd5570a43ec5b32968e67a647f43f43826acb63",
+      "transformation": { "kind": "model-literal-rename", "property": "model", "from": "qwen/qwen3.6-27b", "to": "qwen/qwen3.8-27b", "preserveArguments": true },
+      "sources": ["https://console.groq.com/docs/deprecations"],
+      "limitations": ["Direct TypeScript or JavaScript model properties only; account tier, aliases, and dynamic configuration remain review-only."]
+    },
+    "shopify-api-2025-10-version-retired-2026-10-16": {
+      "changeDigest": "082d5947e26b1ba0d163ce7f92409e71058e60dbd954f46b7631279c91f26ecc",
+      "transformation": { "kind": "api-version-literal-rename", "property": "apiVersion", "from": "2025-10", "to": "2026-01", "preserveArguments": true },
+      "sources": ["https://shopify.dev/docs/api/usage/versioning"],
+      "limitations": ["Direct TypeScript or JavaScript apiVersion string literals only.", "URL paths, headers, SDK wrappers, aliases, and dynamically selected versions remain review-only."]
+    },
+    "sendgrid-web-api-v2-mail-send-migration": {
+      "changeDigest": "ae3c4e6d54615810eaff4d74583cd2fc636ef4f5865c9f4450eee6aa187a12b1",
+      "transformation": { "kind": "string-literal-rename", "from": "/api/mail.send.json", "to": "/v3/mail/send", "preserveArguments": true },
+      "sources": ["https://www.twilio.com/docs/sendgrid/for-developers/migration-guides/v2-to-v3-api"],
+      "limitations": ["Direct TypeScript or JavaScript endpoint string literals only.", "Authentication, payload shape, response behavior, and dynamic URL construction remain review-only."]
     }
   }
 }

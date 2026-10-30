@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateNormalizedCompatibility, normalizeCompatibilityUsage } from '@apiproof/analyzers';
+import { evaluateNormalizedCompatibility, normalizeCompatibilityUsage, TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from '@apiproof/providers';
 import type { CandidateChange, CompatibilityUsage, ReviewedCompatibilityChange } from '@apiproof/shared';
 
@@ -25,6 +25,7 @@ const usageFor = (candidate: CandidateChange, id: string, changed: boolean, dyna
     usage.endpoint = payload.affectedEndpoints?.[0];
     usage.domain = payload.affectedDomains?.[0];
     usage.model = payload.affectedModels?.[0];
+    usage.apiVersion = payload.apiVersionMetadata?.version;
     usage.resource = payload.affectedResources?.[0];
     usage.parameter = payload.affectedParameters?.[0];
     usage.authOrHeader = payload.authOrHeaderPatterns?.[0];
@@ -55,6 +56,28 @@ describe('official candidate fixture coverage', () => {
     expect(candidate.payload.affectedResources).toEqual(['Assistants API']);
     expect(candidate.payload.apiOperationPatterns).toBeUndefined();
     expect(candidate.payload.affectedPackages).toBeUndefined();
+    expect(candidate.state).toBe('needs_review');
+  });
+
+  it('proves Firebase import-alias evidence reaches the compatibility engine without production promotion', async () => {
+    const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get('firebase-vertexai-import-alias-removed-2025-07-17')!;
+    const change = reviewedProjection(candidate);
+    const scan = await new TypeScriptRepositoryAnalyzer().analyze(new Map([
+      ['package.json', JSON.stringify({ dependencies: { firebase: '^12.0.0' } })],
+      ['src/ai.ts', "import { getVertexAI } from 'firebase/vertexai'; export const ai = getVertexAI();"],
+    ]), { id: 'firebase', packageName: 'firebase', constructorExports: [] });
+    const resourceUsage = scan.usageIR?.find((usage) => usage.resource === 'firebase/vertexai');
+    expect(resourceUsage).toBeDefined();
+    if (!resourceUsage) throw new Error('FIREBASE_RESOURCE_USAGE_NOT_FOUND');
+    const result = evaluateNormalizedCompatibility({ providerId: 'firebase', usageIR: [resourceUsage], completeEvidence: true }, change, { compatibilityProviders: new Set(['firebase']), requireOfficialProvenance: true });
+    expect(result.status).toBe('AFFECTED');
+    expect(candidate.state).toBe('needs_review');
+  });
+
+  it('keeps Slack method evidence bound to the exact resource identifier', () => {
+    const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get('slack-files-upload-retired-2025-03-11')!;
+    expect(candidate.payload.affectedResources).toEqual(['files.upload']);
+    expect(candidate.sourceEvidence?.claims).toContainEqual({ key: 'method', value: 'files.upload' });
     expect(candidate.state).toBe('needs_review');
   });
 });

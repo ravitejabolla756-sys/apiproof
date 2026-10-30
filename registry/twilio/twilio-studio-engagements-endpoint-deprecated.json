@@ -1,0 +1,24 @@
+{
+  "provider": "twilio",
+  "id": "twilio-studio-engagements-endpoint-deprecated",
+  "title": "Twilio Studio Engagements endpoint deprecation",
+  "description": "Twilio states that the Engagements endpoint is deprecated and no longer functions; Flow Executions and /Executions replace it.",
+  "packageName": "twilio",
+  "affectedSymbols": [{ "symbol": "twilio", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application addresses the deprecated /Engagements endpoint.",
+  "newBehavior": "The application addresses the /Executions endpoint.",
+  "migrationInstructions": [
+    "Replace a direct literal /Engagements endpoint reference with /Executions.",
+    "Review the response and request semantics before adopting the change."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://www.twilio.com/docs/studio/rest-api",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["studio"],
+  "rules": [{ "kind": "resource", "symbol": "twilio", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://www.twilio.com/docs/studio/rest-api", "summary": "Official Twilio Studio documentation marks Engagements as deprecated and names Executions as the replacement.", "accessedAt": "2026-10-06" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-06", "notes": "Reviewed against the official Twilio Studio REST API documentation; only literal endpoint replacement is executable." },
+  "versionScope": "api-and-sdk",
+  "assumptions": ["The endpoint path replacement does not prove response-shape compatibility.", "Dynamic construction and semantic changes remain human-review-only.", "Any generated patch requires verification and human approval."]
+}

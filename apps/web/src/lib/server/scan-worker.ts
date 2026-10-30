@@ -22,7 +22,7 @@ import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders, ru
 import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import type { ApiProvider } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
-import { loadProviderRegistry } from './registry-utils.js';
+import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
 import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
@@ -30,6 +30,7 @@ import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { providerIntelligenceV1Enabled, workerRuntimeIdentity } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
 import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
+import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { extractSourceSnippet } from './scan-snippet.js';
 import { assertFounderRepositoryScope, assertFounderScanProtectionConfigured, getConfiguredFounderUserId } from './founder-scan-authorization.js';
 import { buildWorkerScope } from './scan-worker-scope.js';
@@ -379,13 +380,17 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     // 6. Build snapshot and detect providers
     const snapshot = RepositorySnapshot.fromMemory(repo.name, filesMap);
     const productizationEnabled = providerIntelligenceV1Enabled();
+    const activeProductionRegistry = productizationEnabled ? await loadActiveProductionRegistry(repo.workspace_id) : undefined;
     const productization = productizationEnabled
-      ? await runProductizationScan({ repositoryId: repo.id, baselineSha: headSha, scanId, files: filesMap })
+      ? await runProductizationScan({ repositoryId: repo.id, baselineSha: headSha, scanId, files: filesMap, ...(activeProductionRegistry ? { registry: activeProductionRegistry } : {}) })
       : null;
     const analyzer = new TypeScriptRepositoryAnalyzer();
     const providersToAnalyze: Array<{ id: 'stripe' | 'twilio'; provider: ApiProvider }> = [];
     const pkgContent = filesMap.get('package.json');
-    if (!productizationEnabled && pkgContent) {
+    // Preserve legacy reviewed adapters as a bridge for provider rules that
+    // have not yet been projected into the normalized registry (notably Stripe).
+    // This avoids losing established coverage during productization rollout.
+    if (pkgContent) {
       try {
         const pkg = JSON.parse(pkgContent) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
         const deps = { ...pkg.dependencies, ...pkg.devDependencies };
@@ -408,16 +413,16 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     if (productization) {
       totalFilesAnalyzed = productization.metrics.analyzedFiles;
       inputDigest = productization.baselineSha;
-      collectedFindings.push(...productizationFindings(productization));
+      collectedFindings.push(...productizationFindings(productization, filesMap));
     }
 
     for (const { id: provId, provider } of providersToAnalyze) {
       const scanResult = await analyzer.analyze(snapshot, provider.descriptor);
       compatibilityResults.push(scanResult);
       totalFilesAnalyzed = Math.max(totalFilesAnalyzed, scanResult.coverage.filesAnalyzed);
-      inputDigest = scanResult.audit.inputDigest;
+      if (!productization) inputDigest = scanResult.audit.inputDigest;
 
-      const registryChanges = await loadProviderRegistry(provId);
+      const registryChanges = await loadProviderRegistry(provId, repo.workspace_id);
       for (const change of registryChanges) {
         const { impacts } = provider.matchImpact(scanResult, change);
         for (const impact of impacts) {
@@ -451,9 +456,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     // 8. Persist findings idempotently + finalize scan
     const completedAt = new Date().toISOString(), newlyCreatedFindingIds: string[] = [];
     const discoveredProviders = productization?.discoveries ?? discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
-    const persistedScanResult = productization
-      ? { schemaVersion: 2, productization: boundedProductizationProjection(productization) }
-      : scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []));
+    const persistedScanResult = productization ? { schemaVersion: 2, productization: boundedProductizationProjection(productization) } : scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []));
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
 
@@ -528,6 +531,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?
       `, [collectedFindings.length > 0 ? 'affected' : 'healthy', completedAt, repo.id]);
+      await replaceRepositoryProviderUsage(tx, { repositoryId: repo.id, workspaceId: repo.workspace_id, scanId, observedAt: completedAt, providerIds: productization ? [...productization.discoveries.map((item) => item.providerId), ...productization.usageIR.map((item) => item.providerId)] : [...discoveredProviders.map((item) => item.providerId), ...compatibilityResults.map((result) => result.provider)] });
 
       // Mark the scan request as completed
       await tx.execute(`
@@ -562,6 +566,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     await failScan(db, scanId, errorCode);
     await markScanWorkerJobFailed(db, job, 'SCAN_EXECUTION_FAILED', errorCode, {
       repositoryFullName: repo.full_name,
+      errorCode,
       durationMs: Date.now() - startedAtMs,
     });
     return {

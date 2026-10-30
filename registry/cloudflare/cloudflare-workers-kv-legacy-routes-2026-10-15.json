@@ -1,0 +1,24 @@
+{
+  "provider": "cloudflare",
+  "id": "cloudflare-workers-kv-legacy-routes-2026-10-15",
+  "title": "Cloudflare Workers KV legacy routes",
+  "description": "Cloudflare documents retirement of the legacy Workers KV namespace route and directs callers to the storage/kv namespace route.",
+  "packageName": "cloudflare",
+  "affectedSymbols": [{ "symbol": "cloudflare", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application addresses the legacy Workers KV namespace route.",
+  "newBehavior": "The application addresses the documented storage/kv namespace route.",
+  "migrationInstructions": [
+    "Replace a direct literal /accounts/{account_id}/workers/namespaces/ path with /accounts/{account_id}/storage/kv/namespaces/.",
+    "Review authentication, aliases, dynamic URL construction, and endpoint semantics before applying the change."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://developers.cloudflare.com/kv/reference/rest-api/",
+  "provenance": "official",
+  "changeType": "resource-removed",
+  "resources": ["workersKv"],
+  "rules": [{ "kind": "resource", "symbol": "cloudflare", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://developers.cloudflare.com/kv/reference/rest-api/", "summary": "Official Cloudflare documentation records the legacy Workers KV namespace route and the storage/kv route family used for the replacement.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official Cloudflare route documentation; executable transformation is limited to direct string literals containing the documented route prefix." },
+  "versionScope": "api-and-sdk",
+  "assumptions": ["The source establishes the route-family migration but not dynamic URL construction or SDK wrapper behavior.", "Only direct string literals are eligible for a deterministic proposal.", "Every generated patch remains subject to verification and human approval."]
+}

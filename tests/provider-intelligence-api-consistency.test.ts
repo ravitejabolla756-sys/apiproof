@@ -34,7 +34,7 @@ const RAW_RESULT = JSON.stringify({
 });
 
 beforeEach(() => {
-  process.env.APIPROOF_SECRET = 'provider-intelligence-api-consistency-secret';
+  process.env.APIPROOF_SECRET = 'provider-intelligence-api-consistency-fixture';
   process.env.APIPROOF_DB_PATH = DB_PATH;
   if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   initDatabase(DB_PATH);
@@ -67,11 +67,18 @@ describe('provider-intelligence API consistency and tenant boundaries', () => {
     const proofBody = await proof.json() as { productization: { baselineSha: string; scanId: string; proofs: Array<Record<string, unknown>> } };
     const inventory = await getInventory(new Request(`http://localhost/api/inventory?repositoryId=${repositoryId}`, { headers: { cookie: `apiproof_session=${session.id}` } }));
     const inventoryBody = await inventory.json() as { productization: { baselineSha: string; scanId: string; proofs: Array<Record<string, unknown>> } };
+    const catalog = await getInventory(new Request('http://localhost/api/inventory'));
+    const catalogBody = await catalog.json() as { totalRulesCount: number; providers: Array<{ id: string; rulesCount: number; status: string }> };
     const map = await getMap(new Request('http://localhost/api/compatibility-map', { headers: { cookie: `apiproof_session=${session.id}` } }));
     const mapBody = await map.json() as { repositories: Array<{ latestCompletedScan: { id: string; baselineSha: string }; compatibilityProofs: Array<Record<string, unknown>> }> };
 
     expect(proof.status).toBe(200);
     expect(inventory.status).toBe(200);
+    expect(catalog.status).toBe(200);
+    expect(catalogBody.totalRulesCount).toBeGreaterThan(2);
+    const openaiProvider = catalogBody.providers.find((provider) => provider.id === 'openai');
+    expect(openaiProvider?.status).toBe('reviewed');
+    expect(openaiProvider?.rulesCount).toBeGreaterThan(0);
     expect(map.status).toBe(200);
     const mapRepo = mapBody.repositories[0]!;
     for (const body of [proofBody, inventoryBody]) {

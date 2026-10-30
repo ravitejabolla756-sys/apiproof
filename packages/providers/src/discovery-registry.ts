@@ -11,6 +11,8 @@ export interface ProviderDefinition {
   readonly apiDomains: readonly string[];
   readonly environmentVariables: readonly string[];
   readonly documentation: { readonly url: string; readonly changelogUrl?: string };
+  /** Named SDK exports that represent client constructors for static usage analysis. */
+  readonly constructorExports?: readonly string[];
   readonly capability: ProviderCapability;
   readonly capabilities: readonly ProviderCapability[];
   readonly allowSharedIdentifiers?: boolean;
@@ -41,6 +43,7 @@ const discoveryProvider = (input: DiscoveryProviderInput): ProviderDefinition =>
 
 export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'openai', displayName: 'OpenAI', category: 'AI / Models', packageIdentifiers: ['openai'], apiDomains: ['api.openai.com'], environmentVariables: ['OPENAI_API_KEY'], documentation: { url: 'https://platform.openai.com/docs' } }),
+  discoveryProvider({ id: 'elevenlabs', displayName: 'ElevenLabs', category: 'AI / Models', packageIdentifiers: ['elevenlabs'], apiDomains: ['api.elevenlabs.io'], environmentVariables: ['ELEVENLABS_API_KEY'], documentation: { url: 'https://elevenlabs.io/docs' } }),
   discoveryProvider({ id: 'anthropic', displayName: 'Anthropic', category: 'AI / Models', packageIdentifiers: ['@anthropic-ai/sdk'], apiDomains: ['api.anthropic.com'], environmentVariables: ['ANTHROPIC_API_KEY'], documentation: { url: 'https://docs.anthropic.com/' } }),
   discoveryProvider({ id: 'google-gemini', displayName: 'Google Gemini', category: 'AI / Models', packageIdentifiers: ['@google/genai', '@google/generative-ai'], apiDomains: ['generativelanguage.googleapis.com'], environmentVariables: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'], documentation: { url: 'https://ai.google.dev/gemini-api/docs' } }),
   discoveryProvider({ id: 'cohere', displayName: 'Cohere', category: 'AI / Models', packageIdentifiers: ['cohere-ai'], apiDomains: ['api.cohere.com'], environmentVariables: ['COHERE_API_KEY'], documentation: { url: 'https://docs.cohere.com/' } }),
@@ -57,6 +60,7 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'cloudflare', displayName: 'Cloudflare', category: 'Cloud / Infrastructure', packageIdentifiers: ['cloudflare', 'wrangler'], apiDomains: ['api.cloudflare.com'], environmentVariables: ['CLOUDFLARE_API_TOKEN'], documentation: { url: 'https://developers.cloudflare.com/' } }),
   discoveryProvider({ id: 'digitalocean', displayName: 'DigitalOcean', category: 'Cloud / Infrastructure', packageIdentifiers: [], apiDomains: ['api.digitalocean.com'], environmentVariables: ['DIGITALOCEAN_ACCESS_TOKEN'], documentation: { url: 'https://docs.digitalocean.com/reference/api/' } }),
   discoveryProvider({ id: 'vercel', displayName: 'Vercel', category: 'Cloud / Infrastructure', packageIdentifiers: ['vercel', '@vercel/sdk'], apiDomains: ['api.vercel.com'], environmentVariables: ['VERCEL_TOKEN'], documentation: { url: 'https://vercel.com/docs/rest-api' } }),
+  discoveryProvider({ id: 'launchdarkly', displayName: 'LaunchDarkly', category: 'Cloud / Infrastructure', packageIdentifiers: ['launchdarkly-node-server-sdk'], apiDomains: ['app.launchdarkly.com', 'api.launchdarkly.com'], environmentVariables: ['LAUNCHDARKLY_SDK_KEY'], documentation: { url: 'https://launchdarkly.com/docs' } }),
   discoveryProvider({ id: 'netlify', displayName: 'Netlify', category: 'Cloud / Infrastructure', packageIdentifiers: ['@netlify/api'], apiDomains: ['api.netlify.com'], environmentVariables: ['NETLIFY_AUTH_TOKEN'], documentation: { url: 'https://docs.netlify.com/api/get-started/' } }),
   discoveryProvider({ id: 'render', displayName: 'Render', category: 'Cloud / Infrastructure', packageIdentifiers: [], apiDomains: ['api.render.com'], environmentVariables: ['RENDER_API_KEY'], documentation: { url: 'https://api-docs.render.com/' } }),
   discoveryProvider({ id: 'railway', displayName: 'Railway', category: 'Cloud / Infrastructure', packageIdentifiers: [], apiDomains: [], environmentVariables: ['RAILWAY_API_TOKEN'], documentation: { url: 'https://docs.railway.com/' } }),
@@ -82,10 +86,11 @@ export const DISCOVERY_PROVIDERS: readonly ProviderDefinition[] = [
   discoveryProvider({ id: 'mailgun', displayName: 'Mailgun', category: 'Communications', packageIdentifiers: ['mailgun.js'], apiDomains: ['api.mailgun.net'], environmentVariables: ['MAILGUN_API_KEY'], documentation: { url: 'https://documentation.mailgun.com/' } }),
   discoveryProvider({ id: 'postmark', displayName: 'Postmark', category: 'Communications', packageIdentifiers: ['postmark'], apiDomains: ['api.postmarkapp.com'], environmentVariables: ['POSTMARK_SERVER_TOKEN'], documentation: { url: 'https://postmarkapp.com/developer' } }),
   discoveryProvider({ id: 'resend', displayName: 'Resend', category: 'Communications', packageIdentifiers: ['resend'], apiDomains: ['api.resend.com'], environmentVariables: ['RESEND_API_KEY'], documentation: { url: 'https://resend.com/docs' } }),
-  discoveryProvider({ id: 'slack', displayName: 'Slack', category: 'Communications', packageIdentifiers: ['@slack/web-api', '@slack/bolt'], apiDomains: ['slack.com'], environmentVariables: ['SLACK_BOT_TOKEN', 'SLACK_APP_TOKEN'], documentation: { url: 'https://api.slack.com/docs' } }),
+  discoveryProvider({ id: 'slack', displayName: 'Slack', category: 'Communications', packageIdentifiers: ['@slack/web-api', '@slack/bolt'], apiDomains: ['slack.com'], environmentVariables: ['SLACK_BOT_TOKEN', 'SLACK_APP_TOKEN'], constructorExports: ['default', 'WebClient'], documentation: { url: 'https://api.slack.com/docs' } }),
   discoveryProvider({ id: 'discord', displayName: 'Discord', category: 'Communications', packageIdentifiers: ['discord.js'], apiDomains: ['discord.com'], environmentVariables: ['DISCORD_TOKEN'], documentation: { url: 'https://discord.com/developers/docs' } }),
 
   discoveryProvider({ id: 'paypal', displayName: 'PayPal', category: 'Payments / Fintech', packageIdentifiers: ['@paypal/checkout-server-sdk', '@paypal/paypal-server-sdk'], apiDomains: ['api-m.paypal.com'], environmentVariables: ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'], documentation: { url: 'https://developer.paypal.com/api/rest/' } }),
+  discoveryProvider({ id: 'stripe', displayName: 'Stripe', category: 'Payments / Fintech', packageIdentifiers: ['stripe'], apiDomains: ['api.stripe.com'], environmentVariables: ['STRIPE_SECRET_KEY'], documentation: { url: 'https://docs.stripe.com/' } }),
   discoveryProvider({ id: 'adyen', displayName: 'Adyen', category: 'Payments / Fintech', packageIdentifiers: ['@adyen/api-library'], apiDomains: ['checkout-live.adyen.com', 'checkout-test.adyen.com'], environmentVariables: ['ADYEN_API_KEY', 'ADYEN_MERCHANT_ACCOUNT'], documentation: { url: 'https://docs.adyen.com/api-explorer/' } }),
   discoveryProvider({ id: 'square', displayName: 'Square', category: 'Payments / Fintech', packageIdentifiers: ['square'], apiDomains: ['connect.squareup.com'], environmentVariables: ['SQUARE_ACCESS_TOKEN'], documentation: { url: 'https://developer.squareup.com/docs' } }),
   discoveryProvider({ id: 'plaid', displayName: 'Plaid', category: 'Payments / Fintech', packageIdentifiers: ['plaid'], apiDomains: ['production.plaid.com'], environmentVariables: ['PLAID_CLIENT_ID', 'PLAID_SECRET'], documentation: { url: 'https://plaid.com/docs/' } }),

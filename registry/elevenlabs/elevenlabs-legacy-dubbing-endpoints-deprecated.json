@@ -1,0 +1,29 @@
+{
+  "provider": "elevenlabs",
+  "id": "elevenlabs-legacy-dubbing-endpoints-deprecated",
+  "title": "ElevenLabs legacy dubbing endpoints deprecated",
+  "description": "ElevenLabs marks legacy /v1/dubbing endpoints outside /v1/dubbing/project as deprecated and directs integrations to the project-based flow.",
+  "packageName": "elevenlabs",
+  "affectedSymbols": [{ "symbol": "dubbing", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application calls a legacy /v1/dubbing endpoint.",
+  "newBehavior": "The application targets the project-based /v1/dubbing/project flow, subject to request-shape review.",
+  "migrationInstructions": [
+    "Replace only a direct literal legacy endpoint prefix when the call site is already project-compatible.",
+    "Review request and response behavior; dynamic routes remain review-only."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://elevenlabs.io/docs/changelog",
+  "effectiveDate": "2026-10-29",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["dubbing"],
+  "rules": [{ "kind": "resource", "symbol": "dubbing", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://elevenlabs.io/docs/changelog", "summary": "Official ElevenLabs changelog identifies legacy dubbing endpoints and the project-based replacement.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official ElevenLabs changelog. The executable transformation is limited to direct string literals and remains subject to request-shape review." },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The source establishes endpoint deprecation but not automatic request-body compatibility.",
+    "Only direct static string literals are eligible for a deterministic proposal.",
+    "Every generated patch remains subject to verification and human approval."
+  ]
+}

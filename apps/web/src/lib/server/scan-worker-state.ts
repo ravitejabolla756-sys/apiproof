@@ -62,7 +62,7 @@ export async function markScanWorkerJobFailed(
   job: ScanWorkerJobState,
   category: string,
   errorMessage: string,
-  context: { repositoryFullName?: string; durationMs?: number } = {}
+  context: { repositoryFullName?: string; errorCode?: string; durationMs?: number } = {}
 ): Promise<void> {
   const retryable = new Set(['GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE', 'GITHUB_NETWORK']);
   const nextStatus = retryable.has(category) && job.attempt_count < 3 ? 'pending' : 'failed';
@@ -81,6 +81,7 @@ export async function markScanWorkerJobFailed(
     attempt: job.attempt_count,
     finalStatus: nextStatus,
     failureCategory: category,
+    errorCode: context.errorCode,
     durationMs: context.durationMs,
   });
 }

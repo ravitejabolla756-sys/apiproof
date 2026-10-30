@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import fs from 'node:fs';
-import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders } from '@apiproof/analyzers';
+import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders, runProductizationScan } from '@apiproof/analyzers';
 import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import {
   type ApiProvider,
@@ -11,11 +11,15 @@ import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
-import { loadProviderRegistry } from './registry-utils.js';
+import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { assertFounderScanAuthorization } from './founder-scan-authorization.js';
+import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
+import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
+import { boundedProductizationProjection } from './productization-persistence.js';
+import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -162,14 +166,31 @@ export async function createCustomerSubscription(customerId: string, priceId: st
       }
     }
 
-    // 4. Construct RepositorySnapshot
+    // 4. Construct RepositorySnapshot and select the reviewed productization path.
+    // The flag remains the explicit rollout boundary: legacy scans stay available
+    // for rollback and existing installations are not silently changed.
     const snapshot = RepositorySnapshot.fromMemory(repo.name, filesMap);
+    const productizationEnabled = providerIntelligenceV1Enabled();
+    const activeProductionRegistry = productizationEnabled ? await loadActiveProductionRegistry(repo.workspace_id) : undefined;
+    const productization = productizationEnabled
+      ? await runProductizationScan({
+          repositoryId: repo.id,
+          baselineSha: headSha,
+          scanId,
+          files: filesMap,
+          ...(activeProductionRegistry ? { registry: activeProductionRegistry } : {}),
+        })
+      : null;
     const analyzer = new TypeScriptRepositoryAnalyzer();
-    const discoveredProviders = discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
+    const discoveredProviders = productization?.discoveries ?? discoverProviders(filesMap, DISCOVERY_PROVIDER_REGISTRY);
 
     // 5. Detect providers from package.json
     const providersToAnalyze: Array<{ id: 'stripe' | 'twilio'; provider: ApiProvider }> = [];
     const pkgContent = filesMap.get('package.json');
+    // Keep the reviewed legacy adapters as a compatibility bridge for rules
+    // that have not yet been projected into the normalized registry (notably
+    // the established Stripe corpus). Productization remains authoritative for
+    // normalized results; this bridge prevents a rollout from losing coverage.
     if (pkgContent) {
       try {
         const pkg = JSON.parse(pkgContent);
@@ -184,40 +205,30 @@ export async function createCustomerSubscription(customerId: string, priceId: st
         // fallback
       }
     }
-    if (providersToAnalyze.length === 0) {
+    if (!productizationEnabled && providersToAnalyze.length === 0) {
       providersToAnalyze.push({ id: 'stripe', provider: new StripeProvider() });
     }
 
     // 6. Run AST scan & impact analysis for each provider
-    const collectedFindings: Array<{
-      id: string;
-      changeId: string;
-      provider: string;
-      title: string;
-      description: string;
-      severity: string;
-      confidence: number;
-      filePath: string;
-      lineNumber: number;
-      symbol: string;
-      reason: string;
-      reasonCodes: string[];
-      evidence: unknown[];
-      sourceSnippet: string;
-      sourceDigest: string;
-    }> = [];
+    const collectedFindings: ProductizationFinding[] = [];
 
     let totalFilesAnalyzed = 0;
     let inputDigest = snapshot.digest();
     const compatibilityResults: ScanResult[] = [];
 
+    if (productization) {
+      totalFilesAnalyzed = productization.metrics.analyzedFiles;
+      inputDigest = productization.baselineSha;
+      collectedFindings.push(...productizationFindings(productization));
+    }
+
     for (const { id: provId, provider } of providersToAnalyze) {
       const scanResult = await analyzer.analyze(snapshot, provider.descriptor);
       compatibilityResults.push(scanResult);
       totalFilesAnalyzed = Math.max(totalFilesAnalyzed, scanResult.coverage.filesAnalyzed);
-      inputDigest = scanResult.audit.inputDigest;
+      if (!productization) inputDigest = scanResult.audit.inputDigest;
 
-      const registryChanges = await loadProviderRegistry(provId);
+      const registryChanges = await loadProviderRegistry(provId, repo.workspace_id);
       for (const change of registryChanges) {
         const { impacts } = provider.matchImpact(scanResult, change);
         for (const impact of impacts) {
@@ -250,6 +261,16 @@ export async function createCustomerSubscription(customerId: string, priceId: st
 
     // 7. Persist findings to database inside a transaction with deduplication
     const newlyCreatedFindingIds: string[] = [];
+    const persistedScanResult = productization
+      ? { schemaVersion: 2, productization: boundedProductizationProjection(productization) }
+      : scanResultWithDiscovery(
+          summarizeScanCompatibility(compatibilityResults),
+          discoveredProviders,
+          compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []),
+        );
+    const observedProviderIds = productization
+      ? [...productization.discoveries.map((item) => item.providerId), ...productization.usageIR.map((item) => item.providerId)]
+      : [...providersToAnalyze.map((provider) => provider.id), ...collectedFindings.map((finding) => finding.provider)];
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
 
@@ -328,7 +349,7 @@ export async function createCustomerSubscription(customerId: string, priceId: st
             completed_at = ?
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
-        JSON.stringify(scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []))), new Date().toISOString(), scanId]);
+        JSON.stringify(persistedScanResult), new Date().toISOString(), scanId]);
 
       // 9. Update repository status
       const repoStatus = collectedFindings.length > 0 ? 'affected' : 'healthy';
@@ -337,6 +358,13 @@ export async function createCustomerSubscription(customerId: string, priceId: st
         SET status = ?, last_scan_at = ?
         WHERE id = ?
       `, [repoStatus, new Date().toISOString(), repo.id]);
+      await replaceRepositoryProviderUsage(tx, {
+        repositoryId: repo.id,
+        workspaceId: repo.workspace_id,
+        scanId,
+        observedAt: new Date().toISOString(),
+        providerIds: observedProviderIds,
+      });
 
       // 10. Record completed activity
       await tx.execute(`
@@ -361,7 +389,12 @@ export async function createCustomerSubscription(customerId: string, priceId: st
       filesAnalyzed: totalFilesAnalyzed,
       findingsCount: collectedFindings.length,
       status: 'completed',
-      providersDetected: providersToAnalyze.map((p) => p.id),
+      providersDetected: productization
+        ? [...new Set([
+            ...productization.discoveries.map((discovery) => discovery.providerId),
+            ...providersToAnalyze.map((provider) => provider.id),
+          ])]
+        : providersToAnalyze.map((p) => p.id),
       findings: collectedFindings.map((f) => ({
         id: f.id,
         changeId: f.changeId,

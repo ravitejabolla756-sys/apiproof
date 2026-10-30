@@ -40,6 +40,7 @@ export interface ProviderDiscoveryResult {
   capability: ProviderCapability;
   capabilities: ProviderCapability[];
   category: ProviderDefinition['category'];
+  constructorExports: readonly string[];
 }
 
 const SOURCE_FILE = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
@@ -205,6 +206,7 @@ export function discoverProviders(
       capability: definition.capability,
       capabilities: [...definition.capabilities],
       category: definition.category,
+      constructorExports: [...(definition.constructorExports ?? [])],
     };
   });
 }
