@@ -20,6 +20,7 @@ import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.j
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
 import { boundedProductizationProjection } from './productization-persistence.js';
 import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
+import { createSyntheticTestFixtureFiles } from './test-fixture-source.js';
 
 export interface ScanExecutionResult {
   scanId: string;
@@ -145,20 +146,8 @@ export async function runRepositoryScan(
             filesMap.set('package.json', fs.readFileSync(pkgPath, 'utf8'));
           }
         } else {
-          // Built-in synthetic fixture if external directory absent
-          filesMap.set('package.json', JSON.stringify({
-            name: repo.name,
-            dependencies: { stripe: '^16.0.0', twilio: '^3.80.0' }
-          }, null, 2));
-          filesMap.set('src/billing.ts', `import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-export async function createCustomerSubscription(customerId: string, priceId: string, couponId: string) {
-  return stripe.subscriptions.create({
-    customer: customerId,
-    items: [{ price: priceId }],
-    coupon: couponId
-  });
-}`);
+          // Built-in synthetic fixture if external directory absent.
+          filesMap = createSyntheticTestFixtureFiles(repo.name);
         }
         headSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
       } else {

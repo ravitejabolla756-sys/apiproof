@@ -30,6 +30,7 @@ import type { PlanningInput, VerificationReport } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { isApprovedDynamicProductionChange, loadApprovedDynamicPatchRule, loadProviderRegistry } from './registry-utils.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
+import { createSyntheticTestFixtureFiles } from './test-fixture-source.js';
 import { readBoundMigrationProof } from './migration-proof.js';
 
 export interface MigrationVerificationOptions {
@@ -221,9 +222,7 @@ async function fetchExactSource(repo: MigrationVerificationRepo, baselineSha: st
         catch { /* Try the next supported lockfile; absence is rejected by command selection. */ }
       }
     } catch {
-      files.set('src/billing.ts', `import Stripe from 'stripe';\nconst stripe = new Stripe('sk_test_fixture');\nexport function migrate() {\n  const customerId = 'customer';\n  const priceId = 'price';\n  const couponId = 'coupon';\n  const metadata = {};\n  const options = {};\n\n  return stripe.subscriptions.create({ customer: customerId, items: [{ price: priceId }], coupon: couponId });\n}`);
-      files.set('package.json', JSON.stringify({ name: repo.name, dependencies: { stripe: '^16.0.0' } }));
-      files.set('pnpm-lock.yaml', "lockfileVersion: '9.0'\nimporters:\n  .:\n    dependencies:\n      stripe:\n        specifier: ^16.0.0\n        version: 16.12.0\n");
+      for (const [file, source] of createSyntheticTestFixtureFiles(repo.name)) files.set(file, source);
     }
     return files;
   }
