@@ -117,7 +117,7 @@ describe('OpenAI Assistants explicit local human review', () => {
     expect(projectedRecord.evidence[0]?.url).toBe(SOURCE_URL);
     expect(projectedRegistry.byChangeId.get(CHANGE_ID)).toEqual(projectedRecord);
 
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(50);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has(CHANGE_ID)).toBe(true);
     const gpt45 = PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.get('openai-gpt-4-5-preview-removal-2025-07-14');
     expect(gpt45).toMatchObject({
