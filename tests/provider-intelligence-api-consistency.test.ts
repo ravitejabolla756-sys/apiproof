@@ -34,7 +34,7 @@ const RAW_RESULT = JSON.stringify({
 });
 
 beforeEach(() => {
-  process.env.APIPROOF_SECRET = 'provider-intelligence-api-consistency-fixture';
+  process.env.APIPROOF_SECRET = 'provider-intelligence-api-consistency-secret';
   process.env.APIPROOF_DB_PATH = DB_PATH;
   if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   initDatabase(DB_PATH);

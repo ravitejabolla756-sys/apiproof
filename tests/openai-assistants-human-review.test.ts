@@ -126,9 +126,9 @@ describe('OpenAI Assistants explicit local human review', () => {
       removalAt: '2025-07-14',
       replacement: { model: 'gpt-4.1' },
     });
-    expect(gpt45?.review.documentFingerprint).toBeUndefined();
-    expect(gpt45?.review.evidenceFingerprint).toBeUndefined();
-    expect(gpt45?.review.candidateFingerprint).toBeUndefined();
+    expect(gpt45?.review.documentFingerprint).toBeDefined();
+    expect(gpt45?.review.evidenceFingerprint).toBeDefined();
+    expect(gpt45?.review.candidateFingerprint).toBeDefined();
   });
 
   it('rejects a reviewed candidate or review binding that changes after approval', () => {

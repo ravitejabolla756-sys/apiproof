@@ -12,9 +12,9 @@ vi.mock('../apps/web/src/lib/server/github.js', async (importOriginal) => ({
 }));
 vi.mock('@apiproof/core', async (importOriginal) => ({
   ...(await importOriginal<typeof CoreModule>()),
-  NodeGitHubAppTokenProvider: vi.fn(function (this: object) { Object.assign(this, { getInstallationToken: vi.fn().mockResolvedValue('github-token-fixture') }); }),
+  NodeGitHubAppTokenProvider: vi.fn(function (this: object) { Object.assign(this, { getInstallationToken: vi.fn().mockResolvedValue('ghs_mock_token') }); }),
   GitHubAppSourceControlProvider: vi.fn(function (this: object) { Object.assign(this, { getDefaultBranch: vi.fn().mockResolvedValue({ name: 'main', sha: 'd'.repeat(40) }) }); }),
-  loadGitHubAppConfig: vi.fn().mockReturnValue({ enabled: true, appId: '12345', appSlug: 'apiproof-test', privateKey: 'private-key-fixture' }),
+  loadGitHubAppConfig: vi.fn().mockReturnValue({ enabled: true, appId: '12345', appSlug: 'apiproof-test', privateKey: 'test-key' }),
 }));
 
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
@@ -44,7 +44,7 @@ describe('provider rescan worker orchestration', () => {
     process.env.GITHUB_APP_ID = '12345';
     process.env.PROVIDER_INTELLIGENCE_V1_ENABLED = 'true';
     process.env.GITHUB_APP_SLUG = 'apiproof-test';
-    process.env.GITHUB_APP_PRIVATE_KEY = 'private-key-fixture';
+    process.env.GITHUB_APP_PRIVATE_KEY = 'test-key';
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
     initDatabase(DB_PATH);
     vi.mocked(fetchRemoteRepositoryFiles).mockResolvedValue({

@@ -6,11 +6,11 @@ import { formatLogEntry, redactSensitiveData } from '../apps/web/src/lib/server/
 
 const RAW_MARKER = 'RAW_SOURCE_MUST_NEVER_LEAK_987654321';
 const SECRETS = [
-  'openai-fixture-value-987',
-  'anthropic-fixture-value-987',
-  'twilio-fixture-value-987',
-  'supabase-fixture-value-987',
-  'github-fixture-value-987',
+  'sk-test-openai-secret-987',
+  'sk-ant-test-secret-987',
+  'twilio-secret-987',
+  'supabase-secret-987',
+  'ghp_test_secret_987',
 ];
 
 describe('provider-intelligence privacy and bounded persistence', () => {

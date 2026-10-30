@@ -28,7 +28,7 @@ import {
 import { MigrationPlanSchema, VerificationReportSchema } from '@apiproof/shared';
 import type { PlanningInput, VerificationReport } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
-import { loadProviderRegistry } from './registry-utils.js';
+import { isApprovedDynamicProductionChange, loadApprovedDynamicPatchRule, loadProviderRegistry } from './registry-utils.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { readBoundMigrationProof } from './migration-proof.js';
 
@@ -74,6 +74,14 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     const scan = await getDatabase().queryOne<{ id: string; sha: string; repository_id: string; status: string }>('SELECT id, sha, repository_id, status FROM scans WHERE id = (SELECT scan_id FROM findings WHERE id = ?)', [input.finding.id]);
     if (!scan || scan.status !== 'completed' || scan.repository_id !== input.repo.id || scan.sha !== baselineSha) throw new Error('BASELINE_SHA_MISMATCH: Migration baseline does not match the completed scan baseline.');
 
+    const plan = MigrationPlanSchema.parse(JSON.parse(input.migration.plan_json));
+    const changeList = await loadProviderRegistry(input.finding.provider, input.repo.workspace_id);
+    const change = changeList.find((candidate) => candidate.id === input.finding.change_id);
+    if (!change) throw new Error('CHANGE_NOT_FOUND: Migration change is not present in the approved registry.');
+    const dynamicChange = await isApprovedDynamicProductionChange(input.finding.provider, input.finding.change_id, input.repo.workspace_id);
+    const dynamicPatchRule = await loadApprovedDynamicPatchRule(input.finding.provider, input.finding.change_id, input.repo.workspace_id);
+    if (dynamicChange && !dynamicPatchRule) throw new Error('DYNAMIC_REMEDIATION_UNAVAILABLE: Approved dynamic finding has no source-bound executable migration template; review-only remediation is required.');
+
     const files = input.options?.sourceFiles ? new Map(Object.entries(input.options.sourceFiles)) : await fetchExactSource(input.repo, baselineSha);
     assertVerificationWorkspaceBounds(files);
     const source = files.get(input.finding.file_path);
@@ -83,10 +91,6 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     if (!input.finding.source_digest && process.env.NODE_ENV === 'production') throw new Error('SOURCE_DIGEST_MISSING: Scan evidence lacks the exact target source digest.');
     if (input.options?.sourceSha && input.options.sourceSha !== baselineSha) throw new Error('BASELINE_SHA_MISMATCH: Source provider returned a different commit.');
 
-    const plan = MigrationPlanSchema.parse(JSON.parse(input.migration.plan_json));
-    const changeList = await loadProviderRegistry(input.finding.provider as 'stripe' | 'twilio');
-    const change = changeList.find((candidate) => candidate.id === input.finding.change_id);
-    if (!change) throw new Error('CHANGE_NOT_FOUND: Migration change is not present in the approved registry.');
     const planningInput = buildPlanningInput(input.finding, input.repo.full_name, change as unknown as PlanningInput['change']);
     workspace = await createSourcePatchWorkspace(input.repo.github_repository_id, Object.fromEntries(files));
     const inferredColumn = inferSymbolColumn(source, input.finding.line_number, input.finding.symbol);
@@ -94,7 +98,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     const workspacePlan = { ...plan, repository: workspace.directory, affectedLocations: inferredColumn ? plan.affectedLocations.map((location) => ({ ...location, column: inferredColumn })) : plan.affectedLocations };
     const workspaceInput = { ...normalizedInput, repository: workspace.directory } as PlanningInput;
     if (workspacePlan.affectedLocations.length !== 1 || workspacePlan.affectedLocations[0]?.file !== input.finding.file_path) throw new Error('TARGET_PATH_MISMATCH: Approved migration target does not match the finding path.');
-    const context = await buildPatchContext(workspace, workspaceInput, workspacePlan);
+    const context = await buildPatchContext(workspace, workspaceInput, workspacePlan, dynamicPatchRule ? { rule: dynamicPatchRule } : undefined);
     const generated = await new DeterministicPatchGenerator().generate(context);
     const patch = await applyCandidate(workspace, context, generated);
     if (patch.status !== 'PATCH_READY_FOR_VALIDATION' || !patch.files.length || patch.validation.some((item) => !item.passed)) throw new Error(`PATCH_REJECTED: Deterministic patch was not safely applied (${patch.status}).`);
