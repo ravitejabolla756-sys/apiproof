@@ -15,7 +15,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
+    "beta:readiness": "tsx --conditions=apiproof-source apps/web/scripts/beta-readiness.ts",
+    "beta:live-preflight": "tsx --conditions=apiproof-source apps/web/scripts/beta-live-preflight.ts",
+    "beta:capture-evidence": "tsx --conditions=apiproof-source apps/web/scripts/beta-capture-evidence.ts",
+    "release:manifest": "tsx --conditions=apiproof-source apps/web/scripts/release-manifest.ts",
+    "provider:review-report": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-report.ts",
+    "provider:review-pack": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-pack.ts",
+    "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts all",
+    "providers:validate:multi": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts multi",
+    "provider:seed-review-queue": "tsx --conditions=apiproof-source apps/web/scripts/seed-provider-review-queue.ts",
     "db:migrate": "pnpm --filter @apiproof/web db:migrate",
+    "db:bootstrap:staging": "tsx apps/web/scripts/bootstrap-staging.ts",
     "verification:worker": "tsx apps/web/scripts/verification-worker.ts"
   },
   "devDependencies": {
@@ -33,3 +43,4 @@
     "vitest": "^4.0.18"
   }
 }
+
