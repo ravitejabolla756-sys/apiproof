@@ -5,7 +5,7 @@ import { evaluateRegisteredCompatibility } from '@apiproof/analyzers';
 import { COMPATIBILITY_FIXTURES } from './fixtures/compatibility-fixtures.js';
 
 const officialRecord = (overrides: Partial<ReviewedCompatibilityChange> = {}): ReviewedCompatibilityChange => ({
-  ...COMPATIBILITY_FIXTURES[0],
+  ...COMPATIBILITY_FIXTURES[0]!,
   review: { ...COMPATIBILITY_FIXTURES[0]!.review, status: 'reviewed', provenance: 'official' },
   evidence: [{ ...COMPATIBILITY_FIXTURES[0]!.evidence[0]!, url: COMPATIBILITY_FIXTURES[0]!.officialSourceUrl }],
   publishedAt: '2025-01-01', effectiveAt: '2025-02-01', removalAt: '2025-03-01',
@@ -45,11 +45,12 @@ describe('production reviewed change registry', () => {
   });
 
   it('does not claim compatibility for discovery-only providers without reviewed changes', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(50);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(3);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')?.map((change) => change.changeId)).toEqual([
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'openai-gpt-4-series-model-retirement-2027-01-14',
     ]);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')?.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
@@ -67,7 +68,16 @@ describe('production reviewed change registry', () => {
       'supabase-management-logs-all-removal-2026-09-23',
       'supabase-openapi-anon-key-access-2026-03-11',
     ]);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.has('cloudflare')).toBe(false);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('cloudflare')?.map((change) => change.changeId)).toEqual([
+      'cloudflare-account-roles-api-deprecated-2026-07-21',
+      'cloudflare-dns-record-type-update-removal-2026-06-30',
+      'cloudflare-foundation-dns-field-removal-2026-11-23',
+      'cloudflare-service-key-auth-removal-2026-09-30',
+      'cloudflare-service-key-authentication-removed-2026-09-30',
+      'cloudflare-workers-kv-legacy-namespace-routes-removed-2026-10-15',
+      'cloudflare-workers-kv-legacy-routes-2026-10-15',
+      'cloudflare-zone-settings-batch-api-eol-2027-03-31',
+    ]);
   });
 
   it('evaluates only an exact registered production record', () => {

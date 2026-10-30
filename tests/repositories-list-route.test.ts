@@ -98,7 +98,7 @@ describe('GET /api/repositories', () => {
     }));
 
     expect(response.status).toBe(400);
-    expect((await response.json()).code).toBe('AUTHORITATIVE_REPOSITORY_ID_REQUIRED');
+    expect((await response.json() as { code?: string }).code).toBe('AUTHORITATIVE_REPOSITORY_ID_REQUIRED');
     const after = await getDatabase().queryOne<{ count: number }>('SELECT COUNT(*) as count FROM repositories');
     expect(after?.count).toBe(before?.count ?? 0);
   });
@@ -120,3 +120,4 @@ describe('GET /api/repositories', () => {
     }
   });
 });
+

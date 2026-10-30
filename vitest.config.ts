@@ -12,5 +12,17 @@ export default defineConfig({
       'next/server': fileURLToPath(new URL('./apps/web/node_modules/next/server.js', import.meta.url)),
     },
   },
-  test: { include: ['tests/**/*.test.ts'], testTimeout: 30_000 },
+  test: {
+    include: ['tests/**/*.test.ts'],
+    testTimeout: 30_000,
+    // Several integration suites deliberately exercise process-level rollout
+    // flags and database-path selection. Running files concurrently lets one
+    // suite change that shared test state while another is mid-request.
+    // Keep the suite deterministic; production code remains concurrent.
+    fileParallelism: false,
+    // These integration suites intentionally exercise process-level rollout
+    // flags and database-path selection. Force one Vitest worker as well so
+    // the shared process environment cannot diverge between test files.
+    maxWorkers: 1,
+  },
 });

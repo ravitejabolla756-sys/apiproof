@@ -27,14 +27,13 @@ export async function generateMigrationForFinding(findingId: string, userId: str
   const { finding: rawFinding, repository: repo } = await requireFindingAccess(findingId, userId);
   const finding = {
     ...rawFinding,
-    provider: rawFinding.provider as 'stripe' | 'twilio',
     repo_full_name: repo.full_name,
     repo_name: repo.name,
     repo_owner: repo.owner,
   };
 
   // 2. Load registry change definition
-  const registryChanges = await loadProviderRegistry(finding.provider);
+  const registryChanges = await loadProviderRegistry(finding.provider, repo.workspace_id);
   const change = registryChanges.find((c: { id: string }) => c.id === finding.change_id);
   if (!change) {
     throw new Error(`Change definition ${finding.change_id} not found in ${finding.provider} registry.`);

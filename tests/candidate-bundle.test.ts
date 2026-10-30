@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY, exportCandidateBundle, importCandidateBundle } from '@apiproof/providers';
 
 describe('candidate bundle handoff', () => {
-  it('exports and imports a stable ten-candidate review bundle', () => {
+  it('exports and imports a stable official review bundle', () => {
     const first = exportCandidateBundle(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates);
     const second = exportCandidateBundle([...OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates].reverse());
     expect(first).toBe(second);
-    expect(importCandidateBundle(first).candidates).toHaveLength(10);
+    expect(importCandidateBundle(first).candidates).toHaveLength(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.length);
     expect(importCandidateBundle(first).byCandidateId.get('openai-assistants-api-sunset-2026-08-26')?.state).toBe('needs_review');
   });
 

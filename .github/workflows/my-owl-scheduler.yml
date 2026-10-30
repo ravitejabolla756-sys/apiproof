@@ -1,0 +1,58 @@
+name: MY OWL Scheduler
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Scheduled operation to run'
+        required: true
+        default: 'provider-changelog'
+        type: choice
+        options:
+          - provider-changelog
+          - scheduled-rescan
+
+permissions:
+  contents: read
+
+concurrency:
+  group: my-owl-scheduler
+  cancel-in-progress: false
+
+jobs:
+  provider-changelog:
+    if: (github.event_name == 'workflow_dispatch' && inputs.job == 'provider-changelog') || (github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Refresh provider changelogs and process bounded rescans
+        env:
+          MY_OWL_APP_URL: ${{ vars.MY_OWL_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$MY_OWL_APP_URL"
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --silent --show-error --retry 2 --retry-delay 5 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$MY_OWL_APP_URL/api/internal/provider-changelog"
+
+  scheduled-rescan:
+    if: (github.event_name == 'workflow_dispatch' && inputs.job == 'scheduled-rescan') || (github.event_name == 'schedule' && github.event.schedule == '0 2 * * *')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Enqueue and process nightly repository rescans
+        env:
+          MY_OWL_APP_URL: ${{ vars.MY_OWL_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$MY_OWL_APP_URL"
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --silent --show-error --retry 2 --retry-delay 5 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$MY_OWL_APP_URL/api/internal/scheduled-rescan"

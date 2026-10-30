@@ -13,12 +13,13 @@ jobs:
 
     env:
       NODE_ENV: test
-      APIPROOF_SECRET: ci-test-apiproof-secret-minimum-32-chars-long
+      APIPROOF_SECRET: ci-fixture-value-minimum-32-chars-long
       GITHUB_APP_ID: "12345"
       GITHUB_APP_SLUG: apiproof-ci
-      GITHUB_APP_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----"
-      GITHUB_WEBHOOK_SECRET: ci-test-webhook-secret-32-chars-long!
-      CRON_SECRET: ci-test-cron-secret-32-chars-long!
+      GITHUB_APP_PRIVATE_KEY: private-key-fixture
+      GITHUB_WEBHOOK_SECRET: webhook-fixture-value-minimum-32-chars
+      CRON_SECRET: cron-fixture-value-minimum-32-chars
+      APIPROOF_LOCAL_SEED_PASSWORD: ci-local-seed-password-only-for-tests
 
     steps:
       - name: Checkout repository
@@ -41,11 +42,20 @@ jobs:
       - name: Run Linter
         run: pnpm lint
 
+      - name: Build workspace packages
+        run: pnpm -r build
+
       - name: Run Typecheck
         run: pnpm typecheck
+
+      - name: Validate provider registry
+        run: pnpm providers:validate:all
+
+      - name: Validate provider isolation
+        run: pnpm providers:validate:multi
 
       - name: Run Test Suite
         run: pnpm test
 
-      - name: Run Production Build
-        run: pnpm -r build
+      - name: Generate release manifest
+        run: pnpm release:manifest

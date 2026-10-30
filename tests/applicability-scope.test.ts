@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileProductionChangeRegistry, OFFICIAL_CHANGE_CANDIDATE_REGISTRY, promoteCandidateToReviewed } from '@apiproof/providers';
+import { compileProductionChangeRegistry, OFFICIAL_CHANGE_CANDIDATE_REGISTRY, promoteCandidateToReviewed, fingerprintCandidate } from '@apiproof/providers';
 
 const record = (overrides: Record<string, unknown> = {}) => ({
   providerId: 'openai', changeId: 'scope-fixture', title: 'Scope fixture', description: 'Applicability scope fixture.', changeType: 'model_retired',
@@ -20,17 +20,34 @@ describe('generic applicability scopes', () => {
   it('accepts parameter removal only with operation and parameter', () => expect(() => compileProductionChangeRegistry([record({ changeType: 'parameter_removed', applicabilityScope: { dimensions: ['provider', 'operation', 'parameter'] }, affectedModels: [], apiOperationPatterns: ['messages.create'], affectedParameters: ['temperature'] })])).not.toThrow());
   it('rejects parameter removal without an authoritative target', () => expect(() => compileProductionChangeRegistry([record({ changeType: 'parameter_removed', applicabilityScope: { dimensions: ['provider', 'parameter'] }, affectedModels: [], affectedParameters: ['temperature'] })])).toThrow('APPLICABILITY_SCOPE_TARGET_REQUIRED'));
   it('accepts a model-scoped parameter restriction without SDK operation scope', () => expect(() => compileProductionChangeRegistry([record({ changeType: 'parameter_removed', applicabilityScope: { dimensions: ['provider', 'model', 'parameter'] }, affectedModels: ['claude-opus-4-7'], affectedParameters: ['temperature'], parameterConditions: [{ parameter: 'temperature', predicate: 'non-default' }] })])).not.toThrow());
+  it('accepts an authentication-header removal scoped directly to the header', () => expect(() => compileProductionChangeRegistry([record({ changeType: 'parameter_removed', applicabilityScope: { dimensions: ['provider', 'auth_or_header'] }, affectedModels: [], authOrHeaderPatterns: ['X-Auth-User-Service-Key'] })])).not.toThrow());
 
   it('accepts the exact OpenAI model-retirement candidate scope without SDK applicability', () => {
     const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get('openai-gpt-4-5-preview-removal-2025-07-14');
     if (!candidate) throw new Error('OPENAI_GPT45_CANDIDATE_MISSING');
     expect(candidate?.payload.applicabilityScope).toEqual({ dimensions: ['provider', 'model'] });
     expect(candidate?.payload.affectedPackages).toBeUndefined();
-    expect(() => promoteCandidateToReviewed({
+    const reviewer = 'Human reviewer';
+    const reviewedAt = '2026-10-05';
+    const notes = 'Test-only local validation; do not promote automatically.';
+    const candidateFingerprint = fingerprintCandidate(candidate);
+    const reviewedCandidate = {
       ...candidate,
       state: 'reviewed',
-      auditTrail: [...(candidate?.auditTrail ?? []), { state: 'reviewed', at: '2026-10-05', actor: 'human-reviewer', note: 'Test-only local validation; not production approval.' }],
+      auditTrail: [...(candidate?.auditTrail ?? []), {
+        state: 'reviewed', at: reviewedAt, actor: reviewer, note: notes,
+        reviewBinding: {
+          documentFingerprint: candidate.documentFingerprint ?? candidate.sourceFingerprint,
+          evidenceFingerprint: candidate.evidenceFingerprint,
+          candidateFingerprint,
+        },
+      }],
       payload: { ...candidate?.payload, severity: 'high' },
-    }, { status: 'reviewed', reviewer: 'Human reviewer', reviewerKind: 'human', reviewedAt: '2026-10-05', notes: 'Test-only local validation; do not promote automatically.' }, [{ url: candidate?.sourceUrl ?? 'https://developers.openai.com/api/docs/deprecations', summary: 'Official OpenAI source.', accessedAt: '2026-10-05' }])).not.toThrow();
+    };
+    expect(() => promoteCandidateToReviewed(
+      reviewedCandidate,
+      { status: 'reviewed', reviewer, reviewerKind: 'human', reviewedAt, notes, documentFingerprint: candidate.documentFingerprint ?? candidate.sourceFingerprint, evidenceFingerprint: candidate.evidenceFingerprint, candidateFingerprint },
+      [{ url: candidate?.sourceUrl ?? 'https://developers.openai.com/api/docs/deprecations', summary: 'Official OpenAI source.', accessedAt: reviewedAt }],
+    )).not.toThrow();
   });
 });

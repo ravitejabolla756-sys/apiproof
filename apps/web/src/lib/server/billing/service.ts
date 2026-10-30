@@ -20,16 +20,16 @@ export interface WorkspaceUsageSummary {
   plan: PlanDefinition;
   subscription: WorkspaceSubscription;
   metrics: {
-    repositories: { current: number; limit: number; allowed: boolean };
-    scans: { current: number; limit: number; allowed: boolean };
-    draftPrs: { current: number; limit: number; allowed: boolean };
+    repositories: { current: number; limit: number | null; allowed: boolean };
+    scans: { current: number; limit: number | null; allowed: boolean };
+    draftPrs: { current: number; limit: number | null; allowed: boolean };
   };
 }
 
 export interface LimitCheckResult {
   allowed: boolean;
   metric: 'repositories' | 'scans' | 'draft_prs';
-  limit: number;
+  limit: number | null;
   current: number;
   reason?: string;
 }
@@ -158,17 +158,17 @@ export async function getWorkspaceUsageSummary(workspaceId: string): Promise<Wor
       repositories: {
         current: repoCount,
         limit: plan.limits.maxRepositories,
-        allowed: isActive && repoCount < plan.limits.maxRepositories,
+        allowed: isActive && (plan.limits.maxRepositories === null || repoCount < plan.limits.maxRepositories),
       },
       scans: {
         current: scanCount,
         limit: plan.limits.maxScansPerMonth,
-        allowed: isActive && scanCount < plan.limits.maxScansPerMonth,
+        allowed: isActive && (plan.limits.maxScansPerMonth === null || scanCount < plan.limits.maxScansPerMonth),
       },
       draftPrs: {
         current: prCount,
         limit: plan.limits.maxDraftPrsPerMonth,
-        allowed: isActive && prCount < plan.limits.maxDraftPrsPerMonth,
+        allowed: isActive && (plan.limits.maxDraftPrsPerMonth === null || prCount < plan.limits.maxDraftPrsPerMonth),
       },
     },
   };
@@ -204,7 +204,7 @@ export async function checkWorkspaceLimit(
   const metricKey = metric === 'repositories' ? 'repositories' : metric === 'scans' ? 'scans' : 'draftPrs';
   const target = summary.metrics[metricKey];
 
-  if (target.current >= target.limit) {
+  if (target.limit !== null && target.current >= target.limit) {
     return {
       allowed: false,
       metric,

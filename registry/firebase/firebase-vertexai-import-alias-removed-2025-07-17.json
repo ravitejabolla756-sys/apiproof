@@ -1,0 +1,29 @@
+{
+  "provider": "firebase",
+  "id": "firebase-vertexai-import-alias-removed-2025-07-17",
+  "title": "Firebase removed the firebase/vertexai import alias",
+  "description": "Firebase JavaScript SDK 12.0.0 removes the firebase/vertexai import alias and directs users to firebase/ai.",
+  "packageName": "firebase",
+  "affectedSymbols": [{ "symbol": "firebase.vertexai", "kind": "resource", "match": "exact" }],
+  "oldBehavior": "The application imports Firebase AI functionality from firebase/vertexai.",
+  "newBehavior": "The application imports Firebase AI functionality from firebase/ai.",
+  "migrationInstructions": [
+    "Replace the exact firebase/vertexai import specifier with firebase/ai.",
+    "Review method names and SDK behavior separately; this rule changes only the module specifier."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://firebase.google.com/support/release-notes/js",
+  "effectiveDate": "2025-07-17",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["firebase.vertexai"],
+  "rules": [{ "kind": "resource", "symbol": "firebase.vertexai", "match": "exact" }],
+  "evidenceSources": [{ "url": "https://firebase.google.com/support/release-notes/js", "summary": "Official Firebase JavaScript release notes identify firebase/vertexai as removed and firebase/ai as the replacement.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official Firebase release notes. The executable transformation is limited to exact import specifier replacement." },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The source establishes the module alias boundary but not method-level compatibility.",
+    "Only exact static import specifiers are eligible for a deterministic proposal.",
+    "Every generated patch remains subject to verification and human approval."
+  ]
+}

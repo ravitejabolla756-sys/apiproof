@@ -1,0 +1,29 @@
+{
+  "provider": "clerk",
+  "id": "clerk-core-3-after-switch-organization-url-removed",
+  "title": "Clerk removed afterSwitchOrganizationUrl",
+  "description": "Clerk Core 3 removes the afterSwitchOrganizationUrl prop from OrganizationSwitcher and directs applications to use afterSelectOrganizationUrl instead.",
+  "packageName": "@clerk/clerk-react",
+  "affectedSymbols": [{ "symbol": "OrganizationSwitcher", "kind": "resource", "match": "exact" }],
+  "oldBehavior": "OrganizationSwitcher receives the removed afterSwitchOrganizationUrl prop.",
+  "newBehavior": "OrganizationSwitcher uses the documented afterSelectOrganizationUrl prop.",
+  "migrationInstructions": [
+    "Replace a direct JSX afterSwitchOrganizationUrl attribute with afterSelectOrganizationUrl.",
+    "Keep wrapper components, dynamic prop forwarding, and behavioral routing changes under human review."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3",
+  "effectiveDate": "2026-10-29",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["OrganizationSwitcher"],
+  "rules": [{ "kind": "resource", "symbol": "OrganizationSwitcher", "match": "exact" }],
+  "evidenceSources": [{ "url": "https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3", "summary": "Official Clerk Core 3 upgrade guidance identifies afterSwitchOrganizationUrl as removed and afterSelectOrganizationUrl as the replacement.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official Clerk Core 3 guide. The executable transformation is limited to direct JSX attribute renames; wrappers and behavior remain review-only." },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The source establishes the named OrganizationSwitcher prop boundary but not wrapper behavior.",
+    "Only direct JSX attributes are eligible for a deterministic proposal.",
+    "Every generated patch remains subject to verification and human approval."
+  ]
+}

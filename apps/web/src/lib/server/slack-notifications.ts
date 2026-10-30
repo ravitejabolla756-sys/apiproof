@@ -221,6 +221,58 @@ async function refreshSlackCredential(
   return parseSlackCredential(decryptSlackToken({ ciphertext: latest.token_ciphertext, iv: latest.token_iv, authTag: latest.token_auth_tag }));
 }
 
+export type SlackMessageConnection = {
+  id: string;
+  workspace_id: string;
+  team_id: string;
+  installer_slack_user_id: string;
+  token_ciphertext: string;
+  token_iv: string;
+  token_auth_tag: string;
+  updated_at: string;
+  status: string;
+};
+
+/**
+ * Sends a non-interactive Slack DM through the same encrypted-token and
+ * idempotent client-message path as finding notifications. Callers own the
+ * durable outbox state; this helper owns credential refresh and Slack I/O.
+ */
+export async function sendSlackDmMessage(input: {
+  connection: SlackMessageConnection;
+  eventKey: string;
+  text: string;
+  blocks?: unknown[];
+}): Promise<{ channel: string; ts: string }> {
+  if (input.connection.status !== 'active') throw new Error('SLACK_CONNECTION_INACTIVE');
+  let credential = parseSlackCredential(decryptSlackToken({
+    ciphertext: input.connection.token_ciphertext,
+    iv: input.connection.token_iv,
+    authTag: input.connection.token_auth_tag,
+  } satisfies EncryptedSlackToken));
+  if (credential.expiresAt && Date.parse(credential.expiresAt) <= Date.now() + 60_000) {
+    credential = await refreshSlackCredential(input.connection, credential);
+  }
+  const opened = await slackApi<{ channel?: { id?: string } }>(credential.accessToken, 'conversations.open', {
+    users: input.connection.installer_slack_user_id,
+    return_im: true,
+  });
+  const channel = opened.channel?.id;
+  if (!channel) throw new Error('SLACK_DM_UNAVAILABLE');
+  const digest = crypto.createHash('sha256').update(input.eventKey).digest();
+  const clientMsgId = `${digest.subarray(0, 4).toString('hex')}-${digest.subarray(4, 6).toString('hex')}-5${digest.subarray(6, 8).toString('hex').slice(1)}-a${digest.subarray(8, 10).toString('hex').slice(1)}-${digest.subarray(10, 16).toString('hex')}`;
+  const posted = await slackApi<{ channel?: string; ts?: string }>(credential.accessToken, 'chat.postMessage', {
+    channel,
+    text: input.text,
+    blocks: input.blocks,
+    client_msg_id: clientMsgId,
+    unfurl_links: false,
+    unfurl_media: false,
+  });
+  if (posted.channel !== channel || !posted.ts) throw new Error('SLACK_MESSAGE_RESULT_INVALID');
+  return { channel, ts: posted.ts };
+}
+
 export async function processOneSlackNotificationDelivery(workerId: string): Promise<boolean> {
   const db = getDatabase();
   const nowIso = new Date().toISOString();

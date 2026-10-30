@@ -38,7 +38,7 @@ describe('local OpenAI production-promotion proof', () => {
     expect(assistantsRecord.affectedVersionRange).toBeUndefined();
     expect(assistantsRecord.apiOperationPatterns).toEqual([]);
     expect(assistantsRecord.affectedEndpoints).toEqual([]);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(3);
   });
 
   it.each([
@@ -49,7 +49,7 @@ describe('local OpenAI production-promotion proof', () => {
     ['different provider and model', 'anthropic', 'gpt-4.5-preview', true, 'NOT_AFFECTED'],
   ] as const)('evaluates %s with no cross-scope claim', (id, providerId, model, staticEvidence, expected) => {
     const result = evaluateRegisteredNormalizedCompatibility({ providerId, usageIR: [usage(id, providerId, model, staticEvidence)], completeEvidence: !staticEvidence ? false : true }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(result).toHaveLength(providerId === 'openai' ? 2 : providerId === 'anthropic' ? 2 : 0);
+    expect(result).toHaveLength(providerId === 'openai' ? 3 : providerId === 'anthropic' ? 2 : 0);
     const modelResult = result.find((item) => item.changeId === modelRecord.changeId);
     if (modelResult) expect(modelResult.status).toBe(expected);
     if (providerId === 'anthropic') {
@@ -65,6 +65,7 @@ describe('local OpenAI production-promotion proof', () => {
     expect(results.map((item) => item.changeId)).toEqual([
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'openai-gpt-4-series-model-retirement-2027-01-14',
     ]);
     expect(results.find((item) => item.changeId === modelRecord.changeId)?.status).toBe('AFFECTED');
     expect(results.find((item) => item.changeId === assistantsRecord.changeId)?.status).toBe('NOT_AFFECTED');

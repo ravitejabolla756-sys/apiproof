@@ -56,6 +56,7 @@ const SECRET_REGEX_PATTERNS = [
   /Bearer\s+[A-Za-z0-9._~+/-]+=*/gi,
   /\b[A-Za-z0-9]+-(?:secret|token|password|private[_-]?key)-[A-Za-z0-9_-]+\b/gi,
   /(?:secret|token|password|private[_-]?key)[-_][A-Za-z0-9_-]{4,}/gi,
+  /\b(?:openai|anthropic|twilio|supabase|github)(?:[-_](?:fixture|test))?[-_](?:value|secret|token|password)[-_][A-Za-z0-9_-]+\b/gi,
   /RAW_SOURCE_MUST_[A-Z0-9_]+/g,
   /-----BEGIN [A-Z ]+ PRIVATE KEY-----[\s\S]*?-----END [A-Z ]+ PRIVATE KEY-----/g,
 ];
