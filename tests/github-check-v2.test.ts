@@ -38,7 +38,7 @@ describe('provider-neutral compatibility check projection', () => {
 
   it('sorts findings deterministically and deduplicates changed files', () => {
     const first = proof();
-    const second = proof({ providerId: 'anthropic', id: 'u2', packageName: '@anthropic-ai/sdk' });
+    const second = proof({ providerId: 'anthropic', packageName: '@anthropic-ai/sdk' });
     const result = evaluateCompatibilityCheck(base({ proofs: [second, first], changedFiles: ['z.ts', 'a.ts', 'z.ts'] }));
     expect(result.findings.map((finding) => finding.providerId)).toEqual(['anthropic', 'openai']);
     expect(result.changedFiles).toEqual(['a.ts', 'z.ts']);

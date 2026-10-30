@@ -17,5 +17,13 @@ describe('Productization worker persistence projection', () => {
     expect(serialized).not.toContain(secret);
     expect(findings.every((finding) => finding.sourceSnippet === '')).toBe(true);
     expect(serialized).toContain('src/client.ts');
+
+    const boundFindings = productizationFindings(scan, new Map([
+      ['src/client.ts', `import OpenAI from 'openai';\nconst key = '${secret}';\nconst client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });\nclient.chat.completions.create({ model: 'gpt-4.5-preview', messages: [] });`],
+    ]));
+    expect(boundFindings[0]?.sourceSnippet).toContain('chat.completions');
+    expect(boundFindings[0]?.sourceSnippet).not.toContain(secret);
+    expect(boundFindings[0]?.sourceDigest).toMatch(/^[a-f0-9]{64}$/);
+    expect(boundFindings[0]?.sourceDigest).not.toBe('a'.repeat(64));
   });
 });

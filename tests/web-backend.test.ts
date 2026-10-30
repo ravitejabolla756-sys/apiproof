@@ -14,6 +14,8 @@ import {
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import { grantTestProposalEntitlement } from './helpers.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-apiproof.db');
 
@@ -138,6 +140,7 @@ describe('APIProof Web Application Backend & Engine Integration', () => {
   describe('4. Deterministic Migration Planning Service', () => {
     it('generates and persists deterministic migration plan from an existing finding', async () => {
       const user = createUser('planner@example.com', 'pass1234!', 'Plan Tester');
+      await grantTestProposalEntitlement((await getDefaultWorkspaceForUser(user.id)).id);
       const repoId = 'repo_plan_test';
 
       db.prepare(`
@@ -174,6 +177,7 @@ describe('APIProof Web Application Backend & Engine Integration', () => {
   describe('5. Safe GitHub Proposal Creation Service', () => {
     it('creates draft PR proposal through safety boundary and records PR in database', async () => {
       const user = createUser('proposer@example.com', 'pass1234!', 'Propose Tester');
+      await grantTestProposalEntitlement((await getDefaultWorkspaceForUser(user.id)).id);
       const repoId = 'repo_prop_test';
 
       db.prepare(`

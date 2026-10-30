@@ -30,6 +30,10 @@ function context(node: Node): UsageFinding['context'] {
   return { function: functionName, class: className };
 }
 
+function isProviderModule(name: string, packageName: string): boolean {
+  return name === packageName || name.startsWith(`${packageName}/`);
+}
+
 export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor, snapshot: RepositorySnapshot): UsageFinding[] {
   const resolver = new BindingResolver(provider);
   const responses = new ResponseResolver(resolver);
@@ -39,7 +43,7 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
   for (const node of resolver.mutatedProviderNodes) snapshot.warn('MUTATED_BINDING', 'A provider binding is reassigned; usages through it cannot be resolved reliably.', location(node).file);
   const usages = new Map<string, UsageFinding>();
   const add = (node: Node, kind: UsageFinding['kind'], symbol: string, binding: Binding,
-    details: Pick<UsageFinding, 'arguments' | 'response' | 'semantics' | 'dynamic'> = {}) => {
+    details: Pick<UsageFinding, 'arguments' | 'response' | 'semantics' | 'dynamic' | 'apiVersion'> = {}) => {
     const loc = location(node);
     const id = createHash('sha256').update(JSON.stringify([provider.id, kind, symbol, loc])).digest('hex').slice(0, 24);
     usages.set(id, { id, provider: provider.id, kind, symbol, location: loc, context: context(node),
@@ -61,8 +65,11 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
         snapshot.warn('UNRESOLVED_PROMISE_CALLBACK', 'Callback fulfillment provenance is not proven; no provider response is inferred.', location(node).file);
       }
     }
-    if (Node.isImportDeclaration(node) && node.getModuleSpecifierValue() === provider.packageName) {
-      add(node.getModuleSpecifier(), 'import', provider.packageName, { kind: 'sdk', path: [], origin: node.getModuleSpecifier(), basis: 'import-binding' });
+    if (Node.isImportDeclaration(node) && isProviderModule(node.getModuleSpecifierValue(), provider.packageName)) {
+      const moduleName = node.getModuleSpecifierValue();
+      const binding = { kind: 'sdk' as const, path: [], origin: node.getModuleSpecifier(), basis: 'import-binding' as const };
+      add(node.getModuleSpecifier(), 'import', provider.packageName, binding);
+      if (moduleName !== provider.packageName) add(node.getModuleSpecifier(), 'resource', moduleName, binding);
     } else if (Node.isImportEqualsDeclaration(node)) {
       const binding = resolver.resolve(node);
       if (binding) add(node, 'import', provider.packageName, binding);
@@ -71,11 +78,13 @@ export function detectUsages(sources: SourceFile[], provider: ProviderDescriptor
       if (binding?.kind === 'sdk' && binding.origin === node) {
         // Capture the module string, never require arguments or credentials.
         add(Node.isCallExpression(node) ? node.getArguments()[0] ?? node : node, 'import', provider.packageName, binding);
-      } else if (binding?.kind === 'client') add(node.getExpression(), 'construction', clientSymbol, binding);
+      } else if (binding?.kind === 'client') {
+        add(node.getExpression(), 'construction', clientSymbol, binding, binding.apiVersion ? { apiVersion: binding.apiVersion } : {});
+      }
       else if (Node.isCallExpression(node) || Node.isNewExpression(node)) {
         const callee = resolver.resolve(node.getExpression());
         if (callee?.kind === 'client' && callee.path.length) add(node.getExpression(), 'method', callee.path.join('.'), callee,
-          { arguments: extractArguments(node.getArguments(), resolver), semantics: memberSemantics(node.getExpression()) });
+          { arguments: extractArguments(node.getArguments(), resolver), semantics: memberSemantics(node.getExpression()), ...(callee.apiVersion ? { apiVersion: callee.apiVersion } : {}) });
         if (Node.isCallExpression(node) && node.getExpression().getKind() === SyntaxKind.ImportKeyword) {
           const argument = node.getArguments()[0];
           if (argument && Node.isStringLiteral(argument) && argument.getLiteralValue() === provider.packageName) {

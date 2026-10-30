@@ -1,0 +1,29 @@
+{
+  "provider": "groq",
+  "id": "groq-qwen-3-6-27b-retired-2026-09-14",
+  "title": "Groq qwen/qwen3.6-27b model retirement",
+  "description": "Groq documents that qwen/qwen3.6-27b was shut down on September 14, 2026, with qwen/qwen3.8-27b as the direct successor for affected tiers.",
+  "packageName": "groq-sdk",
+  "affectedSymbols": [{ "symbol": "qwen.qwen3_6_27b", "kind": "resource", "match": "exact" }],
+  "oldBehavior": "The application sends requests using the retired qwen/qwen3.6-27b model identifier.",
+  "newBehavior": "The application sends requests using the documented qwen/qwen3.8-27b replacement identifier.",
+  "migrationInstructions": [
+    "Replace a direct literal model property set to qwen/qwen3.6-27b with qwen/qwen3.8-27b.",
+    "Review account tier eligibility and dynamic model configuration before applying the proposal."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://console.groq.com/docs/deprecations",
+  "effectiveDate": "2026-09-14",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["models"],
+  "rules": [{ "kind": "resource", "symbol": "qwen.qwen3_6_27b", "match": "exact" }],
+  "evidenceSources": [{ "url": "https://console.groq.com/docs/deprecations", "summary": "Official Groq deprecation documentation names qwen/qwen3.6-27b and qwen/qwen3.8-27b as its replacement.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official Groq deprecations page. The executable transformation is limited to direct literal model properties; tier and dynamic configuration remain review-only." },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The source establishes model retirement and a direct successor but not account-specific eligibility.",
+    "Only direct static model literals are eligible for a deterministic proposal.",
+    "Every generated patch remains subject to verification and human approval."
+  ]
+}

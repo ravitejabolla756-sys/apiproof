@@ -1,5 +1,17 @@
 # Architecture and decisions
 
+> **Current release boundary (2026-10-30):** The repository is in a
+> provider-intelligence beta build phase. The current local capability surface
+> includes the 19-provider discovery/catalog, 50 reviewed compatibility rules,
+> provider-change monitoring, human review, guarded rescans, and Draft-PR
+> evidence. Live deployment proof is still outstanding. The product remains
+> read-oriented for customer repositories: direct automatic writes to `main`,
+> automatic merge, and automatic deployment are not enabled.
+
+The historical Phase 3 planning notes below describe the earlier APIProof
+milestone and are retained for architectural provenance. They are not the
+current beta capability contract.
+
 ## Current release: Phase 3
 
 The current implementation is 0.3.0. See [Phase 2.5 deterministic hardening](phase2.5-design.md), [Phase 3 design](phase3-design.md) and [Phase 3 validation](phase3-results.md). The Phase 3 path is `impact evidence -> bounded planning context -> deterministic or injected model planner -> validator -> human-review plan`. It never writes customer source.

@@ -1,0 +1,31 @@
+# Vercel's configured project root is apps/web. Keep local build proofs and
+# workspace-only artifacts out of the production upload.
+.next/
+.next-*/
+.next-*/**
+.next*
+next-build-*/
+next-build-*/**
+next-build-*
+node_modules/
+dist/
+build/
+coverage/
+.tmp/
+tests/
+../../CLONED/
+../../design-references/
+../../my-owl-*/
+../../docs/
+../../evaluation*/
+../../fixtures/
+../../test-fixtures/
+../../*.png
+../../*.jpeg
+../../*.jpg
+../../*.webp
+../../*.pdf
+../../*.zip
+../../*.log
+../../.git/
+../../.codebase-memory/

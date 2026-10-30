@@ -148,7 +148,7 @@ describe('overnight real provider candidate projections', () => {
         candidateFingerprint: '33b4ebe9cdfef34571301ccfb2cd4e764fd0fe28564260c5066a8661dec2cfa5',
       },
     });
-    expect(projection.candidate.sourceEvidence.claims).toEqual(expect.arrayContaining([
+    expect(projection.candidate.sourceEvidence!.claims).toEqual(expect.arrayContaining([
       { key: 'publishedAt', value: '2026-02-17' },
       { key: 'deprecationStart', value: '2026-03-11' },
       { key: 'rollout', value: 'Existing projects blocked April 8, 2026' },
@@ -178,8 +178,8 @@ describe('overnight real provider candidate projections', () => {
     const proofs = [affected, notAffected, needsReview].flatMap((result, index) => buildCompatibilityProofSnapshot({ repositoryId: 'overnight-provider-fixture', baselineSha: 'b'.repeat(40), scanId: `overnight-proof-${index}`, results: [result], mode: 'test' }));
     expect(proofs.map((proof) => proof.status).sort()).toEqual(['AFFECTED', 'NEEDS_REVIEW', 'NOT_AFFECTED']);
     expect(proofs.find((proof) => proof.status === 'AFFECTED')).toMatchObject({ providerId: 'twilio', changeId: 'twilio-regional-api-domain-removal-2026-04-28', severity: 'high', reviewStatus: 'reviewed', provenance: 'official', replacement: { domain: 'api.twilio.com' } });
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(50);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(3);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')).toHaveLength(2);

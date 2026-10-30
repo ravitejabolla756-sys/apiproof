@@ -1,0 +1,26 @@
+{
+  "provider": "launchdarkly",
+  "id": "launchdarkly-api-version-20220603-eol-2025-04-15",
+  "title": "LaunchDarkly API version 20220603 retirement",
+  "description": "LaunchDarkly marks API version 20220603 EOL and identifies 20240415 as the current API version.",
+  "packageName": "launchdarkly",
+  "affectedSymbols": [{ "symbol": "launchdarkly", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application sends an explicit LaunchDarkly API version 20220603.",
+  "newBehavior": "The application sends the documented replacement API version 20240415.",
+  "migrationInstructions": [
+    "Replace a direct literal apiVersion value of 20220603 with 20240415.",
+    "Review endpoint behavior, headers, aliases, and dynamically selected versions before applying the change."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://launchdarkly.com/docs/api/",
+  "apiVersion": "20220603",
+  "effectiveDate": "2025-04-15",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["apiVersion"],
+  "rules": [{ "kind": "resource", "symbol": "launchdarkly", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://launchdarkly.com/docs/api/", "summary": "Official LaunchDarkly API documentation marks version 20220603 EOL and identifies 20240415 as the current API version.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official API version table; executable transformation is limited to direct apiVersion string literals." },
+  "versionScope": "api-and-sdk",
+  "assumptions": ["The source establishes API-version applicability but not SDK package or endpoint-specific behavior.", "Only direct apiVersion string literals are eligible for a deterministic proposal.", "Every generated patch remains subject to verification and human approval."]
+}

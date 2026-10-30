@@ -5,7 +5,7 @@ import { TypeScriptRepositoryAnalyzer, RepositorySnapshot } from '@apiproof/anal
 import { StripeProvider } from '@apiproof/providers';
 import type { ScanResult } from '@apiproof/shared';
 import { GET } from '../apps/web/src/app/api/compatibility-map/route.js';
-import { summarizeScanCompatibility } from '../apps/web/src/lib/server/scan-compatibility-evidence.js';
+import { parseScanCompatibilityEvidence, summarizeScanCompatibility } from '../apps/web/src/lib/server/scan-compatibility-evidence.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
@@ -162,6 +162,23 @@ describe('GET /api/compatibility-map', () => {
       mappedSymbolCount: new Set(analyzerResult.usages.filter((usage) => usage.kind !== 'import').map((usage) => usage.symbol)).size,
       reviewedChangeCount: 0,
     }]);
+  });
+
+  it('preserves compatibility evidence for monitored providers beyond the legacy Stripe/Twilio pair', () => {
+    const raw = JSON.stringify({ schemaVersion: 1, providers: [
+      { provider: 'openai', detected: true, usageCount: 3, mappedSymbolCount: 2 },
+      { provider: 'google-cloud', detected: false, usageCount: 0, mappedSymbolCount: 0 },
+      { provider: 'braintree', detected: true, usageCount: 1, mappedSymbolCount: 1 },
+    ] });
+
+    expect(parseScanCompatibilityEvidence(raw)?.providers).toEqual([
+      { provider: 'openai', detected: true, usageCount: 3, mappedSymbolCount: 2 },
+      { provider: 'google-cloud', detected: false, usageCount: 0, mappedSymbolCount: 0 },
+      { provider: 'braintree', detected: true, usageCount: 1, mappedSymbolCount: 1 },
+    ]);
+    expect(parseScanCompatibilityEvidence(JSON.stringify({ schemaVersion: 1, providers: [
+      { provider: 'not a provider', detected: true, usageCount: 1, mappedSymbolCount: 1 },
+    ] }))).toBeNull();
   });
 
   it('returns an Anthropic production-registry proof with evidence and reason codes', async () => {

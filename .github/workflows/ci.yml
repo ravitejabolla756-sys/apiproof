@@ -19,6 +19,7 @@ jobs:
       GITHUB_APP_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----"
       GITHUB_WEBHOOK_SECRET: ci-test-webhook-secret-32-chars-long!
       CRON_SECRET: ci-test-cron-secret-32-chars-long!
+      APIPROOF_LOCAL_SEED_PASSWORD: ci-local-seed-password-only-for-tests
 
     steps:
       - name: Checkout repository
@@ -44,8 +45,17 @@ jobs:
       - name: Run Typecheck
         run: pnpm typecheck
 
+      - name: Validate provider registry
+        run: pnpm providers:validate:all
+
+      - name: Validate provider isolation
+        run: pnpm providers:validate:multi
+
       - name: Run Test Suite
         run: pnpm test
 
       - name: Run Production Build
         run: pnpm -r build
+
+      - name: Generate release manifest
+        run: pnpm release:manifest

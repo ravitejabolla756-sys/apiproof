@@ -6,7 +6,9 @@ import { publishVerificationWorkerHeartbeat } from './verification-worker-regist
 import { probeDockerVerificationRuntime } from './verification-worker-runtime.js';
 import { processOneSlackInteractionJob } from './slack-interactions.js';
 import { processOneSlackNotificationDelivery } from './slack-notifications.js';
+import { processOneSlackProviderChangeDelivery } from './slack-provider-change-notifications.js';
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
+import { processRepositoryRescans } from './repository-rescan-worker.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -140,6 +142,21 @@ export async function runVerificationWorker(options: { workerId: string; pollInt
       catch (error) { logger.warn('slack_interaction_dispatch_failed', { workerId, category: failureCategory(error) }); }
       try { processed = await processOneSlackNotificationDelivery(workerId) || processed; }
       catch (error) { logger.warn('slack_notification_dispatch_failed', { workerId, category: failureCategory(error) }); }
+      try { processed = await processOneSlackProviderChangeDelivery(workerId) || processed; }
+      catch (error) { logger.warn('slack_provider_change_dispatch_failed', { workerId, category: failureCategory(error) }); }
+      // Approved provider rules and scheduled repository jobs are dispatched by
+      // the same trusted worker as migration verification. The cron endpoint
+      // remains the enqueue/fallback path, while this drain removes the
+      // approval-to-rescan delay during normal operation.
+      try {
+        const rescans = await processRepositoryRescans({ batchSize: 1, timeoutMs: 50_000 });
+        processed = (rescans.jobsClaimed > 0 || rescans.jobsQueued > 0) || processed;
+      } catch (error) {
+        // A rescan dispatch failure must not make the verification runtime look
+        // unavailable. The durable queue retains the job for retry and the
+        // scheduled route remains an operational fallback.
+        logger.warn('repository_rescan_dispatch_failed', { workerId, category: failureCategory(error) });
+      }
       if (dockerReady) {
         processed = await processOneMigrationVerificationJob(workerId) || processed;
       } else if (lastProbeError) {

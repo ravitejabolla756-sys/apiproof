@@ -49,6 +49,7 @@ DATABASE_TYPE=postgres
 DATABASE_URL=postgres://user:password@localhost:5432/apiproof
 SESSION_SECRET=a_random_32_byte_string_for_session_cookies
 CRON_SECRET=a_random_32_byte_string_for_scan_worker_auth
+MY_OWL_EXPECTED_PROVIDER_REGISTRY_DIGEST=sha256_digest_of_the_frozen_reviewed_registry
 
 # GitHub App Integration
 GITHUB_APP_ID=123456
@@ -72,15 +73,15 @@ BILLING_PROVIDER=mock
 
 ## 4. Scan Worker Scheduling
 
-APIProof processes scans asynchronously via `/api/internal/scan-worker`. Set up a periodic background job or cron runner:
+APIProof processes scans asynchronously through the bounded `/api/internal/scheduled-rescan` orchestrator. It queues stale repositories and invokes the worker with the required scope. Set up the orchestrator rather than calling the worker without a repository scope:
 
 ### Option A: Vercel Cron (`vercel.json`)
 ```json
 {
   "crons": [
     {
-      "path": "/api/internal/scan-worker",
-      "schedule": "* * * * *"
+      "path": "/api/internal/scheduled-rescan",
+      "schedule": "0 2 * * *"
     }
   ]
 }
@@ -88,7 +89,7 @@ APIProof processes scans asynchronously via `/api/internal/scan-worker`. Set up 
 
 ### Option B: Linux `crontab` or Systemd Timer
 ```bash
-* * * * * curl -X POST https://your-domain.com/api/internal/scan-worker -H "Authorization: Bearer YOUR_CRON_SECRET"
+0 2 * * * curl -X POST https://your-domain.com/api/internal/scheduled-rescan -H "Authorization: Bearer YOUR_CRON_SECRET"
 ```
 
 ---
@@ -131,7 +132,7 @@ Below is the verified readiness matrix across all 15 core user journey steps:
 1. Deploy APIProof to a production web host (Vercel, AWS App Runner, Railway, or Docker).
 2. Set up PostgreSQL and run initial database schema initialization.
 3. Configure the 5 required GitHub App environment variables.
-4. Set up an automated 1-minute cron pinging `POST /api/internal/scan-worker`.
+4. Set up the authenticated `POST /api/internal/scheduled-rescan` cron; do not invoke the worker without an exact repository scope.
 5. Invite external pilot users to sign up at `/login`.
 6. Pilot users connect their GitHub App installation, select repositories, and push a test commit containing target vendor API calls.
 7. Verify that scans execute asynchronously and finding cards populate in `/dashboard/findings`.

@@ -29,7 +29,8 @@
     {
       "kind": "method",
       "symbol": "Twiml.VoiceResponse",
-      "match": "exact"
+      "match": "exact",
+      "replacementSymbol": "twiml.VoiceResponse"
     }
   ],
   "evidenceSources": [

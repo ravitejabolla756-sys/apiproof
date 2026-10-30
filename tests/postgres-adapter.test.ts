@@ -4,6 +4,7 @@ import {
   translatePlaceholders,
   resolveDatabaseConfig,
   PostgresDatabaseAdapter,
+  createPostgresPoolConfig,
   SqliteDatabaseAdapter,
   runMigrations,
   type DatabaseAdapter,
@@ -47,6 +48,7 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
     beforeEach(() => {
       delete process.env.APIPROOF_DATABASE_URL;
       delete process.env.APIPROOF_DB_PATH;
+      delete process.env.APIPROOF_PG_CA_CERT;
       process.env.NODE_ENV = 'test';
     });
 
@@ -74,6 +76,34 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
       expect(() => resolveDatabaseConfig()).toThrow(
         /MISSING_PRODUCTION_DATABASE_URL/
       );
+    });
+
+    it('requires certificate-verified TLS for remote PostgreSQL connections', () => {
+      const config = createPostgresPoolConfig('postgresql://user:secret@db.example.test:5432/app');
+
+      expect(config.ssl).toEqual({ rejectUnauthorized: true });
+    });
+
+    it('passes the explicitly configured PostgreSQL CA certificate to the TLS client', () => {
+      process.env.APIPROOF_PG_CA_CERT = '-----BEGIN CERTIFICATE-----\nfixture\n-----END CERTIFICATE-----';
+
+      const config = createPostgresPoolConfig('postgresql://user:secret@db.example.test:5432/app');
+
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: true,
+        ca: process.env.APIPROOF_PG_CA_CERT,
+      });
+    });
+
+    it('rejects remote connection strings that explicitly disable TLS', () => {
+      expect(() => createPostgresPoolConfig('postgresql://user:secret@db.example.test:5432/app?sslmode=disable'))
+        .toThrow('PRODUCTION_TLS_REQUIRED');
+    });
+
+    it('allows plaintext only for an explicitly local development endpoint', () => {
+      const config = createPostgresPoolConfig('postgresql://user:secret@localhost:5432/app');
+
+      expect(config.ssl).toBe(false);
     });
   });
 

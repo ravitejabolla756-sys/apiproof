@@ -14,7 +14,7 @@ export const CompatibilityCheckFindingSchema = z.strictObject({
   symbol: z.string().nullable(),
   reasonCodes: z.array(z.string()).min(1),
   officialSourceUrl: z.string().url(),
-  recommendedNextAction: z.enum(['NO_ACTION', 'MANUAL_REVIEW', 'MIGRATION_NOT_AVAILABLE']),
+  recommendedNextAction: z.enum(['NO_ACTION', 'MANUAL_REVIEW', 'MIGRATION_AVAILABLE', 'MIGRATION_NOT_AVAILABLE']),
   migrationAvailable: z.boolean(),
   message: z.string().min(1),
 });

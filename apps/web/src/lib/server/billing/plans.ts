@@ -2,12 +2,14 @@ export interface PlanDefinition {
   id: string;
   name: string;
   description: string;
-  priceMonthly: number;
+  /** null means custom pricing. */
+  priceMonthly: number | null;
   currency: string;
   limits: {
-    maxRepositories: number;
-    maxScansPerMonth: number;
-    maxDraftPrsPerMonth: number;
+    /** null means unlimited for this metric. */
+    maxRepositories: number | null;
+    maxScansPerMonth: number | null;
+    maxDraftPrsPerMonth: number | null;
   };
 }
 
@@ -15,35 +17,47 @@ export const PLANS: Record<string, PlanDefinition> = {
   free: {
     id: 'free',
     name: 'Free',
-    description: 'For small projects and evaluating MY OWL AST analysis',
+    description: 'For individual developers',
     priceMonthly: 0,
-    currency: 'usd',
+    currency: 'inr',
     limits: {
-      maxRepositories: 3,
-      maxScansPerMonth: 10,
-      maxDraftPrsPerMonth: 5,
+      maxRepositories: 1,
+      maxScansPerMonth: 3,
+      maxDraftPrsPerMonth: 2,
     },
   },
   pro: {
     id: 'pro',
     name: 'Pro',
-    description: 'For engineering teams automating breaking API migrations',
-    priceMonthly: 49,
-    currency: 'usd',
+    description: 'For fast-moving development teams',
+    priceMonthly: 5000,
+    currency: 'inr',
     limits: {
-      maxRepositories: 25,
-      maxScansPerMonth: 200,
+      maxRepositories: 5,
+      maxScansPerMonth: null,
+      maxDraftPrsPerMonth: 20,
+    },
+  },
+  team: {
+    id: 'team',
+    name: 'Team',
+    description: 'For engineering organizations',
+    priceMonthly: 15000,
+    currency: 'inr',
+    limits: {
+      maxRepositories: null,
+      maxScansPerMonth: null,
       maxDraftPrsPerMonth: 100,
     },
   },
   enterprise: {
     id: 'enterprise',
     name: 'Enterprise',
-    description: 'Unlimited repositories and priority AST scan workers',
-    priceMonthly: 299,
+    description: 'For security-sensitive scale with custom deployment options',
+    priceMonthly: null,
     currency: 'usd',
     limits: {
-      maxRepositories: 10000,
+      maxRepositories: null,
       maxScansPerMonth: 100000,
       maxDraftPrsPerMonth: 100000,
     },

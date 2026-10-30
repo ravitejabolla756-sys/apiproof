@@ -83,6 +83,8 @@ export const UsageFindingSchema = z.strictObject({
     basis: z.enum(['import-binding', 'require-binding', 'type-annotation']),
   }),
   confidence: z.number().min(0).max(1),
+  /** A literal provider API version captured from a client configuration object. */
+  apiVersion: z.string().min(1).max(100).optional(),
   arguments: z.array(ArgumentFactSchema).optional(),
   response: z.strictObject({
     originKind: z.enum(['method', 'type']), originSymbol: z.string(),

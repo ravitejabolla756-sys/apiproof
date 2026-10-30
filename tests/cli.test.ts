@@ -7,9 +7,13 @@ import { EvaluationResultSchema, MigrationPlanSchema, PlanningEvaluationResultSc
 import { fixture, root } from './helpers.js';
 
 const execute = promisify(execFile);
+// The CLI is intentionally exercised through a real child process. Under the
+// full Vitest pool, several TypeScript workers can start at once, so the
+// process budget must cover startup contention without changing assertions.
+const CLI_TIMEOUT_MS = 120_000;
 function cli(args: string[]) {
   return execute(process.execPath, ['--import', 'tsx', '--conditions=apiproof-source', 'apps/cli/src/index.ts', ...args], {
-    cwd: root, timeout: 20_000, maxBuffer: 1_048_576, windowsHide: true,
+    cwd: root, timeout: CLI_TIMEOUT_MS, maxBuffer: 1_048_576, windowsHide: true,
   });
 }
 
@@ -29,7 +33,7 @@ describe('CLI contract', () => {
     expect(readable.stdout).toContain('src/customer.ts:6:10');
     expect(readable.stdout).toContain('synthetic');
     expect(readable.stdout).toContain('\n    AST binding resolves');
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('returns JSON input errors with exit code 2', async () => {
     await expect(cli(['impact', fixture('affected'), '--json'])).rejects.toMatchObject({

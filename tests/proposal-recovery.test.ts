@@ -15,6 +15,7 @@ import { processOneMigrationVerificationJob } from '../apps/web/src/lib/server/m
 import { publishVerificationWorkerHeartbeat } from '../apps/web/src/lib/server/verification-worker-registry.js';
 import { GET as proposeRouteGet, POST as proposeRoutePost } from '../apps/web/src/app/api/migrations/propose/route.js';
 import { vi } from 'vitest';
+import { grantTestProposalEntitlement } from './helpers.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-proposal-recovery.db');
 
@@ -45,6 +46,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
   async function setupFixture() {
     const user = createUser('recovery_tester@example.com', 'Pass12345!', 'Recovery Tester');
     const ws = await getDefaultWorkspaceForUser(user.id);
+    await grantTestProposalEntitlement(ws.id);
     const repoId = 'repo_recovery_fixture';
 
     db.prepare("UPDATE repositories SET lifecycle = 'historical', origin = 'seeded_fixture' WHERE id = 'repo_apiproof_fixture'").run();
@@ -460,7 +462,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
 
       const originalRun = FakeSandbox.prototype.run;
       const executedStages: string[] = [];
-      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockImplementation(async function (request) {
+      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockImplementation(async function (this: FakeSandbox, request) {
         const persisted = db.prepare('SELECT patch_digest, patch_content, verification_report FROM migrations WHERE id = ?').get(migration.id) as { patch_digest: string; patch_content: string; verification_report: string | null };
         expect(persisted.patch_digest).not.toBe('6076b19cd227d4bfa8246463198698dcfd0d22c8ee1802f0109b78f1d0e50b5f');
         expect(JSON.parse(persisted.patch_content)).toHaveProperty('src/billing.ts');

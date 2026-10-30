@@ -21,6 +21,7 @@ import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import { grantTestProposalEntitlement } from './helpers.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase9a-ux.db');
 
@@ -49,6 +50,7 @@ describe('Phase 9A — First-Run UX Improvements', () => {
   it('TEST A & B: Repository connection succeeds and allows initial scan triggering with graceful failure handling', async () => {
     const user = await createUserAsync('ux-user@apiproof.test', 'SecurePass123!#$', 'UX User');
     const workspace = await getDefaultWorkspaceForUser(user.id);
+    await grantTestProposalEntitlement(workspace.id);
     const db = getDatabase();
 
     // 1. Connect repo
@@ -249,6 +251,7 @@ describe('Phase 9A — First-Run UX Improvements', () => {
   it('TEST G & H: Canonical target branch matches apiproof/<change-id>/<prefix> and Draft PR safety invariants are enforced', async () => {
     const user = await createUserAsync('branch-user@apiproof.test', 'SecurePass123!#$', 'Branch User');
     const workspace = await getDefaultWorkspaceForUser(user.id);
+    await grantTestProposalEntitlement(workspace.id);
     const db = getDatabase();
 
     const repoId = 'repo_branch_01';

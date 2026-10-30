@@ -183,11 +183,11 @@ describe('GitHub organization security response-field candidate', () => {
   });
 
   it('keeps the four existing reviewed records unchanged and inserts exactly one GitHub rule', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(50);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(3);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('github')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.has(CHANGE_ID)).toBe(true);
-    expect(new Set(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).size).toBe(10);
+    expect(new Set(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).size).toBe(50);
   });
 });

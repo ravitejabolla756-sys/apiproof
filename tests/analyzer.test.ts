@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ScanResultSchema } from '@apiproof/shared';
+import { TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
 import { fixture, proof, repository } from './helpers.js';
 
 describe('TypeScript Stripe analysis', () => {
@@ -51,6 +52,35 @@ export async function load(id: string) {
     expect(scan.usages.filter((usage) => usage.kind === 'method').map((usage) => usage.symbol)).toEqual([
       'customers.retrieve', 'customers.retrieve', 'customers.retrieve', 'checkout.sessions.create', 'webhooks.constructEvent', 'paymentIntents.create',
     ]);
+  });
+
+  it('captures a literal client API version without treating dynamic configuration as evidence', async () => {
+    const directory = await repository({ 'src.ts': `import Stripe from 'stripe';
+const configured = new Stripe('', { apiVersion: '2024-10-01' });
+const selectedVersion = process.env.STRIPE_API_VERSION;
+const dynamic = new Stripe('', { apiVersion: selectedVersion });
+configured.customers.retrieve('cus_123');
+dynamic.customers.retrieve('cus_456');` });
+    const scan = await proof.scan(directory);
+    const constructions = scan.usages.filter((usage) => usage.kind === 'construction');
+    expect(constructions).toHaveLength(2);
+    expect(constructions.find((usage) => usage.apiVersion === '2024-10-01')).toBeDefined();
+    expect(constructions.find((usage) => usage.apiVersion === undefined)).toBeDefined();
+    const methods = scan.usages.filter((usage) => usage.kind === 'method');
+    expect(methods.find((usage) => usage.symbol === 'customers.retrieve' && usage.apiVersion === '2024-10-01')).toBeDefined();
+    expect(methods.find((usage) => usage.symbol === 'customers.retrieve' && usage.apiVersion === undefined)).toBeDefined();
+    const configuredUsage = scan.usageIR?.find((usage) => usage.apiVersion === '2024-10-01');
+    expect(configuredUsage).toMatchObject({ apiVersion: '2024-10-01', dynamic: false });
+  });
+
+  it('treats provider subpath imports as resource evidence', async () => {
+    const scan = await new TypeScriptRepositoryAnalyzer().analyze({
+      'package.json': '{"name":"firebase-fixture","dependencies":{"firebase":"^12.0.0"}}',
+      'src.ts': `import { getVertexAI } from 'firebase/vertexai';
+export const legacy = getVertexAI;`,
+    }, { id: 'firebase', packageName: 'firebase', constructorExports: [] });
+    expect(scan.usages).toContainEqual(expect.objectContaining({ kind: 'resource', symbol: 'firebase/vertexai' }));
+    expect(scan.usageIR).toContainEqual(expect.objectContaining({ resource: 'firebase/vertexai' }));
   });
 
   it('resolves namespace/default CommonJS variants and import-equals', async () => {

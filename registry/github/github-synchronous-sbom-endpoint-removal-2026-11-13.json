@@ -1,0 +1,24 @@
+{
+  "provider": "github",
+  "id": "github-synchronous-sbom-endpoint-removal-2026-11-13",
+  "title": "GitHub synchronous SBOM API removal",
+  "description": "GitHub states that the synchronous dependency-graph SBOM REST endpoint is deprecated and documents an asynchronous generate-report replacement.",
+  "packageName": "github",
+  "affectedSymbols": [{ "symbol": "github", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application calls the synchronous dependency-graph SBOM endpoint.",
+  "newBehavior": "The application calls the asynchronous generate-report endpoint.",
+  "migrationInstructions": [
+    "Replace a direct literal synchronous SBOM path with the generate-report path.",
+    "Update response handling to poll the returned report URL; the path edit alone is not a complete migration."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://github.blog/changelog/2026-05-12-synchronous-sbom-api-deprecated/",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["dependencyGraphSbom"],
+  "rules": [{ "kind": "resource", "symbol": "github", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://github.blog/changelog/2026-05-12-synchronous-sbom-api-deprecated/", "summary": "Official GitHub Changelog documents removal of the synchronous SBOM path and the generate-report replacement.", "accessedAt": "2026-10-06" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-06", "notes": "Reviewed against the official GitHub Changelog; only the literal path replacement is executable and response polling remains required." },
+  "versionScope": "api-and-sdk",
+  "assumptions": ["The source establishes a path replacement but the new asynchronous response contract needs separate code review.", "Dynamic endpoint construction remains human-review-only.", "Any generated patch requires verification and human approval."]
+}
