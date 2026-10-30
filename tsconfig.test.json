@@ -5,6 +5,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./apps/web/src/*"],
+      "@/lib/server/*": ["./apps/web/src/lib/server/*"],
+      "@/lib/server/db": ["./apps/web/src/lib/server/db/index.ts"],
+      "@/lib/server/billing/*": ["./apps/web/src/lib/server/billing/*"],
       "next/server": ["./apps/web/node_modules/next/server.d.ts"],
       "next/*": ["./apps/web/node_modules/next/*"]
     }
