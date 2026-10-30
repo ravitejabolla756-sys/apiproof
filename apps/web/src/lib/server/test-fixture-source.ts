@@ -14,12 +14,18 @@ export function createSyntheticTestFixtureFiles(repositoryName: string): Map<str
     }, null, 2)],
     ['src/billing.ts', `import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
 export async function createCustomerSubscription(customerId: string, priceId: string, couponId: string) {
   return stripe.subscriptions.create({
     customer: customerId,
     items: [{ price: priceId }],
+
+
     coupon: couponId
   });
-}`],
+}
+
+`],
+    ['pnpm-lock.yaml', "lockfileVersion: '9.0'\nimporters:\n  .:\n    dependencies:\n      stripe:\n        specifier: ^16.0.0\n        version: 16.12.0\n      twilio:\n        specifier: ^3.80.0\n        version: 3.84.0\n"],
   ]);
 }
