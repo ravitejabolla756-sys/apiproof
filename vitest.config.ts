@@ -20,5 +20,10 @@ export default defineConfig({
     // suite change that shared test state while another is mid-request.
     // Keep the suite deterministic; production code remains concurrent.
     fileParallelism: false,
+    // These integration suites intentionally exercise process-level rollout
+    // flags and database-path selection. Force one Vitest worker as well so
+    // the shared process environment cannot diverge between test files.
+    minWorkers: 1,
+    maxWorkers: 1,
   },
 });
