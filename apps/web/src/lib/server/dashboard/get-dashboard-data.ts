@@ -77,6 +77,7 @@ export interface DashboardData {
 
 export async function getDashboardData(workspaceId: string): Promise<DashboardData> {
   const db = getDatabase();
+  const sevenDaysAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000)).toISOString();
   const repoStats = await db.queryOne<{ count: number }>(`
     SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ? AND lifecycle = 'active'
   `, [workspaceId]);
@@ -138,9 +139,9 @@ export async function getDashboardData(workspaceId: string): Promise<DashboardDa
            SUM(CASE WHEN f.severity = 'high' THEN 1 ELSE 0 END) AS high,
            SUM(CASE WHEN f.severity NOT IN ('critical', 'high') THEN 1 ELSE 0 END) AS warning
     FROM findings f JOIN repositories r ON r.id = f.repository_id
-    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND f.created_at >= datetime('now', '-7 days')
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND f.created_at >= ?
     GROUP BY date(f.created_at) ORDER BY day ASC
-  `, [workspaceId]);
+  `, [workspaceId, sevenDaysAgo]);
   const recentFixes = await db.query<DashboardData['recentFixes'][number]>(`
     SELECT m.id, m.status, m.created_at, f.title AS finding_title, r.name AS repo_name,
            pr.url AS pr_url, pr.state AS pr_state
