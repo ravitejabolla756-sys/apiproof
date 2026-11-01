@@ -59,5 +59,10 @@ export const githubLoginMigrations: Migration[] = [{
     `);
     await db.execute('CREATE INDEX IF NOT EXISTS idx_github_login_oauth_states_expiry ON github_login_oauth_states(expires_at, consumed_at)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_github_oauth_accounts_user ON github_oauth_accounts(user_id)');
+    if (db.engine === 'postgres') {
+      await db.execute('ALTER TABLE github_login_oauth_states ENABLE ROW LEVEL SECURITY');
+      await db.execute('ALTER TABLE github_oauth_accounts ENABLE ROW LEVEL SECURITY');
+      await db.execute('REVOKE ALL ON TABLE github_login_oauth_states, github_oauth_accounts FROM PUBLIC, anon, authenticated');
+    }
   },
 }];

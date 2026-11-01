@@ -64,5 +64,10 @@ export const googleOAuthMigrations: Migration[] = [{
     `);
     await db.execute('CREATE INDEX IF NOT EXISTS idx_google_oauth_states_expiry ON google_oauth_states(expires_at, consumed_at)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_google_oauth_accounts_user ON google_oauth_accounts(user_id)');
+    if (db.engine === 'postgres') {
+      await db.execute('ALTER TABLE google_oauth_states ENABLE ROW LEVEL SECURITY');
+      await db.execute('ALTER TABLE google_oauth_accounts ENABLE ROW LEVEL SECURITY');
+      await db.execute('REVOKE ALL ON TABLE google_oauth_states, google_oauth_accounts FROM PUBLIC, anon, authenticated');
+    }
   },
 }];

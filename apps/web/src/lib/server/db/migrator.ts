@@ -9,6 +9,7 @@ import { slackReliabilityMigrations } from './slack-reliability-migration.js';
 import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
+import { skipDefaultSeed } from './seed-policy.js';
 
 export const migrations: Migration[] = [
   {
