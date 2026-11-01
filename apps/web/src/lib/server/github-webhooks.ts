@@ -77,7 +77,13 @@ export async function claimWebhookDelivery(
   const result = await db.execute(`
     INSERT INTO github_webhook_deliveries (id, event, status, received_at, processed_at)
     VALUES (?, ?, 'processing', ?, ?)
-    ON CONFLICT (id) DO NOTHING
+    ON CONFLICT (id) DO UPDATE SET
+      event = excluded.event,
+      status = 'processing',
+      received_at = excluded.received_at,
+      processed_at = excluded.processed_at,
+      error_message = NULL
+    WHERE github_webhook_deliveries.status = 'failed'
   `, [deliveryId, event, receivedAt, receivedAt]);
   return result.changes === 1;
 }

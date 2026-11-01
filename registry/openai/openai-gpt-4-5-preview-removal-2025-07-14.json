@@ -1,0 +1,53 @@
+{
+  "provider": "openai",
+  "id": "openai-gpt-4-5-preview-removal-2025-07-14",
+  "title": "OpenAI gpt-4.5-preview model removal",
+  "description": "OpenAI documents that gpt-4.5-preview was deprecated and removed from the API on 2025-07-14, with gpt-4.1 as the recommended replacement.",
+  "packageName": "openai",
+  "affectedSymbols": [
+    {
+      "symbol": "openai",
+      "kind": "resource",
+      "match": "prefix"
+    }
+  ],
+  "oldBehavior": "The application sends requests using the retired gpt-4.5-preview model identifier.",
+  "newBehavior": "The application sends requests using the documented gpt-4.1 replacement model identifier.",
+  "migrationInstructions": [
+    "Replace a direct literal model property set to gpt-4.5-preview with gpt-4.1 and review the resulting behavior.",
+    "Keep dynamic model configuration and non-TypeScript/JavaScript usage under human review."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://developers.openai.com/api/docs/deprecations",
+  "effectiveDate": "2025-07-14",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["models"],
+  "rules": [
+    {
+      "kind": "resource",
+      "symbol": "openai",
+      "match": "prefix"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://developers.openai.com/api/docs/deprecations",
+      "summary": "Official OpenAI deprecation evidence identifies gpt-4.5-preview as removed and gpt-4.1 as the recommended replacement.",
+      "accessedAt": "2026-10-05"
+    }
+  ],
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Ravi Teja",
+    "reviewerKind": "human",
+    "reviewedAt": "2026-10-05",
+    "notes": "Reviewed against the official OpenAI deprecations source. The executable transformation is limited to a direct literal model property; dynamic configuration remains review-only."
+  },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The official source establishes provider/model applicability but does not establish an SDK package or SDK version range.",
+    "A direct literal model property is safe to propose for deterministic replacement; dynamic values require human review.",
+    "A generated patch remains subject to verification and human approval."
+  ]
+}

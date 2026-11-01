@@ -19,6 +19,9 @@ import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib
 import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // ---------------------------------------------------------------------------
 // Authorization helper
 // ---------------------------------------------------------------------------

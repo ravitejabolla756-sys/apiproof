@@ -1,9 +1,10 @@
 import { readFile, writeFile, symlink, rename } from 'node:fs/promises';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { CandidatePatchSchema } from '@apiproof/shared';
-import { loadStripeRegistry } from '@apiproof/providers';
-import { allowedPatchPath, createPatchWorkspace, createSourcePatchWorkspace, cleanupPatchWorkspace, buildPatchContext, deterministicPlan, DeterministicPatchGenerator, LLMPatchGenerator, FakeStructuredPatchModel, validateCandidate, applyCandidate, evaluatePatchCase, patchCases, checkWorkspace, runFixturePatch, redactPatchContext, syntaxValid, unifiedDiff, editDiff } from '@apiproof/core';
+import { loadStripeRegistry, loadTwilioRegistry } from '@apiproof/providers';
+import { allowedPatchPath, createPatchWorkspace, createSourcePatchWorkspace, cleanupPatchWorkspace, buildPatchContext, deterministicPlan, DeterministicPatchGenerator, LLMPatchGenerator, FakeStructuredPatchModel, validateCandidate, applyCandidate, evaluatePatchCase, patchCases, checkWorkspace, runFixturePatch, redactPatchContext, syntaxValid, targetsFor, unifiedDiff, editDiff } from '@apiproof/core';
 import { proof, root, repository } from './helpers.js';
 
 const registry = await loadStripeRegistry(path.join(root, 'registry/stripe'));
@@ -33,6 +34,24 @@ describe('authored patch evaluation', () => {
   });
 });
 describe('workspace and model trust boundary', () => {
+  it('accepts an explicitly supplied migration rule only when its digest matches the reviewed change', async () => {
+    const workspace = await createPatchWorkspace(fixture);
+    const change = registry.find((candidate) => candidate.id === 'stripe-subscription-coupon-removed')!;
+    const planning = await proof.planningInput(workspace.directory, change);
+    const changeDigest = crypto.createHash('sha256').update(JSON.stringify(change)).digest('hex');
+    const rule = {
+      changeDigest,
+      transformation: { kind: 'singleton-discount' as const, paths: ['coupon'], destination: 'discounts', valuePolicy: 'nonempty-string-or-identifier' as const, rejectSiblings: ['discounts', 'coupon'] },
+      sources: ['https://docs.stripe.com/changelog/test-migration'],
+      limitations: ['Test rule is bound to this exact reviewed change digest.'],
+    };
+
+    const context = await buildPatchContext(workspace, planning, deterministicPlan(planning), { rule });
+    expect(context.supported).toBe(true);
+    expect(context.changeDigest).toBe(changeDigest);
+    await expect(buildPatchContext(workspace, planning, deterministicPlan(planning), { rule: { ...rule, changeDigest: '0'.repeat(64) } })).rejects.toMatchObject({ code: 'STALE_TRANSFORMATION_RULE' });
+  });
+
   it('refuses arbitrary repositories, original corpora and the tool itself', async () => {
     for (const directory of [root, path.join(root, 'evaluation-plans/corpus/coupon-direct'), await repository()]) await expect(createPatchWorkspace(directory)).rejects.toMatchObject({ code: 'FIXTURE_ONLY' });
   });
@@ -53,10 +72,18 @@ describe('workspace and model trust boundary', () => {
     const result = await applyCandidate(workspace, input, patch);
     expect(result.status).toBe('PATCH_REJECTED'); expect(await readFile(file, 'utf8')).toBe('export const changed = true;');
   });
-  it('rejects directory junctions at apply without touching their target', async () => {
+  it('rejects directory junctions at apply without touching their target', async ({ skip }) => {
     const { workspace, input, patch } = await setup(); const external = await repository({ 'billing.ts': 'export const outside = true;' });
     await rename(path.join(workspace.directory, 'src'), path.join(workspace.directory, 'original-src'));
-    await symlink(external, path.join(workspace.directory, 'src'), process.platform === 'win32' ? 'junction' : 'dir');
+    try {
+      await symlink(external, path.join(workspace.directory, 'src'), process.platform === 'win32' ? 'junction' : 'dir');
+    } catch (error: unknown) {
+      if (process.platform === 'win32' && error instanceof Error && 'code' in error && error.code === 'EPERM') {
+        skip('Windows junction creation is unavailable in this runner.');
+        return;
+      }
+      throw error;
+    }
     expect((await applyCandidate(workspace, input, patch)).status).toBe('PATCH_REJECTED');
     expect(await readFile(path.join(external, 'billing.ts'), 'utf8')).toBe('export const outside = true;');
   });
@@ -161,6 +188,127 @@ describe('workspace and model trust boundary', () => {
     expect(syntaxValid('src/a.ts', "throw new Error('must never run');")).toBe(true);
     expect(syntaxValid('src/a.tsx', 'const view = <div />;')).toBe(true);
     expect(syntaxValid('src/a.ts', 'const x = [{;')).toBe(false);
+  });
+  it('generates an evidence-bound Twilio namespace edit without touching unrelated receivers', async () => {
+    const twilioRegistry = await loadTwilioRegistry(path.join(root, 'registry/twilio'));
+    const change = twilioRegistry.find((candidate) => candidate.id === 'twilio-twiml-namespace-casing')!;
+    const source = "import twilio from 'twilio';\nconst response = twilio.Twiml.VoiceResponse({});\nconst unrelated = other.Twiml.VoiceResponse({});\n";
+    const input = {
+      change,
+      impacts: [{ usageId: 'usage-twiml', changeId: change.id, symbol: 'Twiml.VoiceResponse', location: { file: 'src/voice.ts', start: { line: 2, column: 1 }, end: { line: 2, column: 45 } }, reason: 'Legacy Twiml namespace', confidence: 0.98, versionAssessment: 'in-range', reasonCodes: ['AFFECTED_METHOD_USED'] }],
+    } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/voice.ts', source, input, 'a'.repeat(64), {
+      kind: 'qualified-member-rename', from: 'Twiml', to: 'twiml', receiver: 'twilio', preserveArguments: true,
+    });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: 'Twiml', replacement: 'twiml', evidenceIds: ['impact:usage-twiml', `change:${change.id}`] });
+    expect(source.slice(targets[0]!.start, targets[0]!.end)).toBe('Twiml');
+  });
+  it('generates an evidence-bound OpenAI model literal edit without touching dynamic models', () => {
+    const change = { id: 'openai-gpt-4-5-preview-removal-2025-07-14', rules: [] };
+    const source = "client.chat.completions.create({ model: 'gpt-4.5-preview', input });\nclient.chat.completions.create({ model: selectedModel, input });\n";
+    const input = {
+      change,
+      impacts: [{ usageId: 'usage-openai-model', changeId: change.id, symbol: 'gpt-4.5-preview', location: { file: 'src/ai.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 72 } }, reason: 'Retired model', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] }],
+    } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/ai.ts', source, input, 'a'.repeat(64), {
+      kind: 'model-literal-rename', property: 'model', from: 'gpt-4.5-preview', to: 'gpt-4.1', preserveArguments: true,
+    });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: "'gpt-4.5-preview'", replacement: "'gpt-4.1'", evidenceIds: ['impact:usage-openai-model', `change:${change.id}`] });
+  });
+
+  it('generates an evidence-bound Groq model literal edit without touching dynamic models', () => {
+    const change = { id: 'groq-qwen-3-6-27b-retired-2026-09-14', rules: [] };
+    const source = "client.chat.completions.create({ model: 'qwen/qwen3.6-27b', input });\nclient.chat.completions.create({ model: selectedModel, input });\n";
+    const input = { change, impacts: [{ usageId: 'usage-groq-model', changeId: change.id, symbol: 'qwen/qwen3.6-27b', location: { file: 'src/ai.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 78 } }, reason: 'Retired Groq model', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] }] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/ai.ts', source, input, 'a'.repeat(64), { kind: 'model-literal-rename', property: 'model', from: 'qwen/qwen3.6-27b', to: 'qwen/qwen3.8-27b', preserveArguments: true });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: "'qwen/qwen3.6-27b'", replacement: "'qwen/qwen3.8-27b'" });
+  });
+
+  it('generates an evidence-bound Shopify apiVersion literal edit without touching dynamic versions', () => {
+    const change = { id: 'shopify-api-2025-10-version-retired-2026-10-16', rules: [] };
+    const source = "client.request({ apiVersion: '2025-10', query });\nclient.request({ apiVersion: selectedVersion, query });\n";
+    const input = { change, impacts: [{ usageId: 'usage-shopify-version', changeId: change.id, symbol: '2025-10', location: { file: 'src/shopify.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 58 } }, reason: 'Retired Shopify API version', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] }] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/shopify.ts', source, input, 'a'.repeat(64), { kind: 'api-version-literal-rename', property: 'apiVersion', from: '2025-10', to: '2026-01', preserveArguments: true });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: "'2025-10'", replacement: "'2026-01'" });
+  });
+  it('generates an evidence-bound Firebase import alias edit without touching unrelated strings', () => {
+    const change = { id: 'firebase-vertexai-import-alias-removed-2025-07-17', rules: [] };
+    const source = "import { getVertexAI } from 'firebase/vertexai';\nconst label = 'firebase/vertexai';\n";
+    const input = { change, impacts: [{ usageId: 'usage-firebase-import', changeId: change.id, symbol: 'firebase/vertexai', location: { file: 'src/firebase.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 48 } }, reason: 'Removed Firebase import alias', confidence: 0.99, versionAssessment: 'in-range', reasonCodes: ['MATCHED_STATIC_USAGE'] }] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/firebase.ts', source, input, 'a'.repeat(64), { kind: 'import-specifier-rename', from: 'firebase/vertexai', to: 'firebase/ai', preserveBindings: true });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: "'firebase/vertexai'", replacement: "'firebase/ai'" });
+  });
+
+  it('generates evidence-bound Firebase identifier edits without renaming unrelated identifiers', () => {
+    const change = { id: 'firebase-vertexai-symbols-removed-2025-07-17', rules: [] };
+    const source = "const model = getVertexAI(app);\nconst error = new VertexAIError('bad');\nconst unrelated = getVertexAIFromConfig();\n";
+    const input = { change, impacts: [
+      { usageId: 'usage-firebase-get', changeId: change.id, symbol: 'getVertexAI', location: { file: 'src/firebase.ts', start: { line: 1, column: 15 }, end: { line: 1, column: 26 } }, reason: 'Removed Firebase symbol', confidence: 0.99, versionAssessment: 'in-range', reasonCodes: ['MATCHED_STATIC_USAGE'] },
+      { usageId: 'usage-firebase-error', changeId: change.id, symbol: 'VertexAIError', location: { file: 'src/firebase.ts', start: { line: 2, column: 21 }, end: { line: 2, column: 34 } }, reason: 'Removed Firebase symbol', confidence: 0.99, versionAssessment: 'in-range', reasonCodes: ['MATCHED_STATIC_USAGE'] },
+    ] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/firebase.ts', source, input, 'a'.repeat(64), {
+      kind: 'identifier-rename-many',
+      replacements: [{ from: 'getVertexAI', to: 'getAI' }, { from: 'VertexAIError', to: 'AIError' }],
+      preserveBindings: true,
+    });
+    expect(targets).toHaveLength(2);
+    expect(targets.map((target) => target.replacement)).toEqual(['getAI', 'AIError']);
+    expect(targets.map((target) => target.expected)).toEqual(['getVertexAI', 'VertexAIError']);
+  });
+
+  it('generates an evidence-bound Clerk JSX attribute rename without changing the value', () => {
+    const change = { id: 'clerk-core-3-after-switch-organization-url-removed', rules: [] };
+    const source = '<OrganizationSwitcher afterSwitchOrganizationUrl={onSwitch} afterSelectOrganizationUrl={other} />';
+    const input = { change, impacts: [{ usageId: 'usage-clerk-prop', changeId: change.id, symbol: 'afterSwitchOrganizationUrl', location: { file: 'src/organizations.tsx', start: { line: 1, column: 23 }, end: { line: 1, column: 51 } }, reason: 'Removed Clerk prop', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] }] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/organizations.tsx', source, input, 'a'.repeat(64), { kind: 'jsx-attribute-rename', from: 'afterSwitchOrganizationUrl', to: 'afterSelectOrganizationUrl', preserveValue: true });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: 'afterSwitchOrganizationUrl', replacement: 'afterSelectOrganizationUrl' });
+  });
+
+  it('generates an evidence-bound Twilio domain edit inside a direct URL literal', () => {
+    const change = { id: 'twilio-regional-api-domain-removal-2026-04-28', rules: [] };
+    const source = "fetch('https://api.ie1.twilio.com/2010-04-01/Accounts');\nfetch(buildTwilioUrl());\n";
+    const input = {
+      change,
+      impacts: [{ usageId: 'usage-twilio-domain', changeId: change.id, symbol: 'api.ie1.twilio.com', location: { file: 'src/twilio.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 62 } }, reason: 'Retired regional domain', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] }],
+    } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/twilio.ts', source, input, 'a'.repeat(64), {
+      kind: 'string-literal-rename', from: 'api.ie1.twilio.com', to: 'api.twilio.com', preserveArguments: true,
+    });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatchObject({ expected: "'https://api.ie1.twilio.com/2010-04-01/Accounts'", replacement: "'https://api.twilio.com/2010-04-01/Accounts'", evidenceIds: ['impact:usage-twilio-domain', `change:${change.id}`] });
+  });
+  it('covers every reviewed Twilio regional domain while refusing dynamic URL construction', () => {
+    const change = { id: 'twilio-regional-api-domain-removal-2026-04-28', rules: [] };
+    const source = "fetch('https://api.au1.twilio.com/2010-04-01/Accounts');\nfetch('https://api.us2.twilio.com/2010-04-01/Accounts');\nfetch(buildTwilioUrl());\n";
+    const input = { change, impacts: [
+      { usageId: 'usage-au', changeId: change.id, symbol: 'api.au1.twilio.com', location: { file: 'src/twilio.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 62 } }, reason: 'Retired regional domain', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] },
+      { usageId: 'usage-us', changeId: change.id, symbol: 'api.us2.twilio.com', location: { file: 'src/twilio.ts', start: { line: 2, column: 1 }, end: { line: 2, column: 62 } }, reason: 'Retired regional domain', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] },
+    ] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/twilio.ts', source, input, 'a'.repeat(64), { kind: 'string-literal-rename-many', replacements: [
+      { from: 'api.ie1.twilio.com', to: 'api.twilio.com' }, { from: 'api.au1.twilio.com', to: 'api.twilio.com' }, { from: 'api.br1.twilio.com', to: 'api.twilio.com' }, { from: 'api.de1.twilio.com', to: 'api.twilio.com' }, { from: 'api.jp1.twilio.com', to: 'api.twilio.com' }, { from: 'api.sg1.twilio.com', to: 'api.twilio.com' }, { from: 'api.us2.twilio.com', to: 'api.twilio.com' },
+    ], preserveArguments: true });
+    expect(targets).toHaveLength(2);
+    expect(targets.map((target) => target.replacement)).toEqual(["'https://api.twilio.com/2010-04-01/Accounts'", "'https://api.twilio.com/2010-04-01/Accounts'"]);
+  });
+  it.each([
+    ['/Engagements', '/Executions'],
+    ['analytics/endpoints/logs.all', 'analytics/endpoints/logs'],
+    ['/{owner}/{repo}/dependency-graph/sbom', '/{owner}/{repo}/dependency-graph/sbom/generate-report'],
+    ['/v1/dubbing', '/v1/dubbing/project'],
+    ['/api/mail.send.json', '/v3/mail/send'],
+  ])('supports a bounded endpoint literal replacement from %s to %s', (from, to) => {
+    const change = { id: `change-${from}`, rules: [] };
+    const source = `request('/v1${from}');\nrequest(buildDynamicPath());\n`;
+    const input = { change, impacts: [{ usageId: 'usage-endpoint', changeId: change.id, symbol: from, location: { file: 'src/client.ts', start: { line: 1, column: 1 }, end: { line: 1, column: 80 } }, reason: 'Deprecated endpoint', confidence: 0.99, versionAssessment: 'not-constrained', reasonCodes: ['MATCHED_STATIC_USAGE'] }] } as unknown as Parameters<typeof targetsFor>[2];
+    const targets = targetsFor('src/client.ts', source, input, 'a'.repeat(64), { kind: 'string-literal-rename', from, to, preserveArguments: true });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]?.replacement).toContain(to);
   });
   it('emits standard diff markers including missing terminal newline', () => {
     expect(unifiedDiff('src/a.ts', 'const a = 1;', 'const a = 2;')).toContain('\\ No newline at end of file');

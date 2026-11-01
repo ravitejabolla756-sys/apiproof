@@ -60,10 +60,10 @@ export default function MigrationsWorkbenchPage() {
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
             <FileCheck2 className="w-6 h-6 text-emerald-600" />
-            Migration Plans Workbench
+            Evidence Review Workbench
           </h1>
           <p className="text-xs text-[#686868] mt-1">
-            Review migration plans here. Source patching and verification run against the exact repository baseline when you propose a Draft PR.
+            Historical migration records remain visible. New plans and Draft PRs are available only for findings with reviewed deterministic templates and a ready verification worker.
           </p>
         </div>
 
@@ -81,14 +81,14 @@ export default function MigrationsWorkbenchPage() {
       {loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
-          <span>Loading migration plans...</span>
+          <span>Loading review records...</span>
         </div>
       ) : migrations.length === 0 ? (
         <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
           <FileCheck2 className="w-8 h-8 text-emerald-600 mx-auto" />
-          <p className="font-semibold text-base text-[#111111]">No active migration plans yet</p>
+          <p className="font-semibold text-base text-[#111111]">No active evidence review records yet</p>
           <p className="text-xs text-[#686868]">
-            Navigate to any finding and click &quot;Generate Migration Plan&quot; to synthesize deterministic AST refactors.
+            Open a finding to review its affected call site, matched rule, and official evidence.
           </p>
           <Link href="/dashboard/findings">
             <Button size="sm" variant="outline">

@@ -23,7 +23,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
     return segments.map((seg, idx) => {
       const href = '/' + segments.slice(0, idx + 1).join('/');
       let formatted = seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
-      if (seg === 'bavio-ai-v1') formatted = 'Bavio-Ai-v1';
+      if (seg === 'bavio-ai-v1') formatted = 'Repository';
       if (seg === 'apiproof-github-fixture') formatted = 'apiproof-github-fixture';
       if (seg === 'stripe-subscription-coupon-removed') formatted = 'stripe-subscription-coupon-removed';
       return { name: formatted, href };

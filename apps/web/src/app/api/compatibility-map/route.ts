@@ -9,8 +9,6 @@ import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
 import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
 import { parseBoundedProductizationProjection } from '../../../lib/server/productization-persistence.js';
 
-type SupportedProvider = 'stripe' | 'twilio';
-
 interface RepositoryRow {
   id: string;
   name: string;
@@ -120,8 +118,7 @@ export async function GET(req: Request) {
     const evidence = parseScanCompatibilityEvidence(repository.completed_scan_raw_result);
     const discovery = parseScanDiscoveryEvidence(repository.completed_scan_raw_result);
     const usageIR = parseScanUsageIR(repository.completed_scan_raw_result);
-    const findingProviders = [...new Set(findings.map((finding) => finding.provider))]
-      .filter((provider): provider is SupportedProvider => provider === 'stripe' || provider === 'twilio');
+    const findingProviders = [...new Set(findings.map((finding) => finding.provider))];
     const providersWithEvidence = new Set(evidence?.providers.filter((item) => item.detected).map((item) => item.provider) ?? []);
     const productizationProviders = Array.isArray(productization?.discoveries) ? productization.discoveries.flatMap((item) => item && typeof item === 'object' && typeof (item as { providerId?: unknown }).providerId === 'string' ? [(item as { providerId: string }).providerId] : []) : [];
     const providerIds = [...new Set([...providersWithEvidence, ...findingProviders, ...(discovery?.providers.map((item) => item.providerId) ?? []), ...productizationProviders])];
@@ -131,7 +128,7 @@ export async function GET(req: Request) {
         ? (productization?.discoveries as Array<{ providerId: string; providerName?: string; packageName?: string | null; declaredVersion?: string | null; resolvedVersion?: string | null; versionConfidence?: string; capabilities?: string[]; capability?: string }>).find((item) => item.providerId === provider)
         : discovery?.providers.find((item) => item.providerId === provider);
       const analysis = evidence?.providers.find((item) => item.provider === provider && item.detected);
-      const changes = provider === 'stripe' || provider === 'twilio' ? await loadProviderRegistry(provider) : [];
+      const changes = await loadProviderRegistry(provider);
       const matchedChangeIds = new Set(findings
         .filter((finding) => finding.provider === provider)
         .map((finding) => finding.change_id));

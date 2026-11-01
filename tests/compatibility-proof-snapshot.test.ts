@@ -11,7 +11,7 @@ const usage = {
 
 const result = (provenance: 'official' | 'synthetic' = 'official') => evaluateCompatibility(
   { providerId: 'openai', packageName: 'openai', resolvedVersion: '4.2.0', versionSource: 'lockfile', versionConfidence: 'exact', usages: [usage], completeEvidence: true },
-  { ...COMPATIBILITY_FIXTURES[0], review: { ...COMPATIBILITY_FIXTURES[0].review, provenance } },
+  { ...COMPATIBILITY_FIXTURES[0]!, review: { ...COMPATIBILITY_FIXTURES[0]!.review, provenance } },
   { compatibilityProviders: new Set(['openai']) },
 );
 

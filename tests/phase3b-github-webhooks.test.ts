@@ -99,6 +99,20 @@ describe('Phase 3B — GitHub Webhooks & Repository Synchronization', () => {
     expect(row?.status).toBe('processing');
   });
 
+  it('allows a failed delivery to be retried without reopening processed deliveries', async () => {
+    const deliveryId = 'delivery_failed_retry';
+    const receivedAt = new Date().toISOString();
+
+    await recordWebhookDelivery(deliveryId, 'push', 'failed', receivedAt, 'temporary failure');
+    expect(await claimWebhookDelivery(deliveryId, 'push', new Date().toISOString())).toBe(true);
+    expect(await getDatabase().queryOne<{ status: string; error_message: string | null }>(
+      'SELECT status, error_message FROM github_webhook_deliveries WHERE id = ?', [deliveryId],
+    )).toEqual({ status: 'processing', error_message: null });
+
+    await recordWebhookDelivery(deliveryId, 'push', 'processed', new Date().toISOString());
+    expect(await claimWebhookDelivery(deliveryId, 'push', new Date().toISOString())).toBe(false);
+  });
+
   // TEST G: installation.created associates only with the correct workspace
   it('TEST G: installation.created associates only with the correct workspace', async () => {
     const { user } = await createUserWithSession('alice@test.com', 'Pass1234!', 'Alice');

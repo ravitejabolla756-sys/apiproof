@@ -4,6 +4,7 @@ import type { DependencyFinding, ScanResult, UsageFinding } from '@apiproof/shar
 import { TOOL_VERSION } from '@apiproof/shared';
 import { normalizeCompatibilityUsage, usageFindingToCompatibilityUsage } from '../typescript/usage-ir.js';
 import { GoRepositorySnapshot } from './repository.js';
+import { extractExplicitApiVersion } from '../api-version.js';
 
 export interface GoProviderDescriptor extends ProviderDescriptor {
   readonly packageNames?: readonly string[];
@@ -45,7 +46,8 @@ function dependencies(snapshot: GoRepositorySnapshot, provider: GoProviderDescri
 
 function addUsage(usages: UsageFinding[], file: string, content: string, offset: number, provider: GoProviderDescriptor, symbol: string, kind: UsageFinding['kind'], semantics: UsageFinding['semantics'] = 'invocation'): void {
   const loc = location(file, content, offset, symbol);
-  usages.push({ id: `${file}:${loc.start.line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location: loc, context: { function: null, class: null }, evidence: { binding: loc, basis: 'import-binding' }, confidence: kind === 'method' ? 0.9 : 0.98 });
+  const apiVersion = extractExplicitApiVersion(content, offset);
+  usages.push({ id: `${file}:${loc.start.line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location: loc, context: { function: null, class: null }, evidence: { binding: loc, basis: 'import-binding' }, confidence: kind === 'method' ? 0.9 : 0.98, ...(apiVersion ? { apiVersion } : {}) });
 }
 
 function detectUsages(snapshot: GoRepositorySnapshot, provider: GoProviderDescriptor): UsageFinding[] {

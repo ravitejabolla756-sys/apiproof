@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { requireFindingAccess } from '@/lib/server/workspace-service';
 import { getMigrationLifecycleState } from '@/lib/server/migration-lifecycle';
+import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
+import { resolveFindingCapability } from '@/lib/server/finding-capability';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -23,6 +25,21 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
   }
 
   const db = getDatabase();
+
+  const scan = await db.queryOne<{ raw_result: string | null }>(
+    `SELECT raw_result FROM scans WHERE id = ? AND repository_id = ? AND status = 'completed' LIMIT 1`,
+    [finding.scan_id, repository.id],
+  );
+  const productization = parseBoundedProductizationProjection((() => {
+    try { return scan?.raw_result ? JSON.parse(scan.raw_result) : null; } catch { return null; }
+  })());
+  const capability = resolveFindingCapability(productization, {
+    provider: finding.provider,
+    changeId: finding.change_id,
+    filePath: finding.file_path,
+    lineNumber: finding.line_number,
+    symbol: finding.symbol,
+  });
 
   // Parse stored JSON
   let evidence: unknown[];
@@ -79,6 +96,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       default_branch: repository.default_branch,
       evidence,
       reasonCodes,
+      capability,
     },
     migration: migration ? {
       ...migration,

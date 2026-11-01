@@ -23,6 +23,7 @@ describe('Docker CLI subprocess environment', () => {
       HOMEDRIVE: 'C:',
       HOMEPATH: '\\Users\\dev',
       CI: 'true',
+      NODE_ENV: 'test',
     });
   });
 

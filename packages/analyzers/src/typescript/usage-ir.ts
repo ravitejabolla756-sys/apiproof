@@ -35,7 +35,7 @@ export function normalizeCompatibilityUsage(usage: CompatibilityUsage, context: 
     parameters: usage.parameter ? [usage.parameter] : [],
     parameterValues: usage.parameter ? [{ parameter: usage.parameter, ...(usage.parameterValue !== undefined ? { value: usage.parameterValue } : {}), ...(usage.parameterValueStatus ? { status: usage.parameterValueStatus } : {}) }] : [],
     responseFields: usage.responseField ? [usage.responseField] : [],
-    authEvidence: [], authOrHeader: usage.authOrHeader, dynamic: !usage.static, location: usage.location, confidence: usage.confidence,
+    authEvidence: [], authOrHeader: usage.authOrHeader, apiVersion: usage.apiVersion, dynamic: !usage.static, location: usage.location, confidence: usage.confidence,
     evidence: [{ kind: usage.evidenceKind === 'http' ? 'http-call' : usage.evidenceKind === 'import' ? 'import' : usage.evidenceKind === 'environment' ? 'environment' : 'sdk-call', detail: operation ?? endpoint ?? usage.parameter ?? usage.responseField ?? usage.evidenceKind, file: usage.location.file, line: usage.location.line, provenance: 'static-source' }],
   });
 }
@@ -48,9 +48,12 @@ export function usageFindingToCompatibilityUsage(usage: UsageFinding, packageNam
   const unresolvedModel = usage.arguments?.some((argument) => argument.properties.some((property) => property.path === 'model' && property.literalHash === undefined)) ?? false;
   return {
     id: usage.id, providerId: usage.provider, packageName,
-    operation: isOperation ? usage.symbol : undefined, parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
+    operation: isOperation ? usage.symbol : undefined,
+    parameter: parameter ?? (usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined),
+    resource: usage.kind === 'resource' && !usage.symbol.startsWith('http') ? usage.symbol : undefined,
     endpoint: usage.kind === 'resource' && usage.symbol.startsWith('http') ? usage.symbol : undefined,
     responseField: isResponse && usage.response?.fieldPath ? usage.response.fieldPath : undefined,
+    apiVersion: usage.apiVersion,
     evidenceKind: usage.kind === 'import' ? 'import' : usage.kind === 'resource' && usage.symbol.startsWith('http') ? 'http' : usage.kind === 'resource' ? 'environment' : 'sdk', confidence: usage.confidence, static: usage.dynamic !== true && !unresolvedModel && (usage.arguments?.every((argument) => argument.complete) ?? true),
     location: { file: usage.location.file, line: usage.location.start.line, column: usage.location.start.column, symbol: usage.symbol },
   };
@@ -61,7 +64,7 @@ export function normalizedUsageToCompatibilityUsage(usage: NormalizedUsageIR): C
   const evidenceKind = usage.evidence[0]?.kind;
   return {
     id: usage.id, providerId: usage.providerId, packageName: usage.packageName,
-    operation: usage.operation, model: usage.model, parameter: usage.parameters[0], responseField: usage.responseFields[0], endpoint: usage.endpoint, domain: usage.domain, resource: usage.resource, authOrHeader: usage.authOrHeader,
+    operation: usage.operation, model: usage.model, parameter: usage.parameters[0], responseField: usage.responseFields[0], endpoint: usage.endpoint, domain: usage.domain, resource: usage.resource, authOrHeader: usage.authOrHeader, apiVersion: usage.apiVersion,
     ...(usage.parameterValues?.[0]?.value !== undefined ? { parameterValue: usage.parameterValues[0].value } : {}),
     ...(usage.parameterValues?.[0]?.status ? { parameterValueStatus: usage.parameterValues[0].status } : {}),
     evidenceKind: evidenceKind === 'http-call' ? 'http' : evidenceKind === 'import' ? 'import' : evidenceKind === 'environment' ? 'environment' : 'sdk',

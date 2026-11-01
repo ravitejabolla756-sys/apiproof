@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { Sidebar } from '@/components/dashboard/sidebar';
 import { Header } from '@/components/dashboard/header';
 import { CommandPalette } from '@/components/dashboard/command-palette';
@@ -11,6 +11,7 @@ import {
   GITHUB_CONNECTION_STORAGE_KEY,
   isGitHubConnectionChangedMessage,
   publishGitHubConnectionChanged,
+  resolveGitHubConnectionStatus,
 } from '@/lib/github-connection-sync';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -18,6 +19,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [githubConnected, setGithubConnected] = useState<boolean | null>(null);
   const [authState, setAuthState] = useState<SessionViewState>('checking');
+  const githubStatusRequestId = useRef(0);
+  const githubStatusController = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const session = createSessionRevalidator({
@@ -41,16 +44,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshGithubStatus = useCallback(async () => {
+    const requestId = ++githubStatusRequestId.current;
+    githubStatusController.current?.abort();
+    const controller = new AbortController();
+    githubStatusController.current = controller;
     try {
-      const res = await fetch('/api/github/repositories', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        setGithubConnected(Boolean(data.connected));
-      } else {
-        setGithubConnected(false);
-      }
+      const res = await fetch('/api/github/repositories', { cache: 'no-store', signal: controller.signal });
+      const data = res.ok ? await res.json() as { connected?: unknown } : null;
+      if (requestId !== githubStatusRequestId.current || controller.signal.aborted) return;
+      setGithubConnected((previous) => resolveGitHubConnectionStatus(
+        previous,
+        res.ok ? { ok: true, connected: data?.connected } : { ok: false },
+      ));
     } catch {
-      setGithubConnected(false);
+      // Preserve the last authoritative state during transient failures.
+    } finally {
+      if (requestId === githubStatusRequestId.current) githubStatusController.current = null;
     }
   }, []);
 
@@ -92,14 +101,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') refreshGithubStatus();
     };
+    const onPageShow = () => refreshGithubStatus();
     window.addEventListener('storage', onStorage);
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('focus', refreshGithubStatus);
+    window.addEventListener('pageshow', onPageShow);
 
     return () => {
       window.removeEventListener('storage', onStorage);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('focus', refreshGithubStatus);
+      window.removeEventListener('pageshow', onPageShow);
+      githubStatusRequestId.current += 1;
+      githubStatusController.current?.abort();
+      githubStatusController.current = null;
       channel?.close();
     };
   }, [refreshGithubStatus]);

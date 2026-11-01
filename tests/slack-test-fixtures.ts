@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 import { FakeGitHubWriteTransport } from '@apiproof/core';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
@@ -11,6 +11,7 @@ import { createSlackActionValue } from '../apps/web/src/lib/server/slack-securit
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
+import { grantTestProposalEntitlement } from './helpers.js';
 
 export const timestamp = () => new Date().toISOString();
 
@@ -39,6 +40,7 @@ export async function slackFixture(name = 'slack-fixture', realScan = false) {
   const db = getDatabase();
   const { user } = await createUserWithSession(`${crypto.randomBytes(8).toString('hex')}@example.test`, 'Pass1234!', 'Slack User');
   const workspace = await getDefaultWorkspaceForUser(user.id);
+  await grantTestProposalEntitlement(workspace.id);
   await saveSlackConnection({ teamId: 'T123', teamName: 'Team', installerSlackUserId: 'U123', accessToken: 'xoxb-test-only' }, workspace.id, user.id);
   const connection = (await db.queryOne<{ id: string }>('SELECT id FROM slack_connections WHERE workspace_id = ?', [workspace.id]))!;
   const repoId = `repo_${crypto.randomBytes(8).toString('hex')}`;
@@ -105,9 +107,11 @@ export async function linkedSlackMigration(realProposal = false) {
   return { ...fixture, migrationId, interactionId, proposal, binding: { ...fixture.binding, migration_id: migrationId } };
 }
 
-export function mockSlackSuccess() {
+type SlackFetchMock = Mock<(url: string | URL | Request, init?: RequestInit) => Promise<Response>>;
+
+export function mockSlackSuccess(): { calls: Array<{ url: string; body: Record<string, unknown> }>; fetchMock: SlackFetchMock } {
   const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
-  const fetchMock = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+  const fetchMock: SlackFetchMock = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
     calls.push({ url: String(url), body: JSON.parse(String(init?.body)) as Record<string, unknown> });
     return new Response(JSON.stringify(String(url).endsWith('/conversations.open')
       ? { ok: true, channel: { id: 'D123' } } : { ok: true, channel: 'D123', ts: '123.456' }), { status: 200 });

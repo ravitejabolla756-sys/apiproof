@@ -1,0 +1,53 @@
+{
+  "provider": "twilio",
+  "id": "twilio-regional-api-domain-removal-2026-04-28",
+  "title": "Twilio regional API domain removal",
+  "description": "Twilio states that region-specific API domains stop working on April 28, 2026 and directs applications to api.twilio.com.",
+  "packageName": "twilio",
+  "affectedSymbols": [
+    {
+      "symbol": "twilio",
+      "kind": "resource",
+      "match": "prefix"
+    }
+  ],
+  "oldBehavior": "The application addresses a Twilio regional API domain.",
+  "newBehavior": "The application addresses api.twilio.com.",
+  "migrationInstructions": [
+    "Replace a direct literal api.ie1.twilio.com reference with api.twilio.com and review the resulting request behavior.",
+    "Keep dynamic URL construction and other regional domains under human review."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://www.twilio.com/en-us/changelog/deprecation-of-region-specific-twilio-api-domain-patterns",
+  "effectiveDate": "2026-04-28",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["domains"],
+  "rules": [
+    {
+      "kind": "resource",
+      "symbol": "twilio",
+      "match": "prefix"
+    }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://www.twilio.com/en-us/changelog/deprecation-of-region-specific-twilio-api-domain-patterns",
+      "summary": "Official Twilio changelog identifies api.ie1.twilio.com as deprecated and api.twilio.com as the replacement.",
+      "accessedAt": "2026-10-06"
+    }
+  ],
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Ravi Teja",
+    "reviewerKind": "human",
+    "reviewedAt": "2026-10-06",
+    "notes": "Reviewed against the official Twilio changelog. The executable transformation is limited to direct string literals containing one explicitly reviewed regional domain."
+  },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The official source establishes the domain replacement but does not establish a package or SDK version range.",
+    "Only the explicitly listed regional domain is covered by this transformation; other regional domains require separate review.",
+    "A generated patch remains subject to verification and human approval."
+  ]
+}

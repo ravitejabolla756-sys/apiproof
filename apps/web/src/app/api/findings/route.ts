@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
+import { resolveFindingCapability } from '@/lib/server/finding-capability';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -20,11 +22,12 @@ export async function GET(req: Request) {
   let query = `
     SELECT f.id, f.scan_id, f.repository_id, f.change_id, f.provider, f.title, f.description,
            f.severity, f.confidence, f.file_path, f.line_number, f.symbol, f.status, f.created_at,
-           r.name as repo_name, r.full_name as repo_full_name,
+           r.name as repo_name, r.full_name as repo_full_name, s.raw_result as scan_raw_result,
            (SELECT p.number FROM pull_requests p JOIN migrations pm ON pm.id = p.migration_id WHERE pm.finding_id = f.id ORDER BY p.created_at DESC LIMIT 1) as pr_number,
            (SELECT p.url FROM pull_requests p JOIN migrations pm ON pm.id = p.migration_id WHERE pm.finding_id = f.id ORDER BY p.created_at DESC LIMIT 1) as pr_url,
            (SELECT p.state FROM pull_requests p JOIN migrations pm ON pm.id = p.migration_id WHERE pm.finding_id = f.id ORDER BY p.created_at DESC LIMIT 1) as pr_state
     FROM findings f
+    JOIN scans s ON s.id = f.scan_id AND s.status = 'completed'
     JOIN repositories r ON r.id = f.repository_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
     WHERE wm.user_id = ? AND r.lifecycle = 'active'
@@ -55,7 +58,24 @@ export async function GET(req: Request) {
 
   query += ' ORDER BY CASE f.severity WHEN \'critical\' THEN 1 WHEN \'high\' THEN 2 ELSE 3 END, f.created_at DESC';
 
-  const findings = await db.query(query, params);
+  const findings = await db.query<Record<string, unknown>>(query, params);
 
-  return NextResponse.json({ findings });
+  const response = findings.map((finding) => {
+    const raw = typeof finding.scan_raw_result === 'string'
+      ? (() => { try { return JSON.parse(finding.scan_raw_result); } catch { return null; } })()
+      : null;
+    const projection = parseBoundedProductizationProjection(raw);
+    const capability = resolveFindingCapability(projection, {
+      provider: String(finding.provider),
+      changeId: String(finding.change_id),
+      filePath: String(finding.file_path),
+      lineNumber: Number(finding.line_number),
+      symbol: String(finding.symbol),
+    });
+    const publicFinding = { ...(finding as Record<string, unknown>) };
+    delete publicFinding.scan_raw_result;
+    return { ...publicFinding, capability };
+  });
+
+  return NextResponse.json({ findings: response });
 }

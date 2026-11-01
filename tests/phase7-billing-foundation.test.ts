@@ -18,6 +18,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserAsync } from '../apps/web/src/lib/server/auth.js';
+import { createSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import {
   getWorkspaceSubscription,
@@ -27,6 +28,8 @@ import {
   processBillingWebhookEvent,
 } from '../apps/web/src/lib/server/billing/service.js';
 import { MockBillingProvider } from '../apps/web/src/lib/server/billing/provider.js';
+import { PLANS } from '../apps/web/src/lib/server/billing/plans.js';
+import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase7-billing.db');
 
@@ -85,13 +88,9 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(check.allowed).toBe(true);
     expect(check.current).toBe(0);
 
-    for (let i = 0; i < 3; i++) {
-      await recordWorkspaceUsage(ws.id, 'draft_prs');
-    }
-
     check = await checkWorkspaceLimit(ws.id, 'draft_prs');
-    expect(check.current).toBe(3);
-    expect(check.limit).toBe(5); // Free plan limit is 5
+    expect(check.current).toBe(0);
+    expect(check.limit).toBe(2); // Free includes a small guarded Draft PR allowance
     expect(check.allowed).toBe(true);
   });
 
@@ -103,8 +102,8 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     const ws = await getDefaultWorkspaceForUser(user.id);
     const db = getDatabase();
 
-    // Insert 3 repositories into Free plan (max 3 allowed)
-    for (let i = 0; i < 3; i++) {
+    // Insert 1 repository into Free plan (max 1 allowed)
+    for (let i = 0; i < 1; i++) {
       await db.execute(`
         INSERT INTO repositories (id, workspace_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
         VALUES (?, ?, 'org', ?, ?, ?, 'main', 'active', CURRENT_TIMESTAMP)
@@ -113,8 +112,8 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
 
     const check = await checkWorkspaceLimit(ws.id, 'repositories');
     expect(check.allowed).toBe(false);
-    expect(check.limit).toBe(3);
-    expect(check.current).toBe(3);
+    expect(check.limit).toBe(1);
+    expect(check.current).toBe(1);
     expect(check.reason).toContain('PLAN_LIMIT_EXCEEDED');
   });
 
@@ -128,7 +127,7 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
 
     let summary = await getWorkspaceUsageSummary(ws.id);
     expect(summary.plan.id).toBe('free');
-    expect(summary.plan.limits.maxRepositories).toBe(3);
+    expect(summary.plan.limits.maxRepositories).toBe(1);
 
     // Update plan to Pro
     await db.execute(`
@@ -137,8 +136,67 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
 
     summary = await getWorkspaceUsageSummary(ws.id);
     expect(summary.plan.id).toBe('pro');
-    expect(summary.plan.limits.maxRepositories).toBe(25);
-    expect(summary.plan.limits.maxScansPerMonth).toBe(200);
+    expect(summary.plan.limits.maxRepositories).toBe(5);
+    expect(summary.plan.limits.maxScansPerMonth).toBeNull();
+    expect(summary.plan.limits.maxDraftPrsPerMonth).toBe(20);
+    for (let i = 0; i < 25; i++) await recordWorkspaceUsage(ws.id, 'scans');
+    expect((await checkWorkspaceLimit(ws.id, 'scans')).allowed).toBe(true);
+    for (let i = 0; i < 20; i++) await recordWorkspaceUsage(ws.id, 'draft_prs');
+    expect((await checkWorkspaceLimit(ws.id, 'draft_prs')).allowed).toBe(false);
+
+    await db.execute(`
+      UPDATE workspace_subscriptions SET plan_id = 'team' WHERE workspace_id = ?
+    `, [ws.id]);
+    summary = await getWorkspaceUsageSummary(ws.id);
+    expect(summary.plan.id).toBe('team');
+    expect(summary.plan.priceMonthly).toBe(15000);
+    expect(summary.plan.limits.maxRepositories).toBeNull();
+    expect(summary.plan.limits.maxScansPerMonth).toBeNull();
+    expect(summary.plan.limits.maxDraftPrsPerMonth).toBe(100);
+    for (let i = 0; i < 100; i++) await recordWorkspaceUsage(ws.id, 'draft_prs');
+    expect((await checkWorkspaceLimit(ws.id, 'draft_prs')).allowed).toBe(false);
+  });
+
+  it('treats null quotas as unlimited and preserves Enterprise custom limits', async () => {
+    const user = await createUserAsync('unlimited-scans@apiproof.test', 'Pass123!#$', 'Unlimited Scans');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+
+    for (let i = 0; i < 3; i++) await recordWorkspaceUsage(ws.id, 'scans');
+    const freeScanLimit = await checkWorkspaceLimit(ws.id, 'scans');
+    expect(freeScanLimit.allowed).toBe(false);
+    expect(freeScanLimit.limit).toBe(3);
+
+    await db.execute(`UPDATE workspace_subscriptions SET plan_id = 'enterprise' WHERE workspace_id = ?`, [ws.id]);
+    const enterprise = await getWorkspaceUsageSummary(ws.id);
+    expect(enterprise.plan.priceMonthly).toBeNull();
+    expect(enterprise.metrics.repositories.limit).toBeNull();
+    expect(enterprise.metrics.repositories.allowed).toBe(true);
+    expect(enterprise.metrics.scans.limit).toBe(100000);
+    expect(enterprise.metrics.draftPrs.limit).toBe(100000);
+    expect(PLANS.free?.limits).toEqual({ maxRepositories: 1, maxScansPerMonth: 3, maxDraftPrsPerMonth: 2 });
+    expect(PLANS.pro?.priceMonthly).toBe(5000);
+  });
+
+  it('allows Team checkout while keeping custom Enterprise on the contact path', async () => {
+    const user = await createUserAsync('checkout-plans@apiproof.test', 'Pass123!#$', 'Checkout Plans');
+    const session = createSession(user.id);
+    const request = (planId: string) => new Request('http://localhost/api/billing/checkout', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${session.id}`,
+      },
+      body: JSON.stringify({ planId }),
+    });
+
+    const teamResponse = await createCheckout(request('team'));
+    expect(teamResponse.status).toBe(200);
+    expect(await teamResponse.json()).toMatchObject({ planId: 'team' });
+
+    const enterpriseResponse = await createCheckout(request('enterprise'));
+    expect(enterpriseResponse.status).toBe(400);
+    expect(await enterpriseResponse.json()).toMatchObject({ error: expect.stringContaining('purchasable') });
   });
 
   // -------------------------------------------------------------------------

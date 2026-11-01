@@ -11,9 +11,9 @@ export function ScanProgress() {
   const steps = [
     "Reading repository main branch...",
     "Indexing package dependencies & lockfiles...",
-    "Resolving AST SDK bindings (Twilio, Stripe, OpenAI)...",
-    "Matching against 11 reviewed API change rules...",
-    "Tracing 27 Twilio usages in Bavio-Ai-v1...",
+    "Resolving reviewed provider SDK bindings...",
+    "Matching against the reviewed beta rule catalog...",
+    "Tracing reachable provider call sites in the selected repository...",
     "Scan Complete: 0 matching breaking changes (NOT_AFFECTED)",
   ];
 

@@ -25,7 +25,7 @@ export function HealthViz() {
         <div className="h-2.5 w-full bg-[#F6F6F4] rounded-full overflow-hidden flex border border-[#E8E8E5]">
           <div className="h-full bg-emerald-500 w-[90%]" title="Healthy / Up to date" />
           <div className="h-full bg-amber-500 w-[7%]" title="Pending Review" />
-          <div className="h-full bg-blue-500 w-[3%]" title="Draft PR Created" />
+          <div className="h-full bg-blue-500 w-[3%]" title="Repository Writes Disabled" />
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export function HealthViz() {
             <ShieldCheck className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-[10px] text-[#686868] uppercase font-semibold">Draft PRs</div>
+            <div className="text-[10px] text-[#686868] uppercase font-semibold">Repository writes</div>
             <div className="text-xs font-bold text-[#111111] font-mono">PR #1 Verified</div>
           </div>
         </div>

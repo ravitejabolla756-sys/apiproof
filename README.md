@@ -1,6 +1,6 @@
 # APIProof
 
-Deterministic Stripe & Twilio impact analysis, evidence-linked migration planning, controlled candidate patches, isolated fixture verification, behavioral contracts, and review-gated GitHub draft PR proposals. See the comprehensive [APIProof v1.0 Documentation](docs/apiproof-v1-documentation.md) for full operational, architectural, and deployment details.
+Evidence-backed compatibility analysis across the reviewed provider catalog, migration planning, controlled candidate patches, isolated fixture verification, behavioral contracts, and review-gated GitHub Draft PR proposals. See the comprehensive [APIProof v1.0 Documentation](docs/apiproof-v1-documentation.md) for full operational, architectural, and deployment details.
 
 **APIProof must never automatically merge pull requests or deploy customer code. Human review remains mandatory in all phases.**
 
@@ -33,7 +33,7 @@ node apps/cli/dist/index.js scan test-fixtures/affected --json
 
 The development command works before building. The compiled CLI runs after `pnpm build`, with no tsx loader. `pnpm test:watch` enables interactive test development. Install scripts are disabled for this workspace. The scanner never installs dependencies or executes scripts in the repository it analyzes.
 
-No API keys, environment variables, database, network service, or runtime configuration are required. No server is deployed in this phase.
+The commands above exercise the local CLI and do not require API keys, a database, or a network service. The MY OWL web application is a separate deployment surface under `apps/web`; its production/beta status is governed by the operator checklist in [`docs/MY-OWL-BETA-DEPLOYMENT-CHECKLIST.md`](docs/MY-OWL-BETA-DEPLOYMENT-CHECKLIST.md), not by this CLI-only section.
 
 ## Architecture
 

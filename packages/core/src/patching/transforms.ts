@@ -211,7 +211,7 @@ export function targetsFor(file: string, source: string, input: PlanningInput, d
       // authorized enclosing call/type node, while the exact source digest,
       // file and symbol still remain mandatory provenance.
       const nodeLine = parsed.getLineAndCharacterOfPosition(node.getStart(parsed)).line + 1;
-      if ((node.getStart(parsed) <= at && node.end >= at) || (nodeLine === impact.location.start.line && (ts.isCallExpression(node) || ts.isTypeReferenceNode(node)))) {
+      if ((node.getStart(parsed) <= at && node.end >= at) || (nodeLine === impact.location.start.line && (ts.isCallExpression(node) || ts.isTypeReferenceNode(node) || (semantics.kind === 'import-specifier-rename' && ts.isImportDeclaration(node)) || (semantics.kind === 'jsx-attribute-rename' && ts.isJsxAttribute(node)) || ((semantics.kind === 'string-literal-rename' || semantics.kind === 'string-literal-rename-many') && ts.isStringLiteral(node))))) {
         if (semantics.kind === 'singleton-discount' && ts.isCallExpression(node)) {
           const rules = input.change.rules.filter((rule) => rule.kind === 'parameter' && rule.symbol === impact.symbol);
           for (const rule of rules) {
@@ -230,9 +230,92 @@ export function targetsFor(file: string, source: string, input: PlanningInput, d
         }
         if (semantics.kind === 'member-rename' && ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
           const member = node.expression;
-          if (impact.symbol === `${semantics.receiver}.${semantics.from}` && member.name.text === semantics.from && input.change.rules.some((r) => r.kind === 'method' && r.symbol === impact.symbol && r.replacementSymbol === `${semantics.receiver}.${semantics.to}`)) add(member.name, semantics.to);
+          const reviewedMethod = input.change.rules.some((r) => r.kind === 'method' && r.symbol === impact.symbol && (!r.replacementSymbol || r.replacementSymbol === `${semantics.receiver}.${semantics.to}`));
+          const impactedMember = impact.symbol === `${semantics.receiver}.${semantics.from}` || impact.symbol === semantics.from;
+          if (impactedMember && member.name.text === semantics.from && reviewedMethod) add(member.name, semantics.to);
+        }
+        if (semantics.kind === 'qualified-member-rename' && ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+          const member = node.expression;
+          const qualifiedReceiver = member.expression;
+          if (ts.isPropertyAccessExpression(qualifiedReceiver)
+            && qualifiedReceiver.expression.getText(parsed) === semantics.receiver
+            && qualifiedReceiver.name.text === semantics.from
+            && impact.symbol === `${semantics.from}.${member.name.text}`
+            && input.change.rules.some((r) => r.kind === 'method' && r.symbol === impact.symbol && r.replacementSymbol === `${semantics.to}.${member.name.text}`)) add(qualifiedReceiver.name, semantics.to);
         }
         if (semantics.kind === 'qualified-type-rename' && ts.isTypeReferenceNode(node) && ts.isQualifiedName(node.typeName) && node.typeName.right.text === semantics.from && input.change.rules.some((rule) => rule.kind === 'type' && rule.symbol === semantics.from && rule.replacementSymbol === semantics.to)) add(node.typeName.right, semantics.to);
+        if (semantics.kind === 'model-literal-rename' && ts.isCallExpression(node)) {
+          for (const argument of node.arguments) {
+            const object = ts.isObjectLiteralExpression(argument) ? argument : ts.isAsExpression(argument) && ts.isObjectLiteralExpression(argument.expression) ? argument.expression : undefined;
+            if (!object) continue;
+            for (const property of object.properties) {
+              if (!ts.isPropertyAssignment(property) || propertyName(property.name) !== semantics.property) continue;
+              const value = property.initializer;
+              if (!ts.isStringLiteral(value) || value.text !== semantics.from) continue;
+              const quote = value.getText(parsed)[0] === "'" ? "'" : '"';
+              add(value, `${quote}${semantics.to.replaceAll(quote, `\\${quote}`)}${quote}`);
+            }
+          }
+        }
+        if (semantics.kind === 'api-version-literal-rename' && ts.isCallExpression(node)) {
+          for (const argument of node.arguments) {
+            const object = ts.isObjectLiteralExpression(argument) ? argument : ts.isAsExpression(argument) && ts.isObjectLiteralExpression(argument.expression) ? argument.expression : undefined;
+            if (!object) continue;
+            for (const property of object.properties) {
+              if (!ts.isPropertyAssignment(property) || propertyName(property.name) !== semantics.property) continue;
+              const value = property.initializer;
+              if (!ts.isStringLiteral(value) || value.text !== semantics.from) continue;
+              const quote = value.getText(parsed)[0] === "'" ? "'" : '"';
+              add(value, `${quote}${semantics.to.replaceAll(quote, `\\${quote}`)}${quote}`);
+            }
+          }
+        }
+        if (semantics.kind === 'import-specifier-rename' && ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text === semantics.from) {
+          const sourceText = node.moduleSpecifier.getText(parsed);
+          const quote = sourceText[0] === "'" ? "'" : '"';
+          const escapedTo = semantics.to.replaceAll(quote, `\\${quote}`);
+          add(node.moduleSpecifier, `${quote}${escapedTo}${quote}`);
+        }
+        if (semantics.kind === 'jsx-attribute-rename' && ts.isJsxAttribute(node) && ts.isIdentifier(node.name) && node.name.text === semantics.from) {
+          add(node.name, semantics.to);
+        }
+        if (semantics.kind === 'identifier-rename-many' && ts.isIdentifier(node)) {
+          const replacement = semantics.replacements.find((item) => item.from === node.text);
+          const symbolMatches = replacement && (impact.symbol === replacement.from || impact.symbol.endsWith(`.${replacement.from}`));
+          if (replacement && symbolMatches) add(node, replacement.to);
+        }
+        if (semantics.kind === 'string-literal-rename' && ts.isStringLiteral(node) && node.text.includes(semantics.from)) {
+          const sourceText = node.getText(parsed);
+          const quote = sourceText[0] === "'" ? "'" : '"';
+          const escapedFrom = semantics.from.replaceAll(quote, `\\${quote}`);
+          const escapedTo = semantics.to.replaceAll(quote, `\\${quote}`);
+          if (sourceText.includes(escapedFrom)) add(node, sourceText.replace(escapedFrom, escapedTo));
+        }
+        if (semantics.kind === 'string-literal-rename-many' && ts.isStringLiteral(node)) {
+          const replacement = semantics.replacements.find((item) => node.text.includes(item.from));
+          if (replacement) {
+            const sourceText = node.getText(parsed);
+            const quote = sourceText[0] === "'" ? "'" : '"';
+            const escapedFrom = replacement.from.replaceAll(quote, `\\${quote}`);
+            const escapedTo = replacement.to.replaceAll(quote, `\\${quote}`);
+            if (sourceText.includes(escapedFrom)) add(node, sourceText.replace(escapedFrom, escapedTo));
+          }
+        }
+        if (!semantics && ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+          const member = node.expression;
+          const methodRule = input.change.rules?.find((rule) => rule.kind === 'method' && rule.symbol === impact.symbol && rule.replacementSymbol);
+          if (methodRule?.kind === 'method' && member.name.text === methodRule.symbol.split('.').at(-1) && methodRule.replacementSymbol) {
+            const replacementMember = methodRule.replacementSymbol.split('.').at(-1);
+            if (replacementMember && member.expression.getText(parsed).endsWith(methodRule.symbol.split('.').slice(0, -1).join('.'))) add(member.name, replacementMember);
+          }
+        }
+        if (!semantics && ts.isTypeReferenceNode(node) && ts.isQualifiedName(node.typeName)) {
+          const typeRule = input.change.rules?.find((rule) => rule.kind === 'type' && rule.symbol === impact.symbol && rule.replacementSymbol);
+          if (typeRule?.kind === 'type' && node.typeName.right.text === typeRule.symbol.split('.').at(-1) && typeRule.replacementSymbol) {
+            const replacementType = typeRule.replacementSymbol.split('.').at(-1);
+            if (replacementType) add(node.typeName.right, replacementType);
+          }
+        }
       }
       ts.forEachChild(node, visit);
     };

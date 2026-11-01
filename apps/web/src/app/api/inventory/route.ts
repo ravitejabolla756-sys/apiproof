@@ -8,7 +8,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { DISCOVERY_PROVIDERS } from '@apiproof/providers';
+import { DISCOVERY_PROVIDERS, PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { loadProviderRegistry } from '@/lib/server/registry-utils.js';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
@@ -34,54 +34,31 @@ export interface ProviderInventoryItem {
 
 export async function GET(req: Request): Promise<NextResponse> {
   try {
-    const stripeRules = await loadProviderRegistry('stripe');
-    const twilioRules = await loadProviderRegistry('twilio');
-
-    const providers: ProviderInventoryItem[] = [
-      {
-        id: 'stripe',
-        name: 'Stripe',
-        category: 'Payments & Subscriptions',
-        status: 'reviewed',
-        capability: 'compatibility',
-        capabilities: ['discovery', 'versionAware', 'compatibility'],
-        rulesCount: stripeRules.length,
-        description: 'Deterministic AST analysis for Stripe Node.js SDK breaking changes (SDK v12 to v16+).',
-        rules: stripeRules.map((r) => ({
-          id: r.id,
-          title: r.title,
-          severity: r.severity,
-          description: r.description,
-        })),
-      },
-      {
-        id: 'twilio',
-        name: 'Twilio',
-        category: 'Communications & SMS',
-        status: 'reviewed',
-        capability: 'compatibility',
-        capabilities: ['discovery', 'versionAware', 'compatibility'],
-        rulesCount: twilioRules.length,
-        description: 'Deterministic AST analysis for Twilio Node.js SDK breaking changes (SDK v3 to v4+).',
-        rules: twilioRules.map((r) => ({
-          id: r.id,
-          title: r.title,
-          severity: r.severity,
-          description: r.description,
-        })),
-      },
-      ...DISCOVERY_PROVIDERS.filter((definition) => definition.id !== 'twilio').map((definition) => ({
+    const reviewedProviderIds = [...new Set(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.providerId))];
+    const loadedRules = await Promise.all(reviewedProviderIds.map(async (providerId) => [providerId, await loadProviderRegistry(providerId)] as const));
+    const rulesByProvider = new Map(loadedRules);
+    const providers: ProviderInventoryItem[] = DISCOVERY_PROVIDERS.map((definition) => {
+      const rules = rulesByProvider.get(definition.id) ?? [];
+      const capabilities = [...new Set([...definition.capabilities, ...(rules.length > 0 ? ['compatibility' as const] : [])])];
+      return {
         id: definition.id,
         name: definition.displayName,
         category: definition.category,
-        status: 'detected' as const,
-        capability: 'discovery' as const,
-        capabilities: [...definition.capabilities],
-        rulesCount: 0,
-        description: `Static TypeScript/JavaScript discovery (${definition.capabilities.join(', ')}); no compatibility or migration rules are registered.`,
-        rules: [],
-      })),
-    ];
+        status: rules.length > 0 ? 'reviewed' as const : 'detected' as const,
+        capability: rules.length > 0 ? 'compatibility' as const : 'discovery' as const,
+        capabilities,
+        rulesCount: rules.length,
+        description: rules.length > 0
+          ? `Reviewed provider compatibility rules with deterministic evidence and guarded remediation where a verified template exists (${capabilities.join(', ')}).`
+          : `Static TypeScript/JavaScript discovery (${capabilities.join(', ')}); no reviewed compatibility rules are registered.`,
+        rules: rules.map((r) => ({
+          id: r.id,
+          title: r.title,
+          severity: r.severity,
+          description: r.description,
+        })),
+      };
+    });
 
     const url = new URL(req.url);
     const repositoryId = url?.searchParams.get('repositoryId');
@@ -102,7 +79,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     return NextResponse.json({
       ok: true,
       providers,
-      totalRulesCount: stripeRules.length + twilioRules.length,
+      totalRulesCount: providers.reduce((total, provider) => total + provider.rulesCount, 0),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load inventory';

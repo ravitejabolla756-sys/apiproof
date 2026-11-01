@@ -19,7 +19,7 @@ const records = [
 
 const cases = records.flatMap((change) => {
   const affected = change.providerId === 'openai' ? { model: 'gpt-4.5-preview' } : change.providerId === 'anthropic' ? { model: 'claude-opus-4-1-20250805' } : change.affectedDomains?.length ? { endpoint: `https://${change.affectedDomains[0]}/v1` } : change.authOrHeaderPatterns?.length ? { endpoint: change.affectedEndpoints[0], authOrHeader: change.authOrHeaderPatterns[0] } : change.apiOperationPatterns.length ? { operation: change.apiOperationPatterns[0] } : { endpoint: change.affectedEndpoints[0] };
-  const usage = (id: string, overrides: Partial<CompatibilityUsage> = {}): CompatibilityUsage => ({ id, providerId: change.providerId, packageName: change.affectedPackages[0], evidenceKind: 'sdk', confidence: 0.95, static: true, location: { file: `fixtures/${change.providerId}/${id}.ts`, line: 10, column: 1 }, ...affected, ...overrides });
+  const usage = (id: string, overrides: Partial<CompatibilityUsage> = {}): CompatibilityUsage => ({ id, providerId: change.providerId, packageName: change.affectedPackages?.[0], evidenceKind: 'sdk', confidence: 0.95, static: true, location: { file: `fixtures/${change.providerId}/${id}.ts`, line: 10, column: 1 }, ...affected, ...overrides });
   return [
     { expected: 'AFFECTED' as const, usage: usage('affected') },
     { expected: 'NOT_AFFECTED' as const, usage: usage('unrelated', { operation: 'unrelated.operation', model: undefined, endpoint: undefined }) },

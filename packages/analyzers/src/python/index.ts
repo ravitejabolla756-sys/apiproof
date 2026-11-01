@@ -5,6 +5,7 @@ import { literalHash, TOOL_VERSION } from '@apiproof/shared';
 import { PythonRepositorySnapshot } from './repository.js';
 import { normalizeCompatibilityUsage } from '../typescript/usage-ir.js';
 import { usageFindingToCompatibilityUsage } from '../typescript/usage-ir.js';
+import { extractExplicitApiVersion } from '../api-version.js';
 
 export interface PythonProviderDescriptor extends ProviderDescriptor {
   readonly packageNames?: readonly string[];
@@ -65,7 +66,8 @@ function dependencyFor(snapshot: PythonRepositorySnapshot, provider: PythonProvi
 function addUsage(usages: UsageFinding[], file: string, content: string, offset: number, provider: PythonProviderDescriptor, symbol: string, kind: UsageFinding['kind'], basis: 'import-binding' | 'require-binding' | 'type-annotation' = 'import-binding', semantics: UsageFinding['semantics'] = 'invocation', argumentFacts?: ArgumentFact[]): void {
   const line = lineNumber(content, offset);
   const loc = location(file, line, offset - content.lastIndexOf('\n', offset - 1), symbol);
-  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location: loc, context: { function: null, class: null }, evidence: { binding: loc, basis }, confidence: kind === 'method' ? 0.9 : 0.98, ...(argumentFacts ? { arguments: argumentFacts } : {}) });
+  const apiVersion = extractExplicitApiVersion(content, offset);
+  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location: loc, context: { function: null, class: null }, evidence: { binding: loc, basis }, confidence: kind === 'method' ? 0.9 : 0.98, ...(apiVersion ? { apiVersion } : {}), ...(argumentFacts ? { arguments: argumentFacts } : {}) });
 }
 
 function detectUsages(snapshot: PythonRepositorySnapshot, provider: PythonProviderDescriptor): UsageFinding[] {

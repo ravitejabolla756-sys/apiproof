@@ -7,12 +7,31 @@ export interface Binding {
   path: string[];
   origin: Node;
   basis: 'import-binding' | 'require-binding' | 'type-annotation';
+  apiVersion?: string;
 }
 
 function importDeclaration(node: Node) {
   return node.getFirstAncestorByKind(SyntaxKind.ImportDeclaration);
 }
 function key(node: Node): string { return `${node.getSourceFile().getFilePath()}:${node.getStart()}:${node.getEnd()}:${node.getKind()}`; }
+function isProviderModule(name: string, packageName: string): boolean {
+  return name === packageName || name.startsWith(`${packageName}/`);
+}
+function literalApiVersion(node: Node): string | undefined {
+  if (!Node.isNewExpression(node) && !Node.isCallExpression(node)) return undefined;
+  for (const argument of node.getArguments()) {
+    if (!Node.isObjectLiteralExpression(argument)) continue;
+    for (const property of argument.getProperties()) {
+      if (!Node.isPropertyAssignment(property) || property.getName() !== 'apiVersion') continue;
+      const value = property.getInitializer();
+      if (value && (Node.isStringLiteral(value) || Node.isNoSubstitutionTemplateLiteral(value))) {
+        const version = value.getLiteralValue().trim();
+        if (version) return version;
+      }
+    }
+  }
+  return undefined;
+}
 
 /** Bounded declaration following; deliberately not a whole-program dataflow engine. */
 export class BindingResolver {
@@ -77,13 +96,18 @@ export class BindingResolver {
     }
     if (Node.isImportClause(node)) {
       const declaration = importDeclaration(node);
-      if (declaration?.getModuleSpecifierValue() === this.provider.packageName) return this.sdk(node, 'import-binding');
+      if (declaration && isProviderModule(declaration.getModuleSpecifierValue(), this.provider.packageName)) return this.sdk(node, 'import-binding');
     }
     if (Node.isNamespaceImport(node) || Node.isImportSpecifier(node)) {
       const declaration = importDeclaration(node);
-      if (declaration?.getModuleSpecifierValue() === this.provider.packageName) {
+      if (declaration && isProviderModule(declaration.getModuleSpecifierValue(), this.provider.packageName)) {
         const name = Node.isImportSpecifier(node) ? node.getName() : 'default';
-        return this.provider.constructorExports.includes(name) ? this.sdk(node, 'import-binding')
+        // Discovery-backed providers may not yet have a curated constructor
+        // export list. Treat their named imports as SDK roots so explicit
+        // client construction (including apiVersion literals) remains
+        // observable by the compatibility engine. Curated providers retain
+        // the stricter export allow-list above.
+        return (this.provider.constructorExports.length === 0 || this.provider.constructorExports.includes(name)) ? this.sdk(node, 'import-binding')
           : { kind: 'type', path: [name], origin: node, basis: 'import-binding' };
       }
     }
@@ -91,7 +115,7 @@ export class BindingResolver {
       const reference = node.getModuleReference();
       if (Node.isExternalModuleReference(reference)) {
         const expression = reference.getExpression();
-        if (expression && Node.isStringLiteral(expression) && expression.getLiteralValue() === this.provider.packageName) {
+          if (expression && Node.isStringLiteral(expression) && isProviderModule(expression.getLiteralValue(), this.provider.packageName)) {
           return this.sdk(node, 'require-binding');
         }
       }
@@ -100,17 +124,23 @@ export class BindingResolver {
       const expression = node.getExpression();
       const first = node.getArguments()[0];
       if (Node.isIdentifier(expression) && expression.getText() === 'require' && first &&
-          Node.isStringLiteral(first) && first.getLiteralValue() === this.provider.packageName &&
+          Node.isStringLiteral(first) && isProviderModule(first.getLiteralValue(), this.provider.packageName) &&
           !(expression.getSymbol()?.getDeclarations().length)) {
         return this.sdk(node, 'require-binding');
       }
       const callee = next(expression);
-      if (callee?.kind === 'sdk' && callee.path.length === 0) return { ...callee, kind: 'client' };
+      if (callee?.kind === 'sdk' && callee.path.length === 0) {
+        const apiVersion = literalApiVersion(node);
+        return { ...callee, kind: 'client', ...(apiVersion ? { apiVersion } : {}) };
+      }
       return undefined;
     }
     if (Node.isNewExpression(node)) {
       const constructor = next(node.getExpression());
-      if (constructor?.kind === 'sdk' && constructor.path.length === 0) return { ...constructor, kind: 'client' };
+      if (constructor?.kind === 'sdk' && constructor.path.length === 0) {
+        const apiVersion = literalApiVersion(node);
+        return { ...constructor, kind: 'client', ...(apiVersion ? { apiVersion } : {}) };
+      }
       return undefined;
     }
     if (Node.isVariableDeclaration(node) || Node.isPropertyDeclaration(node) || Node.isParameterDeclaration(node)) {
@@ -170,7 +200,12 @@ export class BindingResolver {
   }
 
   private member(base: Binding, name: string): Binding {
+    // A discovered provider without a curated export list still needs a
+    // useful, conservative call-site path. Curated descriptors retain their
+    // strict allow-list; the empty-list case means export metadata is unknown,
+    // not that every SDK member is a type-only symbol.
     if (base.kind === 'sdk' && this.provider.constructorExports.includes(name)) return base;
+    if (base.kind === 'sdk' && this.provider.constructorExports.length === 0) return { ...base, kind: 'client', path: [...base.path, name] };
     return { ...base, kind: base.kind === 'sdk' ? (this.provider.id === 'twilio' ? 'client' : 'type') : base.kind, path: [...base.path, name] };
   }
 

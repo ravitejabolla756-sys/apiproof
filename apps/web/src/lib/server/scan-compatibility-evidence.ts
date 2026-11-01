@@ -2,10 +2,21 @@ import { NormalizedUsageIRSchema } from '@apiproof/shared';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 
 export interface ScanCompatibilityProviderEvidence {
-  provider: 'stripe' | 'twilio';
+  /**
+   * Provider IDs are intentionally data-driven. The compatibility proof API
+   * must represent every monitored provider, not only the two providers that
+   * existed when this projection was first introduced.
+   */
+  provider: string;
   detected: boolean;
   usageCount: number;
   mappedSymbolCount: number;
+}
+
+const PROVIDER_ID_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
+
+function isProviderId(value: unknown): value is string {
+  return typeof value === 'string' && PROVIDER_ID_RE.test(value);
 }
 
 export interface ScanCompatibilityEvidence {
@@ -41,7 +52,7 @@ export function summarizeScanCompatibility(results: ScanResult[]): ScanCompatibi
   return {
     schemaVersion: 1,
     providers: results.map((result) => {
-      if (result.provider !== 'stripe' && result.provider !== 'twilio') {
+      if (!isProviderId(result.provider)) {
         throw new Error(`Unsupported compatibility provider in scan result: ${result.provider}`);
       }
 
@@ -72,7 +83,7 @@ export function parseScanCompatibilityEvidence(raw: string | null | undefined): 
 
     for (const provider of candidate.providers) {
       if (!provider || typeof provider !== 'object') return null;
-      if (provider.provider !== 'stripe' && provider.provider !== 'twilio') return null;
+      if (!isProviderId(provider.provider)) return null;
       if (typeof provider.detected !== 'boolean') return null;
       if (!Number.isInteger(provider.usageCount) || provider.usageCount < 0) return null;
       if (!Number.isInteger(provider.mappedSymbolCount) || provider.mappedSymbolCount < 0) return null;

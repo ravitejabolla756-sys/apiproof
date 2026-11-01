@@ -21,6 +21,19 @@ export function isGitHubConnectionChangedMessage(value: unknown): value is GitHu
   return message.type === GITHUB_CONNECTION_CHANGED_EVENT && typeof message.timestamp === 'number';
 }
 
+/**
+ * Only an authoritative successful status response may change the visible
+ * connection state. Network/server failures must not turn a known-connected
+ * workspace into a misleading disconnected state.
+ */
+export function resolveGitHubConnectionStatus(
+  previous: boolean | null,
+  response: { ok: boolean; connected?: unknown } | null,
+): boolean | null {
+  if (!response || !response.ok) return previous;
+  return Boolean(response.connected);
+}
+
 export function publishGitHubConnectionChanged(workspaceId?: string): void {
   const browser = globalThis as typeof globalThis & {
     window?: { localStorage: { setItem(key: string, value: string): void } };

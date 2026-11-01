@@ -22,6 +22,11 @@ import {
   LOCAL_REVIEWED_SUPABASE_OPENAPI_ANON_KEY_REVIEW,
 } from './local-reviewed-candidate-reviews.js';
 import { OFFICIAL_CHANGE_CANDIDATE_REGISTRY } from './official-change-candidates.js';
+import { PROVIDER_EXPANSION_BATCH7_REVIEWED_RECORDS } from './provider-expansion-batch7.js';
+import { PROVIDER_EXPANSION_BATCH8_REVIEWED_RECORDS } from './provider-expansion-batch8.js';
+import { PROVIDER_EXPANSION_BATCH9_REVIEWED_RECORDS } from './provider-expansion-batch9.js';
+import { PROVIDER_EXPANSION_BATCH10_REVIEWED_RECORDS } from './provider-expansion-batch10.js';
+import { PROVIDER_EXPANSION_BATCH12_REVIEWED_RECORDS } from './provider-expansion-batch12.js';
 
 const CANDIDATE_ID = 'openai-gpt-4-5-preview-removal-2025-07-14';
 const candidate = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.byCandidateId.get(CANDIDATE_ID);
@@ -33,6 +38,7 @@ const reviewAction = {
   reviewedAt: '2026-10-05',
   notes: 'I verified the official OpenAI deprecation source, the gpt-4.5-preview identifier, deprecation date 2025-04-14, removal date 2025-07-14, replacement model gpt-4.1, and the current stored source/candidate fingerprints. I approve authoritative applicability at provider + model scope only. I do not assert any SDK package, SDK version range, or exact SDK operation.',
   sourceFingerprint: candidate.sourceFingerprint,
+  evidenceFingerprint: candidate.evidenceFingerprint,
   candidateFingerprint: fingerprintCandidate(candidate),
 };
 
@@ -59,7 +65,16 @@ if (promotionInput.providerId !== 'openai'
 
 const reviewedGpt45Record = promoteCandidateToReviewed(
   promotionInput,
-  { status: 'reviewed', reviewer: reviewAction.reviewer, reviewerKind: 'human', reviewedAt: reviewAction.reviewedAt, notes: reviewAction.notes },
+  {
+    status: 'reviewed',
+    reviewer: reviewAction.reviewer,
+    reviewerKind: 'human',
+    reviewedAt: reviewAction.reviewedAt,
+    notes: reviewAction.notes,
+    documentFingerprint: candidate.documentFingerprint ?? candidate.sourceFingerprint,
+    evidenceFingerprint: candidate.evidenceFingerprint,
+    candidateFingerprint: reviewAction.candidateFingerprint,
+  },
   [{ url: candidate.sourceUrl, summary: 'Official OpenAI deprecation source.', accessedAt: reviewAction.reviewedAt }],
 );
 
@@ -290,4 +305,4 @@ if (reviewedTwilioStudioEngagementsRecord.providerId !== 'twilio'
 }
 
 /** Explicitly reviewed local records; insertion into an external production store remains separate. */
-export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedTwilioStudioEngagementsRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord] as const;
+export const LOCAL_REVIEWED_PRODUCTION_RECORDS = [reviewedGpt45Record, reviewedAssistantsRecord, reviewedAnthropicOpusRecord, reviewedAnthropicParameterRecord, reviewedGithubOrganizationSecurityRecord, reviewedGithubSynchronousSbomRecord, reviewedTwilioRegionalDomainRecord, reviewedTwilioStudioEngagementsRecord, reviewedSupabaseLogsAllRecord, reviewedSupabaseOpenApiAnonKeyRecord, ...PROVIDER_EXPANSION_BATCH7_REVIEWED_RECORDS, ...PROVIDER_EXPANSION_BATCH8_REVIEWED_RECORDS, ...PROVIDER_EXPANSION_BATCH9_REVIEWED_RECORDS, ...PROVIDER_EXPANSION_BATCH10_REVIEWED_RECORDS, ...PROVIDER_EXPANSION_BATCH12_REVIEWED_RECORDS] as const;
