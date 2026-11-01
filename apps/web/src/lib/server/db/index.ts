@@ -9,6 +9,9 @@ import { SQLITE_SCHEMA } from './schema.js';
 import { SQLITE_VERIFICATION_WORKER_SCHEMA } from './verification-worker-migration.js';
 import { SQLITE_SLACK_SCHEMA } from './slack-migration.js';
 import { initializeSlackReliabilitySqlite } from './slack-reliability-migration.js';
+import { SQLITE_GOOGLE_OAUTH_SCHEMA } from './google-oauth-migration.js';
+import { SQLITE_GITHUB_LOGIN_SCHEMA } from './github-login-migration.js';
+import { skipDefaultSeed } from './seed-policy.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -62,8 +65,14 @@ function seedDefaultUserAndFixtureSqlite(db: DatabaseSync): void {
     const memberId = 'wsm_pilot_developer';
     const now = new Date().toISOString();
 
-    const salt = 'apiproof_pilot_salt';
-    const hash = crypto.scryptSync('apiproof2026!', salt, 64).toString('hex');
+    const seedPassword = process.env.APIPROOF_LOCAL_SEED_PASSWORD;
+    if (!seedPassword) {
+      throw new Error(
+        'MISSING_LOCAL_SEED_PASSWORD: APIPROOF_LOCAL_SEED_PASSWORD must be configured when default SQLite seeding is enabled.'
+      );
+    }
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.scryptSync(seedPassword, salt, 64).toString('hex');
     const passwordHash = `${salt}:${hash}`;
 
     db.prepare(`
@@ -118,6 +127,10 @@ function seedDefaultUserAndFixtureSqlite(db: DatabaseSync): void {
  */
 export function initDatabase(dbPath?: string): DatabaseSync {
   const targetPath = dbPath ?? getDatabasePath();
+  const parentDir = path.dirname(targetPath);
+  if (parentDir && parentDir !== '.') {
+    fs.mkdirSync(parentDir, { recursive: true });
+  }
   const db = new DatabaseSync(targetPath);
 
   db.exec('PRAGMA journal_mode = WAL;');
@@ -127,9 +140,11 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec(SQLITE_SCHEMA);
   db.exec(SQLITE_VERIFICATION_WORKER_SCHEMA);
   db.exec(SQLITE_SLACK_SCHEMA);
+  db.exec(SQLITE_GOOGLE_OAUTH_SCHEMA);
+  db.exec(SQLITE_GITHUB_LOGIN_SCHEMA);
   initializeSlackReliabilitySqlite(db);
 
-  seedDefaultUserAndFixtureSqlite(db);
+  if (!skipDefaultSeed()) seedDefaultUserAndFixtureSqlite(db);
 
   rawSqliteInstance = db;
   adapterInstance = new SqliteDatabaseAdapter(db);
