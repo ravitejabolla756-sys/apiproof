@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
-import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2 } from "lucide-react";
+import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2, ShieldCheck, ScanLine, ExternalLink } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 
 interface OverviewData {
@@ -27,6 +27,11 @@ interface OverviewData {
     openFindings: number;
     criticalFindings: number;
     draftPrsCount: number;
+    providerRulesPending: number;
+    providerRulesApproved: number;
+    rescansPending: number;
+    rescansProcessing: number;
+    rescansFailed: number;
   };
   repositories: Array<{
     id: string;
@@ -57,30 +62,66 @@ interface OverviewData {
     created_at: string;
     repo_name: string | null;
   }>;
+  recentProviderChanges: Array<{
+    id: string;
+    provider_id: string;
+    title: string;
+    description: string;
+    source_url: string;
+    published_at: string | null;
+    first_seen_at: string;
+  }>;
+  findingsThisWeek: Array<{
+    day: string;
+    total: number;
+    critical: number;
+    high: number;
+    warning: number;
+  }>;
+  recentFixes: Array<{
+    id: string;
+    status: string;
+    created_at: string;
+    finding_title: string;
+    repo_name: string;
+    pr_url: string | null;
+    pr_state: string | null;
+  }>;
 }
 
 export default function DashboardOverviewPage() {
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
 
-  async function loadOverview() {
+  const loadOverview = useCallback(async () => {
+    setRefreshing(true);
     try {
-      const res = await fetch("/api/overview");
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
+      const res = await fetch("/api/overview", { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`Overview request failed (${res.status})`);
       }
+      const json = await res.json() as OverviewData;
+      setData(json);
+      setError(null);
+      setLastUpdatedAt(new Date());
     } catch (err) {
       console.error("Failed to load overview data:", err);
+      setError("The dashboard could not refresh. Try again in a moment.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     loadOverview();
-  }, []);
+    const interval = window.setInterval(loadOverview, 30_000);
+    return () => window.clearInterval(interval);
+  }, [loadOverview]);
 
   const stats = data?.stats ?? {
     connectedRepositories: 0,
@@ -88,6 +129,11 @@ export default function DashboardOverviewPage() {
     openFindings: 0,
     criticalFindings: 0,
     draftPrsCount: 0,
+    providerRulesPending: 0,
+    providerRulesApproved: 0,
+    rescansPending: 0,
+    rescansProcessing: 0,
+    rescansFailed: 0,
   };
 
   if (loading) {
@@ -96,6 +142,7 @@ export default function DashboardOverviewPage() {
         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>
+
     );
   }
 
@@ -106,6 +153,15 @@ export default function DashboardOverviewPage() {
         onClose={() => setIsConnectOpen(false)}
         onSuccess={loadOverview}
       />
+
+      {error && (
+        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+          <span>{error}</span>
+          <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} className="border-rose-300 bg-white text-rose-900">
+            {refreshing ? "Retrying..." : "Retry"}
+          </Button>
+        </div>
+      )}
 
       {/* WELCOME BANNER (EDITORIAL) */}
       <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-8 space-y-3 shadow-xs">
@@ -127,11 +183,15 @@ export default function DashboardOverviewPage() {
               size="sm"
               variant="outline"
               onClick={loadOverview}
+              disabled={refreshing}
               icon={<RefreshCw className="w-3.5 h-3.5" />}
               className="font-medium text-xs"
             >
-              Refresh
+              {refreshing ? "Refreshing..." : "Refresh"}
             </Button>
+            <span className="hidden text-[10px] text-[#686868] sm:inline" aria-live="polite">
+              {lastUpdatedAt ? `Updated ${lastUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Not refreshed"}
+            </span>
             {data?.criticalFinding ? (
               <Link href={`/dashboard/findings/${data.criticalFinding.id}`}>
                 <Button size="sm" className="gap-2 font-medium">
@@ -153,6 +213,119 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
+      <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-6 shadow-xs">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-700">Provider intelligence</p>
+            <h2 className="mt-2 text-base font-semibold text-[#111111]">Recent provider changes</h2>
+            <p className="mt-1 text-xs text-[#686868]">Official source updates are evidence only until you approve a rule.</p>
+          </div>
+          <Link href="/dashboard/rules/pending" className="text-xs font-medium text-purple-700 hover:underline">Review candidates →</Link>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {data?.recentProviderChanges?.length ? data.recentProviderChanges.map((change) => (
+            <article key={change.id} className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="rounded-full bg-sky-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-sky-800">{change.provider_id}</span>
+                <span className="text-[10px] text-[#686868]">{new Date(change.published_at ?? change.first_seen_at).toLocaleDateString()}</span>
+              </div>
+              <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-[#111111]">{change.title}</h3>
+              <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-[#686868]">{change.description}</p>
+              <a href={change.source_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 hover:underline">
+                View official source <ExternalLink className="h-3 w-3" />
+              </a>
+            </article>
+          )) : (
+            <p className="py-5 text-xs text-[#686868]">No provider changelog entries have been recorded yet.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-6 shadow-xs">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700">Detection trend</p>
+              <h2 className="mt-2 text-base font-semibold text-[#111111]">Findings this week</h2>
+              <p className="mt-1 text-xs text-[#686868]">New findings across active repositories during the last seven days.</p>
+            </div>
+            <Link href="/dashboard/findings" className="text-xs font-medium text-purple-700 hover:underline">View findings →</Link>
+          </div>
+          <div className="mt-5 space-y-3">
+            {data?.findingsThisWeek?.length ? (() => {
+              const max = Math.max(...data.findingsThisWeek.map((item) => item.total), 1);
+              return data.findingsThisWeek.map((item) => (
+                <div key={item.day} className="flex items-center gap-3 text-xs">
+                  <span className="w-20 shrink-0 text-[#686868]">{new Date(`${item.day}T00:00:00`).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#F0F0ED]" aria-label={`${item.total} findings on ${item.day}`}>
+                    <div className="flex h-full min-w-1 overflow-hidden rounded-full" style={{ width: `${Math.max((item.total / max) * 100, 2)}%` }}>
+                      <span className="bg-rose-500" style={{ width: `${(item.critical / item.total) * 100}%` }} />
+                      <span className="bg-amber-500" style={{ width: `${(item.high / item.total) * 100}%` }} />
+                      <span className="bg-sky-500" style={{ width: `${(item.warning / item.total) * 100}%` }} />
+                    </div>
+                  </div>
+                  <span className="w-6 text-right font-semibold text-[#111111]">{item.total}</span>
+                </div>
+              ));
+            })() : (
+              <p className="py-5 text-xs text-[#686868]">No findings were created in the last seven days.</p>
+            )}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-4 text-[10px] text-[#686868]">
+            <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-rose-500" />Critical</span>
+            <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-amber-500" />High</span>
+            <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-sky-500" />Warning</span>
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-6 shadow-xs">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Fix progress</p>
+              <h2 className="mt-2 text-base font-semibold text-[#111111]">Recent fixes</h2>
+              <p className="mt-1 text-xs text-[#686868]">Migration plans and draft pull requests awaiting review.</p>
+            </div>
+            <Link href="/dashboard/migrations" className="text-xs font-medium text-purple-700 hover:underline">View migrations →</Link>
+          </div>
+          <div className="mt-4 space-y-3">
+            {data?.recentFixes?.length ? data.recentFixes.map((fix) => (
+              <div key={fix.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-[#111111]">{fix.finding_title}</p>
+                  <p className="mt-1 truncate text-[10px] text-[#686868]">{fix.repo_name} · {new Date(fix.created_at).toLocaleDateString()}</p>
+                </div>
+                {fix.pr_url ? (
+                  <a href={fix.pr_url} target="_blank" rel="noreferrer" className="shrink-0 text-[10px] font-medium text-purple-700 hover:underline">Draft PR</a>
+                ) : (
+                  <span className="shrink-0 text-[10px] font-medium text-[#686868]">{fix.status.replaceAll("_", " ")}</span>
+                )}
+              </div>
+            )) : (
+              <p className="py-5 text-xs text-[#686868]">No migration plans or draft fixes yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-5 shadow-xs">
+          <div className="flex items-start justify-between gap-4">
+            <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-700">Provider intelligence</p><h2 className="mt-2 text-base font-semibold text-[#111111]">Review queue</h2><p className="mt-1 text-xs text-[#686868]">Official source changes wait for your approval before they affect scans.</p></div>
+            <ShieldCheck className="h-5 w-5 text-purple-700" />
+          </div>
+          <div className="mt-4 flex items-end justify-between"><div><span className="text-2xl font-semibold text-[#111111]">{stats.providerRulesPending}</span><span className="ml-2 text-xs text-[#686868]">pending rules</span></div><Link href="/dashboard/rules/pending" className="text-xs font-medium text-purple-700 hover:underline">Open review →</Link></div>
+          <p className="mt-2 text-[11px] text-[#686868]">{stats.providerRulesApproved} approved rules currently available to the scanner.</p>
+        </div>
+        <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-5 shadow-xs">
+          <div className="flex items-start justify-between gap-4">
+            <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Rescan pipeline</p><h2 className="mt-2 text-base font-semibold text-[#111111]">Repository updates</h2><p className="mt-1 text-xs text-[#686868]">Approval and nightly freshness jobs are tracked durably.</p></div>
+            <ScanLine className="h-5 w-5 text-emerald-700" />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs"><span><strong className="text-[#111111]">{stats.rescansPending}</strong> pending</span><span><strong className="text-[#111111]">{stats.rescansProcessing}</strong> processing</span><span className={stats.rescansFailed ? "text-rose-700" : "text-emerald-700"}><strong>{stats.rescansFailed}</strong> failed</span></div>
+          <p className="mt-2 text-[11px] text-[#686868]">A failed job remains visible for retry and investigation; it is never silently discarded.</p>
+        </div>
+      </div>
+
       {/* ONBOARDING CHECKLIST BANNER */}
       {(stats.connectedRepositories === 0 || !data?.workspace?.hasGitHubInstallation || stats.scansCompleted === 0) && (
         <div className="rounded-[28px] bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white p-8 space-y-6 shadow-md">
@@ -162,7 +335,7 @@ export default function DashboardOverviewPage() {
                 Getting Started with MY OWL
               </div>
               <h2 className="text-xl font-semibold mt-2 text-white">
-                4 Steps to Automate Breaking API Migration PRs
+                4 Steps to Review Breaking API Changes
               </h2>
             </div>
             <Button
@@ -192,7 +365,7 @@ export default function DashboardOverviewPage() {
               </div>
               <h4 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h4>
               <p className="text-purple-200 text-[11px] leading-relaxed">
-                Authorize the MY OWL GitHub App with read-only repository permissions.
+                Authorize the MY OWL GitHub App with restricted repository access for read-only scans.
               </p>
             </div>
 
@@ -250,9 +423,9 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Review & Draft PR</h4>
+              <h4 className="font-semibold text-white text-xs mb-1">Review findings</h4>
               <p className="text-purple-200 text-[11px] leading-relaxed">
-                Inspect findings, verify patch diffs, and create safe draft PRs.
+                Inspect findings, verify the official evidence, and decide the next engineering action.
               </p>
             </div>
           </div>

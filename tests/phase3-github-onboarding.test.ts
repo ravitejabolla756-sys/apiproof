@@ -10,6 +10,7 @@ import { NodeGitHubAppTokenProvider, FetchGitHubControlledWriteTransport, fetchA
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
+import { grantTestProposalEntitlement } from './helpers.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase3-onboarding.db');
 
@@ -29,6 +30,7 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
     process.env.GITHUB_APP_ID = TEST_APP_ID;
     process.env.GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY_PEM;
     process.env.GITHUB_APP_SLUG = 'apiproof';
+    process.env.APIPROOF_ENABLE_LIVE_GITHUB = 'false';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
 
     if (fs.existsSync(TEST_DB_PATH)) {
@@ -44,6 +46,7 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
     }
+    delete process.env.APIPROOF_ENABLE_LIVE_GITHUB;
     vi.restoreAllMocks();
   });
 
@@ -532,6 +535,7 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
   it('TEST S: Existing idempotent PR behavior remains enforced', async () => {
     const { user } = await createUserWithSession('idem@example.com', 'Pass12345!', 'Idem User');
     const ws = await getDefaultWorkspaceForUser(user.id);
+    await grantTestProposalEntitlement(ws.id);
     const dbAdapter = getDatabase();
 
     const repoId = 'repo_idem';

@@ -20,6 +20,8 @@ import {
   validateRepositoryConnectInput,
   validateSafeId,
 } from '../apps/web/src/lib/server/validation.js';
+import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import { grantTestProposalEntitlement } from './helpers.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase1-integrity.db');
 
@@ -157,6 +159,7 @@ describe('APIProof Phase 1 — Production Integrity Test Suite', () => {
       try {
         process.env.NODE_ENV = 'test';
         const user = createUser('transport_test@example.com', 'Pass1234!', 'Transport User');
+        await grantTestProposalEntitlement((await getDefaultWorkspaceForUser(user.id)).id);
         db.prepare(`
           INSERT INTO repositories (id, user_id, owner, name, full_name, github_repository_id, default_branch, status, created_at)
           VALUES ('repo_transport', ?, 'ravitejabolla756-sys', 'apiproof-github-fixture', 'ravitejabolla756-sys/apiproof-github-fixture', '1363070568', 'main', 'connected', ?)
@@ -232,6 +235,7 @@ describe('APIProof Phase 1 — Production Integrity Test Suite', () => {
   describe('4. Idempotent Draft PR Creation', () => {
     it('returns existing PR record on subsequent proposal calls without writing duplicates', async () => {
       const user = createUser('pr_idempotency@example.com', 'Pass1234!', 'PR Idempotency User');
+      await grantTestProposalEntitlement((await getDefaultWorkspaceForUser(user.id)).id);
       const repoId = 'repo_pr_idempotency';
 
       db.prepare(`

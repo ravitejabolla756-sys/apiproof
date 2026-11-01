@@ -7,7 +7,8 @@ import { targetsFor, testAssertionTargetsFor, syntaxValid } from './transforms.j
 import { loadPatchRules } from './rules.js';
 import type { AuthorizedTarget } from './transforms.js';
 import { readFile } from 'node:fs/promises';
-import { RegistryChangeSchema } from '@apiproof/shared';
+import { PatchRuleSchema, RegistryChangeSchema } from '@apiproof/shared';
+import type { PatchRule } from '@apiproof/shared';
 import { resolveBundledResource } from './workspace.js';
 
 export interface PatchGenerationInput {
@@ -16,23 +17,37 @@ export interface PatchGenerationInput {
   targets: AuthorizedTarget[]; snippets: { file: string; text: string; redacted: boolean }[];
   instructions: unknown; warnings: string[]; supported: boolean;
 }
+export interface DynamicPatchRuleOptions {
+  /** A server-validated rule for an approved database change. */
+  readonly rule: PatchRule;
+}
 const issuedContexts = new WeakMap<PatchGenerationInput, { workspace: PatchWorkspace; canonical: PatchGenerationInput }>();
 export function verifiedPatchContext(input: PatchGenerationInput, workspace: PatchWorkspace): PatchGenerationInput {
   const issued = issuedContexts.get(input);
   if (!issued || issued.workspace !== workspace) fail('UNISSUED_PATCH_CONTEXT');
   return structuredClone(issued.canonical);
 }
-export async function buildPatchContext(workspace: PatchWorkspace, input: PlanningInput, plan: MigrationPlan): Promise<PatchGenerationInput> {
+export async function buildPatchContext(workspace: PatchWorkspace, input: PlanningInput, plan: MigrationPlan, options?: DynamicPatchRuleOptions): Promise<PatchGenerationInput> {
   await checkWorkspace(workspace); validatePlan(plan, input);
-  if (!/^[a-z0-9-]+$/.test(input.change.id)) fail('UNTRUSTED_CHANGE');
-  const registryFile = await resolveBundledResource('registry', input.change.provider, `${input.change.id}.json`);
-  const bundled = RegistryChangeSchema.parse(JSON.parse(await readFile(registryFile, 'utf8')));
-  if (sha256(JSON.stringify(bundled)) !== sha256(JSON.stringify(input.change))) fail('UNTRUSTED_CHANGE');
-  const rules = await loadPatchRules(); const rule = rules.rules[input.change.id];
-  if (rule && rule.changeDigest !== sha256(JSON.stringify(bundled))) fail('STALE_TRANSFORMATION_RULE');
+  if (!/^[a-z0-9_-]+$/.test(input.change.id)) fail('UNTRUSTED_CHANGE');
+  const rules = await loadPatchRules();
+  let canonicalChange: PlanningInput['change'];
+  let rule: PatchRule | undefined;
+  if (options) {
+    rule = PatchRuleSchema.parse(options.rule);
+    if (rule.changeDigest !== sha256(JSON.stringify(input.change))) fail('STALE_TRANSFORMATION_RULE');
+    canonicalChange = input.change;
+  } else {
+    const registryFile = await resolveBundledResource('registry', input.change.provider, `${input.change.id}.json`);
+    const bundled = RegistryChangeSchema.parse(JSON.parse(await readFile(registryFile, 'utf8')));
+    if (sha256(JSON.stringify(bundled)) !== sha256(JSON.stringify(input.change))) fail('UNTRUSTED_CHANGE');
+    canonicalChange = bundled as unknown as PlanningInput['change'];
+    rule = rules.rules[input.change.id];
+    if (rule && rule.changeDigest !== sha256(JSON.stringify(bundled))) fail('STALE_TRANSFORMATION_RULE');
+  }
   const expectedLocations = input.impacts.map((item) => ({ file: item.location.file, line: item.location.start.line, column: item.location.start.column, symbol: item.symbol }));
   if (JSON.stringify(plan.affectedLocations) !== JSON.stringify(expectedLocations) || JSON.stringify(plan.facts) !== JSON.stringify(input.facts) || JSON.stringify(plan.evidence) !== JSON.stringify(input.evidence)) fail('PLAN_FACT_MISMATCH');
-  if (plan.repository !== workspace.directory || input.repository !== workspace.directory || plan.generatedBy.changeDigest !== sha256(JSON.stringify(input.change)) || plan.generatedBy.analysisDigest !== input.analysisDigest) fail('PLAN_PROVENANCE_MISMATCH');
+  if (plan.repository !== workspace.directory || input.repository !== workspace.directory || plan.generatedBy.changeDigest !== sha256(JSON.stringify(canonicalChange)) || plan.generatedBy.analysisDigest !== input.analysisDigest) fail('PLAN_PROVENANCE_MISMATCH');
   const targets: AuthorizedTarget[] = []; const snippets: PatchGenerationInput['snippets'] = []; const warnings: string[] = [];
   let supported = plan.status !== 'PLAN_INSUFFICIENT_EVIDENCE' && !['PLAN_GENERATION_FAILED', 'PLAN_UNSUPPORTED_PATTERN'].includes(plan.status);
   for (const file of new Set(plan.affectedLocations.map((item) => item.file))) {
@@ -61,7 +76,8 @@ export async function buildPatchContext(workspace: PatchWorkspace, input: Planni
   cleanPlan.repository = workspace.repositoryId;
   if (JSON.stringify({ plan: cleanPlan, snippets, targets }).length > 64_000) { supported = false; warnings.push('CONTEXT_BOUND_REACHED'); }
   const sourceDigests = Object.fromEntries([...new Set(targets.map((target) => target.path))].filter((file) => workspace.snapshot[file] !== undefined).map((file) => [file, sha256(workspace.snapshot[file]!)]));
-  const result: PatchGenerationInput = { plan: cleanPlan, planDigest: sha256(JSON.stringify(plan)), changeDigest: sha256(JSON.stringify(input.change)), rulesDigest: sha256(JSON.stringify(rules)), repositoryId: workspace.repositoryId, runId: workspace.runId, workspace: workspace.directory, sourceDigests,
+  const effectiveRulesDigest = sha256(JSON.stringify(options ? { ...rules, rules: { ...rules.rules, [input.change.id]: rule } } : rules));
+  const result: PatchGenerationInput = { plan: cleanPlan, planDigest: sha256(JSON.stringify(plan)), changeDigest: sha256(JSON.stringify(canonicalChange)), rulesDigest: effectiveRulesDigest, repositoryId: workspace.repositoryId, runId: workspace.runId, workspace: workspace.directory, sourceDigests,
     targets: supported ? targets : [], snippets: supported ? snippets : [], instructions: rule?.transformation ?? null, warnings: [...new Set(warnings)], supported };
   issuedContexts.set(result, { workspace, canonical: structuredClone(result) });
   return result;

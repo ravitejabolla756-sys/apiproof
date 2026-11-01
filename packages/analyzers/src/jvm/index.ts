@@ -4,6 +4,7 @@ import type { RepositoryAnalyzer, ProviderDescriptor } from '@apiproof/core';
 import type { DependencyFinding, ScanResult, UsageFinding } from '@apiproof/shared';
 import { TOOL_VERSION } from '@apiproof/shared';
 import { normalizeCompatibilityUsage, usageFindingToCompatibilityUsage } from '../typescript/usage-ir.js';
+import { extractExplicitApiVersion } from '../api-version.js';
 
 export interface JvmProviderDescriptor extends ProviderDescriptor {
   readonly packageNames?: readonly string[];
@@ -49,14 +50,16 @@ function addUsage(usages: UsageFinding[], file: string, content: string, offset:
   const line = content.slice(0, offset).split('\n').length;
   const column = offset - content.lastIndexOf('\n', offset - 1);
   const location = { file, start: { line, column }, end: { line, column: column + Math.max(1, symbol.length) } };
-  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location, context: { function: null, class: null }, evidence: { binding: location, basis: 'import-binding' }, confidence: kind === 'method' ? 0.85 : 0.97 });
+  const apiVersion = extractExplicitApiVersion(content, offset);
+  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location, context: { function: null, class: null }, evidence: { binding: location, basis: 'import-binding' }, confidence: kind === 'method' ? 0.85 : 0.97, ...(apiVersion ? { apiVersion } : {}) });
 }
 
-function detectUsages(files: ReadonlyMap<string, string>, provider: JvmProviderDescriptor): UsageFinding[] {
+function detectUsages(files: ReadonlyMap<string, string>, provider: JvmProviderDescriptor, language: JvmLanguage): UsageFinding[] {
   const usages: UsageFinding[] = [];
   const aliases = new Set<string>();
+  const sourcePattern = language === 'java' ? /\.java$/i : /\.kt$/i;
   for (const [file, content] of files) {
-    if (!/\.(?:java|kt)$/i.test(file)) continue;
+    if (!sourcePattern.test(file)) continue;
     for (const match of content.matchAll(/^\s*import\s+(?:(\w+)\s+)?([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)/gm)) {
       const imported = match[2];
       if (!imported || !matchesPackage(imported, provider)) continue;
@@ -87,7 +90,7 @@ export class JvmRepositoryAnalyzer implements RepositoryAnalyzer {
     const provider = providerInput as JvmProviderDescriptor;
     const files = filesFrom(repositoryPath);
     const dependencyList = dependencies(files, provider);
-    const usages = detectUsages(files, provider);
+    const usages = detectUsages(files, provider, this.language);
     const dependency = dependencyList[0];
     const declaredVersion = dependency?.declarations[0]?.range ?? null;
     const resolvedVersion = dependency?.versionResolution?.version ?? null;
@@ -95,7 +98,7 @@ export class JvmRepositoryAnalyzer implements RepositoryAnalyzer {
     const versionConfidence = resolvedVersion ? 'exact' : declaredVersion ? 'declared-only' : 'unknown';
     const usageIR = usages.map((item) => normalizeCompatibilityUsage(usageFindingToCompatibilityUsage(item, dependency?.packageName ?? provider.packageName), { language: this.language, declaredVersion, resolvedVersion, versionSource, versionConfidence }));
     const inputDigest = createHash('sha256').update(JSON.stringify([...files].sort(([a], [b]) => a.localeCompare(b, 'en')))).digest('hex');
-    return { schemaVersion: '1.2', provider: provider.id, language: this.language, providerUsed: dependencyList.length > 0 || usages.length > 0, dependencies: dependencyList, usages, usageIR, diagnostics: [], coverage: { scope: 'supported-static-patterns', filesAnalyzed: [...files.keys()].filter((file) => /\.(?:java|kt)$/i.test(file)).length, filesSkipped: 0, complete: true, limitations: ['Text-based JVM discovery only; no Maven/Gradle model resolution, compiler/type information, or dynamic dataflow.', 'Java and Kotlin are dispatched through the same semantic adapter and normalized IR.'] }, audit: { toolVersion: TOOL_VERSION, inputDigest, mode: 'static-read-only' } };
+    return { schemaVersion: '1.2', provider: provider.id, language: this.language, providerUsed: dependencyList.length > 0 || usages.length > 0, dependencies: dependencyList, usages, usageIR, diagnostics: [], coverage: { scope: 'supported-static-patterns', filesAnalyzed: [...files.keys()].filter((file) => (this.language === 'java' ? /\.java$/i : /\.kt$/i).test(file)).length, filesSkipped: 0, complete: true, limitations: ['Text-based JVM discovery only; no Maven/Gradle model resolution, compiler/type information, or dynamic dataflow.', 'Java and Kotlin are dispatched through the same semantic adapter and normalized IR.'] }, audit: { toolVersion: TOOL_VERSION, inputDigest, mode: 'static-read-only' } };
   }
 }
 

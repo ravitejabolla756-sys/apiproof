@@ -117,7 +117,9 @@ export function validateApplicabilityScope(change: Pick<ReviewedCompatibilityCha
     if (dimensions.has('parameter')) require('parameter', change.affectedParameters.length > 0);
     if (dimensions.has('auth_or_header')) require('auth_or_header', change.authOrHeaderPatterns.length > 0);
     if (!dimensions.has('parameter') && !dimensions.has('auth_or_header')) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:parameter|auth_or_header`);
-    const targetDimensions: ApplicabilityDimension[] = ['operation', 'endpoint', 'resource', 'model', 'domain'];
+    // A header/authentication removal can be authoritative without a stable
+    // endpoint or operation. In that case the header itself is the target.
+    const targetDimensions: ApplicabilityDimension[] = ['operation', 'endpoint', 'resource', 'model', 'domain', 'auth_or_header'];
     if (!targetDimensions.some((dimension) => dimensions.has(dimension))) throw new Error(`APPLICABILITY_SCOPE_TARGET_REQUIRED:${targetDimensions.join('|')}`);
     if (dimensions.has('operation')) require('operation', change.apiOperationPatterns.length > 0);
     if (dimensions.has('endpoint')) require('endpoint', change.affectedEndpoints.length > 0);
@@ -192,7 +194,7 @@ export const CompatibilityResultSchema = z.strictObject({
   proofEvidence: z.array(z.strictObject({ kind: z.enum(['usage', 'version', 'official-source', 'review']), detail: z.string(), file: z.string().optional(), line: z.number().int().positive().optional(), url: z.string().url().optional() })),
   reasonCodes: z.array(z.string()).min(1), officialSourceReference: z.string().url(),
   confidence: z.number().min(0).max(1), evidenceCoverage: z.enum(['complete', 'partial', 'insufficient']),
-  recommendedNextAction: z.enum(['NO_ACTION', 'MANUAL_REVIEW', 'MIGRATION_NOT_AVAILABLE']),
+  recommendedNextAction: z.enum(['NO_ACTION', 'MANUAL_REVIEW', 'MIGRATION_AVAILABLE', 'MIGRATION_NOT_AVAILABLE']),
   migrationAvailable: z.boolean(), verificationAvailable: z.boolean(),
   reviewStatus: z.enum(['draft', 'reviewed', 'verified']), provenance: z.enum(['official', 'synthetic']),
 });

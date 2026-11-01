@@ -116,6 +116,9 @@ CREATE TABLE IF NOT EXISTS scans (
   findings_count INTEGER DEFAULT 0,
   raw_result TEXT,
   error_message TEXT,
+  triggered_by TEXT,
+  rule_candidate_id TEXT,
+  triggered_at TEXT,
   started_at TEXT NOT NULL,
   completed_at TEXT
 );
@@ -381,6 +384,9 @@ CREATE TABLE IF NOT EXISTS scans (
   findings_count INTEGER DEFAULT 0,
   raw_result TEXT,
   error_message TEXT,
+  triggered_by TEXT,
+  rule_candidate_id TEXT,
+  triggered_at TEXT,
   started_at TEXT NOT NULL,
   completed_at TEXT,
   FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE

@@ -8,6 +8,7 @@ import { slackMigrations } from './slack-migration.js';
 import { slackReliabilityMigrations } from './slack-reliability-migration.js';
 import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
+import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 
 export const migrations: Migration[] = [
   {
@@ -26,15 +27,21 @@ export const migrations: Migration[] = [
         await db.execute(ddl);
       }
 
-      // Check if users exist; if not, seed default user and fixture
+      // Preserve the existing local fixture by default. Staging can opt into
+      // schema-only migration and bootstrap its own records separately.
       const userCheck = await db.queryOne<{ id: string }>('SELECT id FROM users LIMIT 1');
-      if (!userCheck) {
+      if (!userCheck && !skipDefaultSeed()) {
         const userId = 'usr_pilot_developer';
         const now = new Date().toISOString();
         
-        // Hash password 'apiproof2026!' with scrypt
-        const salt = 'apiproof_pilot_salt';
-        const hash = crypto.scryptSync('apiproof2026!', salt, 64).toString('hex');
+        const seedPassword = process.env.APIPROOF_LOCAL_SEED_PASSWORD;
+        if (!seedPassword) {
+          throw new Error(
+            'MISSING_LOCAL_SEED_PASSWORD: APIPROOF_LOCAL_SEED_PASSWORD must be configured when default seeding is enabled.'
+          );
+        }
+        const salt = crypto.randomBytes(16).toString('hex');
+        const hash = crypto.scryptSync(seedPassword, salt, 64).toString('hex');
         const passwordHash = `${salt}:${hash}`;
 
         await db.execute(`
@@ -469,11 +476,12 @@ export const migrations: Migration[] = [
   ...verificationWorkerMigrations,
   ...slackMigrations,
   ...slackReliabilityMigrations,
+  ...providerChangeMonitorMigrations,
   ...googleOAuthMigrations,
   ...githubLoginMigrations,
 ];
 
-export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {
+async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {
   // Ensure the migrations tracking table exists
   await db.execute(`
     CREATE TABLE IF NOT EXISTS _apiproof_migrations (
@@ -508,4 +516,18 @@ export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecor
   }
 
   return newlyApplied;
+}
+
+export async function runMigrations(db: DatabaseAdapter): Promise<MigrationRecord[]> {
+  if (db.engine !== 'postgres') {
+    return runMigrationsUnlocked(db);
+  }
+
+  // Vercel can cold-start several functions at once. Keep the advisory lock and
+  // all migration work on one transaction-owned PostgreSQL connection so two
+  // cold starts cannot concurrently create the same schema object.
+  return db.transaction(async (tx) => {
+    await tx.execute("SELECT pg_advisory_xact_lock(hashtext('apiproof:application-migrations'))");
+    return runMigrationsUnlocked(tx);
+  });
 }

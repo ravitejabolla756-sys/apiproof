@@ -40,6 +40,24 @@ interface FindingDetail {
   default_branch: string;
   evidence: Array<{ id: string; kind: string; label: string }>;
   reasonCodes: string[];
+  capability?: {
+    source: 'productization';
+    baselineSha: string | null;
+    scanId: string | null;
+    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
+    migrationAvailable: boolean;
+    verificationAvailable: boolean;
+    evidenceCoverage: 'complete' | 'partial' | 'insufficient' | null;
+    reviewStatus: 'draft' | 'reviewed' | 'verified' | null;
+    remediation: {
+      mode: 'transform' | 'manual-guidance';
+      templateId: string;
+      limitation: string;
+      summary: string;
+      steps: string[];
+      validation: string[];
+    } | null;
+  } | null;
 }
 
 interface MigrationDetail {
@@ -67,8 +85,7 @@ export default function FindingDetailPage({
   const [finding, setFinding] = useState<FindingDetail | null>(null);
   const [migration, setMigration] = useState<MigrationDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [planning, setPlanning] = useState(false);
-  const [proposing, setProposing] = useState(false);
+  const [actionLoading, setActionLoading] = useState<'plan' | 'propose' | null>(null);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   async function loadFinding() {
@@ -119,61 +136,59 @@ export default function FindingDetailPage({
     });
   }, [migration?.id, migration?.verification_job_status]);
 
-  async function handleGeneratePlan() {
-    if (!finding) return;
-    setPlanning(true);
+  async function planMigration() {
+    if (!finding?.capability?.migrationAvailable || !finding.capability.verificationAvailable) return;
+    setActionLoading('plan');
     setMessage(null);
-
     try {
-      const res = await fetch("/api/migrations/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/migrations/plan', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ findingId: finding.id }),
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Plan generation failed.");
-      }
-
-      setMessage({ text: "Deterministic migration plan generated. Verification is pending until the proposal workflow executes it." });
-      await loadFinding();
-    } catch (err: unknown) {
-      setMessage({ text: err instanceof Error ? err.message : String(err), error: true });
+      const payload = await response.json() as { migration?: MigrationDetail; error?: string };
+      if (!response.ok || !payload.migration) throw new Error(payload.error ?? 'Migration planning failed.');
+      setMigration(payload.migration);
+      setMessage({ text: 'Migration plan created. Review it before requesting a verified Draft PR.' });
+    } catch (error) {
+      setMessage({ text: error instanceof Error ? error.message : 'Migration planning failed.', error: true });
     } finally {
-      setPlanning(false);
+      setActionLoading(null);
     }
   }
 
-  async function handleProposePR() {
-    if (!migration) return;
-    setProposing(true);
+  async function proposeMigration() {
+    if (!migration?.id) return;
+    setActionLoading('propose');
     setMessage(null);
-
     try {
-      const res = await fetch("/api/migrations/propose", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/migrations/propose', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ migrationId: migration.id }),
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Draft proposal failed.");
+      const payload = await response.json() as {
+        proposal?: { number: number; state: string; branchName: string };
+        job?: { id?: string; status?: string };
+        error?: string;
+      };
+      if (!response.ok) throw new Error(payload.error ?? 'Draft PR creation failed.');
+      if (payload.proposal) {
+        setMessage({ text: `${getPullRequestStateLabel(payload.proposal.state)} #${payload.proposal.number} on branch ${payload.proposal.branchName}.` });
+        await loadFinding();
+      } else if (payload.job) {
+        setMigration((current) => current ? {
+          ...current,
+          verification_job_id: payload.job?.id ?? current.verification_job_id,
+          verification_job_status: payload.job?.status ?? 'verification_in_progress',
+          lifecycle_state: 'Verification Pending',
+        } : current);
+        setMessage({ text: 'Secure verification started. No repository change will be created until verification passes.' });
       }
-
-      if (res.status === 202 && data.job?.status === 'verification_in_progress') {
-        setMigration((current) => current ? { ...current, verification_job_id: data.job.jobId, verification_job_status: 'pending', lifecycle_state: 'Verification Pending' } : current);
-        setMessage({ text: 'Verification is queued on the isolated worker. A Draft PR will be created only if all verification gates pass.' });
-        return;
-      }
-
-      setMessage({ text: `${getPullRequestStateLabel(data.proposal.state)} #${data.proposal.number} on branch ${data.proposal.branchName}.` });
-      await loadFinding();
-    } catch (err: unknown) {
-      setMessage({ text: err instanceof Error ? err.message : String(err), error: true });
+    } catch (error) {
+      setMessage({ text: error instanceof Error ? error.message : 'Draft PR creation failed.', error: true });
     } finally {
-      setProposing(false);
+      setActionLoading(null);
     }
   }
 
@@ -236,7 +251,7 @@ export default function FindingDetailPage({
             {migration && (
               <StatusPill
                 status={migration.lifecycle_state === "Verification Passed" || migration.lifecycle_state === "Pull Request Merged" ? "verified" : migration.lifecycle_state === "Verification Failed" || migration.lifecycle_state === "Verification Unavailable" || migration.lifecycle_state === "Pull Request Closed" ? "warning" : migration.lifecycle_state === "Draft PR Created" || migration.lifecycle_state === "Pull Request Open" ? "pr_created" : migration.lifecycle_state === "Pull Request State Unavailable" ? "neutral" : "detected"}
-                label={migration.lifecycle_state || "Migration Planned"}
+                label={migration.pr_number ? (migration.lifecycle_state || "Historical Change") : "Evidence Ready"}
               />
             )}
           </div>
@@ -259,6 +274,25 @@ export default function FindingDetailPage({
             <span>{message.text}</span>
           </div>
         )}
+
+        <div className={`p-4 rounded-2xl border ${finding.capability?.migrationAvailable ? 'bg-emerald-50 border-emerald-200' : 'bg-[#F6F6F4] border-[#E8E8E5]'}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">Migration capability</div>
+              <div className="mt-1 font-semibold text-[#111111]">
+                {finding.capability?.migrationAvailable ? 'Deterministic migration template available' : 'Review-only remediation'}
+              </div>
+            </div>
+            <span className={`text-[10px] uppercase font-mono px-2 py-1 rounded border ${finding.capability?.migrationAvailable ? 'bg-white text-emerald-800 border-emerald-300' : 'bg-white text-amber-800 border-amber-300'}`}>
+              {finding.capability?.recommendedNextAction ?? 'MANUAL_REVIEW'}
+            </span>
+          </div>
+          <p className="mt-2 text-[11px] text-[#686868] leading-relaxed">
+            {finding.capability?.migrationAvailable
+              ? 'The exact scan call site matches a digest-bound template. Human review and verification are still required; the beta will not change your repository automatically.'
+              : 'MY OWL found the affected call site, but no safe digest-bound template is registered for this exact change. Review the official evidence and update the code manually.'}
+          </p>
+        </div>
 
         {/* FINDING LIFECYCLE STEPPER */}
         <div className="p-4 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-3">
@@ -286,7 +320,7 @@ export default function FindingDetailPage({
               </p>
             </div>
 
-            {/* Step 2: Migration Planned */}
+            {/* Step 2: Evidence Ready */}
             <div className={`p-3.5 rounded-xl border transition-all ${
               currentStep >= 2
                 ? 'bg-white border-[#D1EBE0] shadow-2xs'
@@ -301,24 +335,24 @@ export default function FindingDetailPage({
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-purple-600 flex items-center justify-center text-[10px] font-bold text-purple-700">2</div>
                   )}
-                  2. Migration Planned
+                  2. Evidence Ready
                 </span>
                 <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-medium border ${
                   currentStep >= 2
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                     : 'bg-purple-50 text-purple-800 border-purple-200'
                 }`}>
-                  {currentStep >= 2 ? 'Verification Pending' : 'Next Action'}
+                  {currentStep >= 2 ? 'Evidence Available' : 'Next Action'}
                 </span>
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 2 ? 'text-[#686868]' : 'text-purple-900'}`}>
                 {currentStep >= 2
-                  ? 'Deterministic migration plan is ready. Source patching and verification run when you propose a Draft PR.'
-                  : 'Click "Generate Migration Plan" to synthesize deterministic AST refactors.'}
+                  ? 'The affected call site, reviewed rule, and official evidence are ready for human review.'
+                  : 'Review the affected call site and official evidence below.'}
               </p>
             </div>
 
-            {/* Step 3: Draft PR Created */}
+            {/* Step 3: Human Review */}
             <div className={`p-3.5 rounded-xl border transition-all ${
               currentStep >= 3
                 ? 'bg-white border-[#D1EBE0] shadow-2xs'
@@ -333,7 +367,7 @@ export default function FindingDetailPage({
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-zinc-400 flex items-center justify-center text-[10px] font-bold text-zinc-600">3</div>
                   )}
-                  3. Draft PR Created
+                  3. Human Review
                 </span>
                 <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-medium border ${
                   currentStep >= 3
@@ -342,13 +376,13 @@ export default function FindingDetailPage({
                     ? 'bg-purple-50 text-purple-800 border-purple-200'
                     : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                 }`}>
-                  {currentStep >= 3 && migration?.pr_number ? `PR #${migration.pr_number}` : currentStep === 2 ? 'Verification Pending' : 'Pending Plan'}
+                  {currentStep >= 3 ? 'Review Required' : 'Pending Review'}
                 </span>
               </div>
               <p className={`text-[11px] leading-relaxed ${currentStep >= 3 ? 'text-[#686868]' : 'text-zinc-600'}`}>
                 {currentStep >= 3
-                  ? 'Review the generated change on GitHub before human approval and merging.'
-                  : 'Open a safe review-only Draft PR to an isolated branch on GitHub.'}
+                  ? 'Use the evidence and source location to decide the remediation in your existing workflow.'
+                  : 'Review the evidence first. Eligible findings can proceed through verified migration planning and an isolated Draft PR; default-branch writes remain blocked.'}
               </p>
             </div>
           </div>
@@ -412,9 +446,7 @@ export default function FindingDetailPage({
               <div className="flex items-center gap-2 text-xs font-semibold text-[#111111]">
                 <FileCode className="w-4 h-4 text-purple-700" />
                 <span>
-                  {migration?.patch_diff
-                    ? `Deterministic AST Transformation Patch — ${finding.file_path}`
-                    : `Repository Source Evidence — ${finding.file_path}`}
+                  `Repository Source Evidence — ${finding.file_path}`
                 </span>
               </div>
               <span className="text-[11px] font-mono text-[#686868]">{finding.repo_name}</span>
@@ -423,7 +455,7 @@ export default function FindingDetailPage({
             {migration?.patch_diff ? (
               <div className="space-y-3">
                 <div className="text-xs text-[#686868]">
-                  Deterministic unified patch generated by AST engine for rule <code className="font-mono text-[11px] text-[#111111]">{finding.change_id}</code>.
+                  This patch record is retained for audit context. New patches are generated only for reviewed, digest-bound templates after exact-baseline verification.
                 </div>
                 <pre className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800">
                   {migration.patch_diff}
@@ -448,39 +480,37 @@ export default function FindingDetailPage({
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-700" />
-              Migration Actions
+              Review Actions
             </h3>
 
             {!migration ? (
               <div className="space-y-3">
                 <p className="text-xs text-[#686868] leading-relaxed">
-                  Generate a deterministic migration plan for this breaking change. Source patching and verification happen before a Draft PR is created.
+                  {finding.capability?.migrationAvailable && finding.capability.verificationAvailable
+                    ? 'This exact finding matches a reviewed, digest-bound migration template. Create a plan first, then request an isolated verification before any Draft PR is written.'
+                    : 'Review the affected call site, matched rule, and official evidence. No safe migration template is available for this finding.'}
                 </p>
-                <Button
-                  size="md"
-                  variant="primary"
-                  disabled={planning}
-                  onClick={handleGeneratePlan}
-                  className="w-full gap-2 font-medium"
-                >
-                  {planning ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-4 h-4" />
-                  )}
-                  <span>{planning ? "Planning Patch..." : "Generate Migration Plan"}</span>
-                </Button>
+                {finding.capability?.migrationAvailable && finding.capability.verificationAvailable ? (
+                  <Button size="md" variant="primary" onClick={() => void planMigration()} disabled={actionLoading !== null} className="w-full gap-2 font-medium">
+                    {actionLoading === 'plan' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    <span>{actionLoading === 'plan' ? 'Creating plan…' : 'Create migration plan'}</span>
+                  </Button>
+                ) : (
+                  <div className="w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-xs font-medium text-amber-900">
+                    Human review required · no executable template
+                  </div>
+                )}
               </div>
             ) : !migration.pr_number ? (
               <div className="space-y-4">
                 <p className="text-xs text-[#686868] leading-relaxed">
                   {migration.lifecycle_state === 'Verification Unavailable'
-                    ? 'The isolated verification worker is unavailable. No Draft PR was created.'
+                    ? 'Historical verification is unavailable. No new repository change was created.'
                     : migration.lifecycle_state === 'Verification Failed'
-                    ? 'Verification failed. No Draft PR was created.'
+                    ? 'Historical verification failed. No new repository change was created.'
                     : isVerificationJobActive(migration.verification_job_status)
-                    ? 'Verification is running in the isolated worker. A Draft PR is created only after every required gate passes.'
-                    : 'Deterministic migration plan generated. Verification runs in an isolated worker before any GitHub Draft PR is created.'}
+                    ? 'Verification is still processing. No repository change will be created until the exact baseline and source evidence pass.'
+                    : 'The plan is ready. Request verification to generate a Draft PR only after the exact baseline and source digests are confirmed.'}
                 </p>
 
                 {/* Pre-proposal branch & safety information */}
@@ -501,23 +531,19 @@ export default function FindingDetailPage({
 
                   <div className="pt-1 text-[11px] text-emerald-800 flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>Draft PR only • No direct writes to {finding.default_branch || 'main'}</span>
+                    <span>Verified Draft PR only • default branch protected</span>
                   </div>
                 </div>
 
                 <Button
                   size="md"
                   variant="primary"
-                  disabled={proposing || isVerificationJobActive(migration.verification_job_status)}
-                  onClick={handleProposePR}
+                  onClick={() => void proposeMigration()}
+                  disabled={actionLoading !== null || isVerificationJobActive(migration.verification_job_status)}
                   className="w-full gap-2 font-medium"
                 >
-                  {proposing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <GitPullRequest className="w-4 h-4" />
-                  )}
-                  <span>{proposing ? "Queueing Verification..." : isVerificationJobActive(migration.verification_job_status) ? "Verification In Progress" : "Propose Safe GitHub Draft PR"}</span>
+                  {actionLoading === 'propose' || isVerificationJobActive(migration.verification_job_status) ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                  <span>{isVerificationJobActive(migration.verification_job_status) ? 'Verification in progress…' : actionLoading === 'propose' ? 'Starting verification…' : 'Verify and create Draft PR'}</span>
                 </Button>
               </div>
             ) : (
@@ -540,6 +566,36 @@ export default function FindingDetailPage({
               </div>
             )}
           </div>
+
+          {finding.capability?.remediation && (
+            <div className="rounded-[24px] border border-amber-200 bg-amber-50/70 p-6 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-base font-semibold text-amber-950 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-700" />
+                  {finding.capability.remediation.mode === 'manual-guidance' ? 'Migration playbook' : 'Review-only migration proposal'}
+                </h3>
+                <span className="rounded-full border border-amber-200 bg-white px-2 py-1 font-mono text-[10px] text-amber-900">
+                  {finding.capability.remediation.templateId}
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed text-amber-950">{finding.capability.remediation.summary}</p>
+              <p className="text-[11px] leading-relaxed text-amber-900">{finding.capability.remediation.limitation}</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-900">Recommended steps</p>
+                  <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-[11px] leading-relaxed text-amber-950">
+                    {finding.capability.remediation.steps.map((step) => <li key={step}>{step}</li>)}
+                  </ol>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-900">Validation before change</p>
+                  <ul className="mt-2 list-disc space-y-1.5 pl-4 text-[11px] leading-relaxed text-amber-950">
+                    {finding.capability.remediation.validation.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* VERIFICATION CONTRACT CARD */}
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">

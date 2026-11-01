@@ -22,7 +22,10 @@ const DOCKER_ENV_KEYS = [
 export function buildDockerProcessEnvironment(
   source: NodeJS.ProcessEnv = process.env,
 ): NodeJS.ProcessEnv {
-  const environment: NodeJS.ProcessEnv = { CI: 'true' };
+  const environment: NodeJS.ProcessEnv = {
+    CI: 'true',
+    NODE_ENV: source.NODE_ENV ?? 'test',
+  };
   for (const key of DOCKER_ENV_KEYS) {
     const value = source[key];
     if (value !== undefined) environment[key] = value;

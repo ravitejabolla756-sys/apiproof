@@ -1,0 +1,45 @@
+{
+  "provider": "shopify",
+  "id": "shopify-api-2025-10-version-retired-2026-10-16",
+  "title": "Shopify API version 2025-10 is unsupported",
+  "description": "Shopify documents that the 2025-10 stable API version is unsupported after October 16, 2026 and recommends moving to a supported stable version.",
+  "packageName": "shopify",
+  "affectedSymbols": [
+    { "symbol": "shopify", "kind": "resource", "match": "exact" }
+  ],
+  "oldBehavior": "The integration selects Shopify API version 2025-10.",
+  "newBehavior": "The integration selects a supported Shopify API version, with 2026-01 recorded as the reviewed replacement.",
+  "migrationInstructions": [
+    "Replace a direct static apiVersion value of 2025-10 with 2026-01.",
+    "Review URL paths, headers, SDK wrappers, and dynamically selected versions separately."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://shopify.dev/docs/api/usage/versioning",
+  "apiVersion": "2025-10",
+  "effectiveDate": "2026-10-16",
+  "provenance": "official",
+  "changeType": "resource-removed",
+  "resources": ["shopify"],
+  "rules": [
+    { "kind": "resource", "symbol": "shopify", "match": "exact" }
+  ],
+  "evidenceSources": [
+    {
+      "url": "https://shopify.dev/docs/api/usage/versioning",
+      "summary": "Shopify documents that API version 2025-10 is unsupported after October 16, 2026 and recommends a supported stable version.",
+      "accessedAt": "2026-10-29"
+    }
+  ],
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Ravi Teja",
+    "reviewerKind": "human",
+    "reviewedAt": "2026-10-29",
+    "notes": "Approved only for direct static apiVersion literals represented by the executable transformation; URL, header, SDK, and dynamic-version applicability remain review-only."
+  },
+  "versionScope": "api-and-sdk",
+  "assumptions": [
+    "The official source establishes the retirement boundary and reviewed replacement version, but does not establish SDK-specific applicability.",
+    "Dynamic version selection and non-literal configuration require human review."
+  ]
+}

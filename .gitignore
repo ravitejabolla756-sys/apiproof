@@ -1,4 +1,5 @@
 node_modules/
+.pnpm-store/
 dist/
 build/
 coverage/
@@ -17,6 +18,8 @@ coverage/
 .DS_Store
 Thumbs.db
 .next/
+.next-*/
+next-build-*/
 
 .vercel
 .env*.local

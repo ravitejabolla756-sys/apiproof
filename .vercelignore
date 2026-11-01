@@ -1,0 +1,41 @@
+# Release boundary: Vercel needs the application, workspace packages, and
+# reviewed registry assets. Local evidence, clones, tests, and archived
+# worktrees must never be uploaded to a production deployment.
+.git/
+.codebase-memory/
+.tmp/
+.vercel/
+.pnpm-store/
+node_modules/
+**/node_modules/
+**/.next/
+**/.next-*/
+**/next-build-*/
+apps/web/.next-*/
+apps/web/.next-*/**
+apps/web/.next*
+apps/web/next-build-*/
+apps/web/next-build-*/**
+apps/web/next-build-*
+**/dist/
+**/build/
+coverage/
+tests/
+CLONED/
+design-references/
+my-owl-*/
+my-owl-*/**
+*.png
+*.jpeg
+*.jpg
+*.webp
+*.pdf
+*.zip
+docs/
+*.log
+*.tsbuildinfo
+!apps/web/public/
+!apps/web/public/**
+.env
+.env.*
+!.env.example

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
-import { getWorkspaceSubscription } from '@/lib/server/billing/service';
-import { getBillingProvider } from '@/lib/server/billing/provider';
+import { getCurrentUser } from '../../../../lib/server/auth.js';
+import { getDefaultWorkspaceForUser } from '../../../../lib/server/workspace-service.js';
+import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
+import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
+import { PLANS } from '../../../../lib/server/billing/plans.js';
 
 export async function POST(req: Request) {
   const user = await getCurrentUser(req);
@@ -11,11 +12,15 @@ export async function POST(req: Request) {
   }
 
   const workspace = await getDefaultWorkspaceForUser(user.id);
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
   const planId = body.planId;
 
   if (!planId || typeof planId !== 'string') {
     return NextResponse.json({ error: 'INVALID_PLAN: Plan ID is required.' }, { status: 400 });
+  }
+
+  if (!Object.hasOwn(PLANS, planId) || planId === 'free' || planId === 'enterprise') {
+    return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400 });
   }
 
   const sub = await getWorkspaceSubscription(workspace.id);

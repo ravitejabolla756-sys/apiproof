@@ -22,17 +22,17 @@ interface BillingSummary {
     id: string;
     name: string;
     description: string;
-    priceMonthly: number;
+    priceMonthly: number | null;
     limits: {
-      maxRepositories: number;
-      maxScansPerMonth: number;
-      maxDraftPrsPerMonth: number;
+      maxRepositories: number | null;
+      maxScansPerMonth: number | null;
+      maxDraftPrsPerMonth: number | null;
     };
   };
   metrics: {
-    repositories: { current: number; limit: number; allowed: boolean };
-    scans: { current: number; limit: number; allowed: boolean };
-    draftPrs: { current: number; limit: number; allowed: boolean };
+    repositories: { current: number; limit: number | null; allowed: boolean };
+    scans: { current: number; limit: number | null; allowed: boolean };
+    draftPrs: { current: number; limit: number | null; allowed: boolean };
   };
 }
 
@@ -180,20 +180,17 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between text-[11px] text-[#686868]">
                       <span>Monitored Repos</span>
                       <span className="font-mono font-semibold text-[#111111]">
-                        {billing.metrics.repositories.current} / {billing.metrics.repositories.limit}
+                        {billing.metrics.repositories.current} / {billing.metrics.repositories.limit ?? 'Unlimited'}
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
+                    {billing.metrics.repositories.limit !== null && <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
                       <div
                         className="h-full bg-purple-700 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            (billing.metrics.repositories.current / billing.metrics.repositories.limit) * 100
-                          )}%`,
+                          width: `${Math.min(100, (billing.metrics.repositories.current / billing.metrics.repositories.limit) * 100)}%`,
                         }}
                       />
-                    </div>
+                    </div>}
                   </div>
 
                   {/* METRIC 2: SCANS */}
@@ -201,41 +198,35 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between text-[11px] text-[#686868]">
                       <span>Scans (Monthly)</span>
                       <span className="font-mono font-semibold text-[#111111]">
-                        {billing.metrics.scans.current} / {billing.metrics.scans.limit}
+                        {billing.metrics.scans.current} / {billing.metrics.scans.limit ?? 'Unlimited'}
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
+                    {billing.metrics.scans.limit !== null && <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
                       <div
                         className="h-full bg-emerald-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            (billing.metrics.scans.current / billing.metrics.scans.limit) * 100
-                          )}%`,
+                          width: `${Math.min(100, (billing.metrics.scans.current / billing.metrics.scans.limit) * 100)}%`,
                         }}
                       />
-                    </div>
+                    </div>}
                   </div>
 
-                  {/* METRIC 3: DRAFT PRS */}
+                  {/* METRIC 3: REPOSITORY WRITES */}
                   <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-2">
                     <div className="flex items-center justify-between text-[11px] text-[#686868]">
-                      <span>Draft PRs (Monthly)</span>
+                      <span>Repository writes</span>
                       <span className="font-mono font-semibold text-[#111111]">
-                        {billing.metrics.draftPrs.current} / {billing.metrics.draftPrs.limit}
+                        Verified Draft PRs only
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
+                    {billing.metrics.draftPrs.limit !== null && <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
                       <div
                         className="h-full bg-indigo-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            (billing.metrics.draftPrs.current / billing.metrics.draftPrs.limit) * 100
-                          )}%`,
+                          width: `${Math.min(100, (billing.metrics.draftPrs.current / billing.metrics.draftPrs.limit) * 100)}%`,
                         }}
                       />
-                    </div>
+                    </div>}
                   </div>
                 </div>
 
@@ -255,7 +246,7 @@ export default function SettingsPage() {
                         className="gap-1.5 font-medium"
                       >
                         {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                        <span>Upgrade to Pro ($49/mo)</span>
+                        <span>Pro is planned after the invite-only beta</span>
                       </Button>
                     ) : (
                       <Button
@@ -305,7 +296,7 @@ export default function SettingsPage() {
                       {installation.accountType}
                     </span>
                   </div>
-                  <div className="text-[11px] text-[#686868]">Authorized for read-only AST scans & draft PR creation</div>
+                  <div className="text-[11px] text-[#686868]">Authorized for read-only repository scans; no repository writes in beta</div>
                 </div>
                 <Button
                   variant="outline"
@@ -352,8 +343,8 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
                   <div>
-                    <div className="font-medium text-xs text-[#111111]">Draft PRs only</div>
-                    <div className="text-[11px] text-[#686868]">Pull requests are created as drafts requiring human review</div>
+                    <div className="font-medium text-xs text-[#111111]">No automatic repository writes</div>
+                    <div className="text-[11px] text-[#686868]">Findings stop at evidence for human review during beta</div>
                   </div>
                   <Check className="w-4 h-4 text-emerald-600" />
                 </div>

@@ -33,6 +33,10 @@ interface FindingRecord {
   pr_number?: number | null;
   pr_url?: string | null;
   pr_state?: string | null;
+  capability?: {
+    migrationAvailable: boolean;
+    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
+  } | null;
 }
 
 export default function FindingsListPage() {
@@ -76,6 +80,7 @@ export default function FindingsListPage() {
 
     return matchesSearch && matchesSeverity && matchesProvider;
   });
+  const providerOptions = ["all", ...Array.from(new Set(findings.map((finding) => finding.provider))).sort()];
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
@@ -135,7 +140,7 @@ export default function FindingsListPage() {
 
           <div className="flex items-center gap-1.5">
             <span className="text-[#686868]">Provider:</span>
-            {["all", "stripe", "twilio"].map((prov) => (
+            {providerOptions.map((prov) => (
               <button
                 key={prov}
                 onClick={() => setProviderFilter(prov)}
@@ -192,8 +197,11 @@ export default function FindingsListPage() {
                   status={finding.pr_state === 'draft' || finding.pr_state === 'open' ? 'pr_created' : finding.pr_state === 'merged' ? 'healthy' : finding.pr_state === 'closed' ? 'warning' : finding.status === "migration_planned" ? "detected" : "neutral"}
                   label={finding.pr_number != null
                     ? `${getPullRequestStateLabel(finding.pr_state)} #${finding.pr_number}`
-                    : finding.status === "migration_planned" ? "Migration Planned" : "Detected"}
+                    : finding.status === "migration_planned" ? "Evidence Ready" : "Detected"}
                 />
+                <span className={`text-[10px] uppercase font-mono px-2 py-1 rounded border ${finding.capability?.migrationAvailable ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
+                  {finding.capability?.migrationAvailable ? 'Migration available' : 'Review only'}
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">

@@ -10,14 +10,14 @@ const action = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('local candidate review workflow', () => {
-  it('keeps the ten-candidate source inventory attributable to official titles', () => {
-    expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates).toHaveLength(10);
+  it('keeps the source inventory attributable to official titles', () => {
+    expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates).toHaveLength(50);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => Boolean(entry.payload.sourceTitle))).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => (entry.payload.sourceFacts?.length ?? 0) > 0)).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => (entry.payload.unknowns?.length ?? 0) > 0)).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => Boolean(entry.payload.severityBasis))).toBe(true);
     expect(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.every((entry) => entry.sourceFingerprintBasis === 'full-body')).toBe(true);
-    expect(new Set(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.map((entry) => entry.providerId))).toEqual(new Set(['openai', 'anthropic', 'github', 'twilio', 'supabase']));
+    expect(new Set(OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.map((entry) => entry.providerId))).toEqual(new Set(['stripe', 'twilio', 'openai', 'firebase', 'github', 'aws', 'google-cloud', 'slack', 'sendgrid', 'shopify', 'auth0', 'clerk', 'supabase', 'vercel', 'cloudflare', 'launchdarkly', 'elevenlabs', 'groq', 'braintree', 'anthropic']));
   });
 
   it('records an explicit review decision without entering the production registry', () => {
@@ -33,8 +33,8 @@ describe('local candidate review workflow', () => {
 
   it('accepts full-body provenance for candidates sharing one official page', () => {
     const openAiCandidates = OFFICIAL_CHANGE_CANDIDATE_REGISTRY.candidates.filter((entry) => entry.sourceUrl.includes('openai.com'));
-    expect(openAiCandidates).toHaveLength(2);
-    expect(new Set(openAiCandidates.map((entry) => entry.sourceFingerprint))).toHaveLength(2);
+    expect(openAiCandidates).toHaveLength(3);
+    expect(new Set(openAiCandidates.map((entry) => entry.sourceFingerprint))).toHaveLength(3);
   });
 
   it('supports explicit rejection and validates the review action contract', () => {

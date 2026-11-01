@@ -29,7 +29,22 @@ const Identifier = z.string().regex(/^[A-Za-z_$][\w$]*$/);
 export const PatchTransformationSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('singleton-discount'), paths: z.array(Identifier).min(1), destination: Identifier, valuePolicy: z.literal('nonempty-string-or-identifier'), rejectSiblings: z.array(Identifier).min(1) }),
   z.strictObject({ kind: z.literal('member-rename'), from: Identifier, to: Identifier, receiver: Identifier, preserveArguments: z.literal(true) }),
+  z.strictObject({ kind: z.literal('qualified-member-rename'), from: Identifier, to: Identifier, receiver: Identifier, preserveArguments: z.literal(true) }),
   z.strictObject({ kind: z.literal('qualified-type-rename'), from: Identifier, to: Identifier, preserveTypeArguments: z.literal(true) }),
+  z.strictObject({ kind: z.literal('model-literal-rename'), property: Identifier, from: z.string().min(1).max(200), to: z.string().min(1).max(200), preserveArguments: z.literal(true) }),
+  z.strictObject({ kind: z.literal('api-version-literal-rename'), property: Identifier, from: z.string().min(1).max(200), to: z.string().min(1).max(200), preserveArguments: z.literal(true) }),
+  z.strictObject({ kind: z.literal('import-specifier-rename'), from: z.string().min(1).max(500), to: z.string().min(1).max(500), preserveBindings: z.literal(true) }),
+  z.strictObject({ kind: z.literal('jsx-attribute-rename'), from: Identifier, to: Identifier, preserveValue: z.literal(true) }),
+  z.strictObject({ kind: z.literal('identifier-rename-many'), replacements: z.array(z.strictObject({ from: Identifier, to: Identifier })).min(1).max(20), preserveBindings: z.literal(true) }),
+  z.strictObject({ kind: z.literal('string-literal-rename'), from: z.string().min(1).max(500), to: z.string().min(1).max(500), preserveArguments: z.literal(true) }),
+  z.strictObject({ kind: z.literal('string-literal-rename-many'), replacements: z.array(z.strictObject({ from: z.string().min(1).max(500), to: z.string().min(1).max(500) })).min(1).max(20), preserveArguments: z.literal(true) }),
 ]);
 export type PatchTransformation = z.infer<typeof PatchTransformationSchema>;
-export const PatchRuleRegistrySchema = z.strictObject({ schemaVersion: z.literal('1.0'), rules: z.record(z.string().regex(/^[a-z0-9-]+$/), z.strictObject({ changeDigest: Digest, transformation: PatchTransformationSchema, sources: z.array(z.url()).min(1), limitations: z.array(z.string()).min(1) })) });
+export const PatchRuleSchema = z.strictObject({
+  changeDigest: Digest,
+  transformation: PatchTransformationSchema,
+  sources: z.array(z.url()).min(1),
+  limitations: z.array(z.string()).min(1),
+});
+export type PatchRule = z.infer<typeof PatchRuleSchema>;
+export const PatchRuleRegistrySchema = z.strictObject({ schemaVersion: z.literal('1.0'), rules: z.record(z.string().regex(/^[a-z0-9-]+$/), PatchRuleSchema) });

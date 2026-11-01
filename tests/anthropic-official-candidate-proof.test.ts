@@ -162,7 +162,7 @@ describe('Anthropic official candidate review preparation', () => {
     expect(classifySourceUpdate(staleStoredCandidate, candidate)).toBe('SOURCE_UNAVAILABLE_REVIEW_REQUIRED');
     const previousWithEvidence = { ...staleStoredCandidate, sourceEvidence: candidate.sourceEvidence, evidenceFingerprint: candidate.evidenceFingerprint };
     expect(classifySourceUpdate(previousWithEvidence, candidate)).toBe('DOCUMENT_UPDATED_EVIDENCE_UNCHANGED');
-    const changedEvidence = { ...candidate, sourceEvidence: { ...candidate.sourceEvidence, claims: [...candidate.sourceEvidence.claims, { key: 'replacement', value: 'claude-opus-4-9' }] }, evidenceFingerprint: 'a'.repeat(64) };
+    const changedEvidence = { ...candidate, sourceEvidence: { ...candidate.sourceEvidence!, claims: [...candidate.sourceEvidence!.claims, { key: 'replacement', value: 'claude-opus-4-9' }] }, evidenceFingerprint: 'a'.repeat(64) };
     expect(classifySourceUpdate(previousWithEvidence, changedEvidence)).toBe('EVIDENCE_UPDATED_REVIEW_REQUIRED');
   });
 
@@ -186,7 +186,7 @@ describe('Anthropic official candidate review preparation', () => {
 
   it('does not create an Anthropic claim for another provider and does not mutate OpenAI rules', () => {
     const unrelated = evaluateRegisteredNormalizedCompatibility({ providerId: 'cloudflare', usageIR: [usage({ providerId: 'cloudflare' })], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
-    expect(unrelated).toHaveLength(0);
+    expect(unrelated.every((result) => result.providerId === 'cloudflare')).toBe(true);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     expect(JSON.stringify(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai'))).toBe(openAiRecordsBefore);
   });
@@ -237,23 +237,63 @@ describe('Anthropic official candidate review preparation', () => {
     }, PRODUCTION_COMPATIBILITY_REGISTRY);
     expect(assistantsResults.find((result) => result.changeId === 'openai-assistants-api-sunset-2026-08-26')?.status).toBe('AFFECTED');
     expect(assistantsResults.find((result) => result.changeId === 'openai-gpt-4-5-preview-removal-2025-07-14')?.status).toBe('NOT_AFFECTED');
-    expect(assistantsResults).toHaveLength(2);
+    expect(assistantsResults).toHaveLength(3);
   });
 
   it('keeps registry ordering stable and produces one proof per reviewed change without conflicts', () => {
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes.map((change) => change.changeId)).toEqual([
       'anthropic-claude-opus-4-1-retirement-2026-08-05',
       'anthropic-opus-4-7-parameter-restrictions',
+      'auth0-connections-enabled-clients-deprecated-2026-01-21',
+      'auth0-enabled-clients-field-deprecation-2026-07-13',
+      'auth0-legacy-enabled-clients-management-deprecation-2026-07-13',
+      'aws-cloudwatch-evidently-end-of-support-2025-10-16',
+      'aws-javascript-sdk-v2-end-of-support-2025-09-08',
+      'braintree-drop-in-sdk-deprecated-2026-10-01',
+      'braintree-transparent-redirect-deprecation',
+      'clerk-api-2026-05-12-metadata-fields-removed',
+      'clerk-core-3-after-switch-organization-url-removed',
+      'cloudflare-account-roles-api-deprecated-2026-07-21',
+      'cloudflare-dns-record-type-update-removal-2026-06-30',
+      'cloudflare-foundation-dns-field-removal-2026-11-23',
+      'cloudflare-service-key-auth-removal-2026-09-30',
+      'cloudflare-service-key-authentication-removed-2026-09-30',
+      'cloudflare-workers-kv-legacy-namespace-routes-removed-2026-10-15',
+      'cloudflare-workers-kv-legacy-routes-2026-10-15',
+      'cloudflare-zone-settings-batch-api-eol-2027-03-31',
+      'elevenlabs-legacy-dubbing-endpoints-deprecated',
+      'elevenlabs-v1-model-removal-2026-07-09',
+      'firebase-instance-id-server-apis-decommission-2027-09-29',
+      'firebase-vertexai-import-alias-removed-2025-07-17',
+      'firebase-vertexai-symbols-removed-2025-07-17',
       'github-organization-security-fields-removed-2026-04-21',
       'github-synchronous-sbom-endpoint-removal-2026-11-13',
+      'google-cloud-api-registry-mcp-operations-removed-2026-07-30',
+      'google-cloud-api-registry-mcp-shutdown-2026-07-30',
+      'groq-models-decommissioned-2026-09-21',
+      'groq-qwen-3-6-27b-retired-2026-09-14',
+      'launchdarkly-api-version-20220603-eol-2025-04-15',
+      'launchdarkly-api-versions-retired-2026-12-31',
       'openai-assistants-api-sunset-2026-08-26',
       'openai-gpt-4-5-preview-removal-2025-07-14',
+      'openai-gpt-4-series-model-retirement-2027-01-14',
+      'sendgrid-v2-mail-send-migration-to-v3',
+      'sendgrid-web-api-v2-mail-send-migration',
+      'shopify-api-2025-10-version-retired-2026-10-16',
+      'shopify-checkout-api-shutdown-2025-04-01',
+      'slack-files-upload-removal-2025-11-12',
+      'slack-files-upload-retired-2025-03-11',
+      'stripe-plans-api-replaced-by-prices',
+      'stripe-sources-api-deprecated',
+      'stripe-subscription-period-fields-removed-2025-03-31',
       'supabase-management-logs-all-removal-2026-09-23',
       'supabase-openapi-anon-key-access-2026-03-11',
       'twilio-regional-api-domain-removal-2026-04-28',
       'twilio-studio-engagements-endpoint-deprecated',
+      'vercel-legacy-integration-webhook-endpoints-removal-2021-08-20',
+      'vercel-webhooks-rest-api-removed',
     ]);
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(2);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('openai')).toHaveLength(3);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('anthropic')).toHaveLength(2);
     const results = evaluateRegisteredNormalizedCompatibility({ providerId: 'anthropic', usageIR: [usage()], completeEvidence: true }, PRODUCTION_COMPATIBILITY_REGISTRY);
     const result = results.find((item) => item.changeId === CANDIDATE_ID);

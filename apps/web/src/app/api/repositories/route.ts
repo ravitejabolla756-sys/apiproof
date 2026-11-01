@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase, type DatabaseAdapter } from '@/lib/server/db';
-import { fetchWorkspaceRepository } from '@/lib/server/github';
-import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
+import { fetchWorkspaceRepository } from '@/lib/server/github.js';
+import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   getDefaultWorkspaceForUser,
   requireWorkspaceMember,
   getWorkspaceGitHubInstallation,
-} from '@/lib/server/workspace-service';
+} from '@/lib/server/workspace-service.js';
 import {
   assertCsrfProtection,
   validateRepositoryConnectInput,
   badRequestResponse,
   forbiddenCsrfResponse,
-} from '@/lib/server/validation';
-import { checkWorkspaceLimit } from '@/lib/server/billing/service';
+} from '@/lib/server/validation.js';
+import { checkWorkspaceLimit } from '@/lib/server/billing/service.js';
 
 export async function GET(req: Request) {
   const privateNoStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };

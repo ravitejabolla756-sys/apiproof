@@ -21,7 +21,7 @@ const refreshed = (overrides: Partial<CandidateChange>): CandidateChange => ({
 
 const withEvidence = (claims: CandidateSourceEvidence['claims'], documentFingerprint = current.documentFingerprint): CandidateChange => {
   const sourceEvidence = evidence(claims);
-  return refreshed({ sourceEvidence, evidenceFingerprint: fingerprintCandidateEvidence(sourceEvidence), documentFingerprint, sourceFingerprint: documentFingerprint });
+  return refreshed({ sourceEvidence, evidenceFingerprint: fingerprintCandidateEvidence(sourceEvidence), ...(documentFingerprint ? { documentFingerprint, sourceFingerprint: documentFingerprint } : {}) });
 };
 
 const actionFor = (candidate: CandidateChange, overrides: Record<string, unknown> = {}) => ({

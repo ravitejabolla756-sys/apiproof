@@ -6,14 +6,17 @@ import { CandidatePatchSchema } from '@apiproof/shared';
 import { root } from './helpers.js';
 
 const execute = promisify(execFile);
-const cli = (args: string[]) => execute(process.execPath, ['--import', 'tsx', '--conditions=apiproof-source', 'apps/cli/src/index.ts', ...args], { cwd: root, windowsHide: true, timeout: 20_000, maxBuffer: 2_000_000 });
+// Keep the real child-process contract reliable when the complete Vitest pool
+// starts several TypeScript workers concurrently.
+const CLI_TIMEOUT_MS = 120_000;
+const cli = (args: string[]) => execute(process.execPath, ['--import', 'tsx', '--conditions=apiproof-source', 'apps/cli/src/index.ts', ...args], { cwd: root, windowsHide: true, timeout: CLI_TIMEOUT_MS, maxBuffer: 2_000_000 });
 const fixture = path.join(root, 'evaluation-patches/corpus/coupon-basic');
 it('source CLI emits a schema-valid patch and human review output', async () => {
   const args = ['patch', fixture, '--change-id', 'stripe-subscription-coupon-removed'];
   const result = CandidatePatchSchema.parse(JSON.parse((await cli([...args, '--json'])).stdout));
   expect(result.status).toBe('PATCH_READY_FOR_VALIDATION');
   expect((await cli(args)).stdout).toContain('NOT EXECUTED. NOT VERIFIED. NOT COMMITTED.');
-});
+}, CLI_TIMEOUT_MS);
 it.each([['patch', root, '--change-id', 'stripe-subscription-coupon-removed', '--json'], ['patch', path.join(root, 'evaluation-plans/corpus/coupon-direct'), '--change-id', 'stripe-subscription-coupon-removed', '--json']])('CLI refuses arbitrary patch target %j', async (...args) => {
   await expect(cli(args)).rejects.toMatchObject({ code: 1, stdout: expect.stringContaining('FIXTURE_ONLY') });
 });

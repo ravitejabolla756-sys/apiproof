@@ -4,22 +4,43 @@ import { translatePlaceholders } from './sql-utils.js';
 
 const { Pool } = pg;
 
+/**
+ * Build the PostgreSQL pool options without weakening transport security.
+ * Local development may use plaintext localhost connections; every remote
+ * connection requires certificate validation and may provide the provider CA.
+ */
+export function createPostgresPoolConfig(connectionString: string): pg.PoolConfig {
+  const isLocal = /(?:localhost|127\.0\.0\.1)(?::|\/|\?|$)/i.test(connectionString);
+  const sslModeDisable = /(?:[?&])sslmode=disable(?:&|$)/i.test(connectionString);
+
+  if (sslModeDisable && !isLocal) {
+    throw new Error('PRODUCTION_TLS_REQUIRED: remote PostgreSQL connections cannot disable TLS.');
+  }
+
+  const ca = process.env.APIPROOF_PG_CA_CERT?.trim();
+  const ssl = isLocal
+    ? false
+    : {
+        rejectUnauthorized: true,
+        ...(ca ? { ca } : {}),
+      };
+
+  return {
+    connectionString,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+    ssl,
+  };
+}
+
 export class PostgresDatabaseAdapter implements DatabaseAdapter {
   readonly engine = 'postgres' as const;
   private pool: pg.Pool;
 
   constructor(connectionStringOrPool: string | pg.Pool) {
     if (typeof connectionStringOrPool === 'string') {
-      const isLocal = connectionStringOrPool.includes('localhost') || connectionStringOrPool.includes('127.0.0.1');
-      const sslModeDisable = connectionStringOrPool.includes('sslmode=disable');
-      
-      this.pool = new Pool({
-        connectionString: connectionStringOrPool,
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
-        ssl: sslModeDisable || isLocal ? false : { rejectUnauthorized: false },
-      });
+      this.pool = new Pool(createPostgresPoolConfig(connectionStringOrPool));
     } else {
       this.pool = connectionStringOrPool;
     }

@@ -3,6 +3,7 @@ import {
   GITHUB_CONNECTION_CHANGED_EVENT,
   createGitHubConnectionChangedMessage,
   isGitHubConnectionChangedMessage,
+  resolveGitHubConnectionStatus,
 } from '../apps/web/src/lib/github-connection-sync.js';
 
 describe('GitHub connection cross-tab refresh protocol', () => {
@@ -21,5 +22,12 @@ describe('GitHub connection cross-tab refresh protocol', () => {
     expect(isGitHubConnectionChangedMessage({ type: message.type })).toBe(false);
     expect(isGitHubConnectionChangedMessage({ type: 'other', timestamp: Date.now() })).toBe(false);
     expect(isGitHubConnectionChangedMessage(null)).toBe(false);
+  });
+
+  it('updates connection state only from an authoritative successful response', () => {
+    expect(resolveGitHubConnectionStatus(null, { ok: true, connected: true })).toBe(true);
+    expect(resolveGitHubConnectionStatus(true, { ok: true, connected: false })).toBe(false);
+    expect(resolveGitHubConnectionStatus(true, { ok: false })).toBe(true);
+    expect(resolveGitHubConnectionStatus(true, null)).toBe(true);
   });
 });

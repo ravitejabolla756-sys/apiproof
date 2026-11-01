@@ -5,6 +5,16 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./apps/web/src/*"],
+      "@/lib/server/*": ["./apps/web/src/lib/server/*"],
+      "@/lib/server/db": ["./apps/web/src/lib/server/db/index.ts"],
+      "@/lib/server/billing/*": ["./apps/web/src/lib/server/billing/*"],
+      "@/lib/server/auth": ["./apps/web/src/lib/server/auth.ts"],
+      "@/lib/server/github": ["./apps/web/src/lib/server/github.ts"],
+      "@/lib/server/rate-limit": ["./apps/web/src/lib/server/rate-limit.ts"],
+      "@/lib/server/validation": ["./apps/web/src/lib/server/validation.ts"],
+      "@/lib/server/workspace-service": ["./apps/web/src/lib/server/workspace-service.ts"],
+      "@/lib/server/productization-persistence": ["./apps/web/src/lib/server/productization-persistence.ts"],
+      "@/lib/server/billing/service": ["./apps/web/src/lib/server/billing/service.ts"],
       "next/server": ["./apps/web/node_modules/next/server.d.ts"],
       "next/*": ["./apps/web/node_modules/next/*"]
     }

@@ -1,6 +1,7 @@
 import semver from 'semver';
 import { CompatibilityResultSchema, ReviewedCompatibilityChangeSchema } from '@apiproof/shared';
 import type { CompatibilityParameterCondition, CompatibilityResult, CompatibilityUsage, NormalizedUsageIR, ReviewedCompatibilityChange, VersionAssessment } from '@apiproof/shared';
+import { hasExecutableMigrationTemplate } from '@apiproof/providers';
 import type { ProductionChangeRegistry } from '@apiproof/providers';
 import { normalizedUsageToCompatibilityUsage } from './usage-ir.js';
 
@@ -182,7 +183,8 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
   const primaryUsage = matched[0] ?? uncertain[0];
   const primaryCondition = primaryUsage?.parameter ? change.parameterConditions?.find((condition) => condition.parameter === primaryUsage.parameter) : undefined;
   const usageAssessment = status === 'AFFECTED' ? 'matched' : status === 'NOT_AFFECTED' && matched.length === 0 ? 'not-used' : status === 'NOT_AFFECTED' ? 'not-applicable' : matched.length > 0 || uncertain.length > 0 ? 'uncertain' : 'not-applicable';
-  const recommendedNextAction = status === 'AFFECTED' ? 'MIGRATION_NOT_AVAILABLE' : status === 'NOT_AFFECTED' ? 'NO_ACTION' : 'MANUAL_REVIEW';
+  const migrationAvailable = status === 'AFFECTED' && hasExecutableMigrationTemplate(change.changeId);
+  const recommendedNextAction = status === 'AFFECTED' ? (migrationAvailable ? 'MIGRATION_AVAILABLE' : 'MIGRATION_NOT_AVAILABLE') : status === 'NOT_AFFECTED' ? 'NO_ACTION' : 'MANUAL_REVIEW';
   const result = { providerId: input.providerId, changeId: change.changeId, status, versionAssessment: version.assessment,
     providerName: input.providerName ?? input.providerId, packageName: input.packageName ?? null,
     declaredVersion: input.declaredVersion ?? null, resolvedVersion: input.resolvedVersion ?? null, versionSource, versionConfidence,
@@ -203,7 +205,7 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     ],
     confidence: status === 'AFFECTED' ? Math.min(...matched.map((usage) => usage.confidence), 1) : status === 'NOT_AFFECTED' ? 0.95 : 0.5,
     evidenceCoverage: input.completeEvidence ? 'complete' : 'partial', recommendedNextAction,
-    migrationAvailable: false, verificationAvailable: false, reviewStatus: change.review.status, provenance: change.review.provenance } satisfies CompatibilityResult;
+    migrationAvailable, verificationAvailable: migrationAvailable, reviewStatus: change.review.status, provenance: change.review.provenance } satisfies CompatibilityResult;
   return CompatibilityResultSchema.parse(result);
 }
 

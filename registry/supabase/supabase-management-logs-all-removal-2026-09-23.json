@@ -1,0 +1,24 @@
+{
+  "provider": "supabase",
+  "id": "supabase-management-logs-all-removal-2026-09-23",
+  "title": "Supabase Management API logs.all removal",
+  "description": "Supabase states that the Management API analytics/endpoints/logs.all endpoint is removed and directs callers to analytics/endpoints/logs.",
+  "packageName": "supabase",
+  "affectedSymbols": [{ "symbol": "supabase", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application calls the analytics/endpoints/logs.all endpoint.",
+  "newBehavior": "The application calls the analytics/endpoints/logs endpoint.",
+  "migrationInstructions": [
+    "Replace a direct literal analytics/endpoints/logs.all path with analytics/endpoints/logs.",
+    "Review the ClickHouse SQL query shape required by the replacement endpoint."
+  ],
+  "severity": "high",
+  "sourceUrl": "https://supabase.com/changelog/48235-migration-of-supabase-management-api-logs-all-analytics-endpoint-to-logs-endpoint",
+  "provenance": "official",
+  "changeType": "symbol-deprecated",
+  "resources": ["analyticsLogs"],
+  "rules": [{ "kind": "resource", "symbol": "supabase", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://supabase.com/changelog/48235-migration-of-supabase-management-api-logs-all-analytics-endpoint-to-logs-endpoint", "summary": "Official Supabase changelog documents the logs.all removal and logs replacement.", "accessedAt": "2026-10-06" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-06", "notes": "Reviewed against the official Supabase changelog; only the literal endpoint replacement is executable." },
+  "versionScope": "api-and-sdk",
+  "assumptions": ["The endpoint replacement may require ClickHouse SQL changes that are not automated here.", "Dynamic endpoint construction remains human-review-only.", "Any generated patch requires verification and human approval."]
+}

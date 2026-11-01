@@ -174,7 +174,7 @@ describe('Migration 014 registration and upgrades', () => {
     await migration.up(adapter);
     expect(raw.prepare('PRAGMA table_info(slack_notification_deliveries)').all().map((row) => row.name)).toContain('next_attempt_at');
     expect(raw.prepare('PRAGMA table_info(slack_notification_deliveries)').all().map((row) => row.name)).toContain('post_started_at');
-    expect(migrations.some((migration) => migration.id === '014')).toBe(true);
+    expect(migrations.find((entry) => entry.id === '014')?.id).toBe('014');
     await adapter.close();
   });
 });

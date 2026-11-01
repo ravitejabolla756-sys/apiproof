@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { CompatibilityChangeTypeSchema, CompatibilityParameterConditionSchema, CompatibilitySourceTypeSchema } from './compatibility.js';
 import type { CompatibilitySourceType } from './compatibility.js';
+import { PatchRuleSchema } from './patching.js';
 
 /** Immutable input used to detect an official source update without retaining its body. */
 export const OfficialSourceSnapshotSchema = z.strictObject({
@@ -76,7 +77,7 @@ export function fingerprintOfficialSource(snapshot: OfficialSourceSnapshot): str
 export const CandidateChangeStateSchema = z.enum(['discovered', 'normalized', 'needs_review', 'reviewed', 'rejected']);
 export type CandidateChangeState = z.infer<typeof CandidateChangeStateSchema>;
 
-const CandidatePayloadSchema = z.strictObject({
+export const CandidatePayloadSchema = z.strictObject({
   changeId: z.string().min(1).max(128).optional(), title: z.string().min(1).max(500), sourceTitle: z.string().min(1).max(500).optional(),
   description: z.string().min(1).max(8_000), changeType: CompatibilityChangeTypeSchema.optional(),
   publishedAt: z.iso.date().optional(), effectiveAt: z.iso.date().optional(), removalAt: z.iso.date().optional(),
@@ -90,11 +91,36 @@ const CandidatePayloadSchema = z.strictObject({
   enumMetadata: z.strictObject({ name: z.string().min(1), removedValues: z.array(z.string().min(1)), addedValues: z.array(z.string().min(1)) }).optional(),
   apiVersionMetadata: z.strictObject({ version: z.string().min(1), replacement: z.string().optional() }).optional(),
   replacement: z.strictObject({ operation: z.string().optional(), parameter: z.string().optional(), endpoint: z.string().optional(), domain: z.string().optional(), authOrHeader: z.string().optional(), model: z.string().optional(), resources: z.array(z.string().min(1)).max(20).optional() }).optional(),
+  /** Optional executable migration proposal; approval still requires an exact digest binding. */
+  migrationTemplate: PatchRuleSchema.omit({ changeDigest: true }).optional(),
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   sourceFacts: z.array(z.string().min(1).max(2_000)).min(1).optional(),
   unknowns: z.array(z.string().min(1).max(500)).optional(),
   severityBasis: z.string().min(1).max(1_000).optional(),
 });
+
+/**
+ * Bounded human-review fixtures. A rule may only be promoted after the
+ * reviewer records one affected, one unaffected, and one uncertain example.
+ * The server re-evaluates the first two examples against the candidate's
+ * source-derived tokens before accepting the review.
+ */
+export const ProviderRuleReviewEvidenceCaseSchema = z.strictObject({
+  kind: z.enum(['affected', 'unaffected', 'uncertain']),
+  filePath: z.string().min(1).max(500),
+  code: z.string().min(1).max(20_000),
+  rationale: z.string().min(1).max(2_000),
+});
+
+export const ProviderRuleReviewEvidenceSchema = z.strictObject({
+  cases: z.array(ProviderRuleReviewEvidenceCaseSchema).length(3).superRefine((cases, ctx) => {
+    const kinds = new Set(cases.map((item) => item.kind));
+    for (const kind of ['affected', 'unaffected', 'uncertain'] as const) {
+      if (!kinds.has(kind)) ctx.addIssue({ code: 'custom', message: `Review evidence requires a ${kind} case.` });
+    }
+  }),
+});
+export type ProviderRuleReviewEvidence = z.infer<typeof ProviderRuleReviewEvidenceSchema>;
 
 export const CandidateChangeSchema = z.strictObject({
   candidateId: z.string().min(1).max(128), providerId: z.string().regex(/^[a-z][a-z0-9-]{0,63}$/),

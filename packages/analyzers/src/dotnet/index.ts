@@ -4,6 +4,7 @@ import type { ProviderDescriptor, RepositoryAnalyzer } from '@apiproof/core';
 import type { DependencyFinding, ScanResult, UsageFinding } from '@apiproof/shared';
 import { TOOL_VERSION } from '@apiproof/shared';
 import { normalizeCompatibilityUsage, usageFindingToCompatibilityUsage } from '../typescript/usage-ir.js';
+import { extractExplicitApiVersion } from '../api-version.js';
 
 export interface DotnetProviderDescriptor extends ProviderDescriptor {
   readonly packageNames?: readonly string[];
@@ -40,7 +41,8 @@ function addUsage(usages: UsageFinding[], file: string, content: string, offset:
   const line = content.slice(0, offset).split('\n').length;
   const column = offset - content.lastIndexOf('\n', offset - 1);
   const location = { file, start: { line, column }, end: { line, column: column + Math.max(1, symbol.length) } };
-  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location, context: { function: null, class: null }, evidence: { binding: location, basis: 'import-binding' }, confidence: kind === 'method' ? 0.85 : 0.97 });
+  const apiVersion = extractExplicitApiVersion(content, offset);
+  usages.push({ id: `${file}:${line}:${symbol}`, provider: provider.id, kind, semantics, symbol, location, context: { function: null, class: null }, evidence: { binding: location, basis: 'import-binding' }, confidence: kind === 'method' ? 0.85 : 0.97, ...(apiVersion ? { apiVersion } : {}) });
 }
 
 function detectUsages(files: ReadonlyMap<string, string>, provider: DotnetProviderDescriptor): UsageFinding[] {

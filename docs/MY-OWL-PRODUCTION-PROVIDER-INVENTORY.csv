@@ -1,0 +1,154 @@
+provider_id,display_name,category,discovery_entry,active_rule_count,status
+openai,OpenAI,AI / Models,yes,2,production-reviewed-rule
+anthropic,Anthropic,AI / Models,yes,2,production-reviewed-rule
+google-gemini,Google Gemini,AI / Models,yes,1,production-reviewed-rule
+cohere,Cohere,AI / Models,yes,0,discovery-only
+deepgram,Deepgram,AI / Models,yes,0,discovery-only
+mistral,Mistral,AI / Models,yes,0,discovery-only
+groq,Groq,AI / Models,yes,1,production-reviewed-rule
+together-ai,Together AI,AI / Models,yes,0,discovery-only
+replicate,Replicate,AI / Models,yes,0,discovery-only
+hugging-face,Hugging Face,AI / Models,yes,0,discovery-only
+perplexity,Perplexity,AI / Models,yes,0,discovery-only
+aws,AWS,Cloud / Infrastructure,yes,1,production-reviewed-rule
+google-cloud,Google Cloud,Cloud / Infrastructure,yes,1,production-reviewed-rule
+microsoft-azure,Microsoft Azure,Cloud / Infrastructure,yes,0,discovery-only
+cloudflare,Cloudflare,Cloud / Infrastructure,yes,1,production-reviewed-rule
+digitalocean,DigitalOcean,Cloud / Infrastructure,yes,0,discovery-only
+vercel,Vercel,Cloud / Infrastructure,yes,0,discovery-only
+netlify,Netlify,Cloud / Infrastructure,yes,0,discovery-only
+render,Render,Cloud / Infrastructure,yes,0,discovery-only
+railway,Railway,Cloud / Infrastructure,yes,0,discovery-only
+supabase,Supabase,Backend / Database,yes,2,production-reviewed-rule
+firebase,Firebase,Backend / Database,yes,1,production-reviewed-rule
+mongodb,MongoDB,Backend / Database,yes,0,discovery-only
+neon,Neon,Backend / Database,yes,0,discovery-only
+planetscale,PlanetScale,Backend / Database,yes,0,discovery-only
+upstash,Upstash,Backend / Database,yes,0,discovery-only
+redis,Redis,Backend / Database,yes,0,discovery-only
+algolia,Algolia,Backend / Database,yes,0,discovery-only
+github,GitHub,Developer Platforms,yes,2,production-reviewed-rule
+gitlab,GitLab,Developer Platforms,yes,0,discovery-only
+bitbucket,Bitbucket,Developer Platforms,yes,0,discovery-only
+sentry,Sentry,Developer Platforms,yes,0,discovery-only
+datadog,Datadog,Developer Platforms,yes,0,discovery-only
+new-relic,New Relic,Developer Platforms,yes,0,discovery-only
+elasticsearch,Elasticsearch,Developer Platforms,yes,0,discovery-only
+twilio,Twilio,Communications,yes,2,production-reviewed-rule
+sendgrid,SendGrid,Communications,yes,1,production-reviewed-rule
+mailgun,Mailgun,Communications,yes,0,discovery-only
+postmark,Postmark,Communications,yes,0,discovery-only
+resend,Resend,Communications,yes,0,discovery-only
+slack,Slack,Communications,yes,1,production-reviewed-rule
+atlassian,Atlassian,Developer Platforms,yes,0,discovery-only
+linear,Linear,Developer Platforms,yes,0,discovery-only
+launchdarkly,LaunchDarkly,Developer Platforms,yes,1,production-reviewed-rule
+snowflake,Snowflake,Analytics / Data,yes,0,discovery-only
+databricks,Databricks,Analytics / Data,yes,0,discovery-only
+discord,Discord,Communications,yes,0,discovery-only
+paypal,PayPal,Payments / Fintech,yes,0,discovery-only
+adyen,Adyen,Payments / Fintech,yes,0,discovery-only
+square,Square,Payments / Fintech,yes,0,discovery-only
+plaid,Plaid,Payments / Fintech,yes,0,discovery-only
+razorpay,Razorpay,Payments / Fintech,yes,0,discovery-only
+paddle,Paddle,Payments / Fintech,yes,0,discovery-only
+chargebee,Chargebee,Payments / Fintech,yes,0,discovery-only
+braintree,Braintree,Payments / Fintech,yes,1,production-reviewed-rule
+shopify,Shopify,Commerce / CRM,yes,1,production-reviewed-rule
+hubspot,HubSpot,Commerce / CRM,yes,0,discovery-only
+salesforce,Salesforce,Commerce / CRM,yes,1,production-reviewed-rule
+woocommerce,WooCommerce,Commerce / CRM,yes,0,discovery-only
+auth0,Auth0,Identity,yes,0,discovery-only
+clerk,Clerk,Identity,yes,1,production-reviewed-rule
+okta,Okta,Identity,yes,0,discovery-only
+workos,WorkOS,Identity,yes,1,production-reviewed-rule
+segment,Segment,Analytics / Data,yes,0,discovery-only
+elevenlabs,ElevenLabs,AI / Models,yes,1,production-reviewed-rule
+mixpanel,Mixpanel,Analytics / Data,yes,0,discovery-only
+amplitude,Amplitude,Analytics / Data,yes,0,discovery-only
+stripe,Stripe,Payments / Fintech,yes,0,discovery-only
+airtable,Airtable,Commerce / CRM,yes,0,discovery-only
+notion,Notion,Commerce / CRM,yes,0,discovery-only
+asana,Asana,Commerce / CRM,yes,0,discovery-only
+trello,Trello,Commerce / CRM,yes,0,discovery-only
+monday,monday.com,Commerce / CRM,yes,0,discovery-only
+pipedrive,Pipedrive,Commerce / CRM,yes,0,discovery-only
+close,Close,Commerce / CRM,yes,0,discovery-only
+gong,Gong,Commerce / CRM,yes,0,discovery-only
+intercom,Intercom,Commerce / CRM,yes,0,discovery-only
+zendesk,Zendesk,Commerce / CRM,yes,0,discovery-only
+freshdesk,Freshdesk,Commerce / CRM,yes,0,discovery-only
+cockroachdb,CockroachDB,Backend / Database,yes,0,discovery-only
+turso,Turso,Backend / Database,yes,0,discovery-only
+prisma,Prisma,Backend / Database,yes,0,discovery-only
+hasura,Hasura,Backend / Database,yes,0,discovery-only
+convex,Convex,Backend / Database,yes,0,discovery-only
+appwrite,Appwrite,Backend / Database,yes,0,discovery-only
+fauna,Fauna,Backend / Database,yes,0,discovery-only
+fastly,Fastly,Cloud / Infrastructure,yes,0,discovery-only
+cloudinary,Cloudinary,Cloud / Infrastructure,yes,0,discovery-only
+flyio,Fly.io,Cloud / Infrastructure,yes,0,discovery-only
+heroku,Heroku,Cloud / Infrastructure,yes,0,discovery-only
+bitrise,Bitrise,Developer Platforms,yes,0,discovery-only
+circleci,CircleCI,Developer Platforms,yes,0,discovery-only
+buildkite,Buildkite,Developer Platforms,yes,0,discovery-only
+docker,Docker,Developer Platforms,yes,0,discovery-only
+posthog,PostHog,Analytics / Data,yes,0,discovery-only
+mux,Mux,Cloud / Infrastructure,yes,0,discovery-only
+mapbox,Mapbox,Cloud / Infrastructure,yes,0,discovery-only
+fireworks-ai,Fireworks AI,AI / Models,yes,0,discovery-only
+stability-ai,Stability AI,AI / Models,yes,0,discovery-only
+voyage-ai,Voyage AI,AI / Models,yes,0,discovery-only
+assemblyai,AssemblyAI,AI / Models,yes,0,discovery-only
+cartesia,Cartesia,AI / Models,yes,0,discovery-only
+ai21-labs,AI21 Labs,AI / Models,yes,0,discovery-only
+cerebras,Cerebras,AI / Models,yes,0,discovery-only
+sambanova,SambaNova,AI / Models,yes,0,discovery-only
+nvidia-nim,NVIDIA NIM,AI / Models,yes,0,discovery-only
+oracle-cloud,Oracle Cloud,Cloud / Infrastructure,yes,0,discovery-only
+ibm-cloud,IBM Cloud,Cloud / Infrastructure,yes,0,discovery-only
+alibaba-cloud,Alibaba Cloud,Cloud / Infrastructure,yes,0,discovery-only
+linode,Akamai Cloud,Cloud / Infrastructure,yes,0,discovery-only
+vultr,Vultr,Cloud / Infrastructure,yes,0,discovery-only
+hetzner,Hetzner Cloud,Cloud / Infrastructure,yes,0,discovery-only
+scaleway,Scaleway,Cloud / Infrastructure,yes,0,discovery-only
+ovhcloud,OVHcloud,Cloud / Infrastructure,yes,0,discovery-only
+bunny,Bunny.net,Cloud / Infrastructure,yes,0,discovery-only
+upcloud,UpCloud,Cloud / Infrastructure,yes,0,discovery-only
+backendless,Backendless,Backend / Database,yes,0,discovery-only
+parse,Parse Platform,Backend / Database,yes,0,discovery-only
+couchbase,Couchbase,Backend / Database,yes,0,discovery-only
+nhost,Nhost,Backend / Database,yes,0,discovery-only
+pocketbase,PocketBase,Backend / Database,yes,0,discovery-only
+xata,Xata,Backend / Database,yes,0,discovery-only
+travis-ci,Travis CI,Developer Platforms,yes,0,discovery-only
+codecov,Codecov,Developer Platforms,yes,0,discovery-only
+sonarcloud,SonarCloud,Developer Platforms,yes,0,discovery-only
+jfrog,JFrog,Developer Platforms,yes,0,discovery-only
+semaphore,Semaphore,Developer Platforms,yes,0,discovery-only
+npm,npm,Developer Platforms,yes,0,discovery-only
+pypi,Python Package Index,Developer Platforms,yes,0,discovery-only
+sourcegraph,Sourcegraph,Developer Platforms,yes,0,discovery-only
+miro,Miro,Developer Platforms,yes,0,discovery-only
+klaviyo,Klaviyo,Commerce / CRM,yes,0,discovery-only
+brevo,Brevo,Communications,yes,0,discovery-only
+gitkraken,GitKraken,Developer Platforms,yes,0,discovery-only
+zoom,Zoom,Communications,yes,0,discovery-only
+webex,Webex,Communications,yes,0,discovery-only
+vonage,Vonage,Communications,yes,0,discovery-only
+telnyx,Telnyx,Communications,yes,0,discovery-only
+pusher,Pusher,Communications,yes,0,discovery-only
+ably,Ably,Communications,yes,0,discovery-only
+onesignal,OneSignal,Communications,yes,0,discovery-only
+mailchimp,Mailchimp,Communications,yes,0,discovery-only
+customerio,Customer.io,Communications,yes,0,discovery-only
+klarna,Klarna,Payments / Fintech,yes,0,discovery-only
+mollie,Mollie,Payments / Fintech,yes,0,discovery-only
+gocardless,GoCardless,Payments / Fintech,yes,0,discovery-only
+worldpay,Worldpay,Payments / Fintech,yes,0,discovery-only
+checkout-com,Checkout.com,Payments / Fintech,yes,0,discovery-only
+recurly,Recurly,Payments / Fintech,yes,0,discovery-only
+wise,Wise,Payments / Fintech,yes,0,discovery-only
+airwallex,Airwallex,Payments / Fintech,yes,0,discovery-only
+finix,Finix,Payments / Fintech,yes,0,discovery-only
+docusign,DocuSign,Commerce / CRM,yes,0,discovery-only

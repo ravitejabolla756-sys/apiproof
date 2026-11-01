@@ -12,12 +12,12 @@ import {
 } from '@apiproof/core';
 import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUser, createSession } from '../apps/web/src/lib/server/auth.js';
-import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import * as proposalService from '../apps/web/src/lib/server/proposal-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
 import { POST as proposeRoutePost } from '../apps/web/src/app/api/migrations/propose/route.js';
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
+import { getProposalWorkspaceForUser } from './helpers.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-proposal-baseline.db');
 
@@ -83,7 +83,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('10a: Migration for repository A never uses repository B SHA (fails closed)', async () => {
     const user = createUser('isolation@example.com', 'Pass12345!', 'Isolation Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
 
     const shaA = '1111111111111111111111111111111111111111';
     const shaB = '2222222222222222222222222222222222222222';
@@ -134,7 +134,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('10b: Proposal uses the exact scan baseline SHA throughout evidence and branch creation', async () => {
     const user = createUser('exact_sha@example.com', 'Pass12345!', 'Exact SHA Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
 
     // Specific custom SHA distinct from fixture
     const exactScanSha = 'a3f8901234567890abcdef1234567890abcdef12';
@@ -183,7 +183,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('10c: Proposal fails closed when analyzed SHA is no longer default-branch HEAD (REPOSITORY_HEAD_DIVERGED)', async () => {
     const user = createUser('diverged@example.com', 'Pass12345!', 'Diverged Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
 
     const scanSha = '4444444444444444444444444444444444444444';
     const movedHeadSha = '5555555555555555555555555555555555555555';
@@ -230,7 +230,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('10d: Valid repository-specific SHA creates branch and draft PR through fake transport', async () => {
     const user = createUser('valid_branch@example.com', 'Pass12345!', 'Valid Branch Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
 
     const repoSha = '6666666666666666666666666666666666666666';
 
@@ -263,7 +263,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('10e: Proposal idempotency returns existing PR without additional writes', async () => {
     const user = createUser('idempotent@example.com', 'Pass12345!', 'Idempotent Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
 
     const repoSha = '7777777777777777777777777777777777777777';
 
@@ -368,7 +368,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('8B: proposal route maps GITHUB_REPOSITORY_EMPTY to HTTP 422 with sanitized actionable message', async () => {
     const user = createUser('empty_route@example.com', 'Pass12345!', 'Empty Route Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
     const session = createSession(user.id);
 
     setupRepoWithScanAndFinding({
@@ -432,7 +432,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('8C: empty live GitHub repository scan fails closed and NEVER falls back to developer fixture', async () => {
     const user = createUser('empty_scan@example.com', 'Pass12345!', 'Empty Scan Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
     const now = new Date().toISOString();
 
     const repoId = 'repo_live_empty';
@@ -487,7 +487,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('8D: live GitHub fetch failure fails closed and does NOT fall back to developer fixture', async () => {
     const user = createUser('fetch_fail@example.com', 'Pass12345!', 'Fetch Fail Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
     const now = new Date().toISOString();
 
     const repoId = 'repo_fetch_fail';
@@ -528,7 +528,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('8E & 8F: Successful real GitHub repository scan produces real findings and preserves baseline integrity', async () => {
     const user = createUser('real_scan@example.com', 'Pass12345!', 'Real Scan Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
     const now = new Date().toISOString();
 
     const repoId = 'repo_real_scan';
@@ -609,7 +609,7 @@ export async function createSub(cust: string, price: string, c: string) {
   // =========================================================================
   it('8G: repository isolation prevents migration proposal using a SHA from another repository', async () => {
     const user = createUser('isolation_g@example.com', 'Pass12345!', 'Isolation G Tester');
-    const ws = await getDefaultWorkspaceForUser(user.id);
+    const ws = await getProposalWorkspaceForUser(user.id);
 
     const shaRepo1 = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     const shaRepo2 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';

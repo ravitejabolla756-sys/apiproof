@@ -1,0 +1,24 @@
+{
+  "provider": "sendgrid",
+  "id": "sendgrid-v2-mail-send-migration-to-v3",
+  "title": "SendGrid v2 Mail Send migration to v3",
+  "description": "Twilio SendGrid documents migration from the v2 Mail Send endpoint to the v3 Mail Send endpoint.",
+  "packageName": "@sendgrid/mail",
+  "affectedSymbols": [{ "symbol": "sendgrid", "kind": "resource", "match": "prefix" }],
+  "oldBehavior": "The application addresses the SendGrid v2 Mail Send endpoint.",
+  "newBehavior": "The application addresses the SendGrid v3 Mail Send endpoint.",
+  "migrationInstructions": [
+    "Replace a direct literal /api/mail.send.json endpoint reference with /v3/mail/send.",
+    "Review authentication, payload shape, response handling, and dynamic URL construction before applying the change."
+  ],
+  "severity": "medium",
+  "sourceUrl": "https://www.twilio.com/docs/sendgrid/for-developers/sending-email/migrating-from-v2-to-v3-mail-send",
+  "provenance": "official",
+  "changeType": "resource-removed",
+  "resources": ["mailSend"],
+  "rules": [{ "kind": "resource", "symbol": "sendgrid", "match": "prefix" }],
+  "evidenceSources": [{ "url": "https://www.twilio.com/docs/sendgrid/for-developers/sending-email/migrating-from-v2-to-v3-mail-send", "summary": "Official Twilio SendGrid migration documentation names /api/mail.send.json as the v2 endpoint and /v3/mail/send as the replacement.", "accessedAt": "2026-10-29" }],
+  "review": { "status": "reviewed", "reviewer": "Ravi Teja", "reviewerKind": "human", "reviewedAt": "2026-10-29", "notes": "Reviewed against the official SendGrid migration guide; executable transformation is limited to direct endpoint string literals." },
+  "versionScope": "api-and-sdk",
+  "assumptions": ["The source establishes endpoint migration but not authentication or payload compatibility.", "Only direct string literals are eligible for a deterministic proposal.", "Every generated patch remains subject to verification and human approval."]
+}

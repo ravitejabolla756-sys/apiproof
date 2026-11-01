@@ -24,7 +24,7 @@ const evaluate = (input: CompatibilityUsage) => evaluateRegisteredNormalizedComp
 
 describe('Twilio Studio Engagements reviewed production rule', () => {
   it('is the tenth reviewed record and preserves the date uncertainty', () => {
-    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(10);
+    expect(PRODUCTION_COMPATIBILITY_REGISTRY.changes).toHaveLength(50);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byProvider.get('twilio')).toHaveLength(2);
     expect(PRODUCTION_COMPATIBILITY_REGISTRY.byChangeId.get(CHANGE_ID)).toMatchObject({
       providerId: 'twilio',
