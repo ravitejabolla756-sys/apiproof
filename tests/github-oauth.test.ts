@@ -91,7 +91,7 @@ describe('GitHub Login OAuth', () => {
     mockGitHubFetch();
     const response = await completeGitHubLogin(new Request(`https://www.myowl.dev/api/auth/github/callback?code=one-time-code&state=${state.state}`, { headers: { cookie: `apiproof_github_login_state=${state.state}` } }));
     expect(response.status).toBe(307);
-    expect(new URL(response.headers.get('location') || '').pathname).toBe('/onboarding');
+    expect(new URL(response.headers.get('location') || '').pathname).toBe('/dashboard');
     expect(response.headers.get('set-cookie')).toContain('apiproof_session=ses_');
     const user = await getDatabase().queryOne<{ id: string; email: string }>('SELECT id, email FROM users WHERE email = ?', ['octo@example.com']);
     expect(user?.id).toMatch(/^usr_/);

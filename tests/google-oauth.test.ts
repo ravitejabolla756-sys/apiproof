@@ -115,7 +115,7 @@ describe('Google OAuth 2.0 sign-in', () => {
     mockGoogleFetch();
     const response = await completeGoogleOAuth(new Request(`https://myowl.dev/api/auth/google/callback?code=one-time-code&state=${state.state}`, { headers: { cookie: `apiproof_google_oauth_state=${state.state}` } }));
     expect(response.status).toBe(307);
-    expect(new URL(response.headers.get('location') || '').pathname).toBe('/onboarding');
+    expect(new URL(response.headers.get('location') || '').pathname).toBe('/dashboard');
     expect(response.headers.get('set-cookie')).toContain('apiproof_session=ses_');
     const user = await getDatabase().queryOne<{ id: string; email: string }>('SELECT id, email FROM users WHERE email = ?', ['google-user@example.com']);
     expect(user?.id).toMatch(/^usr_/);
