@@ -80,6 +80,16 @@ export function LandingNavbar() {
             <span className="text-xs sm:text-sm font-semibold tracking-wider text-white uppercase select-none">
               MY OWL
             </span>
+            <span
+              aria-label="MY OWL beta"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-400/40 bg-slate-950/25 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/90"
+            >
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 rounded-full bg-[#D0F100] shadow-[0_0_8px_rgba(208,241,0,0.7)]"
+              />
+              BETA
+            </span>
           </Link>
 
           {/* CENTER: Desktop Navigation (Features, How it works, Pricing) */}
