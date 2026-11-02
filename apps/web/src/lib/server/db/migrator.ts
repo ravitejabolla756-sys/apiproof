@@ -6,6 +6,8 @@ import { passwordResetMigrations } from './password-reset-migration.js';
 import { verificationWorkerMigrations } from './verification-worker-migration.js';
 import { slackMigrations } from './slack-migration.js';
 import { slackReliabilityMigrations } from './slack-reliability-migration.js';
+import { googleOAuthMigrations } from './google-oauth-migration.js';
+import { githubLoginMigrations } from './github-login-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
@@ -476,6 +478,8 @@ export const migrations: Migration[] = [
   ...slackMigrations,
   ...slackReliabilityMigrations,
   ...providerChangeMonitorMigrations,
+  ...googleOAuthMigrations,
+  ...githubLoginMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {
