@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     if (result.kind === 'account_exists') return redirectWithError(req, 'google_account_exists');
     if (!result.user || !result.session) return redirectWithError(req, 'google_account_invalid');
 
-    const destination = result.kind === 'created' ? '/onboarding' : (stateResult.returnTo || '/dashboard');
+    const destination = stateResult.returnTo || '/dashboard';
     const response = NextResponse.redirect(new URL(destination, redirectBase(req)));
     response.cookies.set(AUTH_COOKIE_NAME, result.session.id, getAuthCookieOptions(result.session.expiresAt));
     clearGoogleOAuthCookie(response);
