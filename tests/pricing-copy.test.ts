@@ -3,13 +3,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 describe('pricing-page capability contract', () => {
-  it('describes the guarded Draft PR boundary without claiming a read-only-only beta', () => {
+  it('describes the free beta and keeps paid plans display-only', () => {
     const source = fs.readFileSync(path.resolve('apps/web/src/app/pricing/page.tsx'), 'utf8');
 
-    expect(source).not.toContain('No Draft PRs in beta');
-    expect(source).not.toContain('reviewed Stripe and Twilio compatibility rules');
-    expect(source).toContain('verified draft PR generation');
-    expect(source).toContain('zero auto-merge capability');
-    expect(source).toContain('isolated branch');
+    expect(source).toContain('Free Beta');
+    expect(source).toContain('Free beta available now');
+    expect(source).toContain('₹4,999');
+    expect(source).toContain('₹14,999');
+    expect(source).toContain('Rolling out');
+    expect(source).toContain('Coming soon');
+    expect(source).toContain('no checkout');
+    expect(source).not.toContain('Start Pro Plan');
+    expect(source).not.toContain('Start Team Plan');
   });
 });
