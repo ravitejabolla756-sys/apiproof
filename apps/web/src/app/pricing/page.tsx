@@ -34,6 +34,15 @@ const startupFeatures = [
   "Priority email support",
 ];
 
+const enterpriseFeatures = [
+  "Organization-wide repository management",
+  "Custom security and compliance requirements",
+  "Advanced team and access management",
+  "Enterprise-scale scanning and reporting",
+  "Dedicated onboarding and support",
+  "Custom integration requirements",
+];
+
 function FeatureList({ features }: { features: string[] }) {
   return (
     <ul className="space-y-3 text-sm text-slate-700">
@@ -75,8 +84,8 @@ export default function PricingPage() {
 
         <section aria-labelledby="plans-heading">
           <h2 id="plans-heading" className="sr-only">MY OWL plans</h2>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <article className="flex flex-col justify-between rounded-[32px] border-2 border-emerald-300 bg-white p-7 shadow-sm md:p-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <article className="flex h-full flex-col justify-between rounded-[32px] border-2 border-emerald-300 bg-white p-7 shadow-sm md:p-8">
               <div className="space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <div><h3 className="text-xl font-semibold">Free Beta</h3><p className="mt-1 text-sm text-slate-500">Available now</p></div>
@@ -88,7 +97,7 @@ export default function PricingPage() {
               <Link href="/login" className="mt-8 w-full rounded-full bg-[#000E29] py-3 text-center text-sm font-semibold text-white transition hover:bg-black">Get Started</Link>
             </article>
 
-            <article className="flex flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
+            <article className="flex h-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
               <div className="space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <div><h3 className="text-xl font-semibold">MY OWL Developer</h3><p className="mt-1 text-sm text-slate-500">Rolling out</p></div>
@@ -100,7 +109,7 @@ export default function PricingPage() {
               <ComingSoonButton label="Rolling out — no checkout" />
             </article>
 
-            <article className="flex flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
+            <article className="flex h-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
               <div className="space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <div><h3 className="text-xl font-semibold">MY OWL Startup</h3><p className="mt-1 text-sm text-slate-500">Coming soon</p></div>
@@ -110,6 +119,18 @@ export default function PricingPage() {
                 <FeatureList features={startupFeatures} />
               </div>
               <ComingSoonButton label="Coming soon — no checkout" />
+            </article>
+
+            <article className="flex h-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
+              <div className="space-y-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div><h3 className="text-xl font-semibold">MY OWL Enterprise</h3><p className="mt-1 text-sm text-slate-500">Coming soon</p></div>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Not available</span>
+                </div>
+                <div><span className="font-serif text-5xl">Custom</span><span className="ml-2 text-sm text-slate-500">pricing</span></div>
+                <FeatureList features={enterpriseFeatures} />
+              </div>
+              <ComingSoonButton label="Contact Sales — Coming Soon" />
             </article>
           </div>
         </section>
