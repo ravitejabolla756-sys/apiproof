@@ -23,6 +23,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400 });
   }
 
+  // Paid plans are intentionally display-only during the public beta.
+  if (planId === 'pro' || planId === 'team') {
+    return NextResponse.json(
+      { error: 'BILLING_NOT_AVAILABLE: Paid plans are rolling out and cannot be purchased yet.' },
+      { status: 403 },
+    );
+  }
+
   const sub = await getWorkspaceSubscription(workspace.id);
   const provider = getBillingProvider();
 

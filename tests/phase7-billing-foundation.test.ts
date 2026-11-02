@@ -178,7 +178,7 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(PLANS.pro?.priceMonthly).toBe(5000);
   });
 
-  it('allows Team checkout while keeping custom Enterprise on the contact path', async () => {
+  it('rejects paid checkout while keeping custom Enterprise on the contact path', async () => {
     const user = await createUserAsync('checkout-plans@apiproof.test', 'Pass123!#$', 'Checkout Plans');
     const session = createSession(user.id);
     const request = (planId: string) => new Request('http://localhost/api/billing/checkout', {
@@ -191,8 +191,8 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     });
 
     const teamResponse = await createCheckout(request('team'));
-    expect(teamResponse.status).toBe(200);
-    expect(await teamResponse.json()).toMatchObject({ planId: 'team' });
+    expect(teamResponse.status).toBe(403);
+    expect(await teamResponse.json()).toMatchObject({ error: expect.stringContaining('BILLING_NOT_AVAILABLE') });
 
     const enterpriseResponse = await createCheckout(request('enterprise'));
     expect(enterpriseResponse.status).toBe(400);
