@@ -61,7 +61,7 @@ export function InteractiveHeroBackground({
   return (
     <div
       ref={containerRef}
-      className={`absolute inset-0 pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,black_0%,black_75%,transparent_98%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_75%,transparent_98%)] ${className}`}
+      className={`absolute inset-0 pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,black_0%,black_58%,rgba(0,0,0,0.88)_72%,rgba(0,0,0,0.5)_86%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_58%,rgba(0,0,0,0.88)_72%,rgba(0,0,0,0.5)_86%,transparent_100%)] ${className}`}
       style={
         {
           '--spotlight-x': initialX,
@@ -74,7 +74,7 @@ export function InteractiveHeroBackground({
       <div className="absolute inset-0 hero-spotlight-lines" />
 
       {/* 2. Starry speckle field */}
-      <div className="absolute inset-0 bg-star-pattern opacity-80" />
+      <div className="absolute inset-0 bg-star-pattern opacity-60" />
     </div>
   );
 }

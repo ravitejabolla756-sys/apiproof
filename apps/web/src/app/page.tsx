@@ -26,7 +26,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 01. HERO SECTION                                                          */}
       {/* ========================================================================= */}
-      <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-start pt-28 sm:pt-36 pb-20 sm:pb-24 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#001033_0%,#002B80_15%,#004EE8_38%,#3B9EF8_68%,#68BCF9_80%,#96D0FB_90%,#BDE3FC_95%,#D8EEFD_98%,#EEF5FF_100%)]">
+      <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-start pt-28 sm:pt-36 pb-20 sm:pb-24 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#050816_0%,#0B1535_28%,#172454_52%,#304A87_70%,#92B4E9_88%,#FFFFFF_100%)]">
         {/* Interactive Spotlight & Background */}
         <InteractiveHeroBackground />
 
