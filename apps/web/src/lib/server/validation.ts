@@ -183,15 +183,19 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
     }
   } else if (!origin && !isTest) {
     const referer = req.headers.get('referer');
-    if (referer && host) {
-      try {
-        const refererHost = new URL(referer).host;
-        if (refererHost !== host) {
-          return { valid: false, error: 'Forbidden: Referer header does not match host.' };
-        }
-      } catch {
-        return { valid: false, error: 'Forbidden: Invalid Referer header.' };
+    if (!referer) {
+      return { valid: false, error: 'Forbidden: Origin or Referer header is required.' };
+    }
+    if (!host) {
+      return { valid: false, error: 'Forbidden: Request host is unavailable.' };
+    }
+    try {
+      const refererHost = new URL(referer).host;
+      if (refererHost !== host) {
+        return { valid: false, error: 'Forbidden: Referer header does not match host.' };
       }
+    } catch {
+      return { valid: false, error: 'Forbidden: Invalid Referer header.' };
     }
   }
 
