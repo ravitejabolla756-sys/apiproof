@@ -26,7 +26,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 01. HERO SECTION                                                          */}
       {/* ========================================================================= */}
-      <section id="main-content" tabIndex={-1} className="relative w-full min-h-[90vh] flex flex-col items-center justify-start pt-28 sm:pt-36 pb-20 sm:pb-24 px-4 sm:px-6 overflow-hidden outline-none bg-[linear-gradient(180deg,#001033_0%,#002B80_15%,#004EE8_38%,#3B9EF8_60%,#68BCF9_74%,#96D0FB_85%,#BDE3FC_92%,#D8EEFD_96.5%,#EEF5FF_100%)]">
+      <main id="main-content" tabIndex={-1} className="relative w-full min-h-[90vh] flex flex-col items-center justify-start pt-28 sm:pt-36 pb-20 sm:pb-24 px-4 sm:px-6 overflow-hidden outline-none bg-[linear-gradient(180deg,#001033_0%,#002B80_15%,#004EE8_38%,#3B9EF8_60%,#68BCF9_74%,#96D0FB_85%,#BDE3FC_92%,#D8EEFD_96.5%,#EEF5FF_100%)]">
         {/* Interactive Spotlight & Background */}
         <InteractiveHeroBackground />
 
@@ -108,7 +108,7 @@ export default function HomePage() {
             <span className="text-slate-200 font-semibold">PROPOSE</span>
           </div>
         </div>
-      </section>
+      </main>
 
       {/* ========================================================================= */}
       {/* 02. THE PROBLEM (Two-Column Editorial Composition)                        */}

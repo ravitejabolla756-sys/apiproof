@@ -12,7 +12,7 @@ Updated implementation report; browser checks are local evidence only and are no
 
 - Public routes exist for home, features, how-it-works, security, docs, pricing, contact, privacy, terms, cookies, updates and 404.
 - Account, workspace, invitation, audit and notification settings now have server routes and responsive pages; organization mutations are owner-gated.
-- Shared focus-visible, skip-link, touch-target, reduced-motion and single-main-landmark rules are implemented. Dialogs now expose semantic names and live regions; dashboard heading hierarchy and repository table headers are accessible. Browser coverage exercises skip-link focus, mobile menu disclosure, public route reachability, crawl endpoints, local seeded sign-in, core dashboard/settings routes, keyboard dialog focus, and axe scans. Full-route manual screen-reader and Lighthouse measurements remain open.
+- Shared focus-visible, skip-link, touch-target, reduced-motion and single-main-landmark rules are implemented. Dialogs now expose semantic names and live regions; dashboard heading hierarchy, repository table headers and the public home landmark are accessible. Browser coverage exercises skip-link focus, mobile menu disclosure, public route reachability, metadata, root internal links, truthful contact-form behavior, crawl endpoints, local seeded sign-in, core dashboard/settings routes, keyboard dialog focus, and axe scans. Full-route manual screen-reader and Lighthouse measurements remain open.
 - The footer now says “Beta · Read-only safety boundary” and links to a truthful status page; no live monitor is claimed.
 
 ## Verified commands
@@ -24,7 +24,7 @@ Updated implementation report; browser checks are local evidence only and are no
 - `pnpm exec vitest run tests/organization-management.test.ts --no-file-parallelism` — 5/5 PASS.
 - `pnpm exec vitest run tests/notification-preferences.test.ts --no-file-parallelism` — 3/3 PASS.
 - `pnpm exec vitest run tests/member2-billing-boundaries.test.ts --no-file-parallelism` — 2/2 PASS.
-- `pnpm exec playwright test tests/e2e/public-site.spec.ts` — 12/12 PASS locally with one worker against the hermetic SQLite fixture, including public route/crawl/mobile, authenticated settings, repository/detail denial, seeded dashboard routes, loading/empty/error/permission-denied states, invitation failure, core authenticated axe scans, and keyboard/dialog focus checks. Single-worker execution is intentional because the local SQLite adapter is not a concurrent browser-test database.
+- `pnpm exec playwright test tests/e2e/public-site.spec.ts` — 14/14 PASS locally with one worker against the hermetic SQLite fixture, including public route/crawl/mobile, metadata and internal-link probes, non-sending contact form, authenticated settings, repository/detail denial, seeded dashboard routes, loading/empty/error/permission-denied states, invitation failure, core authenticated axe scans, and keyboard/dialog focus checks. Single-worker execution is intentional because the local SQLite adapter is not a concurrent browser-test database.
 - `pnpm build` — PASS; all workspace packages built and Next generated 80 static pages.
 
 ## Full-suite baseline exception

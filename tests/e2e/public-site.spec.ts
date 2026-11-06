@@ -34,6 +34,18 @@ async function assertDashboardRoutes(page: Page, routes: string[]) {
   expect(overflow, 'mobile dashboard should not create document-level horizontal overflow').toBe(true);
 }
 
+async function assertPublicRoutes(page: Page, routes: string[]) {
+  for (const route of routes) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    expect(response?.status(), route).toBe(200);
+    await expect(page.locator('main#main-content'), route).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveTitle(/MY OWL/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /MY OWL/);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  }
+}
+
 test.describe('public beta surfaces', () => {
   test('loads the core public pages and evidence-backed content', async ({ page }) => {
     for (const route of ['/features', '/how-it-works', '/security', '/docs', '/pricing', '/faq', '/refunds', '/status', '/privacy', '/terms', '/invite/accept']) {
@@ -86,6 +98,53 @@ test.describe('public beta surfaces', () => {
       const results = await new AxeBuilder({ page }).analyze();
       expect(results.violations, route).toEqual([]);
     }
+  });
+
+  test('checks public metadata and root internal links', async ({ page, request }) => {
+    await assertPublicRoutes(page, [
+      '/',
+      '/about',
+      '/blog',
+      '/features',
+      '/how-it-works',
+      '/security',
+      '/docs',
+      '/pricing',
+      '/faq',
+      '/updates',
+      '/contact',
+      '/privacy',
+      '/terms',
+      '/refunds',
+      '/status',
+      '/cookies',
+      '/invite/accept',
+    ]);
+
+    await page.goto('/');
+    const internalLinks = await page.locator('a[href^="/"]').evaluateAll((anchors) => [...new Set(
+      anchors
+        .map((anchor) => anchor.getAttribute('href'))
+        .filter((href): href is string => Boolean(href))
+        .map((href) => href.split('#', 1)[0])
+        .filter((href) => href.length > 0),
+    )]);
+
+    for (const href of internalLinks) {
+      const response = await request.get(href);
+      expect(response.status(), href).toBeLessThan(400);
+    }
+  });
+
+  test('exercises the contact form without sending a message', async ({ page }) => {
+    await page.goto('/contact');
+    await page.getByLabel('Full Name').fill('Local QA User');
+    await page.getByLabel('Work Email').fill('qa@example.test');
+    await page.getByLabel('Inquiry Type').selectOption('support');
+    await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
+    await page.getByRole('button', { name: 'Review inquiry state' }).click();
+    await expect(page.getByRole('heading', { name: 'No message was sent' })).toBeVisible();
+    await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible();
   });
 });
 

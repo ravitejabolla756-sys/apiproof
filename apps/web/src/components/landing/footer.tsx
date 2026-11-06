@@ -137,11 +137,6 @@ export function LandingFooter() {
                   Status
                 </Link>
               </li>
-              <li>
-                <Link href="/404" className="hover:text-white transition-colors">
-                  404
-                </Link>
-              </li>
             </ul>
           </div>
 
