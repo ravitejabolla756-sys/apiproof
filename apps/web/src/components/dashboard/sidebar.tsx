@@ -17,6 +17,7 @@ import {
   GitPullRequest,
   Activity,
   Sliders,
+  UserRound,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -75,6 +76,7 @@ export function Sidebar() {
 
   const secondaryNav = [
     { name: "Activity", href: "/dashboard/activity", icon: Activity },
+    { name: "Account", href: "/dashboard/settings/account", icon: UserRound },
     { name: "Settings", href: "/dashboard/settings", icon: Sliders },
   ];
 
@@ -101,6 +103,7 @@ export function Sidebar() {
 
   return (
     <aside
+      aria-label="Workspace navigation"
       className={`relative flex w-full shrink-0 flex-col border-b border-[#E8E8E5] bg-white transition-all duration-200 md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r ${
         collapsed ? "md:w-16" : "md:w-64"
       }`}
@@ -120,6 +123,9 @@ export function Sidebar() {
         </Link>
 
         <button
+          type="button"
+          aria-label={collapsed ? 'Expand workspace navigation' : 'Collapse workspace navigation'}
+          aria-expanded={!collapsed}
           onClick={() => setCollapsed(!collapsed)}
           className="hidden md:block p-1.5 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-[#F6F6F4] transition-colors"
         >
@@ -128,7 +134,7 @@ export function Sidebar() {
       </div>
 
       {/* Primary Navigation */}
-      <div className="flex-1 px-2 py-2 md:px-3 md:py-4 space-y-2 md:space-y-5 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto font-sans text-xs font-medium">
+      <nav aria-label="Primary workspace navigation" className="flex-1 px-2 py-2 md:px-3 md:py-4 space-y-2 md:space-y-5 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto font-sans text-xs font-medium">
         <div className="flex flex-wrap gap-1 md:block md:space-y-1">
           {mainNav.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -180,7 +186,7 @@ export function Sidebar() {
             );
           })}
         </div>
-      </div>
+      </nav>
 
       {/* Account Footer with Logout */}
       <div className="flex flex-col p-2 md:block md:p-4 border-t border-[#E8E8E5] bg-white font-sans text-xs">
@@ -194,6 +200,8 @@ export function Sidebar() {
               </span>
             </div>
             <button
+              type="button"
+              aria-label="Sign out of MY OWL"
               onClick={handleLogout}
               disabled={isSigningOut}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"

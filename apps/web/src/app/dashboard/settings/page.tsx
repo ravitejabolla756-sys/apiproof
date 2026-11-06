@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
+import Link from "next/link";
 
 interface GitHubInstallationInfo {
   id: string;
@@ -152,6 +153,16 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT 65%: GITHUB APP & BILLING QUOTAS */}
         <div className="lg:col-span-8 space-y-6">
+
+          <div className="rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-[#111111]">Personal account</h2>
+                <p className="mt-1 text-xs text-[#686868]">Update your profile or manage your sign-in credentials.</p>
+              </div>
+              <Link href="/dashboard/settings/account" className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#D9D9D4] px-3 text-xs font-medium text-[#333333] transition-colors hover:bg-[#F6F6F4]">Open account settings</Link>
+            </div>
+          </div>
 
           {/* BILLING & PLAN OVERVIEW */}
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">

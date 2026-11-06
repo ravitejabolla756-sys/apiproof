@@ -85,6 +85,37 @@ export function validatePasswordResetCompletionInput(body: unknown): ValidationR
   return { valid: true, data: { token, password } };
 }
 
+export function validateAccountDisplayNameInput(body: unknown): ValidationResult<{ name: string }> {
+  if (!body || typeof body !== 'object') {
+    return { valid: false, error: 'Request body must be a JSON object.' };
+  }
+  const name = (body as Record<string, unknown>).name;
+  if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 100) {
+    return { valid: false, error: 'Name is required (1-100 characters).' };
+  }
+  return { valid: true, data: { name: name.trim() } };
+}
+
+export function validatePasswordChangeInput(body: unknown): ValidationResult<{
+  currentPassword: string;
+  newPassword: string;
+}> {
+  if (!body || typeof body !== 'object') {
+    return { valid: false, error: 'Request body must be a JSON object.' };
+  }
+  const { currentPassword, newPassword } = body as Record<string, unknown>;
+  if (typeof currentPassword !== 'string' || currentPassword.length === 0) {
+    return { valid: false, error: 'Current password is required.' };
+  }
+  if (typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128) {
+    return { valid: false, error: 'New password must be 8-128 characters long.' };
+  }
+  if (currentPassword === newPassword) {
+    return { valid: false, error: 'New password must be different from the current password.' };
+  }
+  return { valid: true, data: { currentPassword, newPassword } };
+}
+
 export function validateRepositoryConnectInput(body: unknown): ValidationResult<{
   owner?: string;
   name?: string;
