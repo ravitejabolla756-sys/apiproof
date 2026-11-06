@@ -23,7 +23,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 |---|---|---|---|
 | AUTH-05 | MISSING | No email-verification route/token migration found; `apps/web/src/lib/server/auth.ts` | Design token schema and Member 2 delivery contract |
 | AUTH-10 | PARTIAL | `tests/auth-session.test.ts`, `tests/password-reset.test.ts`, `tests/google-oauth.test.ts`, `tests/github-oauth.test.ts` | Add complete abuse/replay/verification matrix |
-| SCAN-12 | PARTIAL | `packages/analyzers/src`, `tests/analyzer.test.ts`, `tests/multi-language-analyzer.test.ts` | Add deterministic labelled benchmark and thresholds |
+| SCAN-12 | DONE_VERIFIED | `evaluation/scanner-accuracy-{fixtures,benchmark,cli}.ts`, `tests/scanner-accuracy-benchmark.test.ts`; `pnpm scanner:accuracy` and 2 benchmark tests pass: 24 fixtures, TP 18/TN 6/FP 0/FN 0, precision/recall/version accuracy 1.0 | Curated corpus limitations are documented; add representative samples only as scope expands |
 | PROV-05 | PARTIAL | `packages/providers/src/candidate-review.ts`, `packages/providers/src/compatibility-registry.ts`, `tests/provider-changelog-adapters.test.ts` | Add adversarial/contradictory evidence classification tests |
 | IMP-09 | PARTIAL | `apps/web/src/lib/server/finding-capability.ts`, findings routes, `tests/finding-capability.test.ts` | Define persisted transition/audit/concurrency contract |
 | MIG-01 | PARTIAL | `apps/web/src/lib/server/planning-service.ts`, `apps/web/src/lib/server/migration-verification.ts` | Keep deterministic fallback; AI provider approval/credentials are absent |
@@ -39,7 +39,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | SEC-02 | PARTIAL | Direct PostgreSQL adapter and security audit docs; no grant migration found | Runtime/admin role matrix and role-based test environment |
 | SEC-04 | PARTIAL | Closed production missing-Origin/Referer CSRF path in `apps/web/src/lib/server/validation.ts`; `tests/auth-hardening.test.ts` 3/3 plus auth/security matrix 8 files / 70 tests pass | Email verification/unverified-account enforcement remains AUTH-05 coordination work |
 | SEC-08 | DONE_VERIFIED | `apps/web/src/lib/server/security-headers.ts` and middleware apply CSP, HSTS-on-HTTPS, frame/referrer/permissions protections and exact-origin CORS; `tests/security-headers.test.ts`: 6/6 pass; typecheck/lint/build pass | Run approved browser/staging smoke with the deployment origin list |
-| SEC-09 | PARTIAL | Updated Next.js/zod ranges and patched transitive overrides; `pnpm audit --prod --audit-level=high` now exits 0 with no high/critical findings; typecheck/lint/build pass; targeted security suite 58/58 pass | Full suite still has 46 baseline fixture/line-ending failures in 4 files; four moderate advisories remain and need disposition |
+| SEC-09 | DONE_VERIFIED | Patched dependency ranges/overrides; `pnpm audit --prod --audit-level=high` exits 0; typecheck/lint/build pass; full suite 156 files / 1,310 tests passed / 4 skipped; four moderate advisories remain explicitly documented | Keep moderate Nodemailer/minimatch advisories on risk register; no critical/high suppression used |
 | SEC-10 | BLOCKED | `docs/database-backup-and-safety.md` documents procedure only | Approved isolated non-production DB and backup access required |
 | SEC-11 | BLOCKED | No approved error-monitoring provider/configuration found | Owner must approve tool, destination, retention and staging access |
 | SEC-13 | PARTIAL | Worker/runtime registries and worker tables exist | Add queue health metrics, alerts and safe simulated failure evidence |
@@ -55,7 +55,7 @@ Phase 0 read-only checks:
 
 - `git rev-parse --show-toplevel`, `git worktree list --porcelain`, `git status --short`, `git remote -v`: passed; identity and dirty-worktree inventory recorded above.
 - `git rev-list --left-right --count HEAD...origin/main`: `0 0`.
-- `pnpm audit --prod --audit-level=high`: failed release gate with 18 vulnerabilities; no suppression applied.
+- `pnpm audit --prod --audit-level=high`: PASS after remediation; four moderate advisories remain at the `moderate` threshold and are not suppressed.
 - Codebase-memory full index: 7,140 nodes / 17,829 edges; five dashboard files have parse-partial ranges and are not used as authoritative backend evidence.
 
 ## SEC-09 implementation checkpoint
@@ -72,11 +72,13 @@ Phase 0 read-only checks:
 
 - SEC-08 security-header/CORS suite: PASS, 1 file / 6 tests; middleware-level protected-route and preflight checks cover approved/denied origins, HTTPS HSTS, CSP and OAuth-compatible popup policy.
 - SEC-04 auth hardening: PASS for the implemented CSRF fail-closed change; 8-file auth/security matrix passed 70/70. OAuth state/nonce, sessions, recovery, rate limits and password-reset invalidation remain covered by existing tests; email verification and unverified-account policy remain incomplete.
+- SCAN-12 benchmark: PASS, `pnpm scanner:accuracy` reports 24 deterministic fixtures across TypeScript, Python, Go, Java, Kotlin and C#, with 0 false positives/negatives and documented non-representative corpus limitations.
+- Full suite after deterministic fixture stabilization: PASS, 156 files / 1,310 tests / 4 skipped. The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, and same-origin headers in production-route test requests; no external checkout is read.
 
 ## Current checkpoint
 
-- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, the security-header helper, middleware/security-header tests, `validation.ts` and auth-hardening tests.
-- Completed tasks: `SEC-08` (`DONE_VERIFIED` for local implementation and automated acceptance; production browser/staging verification remains a separate gate).
-- Release status: `NO-GO` while the full suite has baseline regressions and external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: isolate and fix the existing deterministic fixture regression without copying the original dirty worktree wholesale, then re-run the full suite before closing SEC-09.
+- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, and the production-route test contract.
+- Completed tasks: `SCAN-12`, `SEC-08`, and `SEC-09` are `DONE_VERIFIED` for local acceptance. `SEC-04` remains `PARTIAL` pending AUTH-05/unverified-account policy.
+- Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
+- Next safe task: complete the local portion of `SEC-01`/`SEC-02` (table/role/grant inventory and repeatable PostgreSQL test plan) while recording the external staging verification boundary.
 - Last verified commit: `a269f5ed80c78d52a4c7b3c08e0c4f8ef364b72b` (local checkpoint; not pushed).

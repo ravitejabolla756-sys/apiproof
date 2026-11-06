@@ -211,20 +211,10 @@ async function fetchExactSource(repo: MigrationVerificationRepo, baselineSha: st
   const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
   if (!installation) {
     if (process.env.NODE_ENV !== 'test') throw new Error('WORKSPACE_GITHUB_NOT_CONNECTED: Exact source retrieval requires an active GitHub installation.');
-    const fixtureRoot = 'C:\\apiproof-github-fixture';
-    const files = new Map<string, string>();
-    try {
-      if (repo.name !== 'apiproof-github-fixture') throw new Error('synthetic-test-source');
-      files.set('src/billing.ts', await fs.readFile(path.join(fixtureRoot, 'src/billing.ts'), 'utf8'));
-      files.set('package.json', await fs.readFile(path.join(fixtureRoot, 'package.json'), 'utf8'));
-      for (const lockfile of ['pnpm-lock.yaml', 'package-lock.json', 'yarn.lock']) {
-        try { files.set(lockfile, await fs.readFile(path.join(fixtureRoot, lockfile), 'utf8')); break; }
-        catch { /* Try the next supported lockfile; absence is rejected by command selection. */ }
-      }
-    } catch {
-      for (const [file, source] of createSyntheticTestFixtureFiles(repo.name)) files.set(file, source);
-    }
-    return files;
+    // Tests must use the same deterministic in-repository source as scanning.
+    // Reading an arbitrary external checkout makes evidence digests and line
+    // numbers depend on machine-local files.
+    return new Map(createSyntheticTestFixtureFiles(repo.name));
   }
   const config = loadGitHubAppConfig();
   const tokens = new NodeGitHubAppTokenProvider(config, { allowAnyRepository: true });

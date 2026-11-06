@@ -1,6 +1,4 @@
 import crypto from 'node:crypto';
-import path from 'node:path';
-import fs from 'node:fs';
 import { TypeScriptRepositoryAnalyzer, RepositorySnapshot, discoverProviders, runProductizationScan } from '@apiproof/analyzers';
 import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@apiproof/providers';
 import {
@@ -135,20 +133,9 @@ export async function runRepositoryScan(
       }
       // Local development/test fixture fallback ONLY for offline test fixture
       if (repo.name === 'apiproof-github-fixture' || repo.owner === 'ravitejabolla756-sys') {
-        const localFixturePath = path.resolve('C:\\apiproof-github-fixture');
-        if (fs.existsSync(localFixturePath)) {
-          const billingPath = path.join(localFixturePath, 'src/billing.ts');
-          const pkgPath = path.join(localFixturePath, 'package.json');
-          if (fs.existsSync(billingPath)) {
-            filesMap.set('src/billing.ts', fs.readFileSync(billingPath, 'utf8'));
-          }
-          if (fs.existsSync(pkgPath)) {
-            filesMap.set('package.json', fs.readFileSync(pkgPath, 'utf8'));
-          }
-        } else {
-          // Built-in synthetic fixture if external directory absent.
-          filesMap = createSyntheticTestFixtureFiles(repo.name);
-        }
+        // Keep offline tests deterministic and self-contained. Never read an
+        // arbitrary external checkout that can change the analyzed source.
+        filesMap = createSyntheticTestFixtureFiles(repo.name);
         headSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
       } else {
         throw new Error(`REPOSITORY_SOURCE_UNAVAILABLE: Repository '${repo.full_name}' is not connected to GitHub and has no local test fixture.`);

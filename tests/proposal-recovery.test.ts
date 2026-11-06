@@ -277,7 +277,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}` },
+          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}`, origin: 'http://localhost:3000', host: 'localhost:3000' },
           body: JSON.stringify({ migrationId: migration.id }),
         });
         const response = await proposeRoutePost(request);
@@ -308,7 +308,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}` },
+          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}`, origin: 'http://localhost:3000', host: 'localhost:3000' },
           body: JSON.stringify({ migrationId: migration.id }),
         });
         const response = await proposeRoutePost(request);
