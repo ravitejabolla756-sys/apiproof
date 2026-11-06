@@ -1,6 +1,6 @@
 # MY OWL V1 — Member 1 Release Gates
 
-Last updated: 2026-11-06. This is a checklist, not a production approval.
+Last updated: 2026-11-07. This is a checklist, not a production approval.
 
 | Gate | Status | Evidence / required next action |
 |---|---|---|
@@ -18,6 +18,7 @@ Last updated: 2026-11-06. This is a checklist, not a production approval.
 | GitHub App/webhook/private repository live verification | NOT_TESTED | No live credentials or authorized staging run in this workstream |
 | Scanner/provider/impact accuracy | NOT_TESTED | Existing unit coverage; benchmark and adversarial acceptance work remains |
 | Migration sandbox and honest confidence | PARTIAL | Deterministic verification exists; approved AI provider is absent |
+| Finding lifecycle and resolution evidence | PASS (local only) | Migration 025, audited state transitions, workspace checks, idempotency/concurrency tests and completed-scan regression handling pass locally; live PostgreSQL/RLS and merged-SHA evidence remain unverified |
 | Draft PR merge/rescan/resolution verification | PARTIAL | Local webhook/verification code exists; merged-SHA integration evidence remains |
 | RBAC and access revocation | PARTIAL | Workspace predicates exist; complete revocation workflow and PostgreSQL tests remain |
 | Payment sandbox checkout/webhooks/lifecycle | BLOCKED | Current provider is `MockBillingProvider`; provider approval/credentials absent |
@@ -36,7 +37,8 @@ Last updated: 2026-11-06. This is a checklist, not a production approval.
 - `pnpm lint`: PASS.
 - `pnpm build`: PASS; Next.js 15.5.29, 63 static pages generated.
 - Targeted backend/security tests: PASS, 7 files / 58 tests.
-- Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 156 passed files / 1 skipped (157 total); 1,319 passed tests / 4 skipped (1,323 total).
+- Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 157 passed files / 1 skipped (158 total); 1,324 passed tests / 4 skipped (1,328 total).
+- IMP-09 focused regression suites: PASS, 3 files / 46 tests (`finding-lifecycle`, `proposal-recovery`, `phase4-async-scan-worker`); lifecycle acceptance includes transitions, duplicate/conflicting idempotency keys, concurrent retries, tenant mismatch, regression reopen and completed-scan evidence.
 - The deterministic fixture stabilization uses repository-owned synthetic source for offline scan/verification tests plus committed LF rules for `evaluation/` and `evaluation-patches/`; no arbitrary local checkout is analyzed.
 
 ## Approval boundaries not crossed

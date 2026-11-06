@@ -12,6 +12,7 @@ import { initializeSlackReliabilitySqlite } from './slack-reliability-migration.
 import { SQLITE_GOOGLE_OAUTH_SCHEMA } from './google-oauth-migration.js';
 import { SQLITE_GITHUB_LOGIN_SCHEMA } from './github-login-migration.js';
 import { SQLITE_EMAIL_VERIFICATION_SCHEMA } from './email-verification-migration.js';
+import { SQLITE_FINDING_LIFECYCLE_EVENTS_SCHEMA } from './finding-lifecycle-migration.js';
 import { SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
@@ -145,6 +146,22 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec(SQLITE_GOOGLE_OAUTH_SCHEMA);
   db.exec(SQLITE_GITHUB_LOGIN_SCHEMA);
   db.exec(SQLITE_EMAIL_VERIFICATION_SCHEMA);
+  const findingColumns = db.prepare('PRAGMA table_info(findings)').all() as Array<{ name?: string }>;
+  if (!findingColumns.some((column) => column.name === 'lifecycle_state')) {
+    db.exec("ALTER TABLE findings ADD COLUMN lifecycle_state TEXT NOT NULL DEFAULT 'open'");
+  }
+  db.exec(`
+    UPDATE findings
+    SET lifecycle_state = CASE
+      WHEN status = 'resolved' THEN 'resolved_legacy'
+      WHEN status = 'pr_created' THEN 'fixed_pending_verification'
+      WHEN status = 'migration_planned' THEN 'remediating'
+      ELSE COALESCE(lifecycle_state, 'open')
+    END
+    WHERE lifecycle_state IS NULL OR lifecycle_state = 'open'
+  `);
+  db.exec('CREATE INDEX IF NOT EXISTS idx_findings_lifecycle_repository ON findings(repository_id, lifecycle_state)');
+  db.exec(SQLITE_FINDING_LIFECYCLE_EVENTS_SCHEMA);
   db.exec(SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA);
   initializeSlackReliabilitySqlite(db);
 

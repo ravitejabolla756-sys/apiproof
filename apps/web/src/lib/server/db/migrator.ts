@@ -9,6 +9,7 @@ import { slackReliabilityMigrations } from './slack-reliability-migration.js';
 import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
 import { emailVerificationMigrations } from './email-verification-migration.js';
+import { findingLifecycleMigrations } from './finding-lifecycle-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
@@ -482,6 +483,7 @@ export const migrations: Migration[] = [
   ...googleOAuthMigrations,
   ...githubLoginMigrations,
   ...emailVerificationMigrations,
+  ...findingLifecycleMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {

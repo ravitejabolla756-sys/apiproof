@@ -15,6 +15,8 @@
 
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
+import { transitionFinding } from './finding-lifecycle.js';
+import { upsertFindingForScan } from './finding-scan-persistence.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
@@ -461,58 +463,9 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       const activeFindingIds: string[] = [];
 
       for (const f of collectedFindings) {
-        const existing = await tx.queryOne<{ id: string; status: string }>(`
-          SELECT id, status FROM findings
-          WHERE repository_id = ? AND change_id = ? AND file_path = ? AND symbol = ?
-        `, [repo.id, f.changeId, f.filePath, f.symbol]);
-
-        if (existing) {
-          await tx.execute(`
-            UPDATE findings
-            SET scan_id = ?,
-                line_number = ?,
-                confidence = ?,
-                reason = ?,
-                reason_codes = ?,
-                evidence = ?,
-                source_snippet = ?,
-                source_digest = ?
-            WHERE id = ?
-          `, [scanId, f.lineNumber, f.confidence, f.reason, JSON.stringify(f.reasonCodes), JSON.stringify(f.evidence), f.sourceSnippet, f.sourceDigest, existing.id]);
-          activeFindingIds.push(existing.id);
-        } else {
-          await tx.execute(`
-            INSERT INTO findings (
-              id, scan_id, repository_id, usage_id, change_id, provider, title, description,
-              severity, confidence, file_path, line_number, symbol, status, reason, reason_codes,
-              evidence, source_snippet, source_digest, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?)
-          `, [
-            f.id, scanId, repo.id, f.id, f.changeId, f.provider, f.title, f.description,
-            f.severity, f.confidence, f.filePath, f.lineNumber, f.symbol, f.reason,
-            JSON.stringify(f.reasonCodes), JSON.stringify(f.evidence), f.sourceSnippet, f.sourceDigest, now,
-          ]);
-          activeFindingIds.push(f.id); newlyCreatedFindingIds.push(f.id);
-        }
-      }
-
-      // Findings are a current-snapshot view. A finding that was not observed
-      // in this complete baseline is resolved, while historical migration/PR
-      // statuses remain immutable for auditability.
-      if (activeFindingIds.length > 0) {
-        const placeholders = activeFindingIds.map(() => '?').join(', ');
-        await tx.execute(`
-          UPDATE findings
-          SET status = 'resolved'
-          WHERE repository_id = ?
-            AND status IN ('open', 'affected')
-            AND id NOT IN (${placeholders})
-        `, [repo.id, ...activeFindingIds]);
-      } else {
-        await tx.execute(`
-          UPDATE findings SET status = 'resolved'
-          WHERE repository_id = ? AND status IN ('open', 'affected')
-        `, [repo.id]);
+        const persisted = await upsertFindingForScan(tx, { finding: f, scanId, repositoryId: repo.id, workspaceId: repo.workspace_id, now });
+        activeFindingIds.push(persisted.id);
+        if (persisted.isNew) newlyCreatedFindingIds.push(persisted.id);
       }
 
       await tx.execute(`
@@ -527,6 +480,27 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
         JSON.stringify(persistedScanResult), completedAt, scanId]);
+
+      // A complete scan is the evidence boundary for a verified resolution.
+      // Findings attached to active remediation remain untouched until their
+      // own post-change scan supplies the required evidence.
+      const placeholders = activeFindingIds.map(() => '?').join(', ');
+      const absentFindings = await tx.query<{ id: string; lifecycle_state: string | null }>(`
+        SELECT id, lifecycle_state FROM findings
+        WHERE repository_id = ?
+          AND COALESCE(lifecycle_state, 'open') IN ('open', 'acknowledged', 'remediating', 'reopened', 'fixed_pending_verification')
+          ${activeFindingIds.length > 0 ? `AND id NOT IN (${placeholders})` : ''}
+      `, [repo.id, ...activeFindingIds]);
+      for (const finding of absentFindings) {
+        await transitionFinding(tx, {
+          findingId: finding.id,
+          workspaceId: repo.workspace_id,
+          toState: 'verified_resolved',
+          reason: 'finding_absent_from_completed_scan',
+          idempotencyKey: `finding:${finding.id}:scan:${scanId}:verified-resolved`,
+          evidence: { scanId, baselineSha: headSha },
+        });
+      }
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?

@@ -1,6 +1,6 @@
 # MY OWL V1 — Member 1 Progress
 
-Last updated: 2026-11-06
+Last updated: 2026-11-07
 Workstream: `codex/v1-backend-security`
 Worktree: `C:\YC-my-owl-v1-member1`
 Baseline: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8` (`origin/main`)
@@ -25,7 +25,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | AUTH-10 | PARTIAL | Existing auth/OAuth/recovery coverage plus `tests/email-verification.test.ts` 8/8: digest-at-rest, expiry, replay, resend invalidation, delivery cleanup, safe UI/API responses, rate-limit path and migration idempotency | Add central verified-user enforcement and concurrent PostgreSQL verification evidence |
 | SCAN-12 | DONE_VERIFIED | `evaluation/scanner-accuracy-{fixtures,benchmark,cli}.ts`, `tests/scanner-accuracy-benchmark.test.ts`; `pnpm scanner:accuracy` and 2 benchmark tests pass: 24 fixtures, TP 18/TN 6/FP 0/FN 0, precision/recall/version accuracy 1.0 | Curated corpus limitations are documented; add representative samples only as scope expands |
 | PROV-05 | PARTIAL | `packages/providers/src/candidate-review.ts`, `packages/providers/src/compatibility-registry.ts`, `tests/provider-changelog-adapters.test.ts` | Add adversarial/contradictory evidence classification tests |
-| IMP-09 | PARTIAL | `apps/web/src/lib/server/finding-capability.ts`, findings routes, `tests/finding-capability.test.ts` | Define persisted transition/audit/concurrency contract |
+| IMP-09 | DONE_VERIFIED_LOCAL | `finding-lifecycle.ts`, migration 025, scan/plan/PR integrations, `tests/finding-lifecycle.test.ts`: 5/5 plus proposal-recovery/async-worker regression suites 46/46 | Live PostgreSQL migration/RLS and post-merge GitHub evidence remain unverified |
 | MIG-01 | PARTIAL | `apps/web/src/lib/server/planning-service.ts`, `apps/web/src/lib/server/migration-verification.ts` | Keep deterministic fallback; AI provider approval/credentials are absent |
 | PR-07 | PARTIAL | `apps/web/src/lib/server/github-webhooks.ts`, `apps/web/src/app/api/webhooks/github/route.ts` | Prove merged-SHA deduplicated rescan integration |
 | PR-08 | PARTIAL | `apps/web/src/lib/server/migration-verification.ts`, `apps/web/src/lib/server/proposal-service.ts` | Add post-merge finding-resolution state machine/evidence tests |
@@ -73,13 +73,13 @@ Phase 0 read-only checks:
 - SEC-08 security-header/CORS suite: PASS, 1 file / 6 tests; middleware-level protected-route and preflight checks cover approved/denied origins, HTTPS HSTS, CSP and OAuth-compatible popup policy.
 - SEC-04 auth hardening: PASS for the implemented CSRF fail-closed change; 8-file auth/security matrix passed 70/70. OAuth state/nonce, sessions, recovery, rate limits and password-reset invalidation remain covered by existing tests; email verification and unverified-account policy remain incomplete.
 - SCAN-12 benchmark: PASS, `pnpm scanner:accuracy` reports 24 deterministic fixtures across TypeScript, Python, Go, Java, Kotlin and C#, with 0 false positives/negatives and documented non-representative corpus limitations.
-- Full suite after AUTH-05 implementation: PASS, 156 passed files / 1 skipped (157 total); 1,319 passed tests / 4 skipped (1,323 total). The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, and same-origin headers in production-route test requests; no external checkout is read.
+- Full suite after AUTH-05 and IMP-09 implementation: PASS, 157 passed files / 1 skipped (158 total); 1,324 passed tests / 4 skipped (1,328 total). The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, same-origin headers in production-route test requests, and a migration-compatible finding lifecycle; no external checkout is read.
 - AUTH-05 local backend/UI flow: PASS, 8 verification tests plus Google/GitHub OAuth suites; real SMTP delivery and final account enforcement are not claimed.
 
 ## Current checkpoint
 
-- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, and the AUTH-05 schema/service/API/UI/OAuth/test files.
+- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, and IMP-09 lifecycle/migration/adapter/worker integration files.
 - Completed tasks: `SCAN-12`, `SEC-08`, and `SEC-09` are `DONE_VERIFIED` for local acceptance. `SEC-01`/`SEC-02`, `SEC-04`, and `AUTH-05` remain `PARTIAL` because external PostgreSQL and approved email/enforcement contracts are not verified.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: review the local AUTH-05 diff, then run the full suite and record whether the unverified-account enforcement policy can be approved without locking out existing accounts.
-- Last verified implementation commit: `5d8af75` (local checkpoint; not pushed).
+- Next safe task: run the full suite against the IMP-09 checkpoint, then continue with the next unblocked task while retaining the external PostgreSQL, email and provider gates.
+- Last verified implementation commit: `5d8af75` before the current IMP-09 checkpoint (not yet committed or pushed).
