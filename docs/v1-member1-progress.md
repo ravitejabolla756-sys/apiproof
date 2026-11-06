@@ -66,7 +66,7 @@ Phase 0 read-only checks:
 - `pnpm audit --prod --audit-level=high`: PASS (exit 0; 4 moderate findings remain: three Nodemailer advisories and one minimatch advisory).
 - `pnpm typecheck`: PASS; `pnpm lint`: PASS; `pnpm build`: PASS on Next.js 15.5.29.
 - Targeted security/backend suite: PASS, 7 files / 58 tests (`auth-session`, `session-revalidation`, `password-reset`, Google/GitHub OAuth, billing foundation, P0 live-scan security).
-- Full suite: FAIL, 4 files / 46 tests failing and 148 files passing / 1 skipped. Failures are `FIXTURE_DIGEST_MISMATCH` and fixture line-number/digest regressions on the clean baseline; no test or audit was weakened.
+- Initial post-dependency full-suite run: FAIL, 4 files / 46 tests. The failures were `FIXTURE_DIGEST_MISMATCH` and fixture line-number/digest regressions; no test or audit was weakened. The deterministic fixture stabilization below resolved these failures.
 
 ## SEC-08 implementation checkpoint
 
@@ -81,4 +81,4 @@ Phase 0 read-only checks:
 - Completed tasks: `SCAN-12`, `SEC-08`, and `SEC-09` are `DONE_VERIFIED` for local acceptance. `SEC-04` remains `PARTIAL` pending AUTH-05/unverified-account policy.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
 - Next safe task: complete the local portion of `SEC-01`/`SEC-02` (table/role/grant inventory and repeatable PostgreSQL test plan) while recording the external staging verification boundary.
-- Last verified commit: `a269f5ed80c78d52a4c7b3c08e0c4f8ef364b72b` (local checkpoint; not pushed).
+- Last verified implementation commit: `2c368ad` (local checkpoint; not pushed).
