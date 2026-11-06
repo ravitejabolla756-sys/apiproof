@@ -17,7 +17,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Email verification delivery | BLOCKED | Approved email provider and Member 2 template contract not configured |
 | GitHub App/webhook/private repository live verification | NOT_TESTED | No live credentials or authorized staging run in this workstream |
 | Scanner/provider/impact accuracy | NOT_TESTED | Existing unit coverage; benchmark and adversarial acceptance work remains |
-| Migration sandbox and honest confidence | PARTIAL | Deterministic verification exists; approved AI provider is absent |
+| Migration recommendations and sandbox | PARTIAL / EXTERNAL BLOCKED | Deterministic planner, bounded redacted context, strict model-output validation and isolated verification are locally covered; production AI provider/credentials/cost policy/runtime adapter are not approved |
 | Finding lifecycle and resolution evidence | PASS (local only) | Migration 025, audited state transitions, workspace checks, idempotency/concurrency tests and completed-scan regression handling pass locally; live PostgreSQL/RLS and merged-SHA evidence remain unverified |
 | Draft PR merge/rescan/resolution verification | PARTIAL | Local webhook/verification code exists; merged-SHA integration evidence remains |
 | RBAC and access revocation | PARTIAL | Workspace predicates exist; complete revocation workflow and PostgreSQL tests remain |
