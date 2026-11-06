@@ -15,8 +15,8 @@
 
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
-import { transitionFinding } from './finding-lifecycle.js';
 import { upsertFindingForScan } from './finding-scan-persistence.js';
+import { persistMergedFindingResolutionEvidence } from './finding-resolution-verification.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
@@ -312,8 +312,8 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
   // 3. Reuse the durable scan row created by the webhook when possible.
   // This prevents retries/reconciliation from producing duplicate scan records.
-  const existingScan = await db.queryOne<{ id: string; status: string }>(`
-    SELECT id, status FROM scans
+  const existingScan = await db.queryOne<{ id: string; status: string; triggered_by: string | null }>(`
+    SELECT id, status, triggered_by FROM scans
     WHERE repository_id = ? AND sha = ?
     ORDER BY started_at ASC LIMIT 1
   `, [repo.id, job.commit_sha]);
@@ -461,10 +461,14 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     const persistedScanResult = productization ? { schemaVersion: 2, productization: boundedProductizationProjection(productization) } : scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []));
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
+      const activeChangeIds = new Set<string>();
+      const findingPreviousStates = new Map<string, string | null>();
 
       for (const f of collectedFindings) {
         const persisted = await upsertFindingForScan(tx, { finding: f, scanId, repositoryId: repo.id, workspaceId: repo.workspace_id, now });
         activeFindingIds.push(persisted.id);
+        activeChangeIds.add(f.changeId);
+        findingPreviousStates.set(persisted.id, persisted.previousState);
         if (persisted.isNew) newlyCreatedFindingIds.push(persisted.id);
       }
 
@@ -481,26 +485,15 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
         JSON.stringify(persistedScanResult), completedAt, scanId]);
 
-      // A complete scan is the evidence boundary for a verified resolution.
-      // Findings attached to active remediation remain untouched until their
-      // own post-change scan supplies the required evidence.
-      const placeholders = activeFindingIds.map(() => '?').join(', ');
-      const absentFindings = await tx.query<{ id: string; lifecycle_state: string | null }>(`
-        SELECT id, lifecycle_state FROM findings
-        WHERE repository_id = ?
-          AND COALESCE(lifecycle_state, 'open') IN ('open', 'acknowledged', 'remediating', 'reopened', 'fixed_pending_verification')
-          ${activeFindingIds.length > 0 ? `AND id NOT IN (${placeholders})` : ''}
-      `, [repo.id, ...activeFindingIds]);
-      for (const finding of absentFindings) {
-        await transitionFinding(tx, {
-          findingId: finding.id,
-          workspaceId: repo.workspace_id,
-          toState: 'verified_resolved',
-          reason: 'finding_absent_from_completed_scan',
-          idempotencyKey: `finding:${finding.id}:scan:${scanId}:verified-resolved`,
-          evidence: { scanId, baselineSha: headSha },
-        });
-      }
+      await persistMergedFindingResolutionEvidence(tx, {
+        workspaceId: repo.workspace_id,
+        repositoryId: repo.id,
+        scanId,
+        mergeSha: headSha,
+        activeFindingIds,
+        activeChangeIds,
+        findingPreviousStates,
+      });
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?

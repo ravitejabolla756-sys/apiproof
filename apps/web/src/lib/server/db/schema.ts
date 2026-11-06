@@ -172,6 +172,7 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   base_branch TEXT NOT NULL,
   url TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'draft',
+  merge_sha TEXT,
   created_at TEXT NOT NULL,
   UNIQUE (migration_id)
 );
@@ -446,6 +447,7 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   base_branch TEXT NOT NULL,
   url TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'draft',
+  merge_sha TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (migration_id) REFERENCES migrations(id) ON DELETE CASCADE,
   FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE,

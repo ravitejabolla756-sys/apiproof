@@ -26,6 +26,31 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
 
   const db = getDatabase();
 
+  const resolutionVerification = await db.queryOne<{
+    id: string;
+    migration_id: string;
+    pull_request_id: string;
+    merge_sha: string;
+    scan_id: string;
+    classification: string;
+    evidence_json: string;
+    created_at: string;
+  }>(`
+    SELECT id, migration_id, pull_request_id, merge_sha, scan_id, classification, evidence_json, created_at
+    FROM finding_resolution_verifications
+    WHERE workspace_id = ? AND repository_id = ? AND finding_id = ?
+    ORDER BY created_at DESC
+    LIMIT 1
+  `, [repository.workspace_id, repository.id, finding.id]);
+  let resolutionEvidence: unknown = null;
+  if (resolutionVerification) {
+    try {
+      resolutionEvidence = JSON.parse(resolutionVerification.evidence_json);
+    } catch {
+      resolutionEvidence = null;
+    }
+  }
+
   const scan = await db.queryOne<{ raw_result: string | null }>(
     `SELECT raw_result FROM scans WHERE id = ? AND repository_id = ? AND status = 'completed' LIMIT 1`,
     [finding.scan_id, repository.id],
@@ -97,6 +122,16 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       evidence,
       reasonCodes,
       capability,
+      resolution_verification: resolutionVerification ? {
+        id: resolutionVerification.id,
+        migration_id: resolutionVerification.migration_id,
+        pull_request_id: resolutionVerification.pull_request_id,
+        merge_sha: resolutionVerification.merge_sha,
+        scan_id: resolutionVerification.scan_id,
+        classification: resolutionVerification.classification,
+        evidence: resolutionEvidence,
+        created_at: resolutionVerification.created_at,
+      } : null,
     },
     migration: migration ? {
       ...migration,

@@ -27,8 +27,8 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | PROV-05 | PARTIAL | `packages/providers/src/candidate-review.ts`, `packages/providers/src/compatibility-registry.ts`, `tests/provider-changelog-adapters.test.ts` | Add adversarial/contradictory evidence classification tests |
 | IMP-09 | DONE_VERIFIED_LOCAL | `finding-lifecycle.ts`, migration 025, scan/plan/PR integrations, `tests/finding-lifecycle.test.ts`: 5/5 plus proposal-recovery/async-worker regression suites 46/46 | Live PostgreSQL migration/RLS and post-merge GitHub evidence remain unverified |
 | MIG-01 | PARTIAL_EXTERNAL_BLOCKED | `planning-service.ts` uses bounded `DeterministicPlanner`; core `LLMPlanner`/`validateModelOutput` provide a tested future-adapter boundary; `tests/planning.test.ts` covers valid/invalid model output, provider failure and deterministic fallback | No approved production model/provider, credentials, structured-output/cost/retry contract or runtime adapter; keep web route deterministic-only |
-| PR-07 | PARTIAL | `apps/web/src/lib/server/github-webhooks.ts`, `apps/web/src/app/api/webhooks/github/route.ts` | Prove merged-SHA deduplicated rescan integration |
-| PR-08 | PARTIAL | `apps/web/src/lib/server/migration-verification.ts`, `apps/web/src/lib/server/proposal-service.ts` | Add post-merge finding-resolution state machine/evidence tests |
+| PR-07 | DONE_VERIFIED_LOCAL | `github-webhooks.ts`, `github-merge-scan.ts`, `github-pull-request-webhook.test.ts`: 13/13; authentic merged PRs persist merge SHA, queue one durable scan request/scan per effective commit, and tolerate duplicate/missing-SHA delivery paths | Live GitHub App auth, permissions, out-of-order delivery and worker execution remain unverified |
+| PR-08 | DONE_VERIFIED_LOCAL | `finding-resolution-verification.ts`, migration 026, scan-worker integration, finding API projection, `finding-lifecycle.test.ts` and `phase4-async-scan-worker.test.ts`: local classification/evidence/idempotency coverage passes | Live merged-PR scan, provider failure/retry and PostgreSQL/RLS evidence remain unverified |
 | ORG-05 | PARTIAL | `apps/web/src/lib/server/workspace-service.ts`, workspace-scoped routes | Centralize/document role matrix and PostgreSQL isolation tests |
 | ORG-10 | MISSING | No complete member-removal/revocation flow found in current backend inventory | Coordinate API contract with Member 2 |
 | BILL-02 | PARTIAL | `apps/web/src/lib/server/billing/provider.ts` contains `MockBillingProvider`; checkout route exists | Provider selection/approval and sandbox credentials required |
@@ -73,8 +73,9 @@ Phase 0 read-only checks:
 - SEC-08 security-header/CORS suite: PASS, 1 file / 6 tests; middleware-level protected-route and preflight checks cover approved/denied origins, HTTPS HSTS, CSP and OAuth-compatible popup policy.
 - SEC-04 auth hardening: PASS for the implemented CSRF fail-closed change; 8-file auth/security matrix passed 70/70. OAuth state/nonce, sessions, recovery, rate limits and password-reset invalidation remain covered by existing tests; email verification and unverified-account policy remain incomplete.
 - SCAN-12 benchmark: PASS, `pnpm scanner:accuracy` reports 24 deterministic fixtures across TypeScript, Python, Go, Java, Kotlin and C#, with 0 false positives/negatives and documented non-representative corpus limitations.
-- Full suite after AUTH-05 and IMP-09 implementation: PASS, 157 passed files / 1 skipped (158 total); 1,324 passed tests / 4 skipped (1,328 total). The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, same-origin headers in production-route test requests, and a migration-compatible finding lifecycle; no external checkout is read.
+- Full suite after AUTH-05, IMP-09, PR-07 and PR-08 implementation: PASS, 157 passed files / 1 skipped (158 total); 1,327 passed tests / 4 skipped (1,331 total). The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, same-origin headers in production-route test requests, and migration-compatible lifecycle/resolution tables; no external checkout is read.
 - AUTH-05 local backend/UI flow: PASS, 8 verification tests plus Google/GitHub OAuth suites; real SMTP delivery and final account enforcement are not claimed.
+- PR-07/PR-08 local flow: PASS, webhook/worker/lifecycle regression suites pass; merge SHA is stored on the PR, exact-commit scan work is deduplicated, and resolution evidence records `resolved`, `unresolved`, `regressed`, `ambiguous` or `inconclusive` without auto-merge authority.
 
 ## Current checkpoint
 
@@ -82,4 +83,4 @@ Phase 0 read-only checks:
 - Completed tasks: `SCAN-12`, `SEC-08`, and `SEC-09` are `DONE_VERIFIED` for local acceptance. `SEC-01`/`SEC-02`, `SEC-04`, and `AUTH-05` remain `PARTIAL` because external PostgreSQL and approved email/enforcement contracts are not verified.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
 - Next safe task: run the full suite against the IMP-09 checkpoint, then continue with the next unblocked task while retaining the external PostgreSQL, email and provider gates.
-- Last verified implementation commit: `5d8af75` before the current IMP-09 checkpoint (not yet committed or pushed).
+- Last verified implementation commit before the current uncommitted PR-07/PR-08 changes: `5d8af75`; the implementation remains isolated and unpushed pending final commit review.

@@ -5,6 +5,7 @@ import {
   updateGitHubInstallationStatus,
 } from './workspace-service.js';
 import { getConfiguredFounderUserId, isLiveScanProtectionEnabled } from './founder-scan-authorization.js';
+import { enqueueMergedPullRequestScan } from './github-merge-scan.js';
 
 export interface WebhookResult {
   received: boolean;
@@ -370,22 +371,39 @@ export async function processGitHubWebhook(params: {
       await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Pull request state is not authoritative');
       return { received: true, handled: false, reason: 'invalid_pull_request_state' };
     }
+    const mergeCommitSha = pullRequestData?.merge_commit_sha == null ? '' : String(pullRequestData.merge_commit_sha);
+    if (state === 'merged' && !/^[a-f0-9]{40,64}$/i.test(mergeCommitSha)) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Missing or invalid merge commit SHA');
+      return { received: true, handled: false, reason: 'invalid_merge_commit_sha' };
+    }
 
-    const result = await db.execute(`
-      UPDATE pull_requests
-      SET state = ?
-      WHERE repository_id = ? AND number = ?
-        AND EXISTS (
-          SELECT 1 FROM repositories r
-          JOIN github_installations gi ON gi.workspace_id = r.workspace_id
-          WHERE r.id = pull_requests.repository_id
-            AND r.workspace_id = ?
-            AND r.github_repository_id = ?
-            AND r.lifecycle = 'active'
-            AND gi.installation_id = ?
-            AND (gi.status IS NULL OR gi.status = 'active')
-        )
-    `, [state, repository.id, number, installation.workspaceId, githubRepositoryId, installationId]);
+    const result = await db.transaction(async (tx): Promise<{ changes: number; scanRequestId?: string }> => {
+      const updated = await tx.execute(`
+        UPDATE pull_requests
+        SET state = ?, merge_sha = ?
+        WHERE repository_id = ? AND number = ?
+          AND EXISTS (
+            SELECT 1 FROM repositories r
+            JOIN github_installations gi ON gi.workspace_id = r.workspace_id
+            WHERE r.id = pull_requests.repository_id
+              AND r.workspace_id = ?
+              AND r.github_repository_id = ?
+              AND r.lifecycle = 'active'
+              AND gi.installation_id = ?
+              AND (gi.status IS NULL OR gi.status = 'active')
+          )
+      `, [state, state === 'merged' ? mergeCommitSha : null, repository.id, number, installation.workspaceId, githubRepositoryId, installationId]);
+      if (updated.changes === 0 || state !== 'merged') return updated;
+      const scanRequestId = await enqueueMergedPullRequestScan(tx, {
+        deliveryId,
+        repositoryId: repository.id,
+        workspaceId: installation.workspaceId,
+        defaultBranch: (await tx.queryOne<{ default_branch: string }>('SELECT default_branch FROM repositories WHERE id = ?', [repository.id]))?.default_branch ?? 'main',
+        commitSha: mergeCommitSha,
+        now,
+      });
+      return { ...updated, scanRequestId };
+    });
 
     if (result.changes === 0) {
       await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Pull request is not mapped to a local proposal');
@@ -393,7 +411,7 @@ export async function processGitHubWebhook(params: {
     }
 
     await recordWebhookDelivery(deliveryId, event, 'processed', now);
-    return { received: true, handled: true, deliveryId, status: state };
+    return { received: true, handled: true, deliveryId, status: state, ...(result.scanRequestId ? { scanRequestId: result.scanRequestId } : {}) };
   }
 
   // 3. Push Events

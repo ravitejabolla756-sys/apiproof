@@ -4,6 +4,7 @@ import path from 'node:path';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { recordFindingCreated, transitionFinding } from '../apps/web/src/lib/server/finding-lifecycle.js';
+import { classifyMergedFinding, recordFindingResolutionVerification } from '../apps/web/src/lib/server/finding-resolution-verification.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-finding-lifecycle-${process.pid}.db`);
 
@@ -79,5 +80,23 @@ describe('finding lifecycle state machine', () => {
     expect(results.filter((result) => result.changed)).toHaveLength(1);
     expect(results.every((result) => result.state === 'remediating')).toBe(true);
     expect(await db.query('SELECT id FROM finding_lifecycle_events WHERE idempotency_key = ?', ['finding-event-concurrent'])).toHaveLength(1);
+  });
+
+  it('classifies merged finding outcomes and persists resolution evidence idempotently', async () => {
+    expect(classifyMergedFinding({ scanCompleted: true, findingPresent: false, previousState: 'fixed_pending_verification', conflictingActiveChange: false })).toBe('resolved');
+    expect(classifyMergedFinding({ scanCompleted: true, findingPresent: true, previousState: 'fixed_pending_verification', conflictingActiveChange: false })).toBe('unresolved');
+    expect(classifyMergedFinding({ scanCompleted: true, findingPresent: true, previousState: 'verified_resolved', conflictingActiveChange: false })).toBe('regressed');
+    expect(classifyMergedFinding({ scanCompleted: true, findingPresent: false, previousState: 'fixed_pending_verification', conflictingActiveChange: true })).toBe('ambiguous');
+    expect(classifyMergedFinding({ scanCompleted: false, findingPresent: false, previousState: 'fixed_pending_verification', conflictingActiveChange: false })).toBe('inconclusive');
+
+    const db = getDatabase();
+    const migrationId = `mig_resolution_${Date.now()}`;
+    const pullRequestId = `pr_resolution_${Date.now()}`;
+    await db.execute(`INSERT INTO migrations (id, finding_id, repository_id, plan_id, status, plan_json, baseline_sha, created_at) VALUES (?, ?, ?, ?, 'planned', ?, ?, ?)`, [migrationId, findingId, repositoryId, `plan-${migrationId}`, '{}', 'b'.repeat(40), new Date().toISOString()]);
+    await db.execute(`INSERT INTO pull_requests (id, migration_id, repository_id, number, title, branch_name, base_branch, url, state, merge_sha, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'merged', ?, ?)`, [pullRequestId, migrationId, repositoryId, 42, 'Resolution', 'fix/resolution', 'main', 'https://example.test/pr/42', 'c'.repeat(40), new Date().toISOString()]);
+    const evidence = { baselineSha: 'b'.repeat(40), mergeSha: 'c'.repeat(40), scanId };
+    await recordFindingResolutionVerification(db, { workspaceId, repositoryId, findingId, migrationId, pullRequestId, mergeSha: 'c'.repeat(40), scanId, classification: 'resolved', evidence });
+    await recordFindingResolutionVerification(db, { workspaceId, repositoryId, findingId, migrationId, pullRequestId, mergeSha: 'c'.repeat(40), scanId, classification: 'resolved', evidence });
+    expect(await db.query('SELECT id FROM finding_resolution_verifications WHERE migration_id = ?', [migrationId])).toHaveLength(1);
   });
 });

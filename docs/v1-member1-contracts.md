@@ -27,6 +27,8 @@ This document records backend contracts that require coordination with Member 2.
 
 - Deterministic evidence and verification status are authoritative. Model output, if later approved, is untrusted and cannot directly write repositories or merge PRs.
 - A post-merge event must bind repository, PR, merge SHA, migration/finding identity and the subsequent scan before resolution is shown as verified.
+- Merged pull requests persist `merge_sha`; the durable scan queue is unique on `(repository_id, commit_sha)` and the worker records resolution evidence only for the exact merged commit. Duplicate deliveries converge on the existing request/scan.
+- Resolution evidence is immutable and idempotent per migration/scan. `resolved` requires absence from a completed exact-commit scan; `unresolved` means the finding remains; `regressed` means it reappears after a prior verified state; `ambiguous` protects a matching active change; `inconclusive` covers missing baseline evidence. No classification grants merge or deployment authority.
 - Draft PRs remain review-only; no auto-merge contract exists.
 
 ### MIG-01 AI recommendation boundary
@@ -61,3 +63,4 @@ This document records backend contracts that require coordination with Member 2.
 - 2026-11-06: Phase 0 initialized this contract document from the clean `origin/main` baseline. No endpoint, schema or event contract was changed in Phase 0.
 - 2026-11-07: Added the local AUTH-05 token/API/schema contract. Provider delivery, Member 2 template approval, and final unverified-account enforcement remain separate gates.
 - 2026-11-07: Added the local IMP-09 audited finding lifecycle, migration 025, scan/plan/PR integrations, idempotency/concurrency tests and explicit completed-scan evidence requirements.
+- 2026-11-07: Added PR-07 merged-SHA persistence/deduplicated scan queue handling and PR-08 exact-commit finding-resolution classifications/evidence migration 026; live GitHub/PostgreSQL execution remains unverified.

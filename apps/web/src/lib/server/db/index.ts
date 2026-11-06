@@ -13,6 +13,7 @@ import { SQLITE_GOOGLE_OAUTH_SCHEMA } from './google-oauth-migration.js';
 import { SQLITE_GITHUB_LOGIN_SCHEMA } from './github-login-migration.js';
 import { SQLITE_EMAIL_VERIFICATION_SCHEMA } from './email-verification-migration.js';
 import { SQLITE_FINDING_LIFECYCLE_EVENTS_SCHEMA } from './finding-lifecycle-migration.js';
+import { SQLITE_FINDING_RESOLUTION_SCHEMA } from './finding-resolution-migration.js';
 import { SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
@@ -162,6 +163,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   `);
   db.exec('CREATE INDEX IF NOT EXISTS idx_findings_lifecycle_repository ON findings(repository_id, lifecycle_state)');
   db.exec(SQLITE_FINDING_LIFECYCLE_EVENTS_SCHEMA);
+  db.exec(SQLITE_FINDING_RESOLUTION_SCHEMA);
   db.exec(SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA);
   initializeSlackReliabilitySqlite(db);
 

@@ -11,7 +11,7 @@ export async function upsertFindingForScan(
     workspaceId: string;
     now: string;
   },
-): Promise<{ id: string; isNew: boolean }> {
+): Promise<{ id: string; isNew: boolean; previousState: string | null }> {
   const { finding, scanId, repositoryId, workspaceId, now } = params;
   const existing = await db.queryOne<{ id: string; lifecycle_state: string | null }>(`
     SELECT id, lifecycle_state FROM findings
@@ -35,7 +35,7 @@ export async function upsertFindingForScan(
           evidence = ?, source_snippet = ?, source_digest = ?
       WHERE id = ?
     `, [scanId, finding.lineNumber, finding.confidence, finding.reason, JSON.stringify(finding.reasonCodes), JSON.stringify(finding.evidence), finding.sourceSnippet, finding.sourceDigest, existing.id]);
-    return { id: existing.id, isNew: false };
+    return { id: existing.id, isNew: false, previousState: existing.lifecycle_state };
   }
 
   await db.execute(`
@@ -50,6 +50,6 @@ export async function upsertFindingForScan(
     JSON.stringify(finding.reasonCodes), JSON.stringify(finding.evidence), finding.sourceSnippet, finding.sourceDigest, now,
   ]);
   await recordFindingCreated(db, { findingId: finding.id, repositoryId, workspaceId, scanId });
-  return { id: finding.id, isNew: true };
+  return { id: finding.id, isNew: true, previousState: null };
 }
 

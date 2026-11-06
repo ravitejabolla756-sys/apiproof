@@ -19,7 +19,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Scanner/provider/impact accuracy | NOT_TESTED | Existing unit coverage; benchmark and adversarial acceptance work remains |
 | Migration recommendations and sandbox | PARTIAL / EXTERNAL BLOCKED | Deterministic planner, bounded redacted context, strict model-output validation and isolated verification are locally covered; production AI provider/credentials/cost policy/runtime adapter are not approved |
 | Finding lifecycle and resolution evidence | PASS (local only) | Migration 025, audited state transitions, workspace checks, idempotency/concurrency tests and completed-scan regression handling pass locally; live PostgreSQL/RLS and merged-SHA evidence remain unverified |
-| Draft PR merge/rescan/resolution verification | PARTIAL | Local webhook/verification code exists; merged-SHA integration evidence remains |
+| Draft PR merge/rescan/resolution verification | PASS (local only) | PR-07/PR-08 focused webhook, async-worker and lifecycle suites pass; merge SHA is persisted, exact-commit rescan is durable/deduplicated, and resolution classifications/evidence are tenant-scoped; live GitHub/PostgreSQL execution remains unverified |
 | RBAC and access revocation | PARTIAL | Workspace predicates exist; complete revocation workflow and PostgreSQL tests remain |
 | Payment sandbox checkout/webhooks/lifecycle | BLOCKED | Current provider is `MockBillingProvider`; provider approval/credentials absent |
 | Backup restore | BLOCKED | Requires approved isolated non-production backup/restore access |
@@ -37,8 +37,9 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 - `pnpm lint`: PASS.
 - `pnpm build`: PASS; Next.js 15.5.29, 63 static pages generated.
 - Targeted backend/security tests: PASS, 7 files / 58 tests.
-- Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 157 passed files / 1 skipped (158 total); 1,324 passed tests / 4 skipped (1,328 total).
+- Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 157 passed files / 1 skipped (158 total); 1,327 passed tests / 4 skipped (1,331 total).
 - IMP-09 focused regression suites: PASS, 3 files / 46 tests (`finding-lifecycle`, `proposal-recovery`, `phase4-async-scan-worker`); lifecycle acceptance includes transitions, duplicate/conflicting idempotency keys, concurrent retries, tenant mismatch, regression reopen and completed-scan evidence.
+- PR-07/PR-08 focused regression suites: PASS, 3 files / 38 tests (`github-pull-request-webhook`, `finding-lifecycle`, `phase4-async-scan-worker`); coverage includes merge-SHA deduplication, missing-SHA rejection, persisted merge linkage, resolution classifications and idempotent evidence.
 - The deterministic fixture stabilization uses repository-owned synthetic source for offline scan/verification tests plus committed LF rules for `evaluation/` and `evaluation-patches/`; no arbitrary local checkout is analyzed.
 
 ## Approval boundaries not crossed
