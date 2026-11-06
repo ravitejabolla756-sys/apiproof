@@ -35,8 +35,8 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | BILL-03 | PARTIAL | `apps/web/src/app/api/webhooks/billing/route.ts`, `billing/service.ts` | Replace mock verification with approved provider raw-signature adapter |
 | BILL-04 | PARTIAL | `apps/web/src/lib/server/billing/service.ts`, `apps/web/src/lib/server/billing/plans.ts` | Authoritative provider lifecycle reconciliation |
 | BILL-10 | PARTIAL | `billing/service.ts` maps payment failure to `past_due` | Written grace/suspension policy and notification contract |
-| SEC-01 | PARTIAL | `docs/MY-OWL-P0-LIVE-SCAN-SECURITY-REPORT.md`; app predicates exist | PostgreSQL policies/roles require approved staging or production read-only access |
-| SEC-02 | PARTIAL | Direct PostgreSQL adapter and security audit docs; no grant migration found | Runtime/admin role matrix and role-based test environment |
+| SEC-01 | PARTIAL | `docs/v1-member1-db-access-matrix.md`; 40-table source inventory, RLS decisions and repeatable PostgreSQL catalog/isolation contract; app predicates exist | PostgreSQL policies/roles require approved staging or production read-only access |
+| SEC-02 | PARTIAL | `docs/v1-member1-db-access-matrix.md`; intended runtime/migration/ops role matrix and read-only ACL/default-privilege query pack; no grant migration found | Effective grants, role separation and impersonation tests require approved staging role environment |
 | SEC-04 | PARTIAL | Closed production missing-Origin/Referer CSRF path in `apps/web/src/lib/server/validation.ts`; `tests/auth-hardening.test.ts` 3/3 plus auth/security matrix 8 files / 70 tests pass | Email verification/unverified-account enforcement remains AUTH-05 coordination work |
 | SEC-08 | DONE_VERIFIED | `apps/web/src/lib/server/security-headers.ts` and middleware apply CSP, HSTS-on-HTTPS, frame/referrer/permissions protections and exact-origin CORS; `tests/security-headers.test.ts`: 6/6 pass; typecheck/lint/build pass | Run approved browser/staging smoke with the deployment origin list |
 | SEC-09 | DONE_VERIFIED | Patched dependency ranges/overrides; `pnpm audit --prod --audit-level=high` exits 0; typecheck/lint/build pass; full suite 156 files / 1,310 tests passed / 4 skipped; four moderate advisories remain explicitly documented | Keep moderate Nodemailer/minimatch advisories on risk register; no critical/high suppression used |
@@ -77,8 +77,8 @@ Phase 0 read-only checks:
 
 ## Current checkpoint
 
-- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, and the production-route test contract.
+- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, and the database access matrix.
 - Completed tasks: `SCAN-12`, `SEC-08`, and `SEC-09` are `DONE_VERIFIED` for local acceptance. `SEC-04` remains `PARTIAL` pending AUTH-05/unverified-account policy.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: complete the local portion of `SEC-01`/`SEC-02` (table/role/grant inventory and repeatable PostgreSQL test plan) while recording the external staging verification boundary.
+- Next safe task: design the approved staging role/context migration contract, or continue with the next local Phase 1 security gap if staging authority is not provided.
 - Last verified implementation commit: `2c368ad` (local checkpoint; not pushed).
