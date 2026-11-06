@@ -28,6 +28,7 @@
     "release:manifest": "tsx --conditions=apiproof-source apps/web/scripts/release-manifest.ts",
     "provider:review-report": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-report.ts",
     "provider:review-pack": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-pack.ts",
+    "scanner:accuracy": "tsx --conditions=apiproof-source evaluation/scanner-accuracy-cli.ts",
     "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts all",
     "providers:validate:multi": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts multi",
     "provider:seed-review-queue": "tsx --conditions=apiproof-source apps/web/scripts/seed-provider-review-queue.ts",
