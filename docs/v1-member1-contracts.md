@@ -33,6 +33,12 @@ This document records backend contracts that require coordination with Member 2.
 - Member 2 may render/deliver notifications, but delivery failure must not change authorization or billing truth.
 - Alert destinations, retention and escalation policy require owner approval before staging/production configuration.
 
+## HTTP security (SEC-08)
+
+- `APIPROOF_CORS_ORIGINS` is an optional comma-separated allowlist of exact HTTP(S) origins. Empty means same-origin only; wildcard origins are rejected.
+- Credentialed CORS is emitted only for an allowlisted origin, and preflight requests from other origins receive a 403 response.
+- The CSP intentionally retains `unsafe-inline` for current Next App Router hydration and inline UI styles; development alone adds `unsafe-eval`. A future nonce migration can tighten these exceptions after browser coverage is available.
+
 ## Change log
 
 - 2026-11-06: Phase 0 initialized this contract document from the clean `origin/main` baseline. No endpoint, schema or event contract was changed in Phase 0.

@@ -38,7 +38,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | SEC-01 | PARTIAL | `docs/MY-OWL-P0-LIVE-SCAN-SECURITY-REPORT.md`; app predicates exist | PostgreSQL policies/roles require approved staging or production read-only access |
 | SEC-02 | PARTIAL | Direct PostgreSQL adapter and security audit docs; no grant migration found | Runtime/admin role matrix and role-based test environment |
 | SEC-04 | PARTIAL | `apps/web/src/lib/server/auth.ts`, OAuth/reset/session tests | Complete threat checklist and unverified-account enforcement |
-| SEC-08 | PARTIAL | `apps/web/src/middleware.ts`; no global security-header/CORS policy found | Add tested headers/CORS without breaking OAuth callbacks |
+| SEC-08 | DONE_VERIFIED | `apps/web/src/lib/server/security-headers.ts` and middleware apply CSP, HSTS-on-HTTPS, frame/referrer/permissions protections and exact-origin CORS; `tests/security-headers.test.ts`: 6/6 pass; typecheck/lint/build pass | Run approved browser/staging smoke with the deployment origin list |
 | SEC-09 | PARTIAL | Updated Next.js/zod ranges and patched transitive overrides; `pnpm audit --prod --audit-level=high` now exits 0 with no high/critical findings; typecheck/lint/build pass; targeted security suite 58/58 pass | Full suite still has 46 baseline fixture/line-ending failures in 4 files; four moderate advisories remain and need disposition |
 | SEC-10 | BLOCKED | `docs/database-backup-and-safety.md` documents procedure only | Approved isolated non-production DB and backup access required |
 | SEC-11 | BLOCKED | No approved error-monitoring provider/configuration found | Owner must approve tool, destination, retention and staging access |
@@ -68,10 +68,14 @@ Phase 0 read-only checks:
 - Targeted security/backend suite: PASS, 7 files / 58 tests (`auth-session`, `session-revalidation`, `password-reset`, Google/GitHub OAuth, billing foundation, P0 live-scan security).
 - Full suite: FAIL, 4 files / 46 tests failing and 148 files passing / 1 skipped. Failures are `FIXTURE_DIGEST_MISMATCH` and fixture line-number/digest regressions on the clean baseline; no test or audit was weakened.
 
+## SEC-08 implementation checkpoint
+
+- SEC-08 security-header/CORS suite: PASS, 1 file / 6 tests; middleware-level protected-route and preflight checks cover approved/denied origins, HTTPS HSTS, CSP and OAuth-compatible popup policy.
+
 ## Current checkpoint
 
-- Changed files: three Phase 0 artifacts plus the four dependency/lockfile files listed above; no application runtime code changed.
-- Completed tasks: none; all classifications above remain provisional until their acceptance criteria are fully evidenced.
+- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, the security-header helper, middleware and security-header tests.
+- Completed tasks: `SEC-08` (`DONE_VERIFIED` for local implementation and automated acceptance; production browser/staging verification remains a separate gate).
 - Release status: `NO-GO` while critical/high dependency findings and external security gates remain unresolved.
 - Next safe task: isolate and fix the existing deterministic fixture regression without copying the original dirty worktree wholesale, then re-run the full suite before closing SEC-09.
 - Last verified commit: `7df82652708131c7ba141bd185725363091260c6` (local checkpoint; not pushed).
