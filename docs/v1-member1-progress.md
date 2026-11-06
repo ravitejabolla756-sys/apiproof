@@ -39,7 +39,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | SEC-02 | PARTIAL | `docs/v1-member1-db-access-matrix.md`; intended runtime/migration/ops role matrix and read-only ACL/default-privilege query pack; no grant migration found | Effective grants, role separation and impersonation tests require approved staging role environment |
 | SEC-04 | PARTIAL | Closed production missing-Origin/Referer CSRF path; `tests/auth-hardening.test.ts` 3/3 plus auth/security matrix and AUTH-05 verification tests pass; OAuth provider-verified state is persisted | Central unverified-account enforcement and approved email delivery remain AUTH-05 coordination work |
 | SEC-08 | DONE_VERIFIED | `apps/web/src/lib/server/security-headers.ts` and middleware apply CSP, HSTS-on-HTTPS, frame/referrer/permissions protections and exact-origin CORS; `tests/security-headers.test.ts`: 6/6 pass; typecheck/lint/build pass | Run approved browser/staging smoke with the deployment origin list |
-| SEC-09 | DONE_VERIFIED | Patched dependency ranges/overrides; `pnpm audit --prod --audit-level=high` exits 0; typecheck/lint/build pass; full suite 156 files / 1,310 tests passed / 4 skipped; four moderate advisories remain explicitly documented | Keep moderate Nodemailer/minimatch advisories on risk register; no critical/high suppression used |
+| SEC-09 | DONE_VERIFIED | Patched dependency ranges/overrides; `pnpm audit --prod --audit-level=high` exits 0; typecheck/lint/build pass; full suite 156 passed files / 1,319 passed tests / 4 skipped; four moderate advisories remain explicitly documented | Keep moderate Nodemailer/minimatch advisories on risk register; no critical/high suppression used |
 | SEC-10 | BLOCKED | `docs/database-backup-and-safety.md` documents procedure only | Approved isolated non-production DB and backup access required |
 | SEC-11 | BLOCKED | No approved error-monitoring provider/configuration found | Owner must approve tool, destination, retention and staging access |
 | SEC-13 | PARTIAL | Worker/runtime registries and worker tables exist | Add queue health metrics, alerts and safe simulated failure evidence |
@@ -73,7 +73,7 @@ Phase 0 read-only checks:
 - SEC-08 security-header/CORS suite: PASS, 1 file / 6 tests; middleware-level protected-route and preflight checks cover approved/denied origins, HTTPS HSTS, CSP and OAuth-compatible popup policy.
 - SEC-04 auth hardening: PASS for the implemented CSRF fail-closed change; 8-file auth/security matrix passed 70/70. OAuth state/nonce, sessions, recovery, rate limits and password-reset invalidation remain covered by existing tests; email verification and unverified-account policy remain incomplete.
 - SCAN-12 benchmark: PASS, `pnpm scanner:accuracy` reports 24 deterministic fixtures across TypeScript, Python, Go, Java, Kotlin and C#, with 0 false positives/negatives and documented non-representative corpus limitations.
-- Full suite after deterministic fixture stabilization: PASS, 156 files / 1,310 tests / 4 skipped. The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, and same-origin headers in production-route test requests; no external checkout is read.
+- Full suite after AUTH-05 implementation: PASS, 156 passed files / 1 skipped (157 total); 1,319 passed tests / 4 skipped (1,323 total). The fix uses repository-owned synthetic source, committed LF rules for evaluation corpora, and same-origin headers in production-route test requests; no external checkout is read.
 - AUTH-05 local backend/UI flow: PASS, 8 verification tests plus Google/GitHub OAuth suites; real SMTP delivery and final account enforcement are not claimed.
 
 ## Current checkpoint
@@ -82,4 +82,4 @@ Phase 0 read-only checks:
 - Completed tasks: `SCAN-12`, `SEC-08`, and `SEC-09` are `DONE_VERIFIED` for local acceptance. `SEC-01`/`SEC-02`, `SEC-04`, and `AUTH-05` remain `PARTIAL` because external PostgreSQL and approved email/enforcement contracts are not verified.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
 - Next safe task: review the local AUTH-05 diff, then run the full suite and record whether the unverified-account enforcement policy can be approved without locking out existing accounts.
-- Last verified implementation commit: `2c368ad` (local checkpoint; not pushed).
+- Last verified implementation commit: `5d8af75` (local checkpoint; not pushed).

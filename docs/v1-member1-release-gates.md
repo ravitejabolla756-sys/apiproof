@@ -4,7 +4,7 @@ Last updated: 2026-11-06. This is a checklist, not a production approval.
 
 | Gate | Status | Evidence / required next action |
 |---|---|---|
-| Clean isolated workstream baseline | PASS | `C:\YC-my-owl-v1-member1`, branch `codex/v1-backend-security`, reviewed from `d1cd9f4d`; current implementation checkpoint `2c368ad` |
+| Clean isolated workstream baseline | PASS | `C:\YC-my-owl-v1-member1`, branch `codex/v1-backend-security`, reviewed from `d1cd9f4d`; current implementation checkpoint `5d8af75` |
 | Original dirty work preserved | PASS | Original `C:\YC-my-owl-v1` remains separate with 238 status entries |
 | Dependency vulnerabilities | PASS (high/critical) | `pnpm audit --prod --audit-level=high` exits 0 after patched dependency updates; four moderate advisories remain (three Nodemailer, one minimatch) and require risk disposition |
 | Security headers and exact-origin CORS | PASS (local) | Middleware tests cover protected API responses, approved/denied preflight, CSP, HSTS-on-HTTPS and OAuth-compatible popup policy; staging/browser smoke remains not tested |
@@ -36,7 +36,7 @@ Last updated: 2026-11-06. This is a checklist, not a production approval.
 - `pnpm lint`: PASS.
 - `pnpm build`: PASS; Next.js 15.5.29, 63 static pages generated.
 - Targeted backend/security tests: PASS, 7 files / 58 tests.
-- Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 156 files / 1,310 tests / 4 skipped.
+- Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 156 passed files / 1 skipped (157 total); 1,319 passed tests / 4 skipped (1,323 total).
 - The deterministic fixture stabilization uses repository-owned synthetic source for offline scan/verification tests plus committed LF rules for `evaluation/` and `evaluation-patches/`; no arbitrary local checkout is analyzed.
 
 ## Approval boundaries not crossed
