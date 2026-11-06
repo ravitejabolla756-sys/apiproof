@@ -8,11 +8,11 @@ describe('pricing-page capability contract', () => {
 
     expect(source).toContain('Free Beta');
     expect(source).toContain('Free beta available now');
-    expect(source).toContain('₹4,999');
-    expect(source).toContain('₹14,999');
+    expect(source).toContain('₹5,000');
+    expect(source).toContain('₹15,000');
     expect(source).toContain('MY OWL Enterprise');
     expect(source).toContain('Custom');
-    expect(source).toContain('Contact Sales');
+    expect(source).toContain('Start an enterprise inquiry');
     expect(source).toContain('Organization-wide repository management');
     expect(source).toContain('Rolling out');
     expect(source).toContain('Coming soon');

@@ -7,7 +7,7 @@ export default function StatusPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
-      <main id="main-content" className="mx-auto max-w-4xl space-y-12 px-4 pb-24 pt-36 sm:px-6 lg:px-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-4xl space-y-12 px-4 pb-24 pt-36 sm:px-6 lg:px-8 outline-none">
         <header className="space-y-4 border-b border-black/[0.08] pb-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-200/80 px-3 py-1 text-xs font-mono font-medium text-slate-800"><Activity className="h-3.5 w-3.5" aria-hidden="true" /><span>SERVICE STATUS</span></div>
           <h1 className="font-serif text-4xl font-normal leading-tight tracking-tight sm:text-5xl">A truthful status surface is coming.</h1>

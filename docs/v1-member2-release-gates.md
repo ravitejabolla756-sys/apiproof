@@ -1,0 +1,19 @@
+# MY OWL V1 — Member 2 Release Gates
+
+Last updated: 2026-11-07. This is a checklist, not launch approval.
+
+| Gate | Status | Required evidence or unblock |
+|---|---|---|
+| Isolated worktree | PASS | `C:\YC-my-owl-v1-member2`, branch `codex/v1-frontend-product`, based on `d1cd9f4` |
+| Original dirty work preserved | PASS | `C:\YC-my-owl-v1` remains separate with 238 pre-existing entries |
+| Member 1 integration | NOT_INTEGRATED | Deliberately integrate reviewed commits/contracts only after shared changes are complete |
+| Typecheck/lint/build | PASS | Typecheck, targeted ESLint and `pnpm build` pass; Next generated 80 static pages |
+| Full test suite | FAIL_BASELINE | 1,267 passed, 47 failed, 4 skipped across 157 files; failures are existing fixture/evaluation drift outside changed source, with details in QA report |
+| Browser/E2E | PASS_LOCAL | Playwright public-site harness passes locally after Chromium install; no authenticated/browser-production proof |
+| Accessibility | PARTIAL | Skip-link, focus-visible, reduced-motion, touch-target and mobile-menu checks pass; axe/contrast/screen-reader review not run |
+| PostgreSQL tenant/RBAC | BLOCKED | Production-representative roles and policies required |
+| Transactional email | BLOCKED | Approved domain/provider, credentials and sandbox delivery required |
+| Real billing | BLOCKED | Approved provider, signed webhooks and sandbox reconciliation required |
+| Legal content | BLOCKED | Privacy, terms and refund pages are explicitly drafts; owner/legal review required |
+| Status/incident source | BLOCKED | Truthful no-monitor status page and SEC-18 draft exist; approved status/monitoring source and runbook review required |
+| Production release | NO-GO | Do not deploy, activate payments, send real email or push without approval |
