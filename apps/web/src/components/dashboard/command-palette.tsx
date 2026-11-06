@@ -100,19 +100,26 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-24 px-4 animate-in fade-in duration-150 font-sans">
-      <div className="bg-white border border-[#E8E8E5] w-full max-w-xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="command-palette-title"
+        className="bg-white border border-[#E8E8E5] w-full max-w-xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col"
+      >
+        <h2 id="command-palette-title" className="sr-only">Search MY OWL</h2>
         {/* Search Header */}
         <div className="flex items-center px-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
           <Search className="h-4 w-4 text-zinc-400 shrink-0" />
           <input
             type="text"
+            aria-label="Search repositories and workspace navigation"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command, search repositories or SDK rules..."
             className="w-full bg-transparent border-0 px-3 py-3.5 text-xs text-[#111111] placeholder:text-zinc-400 focus:outline-none"
             autoFocus
           />
-          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
+          <button type="button" aria-label="Close search" onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
             <X className="h-4 w-4" />
           </button>
         </div>

@@ -220,16 +220,21 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150 font-sans">
-      <div className="bg-white border border-[#E8E8E5] w-full max-w-lg rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="connect-repository-title"
+        className="bg-white border border-[#E8E8E5] w-full max-w-lg rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700">
               <Github className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-semibold text-[#111111]">Connect GitHub Repository</h3>
+            <h3 id="connect-repository-title" className="text-sm font-semibold text-[#111111]">Connect GitHub Repository</h3>
           </div>
-          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
+          <button type="button" autoFocus aria-label="Close repository connection dialog" onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -237,14 +242,14 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         {/* Content */}
         <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
           {error && (
-            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+            <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {statusMessage && (
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-purple-900 text-xs flex items-center gap-2">
+            <div role="status" aria-live="polite" className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-purple-900 text-xs flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
               <span>{statusMessage}</span>
             </div>

@@ -9,6 +9,31 @@ async function signIn(page: Page) {
   await page.waitForURL('**/dashboard');
 }
 
+async function scanAuthenticatedRoutes(page: Page, routes: string[]) {
+  for (const route of routes) {
+    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations, route).toEqual([]);
+  }
+}
+
+async function assertDashboardRoutes(page: Page, routes: string[]) {
+  for (const route of routes) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    expect(response?.status(), route).toBe(200);
+    await expect(page.locator('main#main-content')).toBeVisible({ timeout: 30_000 });
+    if (route.includes('/repositories/')) {
+      await expect(page.getByText('Repository not found or access denied.')).toBeVisible({ timeout: 30_000 });
+      continue;
+    }
+    await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+  }
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+  expect(overflow, 'mobile dashboard should not create document-level horizontal overflow').toBe(true);
+}
+
 test.describe('public beta surfaces', () => {
   test('loads the core public pages and evidence-backed content', async ({ page }) => {
     for (const route of ['/features', '/how-it-works', '/security', '/docs', '/pricing', '/faq', '/refunds', '/status', '/privacy', '/terms', '/invite/accept']) {
@@ -84,11 +109,10 @@ test.describe('authenticated product surfaces', () => {
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
 
-  test('covers the seeded dashboard browsing and product workflow routes', async ({ page }) => {
+  test('covers the seeded dashboard primary browsing routes', async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });
-
-    const routes = [
+    await assertDashboardRoutes(page, [
       '/dashboard',
       '/dashboard/activity',
       '/dashboard/compatibility',
@@ -96,25 +120,73 @@ test.describe('authenticated product surfaces', () => {
       '/dashboard/repositories/repo_apiproof_fixture',
       '/dashboard/findings',
       '/dashboard/migrations',
+    ]);
+  });
+
+  test('covers the seeded dashboard secondary workflow routes', async ({ page }) => {
+    await signIn(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await assertDashboardRoutes(page, [
       '/dashboard/pull-requests',
       '/dashboard/providers',
       '/dashboard/inventory',
       '/dashboard/settings',
-    ];
+    ]);
+  });
 
-    for (const route of routes) {
-      const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-      expect(response?.status(), route).toBe(200);
-      await expect(page.locator('main#main-content')).toBeVisible({ timeout: 30_000 });
-      if (route.includes('/repositories/')) {
-        await expect(page.getByText('Repository not found or access denied.')).toBeVisible({ timeout: 30_000 });
-        continue;
-      }
-      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
-    }
+  test('scans core authenticated data routes', async ({ page }) => {
+    await signIn(page);
+    await scanAuthenticatedRoutes(page, [
+      '/dashboard',
+      '/dashboard/activity',
+      '/dashboard/compatibility',
+      '/dashboard/repositories',
+      '/dashboard/findings',
+      '/dashboard/migrations',
+    ]);
+  });
 
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
-    expect(overflow, 'mobile dashboard should not create document-level horizontal overflow').toBe(true);
+  test('scans core authenticated workflow and settings routes', async ({ page }) => {
+    await signIn(page);
+    await scanAuthenticatedRoutes(page, [
+      '/dashboard/pull-requests',
+      '/dashboard/providers',
+      '/dashboard/inventory',
+      '/dashboard/settings/account',
+      '/dashboard/settings/workspace',
+      '/dashboard/settings/notifications',
+    ]);
+  });
+
+  test('verifies keyboard skip-link and dialog behavior', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard');
+    await page.locator('.skip-link').focus();
+    await expect(page.locator('.skip-link')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#main-content')).toBeFocused();
+
+    const searchTrigger = page.getByRole('button', { name: /Search repos, findings, SDKs/ });
+    await searchTrigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Search MY OWL' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Search repositories and workspace navigation' })).toBeFocused();
+    const commandPaletteResults = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
+    expect(commandPaletteResults.violations, 'command palette').toEqual([]);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Search MY OWL' })).toHaveCount(0);
+
+    await page.route('**/api/github/repositories', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
+    });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Connect GitHub Repository' })).toBeVisible();
+    const repositoryDialogResults = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
+    expect(repositoryDialogResults.violations, 'repository connection dialog').toEqual([]);
+    await expect(page.getByRole('button', { name: 'Close repository connection dialog' })).toBeFocused();
+    await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
+    await page.unroute('**/api/github/repositories');
   });
 
   test('shows safe invalid-login and permission-denied states without leaking data', async ({ page }) => {

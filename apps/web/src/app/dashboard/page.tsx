@@ -363,7 +363,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Authorize the MY OWL GitHub App with restricted repository access for read-only scans.
               </p>
@@ -383,7 +383,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Choose Repository</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Choose Repository</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Select target repositories to monitor for breaking vendor API changes.
               </p>
@@ -403,7 +403,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Run Initial AST Scan</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Run Initial AST Scan</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Scan target repo commits using deterministic AST pattern matchers.
               </p>
@@ -423,7 +423,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Review findings</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Review findings</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Inspect findings, verify the official evidence, and decide the next engineering action.
               </p>
