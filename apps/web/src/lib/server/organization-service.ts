@@ -1,0 +1,222 @@
+import crypto from 'node:crypto';
+import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { requireWorkspaceMember, requireWorkspaceOwner, type WorkspaceRole, type WorkspaceWithRole } from './workspace-service.js';
+
+const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+export interface OrganizationMember {
+  id: string;
+  userId: string;
+  email: string;
+  name: string;
+  role: WorkspaceRole;
+  createdAt: string;
+}
+
+export interface WorkspaceInvitation {
+  id: string;
+  workspaceId: string;
+  email: string;
+  role: WorkspaceRole;
+  expiresAt: string;
+  acceptedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+}
+
+export interface WorkspaceAuditEvent {
+  id: string;
+  action: string;
+  targetType: string;
+  targetId: string | null;
+  metadata: Record<string, unknown>;
+  actorEmail: string | null;
+  createdAt: string;
+}
+
+export class OrganizationServiceError extends Error {
+  constructor(
+    message: string,
+    public readonly code:
+      | 'INVALID_WORKSPACE_NAME'
+      | 'INVALID_WORKSPACE_SLUG'
+      | 'MEMBER_NOT_FOUND'
+      | 'INVITATION_NOT_FOUND'
+      | 'INVITATION_EXPIRED'
+      | 'INVITATION_EMAIL_MISMATCH'
+      | 'INVITATION_ALREADY_USED'
+      | 'LAST_OWNER_REQUIRED'
+      | 'ALREADY_A_MEMBER',
+  ) {
+    super(message);
+    this.name = 'OrganizationServiceError';
+  }
+}
+
+function id(prefix: string): string {
+  return `${prefix}_${crypto.randomBytes(12).toString('hex')}`;
+}
+
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function cleanEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function mapMember(row: { id: string; user_id: string; email: string; name: string; role: WorkspaceRole; created_at: string }): OrganizationMember {
+  return { id: row.id, userId: row.user_id, email: row.email, name: row.name, role: row.role, createdAt: row.created_at };
+}
+
+async function recordAudit(
+  tx: DatabaseAdapter,
+  workspaceId: string,
+  actorUserId: string | null,
+  action: string,
+  targetType: string,
+  targetId: string | null,
+  metadata: Record<string, unknown> = {},
+): Promise<void> {
+  await tx.execute(
+    `INSERT INTO workspace_audit_events (id, workspace_id, actor_user_id, action, target_type, target_id, metadata_json, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id('wae'), workspaceId, actorUserId, action, targetType, targetId, JSON.stringify(metadata), new Date().toISOString()],
+  );
+}
+
+export async function updateWorkspaceSettings(userId: string, workspaceId: string, name: string, slug: string): Promise<WorkspaceWithRole> {
+  await requireWorkspaceOwner(userId, workspaceId);
+  const cleanName = name.trim();
+  const cleanSlug = slug.trim().toLowerCase();
+  if (cleanName.length < 1 || cleanName.length > 100) throw new OrganizationServiceError('Workspace name must be 1-100 characters.', 'INVALID_WORKSPACE_NAME');
+  if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(cleanSlug)) throw new OrganizationServiceError('Workspace slug must be 3-64 lowercase letters, numbers, or hyphens.', 'INVALID_WORKSPACE_SLUG');
+
+  const db = getDatabase();
+  try {
+    await db.transaction(async (tx) => {
+      await tx.execute('UPDATE workspaces SET name = ?, slug = ?, updated_at = ? WHERE id = ?', [cleanName, cleanSlug, new Date().toISOString(), workspaceId]);
+      await recordAudit(tx, workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { name: cleanName, slug: cleanSlug });
+    });
+  } catch (error) {
+    if (String(error).toLowerCase().includes('unique')) throw new OrganizationServiceError('That workspace slug is already in use.', 'INVALID_WORKSPACE_SLUG');
+    throw error;
+  }
+  return requireWorkspaceMember(userId, workspaceId);
+}
+
+export async function listOrganizationMembers(userId: string, workspaceId: string): Promise<OrganizationMember[]> {
+  await requireWorkspaceMember(userId, workspaceId);
+  const rows = await getDatabase().query<{ id: string; user_id: string; email: string; name: string; role: WorkspaceRole; created_at: string }>(
+    `SELECT wm.id, wm.user_id, u.email, u.name, wm.role, wm.created_at
+     FROM workspace_members wm JOIN users u ON u.id = wm.user_id
+     WHERE wm.workspace_id = ? ORDER BY CASE wm.role WHEN 'owner' THEN 0 ELSE 1 END, u.name ASC`,
+    [workspaceId],
+  );
+  return rows.map(mapMember);
+}
+
+export async function updateMemberRole(userId: string, workspaceId: string, memberId: string, role: WorkspaceRole): Promise<OrganizationMember[]> {
+  await requireWorkspaceOwner(userId, workspaceId);
+  const db = getDatabase();
+  const member = await db.queryOne<{ user_id: string; role: WorkspaceRole }>('SELECT user_id, role FROM workspace_members WHERE id = ? AND workspace_id = ?', [memberId, workspaceId]);
+  if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
+  if (member.role === 'owner' && role !== 'owner') {
+    const owners = await db.queryOne<{ count: number }>("SELECT COUNT(*) as count FROM workspace_members WHERE workspace_id = ? AND role = 'owner'", [workspaceId]);
+    if (Number(owners?.count ?? 0) <= 1) throw new OrganizationServiceError('A workspace must retain at least one owner.', 'LAST_OWNER_REQUIRED');
+  }
+  await db.transaction(async (tx) => {
+    await tx.execute('UPDATE workspace_members SET role = ? WHERE id = ? AND workspace_id = ?', [role, memberId, workspaceId]);
+    await recordAudit(tx, workspaceId, userId, 'member.role_updated', 'member', memberId, { userId: member.user_id, role });
+  });
+  return listOrganizationMembers(userId, workspaceId);
+}
+
+export async function removeOrganizationMember(userId: string, workspaceId: string, memberId: string): Promise<void> {
+  await requireWorkspaceOwner(userId, workspaceId);
+  const db = getDatabase();
+  const member = await db.queryOne<{ user_id: string; role: WorkspaceRole }>('SELECT user_id, role FROM workspace_members WHERE id = ? AND workspace_id = ?', [memberId, workspaceId]);
+  if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
+  if (member.role === 'owner') {
+    const owners = await db.queryOne<{ count: number }>("SELECT COUNT(*) as count FROM workspace_members WHERE workspace_id = ? AND role = 'owner'", [workspaceId]);
+    if (Number(owners?.count ?? 0) <= 1) throw new OrganizationServiceError('A workspace must retain at least one owner.', 'LAST_OWNER_REQUIRED');
+  }
+  await db.transaction(async (tx) => {
+    await tx.execute('DELETE FROM workspace_members WHERE id = ? AND workspace_id = ?', [memberId, workspaceId]);
+    await tx.execute('DELETE FROM sessions WHERE user_id = ?', [member.user_id]);
+    await recordAudit(tx, workspaceId, userId, 'member.removed', 'member', memberId, { userId: member.user_id });
+  });
+}
+
+export async function listWorkspaceInvitations(userId: string, workspaceId: string): Promise<WorkspaceInvitation[]> {
+  await requireWorkspaceOwner(userId, workspaceId);
+  const rows = await getDatabase().query<WorkspaceInvitation & { workspace_id: string; expires_at: string; accepted_at: string | null; revoked_at: string | null; created_at: string }>(
+    `SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at, created_at
+     FROM workspace_invitations WHERE workspace_id = ? ORDER BY created_at DESC LIMIT 100`, [workspaceId],
+  );
+  return rows.map((row) => ({ id: row.id, workspaceId: row.workspace_id, email: row.email, role: row.role, expiresAt: row.expires_at, acceptedAt: row.accepted_at, revokedAt: row.revoked_at, createdAt: row.created_at }));
+}
+
+export async function createWorkspaceInvitation(userId: string, workspaceId: string, email: string, role: WorkspaceRole): Promise<{ invitation: WorkspaceInvitation; token: string }> {
+  await requireWorkspaceOwner(userId, workspaceId);
+  const normalizedEmail = cleanEmail(email);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)) throw new Error('A valid invite email is required.');
+  if (role !== 'member') throw new Error('Only member invitations are available.');
+  const db = getDatabase();
+  const existingMember = await db.queryOne('SELECT wm.id FROM workspace_members wm JOIN users u ON u.id = wm.user_id WHERE wm.workspace_id = ? AND lower(u.email) = ?', [workspaceId, normalizedEmail]);
+  if (existingMember) throw new OrganizationServiceError('That person is already a workspace member.', 'ALREADY_A_MEMBER');
+  const token = crypto.randomBytes(32).toString('base64url');
+  const now = new Date();
+  const invitation = { id: id('wsi'), workspaceId, email: normalizedEmail, role, expiresAt: new Date(now.getTime() + INVITATION_TTL_MS).toISOString(), acceptedAt: null, revokedAt: null, createdAt: now.toISOString() } satisfies WorkspaceInvitation;
+  await db.transaction(async (tx) => {
+    await tx.execute('UPDATE workspace_invitations SET revoked_at = ? WHERE workspace_id = ? AND lower(email) = ? AND accepted_at IS NULL AND revoked_at IS NULL', [now.toISOString(), workspaceId, normalizedEmail]);
+    await tx.execute(
+      `INSERT INTO workspace_invitations (id, workspace_id, invited_by, email, role, token_hash, expires_at, accepted_at, revoked_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?)`,
+      [invitation.id, workspaceId, userId, normalizedEmail, role, hashToken(token), invitation.expiresAt, invitation.createdAt],
+    );
+    await recordAudit(tx, workspaceId, userId, 'invitation.created', 'invitation', invitation.id, { email: normalizedEmail, role });
+  });
+  return { invitation, token };
+}
+
+export async function revokeWorkspaceInvitation(userId: string, workspaceId: string, invitationId: string): Promise<void> {
+  await requireWorkspaceOwner(userId, workspaceId);
+  const db = getDatabase();
+  const result = await db.execute('UPDATE workspace_invitations SET revoked_at = ? WHERE id = ? AND workspace_id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitationId, workspaceId]);
+  if (result.changes !== 1) throw new OrganizationServiceError('Invitation not found or already closed.', 'INVITATION_NOT_FOUND');
+  await recordAudit(db, workspaceId, userId, 'invitation.revoked', 'invitation', invitationId);
+}
+
+export async function acceptWorkspaceInvitation(userId: string, token: string): Promise<WorkspaceWithRole> {
+  const db = getDatabase();
+  const user = await db.queryOne<{ email: string }>('SELECT email FROM users WHERE id = ?', [userId]);
+  if (!user) throw new OrganizationServiceError('Invitation recipient account was not found.', 'INVITATION_NOT_FOUND');
+  const invitation = await db.queryOne<{ id: string; workspace_id: string; email: string; role: WorkspaceRole; expires_at: string; accepted_at: string | null; revoked_at: string | null }>(
+    'SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at FROM workspace_invitations WHERE token_hash = ?', [hashToken(token)],
+  );
+  if (!invitation) throw new OrganizationServiceError('Invitation not found.', 'INVITATION_NOT_FOUND');
+  if (invitation.accepted_at || invitation.revoked_at) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
+  if (Date.parse(invitation.expires_at) <= Date.now()) throw new OrganizationServiceError('Invitation has expired.', 'INVITATION_EXPIRED');
+  if (cleanEmail(user.email) !== cleanEmail(invitation.email)) throw new OrganizationServiceError('Sign in with the invited email address to accept this invitation.', 'INVITATION_EMAIL_MISMATCH');
+  const existingMember = await db.queryOne('SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?', [invitation.workspace_id, userId]);
+  if (existingMember) throw new OrganizationServiceError('That account is already a workspace member.', 'ALREADY_A_MEMBER');
+
+  await db.transaction(async (tx) => {
+    const update = await tx.execute('UPDATE workspace_invitations SET accepted_at = ? WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitation.id]);
+    if (update.changes !== 1) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
+    await tx.execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', [id('wsm'), invitation.workspace_id, userId, invitation.role, new Date().toISOString()]);
+    await recordAudit(tx, invitation.workspace_id, userId, 'invitation.accepted', 'invitation', invitation.id);
+  });
+  return requireWorkspaceMember(userId, invitation.workspace_id);
+}
+
+export async function listWorkspaceAuditEvents(userId: string, workspaceId: string): Promise<WorkspaceAuditEvent[]> {
+  await requireWorkspaceMember(userId, workspaceId);
+  const rows = await getDatabase().query<{ id: string; action: string; target_type: string; target_id: string | null; metadata_json: string; actor_email: string | null; created_at: string }>(
+    `SELECT a.id, a.action, a.target_type, a.target_id, a.metadata_json, u.email as actor_email, a.created_at
+     FROM workspace_audit_events a LEFT JOIN users u ON u.id = a.actor_user_id
+     WHERE a.workspace_id = ? ORDER BY a.created_at DESC LIMIT 100`, [workspaceId],
+  );
+  return rows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: JSON.parse(row.metadata_json) as Record<string, unknown>, actorEmail: row.actor_email, createdAt: row.created_at }));
+}

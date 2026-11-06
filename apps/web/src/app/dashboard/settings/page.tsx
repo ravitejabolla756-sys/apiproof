@@ -160,7 +160,10 @@ export default function SettingsPage() {
                 <h2 className="text-sm font-semibold text-[#111111]">Personal account</h2>
                 <p className="mt-1 text-xs text-[#686868]">Update your profile or manage your sign-in credentials.</p>
               </div>
-              <Link href="/dashboard/settings/account" className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#D9D9D4] px-3 text-xs font-medium text-[#333333] transition-colors hover:bg-[#F6F6F4]">Open account settings</Link>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/dashboard/settings/account" className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#D9D9D4] px-3 text-xs font-medium text-[#333333] transition-colors hover:bg-[#F6F6F4]">Account settings</Link>
+                <Link href="/dashboard/settings/workspace" className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#D9D9D4] px-3 text-xs font-medium text-[#333333] transition-colors hover:bg-[#F6F6F4]">Workspace administration</Link>
+              </div>
             </div>
           </div>
 
