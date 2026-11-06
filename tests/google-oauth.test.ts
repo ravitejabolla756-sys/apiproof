@@ -117,8 +117,9 @@ describe('Google OAuth 2.0 sign-in', () => {
     expect(response.status).toBe(307);
     expect(new URL(response.headers.get('location') || '').pathname).toBe('/dashboard');
     expect(response.headers.get('set-cookie')).toContain('apiproof_session=ses_');
-    const user = await getDatabase().queryOne<{ id: string; email: string }>('SELECT id, email FROM users WHERE email = ?', ['google-user@example.com']);
+    const user = await getDatabase().queryOne<{ id: string; email: string; email_verified_at: string | null }>('SELECT id, email, email_verified_at FROM users WHERE email = ?', ['google-user@example.com']);
     expect(user?.id).toMatch(/^usr_/);
+    expect(user?.email_verified_at).toBeTruthy();
     expect(await getDatabase().queryOne('SELECT google_subject FROM google_oauth_accounts WHERE user_id = ?', [user?.id])).toMatchObject({ google_subject: 'google-subject-123' });
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM workspace_members WHERE user_id = ?', [user?.id])).toHaveLength(1);
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM sessions WHERE user_id = ?', [user?.id])).toHaveLength(1);

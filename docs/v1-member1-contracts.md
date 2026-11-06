@@ -4,8 +4,10 @@ This document records backend contracts that require coordination with Member 2.
 
 ## Email verification (AUTH-05)
 
-- Backend owns token issuance, hashing, expiry, single-use consumption, resend throttling, verification state, and enforcement decisions.
-- Member 2 owns templates and delivery presentation. The backend must pass a stable template key and non-secret user-safe variables; raw tokens are never logged or persisted in plaintext.
+- Backend owns token issuance, hashing, expiry, single-use consumption, resend throttling, verification state, and enforcement decisions. The current API actions are `verify_email` and authenticated `resend_email_verification` on `POST /api/auth`.
+- The action URL keeps the token in the URL fragment; the server receives it only through the explicit verification POST and never logs or persists it in plaintext.
+- The current SMTP delivery adapter renders the password-reset-compatible fallback template and accepts `EMAIL_FROM` with `PASSWORD_RESET_FROM` as a compatibility fallback. Member 2 must approve the final template key/variables contract before production delivery; this workstream does not claim that approval.
+- Existing OAuth providers only set `users.email_verified_at` after the provider's own verified-email check. Matching a provider email to an existing password account still does not link or verify that account automatically.
 - Real delivery remains gated until an approved email provider and environment are available.
 
 ## Organization access (ORG-05 / ORG-10)
@@ -42,3 +44,4 @@ This document records backend contracts that require coordination with Member 2.
 ## Change log
 
 - 2026-11-06: Phase 0 initialized this contract document from the clean `origin/main` baseline. No endpoint, schema or event contract was changed in Phase 0.
+- 2026-11-07: Added the local AUTH-05 token/API/schema contract. Provider delivery, Member 2 template approval, and final unverified-account enforcement remain separate gates.

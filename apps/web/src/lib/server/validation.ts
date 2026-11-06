@@ -85,6 +85,15 @@ export function validatePasswordResetCompletionInput(body: unknown): ValidationR
   return { valid: true, data: { token, password } };
 }
 
+export function validateEmailVerificationInput(body: unknown): ValidationResult<{ token: string }> {
+  if (!body || typeof body !== 'object') return { valid: false, error: 'Request body must be a JSON object.' };
+  const token = (body as Record<string, unknown>).token;
+  if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    return { valid: false, error: 'A valid email verification token is required.' };
+  }
+  return { valid: true, data: { token } };
+}
+
 export function validateRepositoryConnectInput(body: unknown): ValidationResult<{
   owner?: string;
   name?: string;

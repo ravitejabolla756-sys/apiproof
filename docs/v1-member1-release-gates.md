@@ -13,6 +13,7 @@ Last updated: 2026-11-06. This is a checklist, not a production approval.
 | PostgreSQL tenant isolation / RLS | BLOCKED | No approved production/staging role access; local SQLite tests are insufficient |
 | PostgreSQL least-privilege grants | BLOCKED | No approved role/grant read-back environment |
 | Auth/OAuth/session security | PARTIAL | 8-file auth/security matrix passed 70/70, including production missing-Origin/Referer CSRF rejection; email verification and unverified-account enforcement remain incomplete |
+| Email verification backend flow | PASS (local only) | Migration 024, hashed single-use token service, verification/resend actions, verification page, and 8 focused tests pass; provider delivery and enforcement policy remain gated |
 | Email verification delivery | BLOCKED | Approved email provider and Member 2 template contract not configured |
 | GitHub App/webhook/private repository live verification | NOT_TESTED | No live credentials or authorized staging run in this workstream |
 | Scanner/provider/impact accuracy | NOT_TESTED | Existing unit coverage; benchmark and adversarial acceptance work remains |

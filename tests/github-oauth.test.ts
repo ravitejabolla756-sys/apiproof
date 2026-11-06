@@ -93,8 +93,9 @@ describe('GitHub Login OAuth', () => {
     expect(response.status).toBe(307);
     expect(new URL(response.headers.get('location') || '').pathname).toBe('/dashboard');
     expect(response.headers.get('set-cookie')).toContain('apiproof_session=ses_');
-    const user = await getDatabase().queryOne<{ id: string; email: string }>('SELECT id, email FROM users WHERE email = ?', ['octo@example.com']);
+    const user = await getDatabase().queryOne<{ id: string; email: string; email_verified_at: string | null }>('SELECT id, email, email_verified_at FROM users WHERE email = ?', ['octo@example.com']);
     expect(user?.id).toMatch(/^usr_/);
+    expect(user?.email_verified_at).toBeTruthy();
     expect(await getDatabase().queryOne('SELECT github_subject FROM github_oauth_accounts WHERE user_id = ?', [user?.id])).toMatchObject({ github_subject: '123456' });
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM workspace_members WHERE user_id = ?', [user?.id])).toHaveLength(1);
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM sessions WHERE user_id = ?', [user?.id])).toHaveLength(1);

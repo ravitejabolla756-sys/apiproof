@@ -251,6 +251,7 @@ export async function authenticateGoogleOAuth(config: GoogleOAuthConfig, code: s
       const row = await tx.queryOne<{ id: string; email: string; name: string; created_at: string }>('SELECT id, email, name, created_at FROM users WHERE id = ?', [existingIdentity.user_id]);
       if (!row) throw new Error('GOOGLE_OAUTH_ACCOUNT_INVALID');
       await tx.execute('UPDATE google_oauth_accounts SET google_email = ?, google_name = ?, updated_at = ? WHERE google_subject = ?', [identity.email, identity.name, new Date().toISOString(), identity.subject]);
+      await tx.execute('UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?', [new Date().toISOString(), existingIdentity.user_id]);
       return { kind: 'authenticated', user: mapUser(row) };
     }
 
@@ -263,7 +264,7 @@ export async function authenticateGoogleOAuth(config: GoogleOAuthConfig, code: s
     const userId = `usr_${crypto.randomBytes(12).toString('hex')}`;
     const oauthId = `goa_${crypto.randomBytes(12).toString('hex')}`;
     const displayName = identity.name;
-    await tx.execute('INSERT INTO users (id, email, password_hash, name, created_at) VALUES (?, ?, ?, ?, ?)', [userId, identity.email, hashPassword(crypto.randomBytes(48).toString('hex')), displayName, now]);
+    await tx.execute('INSERT INTO users (id, email, password_hash, name, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?)', [userId, identity.email, hashPassword(crypto.randomBytes(48).toString('hex')), displayName, now, now]);
     await createWorkspaceForUser(userId, `${displayName}'s Workspace`, undefined, tx);
     await tx.execute('INSERT INTO google_oauth_accounts (id, user_id, google_subject, google_email, google_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [oauthId, userId, identity.subject, identity.email, displayName, now, now]);
     return { kind: 'created', user: { id: userId, email: identity.email, name: displayName, createdAt: now } };

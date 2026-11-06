@@ -188,6 +188,7 @@ export async function authenticateGitHubLogin(
       const row = await tx.queryOne<{ id: string; email: string; name: string; created_at: string }>('SELECT id, email, name, created_at FROM users WHERE id = ?', [existingIdentity.user_id]);
       if (!row) throw new Error('GITHUB_OAUTH_ACCOUNT_INVALID');
       await tx.execute('UPDATE github_oauth_accounts SET github_login = ?, github_email = ?, github_name = ?, updated_at = ? WHERE github_subject = ?', [identity.login, identity.email, identity.name, new Date().toISOString(), identity.subject]);
+      await tx.execute('UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?', [new Date().toISOString(), existingIdentity.user_id]);
       return { kind: 'authenticated', user: mapUser(row) };
     }
 
@@ -199,7 +200,7 @@ export async function authenticateGitHubLogin(
     const now = new Date().toISOString();
     const userId = `usr_${crypto.randomBytes(12).toString('hex')}`;
     const oauthId = `gho_${crypto.randomBytes(12).toString('hex')}`;
-    await tx.execute('INSERT INTO users (id, email, password_hash, name, created_at) VALUES (?, ?, ?, ?, ?)', [userId, identity.email, hashPassword(crypto.randomBytes(48).toString('hex')), identity.name, now]);
+    await tx.execute('INSERT INTO users (id, email, password_hash, name, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?)', [userId, identity.email, hashPassword(crypto.randomBytes(48).toString('hex')), identity.name, now, now]);
     await createWorkspaceForUser(userId, `${identity.name}'s Workspace`, undefined, tx);
     await tx.execute('INSERT INTO github_oauth_accounts (id, user_id, github_subject, github_login, github_email, github_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [oauthId, userId, identity.subject, identity.login, identity.email, identity.name, now, now]);
     return { kind: 'created', user: { id: userId, email: identity.email, name: identity.name, createdAt: now } };

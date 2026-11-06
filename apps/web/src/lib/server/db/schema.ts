@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  email_verified_at TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -261,6 +262,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  email_verified_at TEXT,
   created_at TEXT NOT NULL
 );
 
