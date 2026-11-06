@@ -21,10 +21,10 @@ export function LandingFooter() {
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>All systems operational · Read-only AST safety</span>
-          </div>
+          <Link href="/status" className="inline-flex min-h-10 items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300 transition-colors hover:border-white/20 hover:text-white">
+            <span className="w-2 h-2 rounded-full bg-slate-400" aria-hidden="true" />
+            <span>Beta · Read-only safety boundary</span>
+          </Link>
         </div>
 
         {/* DIVIDER */}
@@ -84,6 +84,11 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/faq" className="hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="hover:text-white transition-colors">
                   Contact
                 </Link>
@@ -120,6 +125,16 @@ export function LandingFooter() {
               <li>
                 <Link href="/cookies" className="hover:text-white transition-colors">
                   Cookies
+                </Link>
+              </li>
+              <li>
+                <Link href="/refunds" className="hover:text-white transition-colors">
+                  Billing &amp; refunds
+                </Link>
+              </li>
+              <li>
+                <Link href="/status" className="hover:text-white transition-colors">
+                  Status
                 </Link>
               </li>
               <li>

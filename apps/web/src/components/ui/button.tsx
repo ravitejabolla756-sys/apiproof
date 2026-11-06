@@ -16,7 +16,7 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const base = 'inline-flex items-center justify-center font-sans font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 disabled:opacity-50 disabled:cursor-not-allowed';
+  const base = 'inline-flex min-h-10 items-center justify-center font-sans font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
     primary: 'bg-[#111111] hover:bg-zinc-800 text-white shadow-sm active:scale-[0.99]',

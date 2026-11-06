@@ -18,7 +18,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 space-y-16 outline-none">
 
         {/* TOP SECTION: HEADING + FORM */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -32,7 +32,7 @@ export default function ContactPage() {
               Connect with the MY OWL Team
             </h1>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-md">
-              Questions about protected repositories, custom vendor breaking change rules, security boundaries, or enterprise self-hosted deployment? We&apos;re here to assist.
+              Questions about the beta workflow, repository permissions, or planned enterprise evaluation? We&apos;ll show you what is available today and what still needs review.
             </p>
           </div>
 
@@ -43,17 +43,18 @@ export default function ContactPage() {
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h3 className="font-serif text-2xl text-[#000E29]">Message Received</h3>
+                <h3 className="font-serif text-2xl text-[#000E29]">No message was sent</h3>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                  Thank you for reaching out. A MY OWL engineer will review your inquiry and follow up within 24 hours.
+                  Contact intake is not connected to a delivery service in this beta. Please use an owner-provided support channel before sharing sensitive details.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="font-medium text-slate-700">Full Name</label>
+                    <label htmlFor="contact-name" className="font-medium text-slate-700">Full Name</label>
                     <input
+                      id="contact-name"
                       type="text"
                       required
                       placeholder="Alex Rivera"
@@ -61,8 +62,9 @@ export default function ContactPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="font-medium text-slate-700">Work Email</label>
+                    <label htmlFor="contact-email" className="font-medium text-slate-700">Work Email</label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       placeholder="alex@company.com"
@@ -72,8 +74,9 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="font-medium text-slate-700">Inquiry Type</label>
+                  <label htmlFor="contact-type" className="font-medium text-slate-700">Inquiry Type</label>
                   <select
+                    id="contact-type"
                     className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] focus:outline-none focus:ring-2 focus:ring-black/10"
                     defaultValue=""
                     required
@@ -88,8 +91,9 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="font-medium text-slate-700">How can we help?</label>
+                  <label htmlFor="contact-message" className="font-medium text-slate-700">How can we help?</label>
                   <textarea
+                    id="contact-message"
                     rows={4}
                     required
                     placeholder="Tell us about your tech stack, repository setup, or technical question..."
@@ -101,7 +105,7 @@ export default function ContactPage() {
                   type="submit"
                   className="px-8 py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold transition-all shadow-xs"
                 >
-                  Send Inquiry
+                  Review inquiry state
                 </button>
               </form>
             )}
@@ -118,9 +122,9 @@ export default function ContactPage() {
                 <Server className="w-4 h-4" />
               </div>
               <h3 className="font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h3>
-              <p className="text-xs text-slate-600">Private runners, GitHub Enterprise Server, VPC peering, and custom SLAs.</p>
+              <p className="text-xs text-slate-600">Questions about private runners, GitHub Enterprise Server, or future deployment options.</p>
             </div>
-            <span className="text-[11px] font-semibold text-blue-600 font-mono">enterprise@myowl.dev</span>
+              <span className="text-[11px] font-semibold text-slate-500 font-mono">Owner-provided contact only</span>
           </div>
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
@@ -129,9 +133,9 @@ export default function ContactPage() {
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <h3 className="font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h3>
-              <p className="text-xs text-slate-600">Strict read-only tree inspection, transient in-memory parsing, zero persistent code retention.</p>
+              <p className="text-xs text-slate-600">Read-only inspection and evidence boundaries documented for beta review.</p>
             </div>
-            <span className="text-[11px] font-semibold text-blue-600 font-mono">security@myowl.dev</span>
+              <span className="text-[11px] font-semibold text-slate-500 font-mono">See the security page</span>
           </div>
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
@@ -140,9 +144,9 @@ export default function ContactPage() {
                 <FileCode className="w-4 h-4" />
               </div>
               <h3 className="font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h3>
-              <p className="text-xs text-slate-600">Configure breaking change detection for private internal microservices and SDKs.</p>
+              <p className="text-xs text-slate-600">Discuss future rule coverage for private internal services and SDKs.</p>
             </div>
-            <span className="text-[11px] font-semibold text-blue-600 font-mono">rules@myowl.dev</span>
+              <span className="text-[11px] font-semibold text-slate-500 font-mono">Planned evaluation</span>
           </div>
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
@@ -151,9 +155,9 @@ export default function ContactPage() {
                 <HelpCircle className="w-4 h-4" />
               </div>
               <h3 className="font-serif text-lg text-[#000E29] font-medium">Technical Support</h3>
-              <p className="text-xs text-slate-600">Assistance with GitHub App permissions, scan triggers, or 4-gate verification errors.</p>
+              <p className="text-xs text-slate-600">Review the beta documentation for GitHub permissions and scan boundaries.</p>
             </div>
-            <span className="text-[11px] font-semibold text-blue-600 font-mono">support@myowl.dev</span>
+              <span className="text-[11px] font-semibold text-slate-500 font-mono">No staffed inbox is connected</span>
           </div>
 
         </div>

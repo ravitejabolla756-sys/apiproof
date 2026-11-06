@@ -22,6 +22,54 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Shared keyboard and motion contract for authenticated and public surfaces. */
+*:focus-visible {
+  outline: 3px solid #0050F8;
+  outline-offset: 3px;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  transform: translateY(-180%);
+  border-radius: 0.75rem;
+  background: #061332;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

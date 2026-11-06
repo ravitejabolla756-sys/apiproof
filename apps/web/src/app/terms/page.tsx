@@ -12,7 +12,7 @@ export default function TermsPage() {
     },
     {
       title: "2. Description of Service",
-      content: "MY OWL provides automated Abstract Syntax Tree (AST) analysis, upstream vendor breaking change monitoring, four-gate migration verification, and automated draft pull request generation for supported programming languages and vendor SDKs."
+      content: "MY OWL provides account, workspace, repository analysis and evidence-backed compatibility workflows for supported languages and provider catalogs. Availability and exact capabilities depend on the deployed beta configuration and approved integrations."
     },
     {
       title: "3. Human Review & Draft-Only Guarantee",
@@ -24,11 +24,11 @@ export default function TermsPage() {
     },
     {
       title: "5. GitHub App Scopes & Security Invariants",
-      content: "Customer grants MY OWL scoped permissions via GitHub OAuth and GitHub App installation to inspect repository manifests, parse files ephemerally for AST matching, and submit draft pull requests. Customer may revoke or modify repository access permissions at any time via GitHub organization settings."
+      content: "Customer grants only the permissions shown by the GitHub OAuth or GitHub App installation flow. Customer may revoke or modify repository access through GitHub settings. The deployed permission set and product configuration control whether any draft-PR workflow is available."
     },
     {
-      title: "6. Billing, Subscription Tiers & Cancellation",
-      content: "Paid tiers (such as Pro at $29/month, Team at $99/month, and Enterprise Custom) are billed in advance on a recurring monthly or annual basis. You may upgrade, downgrade, or cancel your subscription at any time through the billing dashboard. Cancellations take effect at the conclusion of the active billing period."
+      title: "6. Billing, subscriptions and cancellation",
+      content: "The current beta does not represent mock billing behavior as a live paid entitlement. If paid subscriptions are activated, the approved provider, canonical plan catalog, checkout terms, renewal timing, cancellation behavior and refund policy will govern. Those terms must be published and reviewed before paid activation."
     },
     {
       title: "7. Disclaimer of Warranties",
@@ -52,7 +52,7 @@ export default function TermsPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-12">
+      <main id="main-content" tabIndex={-1} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-12 outline-none">
 
         {/* HEADER */}
         <div className="space-y-4 border-b border-black/[0.08] pb-10">
@@ -65,7 +65,7 @@ export default function TermsPage() {
             Terms &amp; Conditions
           </h1>
           <p className="text-xs font-mono text-slate-500">
-            Last updated: March 2026 · Effective immediately
+            Draft for owner and legal review · Not an effective agreement
           </p>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed pt-2">
             Please read these Terms &amp; Conditions carefully before installing the MY OWL GitHub App or accessing our breaking change detection platform.

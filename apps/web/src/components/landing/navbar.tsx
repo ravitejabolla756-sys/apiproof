@@ -62,6 +62,7 @@ export function LandingNavbar() {
 
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-[760px] pointer-events-none transition-all duration-300">
+      <a href="#main-content" className="skip-link pointer-events-auto">Skip to main content</a>
       <header className="pointer-events-auto w-full">
         {/* Main Navbar Bar (Quieter when scrolling) */}
         <div className={`px-3.5 sm:px-5 rounded-full border flex items-center justify-between transition-all duration-300 ${
@@ -83,7 +84,7 @@ export function LandingNavbar() {
           </Link>
 
           {/* CENTER: Desktop Navigation (Features, How it works, Pricing) */}
-          <nav className="hidden md:flex items-center gap-1 text-[13px] font-medium">
+          <nav aria-label="Primary site navigation" className="hidden md:flex items-center gap-1 text-[13px] font-medium">
             {DESKTOP_NAV_LINKS.map((link) => {
               const active = isLinkActive(link.href);
               return (
@@ -132,6 +133,7 @@ export function LandingNavbar() {
               className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white flex items-center justify-center transition-colors focus:outline-hidden"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-site-navigation"
             >
               {mobileMenuOpen ? (
                 <X className="w-4 h-4 text-white" />
@@ -151,8 +153,8 @@ export function LandingNavbar() {
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
-            <div className="md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200">
-              <nav className="flex flex-col gap-1">
+            <div id="mobile-site-navigation" className="md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200">
+              <nav aria-label="Mobile site navigation" className="flex flex-col gap-1">
                 {MOBILE_NAV_LINKS.map((link) => {
                   const active = isLinkActive(link.href);
                   return (

@@ -9,7 +9,7 @@ export default function NotFoundPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased flex flex-col justify-between selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-36 pb-24 text-center my-auto">
+      <main id="main-content" tabIndex={-1} className="max-w-3xl mx-auto px-4 sm:px-6 pt-36 pb-24 text-center my-auto outline-none">
         <div className="rounded-[32px] bg-[#EFF1F5] border border-black/[0.04] p-10 sm:p-16 shadow-xs space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <span>ERROR 404</span>

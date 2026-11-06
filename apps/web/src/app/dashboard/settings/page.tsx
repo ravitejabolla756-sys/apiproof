@@ -40,7 +40,6 @@ interface BillingSummary {
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
   const [installation, setInstallation] = useState<GitHubInstallationInfo | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -89,44 +88,6 @@ export default function SettingsPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initiate GitHub connection.");
       setConnecting(false);
-    }
-  }
-
-  async function handleCheckout(planId: string) {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error || "Failed to initiate checkout session");
-      }
-      window.location.href = data.checkoutUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate checkout URL.");
-      setUpgrading(false);
-    }
-  }
-
-  async function handlePortal() {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/portal', {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (!res.ok || !data.portalUrl) {
-        throw new Error(data.error || "Failed to generate portal session");
-      }
-      window.location.href = data.portalUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate portal URL.");
-      setUpgrading(false);
     }
   }
 
@@ -253,25 +214,19 @@ export default function SettingsPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     {billing.plan.id === 'free' ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCheckout('pro')}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                        <span>Pro is planned after the invite-only beta</span>
-                      </Button>
+                      <Link href="/pricing" className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 text-xs font-medium text-white transition hover:bg-zinc-800">
+                        <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>View paid-plan rollout</span>
+                      </Link>
                     ) : (
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={handlePortal}
-                        disabled={upgrading}
+                        disabled
                         className="gap-1.5 font-medium"
                       >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                        <span>Manage Customer Portal</span>
+                        <CreditCard className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>Billing portal unavailable in beta</span>
                       </Button>
                     )}
                   </div>

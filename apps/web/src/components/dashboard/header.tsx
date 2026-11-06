@@ -35,7 +35,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
   return (
     <header className="h-16 bg-white/90 backdrop-blur-md border-b border-[#E8E8E5] px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-xs">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs">
         <Link href="/dashboard" className="text-[#686868] hover:text-[#111111] transition-colors font-medium">
           MY OWL
         </Link>
@@ -58,6 +58,8 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
       <div className="flex items-center gap-3">
         {/* Command Search Trigger */}
         <button
+          type="button"
+          aria-label="Open command search"
           onClick={onOpenCommandPalette}
           className="flex items-center gap-3 bg-[#F6F6F4] hover:bg-zinc-200/60 border border-[#E8E8E5] rounded-xl px-3.5 py-1.5 text-xs text-[#686868] transition-colors shadow-2xs"
         >
@@ -72,6 +74,8 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
         {githubConnected ? (
           /* Connected state — still clickable to manage/reconnect */
           <button
+            type="button"
+            aria-label="Manage GitHub connection"
             id="github-connected-btn"
             onClick={onOpenConnectModal}
             title="GitHub connected — click to manage repositories"

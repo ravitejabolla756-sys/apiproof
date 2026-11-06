@@ -9,7 +9,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* EDITORIAL HERO */}
         <div className="rounded-[32px] bg-[#EFF1F5] border border-black/[0.04] p-8 md:p-14 shadow-xs">

@@ -56,19 +56,16 @@ function FeatureList({ features }: { features: string[] }) {
   );
 }
 
-function ComingSoonButton({ label }: { label: string }) {
-  return (
-    <div className="w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-500">
-      {label}
-    </div>
-  );
+function ComingSoonButton({ label, href }: { label: string; href?: string }) {
+  if (href) return <Link href={href} className="block w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-200">{label}</Link>;
+  return <div className="w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-500">{label}</div>;
 }
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] antialiased">
       <LandingNavbar />
-      <main className="mx-auto max-w-7xl space-y-14 px-4 pb-24 pt-36 sm:px-6 lg:px-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-14 px-4 pb-24 pt-36 sm:px-6 lg:px-8 outline-none">
         <header className="mx-auto max-w-3xl space-y-5 text-center">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-800">
             <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
@@ -103,7 +100,7 @@ export default function PricingPage() {
                   <div><h3 className="text-xl font-semibold">MY OWL Developer</h3><p className="mt-1 text-sm text-slate-500">Rolling out</p></div>
                   <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">Coming soon</span>
                 </div>
-                <div><span className="font-serif text-5xl">₹4,999</span><span className="ml-2 text-sm text-slate-500">/month</span></div>
+                <div><span className="font-serif text-5xl">₹5,000</span><span className="ml-2 text-sm text-slate-500">/month</span></div>
                 <FeatureList features={developerFeatures} />
               </div>
               <ComingSoonButton label="Rolling out — no checkout" />
@@ -115,7 +112,7 @@ export default function PricingPage() {
                   <div><h3 className="text-xl font-semibold">MY OWL Startup</h3><p className="mt-1 text-sm text-slate-500">Coming soon</p></div>
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Not available</span>
                 </div>
-                <div><span className="font-serif text-5xl">₹14,999</span><span className="ml-2 text-sm text-slate-500">/month</span></div>
+                <div><span className="font-serif text-5xl">₹15,000</span><span className="ml-2 text-sm text-slate-500">/month</span></div>
                 <FeatureList features={startupFeatures} />
               </div>
               <ComingSoonButton label="Coming soon — no checkout" />
@@ -130,7 +127,7 @@ export default function PricingPage() {
                 <div><span className="font-serif text-5xl">Custom</span><span className="ml-2 text-sm text-slate-500">pricing</span></div>
                 <FeatureList features={enterpriseFeatures} />
               </div>
-              <ComingSoonButton label="Contact Sales — Coming Soon" />
+              <ComingSoonButton href="/contact" label="Start an enterprise inquiry" />
             </article>
           </div>
         </section>

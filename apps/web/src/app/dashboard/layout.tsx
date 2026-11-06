@@ -142,6 +142,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#F6F6F4] text-[#111111] flex flex-col md:flex-row font-sans selection:bg-[#111111] selection:text-white">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       {/* Sidebar */}
       <Sidebar />
 
@@ -152,7 +153,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           onOpenConnectModal={() => setIsConnectModalOpen(true)}
           githubConnected={githubConnected}
         />
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1440px] w-full mx-auto space-y-6">
+        <main id="main-content" tabIndex={-1} className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1440px] w-full mx-auto space-y-6 outline-none">
           {children}
         </main>
       </div>
