@@ -39,11 +39,11 @@ Statuses are current baseline findings, not completion claims.
 | NOT-05 | PARTIAL | PR/migration APIs; no user notification integration | No lifecycle notification test | PR-08 event contract requires review | Trusted event/recipient delivery | Integrate after review |
 | NOT-06 | DONE_VERIFIED_LOCAL | Preference schema/service/API/UI with required guards | `notification-preferences` 3/3 | Delivery availability is provider-owned | Email/Slack providers inactive | Connect to authoritative providers |
 | NOT-10 | BLOCKED | No digest schema, scheduler or template | No digest test | SEC-13 is PARTIAL | Scheduler/worker/event/retention contracts absent | Define contract with owner and Member 1 |
-| WEB-08 | DONE_VERIFIED_LOCAL | Evidence-backed FAQ, footer link and native details | FAQ/route assertions in 5-test browser suite | None | Content-owner review | Approve final copy |
+| WEB-08 | DONE_VERIFIED_LOCAL | Evidence-backed FAQ, footer link and native details | FAQ/route assertions in 14-test browser suite | None | Content-owner review | Approve final copy |
 | WEB-11 | PARTIAL | Privacy/terms marked draft; unsupported guarantees removed | Public route reachability | None | Owner/legal approval | Obtain sign-off |
 | WEB-12 | PARTIAL | Refund page marked draft; no paid entitlement claimed | Public route reachability | Billing contract remains partial | Owner/legal/provider approval | Finalize after billing decision |
 | WEB-13 | PARTIAL | Status says no live monitor; footer avoids uptime claim | Status/truthful-copy assertions | Monitoring SEC-11/13 incomplete | Approved status source | Connect after monitoring approval |
-| WEB-14 | PARTIAL | `sitemap.ts`, `robots.ts`, metadata and main targets | Crawl endpoint checks pass | None | Lighthouse/Core Web Vitals absent | Run reproducible performance audit |
+| WEB-14 | PARTIAL | `sitemap.ts`, `robots.ts`, inherited metadata and main targets | Metadata, heading, internal-link and crawl endpoint checks pass | None | Lighthouse/Core Web Vitals absent | Run reproducible performance audit |
 | WEB-15 | PARTIAL | Public navigation, contact copy, invitation error, mobile menu, truthful contact form and crawl surfaces | Browser suite 14/14 including metadata/link/form/axe checks; full manual/perf incomplete | None | Live contact/production proof absent | Complete public matrix and performance |
 | SEC-18 | PARTIAL | Draft runbook covers severity, roles, containment, evidence, recovery and tabletop | Document review only; no owner tabletop | Monitoring/alert contracts partial | Approved channels and reviewed exercise | Owner + Member 1 review and record |
 
