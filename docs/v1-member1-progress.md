@@ -79,4 +79,4 @@ Phase 0 read-only checks:
 - Completed tasks: `SEC-08` (`DONE_VERIFIED` for local implementation and automated acceptance; production browser/staging verification remains a separate gate).
 - Release status: `NO-GO` while the full suite has baseline regressions and external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
 - Next safe task: isolate and fix the existing deterministic fixture regression without copying the original dirty worktree wholesale, then re-run the full suite before closing SEC-09.
-- Last verified commit: `98124db4d190c8b197ca7a062e166dc2c8a350ff` (local checkpoint; not pushed).
+- Last verified commit: `a269f5ed80c78d52a4c7b3c08e0c4f8ef364b72b` (local checkpoint; not pushed).
