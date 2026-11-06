@@ -18,6 +18,7 @@ import {
   Activity,
   Sliders,
   UserRound,
+  Bell,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -77,6 +78,7 @@ export function Sidebar() {
   const secondaryNav = [
     { name: "Activity", href: "/dashboard/activity", icon: Activity },
     { name: "Account", href: "/dashboard/settings/account", icon: UserRound },
+    { name: "Notifications", href: "/dashboard/settings/notifications", icon: Bell },
     { name: "Settings", href: "/dashboard/settings", icon: Sliders },
   ];
 

@@ -1,0 +1,57 @@
+import { getDatabase } from './db/index.js';
+
+export type NotificationCategory = 'security' | 'account' | 'findings' | 'migration' | 'provider_change' | 'weekly_digest';
+export type NotificationChannel = 'email' | 'slack';
+
+export interface NotificationPreference {
+  category: NotificationCategory;
+  channel: NotificationChannel;
+  enabled: boolean;
+  required: boolean;
+  deliveryAvailable: boolean;
+}
+
+const DEFAULTS: Array<{ category: NotificationCategory; channel: NotificationChannel; enabled: boolean; required: boolean; deliveryAvailable: boolean }> = [
+  { category: 'security', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+  { category: 'account', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+  { category: 'findings', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
+  { category: 'findings', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
+  { category: 'migration', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
+  { category: 'migration', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
+  { category: 'provider_change', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
+  { category: 'provider_change', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
+  { category: 'weekly_digest', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
+  { category: 'weekly_digest', channel: 'slack', enabled: false, required: false, deliveryAvailable: true },
+];
+
+const VALID_CATEGORIES = new Set<NotificationCategory>(DEFAULTS.map((item) => item.category));
+const VALID_CHANNELS = new Set<NotificationChannel>(DEFAULTS.map((item) => item.channel));
+
+export async function getNotificationPreferences(userId: string): Promise<NotificationPreference[]> {
+  const rows = await getDatabase().query<{ category: NotificationCategory; channel: NotificationChannel; enabled: number | boolean }>(
+    'SELECT category, channel, enabled FROM user_notification_preferences WHERE user_id = ?', [userId],
+  );
+  const stored = new Map(rows.map((row) => [`${row.category}:${row.channel}`, Boolean(row.enabled)]));
+  return DEFAULTS.map((item) => ({ ...item, enabled: stored.get(`${item.category}:${item.channel}`) ?? item.enabled }));
+}
+
+export async function updateNotificationPreferences(userId: string, updates: Array<{ category: NotificationCategory; channel: NotificationChannel; enabled: boolean }>): Promise<NotificationPreference[]> {
+  for (const update of updates) {
+    if (!VALID_CATEGORIES.has(update.category) || !VALID_CHANNELS.has(update.channel)) throw new Error('Invalid notification preference category or channel.');
+    const required = DEFAULTS.find((item) => item.category === update.category && item.channel === update.channel)?.required;
+    if (required && !update.enabled) throw new Error('Security and account-recovery notifications cannot be disabled.');
+  }
+  const now = new Date().toISOString();
+  await getDatabase().transaction(async (tx) => {
+    for (const update of updates) {
+      await tx.execute(
+        `INSERT INTO user_notification_preferences (user_id, category, channel, enabled, updated_at)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, category, channel) DO UPDATE SET enabled = EXCLUDED.enabled, updated_at = EXCLUDED.updated_at`,
+        [userId, update.category, update.channel, update.enabled ? 1 : 0, now],
+      );
+    }
+  });
+  return getNotificationPreferences(userId);
+}
+

@@ -10,6 +10,7 @@ import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { organizationMigrations } from './organization-migration.js';
+import { notificationMigrations } from './notification-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
 export const migrations: Migration[] = [
@@ -482,6 +483,7 @@ export const migrations: Migration[] = [
   ...googleOAuthMigrations,
   ...githubLoginMigrations,
   ...organizationMigrations,
+  ...notificationMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {

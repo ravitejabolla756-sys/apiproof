@@ -13,6 +13,7 @@ import { SQLITE_GOOGLE_OAUTH_SCHEMA } from './google-oauth-migration.js';
 import { SQLITE_GITHUB_LOGIN_SCHEMA } from './github-login-migration.js';
 import { SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA } from './provider-change-monitor-migration.js';
 import { SQLITE_ORGANIZATION_SCHEMA } from './organization-migration.js';
+import { SQLITE_NOTIFICATION_SCHEMA } from './notification-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
 export * from './types.js';
@@ -146,6 +147,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec(SQLITE_GITHUB_LOGIN_SCHEMA);
   db.exec(SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA);
   db.exec(SQLITE_ORGANIZATION_SCHEMA);
+  db.exec(SQLITE_NOTIFICATION_SCHEMA);
   initializeSlackReliabilitySqlite(db);
 
   if (!skipDefaultSeed()) seedDefaultUserAndFixtureSqlite(db);
