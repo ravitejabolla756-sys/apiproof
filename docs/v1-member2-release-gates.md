@@ -9,7 +9,7 @@ Last updated: 2026-11-07. This is a checklist, not launch approval.
 | Member 1 integration | NOT_INTEGRATED | Deliberately integrate reviewed commits/contracts only after shared changes are complete |
 | Typecheck/lint/build | PASS | Typecheck, targeted ESLint and `pnpm build` pass; Next generated 80 static pages |
 | Full test suite | FAIL_BASELINE | 1,268 passed, 46 failed, 4 skipped across 157 files; failures are existing fixture/evaluation drift outside changed source, with details in QA report |
-| Browser/E2E | PARTIAL | Playwright harness passes locally: 14/14 serial public/authenticated/metadata/link/form/axe/dialog tests; CI artifacts and production proof remain incomplete |
+| Browser/E2E | PARTIAL | Playwright harness passes locally: 14/14 serial public/authenticated/metadata/link/form/axe/dialog tests; CI job now retains artifacts, but no authorized CI run or production proof is recorded |
 | Accessibility | PARTIAL | Core authenticated/public axe scans, semantic dialogs, skip-link/focus-visible/reduced-motion/touch-target checks pass; full manual screen-reader and route review remain open |
 | PostgreSQL tenant/RBAC | BLOCKED | Production-representative roles and policies required |
 | Transactional email | BLOCKED | Approved domain/provider, credentials and sandbox delivery required |

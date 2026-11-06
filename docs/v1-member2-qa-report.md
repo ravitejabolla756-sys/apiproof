@@ -33,7 +33,7 @@ Updated implementation report; browser checks are local evidence only and are no
 
 ## Required next checks
 
-- Add CI artifact retention and the remaining manual browser checks before claiming UI-13 complete.
+- Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.
 - Complete manual screen-reader/full-route checks for keyboard-only navigation, mobile widths, dialogs, forms, loading/error/empty/denied states and reduced motion.
 - Run link/metadata checks for every public route and record actual outcomes.
 - Capture measured performance only from a reproducible local or approved environment; do not invent Lighthouse/Core Web Vitals values.

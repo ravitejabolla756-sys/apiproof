@@ -59,3 +59,47 @@ jobs:
 
       - name: Generate release manifest
         run: pnpm release:manifest
+
+  browser-e2e:
+    name: Browser E2E
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      APIPROOF_SECRET: ci-test-apiproof-secret-minimum-32-chars-long
+      APIPROOF_LOCAL_SEED_PASSWORD: ci-local-seed-password-only-for-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser E2E
+        run: pnpm exec playwright test tests/e2e/public-site.spec.ts
+
+      - name: Upload browser artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-browser-evidence-${{ github.run_id }}
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore
+          retention-days: 14
