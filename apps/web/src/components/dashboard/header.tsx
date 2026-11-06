@@ -59,7 +59,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
         {/* Command Search Trigger */}
         <button
           type="button"
-          aria-label="Open command search"
+          aria-label="Search repos, findings, SDKs... ⌘K"
           onClick={onOpenCommandPalette}
           className="flex items-center gap-3 bg-[#F6F6F4] hover:bg-zinc-200/60 border border-[#E8E8E5] rounded-xl px-3.5 py-1.5 text-xs text-[#686868] transition-colors shadow-2xs"
         >

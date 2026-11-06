@@ -92,7 +92,7 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <main id="main-content" tabIndex={-1} className="max-w-4xl space-y-6 outline-none">
+    <div className="max-w-4xl space-y-6 outline-none">
       <div className="flex flex-col gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link href="/dashboard/settings" className="mb-3 inline-flex min-h-10 items-center gap-2 text-xs font-medium text-[#686868] hover:text-[#111111]">
@@ -157,6 +157,6 @@ export default function AccountSettingsPage() {
           </section>
         </div>
       ) : null}
-    </main>
+    </div>
   );
 }

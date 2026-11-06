@@ -104,10 +104,10 @@ export default function WorkspaceSettingsPage() {
     setMessage('Invitation link copied.');
   }
 
-  if (loading) return <main id="main-content" tabIndex={-1} className="flex items-center gap-2 text-xs text-[#686868] outline-none"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading workspace settings…</main>;
+  if (loading) return <div className="flex items-center gap-2 text-xs text-[#686868] outline-none"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading workspace settings…</div>;
 
   return (
-    <main id="main-content" tabIndex={-1} className="max-w-5xl space-y-6 outline-none">
+    <div className="max-w-5xl space-y-6 outline-none">
       <div className="flex flex-col gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link href="/dashboard/settings" className="mb-3 inline-flex min-h-10 items-center gap-2 text-xs font-medium text-[#686868] hover:text-[#111111]"><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Workspace settings</Link>
@@ -149,6 +149,6 @@ export default function WorkspaceSettingsPage() {
         <div className="mb-5 flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="audit-heading" className="text-base font-semibold text-[#111111]">Administrative audit trail</h2><p className="mt-1 text-xs text-[#686868]">Workspace membership and settings changes are attributed to the acting account.</p></div></div>
         {audit.length === 0 ? <p className="text-xs text-[#686868]">No administrative events recorded yet.</p> : <div className="divide-y divide-[#E8E8E5]">{audit.slice(0, 20).map((event) => <div key={event.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-medium text-[#333333]">{event.action}</p><p className="text-[11px] text-[#686868]">{event.actorEmail || 'System'} · {event.targetType}</p></div><time className="text-[11px] font-mono text-[#888888]" dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleString()}</time></div>)}</div>}
       </section>
-    </main>
+    </div>
   );
 }

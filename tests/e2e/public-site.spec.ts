@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test.describe('public beta surfaces', () => {
   test('loads the core public pages and evidence-backed content', async ({ page }) => {
@@ -41,5 +42,38 @@ test.describe('public beta surfaces', () => {
     await expect(page.locator('#mobile-site-navigation')).toBeVisible();
     await page.getByRole('button', { name: 'Close menu' }).click();
     await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('passes automated accessibility scans on representative public pages', async ({ page }) => {
+    for (const route of ['/pricing', '/faq', '/status']) {
+      await page.goto(route);
+      const results = await new AxeBuilder({ page }).analyze();
+      expect(results.violations, route).toEqual([]);
+    }
+  });
+});
+
+test.describe('authenticated product surfaces', () => {
+  test('signs in with the local seed and loads account, workspace, and notification settings', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByLabel('Email').fill('developer@apiproof.dev');
+    await page.getByLabel('Password').fill('local-test-seed-password');
+    await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
+    await page.waitForURL('**/dashboard');
+
+    await page.goto('/dashboard/settings/account');
+    await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible();
+    await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer');
+
+    await page.goto('/dashboard/settings/workspace');
+    await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
+
+    await page.goto('/dashboard/settings/notifications');
+    await expect(page.getByRole('heading', { name: 'Notification preferences' })).toBeVisible();
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 });
+
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
 });

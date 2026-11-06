@@ -58,7 +58,7 @@ function FeatureList({ features }: { features: string[] }) {
 
 function ComingSoonButton({ label, href }: { label: string; href?: string }) {
   if (href) return <Link href={href} className="block w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-200">{label}</Link>;
-  return <div className="w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-500">{label}</div>;
+  return <div className="w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-600">{label}</div>;
 }
 
 export default function PricingPage() {

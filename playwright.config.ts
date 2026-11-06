@@ -16,7 +16,8 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
-      APIPROOF_SKIP_DEFAULT_SEED: 'true',
+      APIPROOF_SKIP_DEFAULT_SEED: 'false',
+      APIPROOF_LOCAL_SEED_PASSWORD: 'local-test-seed-password',
       APIPROOF_DB_PATH: '.tmp/playwright.db',
     },
   },

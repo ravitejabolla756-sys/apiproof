@@ -18,40 +18,40 @@ Baseline: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8` (`origin/main`)
 
 Statuses are current baseline findings, not completion claims.
 
-| ID | Status | Code/test evidence | Member 1 dependency / next action |
-|---|---|---|---|
-| AUTH-08 | PASS-LOCAL | `GET/PATCH /api/account`, account page, display-name validation, and `tests/account-settings.test.ts` profile coverage | Production email/account-recovery contract still external |
-| AUTH-09 | MISSING | No account deletion route, service or UI found | Await reviewed SEC-19 deletion/retention contract before implementing destructive semantics |
-| UI-12 | PASS-LOCAL | Shared focus-visible, skip-link, touch-target and reduced-motion baseline; public/dashboard main targets and browser keyboard/mobile checks | axe/contrast/screen-reader and production visual review remain external |
-| UI-13 | PASS-LOCAL | `playwright.config.ts` and `tests/e2e/public-site.spec.ts`; Chromium installed locally; public route/crawl/mobile checks pass | Authenticated flows, axe/Lighthouse and CI browser artifact policy remain open |
-| ORG-02 | PASS-LOCAL | Workspace settings API/page with owner gate and slug validation | PostgreSQL runtime/RLS evidence pending |
-| ORG-03 | PASS-LOCAL | Hashed 7-day invite tokens, manual-copy invite link, accept page/API, email binding and single-use tests | Approved email delivery intentionally not enabled |
-| ORG-04 | PASS-LOCAL | Member list, owner-only role changes/removal, last-owner safeguard, session invalidation and tests | Member 1 revocation contract still needs shared review |
-| ORG-11 | PASS-LOCAL | Dedicated `workspace_audit_events`, audit API/page, administrative event writes and tests | Retention/operations policy and production PostgreSQL proof pending |
-| BILL-07 | PARTIAL | Paid checkout remains server-blocked; pricing and settings now show beta/coming-soon truth; boundary tests pass | Real provider, signed webhooks and entitlement reconciliation required |
-| BILL-08 | PARTIAL | Portal endpoint now returns explicit beta-unavailable response; no simulated customer URL exposed | Real provider portal and owner authorization required |
-| BILL-09 | MISSING | No invoice schema, API or UI found | Requires approved provider invoice contract |
-| BILL-11 | PARTIAL | `/contact` now marks intake as local/not sent and avoids unsupported SLA/deployment claims | Durable inquiry intake and approved enterprise contract required |
-| NOT-01 | PARTIAL | Password-reset email adapter exists; no general provider abstraction/delivery tracking | Coordinate approved provider and delivery state contract |
-| NOT-02 | PARTIAL | Password reset backend exists; Member 1 verification changes are only in separate local worktree | Add templates/contract tests without sending real mail |
-| NOT-03 | PARTIAL | Slack finding notification queue exists; no email preference/recipient product surface | Reuse trusted events; add preferences and authorization tests |
-| NOT-04 | PARTIAL | Scan worker failure states exist; no user notification event path found | Define durable actionable-failure event contract |
-| NOT-05 | PARTIAL | PR/migration lifecycle APIs exist; no notification delivery integration found | Integrate only after Member 1 PR-08 event contract is reviewed |
-| NOT-06 | PASS-LOCAL | `user_notification_preferences`, `GET/PATCH /api/account/notifications`, settings UI, required-category guard and 3 tests | Email/Slack delivery availability remains provider-gated |
-| NOT-10 | MISSING | No digest schema, scheduler or template found | Define cadence/clock/dedupe contract and worker integration |
-| WEB-08 | PASS-LOCAL | Evidence-backed `/faq` page, footer link, native details controls and browser reachability check | Content owner review remains open |
-| WEB-11 | PARTIAL | `/privacy` and `/terms` identify draft/legal-review status and remove unsupported guarantees | Owner/legal approval required |
-| WEB-12 | PARTIAL | `/refunds` draft clearly says no paid beta entitlement/provider is active | Owner/legal/provider contract required |
-| WEB-13 | PARTIAL | `/status` is truthful and footer no longer claims uptime; updates remain informational | Approved live status/monitoring source required |
-| WEB-14 | PARTIAL | `sitemap.ts`, `robots.ts`, canonical site fallback and public main targets added | Metadata/performance/Lighthouse measurement required |
-| WEB-15 | PASS-LOCAL | Public route, crawl, keyboard and mobile Playwright checks pass; contact form explicitly does not claim delivery | Full link audit, axe, performance and live-contact proof remain open |
-| SEC-18 | PASS-LOCAL | `docs/v1-member2-incident-response.md` includes severity, roles, containment, evidence, recovery and tabletop | Owner/security review and real alert/on-call/status channels required |
+| ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
+|---|---|---|---|---|---|---|
+| AUTH-08 | DONE_VERIFIED_LOCAL | `GET/PATCH /api/account`, password-change route/page and session invalidation | `account-settings` 5/5; `auth-session` 13/13 | AUTH-05 enforcement remains separate | Recovery/email policy | Review linked-account password semantics |
+| AUTH-09 | BLOCKED | No deletion route/service/UI | No destructive-flow test; intentionally not invented | SEC-19 is PARTIAL with no deletion contract | Legal retention and durable deletion policy | Obtain owner/Member 1 contract |
+| UI-12 | PARTIAL | Focus-visible, skip-link, touch-target, reduced-motion and single-main baseline | Keyboard/mobile checks and axe scans pass on pricing/FAQ/status/notifications | None | Manual screen-reader/full-route review | Expand manual and route coverage |
+| UI-13 | PARTIAL | Playwright/Chromium harness and authenticated settings coverage | `pnpm exec playwright test` 5/5 local; subset only | None | Required route/state matrix and CI artifacts incomplete | Add remaining route/state cases |
+| ORG-02 | PARTIAL | Workspace settings API/page, owner gate and slug validation | `organization-management` 5/5 | ORG-05 role matrix remains PARTIAL | PostgreSQL tenant/RLS proof | Reconcile role matrix and run approved checks |
+| ORG-03 | PARTIAL | Hashed 7-day single-use invites, email binding, accept page/API | Organization suite covers expiry/replay/email/member guards | ORG-05/ORG-10 coordination | Approved transactional email unavailable | Add provider-backed acceptance after approval |
+| ORG-04 | PARTIAL | Owner-only role/removal UI/API, last-owner guard and session invalidation | Organization suite covers owner/member boundaries | ORG-10 is MISSING; revocation contract absent | PostgreSQL/concurrent proof | Integrate reviewed backend contract |
+| ORG-11 | PARTIAL | `workspace_audit_events`, audit API/page and attributed writes | Organization suite covers audit records | Retention/operations policy unresolved | PostgreSQL retention/RLS proof | Review retention and migrate safely |
+| BILL-07 | PARTIAL | Paid checkout server-blocked; pricing/settings show beta states | Billing boundaries 2/2; pricing included in 29/29 | Provider lifecycle remains PARTIAL | Provider sandbox/signatures/reconciliation | Owner selects and approves provider |
+| BILL-08 | PARTIAL | Portal endpoint returns beta-unavailable; no simulated URL | Billing boundary test covers refusal | Provider contract required | Real provider portal/authorization | Implement projection after approval |
+| BILL-09 | MISSING | No invoice schema/API/UI | No invoice test | Provider lifecycle contract | Invoice source/retention policy | Define provider-backed contract |
+| BILL-11 | PARTIAL | Contact/enterprise copy is explicit local intake with no SLA claim | Public browser checks truthful copy | None | Durable approved intake workflow | Owner chooses intake channel |
+| NOT-01 | PARTIAL | Reset adapter exists; no general trusted event/delivery abstraction | Reset tests only; no provider proof | Event categories are backend guidance | Approved email provider/delivery state | Define event/recipient contract |
+| NOT-02 | PARTIAL | Reset route/template path exists; delivery not active | Auth/session tests; no SMTP sandbox | AUTH-05 template approval pending | Approved provider/domain | Review variables and delivery contract |
+| NOT-03 | PARTIAL | Slack finding queue and preference UI/API | Notification preferences 3/3; no email delivery proof | Trusted event guidance and Slack auth | Provider connection/durable delivery | Integrate recipient auth/dedupe |
+| NOT-04 | PARTIAL | Worker failure states; no general actionable-failure event path | No end-to-end user delivery test | SEC-13 worker monitoring partial | Durable event/retry/alert contract | Define failure event/retry policy |
+| NOT-05 | PARTIAL | PR/migration APIs; no user notification integration | No lifecycle notification test | PR-08 event contract requires review | Trusted event/recipient delivery | Integrate after review |
+| NOT-06 | DONE_VERIFIED_LOCAL | Preference schema/service/API/UI with required guards | `notification-preferences` 3/3 | Delivery availability is provider-owned | Email/Slack providers inactive | Connect to authoritative providers |
+| NOT-10 | BLOCKED | No digest schema, scheduler or template | No digest test | SEC-13 is PARTIAL | Scheduler/worker/event/retention contracts absent | Define contract with owner and Member 1 |
+| WEB-08 | DONE_VERIFIED_LOCAL | Evidence-backed FAQ, footer link and native details | FAQ/route assertions in 5-test browser suite | None | Content-owner review | Approve final copy |
+| WEB-11 | PARTIAL | Privacy/terms marked draft; unsupported guarantees removed | Public route reachability | None | Owner/legal approval | Obtain sign-off |
+| WEB-12 | PARTIAL | Refund page marked draft; no paid entitlement claimed | Public route reachability | Billing contract remains partial | Owner/legal/provider approval | Finalize after billing decision |
+| WEB-13 | PARTIAL | Status says no live monitor; footer avoids uptime claim | Status/truthful-copy assertions | Monitoring SEC-11/13 incomplete | Approved status source | Connect after monitoring approval |
+| WEB-14 | PARTIAL | `sitemap.ts`, `robots.ts`, metadata and main targets | Crawl endpoint checks pass | None | Lighthouse/Core Web Vitals absent | Run reproducible performance audit |
+| WEB-15 | PARTIAL | Public navigation, contact copy, mobile menu and crawl surfaces | Browser suite 5/5 including axe; full links/forms/perf incomplete | None | Live contact/production proof absent | Complete public matrix and performance |
+| SEC-18 | PARTIAL | Draft runbook covers severity, roles, containment, evidence, recovery and tabletop | Document review only; no owner tabletop | Monitoring/alert contracts partial | Approved channels and reviewed exercise | Owner + Member 1 review and record |
 
 ## Current checkpoint
 
-- Phase: local implementation slices for account, organization, public surfaces, billing boundaries, notifications and incident response complete; final verification/reconciliation remains.
-- Highest-priority next task: final full test/build/browser verification, then review remaining provider/legal/PostgreSQL gates.
+- Phase: local implementation slices for account, organization, public surfaces, billing boundaries, notifications and incident response complete; verification is complete and release reconciliation remains.
+- Highest-priority next task: review remaining provider/legal/PostgreSQL/deletion/scheduler gates with the owner and Member 1.
 - Shared contracts: Member 1's local contracts cover finding lifecycle, merged-SHA scans, resolution evidence and deterministic planning; local email/billing/RBAC/deletion gaps remain unintegrated.
 - External blockers: approved transactional email, real billing provider, PostgreSQL role/RLS evidence, deletion/revocation contracts, legal approval, status/monitoring source and deployment access.
-- Verification: targeted Member 2 contracts 29/29 pass; Playwright public-site 3/3 pass; TypeScript, targeted ESLint and production build pass. Repository-wide Vitest is not clean because 47 pre-existing fixture/evaluation cases fail with digest/line-number drift outside changed source.
+- Verification: targeted Member 2 contracts 29/29 pass; Playwright browser/axe suite 5/5 pass; TypeScript, targeted ESLint and production build pass. Repository-wide Vitest is not clean because 46 existing fixture/evaluation cases fail with digest/line-number drift outside changed source (152 files pass, 4 fail, 1 skipped).
 - Next safe action: fixture-owner remediation and Member 1 contract review; keep production recommendation NO-GO until the failing suite and external gates are cleared.

@@ -4,7 +4,7 @@ import { MyOwlLogo } from "@/components/ui/logo";
 
 export function LandingFooter() {
   return (
-    <footer className="w-full bg-[#001033] text-slate-400 py-16 text-xs border-t border-white/10">
+    <footer className="w-full bg-[#001033] text-slate-300 py-16 text-xs border-t border-white/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
 
         {/* TOP ROW: Brand and Description */}
@@ -16,7 +16,7 @@ export function LandingFooter() {
                 MY OWL
               </span>
             </Link>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               API change detection, migration planning, and safe draft pull requests.
             </p>
           </div>
@@ -35,10 +35,10 @@ export function LandingFooter() {
 
           {/* Column 1: PRODUCT */}
           <div className="space-y-3">
-            <h4 className="font-mono text-[11px] font-bold uppercase tracking-wider text-white">
+            <h2 className="font-mono text-[11px] font-bold uppercase tracking-wider text-white">
               Product
-            </h4>
-            <ul className="space-y-2.5 text-slate-400">
+            </h2>
+            <ul className="space-y-2.5 text-slate-300">
               <li>
                 <Link href="/features" className="hover:text-white transition-colors">
                   Product Overview
@@ -64,10 +64,10 @@ export function LandingFooter() {
 
           {/* Column 2: COMPANY */}
           <div className="space-y-3">
-            <h4 className="font-mono text-[11px] font-bold uppercase tracking-wider text-white">
+            <h2 className="font-mono text-[11px] font-bold uppercase tracking-wider text-white">
               Company
-            </h4>
-            <ul className="space-y-2.5 text-slate-400">
+            </h2>
+            <ul className="space-y-2.5 text-slate-300">
               <li>
                 <Link href="/docs" className="hover:text-white transition-colors">
                   Docs
@@ -98,10 +98,10 @@ export function LandingFooter() {
 
           {/* Column 3: INFORMATION */}
           <div className="space-y-3">
-            <h4 className="font-mono text-[11px] font-bold uppercase tracking-wider text-white">
+            <h2 className="font-mono text-[11px] font-bold uppercase tracking-wider text-white">
               Information
-            </h4>
-            <ul className="space-y-2.5 text-slate-400">
+            </h2>
+            <ul className="space-y-2.5 text-slate-300">
               <li>
                 <Link href="/about" className="hover:text-white transition-colors">
                   About
@@ -148,9 +148,9 @@ export function LandingFooter() {
         </div>
 
         {/* BOTTOM COPYRIGHT */}
-        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-300 gap-2">
           <div>© 2026 MY OWL. All rights reserved.</div>
-          <div className="font-mono text-[11px] text-slate-400">myowl.dev</div>
+          <div className="font-mono text-[11px] text-slate-300">myowl.dev</div>
         </div>
 
       </div>

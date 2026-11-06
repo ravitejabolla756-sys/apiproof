@@ -197,7 +197,7 @@ export function Sidebar() {
               <span className="truncate text-[11px] font-semibold text-[#111111]" title={workspaceName || 'Active Workspace'}>
                 {workspaceName || 'Active Workspace'}
               </span>
-              <span className="truncate font-mono text-[10px] text-[#888888]" title={userEmail}>
+              <span className="truncate font-mono text-[10px] text-[#686868]" title={userEmail}>
                 {userEmail}
               </span>
             </div>
