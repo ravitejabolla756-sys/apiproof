@@ -74,4 +74,4 @@ Phase 0 read-only checks:
 - Completed tasks: none; all classifications above remain provisional until their acceptance criteria are fully evidenced.
 - Release status: `NO-GO` while critical/high dependency findings and external security gates remain unresolved.
 - Next safe task: isolate and fix the existing deterministic fixture regression without copying the original dirty worktree wholesale, then re-run the full suite before closing SEC-09.
-- Last verified commit: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8`.
+- Last verified commit: `7df82652708131c7ba141bd185725363091260c6` (local checkpoint; not pushed).
