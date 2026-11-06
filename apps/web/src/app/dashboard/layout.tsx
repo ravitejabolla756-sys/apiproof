@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F6F4] text-[#111111] flex flex-col md:flex-row font-sans selection:bg-[#111111] selection:text-white">
+    <div className="min-h-screen overflow-x-hidden bg-[#F6F6F4] text-[#111111] flex flex-col md:flex-row font-sans selection:bg-[#111111] selection:text-white">
       <a href="#main-content" className="skip-link">Skip to main content</a>
       {/* Sidebar */}
       <Sidebar />

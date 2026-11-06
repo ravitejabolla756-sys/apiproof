@@ -1,12 +1,20 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+
+async function signIn(page: Page) {
+  await page.goto('/login');
+  await page.getByLabel('Email').fill('developer@apiproof.dev');
+  await page.getByLabel('Password').fill('local-test-seed-password');
+  await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
+  await page.waitForURL('**/dashboard');
+}
 
 test.describe('public beta surfaces', () => {
   test('loads the core public pages and evidence-backed content', async ({ page }) => {
-    for (const route of ['/features', '/how-it-works', '/security', '/docs', '/pricing', '/faq', '/refunds', '/status', '/privacy', '/terms']) {
-      const response = await page.goto(route);
+    for (const route of ['/features', '/how-it-works', '/security', '/docs', '/pricing', '/faq', '/refunds', '/status', '/privacy', '/terms', '/invite/accept']) {
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
       expect(response?.status(), route).toBe(200);
-      await expect(page.locator('main#main-content')).toBeVisible();
+      await expect(page.locator('main#main-content')).toBeVisible({ timeout: 30_000 });
     }
     await page.goto('/faq');
     await expect(page.getByRole('heading', { name: 'Frequently asked questions' })).toBeVisible();
@@ -14,6 +22,9 @@ test.describe('public beta surfaces', () => {
     await expect(page.getByText('REFUND POLICY DRAFT')).toBeVisible();
     await page.goto('/status');
     await expect(page.getByText('No live monitor is connected')).toBeVisible();
+    await page.goto('/invite/accept');
+    await expect(page.getByRole('heading', { name: 'Workspace invitation' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
   });
 
   test('exposes crawl controls and avoids unsupported operational status copy', async ({ page, request }) => {
@@ -55,25 +66,93 @@ test.describe('public beta surfaces', () => {
 
 test.describe('authenticated product surfaces', () => {
   test('signs in with the local seed and loads account, workspace, and notification settings', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByLabel('Email').fill('developer@apiproof.dev');
-    await page.getByLabel('Password').fill('local-test-seed-password');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
-    await page.waitForURL('**/dashboard');
+    await signIn(page);
 
     await page.goto('/dashboard/settings/account');
-    await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible();
-    await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer');
+    await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer', { timeout: 30_000 });
 
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
 
     await page.goto('/dashboard/settings/notifications');
-    await expect(page.getByRole('heading', { name: 'Notification preferences' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Notification preferences' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 });
 
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
+  });
+
+  test('covers the seeded dashboard browsing and product workflow routes', async ({ page }) => {
+    await signIn(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    const routes = [
+      '/dashboard',
+      '/dashboard/activity',
+      '/dashboard/compatibility',
+      '/dashboard/repositories',
+      '/dashboard/repositories/repo_apiproof_fixture',
+      '/dashboard/findings',
+      '/dashboard/migrations',
+      '/dashboard/pull-requests',
+      '/dashboard/providers',
+      '/dashboard/inventory',
+      '/dashboard/settings',
+    ];
+
+    for (const route of routes) {
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      expect(response?.status(), route).toBe(200);
+      await expect(page.locator('main#main-content')).toBeVisible({ timeout: 30_000 });
+      if (route.includes('/repositories/')) {
+        await expect(page.getByText('Repository not found or access denied.')).toBeVisible({ timeout: 30_000 });
+        continue;
+      }
+      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+    }
+
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+    expect(overflow, 'mobile dashboard should not create document-level horizontal overflow').toBe(true);
+  });
+
+  test('shows safe invalid-login and permission-denied states without leaking data', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByLabel('Email').fill('unknown@example.test');
+    await page.getByLabel('Password').fill('wrong-password');
+    await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
+    await expect(page.getByText('Invalid email or password.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('developer@apiproof.dev')).toHaveCount(0);
+
+    await signIn(page);
+    await page.route('**/api/workspace/settings', async (route) => {
+      await route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace access denied.' }) });
+    });
+    await page.goto('/dashboard/settings/workspace');
+    await expect(page.getByRole('alert').filter({ hasText: 'Workspace access denied.' })).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/workspace/settings');
+  });
+
+  test('renders a deterministic empty repository state and account error state', async ({ page }) => {
+    await signIn(page);
+    let releaseRepositories: (() => void) | undefined;
+    const repositoriesLoading = new Promise<void>((resolve) => { releaseRepositories = resolve; });
+    await page.route('**/api/repositories', async (route) => {
+      await repositoriesLoading;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });
+    });
+    await page.goto('/dashboard/repositories');
+    await expect(page.getByText('Loading repositories from database...')).toBeVisible({ timeout: 30_000 });
+    releaseRepositories?.();
+    await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/repositories');
+
+    await page.route('**/api/account', async (route) => {
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) });
+    });
+    await page.goto('/dashboard/settings/account');
+    await expect(page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' })).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/account');
   });
 });

@@ -13,7 +13,9 @@ export function resolveBuilder(call: Node, bindings: BindingResolver) {
   let fn = declarations[0];
   if (fn && Node.isVariableDeclaration(fn)) {
     if (fn.getVariableStatement()?.getDeclarationKind() !== VariableDeclarationKind.Const || bindings.isWritten(fn)) return undefined;
-    fn = fn.getInitializer();
+    const initializer = fn.getInitializer();
+    if (!initializer) return undefined;
+    fn = initializer;
   }
   if (!fn || !(Node.isFunctionDeclaration(fn) || Node.isArrowFunction(fn) || Node.isFunctionExpression(fn)) || fn.isAsync() ||
     ((Node.isFunctionDeclaration(fn) || Node.isFunctionExpression(fn)) && fn.isGenerator())) return undefined;

@@ -1,9 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 120_000,
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
   reporter: process.env.CI ? [['dot'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: 'http://127.0.0.1:3100',
@@ -18,7 +20,7 @@ export default defineConfig({
     env: {
       APIPROOF_SKIP_DEFAULT_SEED: 'false',
       APIPROOF_LOCAL_SEED_PASSWORD: 'local-test-seed-password',
-      APIPROOF_DB_PATH: '.tmp/playwright.db',
+      APIPROOF_DB_PATH: resolve(process.cwd(), '.tmp', 'playwright.db'),
     },
   },
 });
