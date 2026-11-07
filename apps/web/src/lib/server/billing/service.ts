@@ -201,6 +201,16 @@ export async function checkWorkspaceLimit(
     };
   }
 
+  if (sub.status !== 'active' && sub.status !== 'trialing') {
+    return {
+      allowed: false,
+      metric,
+      limit: 0,
+      current: 0,
+      reason: 'SUBSCRIPTION_INACTIVE: Workspace subscription is not active.',
+    };
+  }
+
   const metricKey = metric === 'repositories' ? 'repositories' : metric === 'scans' ? 'scans' : 'draftPrs';
   const target = summary.metrics[metricKey];
 

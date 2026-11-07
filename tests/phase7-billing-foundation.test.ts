@@ -95,6 +95,26 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(check.allowed).toBe(true);
   });
 
+  it('denies usage when subscription status is incomplete or unknown, while allowing trialing', async () => {
+    const user = await createUserAsync('billing-status-policy@apiproof.test', 'Pass123!#$', 'Billing Status');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+
+    for (const status of ['incomplete', 'unexpected_status']) {
+      await db.execute('UPDATE workspace_subscriptions SET status = ? WHERE workspace_id = ?', [status, workspace.id]);
+      await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({
+        allowed: false,
+        limit: 0,
+        current: 0,
+        reason: 'SUBSCRIPTION_INACTIVE: Workspace subscription is not active.',
+      });
+    }
+
+    await db.execute("UPDATE workspace_subscriptions SET status = 'trialing' WHERE workspace_id = ?", [workspace.id]);
+    await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({ allowed: true });
+  });
+
   // -------------------------------------------------------------------------
   // TEST 3: Server-side Limit Enforcement
   // -------------------------------------------------------------------------
