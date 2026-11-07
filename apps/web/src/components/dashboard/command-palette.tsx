@@ -169,6 +169,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 return (
                   <button
                     key={item.href}
+                    type="button"
                     onClick={() => navigate(item.href)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
@@ -193,6 +194,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 {filteredRepos.map((repo) => (
                   <button
                     key={repo.id}
+                    type="button"
                     onClick={() => navigate(`/dashboard/repositories/${repo.id}`)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
@@ -219,6 +221,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 {filteredInventory.map((inv) => (
                   <button
                     key={inv.id}
+                    type="button"
                     onClick={() => navigate('/dashboard/inventory')}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >

@@ -134,6 +134,7 @@ export default function FindingsListPage() {
             {["all", "critical", "high"].map((sev) => (
               <button
                 key={sev}
+                type="button"
                 onClick={() => setSeverityFilter(sev)}
                 aria-pressed={severityFilter === sev}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
@@ -152,6 +153,7 @@ export default function FindingsListPage() {
             {providerOptions.map((prov) => (
               <button
                 key={prov}
+                type="button"
                 onClick={() => setProviderFilter(prov)}
                 aria-pressed={providerFilter === prov}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${

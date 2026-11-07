@@ -51,6 +51,7 @@ export function ProductVideo({
       {/* Center: Play Trigger & Cinematic Badge */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 my-auto">
         <button
+          type="button"
           onClick={() => setIsPlaying(true)}
           className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 hover:bg-[#D0F100] border border-white/20 hover:border-transparent backdrop-blur-md flex items-center justify-center text-white hover:text-black transition-all duration-300 group-hover:scale-105 shadow-2xl focus:outline-none"
           aria-label="Play product video"

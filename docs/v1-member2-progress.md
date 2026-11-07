@@ -459,6 +459,12 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; focused ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused pipeline navigation journey passed 1/1. The test verifies four visible desktop stage buttons, accessible names, native button semantics and pressed-state transition.
 - Scope: this advances local automated UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 interactive control semantics
+
+- Change: dashboard and landing controls now use explicit non-submit button semantics; the shared `Button` primitive defaults to `type="button"` while preserving explicit submit overrides. Command-palette actions, findings filters, repository expanders, provider-rule actions, retry and product-video controls were covered; repository expanders now expose an accessible expand/collapse name and `aria-expanded` state.
+- Files: `apps/web/src/components/ui/button.tsx`, `apps/web/src/components/dashboard/command-palette.tsx`, `apps/web/src/app/dashboard/layout.tsx`, `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `apps/web/src/components/landing/product-video.tsx`, `tests/e2e/control-semantics.spec.ts`.
+- Scope: local UI-12 work only; backend contracts and production/provider behavior are unchanged. Full screen-reader/manual review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

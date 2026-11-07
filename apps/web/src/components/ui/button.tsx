@@ -34,6 +34,7 @@ export function Button({
 
   return (
     <button
+      type="button"
       disabled={disabled}
       className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}

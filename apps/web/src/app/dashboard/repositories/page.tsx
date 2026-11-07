@@ -228,7 +228,10 @@ export default function RepositoriesTablePage() {
                         <div className="flex items-center justify-between py-3.5 px-4">
                           <div className="w-10">
                             <button
+                              type="button"
                               onClick={() => setExpandedRepo(isExpanded ? null : repo.id)}
+                              aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${repo.name}`}
+                              aria-expanded={isExpanded}
                               className="p-1 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
                             >
                               {isExpanded ? (

@@ -131,7 +131,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="space-y-3">
           <p>{authState === 'checking' ? 'Checking your session…' : 'We could not validate your session.'}</p>
           {authState === 'unavailable' && (
-            <button className="underline text-[#111111]" onClick={() => window.location.reload()}>
+            <button type="button" className="underline text-[#111111]" onClick={() => window.location.reload()}>
               Try again
             </button>
           )}
