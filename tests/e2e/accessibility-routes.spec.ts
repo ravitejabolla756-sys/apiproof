@@ -47,9 +47,9 @@ test.describe('route accessibility audit', () => {
     }
   });
 
-  test('keeps representative public and authenticated screens accessible at mobile width', async ({ page }) => {
+  test('keeps all audited public and authenticated routes accessible at mobile width', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const route of ['/', '/pricing', '/docs', '/login', '/forgot-password', '/reset-password']) {
+    for (const route of publicRoutes) {
       const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
       expect(response?.status(), route).toBe(200);
       await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
@@ -58,7 +58,7 @@ test.describe('route accessibility audit', () => {
     }
 
     await signIn(page);
-    for (const route of ['/dashboard', '/dashboard/repositories', '/dashboard/settings/workspace']) {
+    for (const route of authenticatedRoutes) {
       const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
       expect(response?.status(), route).toBe(200);
       await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });

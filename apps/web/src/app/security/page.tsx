@@ -195,7 +195,12 @@ export default function SecurityPage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div
+            role="region"
+            aria-label="Security boundary comparison"
+            tabIndex={0}
+            className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2"
+          >
             <table className="w-full text-left text-xs border-collapse font-sans">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase">

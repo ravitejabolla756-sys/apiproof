@@ -269,7 +269,12 @@ export default function HowItWorksPage() {
               </div>
 
               {/* Concrete Artifact / Code Block */}
-              <div className="rounded-xl bg-[#000E29] text-white p-4 font-mono text-xs overflow-x-auto space-y-1">
+              <div
+                role="region"
+                aria-label={`${item.name} system artifact`}
+                tabIndex={0}
+                className="rounded-xl bg-[#000E29] text-white p-4 font-mono text-xs overflow-x-auto space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2"
+              >
                 <span className="text-slate-400 text-[10px] uppercase tracking-wider block">
                   SYSTEM ARTIFACT: {item.name}
                 </span>
