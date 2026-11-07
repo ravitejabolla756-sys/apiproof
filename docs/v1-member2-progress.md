@@ -5,6 +5,13 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 findings filtered-empty recovery
+
+- Change: Added a deterministic browser journey for the findings filtered-empty state: search with no matches, verify the truthful status and clear-filters recovery action, then restore the result set. The journey also retains the multi-provider mobile wrapping and overflow assertions.
+- Files: `tests/e2e/findings-filter-responsive.spec.ts`.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused findings suite passed 2/2 in 17.6 seconds, including axe-clean filtered-empty content and successful filter recovery. Artifacts: `/tmp/myowl-v1-findings-filter-recovery-artifacts`.
+- Scope: local UI-12/UI-13 state and recovery evidence only; full screen-reader review, hosted CI, integrated staging, backend/provider contracts and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12 findings filter mobile wrapping
 
 - Change: Findings severity and provider controls now wrap at narrow widths, keep each action label together, and retain full-width mobile composition; this prevents a multi-provider response from creating document-level horizontal overflow.
