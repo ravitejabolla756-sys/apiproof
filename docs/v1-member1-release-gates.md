@@ -1,6 +1,6 @@
 # MY OWL V1 — Member 1 Release Gates
 
-Last updated: 2026-11-07. This is a checklist, not a production approval.
+Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 | Gate | Status | Evidence / required next action |
 |---|---|---|
@@ -13,7 +13,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Database source access inventory | PASS (local only) | `docs/v1-member1-db-access-matrix.md` inventories 40 tables and records RLS decisions, intended roles, catalog queries and blocked PostgreSQL isolation tests |
 | PostgreSQL tenant isolation / RLS | BLOCKED | No approved production/staging role access; local SQLite tests are insufficient |
 | PostgreSQL least-privilege grants | BLOCKED | No approved role/grant read-back environment |
-| Auth/OAuth/session security | PARTIAL | 8-file auth/security matrix passed 70/70, including production missing-Origin/Referer CSRF rejection; email verification and unverified-account enforcement remain incomplete |
+| Auth/OAuth/session security | PARTIAL | Existing 8-file auth/security matrix passed 70/70; latest password-reset/email-verification/OAuth/CSRF run passes 39/39, including concurrent single-use token consumption; central unverified-account enforcement and PostgreSQL concurrency evidence remain incomplete |
 | Email verification backend flow | PASS (local only) | Migration 024, hashed single-use token service, verification/resend actions, verification page, and 8 focused tests pass; provider delivery and enforcement policy remain gated |
 | Email verification delivery | BLOCKED | Approved email provider and Member 2 template contract not configured |
 | GitHub App/webhook/private repository live verification | NOT_TESTED | No live credentials or authorized staging run in this workstream |
@@ -21,13 +21,13 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Migration recommendations and sandbox | PARTIAL / EXTERNAL BLOCKED | Deterministic planner, bounded redacted context, strict model-output validation and isolated verification are locally covered; production AI provider/credentials/cost policy/runtime adapter are not approved |
 | Finding lifecycle and resolution evidence | PASS (local only) | Migration 025, audited state transitions, workspace checks, idempotency/concurrency tests and completed-scan regression handling pass locally; live PostgreSQL/RLS and merged-SHA evidence remain unverified |
 | Draft PR merge/rescan/resolution verification | PASS (local only) | PR-07/PR-08 focused webhook, async-worker and lifecycle suites pass; merge SHA is persisted, exact-commit rescan is durable/deduplicated, and resolution classifications/evidence are tenant-scoped; live GitHub/PostgreSQL execution remains unverified |
-| RBAC and access revocation | PARTIAL / CONTRACT REVIEW | Central owner/admin/member policy plus durable ORG-10 membership removal, idempotency, audit persistence and worker-time membership guards pass in local SQLite tests; invitation schema/service, reviewed member-management route/UI, PostgreSQL/RLS evidence and live worker verification remain open |
-| Payment sandbox checkout/webhooks/lifecycle | BLOCKED | Current provider is `MockBillingProvider`; provider approval/credentials absent |
+| RBAC and access revocation | PARTIAL / CONTRACT REVIEW | Central owner/admin/member policy plus durable ORG-10 membership removal, idempotency, audit persistence and worker-time membership guards pass in local SQLite tests; Member 2's invitation/audit/service files are not integrated, and transactional invitation invalidation, migration reconciliation, PostgreSQL/RLS evidence and live worker verification remain open |
+| Payment sandbox checkout/webhooks/lifecycle | BLOCKED | Local mock is explicitly disabled in production, requires an explicit sufficiently long test secret, validates the normalized status/plan/date contract, and exposes safe webhook/portal error categories; 18 seeded local billing tests, typecheck, targeted ESLint and build pass. Provider approval/credentials and sandbox delivery/reconciliation evidence remain absent |
 | Backup restore | BLOCKED | Requires approved isolated non-production backup/restore access |
 | Error monitoring and alert routing | BLOCKED | Approved observability provider/destination absent |
-| Queue/scheduler monitoring | PARTIAL | Protected status exposes queue depth/age/retry/stalled-lease/exhaustion indicators and local 32/32 operations/cron/scan tests pass; approved alerts, heartbeat and failure rehearsal remain |
+| Queue/scheduler monitoring | PARTIAL | Protected status exposes queue depth/age/retry/stalled-lease/exhaustion indicators and durable per-run worker/scheduler heartbeat outcomes; focused monitoring/operations/cron tests pass; alert destination, confirmed scan-worker cadence and staged failure rehearsal remain |
 | Branch protection | BLOCKED | Requires GitHub repository-admin read-back and approval |
-| Load/resilience evidence | PARTIAL | Local-only SEC-16 harness covers bounded API, webhook, SQLite and worker-metrics workloads plus deterministic retry recovery/exhaustion; approved staging traffic, p50/p95/p99 thresholds, bottleneck and worker-failure-recovery evidence remain |
+| Load/resilience evidence | PARTIAL | Local-only SEC-16 harness covers bounded API, webhook, SQLite and worker-metrics workloads, cooperative timeout cancellation, injected sanitized failures and retry recovery/exhaustion; one Windows measurement snapshot is recorded in `docs/sec16-local-measurements.md`; approved staging traffic, SLOs, bottleneck and worker-failure-recovery evidence remain |
 | Deployment rollback rehearsal | BLOCKED | Hosting stack/staging rehearsal not authorized or verified |
 | Retention/deletion | PARTIAL / POLICY BLOCKED | Account/workspace/billing/backup inventory and request-state contract are documented; legal retention policy and durable workflow remain unapproved |
 | Final release security audit | NOT_TESTED | Must use a frozen candidate after all other gates |
@@ -39,9 +39,11 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 - `pnpm build`: PASS; Next.js 15.5.29, 63 static pages generated.
 - Targeted backend/security tests: PASS, 7 files / 58 tests.
 - Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 157 passed files / 1 skipped (158 total); 1,327 passed tests / 4 skipped (1,331 total).
-- Current PROV-05/SEC-16 seeded full-suite rerun: NOT_COMPLETE; the 161-file process remained active beyond the bounded runtime window and was stopped without an aggregate result. No full-suite pass is claimed for this checkpoint.
+- Latest seeded serial full-suite result: FAIL, 162 files passed / 1 failed / 1 skipped; 1,358 tests passed / 1 failed / 4 skipped, duration 1,868.05s. The sole failure was a CLI test exceeding Vitest's 30s outer timeout while spawning real Node/tsx processes. All CLI tests now use the existing 120s child-process cap as their outer limit; the complete CLI file passes 10/10 in 172.04s. The repository suite has not been rerun after this correction. `proposal-recovery` passes 22/22 when run with the required local seed. No full-suite pass is claimed.
 - SEC-16/ORG-05 targeted suite: PASS, 4 files / 26 tests; includes one load test covering four local workloads, two deterministic retry tests, three SQLite-backed ORG-05 tests, the pure role-policy tests, and existing multi-tenant workspace regressions.
 - Targeted ESLint: PASS for the new SEC-16 and ORG-05 files; `pnpm typecheck`: PASS.
+- 2026-11-08 billing boundary: PASS, 2 files / 18 tests with the process-scoped local seed; `pnpm typecheck`, targeted ESLint and `pnpm build` pass. This verifies only local mock rejection/normalization and the existing SQLite lifecycle fixtures; provider-specific signature verification, sandbox delivery, PostgreSQL concurrency and production reconciliation remain blocked.
+- Latest SEC-13 / SEC-16 checkpoint: PASS, 5 files / 31 tests, including the complete CLI contract file; targeted ESLint, `pnpm typecheck`, and `pnpm build` pass. The measurement record is local in-process evidence only; the full-suite failure and staging/production limits are stated above.
 - ORG-10 service/authorization suite: PASS, 3 files / 12 tests; includes the 5 pure revocation-plan tests, 4 durable service tests and 3 role-policy integration tests. Coverage includes stale-session denial, preservation of another workspace, durable request/event records, duplicate/conflicting idempotency, final-owner/self-removal protection and concurrent removal serialization.
 - The broader worker regression command (`proposal-recovery`, `slack-phase1`, `slack-reliability`) was stopped after a bounded wait without an aggregate result. It is recorded as `NOT_COMPLETE`; no assertions were weakened or bypassed.
 - IMP-09 focused regression suites: PASS, 3 files / 46 tests (`finding-lifecycle`, `proposal-recovery`, `phase4-async-scan-worker`); lifecycle acceptance includes transitions, duplicate/conflicting idempotency keys, concurrent retries, tenant mismatch, regression reopen and completed-scan evidence.
