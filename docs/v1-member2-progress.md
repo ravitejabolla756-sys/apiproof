@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 repository filter regression
+
+- Change: Rebuilt the web bundle and ran the complete committed browser matrix after the responsive and keyboard repository-filter change.
+- Evidence: Production build generated 83 static pages; rebuilt-bundle CI-mode Playwright suite passed 92/92 in 2.7 minutes on isolated SQLite `/tmp/myowl-v1-repository-filter-full.db`; artifacts were retained at `/tmp/myowl-v1-repository-filter-full-artifacts` and `/tmp/myowl-v1-repository-filter-full-report`.
+- Scope: local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, full screen-reader review, backend/provider contracts and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12 repository filter responsive and keyboard semantics
 
 - Change: Repository health filters now wrap at narrow widths while preserving each action label; the browser journey now verifies keyboard focus, Enter activation, `aria-pressed` state, truthful filtered-empty feedback and restoration of all repositories.

@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Full repository-filter regression
+
+- PASS: Rebuilt-bundle CI-mode Playwright suite passed 92/92 in 2.7 minutes on isolated SQLite `/tmp/myowl-v1-repository-filter-full.db`; the run includes repository responsive/keyboard filter recovery and all prior auth, organization, billing-boundary, findings, PR/workflow, degraded-state and accessibility journeys. Production build generated 83 static pages.
+- Artifacts: `/tmp/myowl-v1-repository-filter-full-artifacts`, `/tmp/myowl-v1-repository-filter-full-report`.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, integrated staging, full manual assistive-technology review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Repository filter responsive and keyboard semantics
 
 - PASS: Repository filter journey passed 1/1 in 13.2 seconds with keyboard focus, Enter activation, `aria-pressed` state, filtered-empty status, recovery to all repositories and an axe-clean filtered-empty state.
