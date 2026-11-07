@@ -24,6 +24,14 @@ test.describe('route accessibility audit', () => {
     expect(results.violations).toEqual([]);
   });
 
+  test('keeps the not-found page accessible', async ({ page }) => {
+    const response = await page.goto('/route-that-does-not-exist', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    expect(response?.status()).toBe(404);
+    await expect(page.locator('main#main-content h1')).toHaveText('Page not found');
+    const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+    expect(results.violations).toEqual([]);
+  });
+
   test('passes axe on every public route', async ({ page }) => {
     for (const route of publicRoutes) {
       const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });

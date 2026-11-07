@@ -625,6 +625,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; authentication/loading suite passed 3/3; full rebuilt-bundle CI-mode Playwright suite passed 59/59. The session UI contract remains covered by the dashboard layout change recorded above.
 - Scope: local session-state semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — WEB-15/UI-12 not-found route accessibility
+
+- Change: added explicit coverage for the public not-found response, expecting HTTP 404 while verifying the main heading and axe-clean main content.
+- Files: `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: targeted ESLint passed; dedicated accessibility route matrix passed 8/8; full rebuilt-bundle CI-mode Playwright suite passed 60/60.
+- Scope: local public-route QA only; manual assistive technology, hosted CI, staging and production remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
