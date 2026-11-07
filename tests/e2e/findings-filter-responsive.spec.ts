@@ -41,3 +41,48 @@ test('wraps findings filters for multi-provider mobile results', async ({ page }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });
+
+test('recovers from a filtered-empty findings state', async ({ page }) => {
+  await signIn(page);
+
+  await page.route('**/api/findings', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        findings: [{
+          id: 'finding-filter-recovery',
+          provider: 'github',
+          change_id: 'rule-filter-recovery',
+          title: 'Filtered recovery finding',
+          description: 'A fixture finding used to verify filtered-empty recovery.',
+          severity: 'high',
+          confidence: '0.9',
+          file_path: 'src/integration.ts',
+          line_number: 1,
+          symbol: 'compatibilityCall',
+          status: 'open',
+          created_at: '2026-11-08T00:00:00.000Z',
+          repo_name: 'fixture-repository',
+          repo_full_name: 'fixture/fixture-repository',
+          pr_number: null,
+          pr_url: null,
+          pr_state: null,
+          capability: { migrationAvailable: false, recommendedNextAction: 'MANUAL_REVIEW' },
+        }],
+      }),
+    });
+  });
+
+  await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
+  const search = page.getByRole('textbox', { name: 'Search findings' });
+  await search.fill('does-not-match');
+  const filteredEmpty = page.getByRole('status').filter({ hasText: 'No findings match the current filters' });
+  await expect(filteredEmpty).toBeVisible({ timeout: 30_000 });
+  await expect(filteredEmpty.getByRole('button', { name: 'Clear filters' })).toBeVisible();
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+
+  await filteredEmpty.getByRole('button', { name: 'Clear filters' }).click();
+  await expect(search).toHaveValue('');
+  await expect(page.getByRole('heading', { name: 'Filtered recovery finding' })).toBeVisible();
+});
