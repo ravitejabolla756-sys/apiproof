@@ -29,6 +29,27 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/pull-requests');
   });
 
+  test('announces compatibility-map and provider-rule failures as alerts', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/compatibility-map', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Compatibility data could not be loaded (503).' }) });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const compatibilityAlert = page.getByRole('alert').filter({ hasText: 'Compatibility data could not be loaded' });
+    await expect(compatibilityAlert).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'compatibility-map error state').toEqual([]);
+    await page.unroute('**/api/compatibility-map');
+
+    await page.route('**/api/provider-rules', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Provider rules are temporarily unavailable.' }) });
+    });
+    await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
+    const providerAlert = page.getByRole('alert').filter({ hasText: 'Provider rules are temporarily unavailable.' });
+    await expect(providerAlert).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'provider-rule error state').toEqual([]);
+    await page.unroute('**/api/provider-rules');
+  });
+
   test('shows recoverable errors instead of false empty states', async ({ page }) => {
     await signIn(page);
 

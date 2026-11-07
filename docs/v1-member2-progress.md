@@ -222,3 +222,10 @@ Statuses are current baseline findings, not completion claims.
 ## 2026-11-07 checkpoint — UI-13 full local browser suite
 
 - Evidence: `pnpm exec playwright test tests/e2e --workers=1 --timeout=300000` PASS — 28/28 in 2.5 minutes, including dashboard data states, public/authenticated route coverage, accessibility scans, dialog focus, notification loading/error/retry, and repository list/detail recovery. This is local dev-server evidence; hosted CI and production verification remain NOT_RUN.
+
+## 2026-11-07 checkpoint — UI-12 dashboard state alerts
+
+- Change: the compatibility-map initial failure and provider-rule review failure now use assertive alert live regions; loading and visual recovery behavior remain unchanged. Added focused browser coverage with axe checks for both failure states.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; focused dashboard state journey PASS — 1/1; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
+- Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.

@@ -137,7 +137,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   }
 
   if (error && repositories.length === 0) {
-    return <div className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
+    return <div role="alert" aria-live="assertive" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
       <p>{error}</p>
       <button onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
         <RefreshCw className="h-3.5 w-3.5" />Retry
