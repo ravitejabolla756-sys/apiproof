@@ -97,7 +97,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans outline-none">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-3 mb-10 group">
         <ApiProofLogo className="h-8 w-auto shrink-0 transition-transform group-hover:scale-105" variant="dark" />
@@ -108,6 +108,7 @@ export default function LoginPage() {
 
       {/* Auth Card */}
       <div className="w-full max-w-md bg-white rounded-2xl border border-[#E8E8E5] shadow-sm p-8">
+        <h1 className="sr-only">Sign in to MY OWL</h1>
         {/* Mode Switcher */}
         <div className="flex gap-1 p-1 bg-[#F5F5F7] rounded-xl mb-8">
           <button
@@ -253,6 +254,6 @@ export default function LoginPage() {
       <p className="mt-6 text-xs text-slate-500">
         Deterministic AST analysis. No AI required.
       </p>
-    </div>
+    </main>
   );
 }

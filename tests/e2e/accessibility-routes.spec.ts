@@ -5,7 +5,7 @@ import { signIn } from './helpers';
 const publicRoutes = [
   '/', '/about', '/blog', '/features', '/how-it-works', '/security', '/docs', '/pricing',
   '/faq', '/updates', '/contact', '/privacy', '/terms', '/refunds', '/status', '/cookies',
-  '/invite/accept', '/verify-email',
+  '/invite/accept', '/verify-email', '/login', '/forgot-password', '/reset-password',
 ];
 
 const authenticatedRoutes = [
