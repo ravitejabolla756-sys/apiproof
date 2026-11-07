@@ -5,6 +5,13 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 repository filter responsive and keyboard semantics
+
+- Change: Repository health filters now wrap at narrow widths while preserving each action label; the browser journey now verifies keyboard focus, Enter activation, `aria-pressed` state, truthful filtered-empty feedback and restoration of all repositories.
+- Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/repository-filter-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; repository filter journey passed 1/1 in 13.2 seconds with an axe-clean filtered-empty state. Artifacts: `/tmp/myowl-v1-repository-filter-keyboard-artifacts`.
+- Scope: local UI-12 responsive/keyboard evidence only; full screen-reader review, hosted CI, integrated staging, backend/provider contracts and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12 findings filter keyboard semantics
 
 - Change: Extended the findings browser journey to focus provider filters, activate them with Enter, verify `aria-pressed` selection state and restore the full provider collection through the keyboard-accessible “all” control.

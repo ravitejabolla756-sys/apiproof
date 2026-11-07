@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Repository filter responsive and keyboard semantics
+
+- PASS: Repository filter journey passed 1/1 in 13.2 seconds with keyboard focus, Enter activation, `aria-pressed` state, filtered-empty status, recovery to all repositories and an axe-clean filtered-empty state.
+- PASS: Impeccable detector, targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Full screen-reader review, hosted CI, integrated staging, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Findings filter keyboard semantics
 
 - PASS: Focused findings suite passed 2/2 in 17.4 seconds with keyboard focus, Enter activation, `aria-pressed` state verification and provider-filter restoration, alongside the existing responsive and filtered-empty checks.
