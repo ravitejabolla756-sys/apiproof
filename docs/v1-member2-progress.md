@@ -458,6 +458,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-13 cumulative browser regression after dashboard accessibility audit
+
+- Evidence: fresh explicit SQLite database `/tmp/myowl-v1-full-cumulative-a11y.db`; rebuilt-bundle CI-mode Playwright suite passed 69/69 in 1.5 minutes after the cumulative dashboard route, detail, shared-component and sidebar accessibility changes. Artifacts were retained at `/tmp/myowl-v1-full-cumulative-artifacts.uFwc8A`.
+- Scope: complete local hermetic browser evidence only; hosted CI, integrated staging, manual screen-reader review and production verification remain open. UI-12 and UI-13 remain PARTIAL; no backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository connection dialog semantics
 
 - Change: the repository connection modal now hides decorative status, provider, repository-type, branch and action icons from the accessibility tree, and announces the in-progress GitHub authorization handoff through a polite live region. Existing focus trapping, Escape dismissal and repository connection behavior are unchanged.
