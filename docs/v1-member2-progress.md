@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-13 dashboard fixture recovery determinism
+
+- Change: The Slack status failure fixture now holds the unavailable state until the test explicitly enables success before retry, preventing an in-flight development request from overwriting the recovery result; request-count evidence is bounded to the initial request plus a possible replay.
+- Evidence: Web production build passed and generated 83 static pages. The full CI-equivalent Playwright run reached 90/92; two dashboard cases were fixture-sensitive under the long serial run. After the deterministic fixture change, those two affected cases passed 2/2 in 3.2 seconds on a fresh isolated SQLite database. Artifacts: `/tmp/myowl-v1-full-90-of-92-artifacts`, `/tmp/myowl-v1-full-90-of-92-report`, `/tmp/myowl-v1-slack-failure-rerun-3-artifacts`.
+- Scope: local UI-13 test-harness reliability and UI-12 recovery evidence only; the full matrix is not claimed green, hosted CI/staging remain unverified, and no backend/provider/production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 Slack/GitHub action retry keyboard coverage
 
 - Change: Extended Slack connection and GitHub installation failure journeys to focus their action-specific retry controls, verify focus visibility, and activate recovery with Enter while retaining the distinct-operation assertions and axe checks.

@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Dashboard fixture recovery determinism
+
+- PASS: Web production build generated 83 static pages. After stabilizing the Slack status fixture, the two affected dashboard cases passed 2/2 in 3.2 seconds on an isolated SQLite database, with targeted ESLint and `git diff --check` passing.
+- NOTE: The preceding full CI-equivalent browser run completed 90/92; provider-rule and Slack dashboard cases were the only failures. Its artifacts are retained and the full matrix is not represented as green.
+- Scope: local UI-13 harness/UI-12 recovery evidence only. Hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Slack/GitHub action retry keyboard coverage
 
 - PASS: Focused Slack/GitHub action suite passed 2/2 in 12.6 seconds; action-specific retry controls now verify keyboard focus and Enter activation with the existing axe and distinct-operation assertions intact.
