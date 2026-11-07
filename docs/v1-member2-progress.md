@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 Slack/GitHub action retry keyboard coverage
+
+- Change: Extended Slack connection and GitHub installation failure journeys to focus their action-specific retry controls, verify focus visibility, and activate recovery with Enter while retaining the distinct-operation assertions and axe checks.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused Slack/GitHub action suite passed 2/2 in 12.6 seconds. Artifacts: `/tmp/myowl-v1-slack-github-retry-keyboard-artifacts`.
+- Scope: local UI-12 action-state evidence only; no Slack connection, GitHub installation, provider delivery, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 component-specific retry keyboard coverage
 
 - Change: Extended dashboard overview, GitHub repository loading, provider-rule loading, and workspace-switch recovery journeys to verify retry-control focus and Enter activation. The provider-rule fixture also bounds expected development effect replay at 2–3 requests without weakening failure→retry assertions.
