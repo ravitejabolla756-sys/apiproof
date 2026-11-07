@@ -25,9 +25,11 @@ test.describe('public beta surfaces', () => {
     await page.goto('/invite/accept');
     await expect(page.getByRole('heading', { name: 'Workspace invitation' })).toBeVisible();
     await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, '/invite/accept missing-token state').toEqual([]);
     await page.goto('/verify-email');
     await expect(page.getByRole('heading', { name: 'Verification unavailable' })).toBeVisible();
     await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, '/verify-email missing-token state').toEqual([]);
   });
 
   test('exposes crawl controls and avoids unsupported operational status copy', async ({ page, request }) => {
@@ -477,6 +479,7 @@ test.describe('authenticated product surfaces', () => {
     await page.getByLabel('Password').fill('wrong-password');
     await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
     await expect(page.getByText('Invalid email or password.')).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'invalid login state').toEqual([]);
     await expect(page.getByText('developer@apiproof.dev')).toHaveCount(0);
 
     await signIn(page);
@@ -485,6 +488,7 @@ test.describe('authenticated product surfaces', () => {
     });
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('alert').filter({ hasText: 'Workspace access denied.' })).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace permission-denied state').toEqual([]);
     await page.unroute('**/api/workspace/settings');
   });
 

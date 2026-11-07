@@ -61,6 +61,11 @@ Statuses are current baseline findings, not completion claims.
 - Change: extended the deterministic dashboard data-state journeys with axe checks against rendered error alerts and recovered empty states for findings, migrations, pull requests, activity, inventory, compatibility, provider coverage and repository list/detail flows.
 - Evidence: `pnpm exec eslint tests/e2e/dashboard-data-states.spec.ts --max-warnings 0` PASS; `pnpm exec playwright test tests/e2e/dashboard-data-states.spec.ts --workers=1 --timeout=300000` PASS — 2/2. Loading/error/empty state coverage is local browser evidence; full assistive-technology review remains open.
 
+## 2026-11-07 checkpoint — UI-12 public/authentication failure states
+
+- Change: added focused axe checks while missing-token invitation/verification alerts, invalid-login feedback, and workspace permission-denied feedback are rendered.
+- Evidence: `pnpm exec eslint tests/e2e/public-site.spec.ts --max-warnings 0` PASS; the focused public-core and invalid-login/permission-denied browser journeys pass 2/2. This is local browser accessibility-tree evidence; full assistive-technology review remains open.
+
 ## 2026-11-07 checkpoint — UI-12 all-route structural accessibility audit
 
 - Change: added a hermetic axe route sweep over 21 public and 16 authenticated routes, scoped to each route’s `main#main-content` landmark. Corrected the public landing page’s single-main landmark hierarchy, `/docs` category/help heading levels, `/updates` release-card heading levels, `/contact` service-card heading levels, auth-entry heading/landmark semantics, and the `/verify-email` main-content hook; remediated low-contrast light-surface tokens across the landing page and scroll pipeline while preserving dark-surface tokens.
