@@ -124,6 +124,28 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     ]);
   });
 
+  it('reaches the configured concurrency without exceeding its bound', async () => {
+    let observedInFlight = 0;
+    let observedMaximum = 0;
+    const report = await runLocalLoadScenario({
+      name: 'bounded-concurrency',
+      iterations: 12,
+      concurrency: 3,
+      operation: async () => {
+        observedInFlight += 1;
+        observedMaximum = Math.max(observedMaximum, observedInFlight);
+        await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        observedInFlight -= 1;
+      },
+    });
+
+    expect(report.succeeded).toBe(12);
+    expect(report.failed).toBe(0);
+    expect(report.maxInFlight).toBe(3);
+    expect(observedMaximum).toBe(3);
+    expect(observedInFlight).toBe(0);
+  });
+
   it('recovers from bounded transient failure without exceeding the retry budget', async () => {
     const report = await runBoundedRetryScenario({
       maxAttempts: 4,
