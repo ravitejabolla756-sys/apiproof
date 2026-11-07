@@ -63,3 +63,22 @@ Before closing, the technical lead records: root cause, affected scope, containm
 ## Tabletop exercise
 
 Run this scenario before enabling live integrations: “A member accepts an invitation from a different account, then sees another workspace’s repository activity.” The expected response is to reproduce with two users, verify email-bound single-use token behavior, inspect membership predicates, revoke the affected member sessions, preserve redacted evidence, and keep the public status page explicitly unclaimed until an approved source is connected. Record gaps; do not mark the exercise as a production control.
+
+### Tabletop record template — not yet conducted
+
+Complete this record with the service owner and Member 1 before treating SEC-18 as reviewed. Use a fresh UTC timestamp and link only to redacted, non-production evidence.
+
+| Field | Record |
+|---|---|
+| Exercise date / facilitator | `TBD` |
+| Participants and assigned roles | `TBD` — incident commander, technical lead, communications owner, security owner |
+| Detection signal and timestamp | `TBD` |
+| First severity and rationale | `TBD` |
+| Two-user/two-workspace reproduction result | `TBD` |
+| Containment decision and rollback condition | `TBD` |
+| Session/invitation/audit evidence reviewed | `TBD` — redacted references only |
+| Customer/status communication decision | `TBD` — no publication without owner/security review |
+| Gaps, owners, and due dates | `TBD` |
+| Owner/security sign-off | `TBD` |
+
+The worksheet is planning evidence only. Until it is completed and reviewed, the incident-response gate remains PARTIAL/BLOCKED for live operations.

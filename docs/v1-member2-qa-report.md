@@ -122,6 +122,8 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 
 - `pnpm exec eslint apps/web/src/app/dashboard/page.tsx tests/e2e/dashboard-data-states.spec.ts tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; the detector reported only incumbent dashboard purple-palette warnings; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; dashboard data-state suite — 9/9 PASS; workspace-switch journey — 1/1 PASS; full CI-mode production-build browser matrix — 43/43 PASS in 56.1 seconds. Dashboard refresh and workspace-switch status semantics are covered locally; this remains automated/browser evidence, not a full screen-reader or hosted CI sign-off.
 
+- SEC-18 documentation review — PASS for structure: `docs/v1-member2-incident-response.md` now includes a redacted-evidence tabletop worksheet with explicit `TBD` fields and no implied live-control claim. The tabletop itself, owner/security review, monitoring source, on-call ownership and production exercise remain NOT_RUN.
+
 ## Required next checks
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.

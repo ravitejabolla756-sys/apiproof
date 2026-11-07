@@ -411,3 +411,9 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector reported only incumbent dashboard purple-palette warnings; web production build PASS with 83 generated static pages; dashboard data-state suite PASS — 9/9; workspace-switch journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 56.1 seconds. Retained artifacts were moved to `/tmp/myowl-v1-ui12-refresh-status-artifacts/`.
 - Scope: local automated/browser evidence only; full screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — SEC-18 tabletop worksheet
+
+- Change: added a structured, explicitly uncompleted tabletop-record template to the incident-response runbook, covering roles, detection, severity, tenant-boundary reproduction, containment, redacted evidence, communications, gaps and owner/security sign-off.
+- Files: `docs/v1-member2-incident-response.md`.
+- Scope: this improves review readiness but does not constitute a tabletop exercise, monitoring setup, on-call assignment, owner/security approval or production control. No production/provider/remote Git operation was performed.
