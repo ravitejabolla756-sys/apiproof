@@ -398,7 +398,7 @@ export default function RepositoryDetailPage({
         {scans.length === 0 ? (
           <p className="text-xs text-[#686868] py-4 text-center">No scans recorded yet.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div role="region" aria-label="Repository scan history" tabIndex={0} className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-inset">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">

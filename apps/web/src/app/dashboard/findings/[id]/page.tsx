@@ -458,7 +458,7 @@ export default function FindingDetailPage({
                 <div className="text-xs text-[#686868]">
                   This patch record is retained for audit context. New patches are generated only for reviewed, digest-bound templates after exact-baseline verification.
                 </div>
-                <pre className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800">
+                <pre tabIndex={0} aria-label="Migration patch diff" className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
                   {migration.patch_diff}
                 </pre>
               </div>
@@ -467,7 +467,7 @@ export default function FindingDetailPage({
                 <div className="text-xs text-[#686868]">
                   Call site captured during static AST traversal at line {finding.line_number}:
                 </div>
-                <pre className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800">
+                <pre tabIndex={0} aria-label="Finding source snippet" className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
                   {finding.source_snippet || `// Call site location: ${finding.file_path}:${finding.line_number}\n${finding.symbol}`}
                 </pre>
               </div>

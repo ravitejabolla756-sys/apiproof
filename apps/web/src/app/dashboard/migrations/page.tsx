@@ -144,7 +144,7 @@ export default function MigrationsWorkbenchPage() {
                     <span className="font-mono text-[11px] text-[#686868]">{mig.file_path}</span>
                   </div>
 
-                  <pre className="rounded-2xl bg-zinc-950 p-4 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800">
+                  <pre tabIndex={0} aria-label={`Migration diff for ${mig.file_path}`} className="rounded-2xl bg-zinc-950 p-4 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
                     {mig.patch_diff}
                   </pre>
                 </div>

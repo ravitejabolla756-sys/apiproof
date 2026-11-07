@@ -73,8 +73,8 @@ Statuses are current baseline findings, not completion claims.
 
 ## 2026-11-07 checkpoint — UI-12 responsive mobile accessibility
 
-- Change: added full 390px viewport axe coverage for all 21 public and 16 authenticated routes; fixed keyboard accessibility for the landing code sample, repositories table, `/how-it-works` system-artifact blocks and `/security` comparison table horizontal scroll regions with labels and visible focus styles.
-- Evidence: `pnpm exec eslint apps/web/src/app/dashboard/repositories/page.tsx apps/web/src/app/how-it-works/page.tsx apps/web/src/app/security/page.tsx apps/web/src/components/landing/scroll-pipeline.tsx tests/e2e/accessibility-routes.spec.ts --max-warnings 0` PASS; web typecheck PASS; route accessibility audit PASS — 4/4 tests in 1.6 minutes. Full assistive-technology review remains open.
+- Change: added full 390px viewport axe coverage for all 21 public and 16 authenticated routes; fixed keyboard accessibility for the landing code sample, repositories table, `/how-it-works` system-artifact blocks, `/security` comparison table, migration diffs, provider coverage, finding diffs/source, and repository scan history horizontal scroll regions with labels and visible focus styles.
+- Evidence: `pnpm exec eslint apps/web/src/app/dashboard/migrations/page.tsx apps/web/src/app/dashboard/providers/page.tsx apps/web/src/app/dashboard/findings/[id]/page.tsx apps/web/src/app/dashboard/repositories/[id]/page.tsx tests/e2e/accessibility-routes.spec.ts --max-warnings 0` PASS; route accessibility audit mobile test PASS — 1/1 in 1.1 minutes. Full assistive-technology review remains open.
 
 ## 2026-11-07 checkpoint — UI-12 collapsed navigation accessibility
 

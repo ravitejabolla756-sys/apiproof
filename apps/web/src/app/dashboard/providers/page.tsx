@@ -173,7 +173,7 @@ export default function ProvidersPage() {
             </div>
           </section>}
 
-          <section className="overflow-x-auto rounded-[28px] border border-[#E8E8E5] bg-white shadow-xs">
+          <section role="region" aria-label="Provider coverage table" tabIndex={0} className="overflow-x-auto rounded-[28px] border border-[#E8E8E5] bg-white shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-inset">
             <table className="w-full min-w-[980px] border-collapse text-left">
               <thead className="border-b border-[#E8E8E5] bg-[#FAFAF8] text-[10px] uppercase tracking-[0.12em] text-[#686868]">
                 <tr><th className="px-5 py-4">Provider</th><th className="px-5 py-4">Source</th><th className="px-5 py-4">Parser</th><th className="px-5 py-4">Rules</th><th className="px-5 py-4">Scanner</th><th className="px-5 py-4">Rescan</th><th className="px-5 py-4">Templates</th><th className="px-5 py-4">Fix policy</th></tr>
