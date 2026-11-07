@@ -43,10 +43,12 @@ export default function SettingsPage() {
   const [installation, setInstallation] = useState<GitHubInstallationInfo | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorAction, setErrorAction] = useState<'load' | 'connect' | null>(null);
 
   async function loadStatus() {
     setLoading(true);
     setError(null);
+    setErrorAction(null);
     try {
       const [repoRes, billingRes] = await Promise.all([
         fetch('/api/github/repositories'),
@@ -71,6 +73,7 @@ export default function SettingsPage() {
     } catch (err: unknown) {
       console.error("Failed to load settings data:", err);
       setError(err instanceof Error ? err.message : 'Workspace settings data is temporarily unavailable.');
+      setErrorAction('load');
     } finally {
       setLoading(false);
     }
@@ -83,6 +86,7 @@ export default function SettingsPage() {
   async function handleConnectGitHub() {
     setConnecting(true);
     setError(null);
+    setErrorAction(null);
     try {
       const res = await fetch('/api/github/install');
       const data = await res.json();
@@ -92,6 +96,7 @@ export default function SettingsPage() {
       window.location.href = data.url;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initiate GitHub connection.");
+      setErrorAction('connect');
       setConnecting(false);
     }
   }
@@ -113,7 +118,7 @@ export default function SettingsPage() {
         <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" aria-hidden="true" />
           <span>{error}</span>
-          <Button type="button" variant="outline" size="sm" onClick={() => void loadStatus()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry</Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => void (errorAction === 'connect' ? handleConnectGitHub() : loadStatus())} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? 'Retry GitHub connection' : 'Retry settings load'}</Button>
         </div>
       )}
 
