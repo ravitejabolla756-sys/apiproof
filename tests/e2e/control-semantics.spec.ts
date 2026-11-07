@@ -14,4 +14,15 @@ test('dashboard interactive controls expose explicit button semantics', async ({
   const severityFilters = page.getByRole('group', { name: 'Filter by severity' }).getByRole('button');
   await expect(severityFilters).not.toHaveCount(0);
   for (const button of await severityFilters.all()) await expect(button).toHaveAttribute('type', 'button');
+
+  await page.route('**/api/repositories', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [{ id: 'repo-semantics', owner: 'acme', name: 'owl', full_name: 'acme/owl', github_repository_id: 'gh-1', default_branch: 'main', status: 'healthy', last_scan_at: null, created_at: '2026-11-07T00:00:00.000Z', findings_count: 0, scans_count: 0, last_scan_sha: null }] }) });
+  });
+  await page.goto('/dashboard/repositories');
+  const expander = page.getByRole('button', { name: 'Collapse owl' });
+  await expect(expander).toHaveAttribute('type', 'button');
+  await expect(expander).toHaveAttribute('aria-expanded', 'true');
+  await expander.click();
+  await expect(page.getByRole('button', { name: 'Expand owl' })).toHaveAttribute('aria-expanded', 'false');
+  await page.unroute('**/api/repositories');
 });
