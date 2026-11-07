@@ -108,8 +108,8 @@ describe('workspace administration', () => {
     await expect(acceptWorkspaceInvitation(wrongUser.user.id, created.token)).rejects.toMatchObject({ code: 'INVITATION_EMAIL_MISMATCH' });
     const members = await listOrganizationMembers(owner.user.id, workspace.id);
     const ownerMember = members.find((member) => member.userId === owner.user.id)!;
-    await expect(updateMemberRole(owner.user.id, workspace.id, ownerMember.id, 'member')).rejects.toMatchObject({ code: 'LAST_OWNER_REQUIRED' });
-    await expect(removeOrganizationMember(owner.user.id, workspace.id, ownerMember.id)).rejects.toMatchObject({ code: 'LAST_OWNER_REQUIRED' });
+    await expect(updateMemberRole(owner.user.id, workspace.id, ownerMember.userId, 'member')).rejects.toMatchObject({ code: 'LAST_OWNER_REQUIRED' });
+    await expect(removeOrganizationMember(owner.user.id, workspace.id, ownerMember.userId)).rejects.toMatchObject({ code: 'LAST_OWNER_REQUIRED' });
   });
 
   it('allows an owner to promote a member and revoke access with session invalidation', async () => {
@@ -118,8 +118,8 @@ describe('workspace administration', () => {
     const workspace = await getDefaultWorkspaceForUser(owner.user.id);
     await getDatabase().execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', ['wsm_member', workspace.id, member.user.id, 'member', new Date().toISOString()]);
     const memberRow = (await listOrganizationMembers(owner.user.id, workspace.id)).find((item) => item.userId === member.user.id)!;
-    await updateMemberRole(owner.user.id, workspace.id, memberRow.id, 'owner');
-    await removeOrganizationMember(owner.user.id, workspace.id, memberRow.id);
+    await updateMemberRole(owner.user.id, workspace.id, memberRow.userId, 'owner');
+    await removeOrganizationMember(owner.user.id, workspace.id, memberRow.userId);
     expect(await getDatabase().queryOne('SELECT id FROM workspace_members WHERE id = ?', [memberRow.id])).toBeUndefined();
     expect(await getDatabase().queryOne('SELECT id FROM sessions WHERE user_id = ?', [member.user.id])).toBeUndefined();
   });

@@ -12,8 +12,8 @@ function readCookieValue(req: Request, name: string): string | null {
   return pair ? pair.slice(name.length + 1) || null : null;
 }
 
-export async function resolveWorkspaceForRequest(req: Request, userId: string): Promise<WorkspaceWithRole> {
-  const explicitId = new URL(req.url).searchParams.get('workspaceId');
+export async function resolveWorkspaceForRequest(req: Request, userId: string, requestedWorkspaceId?: string): Promise<WorkspaceWithRole> {
+  const explicitId = requestedWorkspaceId ?? new URL(req.url).searchParams.get('workspaceId');
   if (explicitId) {
     const validation = validateSafeId(explicitId, 'workspaceId');
     if (!validation.valid || !validation.data) throw new Error(validation.error || 'Invalid workspaceId.');

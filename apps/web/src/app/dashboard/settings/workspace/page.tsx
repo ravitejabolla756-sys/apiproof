@@ -103,17 +103,19 @@ export default function WorkspaceSettingsPage() {
   }
 
   async function changeRole(member: Member, role: 'owner' | 'member') {
+    if (!workspace) return;
     setError(null); setMessage(null);
-    const response = await fetch('/api/workspace/members', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ memberId: member.id, role }) });
+    const response = await fetch('/api/workspace/members', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, role }) });
     const data = await readJson<{ members?: Member[] }>(response);
     if (!response.ok || !data.members) { setError(data.error || 'Unable to update member role.'); return; }
     setMembers(data.members); setMessage('Member role updated.');
   }
 
   async function removeMember(member: Member) {
+    if (!workspace) return;
     if (!window.confirm(`Remove ${member.email} from this workspace? Their active sessions will be signed out.`)) return;
     setError(null); setMessage(null);
-    const response = await fetch('/api/workspace/members', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ memberId: member.id }) });
+    const response = await fetch('/api/workspace/members', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId }) });
     const data = await readJson<Record<string, never>>(response);
     if (!response.ok) { setError(data.error || 'Unable to remove member.'); return; }
     setMembers((current) => current.filter((item) => item.id !== member.id)); setMessage('Member removed.');
