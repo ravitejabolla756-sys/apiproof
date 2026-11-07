@@ -139,7 +139,7 @@ export default function DashboardOverviewPage() {
   if (loading) {
     return (
       <div role="status" aria-live="polite" aria-atomic="true" className="py-24 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>
 
@@ -184,7 +184,7 @@ export default function DashboardOverviewPage() {
               variant="outline"
               onClick={loadOverview}
               disabled={refreshing}
-              icon={<RefreshCw className="w-3.5 h-3.5" />}
+              icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
               className="font-medium text-xs"
             >
               {refreshing ? "Refreshing..." : "Refresh"}
@@ -201,7 +201,7 @@ export default function DashboardOverviewPage() {
               <Button
                 size="sm"
                 onClick={() => setIsConnectOpen(true)}
-                icon={<Plus className="w-3.5 h-3.5" />}
+                icon={<Plus aria-hidden="true" className="w-3.5 h-3.5" />}
                 className="font-medium"
               >
                 Connect Repository
@@ -230,7 +230,7 @@ export default function DashboardOverviewPage() {
               <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-[#111111]">{change.title}</h3>
               <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-[#686868]">{change.description}</p>
               <a href={change.source_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 hover:underline">
-                View official source <ExternalLink className="h-3 w-3" />
+                View official source <ExternalLink aria-hidden="true" className="h-3 w-3" />
               </a>
             </article>
           )) : (
@@ -309,7 +309,7 @@ export default function DashboardOverviewPage() {
         <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-5 shadow-xs">
           <div className="flex items-start justify-between gap-4">
             <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-700">Provider intelligence</p><h2 className="mt-2 text-base font-semibold text-[#111111]">Review queue</h2><p className="mt-1 text-xs text-[#686868]">Official source changes wait for your approval before they affect scans.</p></div>
-            <ShieldCheck className="h-5 w-5 text-purple-700" />
+            <ShieldCheck aria-hidden="true" className="h-5 w-5 text-purple-700" />
           </div>
           <div className="mt-4 flex items-end justify-between"><div><span className="text-2xl font-semibold text-[#111111]">{stats.providerRulesPending}</span><span className="ml-2 text-xs text-[#686868]">pending rules</span></div><Link href="/dashboard/rules/pending" className="text-xs font-medium text-purple-700 hover:underline">Open review →</Link></div>
           <p className="mt-2 text-[11px] text-[#686868]">{stats.providerRulesApproved} approved rules currently available to the scanner.</p>
@@ -317,7 +317,7 @@ export default function DashboardOverviewPage() {
         <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-5 shadow-xs">
           <div className="flex items-start justify-between gap-4">
             <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Rescan pipeline</p><h2 className="mt-2 text-base font-semibold text-[#111111]">Repository updates</h2><p className="mt-1 text-xs text-[#686868]">Approval and nightly freshness jobs are tracked durably.</p></div>
-            <ScanLine className="h-5 w-5 text-emerald-700" />
+            <ScanLine aria-hidden="true" className="h-5 w-5 text-emerald-700" />
           </div>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs"><span><strong className="text-[#111111]">{stats.rescansPending}</strong> pending</span><span><strong className="text-[#111111]">{stats.rescansProcessing}</strong> processing</span><span className={stats.rescansFailed ? "text-rose-700" : "text-emerald-700"}><strong>{stats.rescansFailed}</strong> failed</span></div>
           <p className="mt-2 text-[11px] text-[#686868]">A failed job remains visible for retry and investigation; it is never silently discarded.</p>
@@ -341,7 +341,7 @@ export default function DashboardOverviewPage() {
               onClick={() => setIsConnectOpen(true)}
               className="bg-white text-purple-950 hover:bg-purple-100 font-semibold gap-1.5"
             >
-              <Plus className="w-4 h-4" />
+              <Plus aria-hidden="true" className="w-4 h-4" />
               <span>Connect GitHub Repository</span>
             </Button>
           </div>
@@ -356,7 +356,7 @@ export default function DashboardOverviewPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">1</span>
                 {data?.workspace?.hasGitHubInstallation ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
@@ -376,7 +376,7 @@ export default function DashboardOverviewPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">2</span>
                 {stats.connectedRepositories > 0 ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
@@ -396,7 +396,7 @@ export default function DashboardOverviewPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">3</span>
                 {stats.scansCompleted > 0 ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
@@ -416,7 +416,7 @@ export default function DashboardOverviewPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center font-semibold text-purple-200 text-[11px]">4</span>
                 {stats.draftPrsCount > 0 ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
@@ -460,7 +460,7 @@ export default function DashboardOverviewPage() {
 
               <div className="pt-2 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-emerald-700 font-medium">
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4" />
                   <span>Deterministic AST Detection</span>
                 </div>
                 <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
@@ -472,7 +472,7 @@ export default function DashboardOverviewPage() {
           ) : (
             <div role="status" aria-live="polite" aria-atomic="true" className="rounded-[24px] bg-[#EEF7F2] border border-[#D1EBE0] p-6 space-y-2 shadow-xs">
               <div className="flex items-center gap-2 text-emerald-950 font-semibold text-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600" />
                 <span>All monitored repositories are up to date</span>
               </div>
               <p className="text-xs text-emerald-800">
@@ -485,11 +485,11 @@ export default function DashboardOverviewPage() {
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-purple-700" />
+                <GitBranch aria-hidden="true" className="w-4 h-4 text-purple-700" />
                 Monitored Repositories
               </h3>
               <Link href="/dashboard/repositories" className="text-xs text-[#686868] hover:text-[#111111] font-medium flex items-center gap-1">
-                View all <ArrowRight className="w-3.5 h-3.5" />
+                View all <ArrowRight aria-hidden="true" className="w-3.5 h-3.5" />
               </Link>
             </div>
 

@@ -498,6 +498,12 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: focused ESLint PASS; web typecheck PASS; rebuilt web production build PASS with 83 generated pages; focused Slack journey PASS 1/1; full rebuilt-bundle Playwright suite PASS 69/69 on `/tmp/myowl-v1-full-slack-progress.db`.
 - Scope: this advances local UI-12/UI-13 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 dashboard overview decorative semantics
+
+- Change: dashboard overview loading, provider/repository pipeline, onboarding, review-queue and repository-status icons now explicitly hide decorative SVGs while preserving visible labels and chart semantics.
+- Evidence: focused dashboard ESLint PASS; web typecheck PASS; rebuilt web production build PASS with 83 generated pages; dashboard data-state suite PASS 16/16; full rebuilt-bundle Playwright suite PASS 69/69 on `/tmp/myowl-v1-full-dashboard-icons-a11y.db`.
+- Scope: this advances local UI-12 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository scan-state semantics
 
 - Change: the repository detail scan summary now exposes the current scan state as an atomic polite live region; decorative scan-state and section icons are hidden from assistive technology; scan-history column headers now declare `scope="col"`.
