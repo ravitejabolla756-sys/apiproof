@@ -488,10 +488,10 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByText('No repositories connected yet.')).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/repositories');
 
-    let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; });
-    await page.route('**/api/account', async (route) => { await accountLoading; await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) }); });
+    let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; }); let accountRequests = 0;
+    await page.route('**/api/account', async (route) => { accountRequests += 1; if (accountRequests === 1) { await accountLoading; await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) }); return; } await route.continue(); });
     await page.goto('/dashboard/settings/account'); const accountStatus = page.getByRole('status'); await expect(accountStatus).toContainText('Loading account settings…'); await expect(accountStatus).toHaveAttribute('aria-atomic', 'true'); releaseAccount?.();
-    const accountAlert = page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' }); await expect(accountAlert).toBeVisible({ timeout: 30_000 }); await expect(accountAlert).toHaveAttribute('aria-live', 'assertive'); await expect(accountAlert).toHaveAttribute('aria-atomic', 'true');
+    const accountAlert = page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' }); await expect(accountAlert).toBeVisible({ timeout: 30_000 }); await expect(accountAlert).toHaveAttribute('aria-live', 'assertive'); await expect(accountAlert).toHaveAttribute('aria-atomic', 'true'); await accountAlert.getByRole('button', { name: 'Retry account load' }).click(); await expect(accountAlert).toHaveCount(0); await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 }); expect(accountRequests).toBeGreaterThanOrEqual(2);
     await page.unroute('**/api/account');
   });
   test('renders notification loading and error states safely', async ({ page }) => {

@@ -24,21 +24,23 @@ export default function AccountSettingsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        const response = await fetch('/api/account');
-        const data = await response.json() as { account?: AccountProfile; error?: string };
-        if (!response.ok || !data.account) throw new Error(data.error || 'Unable to load account settings.');
-        setAccount(data.account);
-        setName(data.account.name);
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : 'Unable to load account settings.');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  async function loadAccount() {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/account');
+      const data = await response.json() as { account?: AccountProfile; error?: string };
+      if (!response.ok || !data.account) throw new Error(data.error || 'Unable to load account settings.');
+      setAccount(data.account);
+      setName(data.account.name);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Unable to load account settings.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { void loadAccount(); }, []);
 
   async function saveName(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -108,7 +110,7 @@ export default function AccountSettingsPage() {
       </div>
 
       {message && <div role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">{message}</div>}
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{error}</div>}
+      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><span>{error}</span>{!account && <Button type="button" variant="outline" size="sm" onClick={() => void loadAccount()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry account load</Button>}</div>}
 
       {loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="flex items-center gap-2 rounded-2xl border border-[#E8E8E5] bg-white p-6 text-xs text-[#686868]">
