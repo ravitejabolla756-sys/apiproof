@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — GitHub action retry semantics
+
+- PASS: Focused GitHub installation recovery journey passed 1/1 in 2.4 seconds with an axe-clean action error and the correct Retry GitHub connection control.
+- PASS: Rebuilt-bundle CI-mode Playwright suite passed 90/90 in 2.2 minutes; targeted ESLint, `git diff --check`, and production build passed with 83 generated pages.
+- Scope: local ORG-02/UI-12 evidence only. GitHub installation activation, hosted CI, staging, PostgreSQL/RBAC, Member 1 contracts, provider integrations, transactional email and production remain unverified or blocked by the master goal.
+
 ## 2026-11-08 — Slack action retry semantics
 
 - PASS: Focused Slack action-recovery journey passed 1/1 in 2.9 seconds with an axe-clean alert and the correct Retry Slack connection action.

@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `d014b16` (`codex/v1-frontend-product`)
+Current HEAD: `bc87c57` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — ORG-02/UI-12 GitHub action retry semantics
+
+- Change: Workspace Settings now distinguishes settings-load failures from GitHub installation failures and exposes the matching recovery action: Retry settings load or Retry GitHub connection. A failed installation URL request no longer offers a misleading status reload.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/github-action-recovery.spec.ts`.
+- Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; rebuilt web production bundle passed with 83 generated pages; focused GitHub action-recovery journey passed 1/1 in 2.4 seconds with an axe-clean alert; rebuilt-bundle CI-mode full Playwright suite passed 90/90 in 2.2 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-github-action-recovery-artifacts`, `/tmp/myowl-v1-full-github-action-recovery-artifacts`.
+- Scope: local ORG-02/UI-12 action-state recovery only; no GitHub installation activation, backend/shared contract, remote Git, staging, production, payment or email action was performed.
 
 ## 2026-11-08 checkpoint — NOT-03/UI-12 Slack action retry semantics
 
@@ -194,7 +201,7 @@ Current HEAD: `d014b16` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
-Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 89/89, with compatibility-map, provider-rule, workspace-switch, repository-picker, and Slack action recovery journeys added in the checkpoints above.
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 90/90, with compatibility-map, provider-rule, workspace-switch, repository-picker, Slack action, and GitHub action recovery journeys added in the checkpoints above.
 
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
