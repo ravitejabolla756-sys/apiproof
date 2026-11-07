@@ -255,11 +255,9 @@ export default function FindingsListPage() {
                     <span>Rule: <code className="font-mono text-[11px] text-[#111111]">{finding.change_id}</code></span>
                   )}
                 </span>
-                <Link href={`/dashboard/findings/${finding.id}`}>
-                  <Button size="sm" variant="primary" className="gap-1 text-xs">
-                    <span>Inspect Workbench & Plan</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Button>
+                <Link href={`/dashboard/findings/${finding.id}`} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                  <span>Inspect Workbench &amp; Plan</span>
+                  <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>

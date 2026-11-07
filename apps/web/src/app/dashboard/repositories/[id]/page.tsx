@@ -378,11 +378,9 @@ export default function RepositoryDetailPage({
                   <span className="text-xs text-[#686868]">
                     Rule: <code className="font-mono text-[11px] text-[#111111]">{finding.change_id}</code>
                   </span>
-                  <Link href={`/dashboard/findings/${finding.id}`}>
-                    <Button size="sm" variant="primary" className="gap-1 text-xs font-medium">
-                      <span>Inspect Evidence</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </Button>
+                  <Link href={`/dashboard/findings/${finding.id}`} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                    <span>Inspect Evidence</span>
+                    <ExternalLink aria-hidden="true" className="w-3 h-3" />
                   </Link>
                 </div>
               </div>

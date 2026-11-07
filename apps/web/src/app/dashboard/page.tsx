@@ -193,11 +193,9 @@ export default function DashboardOverviewPage() {
               {lastUpdatedAt ? `Updated ${lastUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Not refreshed"}
             </span>
             {data?.criticalFinding ? (
-              <Link href={`/dashboard/findings/${data.criticalFinding.id}`}>
-                <Button size="sm" className="gap-2 font-medium">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Review Critical Finding</span>
-                </Button>
+              <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#111111] px-4.5 py-2.5 text-sm font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                <AlertTriangle aria-hidden="true" className="w-3.5 h-3.5 text-amber-300" />
+                <span>Review Critical Finding</span>
               </Link>
             ) : (
               <Button
@@ -465,11 +463,9 @@ export default function DashboardOverviewPage() {
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Deterministic AST Detection</span>
                 </div>
-                <Link href={`/dashboard/findings/${data.criticalFinding.id}`}>
-                  <Button size="sm" variant="outline" className="gap-1.5 text-xs bg-white">
-                    <span>Inspect Finding & Plan</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Button>
+                <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
+                  <span>Inspect Finding &amp; Plan</span>
+                  <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
@@ -521,10 +517,8 @@ export default function DashboardOverviewPage() {
                         <div className="text-[#111111] font-medium">{repo.findings_count} findings</div>
                         <div className="text-[#686868] text-[11px]">{repo.last_scan_at ? new Date(repo.last_scan_at).toLocaleDateString() : 'Not scanned'}</div>
                       </div>
-                      <Link href={`/dashboard/repositories/${repo.id}`}>
-                        <Button size="sm" variant="outline" className="text-xs">
-                          Inspect
-                        </Button>
+                      <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
+                        Inspect
                       </Link>
                     </div>
                   </div>

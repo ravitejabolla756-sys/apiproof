@@ -96,10 +96,8 @@ export default function MigrationsWorkbenchPage() {
           <p className="text-xs text-[#686868]">
             Open a finding to review its affected call site, matched rule, and official evidence.
           </p>
-          <Link href="/dashboard/findings">
-            <Button size="sm" variant="outline">
-              View Open Findings
-            </Button>
+          <Link href="/dashboard/findings" className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
+            View Open Findings
           </Link>
         </div>
       ) : (
@@ -183,18 +181,14 @@ export default function MigrationsWorkbenchPage() {
 
                   <div className="pt-2 border-t border-[#D1EBE0] flex items-center justify-between">
                     {mig.pr_url ? (
-                      <a href={mig.pr_url} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="primary" className="gap-1.5 text-xs font-medium">
-                          <GitPullRequest className="w-3.5 h-3.5" />
-                          <span>Inspect Pull Request #{mig.pr_number}</span>
-                        </Button>
+                      <a href={mig.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                        <GitPullRequest aria-hidden="true" className="w-3.5 h-3.5" />
+                        <span>Inspect Pull Request #{mig.pr_number}</span>
                       </a>
                     ) : (
-                      <Link href={`/dashboard/findings/${mig.finding_id}`}>
-                        <Button size="sm" variant="primary" className="gap-1.5 text-xs font-medium">
-                          <span>Inspect Finding</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </Button>
+                      <Link href={`/dashboard/findings/${mig.finding_id}`} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                        <span>Inspect Finding</span>
+                        <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />
                       </Link>
                     )}
                     <span className="text-[11px] font-semibold text-emerald-900">Review-Only Guard</span>

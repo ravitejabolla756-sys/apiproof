@@ -495,6 +495,13 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`.
 - Scope: local accessibility correctness only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 dashboard action semantics
+
+- Change: removed the remaining nested link/button controls from dashboard overview, findings, migrations, pull requests and repository detail screens. Each action is now one keyboard-focusable link or external anchor with the incumbent visual variant, label, route and target behavior preserved.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`.
+- Evidence: repository search found no remaining link/button nesting in `apps/web/src/app` or `apps/web/src/components`; targeted ESLint and repository typecheck passed; CI-mode accessibility route audit passed 5/5 and control-semantics coverage passed 1/1 in 28.9 seconds.
+- Scope: local accessibility correctness only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
