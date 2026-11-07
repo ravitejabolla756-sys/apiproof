@@ -2,11 +2,32 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 async function signIn(page: Page) {
+  await signInWithCredentials(page, 'developer@apiproof.dev', 'local-test-seed-password');
+}
+
+async function signInWithCredentials(page: Page, email: string, password: string) {
   await page.goto('/login');
-  await page.getByLabel('Email').fill('developer@apiproof.dev');
-  await page.getByLabel('Password').fill('local-test-seed-password');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
   await page.waitForURL('**/dashboard');
+}
+
+async function createLocalAccount(page: Page, email: string, password: string) {
+  await page.goto('/login');
+  const signupResult = await page.evaluate(async ({ signupEmail, signupPassword }) => {
+    const response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'signup', email: signupEmail, password: signupPassword, name: 'Browser Account' }),
+    });
+    return { status: response.status, body: await response.json() as { error?: string } };
+  }, { signupEmail: email, signupPassword: password });
+  expect(signupResult.status, signupResult.body.error).toBe(200);
+  // The signup endpoint creates the authenticated session as part of account creation.
+  // Navigate explicitly instead of submitting the login form again; the login page
+  // redirects authenticated sessions before its form controls are available.
+  await page.goto('/dashboard');
 }
 
 async function withAcceptedInvitation(ownerPage: Page, browser: Browser, inviteEmail: string, action: (invitedPage: Page) => Promise<void>) {
@@ -239,6 +260,35 @@ test.describe('authenticated product surfaces', () => {
     ] });
     await expect(findingsSlack).not.toBeChecked();
     await page.unroute('**/api/account/notifications');
+  });
+
+  test('changes a real local account password and invalidates another session', async ({ page, browser }) => {
+    const email = `browser-password-${Date.now()}@example.test`;
+    const oldPassword = 'OldPassword123!';
+    const newPassword = 'NewPassword456!';
+    await createLocalAccount(page, email, oldPassword);
+
+    await page.goto('/dashboard/settings/account');
+    await page.getByLabel('Current password', { exact: true }).fill(oldPassword);
+    await page.getByLabel('New password', { exact: true }).fill(newPassword);
+    await page.getByLabel('Confirm new password', { exact: true }).fill(newPassword);
+    await page.getByRole('button', { name: 'Update password' }).click();
+    await expect(page.getByRole('status')).toContainText('Password updated.', { timeout: 30_000 });
+
+    const otherPage = await browser.newPage();
+    try {
+      await otherPage.goto('/login');
+      await otherPage.getByLabel('Email').fill(email);
+      await otherPage.getByLabel('Password').fill(oldPassword);
+      await otherPage.getByRole('button', { name: 'Sign In', exact: true }).last().click();
+      await expect(otherPage.getByText('Invalid email or password.', { exact: true })).toBeVisible({ timeout: 30_000 });
+
+      await otherPage.getByLabel('Password').fill(newPassword);
+      await otherPage.getByRole('button', { name: 'Sign In', exact: true }).last().click();
+      await otherPage.waitForURL('**/dashboard');
+    } finally {
+      await otherPage.close();
+    }
   });
 
   test('exposes an accessible server-backed workspace context selector', async ({ page }) => {
