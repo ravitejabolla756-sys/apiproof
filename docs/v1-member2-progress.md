@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 current dashboard production-build regression
+
+- Change: Re-ran the complete dashboard data-state matrix after the Slack fixture stabilization under the CI-mode production-build server.
+- Evidence: Dashboard data-state suite passed 16/16 in 23.9 seconds on isolated SQLite `/tmp/myowl-v1-dashboard-full-current.db`, retaining loading, empty, error, retry, keyboard, axe and repository-selection assertions. Artifacts: `/tmp/myowl-v1-dashboard-full-current-artifacts`.
+- Scope: local UI-12/UI-13 evidence only; this does not replace the earlier 90/92 full-matrix result, and hosted CI, staging, manual screen-reader review and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-13 dashboard fixture recovery determinism
 
 - Change: The Slack status failure fixture now holds the unavailable state until the test explicitly enables success before retry, preventing an in-flight development request from overwriting the recovery result; request-count evidence is bounded to the initial request plus a possible replay.

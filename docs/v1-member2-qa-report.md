@@ -2,6 +2,11 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Current dashboard production-build regression
+
+- PASS: Complete dashboard data-state suite passed 16/16 in 23.9 seconds under the CI-mode production-build server on isolated SQLite, including provider-rule and Slack recovery states after fixture stabilization.
+- Scope: local UI-12/UI-13 evidence only. The full 92-test matrix still has the separately recorded 90/92 result; hosted CI, integrated staging, manual screen-reader review and production remain open.
+
 ## 2026-11-08 — Dashboard fixture recovery determinism
 
 - PASS: Web production build generated 83 static pages. After stabilizing the Slack status fixture, the two affected dashboard cases passed 2/2 in 3.2 seconds on an isolated SQLite database, with targeted ESLint and `git diff --check` passing.
