@@ -8,6 +8,8 @@ test('keeps beta billing boundaries truthful in browser flows', async ({ page })
   await expect(page.getByText('Coming soon — no checkout')).toBeVisible();
 
   await signIn(page);
+  await page.goto('/dashboard/settings');
+  await expect(page.getByRole('link', { name: 'View paid-plan rollout' })).toBeVisible();
   const checkout = await page.request.post('/api/billing/checkout', { data: { planId: 'team' } });
   expect(checkout.status()).toBe(403);
   expect(await checkout.json()).toMatchObject({ error: expect.stringContaining('BILLING_NOT_AVAILABLE') });
