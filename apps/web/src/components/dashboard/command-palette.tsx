@@ -141,7 +141,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         <h2 id="command-palette-title" className="sr-only">Search MY OWL</h2>
         {/* Search Header */}
         <div className="flex items-center px-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
-          <Search className="h-4 w-4 text-zinc-400 shrink-0" />
+          <Search aria-hidden="true" className="h-4 w-4 text-zinc-400 shrink-0" />
           <input
             ref={searchInputRef}
             type="text"
@@ -152,7 +152,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             className="w-full bg-transparent border-0 px-3 py-3.5 text-xs text-[#111111] placeholder:text-zinc-400 focus:outline-none"
           />
           <button type="button" aria-label="Close search" onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
-            <X className="h-4 w-4" />
+            <X aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
 
@@ -174,10 +174,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className="h-4 w-4 text-purple-700" />
+                      <Icon aria-hidden="true" className="h-4 w-4 text-purple-700" />
                       <span>{item.name}</span>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-[#111111]" />
+                    <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 text-zinc-400 group-hover:text-[#111111]" />
                   </button>
                 );
               })}
@@ -199,7 +199,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <FolderGit2 className="h-4 w-4 text-purple-700" />
+                      <FolderGit2 aria-hidden="true" className="h-4 w-4 text-purple-700" />
                       <span className="font-mono font-medium">{repo.name}</span>
                     </div>
                     <span className="text-[11px] text-[#686868] font-mono">
@@ -226,7 +226,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Boxes className="h-4 w-4 text-purple-700" />
+                      <Boxes aria-hidden="true" className="h-4 w-4 text-purple-700" />
                       <span>{inv.name}</span>
                       <span className="text-[10px] text-[#686868]">({inv.category})</span>
                     </div>

@@ -11,7 +11,7 @@ export function HealthViz() {
           <p className="text-xs text-[#686868]">Status across indexed third-party SDK dependencies</p>
         </div>
         <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-800 bg-[#EEF7F2] border border-[#D1EBE0] px-3 py-1 rounded-full font-medium">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+          <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-emerald-600" />
           <span>1 Deprecation Managed</span>
         </div>
       </div>
@@ -33,7 +33,7 @@ export function HealthViz() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
         <div className="bg-[#F6F6F4] border border-[#E8E8E5] rounded-xl p-3.5 flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-[#EEF7F2] border border-[#D1EBE0] flex items-center justify-center text-emerald-700 shrink-0">
-            <CheckCircle2 className="h-4 w-4" />
+            <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
           </div>
           <div>
             <div className="text-[10px] text-[#686868] uppercase font-semibold">Healthy Repos</div>
@@ -43,7 +43,7 @@ export function HealthViz() {
 
         <div className="bg-[#F6F6F4] border border-[#E8E8E5] rounded-xl p-3.5 flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-[#FEF8EC] border border-[#FDE68A] flex items-center justify-center text-amber-700 shrink-0">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle aria-hidden="true" className="h-4 w-4" />
           </div>
           <div>
             <div className="text-[10px] text-[#686868] uppercase font-semibold">Open Findings</div>
@@ -53,7 +53,7 @@ export function HealthViz() {
 
         <div className="bg-[#F6F6F4] border border-[#E8E8E5] rounded-xl p-3.5 flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-[#EBF3FC] border border-[#C6E1FA] flex items-center justify-center text-blue-700 shrink-0">
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck aria-hidden="true" className="h-4 w-4" />
           </div>
           <div>
             <div className="text-[10px] text-[#686868] uppercase font-semibold">Repository writes</div>
