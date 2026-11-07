@@ -23,7 +23,7 @@ test.describe('public beta surfaces', () => {
     await expect(page.getByText('No live monitor is connected')).toBeVisible();
     await page.goto('/invite/accept');
     await expect(page.getByRole('heading', { name: 'Workspace invitation' })).toBeVisible();
-    await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
+    const verificationAlert = page.getByRole('alert').filter({ hasText: 'missing its token' }); await expect(verificationAlert).toBeVisible({ timeout: 30_000 }); await expect(verificationAlert).toHaveAttribute('aria-live', 'assertive'); await expect(verificationAlert).toHaveAttribute('aria-atomic', 'true');
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, '/invite/accept missing-token state').toEqual([]);
     await page.goto('/verify-email');
     await expect(page.getByRole('heading', { name: 'Verification unavailable' })).toBeVisible();

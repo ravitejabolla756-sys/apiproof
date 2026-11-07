@@ -116,6 +116,8 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 
 - `pnpm exec eslint apps/web/src/app/contact/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; Impeccable detector returned no findings; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; focused contact journey — 1/1 PASS with atomic no-send status assertion; full CI-mode production-build browser matrix — 43/43 PASS in 60 seconds. Contact intake remains intentionally non-sending; this is local public-site evidence, not manual assistive-technology or hosted deployment sign-off.
 
+- `pnpm exec eslint apps/web/src/app/verify-email/page.tsx apps/web/src/app/forgot-password/page.tsx apps/web/src/app/reset-password/page.tsx apps/web/src/app/dashboard/settings/account/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; Impeccable detector returned no findings; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; verification-link public journey — 1/1 PASS with assertive atomic missing-token assertion; full CI-mode production-build browser matrix — 43/43 PASS in 57.6 seconds. Verification/reset/submission feedback semantics are covered locally; this remains automated/browser evidence, not a full screen-reader or hosted CI sign-off.
+
 ## Required next checks
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.

@@ -392,3 +392,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; focused non-sending contact journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 60 seconds. Retained artifacts were moved to `/tmp/myowl-v1-web15-contact-artifacts/`.
 - Scope: local public-site evidence only; manual assistive-technology, hosted CI, representative deployment performance, legal and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 verification and submission progress semantics
+
+- Change: verify-email feedback now distinguishes assertive errors from polite success/status states and is atomic; password reset and account profile/password submission progress spans are also atomic.
+- Files: `apps/web/src/app/verify-email/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; verification-link public journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 57.6 seconds. Retained artifacts were moved to `/tmp/myowl-v1-ui12-verification-state-artifacts/`.
+- Scope: local automated/browser evidence only; full screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
