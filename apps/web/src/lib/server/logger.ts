@@ -62,15 +62,18 @@ const SENSITIVE_KEYS = new Set([
   'secret',
   'signingkey',
   'encryptionkey',
+  'accesskey',
+  'servicerolekey',
 ]);
 
 // Credential-bearing key names often include a provider prefix or a storage
 // suffix (for example `oauthAccessToken`, `passwordHash`, or `privateKeyPem`).
 // Diagnostic labels such as `secretName` intentionally remain visible.
-const SENSITIVE_KEY_PATTERN = /^(?:[a-z0-9]+)*(?:token|secret|password|privatekey|apikey|authorization|credential|signature)(?:value|raw|text|contents?|pem|hash|ciphertext|encoded)?$/;
+const SENSITIVE_KEY_PATTERN = /^(?:[a-z0-9]+)*(?:token|secret|password|privatekey|apikey|accesskey|servicerolekey|authorization|credential|signature|signingkey|encryptionkey)(?:value|raw|text|contents?|pem|hash|ciphertext|encoded)?$/;
 
 // Sensitive regex patterns (GitHub tokens, Bearer headers, RSA private keys)
 const SECRET_REGEX_PATTERNS = [
+  /((?<![a-z0-9_])"?[a-z0-9_]*(?:api[_-]?key|access[_-]?key|service[_-]?role[_-]?key|signing[_-]?key|encryption[_-]?key|secret|token|password|client[_-]?secret|private[_-]?key|authorization|cookie|credential|connection[_-]?string|database[_-]?url)"?\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;&}]+)/gi,
   /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{8,}\b/g,
   /\bwhsec_[A-Za-z0-9_-]{8,}\b/g,
   /\bxox(?:b|p|s|a)-[A-Za-z0-9-]{10,}\b/g,

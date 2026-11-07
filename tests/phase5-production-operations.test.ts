@@ -176,6 +176,8 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       passwordHash: 'stored-password-hash',
       privateKeyPem: 'private-key-material',
       oauthAccessToken: 'oauth-token-material',
+      awsSecretAccessKey: 'aws-access-key-material',
+      serviceRoleKey: 'service-role-key-material',
       secret_value: 'secret-value-material',
       signingKey: 'signing-key-material',
       envName: 'BILLING_WEBHOOK_SECRET',
@@ -191,6 +193,8 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       passwordHash: '[REDACTED]',
       privateKeyPem: '[REDACTED]',
       oauthAccessToken: '[REDACTED]',
+      awsSecretAccessKey: '[REDACTED]',
+      serviceRoleKey: '[REDACTED]',
       secret_value: '[REDACTED]',
       signingKey: '[REDACTED]',
       envName: 'BILLING_WEBHOOK_SECRET',
@@ -198,9 +202,18 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       self: '[CIRCULAR]',
     });
     const serialized = JSON.stringify(parsed);
-    for (const secret of ['stored-password-hash', 'private-key-material', 'oauth-token-material', 'secret-value-material', 'signing-key-material']) {
+    for (const secret of ['stored-password-hash', 'private-key-material', 'oauth-token-material', 'aws-access-key-material', 'service-role-key-material', 'secret-value-material', 'signing-key-material']) {
       expect(serialized).not.toContain(secret);
     }
+  });
+
+  it('redacts secret assignments embedded in diagnostic strings and JSON-like text', () => {
+    const rawSecret = 'this-is-a-credential-value';
+    const text = `AWS_SECRET_ACCESS_KEY=${rawSecret}; "service_role_key": "${rawSecret}"; databaseUrl = 'postgres://user:${rawSecret}@db.example.test/app'`;
+    const sanitized = redactSecretString(text);
+
+    expect(sanitized).not.toContain(rawSecret);
+    expect(sanitized.match(/\[REDACTED\]/g)).toHaveLength(3);
   });
 
   it('preserves known operational error categories while redacting token-like values', () => {
