@@ -477,6 +477,12 @@ Statuses are current baseline findings, not completion claims.
 - Files: `tests/e2e/public-site.spec.ts`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/helpers.ts`.
 - Evidence: fresh-database CI-mode Playwright suite passed 48/48 in 1.2 minutes; targeted affected journeys passed; targeted ESLint passed. This is local production-style browser evidence only; hosted CI and integrated staging remain NOT_RUN.
 
+## 2026-11-07 checkpoint — UI-13 fresh-database regression isolation
+
+- Change: the workspace retry fixture now gates recovery until the user activates Retry; the browser helper gives invited pages distinct rate-limit identities; the finding detail test asserts successful retrieval without depending on development-only duplicate-effect counts.
+- Files: `tests/e2e/public-site.spec.ts`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/helpers.ts`.
+- Evidence: fresh explicit `/tmp` SQLite database, `CI=1` Playwright suite, 48/48 passed in 1.2 minutes; repository typecheck passed; targeted ESLint passed. Hosted CI and integrated staging remain NOT_RUN.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
