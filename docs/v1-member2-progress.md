@@ -236,3 +236,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; focused Slack failure journey PASS — 1/1; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
 - Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 account mutation announcements
+
+- Change: account profile and password forms now mark active submissions busy and expose `Saving…`/`Updating…` as polite status regions; existing session-invalidation and success/error behavior is unchanged.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`.
+- Evidence: targeted ESLint PASS; web typecheck PASS after the browser server exited; Impeccable detector returned no findings; real local password-change/session-invalidation journey PASS — 1/1; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
+- Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
