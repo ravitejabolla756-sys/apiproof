@@ -470,6 +470,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: fresh isolated SQLite database `/tmp/myowl-v1-full-table-semantics.db`; rebuilt-bundle CI-mode Playwright suite passed 67/67 across all committed E2E specs after the table-header scope and compatibility empty-state changes; `test-results/.last-run.json` reported `status: "passed"` with no failed tests.
 - Scope: this strengthens local UI-13 evidence only. Hosted CI, integrated staging, full screen-reader/manual review and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 finding verification progress semantics
+
+- Change: the finding workbench now announces an active background verification job through an atomic polite live region; decorative loading/navigation/action icons are hidden from assistive technology.
+- Regression: the existing finding action journey now covers planning failure/recovery and the transition into `verification_in_progress`, including the live-region attributes and no-false-success wording.
+- Evidence: focused ESLint PASS; web typecheck PASS; rebuilt web production build PASS with 83 generated pages; focused finding action journey PASS 1/1; full rebuilt-bundle Playwright suite PASS 67/67 on `/tmp/myowl-v1-full-finding-verification-a11y.db`.
+- Scope: this advances local UI-12/UI-13 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository scan-state semantics
 
 - Change: the repository detail scan summary now exposes the current scan state as an atomic polite live region; decorative scan-state and section icons are hidden from assistive technology; scan-history column headers now declare `scope="col"`.

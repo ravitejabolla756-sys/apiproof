@@ -304,6 +304,21 @@ test.describe('authenticated dashboard data states', () => {
     expect(findingRequests).toBeGreaterThanOrEqual(1);
     expect(planRequests).toBe(2);
     await page.unroute('**/api/migrations/plan');
+
+    await page.route('**/api/migrations/propose', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ job: { id: 'verification-job-a11y', status: 'verification_in_progress' } }) });
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ job: { id: 'verification-job-a11y', status: 'verification_in_progress' } }) });
+    });
+    const verifyButton = page.getByRole('button', { name: 'Verify and create Draft PR' });
+    await verifyButton.click();
+    const verificationStatus = page.getByRole('status').filter({ hasText: 'Verification is in progress.' });
+    await expect(verificationStatus).toBeVisible();
+    await expect(verificationStatus).toHaveAttribute('aria-live', 'polite');
+    await expect(verificationStatus).toHaveAttribute('aria-atomic', 'true');
+    await page.unroute('**/api/migrations/propose');
   });
 
   test('shows recoverable errors instead of false empty states', async ({ page }) => {

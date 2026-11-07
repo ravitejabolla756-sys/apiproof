@@ -195,7 +195,7 @@ export default function FindingDetailPage({
   if (loading) {
     return (
       <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading AST finding workbench...</span>
       </div>
     );
@@ -205,7 +205,7 @@ export default function FindingDetailPage({
     return (
       <div className="space-y-4 font-sans text-xs">
         <Link href="/dashboard/findings" className="text-[#686868] hover:text-[#111111] flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Findings
+          <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" /> Back to Findings
         </Link>
         <div role="alert" aria-live="assertive" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
           <h1 className="text-xl font-semibold text-[#111111]">Finding unavailable</h1>
@@ -483,11 +483,12 @@ export default function FindingDetailPage({
           {/* ACTION PANEL */}
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-700" />
+            <Sparkles aria-hidden="true" className="w-4 h-4 text-purple-700" />
               Review Actions
             </h3>
             {actionLoading === 'plan' && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Creating migration plan…</p>}
             {actionLoading === 'propose' && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Starting secure verification…</p>}
+            {isVerificationJobActive(migration?.verification_job_status) && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Verification is in progress. No repository change will be created until verification passes.</p>}
 
             {!migration ? (
               <div className="space-y-3">
@@ -536,7 +537,7 @@ export default function FindingDetailPage({
                   </div>
 
                   <div className="pt-1 text-[11px] text-emerald-800 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                     <span>Verified Draft PR only • default branch protected</span>
                   </div>
                 </div>
@@ -556,7 +557,7 @@ export default function FindingDetailPage({
             ) : (
               <div className="p-4 rounded-xl bg-[#EBF3FC] border border-[#C6E1FA] space-y-2">
                 <div className="flex items-center gap-2 text-blue-900 font-semibold text-xs">
-                  <GitPullRequest className="w-4 h-4 text-blue-600" />
+                  <GitPullRequest aria-hidden="true" className="w-4 h-4 text-blue-600" />
                   <span>{getPullRequestStateLabel(migration.pr_state)} · #{migration.pr_number}</span>
                 </div>
                 <p className="text-[11px] text-blue-800">
