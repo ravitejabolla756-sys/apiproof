@@ -66,4 +66,22 @@ test.describe('route accessibility audit', () => {
       expect(results.violations, `${route} mobile`).toEqual([]);
     }
   });
+
+  test('keeps all audited public and authenticated routes accessible at tablet width', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    for (const route of publicRoutes) {
+      await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+      const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+      expect(results.violations, `${route} tablet`).toEqual([]);
+    }
+
+    await signIn(page);
+    for (const route of authenticatedRoutes) {
+      await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+      const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+      expect(results.violations, `${route} tablet`).toEqual([]);
+    }
+  });
 });
