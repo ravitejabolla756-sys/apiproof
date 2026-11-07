@@ -129,7 +129,7 @@ export default function RepositoriesTablePage() {
             onClick={loadRepositories}
             variant="outline"
             size="sm"
-            icon={<RefreshCw className="w-3.5 h-3.5" />}
+            icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
             className="font-medium"
           >
             Refresh
@@ -137,7 +137,7 @@ export default function RepositoriesTablePage() {
           <Button
             onClick={() => setIsConnectOpen(true)}
             size="sm"
-            icon={<Plus className="w-4 h-4" />}
+            icon={<Plus aria-hidden="true" className="w-4 h-4" />}
             className="font-medium"
           >
             Connect repository
@@ -150,7 +150,7 @@ export default function RepositoriesTablePage() {
       {/* Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+          <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
             type="text"
             aria-label="Search repositories"
@@ -235,15 +235,15 @@ export default function RepositoriesTablePage() {
                               className="p-1 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="w-4 h-4 text-purple-700" />
+                                <ChevronDown aria-hidden="true" className="w-4 h-4 text-purple-700" />
                               ) : (
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight aria-hidden="true" className="w-4 h-4" />
                               )}
                             </button>
                           </div>
 
                           <div className="flex-1 font-medium text-[#111111] flex items-center gap-2">
-                            <GitBranch className="w-4 h-4 text-zinc-400" />
+                            <GitBranch aria-hidden="true" className="w-4 h-4 text-zinc-400" />
                             <Link href={`/dashboard/repositories/${repo.id}`} className="font-mono text-xs hover:underline">
                               {repo.name}
                             </Link>
@@ -286,9 +286,9 @@ export default function RepositoriesTablePage() {
                               className="text-xs gap-1 font-medium"
                             >
                               {isScanning ? (
-                                <Loader2 className="w-3 h-3 animate-spin text-purple-700" />
+                                <Loader2 aria-hidden="true" className="w-3 h-3 animate-spin text-purple-700" />
                               ) : (
-                                <Play className="w-3 h-3 text-purple-700" />
+                                <Play aria-hidden="true" className="w-3 h-3 text-purple-700" />
                               )}
                               <span>{isScanning ? "Scanning..." : "Scan"}</span>
                             </Button>
@@ -297,14 +297,14 @@ export default function RepositoriesTablePage() {
                               href={`/dashboard/repositories/${repo.id}`}
                               className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1"
                             >
-                              Inspect <ExternalLink className="w-3 h-3" />
+                              Inspect <ExternalLink aria-hidden="true" className="w-3 h-3" />
                             </Link>
                           </div>
                         </div>
 
                         {/* Scan Status Toast if active for this repo */}
                         {scanMessage && scanMessage.id === repo.id && (
-                          <div className={`px-5 py-2 text-xs border-t ${
+                          <div role="status" aria-live="polite" aria-atomic="true" className={`px-5 py-2 text-xs border-t ${
                             scanMessage.error
                               ? "bg-rose-50 text-rose-800 border-rose-200"
                               : "bg-purple-50 text-purple-900 border-purple-200"

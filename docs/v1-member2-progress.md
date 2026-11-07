@@ -465,6 +465,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; CI-mode focused keyboard/dialog journey passed 1/1 in 3.7 seconds with an axe-clean dialog. Playwright artifacts were retained at `/tmp/myowl-v1-connect-modal-artifacts.o6fgRo`.
 - Scope: local repository-dialog accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 repository list status semantics
+
+- Change: repository-list action, branch and scan icons are now decorative to assistive technology, and transient per-repository scan feedback is exposed as a polite atomic status region. Existing filtering, expansion, scan and navigation behavior is unchanged.
+- Files: `apps/web/src/app/dashboard/repositories/page.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; CI-mode repository-recovery journey passed 1/1 in 2.3 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-repositories-icons-artifacts.wiTob5`.
+- Scope: local repository-list accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
 
 - Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.
