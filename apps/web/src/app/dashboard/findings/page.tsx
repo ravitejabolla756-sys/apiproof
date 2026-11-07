@@ -248,7 +248,7 @@ export default function FindingsListPage() {
                 <span className="text-[#686868] flex items-center gap-1.5 font-medium">
                   {finding.pr_number != null ? (
                     <>
-                      <GitPullRequest className="w-4 h-4 text-blue-600" />
+                      <GitPullRequest aria-hidden="true" className="w-4 h-4 text-blue-600" />
                       <span>{getPullRequestStateLabel(finding.pr_state)} · #{finding.pr_number}</span>
                     </>
                   ) : (

@@ -130,7 +130,7 @@ export default function RepositoryDetailPage({
     return (
       <div className="space-y-4 font-sans text-xs">
         <Link href="/dashboard/repositories" className="text-zinc-500 hover:text-black flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Repositories
+          <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" /> Back to Repositories
         </Link>
         <DashboardDataError message={error || "Repository not found or access denied."} onRetry={() => void loadData()} />
       </div>
@@ -148,7 +148,7 @@ export default function RepositoryDetailPage({
           href="/dashboard/repositories"
           className="inline-flex items-center gap-1.5 text-xs text-[#686868] hover:text-[#111111] font-medium transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" />
           Back to Repositories
         </Link>
       </div>
@@ -219,9 +219,9 @@ export default function RepositoryDetailPage({
               {scanning ? (
                 <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin" />
               ) : scans.length === 0 ? (
-                <FileCode className="w-4 h-4" />
+                <FileCode aria-hidden="true" className="w-4 h-4" />
               ) : scans[0]?.status === "failed" ? (
-                <AlertTriangle className="w-4 h-4" />
+                <AlertTriangle aria-hidden="true" className="w-4 h-4" />
               ) : (
                 <CheckCircle2 aria-hidden="true" className="w-4 h-4" />
               )}
@@ -282,7 +282,7 @@ export default function RepositoryDetailPage({
             }`}
           >
             {message.error ? (
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertTriangle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
             ) : (
               <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
             )}

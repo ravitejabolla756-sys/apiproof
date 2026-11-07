@@ -514,6 +514,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; combined dashboard data-state and accessibility-route suites passed 25/25 in 51.5 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-migrations-map-artifacts.Yh0ye0`.
 - Scope: local migrations/compatibility accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 sidebar and remaining detail semantics
+
+- Change: shared sidebar navigation icons, repository/finding detail back and evidence icons, findings-list PR icon, and settings plan-state icons now hide decorative artwork from the accessibility tree. Existing navigation labels, workspace switching, logout, detail recovery and settings behavior are unchanged.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `apps/web/src/app/dashboard/settings/page.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; combined accessibility-route and control-semantics suites passed 14/14 in 41.7 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-sidebar-detail-artifacts.Q3VBsf`.
+- Scope: local sidebar/detail/settings accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
 
 - Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.

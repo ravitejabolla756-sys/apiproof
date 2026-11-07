@@ -175,7 +175,7 @@ export function Sidebar() {
           onClick={() => setCollapsed(!collapsed)}
           className="hidden md:block p-1.5 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-[#F6F6F4] transition-colors"
         >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {collapsed ? <ChevronRight aria-hidden="true" className="w-4 h-4" /> : <ChevronLeft aria-hidden="true" className="w-4 h-4" />}
         </button>
       </div>
 
@@ -199,7 +199,7 @@ export function Sidebar() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-purple-700" : "text-zinc-400"}`} />
+                  <Icon aria-hidden="true" className={`w-4 h-4 shrink-0 ${isActive ? "text-purple-700" : "text-zinc-400"}`} />
                   <span className={collapsed ? "md:hidden" : ""}>{item.name}</span>
                 </div>
 
@@ -230,7 +230,7 @@ export function Sidebar() {
                     : "text-[#686868] hover:text-[#111111] hover:bg-[#F6F6F4]"
                 }`}
               >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-purple-700" : "text-zinc-400"}`} />
+                <Icon aria-hidden="true" className={`w-4 h-4 shrink-0 ${isActive ? "text-purple-700" : "text-zinc-400"}`} />
                 <span className={collapsed ? "md:hidden" : ""}>{item.name}</span>
               </Link>
             );
@@ -278,7 +278,7 @@ export function Sidebar() {
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
               title="Sign out"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut aria-hidden="true" className="w-3.5 h-3.5" />
               <span className={collapsed ? "md:hidden" : ""}>{isSigningOut ? 'Signing out…' : 'Sign Out'}</span>
             </button>
         </div>

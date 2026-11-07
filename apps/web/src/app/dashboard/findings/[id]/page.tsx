@@ -225,7 +225,7 @@ export default function FindingDetailPage({
           href="/dashboard/findings"
           className="inline-flex items-center gap-1.5 text-xs text-[#686868] hover:text-[#111111] font-medium transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" />
           Back to Findings
         </Link>
       </div>
@@ -448,7 +448,7 @@ export default function FindingDetailPage({
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-[#E8E8E5]">
               <div className="flex items-center gap-2 text-xs font-semibold text-[#111111]">
-                <FileCode className="w-4 h-4 text-purple-700" />
+                <FileCode aria-hidden="true" className="w-4 h-4 text-purple-700" />
                 <span>
                   `Repository Source Evidence — ${finding.file_path}`
                 </span>
@@ -577,7 +577,7 @@ export default function FindingDetailPage({
             <div className="rounded-[24px] border border-amber-200 bg-amber-50/70 p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-base font-semibold text-amber-950 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-700" />
+                  <AlertTriangle aria-hidden="true" className="w-4 h-4 text-amber-700" />
                   {finding.capability.remediation.mode === 'manual-guidance' ? 'Migration playbook' : 'Review-only migration proposal'}
                 </h3>
                 <span className="rounded-full border border-amber-200 bg-white px-2 py-1 font-mono text-[10px] text-amber-900">
