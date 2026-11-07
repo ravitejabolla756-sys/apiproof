@@ -117,7 +117,9 @@ export default function FindingsListPage() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+          <label htmlFor="findings-search" className="sr-only">Search findings</label>
           <input
+            id="findings-search"
             type="text"
             placeholder="Search symbol, file, or rule..."
             value={searchQuery}
@@ -126,13 +128,14 @@ export default function FindingsListPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-3">
+          <div role="group" aria-label="Filter by severity" className="flex items-center gap-1.5">
             <span className="text-[#686868]">Severity:</span>
             {["all", "critical", "high"].map((sev) => (
               <button
                 key={sev}
                 onClick={() => setSeverityFilter(sev)}
+                aria-pressed={severityFilter === sev}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   severityFilter === sev
                     ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
@@ -144,12 +147,13 @@ export default function FindingsListPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div role="group" aria-label="Filter by provider" className="flex items-center gap-1.5">
             <span className="text-[#686868]">Provider:</span>
             {providerOptions.map((prov) => (
               <button
                 key={prov}
                 onClick={() => setProviderFilter(prov)}
+                aria-pressed={providerFilter === prov}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   providerFilter === prov
                     ? "bg-white text-[#111111] border-[#111111] shadow-2xs"

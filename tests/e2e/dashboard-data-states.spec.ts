@@ -39,6 +39,9 @@ test.describe('authenticated dashboard data states', () => {
     await expect(page.getByRole('status')).toContainText('Querying database findings...');
     releaseFindings?.();
     await expect(page.getByRole('heading', { name: 'API Compatibility Findings' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByLabel('Search findings')).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Filter by severity' }).getByRole('button', { name: 'all' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('group', { name: 'Filter by provider' })).toBeVisible();
     await page.unroute('**/api/findings');
   });
 
