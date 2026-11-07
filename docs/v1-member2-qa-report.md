@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Account/notification retry keyboard coverage
+
+- PASS: Focused authenticated account/notification journeys passed 2/2 in 21.9 seconds; account-load and notification-preferences retry controls now verify keyboard focus and Enter activation, retaining loading/error, table and axe assertions.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Transactional email, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Current dashboard production-build regression
 
 - PASS: Complete dashboard data-state suite passed 16/16 in 23.9 seconds under the CI-mode production-build server on isolated SQLite, including provider-rule and Slack recovery states after fixture stabilization.

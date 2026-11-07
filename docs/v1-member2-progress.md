@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 account/notification retry keyboard coverage
+
+- Change: Extended the authenticated account-settings and notification-preferences recovery journeys to focus their retry controls, verify focus visibility, and activate recovery with Enter while preserving the existing loading/error, table, and axe assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; the focused account/notification journeys passed 2/2 in 21.9 seconds. Artifacts: `/tmp/myowl-v1-account-notification-keyboard-artifacts`.
+- Scope: local UI-12 keyboard/state evidence only; no email delivery, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 current dashboard production-build regression
 
 - Change: Re-ran the complete dashboard data-state matrix after the Slack fixture stabilization under the CI-mode production-build server.
