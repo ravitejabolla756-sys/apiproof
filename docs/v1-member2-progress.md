@@ -257,3 +257,9 @@ Statuses are current baseline findings, not completion claims.
 - Files: `.github/workflows/ci.yml`.
 - Evidence: `pnpm --filter @apiproof/web build` PASS with 83 generated static pages; CI-mode local production-build browser run `CI=1 NODE_ENV=test APIPROOF_E2E_TEST_MODE=true APIPROOF_DB_PATH=.tmp/playwright-ci-current.db APIPROOF_LOCAL_SEED_PASSWORD=ci-local-seed-password-only-for-tests pnpm exec playwright test tests/e2e --workers=1 --timeout=300000` PASS — 41/41 in 54.3 seconds; CI YAML parse PASS.
 - Remaining limitation: the hosted GitHub Actions job and integrated staging remain NOT_RUN; no remote Git or production operation was performed.
+
+## 2026-11-07 checkpoint — repository release gates
+
+- Read-only audit confirmed branch `codex/v1-frontend-product`, HEAD `7668d1b`, and a clean worktree before documentation changes.
+- Evidence: repository-wide `pnpm lint` PASS; all six workspace package typechecks PASS; the final root `tsc -p tsconfig.test.json` stage remains FAIL on pre-existing test-project configuration errors in account-settings, billing/organization, E2E, and runtime-mode tests. No changed application file was implicated.
+- The failure is recorded rather than suppressed or broadened into unrelated refactoring. The committed CI browser matrix remains locally green at 41/41, and hosted CI/staging plus production verification remain open.
