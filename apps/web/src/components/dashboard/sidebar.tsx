@@ -250,6 +250,7 @@ export function Sidebar() {
             value={activeWorkspaceId}
             onChange={handleWorkspaceChange}
             disabled={workspaceSwitching || workspaces.length < 2}
+            aria-busy={workspaceSwitching ? 'true' : undefined}
             className="w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
           >
             {workspaces.length === 0 && <option value="">{workspaceLoadError ? 'Workspace list unavailable' : 'Loading workspace…'}</option>}
@@ -273,6 +274,7 @@ export function Sidebar() {
               aria-label="Sign out of MY OWL"
               onClick={handleLogout}
               disabled={isSigningOut}
+              aria-busy={isSigningOut ? 'true' : undefined}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
               title="Sign out"
             >
@@ -280,7 +282,7 @@ export function Sidebar() {
               <span className={collapsed ? "md:hidden" : ""}>{isSigningOut ? 'Signing out…' : 'Sign Out'}</span>
             </button>
         </div>
-        {logoutError && <p role="alert" className="mt-2 text-[11px] text-rose-700">{logoutError}</p>}
+        {logoutError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-2 text-[11px] text-rose-700">{logoutError}</p>}
       </div>
     </aside>
   );

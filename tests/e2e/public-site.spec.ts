@@ -289,7 +289,7 @@ test.describe('authenticated product surfaces', () => {
     const selector = page.getByLabel('Active workspace');
     await expect(selector).toHaveValue('ws_primary', { timeout: 30_000 });
     await expect(selector.locator('option')).toHaveCount(2);
-    await selector.selectOption('ws_secondary'); await expect(page.getByRole('status')).toContainText('Switching workspace…'); releaseContext?.();
+    await selector.selectOption('ws_secondary'); await expect(selector).toHaveAttribute('aria-busy', 'true'); await expect(page.getByRole('status')).toContainText('Switching workspace…'); releaseContext?.();
     await expect.poll(() => postedWorkspaceId).toBe('ws_secondary');
     await expect(selector).toHaveValue('ws_secondary', { timeout: 30_000 });
     await expect(selector.locator('option:checked')).toHaveText('Secondary Workspace');

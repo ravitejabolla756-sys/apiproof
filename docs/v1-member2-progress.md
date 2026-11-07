@@ -357,3 +357,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; workspace-list error/retry journey PASS — 1/1 with an axe scan; full CI-mode browser matrix PASS — 43/43 in 54.8 seconds.
 - Scope: no backend/shared contract changed; PostgreSQL/RBAC proof and full screen-reader review remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — ORG-02 sidebar busy/error semantics
+
+- Change: workspace selection and sign-out controls now expose `aria-busy` while mutating; logout failures are assertive atomic alerts, and the delayed workspace-switch journey asserts selector busy state.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; workspace context journeys PASS — 2/2; full CI-mode browser matrix PASS — 43/43 in 54.3 seconds.
+- Scope: no backend/shared contract changed; PostgreSQL/RBAC proof and full screen-reader review remain open. No production/provider/remote Git operation was performed.
