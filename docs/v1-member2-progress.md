@@ -63,8 +63,8 @@ Statuses are current baseline findings, not completion claims.
 
 ## 2026-11-07 checkpoint — UI-12 all-route structural accessibility audit
 
-- Change: added a hermetic axe route sweep over 18 public and 16 authenticated routes, scoped to each route’s `main#main-content` landmark with color contrast retained as a separately tracked shared-landing remediation item. Corrected the public landing page’s single-main landmark hierarchy, `/docs` category/help heading levels, `/updates` release-card heading levels, `/contact` service-card heading levels, and the `/verify-email` main-content hook.
-- Evidence: `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --timeout=300000` PASS — 2/2 tests in 1.5 minutes; ESLint and web typecheck also PASS. Full assistive-technology review, hosted CI and production verification remain NOT_RUN.
+- Change: added a hermetic axe route sweep over 18 public and 16 authenticated routes, scoped to each route’s `main#main-content` landmark. Corrected the public landing page’s single-main landmark hierarchy, `/docs` category/help heading levels, `/updates` release-card heading levels, `/contact` service-card heading levels, and the `/verify-email` main-content hook; remediated low-contrast light-surface tokens across the landing page and scroll pipeline while preserving dark-surface tokens.
+- Evidence: `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --timeout=300000` PASS — 3/3 tests in 1.1 minutes, including a color-contrast-enabled landing-page scan; ESLint and web typecheck also PASS. Full assistive-technology review, hosted CI and production verification remain NOT_RUN.
 
 ## 2026-11-07 checkpoint — UI-12 collapsed navigation accessibility
 

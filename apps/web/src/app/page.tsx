@@ -222,7 +222,7 @@ export default function HomePage() {
 
           {/* Small Technical Code Fragment */}
           <div className="pt-6 font-mono text-xs text-slate-700">
-            <div className="text-[11px] text-slate-400 pb-2">// src/billing.ts:42</div>
+            <div className="text-[11px] text-slate-600 pb-2">// src/billing.ts:42</div>
             <div className="space-y-1">
               <div className="text-rose-700 font-medium">- coupon: promoCouponId</div>
               <div className="text-emerald-700 font-medium">+ discounts: [&#123; coupon: promoCouponId &#125;]</div>
@@ -312,7 +312,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="text-center text-slate-400 font-bold">↓</div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
 
               <div>
                 <span className="text-[10px] text-slate-600 uppercase tracking-widest block pb-1">AFTER</span>

@@ -17,6 +17,13 @@ const authenticatedRoutes = [
 ];
 
 test.describe('route accessibility audit', () => {
+  test('passes axe color contrast on the public landing page', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await expect(page.locator('main#main-content h1').first()).toBeVisible({ timeout: 30_000 });
+    const results = await new AxeBuilder({ page }).include('#main-content').analyze();
+    expect(results.violations).toEqual([]);
+  });
+
   test('passes axe on every public route', async ({ page }) => {
     for (const route of publicRoutes) {
       const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
