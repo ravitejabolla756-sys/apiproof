@@ -528,6 +528,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: web production build passed with 83 generated pages; targeted ESLint passed; repository typecheck passed; fresh-database accessibility matrix passed 6/6 in 31.3 seconds, including the new all-authenticated-route mobile overflow assertion.
 - Scope: local responsive/accessibility evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-13 post-fix full regression
+
+- Evidence: fresh explicit SQLite database `/tmp/myowl-v1-ui12-full-regression.db`; rebuilt-bundle CI-mode Playwright suite passed 52/52 in 1.2 minutes after the mobile overflow fix. This includes all existing auth, organization, invitation/member, billing, findings, PR/workflow, accessibility, degraded-state and recovery journeys plus the new overflow, focus and nested-interactive guards.
+- Scope: local hermetic browser evidence only; hosted CI, integrated staging, screen-reader/manual review and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
