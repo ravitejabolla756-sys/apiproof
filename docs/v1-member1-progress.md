@@ -262,6 +262,11 @@ Phase 0 read-only checks:
 - Added an additive migration (`028`) and fresh-schema indexes for queue health scans over status, lease expiry, creation time and attempt count. The metrics regression verifies the index exists in local SQLite; the migration applies the same index to existing SQLite/PostgreSQL databases.
 - `phase5-production-operations` passes 10/10; targeted ESLint and full `pnpm typecheck` pass. Targeted Postgres migration execution and large-queue query-plan/latency measurements remain unverified. SEC-13 remains PARTIAL pending owner-approved alert thresholds/destination, worker cadence confirmation, and staged worker-death/retry-storm rehearsal.
 
+### 2026-11-08 SEC-13 single-pass queue metrics
+
+- Consolidated status totals, latest completed/failed job time, pending age, retries, stalled processing and retry exhaustion into one conditional aggregate over the queue instead of separate table passes.
+- SQLite `EXPLAIN QUERY PLAN` confirms the aggregate can use `idx_scan_requests_health` as a covering index. `phase5-production-operations` passes 10/10, targeted ESLint passes, and `pnpm typecheck` passes. PostgreSQL query-plan behavior and large-queue latency remain unverified; alerting and staged recovery remain external gates.
+
 ### 2026-11-08 SEC-16 timeout scheduling containment
 
 - A timed-out in-process operation previously released its worker slot and allowed additional iterations to start even if the original callback had not settled after abort. The harness now stops scheduling when any operation times out and reports `started`/`notStarted` alongside the requested iteration count.
