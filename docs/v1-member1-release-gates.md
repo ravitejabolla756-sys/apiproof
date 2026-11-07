@@ -55,6 +55,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - SEC-10/SEC-19 document audit: `docs/database-backup-and-safety.md` now labels production backup/PITR/RPO/RTO and retention values as unverified proposals; no restore proof or legal retention approval is claimed. An approved isolated backup/restore rehearsal and legal/owner/Member 2 retention contract remain required.
 - ORG-05 repository-list role regression: PASS, `repositories-list-route` 6/6 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown persisted roles receive generic 403 and private/no-store headers; this is SQLite-local evidence only.
 - SEC-11 logger hardening: PASS, production-operations and Slack reliability suites 2 files / 28 tests with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Key-variant redaction and circular-context handling are local evidence; external monitoring remains unconfigured/unverified.
+- ORG-05 GitHub status-role regression: PASS, `github-repository-status-route` 4/4 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown default-workspace role yields generic 403/private response; PostgreSQL/RLS remains unverified.
 
 ## Approval boundaries not crossed
 

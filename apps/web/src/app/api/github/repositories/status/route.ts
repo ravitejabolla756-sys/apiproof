@@ -3,6 +3,7 @@ import { getCurrentUser } from '../../../../../lib/server/auth.js';
 import {
   getDefaultWorkspaceForUser,
   getWorkspaceGitHubInstallation,
+  isWorkspaceAuthorizationError,
   requireWorkspaceMember,
 } from '../../../../../lib/server/workspace-service.js';
 
@@ -21,7 +22,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers });
     }
   } else {
-    workspaceId = (await getDefaultWorkspaceForUser(user.id)).id;
+    try {
+      workspaceId = (await getDefaultWorkspaceForUser(user.id)).id;
+    } catch (error: unknown) {
+      if (isWorkspaceAuthorizationError(error)) {
+        return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers });
+      }
+      throw error;
+    }
   }
 
   const installation = await getWorkspaceGitHubInstallation(workspaceId);
