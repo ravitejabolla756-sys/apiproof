@@ -705,6 +705,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; rebuilt web production bundle passed with 83 generated pages; route accessibility and public media-state matrix passed 9/9.
 - Scope: local landing accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — repository-wide quality gates
+
+- Evidence: fresh audit confirmed branch `codex/v1-frontend-product`; repository-wide `pnpm lint` passed with zero warnings and `pnpm typecheck` passed across all workspaces plus the test TypeScript project.
+- Scope: local static-quality evidence only; hosted CI, integrated staging, manual assistive technology and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
