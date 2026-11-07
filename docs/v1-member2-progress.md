@@ -417,3 +417,8 @@ Statuses are current baseline findings, not completion claims.
 - Change: added a structured, explicitly uncompleted tabletop-record template to the incident-response runbook, covering roles, detection, severity, tenant-boundary reproduction, containment, redacted evidence, communications, gaps and owner/security sign-off.
 - Files: `docs/v1-member2-incident-response.md`.
 - Scope: this improves review readiness but does not constitute a tabletop exercise, monitoring setup, on-call assignment, owner/security approval or production control. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — repository-wide lint after cumulative UI work
+
+- Evidence: `pnpm lint` passed with ESLint `--max-warnings 0` across the repository.
+- Scope: local static-quality evidence only; hosted CI, staging, screen-reader/manual review and production gates remain open. No production/provider/remote Git operation was performed.

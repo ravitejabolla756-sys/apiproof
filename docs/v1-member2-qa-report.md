@@ -124,6 +124,8 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 
 - SEC-18 documentation review — PASS for structure: `docs/v1-member2-incident-response.md` now includes a redacted-evidence tabletop worksheet with explicit `TBD` fields and no implied live-control claim. The tabletop itself, owner/security review, monitoring source, on-call ownership and production exercise remain NOT_RUN.
 
+- `pnpm lint` — PASS with ESLint `--max-warnings 0` across the repository after the cumulative UI/accessibility changes. This is local static-quality evidence; hosted CI and production verification remain separate gates.
+
 ## Required next checks
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.
