@@ -350,3 +350,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; delayed authorized workspace-switch journey PASS — 1/1; full CI-mode browser matrix PASS — 43/43 in 55.1 seconds.
 - Scope: no backend/shared contract changed; PostgreSQL/RBAC proof and full screen-reader review remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — ORG-02 workspace-list recovery
+
+- Change: workspace-list fetch failures are no longer silent: the selector exposes an assertive atomic error with a keyboard-operable Try again action, updates its option copy, and retries the existing `/api/workspaces` contract without changing context authorization.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; workspace-list error/retry journey PASS — 1/1 with an axe scan; full CI-mode browser matrix PASS — 43/43 in 54.8 seconds.
+- Scope: no backend/shared contract changed; PostgreSQL/RBAC proof and full screen-reader review remain open. No production/provider/remote Git operation was performed.
