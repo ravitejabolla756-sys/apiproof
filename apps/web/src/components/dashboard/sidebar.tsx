@@ -32,6 +32,7 @@ export function Sidebar() {
   const [workspaceName, setWorkspaceName] = useState<string>('');
   const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string }>>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
+  const [workspaceLoadComplete, setWorkspaceLoadComplete] = useState(false);
   const [workspaceSwitching, setWorkspaceSwitching] = useState(false);
   const [workspaceLoadError, setWorkspaceLoadError] = useState(false);
   const [workspaceLoadAttempt, setWorkspaceLoadAttempt] = useState(0);
@@ -67,6 +68,7 @@ export function Sidebar() {
     let active = true;
     async function loadWorkspaces() {
       setWorkspaceLoadError(false);
+      setWorkspaceLoadComplete(false);
       try {
         const response = await fetch('/api/workspaces', { cache: 'no-store' });
         if (!response.ok) throw new Error('Workspace list unavailable.');
@@ -74,8 +76,12 @@ export function Sidebar() {
         const data = await response.json();
         if (Array.isArray(data.workspaces)) setWorkspaces(data.workspaces);
         if (typeof data.activeWorkspaceId === 'string') setActiveWorkspaceId(data.activeWorkspaceId);
+        setWorkspaceLoadComplete(true);
       } catch {
-        if (active) setWorkspaceLoadError(true);
+        if (active) {
+          setWorkspaceLoadError(true);
+          setWorkspaceLoadComplete(true);
+        }
       }
     }
     void loadWorkspaces();
@@ -253,10 +259,11 @@ export function Sidebar() {
             aria-busy={workspaceSwitching ? 'true' : undefined}
             className="w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
           >
-            {workspaces.length === 0 && <option value="">{workspaceLoadError ? 'Workspace list unavailable' : 'Loading workspace…'}</option>}
+            {workspaces.length === 0 && <option value="">{workspaceLoadError ? 'Workspace list unavailable' : workspaceLoadComplete ? 'No workspaces available' : 'Loading workspace…'}</option>}
             {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
           </select>
           {workspaceLoadError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} className="font-semibold underline underline-offset-2">Try again</button></p>}
+          {workspaceLoadComplete && !workspaceLoadError && workspaces.length === 0 && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">No workspaces are available.</p>}
           {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
           {workspaceContextError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">{workspaceContextError}</p>}
         </div>

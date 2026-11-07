@@ -3,6 +3,19 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
+  test('announces an empty workspace list instead of a loading state', async ({ page }) => {
+    await page.route('**/api/workspaces', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: null, workspaces: [] }) });
+    });
+    await signIn(page);
+    const sidebar = page.getByRole('complementary', { name: 'Workspace navigation' });
+    await expect(sidebar.getByRole('status').filter({ hasText: 'No workspaces are available.' })).toBeVisible({ timeout: 30_000 });
+    await expect(sidebar.getByLabel('Active workspace')).toBeDisabled();
+    await expect(sidebar.getByLabel('Active workspace').locator('option')).toHaveText('No workspaces available');
+    expect((await new AxeBuilder({ page }).include('aside').analyze()).violations, 'empty workspace list state').toEqual([]);
+    await page.unroute('**/api/workspaces');
+  });
+
   test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/workspace/members', async (route) => {
