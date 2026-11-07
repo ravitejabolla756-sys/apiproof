@@ -495,10 +495,9 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/repositories');
 
-    await page.route('**/api/account', async (route) => {
-      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) });
-    });
-    await page.goto('/dashboard/settings/account');
+    let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; });
+    await page.route('**/api/account', async (route) => { await accountLoading; await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) }); });
+    await page.goto('/dashboard/settings/account'); await expect(page.getByRole('status')).toContainText('Loading account settings…'); releaseAccount?.();
     await expect(page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' })).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/account');
   });
