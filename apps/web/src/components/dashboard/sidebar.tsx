@@ -34,6 +34,7 @@ export function Sidebar() {
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
   const [workspaceLoadComplete, setWorkspaceLoadComplete] = useState(false);
   const [workspaceSwitching, setWorkspaceSwitching] = useState(false);
+  const [workspaceRetryId, setWorkspaceRetryId] = useState<string | null>(null);
   const [workspaceLoadError, setWorkspaceLoadError] = useState(false);
   const [workspaceLoadAttempt, setWorkspaceLoadAttempt] = useState(0);
   const [workspaceContextError, setWorkspaceContextError] = useState<string | null>(null);
@@ -88,10 +89,10 @@ export function Sidebar() {
     return () => { active = false; };
   }, [workspaceLoadAttempt]);
 
-  async function handleWorkspaceChange(event: ChangeEvent<HTMLSelectElement>) {
-    const workspaceId = event.target.value;
+  async function switchWorkspace(workspaceId: string) {
     if (!workspaceId || workspaceId === activeWorkspaceId || workspaceSwitching) return;
     setWorkspaceSwitching(true);
+    setWorkspaceRetryId(workspaceId);
     setWorkspaceContextError(null);
     try {
       const response = await fetch('/api/workspace/context', {
@@ -105,6 +106,10 @@ export function Sidebar() {
       setWorkspaceContextError('Workspace could not be changed. Please try again.');
       setWorkspaceSwitching(false);
     }
+  }
+
+  function handleWorkspaceChange(event: ChangeEvent<HTMLSelectElement>) {
+    void switchWorkspace(event.target.value);
   }
 
   const mainNav = [
@@ -265,7 +270,7 @@ export function Sidebar() {
           {workspaceLoadError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} className="font-semibold underline underline-offset-2">Try again</button></p>}
           {workspaceLoadComplete && !workspaceLoadError && workspaces.length === 0 && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">No workspaces are available.</p>}
           {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
-          {workspaceContextError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">{workspaceContextError}</p>}
+          {workspaceContextError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-rose-700"><span>{workspaceContextError}</span>{workspaceRetryId && <button type="button" onClick={() => void switchWorkspace(workspaceRetryId)} className="font-semibold underline underline-offset-2">Retry workspace switch</button>}</p>}
         </div>
         <div className="flex items-center justify-between">
             <div className={`flex flex-col min-w-0 pr-2 ${collapsed ? "md:hidden" : ""}`}>
