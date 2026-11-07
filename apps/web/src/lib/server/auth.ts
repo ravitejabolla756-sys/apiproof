@@ -19,6 +19,11 @@ export const AUTH_COOKIE_NAME = 'apiproof_session';
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 export const SESSION_TTL_SECONDS = Math.floor(SESSION_TTL_MS / 1000); // 2,592,000 seconds
 
+function isSessionExpired(expiresAt: string): boolean {
+  const expiryTime = Date.parse(expiresAt);
+  return !Number.isFinite(expiryTime) || expiryTime <= Date.now();
+}
+
 export interface AuthCookieOptions {
   httpOnly: boolean;
   secure: boolean;
@@ -294,7 +299,7 @@ export async function validateSessionAsync(sessionId: string): Promise<{ user: U
   `, [sessionId]);
 
   if (!row) return null;
-  if (new Date(row.expires_at) < new Date()) {
+  if (isSessionExpired(row.expires_at)) {
     await deleteSessionAsync(sessionId);
     return null;
   }
@@ -338,7 +343,7 @@ export function validateSession(sessionId: string): { user: User; session: Sessi
     `, [sessionId]);
 
     if (!row) return null;
-    if (new Date(row.expires_at) < new Date()) {
+    if (isSessionExpired(row.expires_at)) {
       deleteSession(sessionId);
       return null;
     }

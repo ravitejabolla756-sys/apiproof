@@ -35,7 +35,11 @@ import { middleware } from '../apps/web/src/middleware.js';
 import {
   AUTH_COOKIE_NAME,
   SESSION_TTL_SECONDS,
+  createSession,
+  createSessionAsync,
+  createUserWithSession,
   validateSession,
+  validateSessionAsync,
   getAuthCookieOptions,
   getClearAuthCookieOptions,
 } from '../apps/web/src/lib/server/auth.js';
@@ -308,6 +312,18 @@ describe('Production Authentication & Session Persistence', () => {
       });
       const authRes = await authGet(authReq);
       expect(authRes.status).toBe(401);
+    });
+
+    it('rejects and purges malformed expiry timestamps in both validation paths', async () => {
+      const { user } = await createUserWithSession('malformed-expiry@example.com', 'Password123!', 'Malformed Expiry');
+      const syncSession = await createSession(user.id);
+      const asyncSession = await createSessionAsync(user.id);
+      const db = getDatabase();
+      await db.execute("UPDATE sessions SET expires_at = 'not-a-timestamp' WHERE id IN (?, ?)", [syncSession.id, asyncSession.id]);
+
+      expect(await validateSession(syncSession.id)).toBeNull();
+      expect(await validateSessionAsync(asyncSession.id)).toBeNull();
+      expect(await db.queryOne('SELECT id FROM sessions WHERE id IN (?, ?)', [syncSession.id, asyncSession.id])).toBeUndefined();
     });
   });
 
