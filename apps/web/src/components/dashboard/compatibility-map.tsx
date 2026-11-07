@@ -221,13 +221,13 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
           </div>
 
           {!currentRepo.latestCompletedScan ? (
-            <p className="rounded-lg border border-[#E8E8E5] bg-white p-4 text-[#686868]">
+            <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-[#E8E8E5] bg-white p-4 text-[#686868]">
               {currentRepo.latestScanStatus === "failed" ? "Latest scan failed — review scan status." : "Awaiting first completed scan."}
             </p>
           ) : !currentRepo.analysisEvidenceAvailable ? (
-            <p className="rounded-lg border border-[#FDE68A] bg-[#FEF8EC] p-4 text-amber-900">Integration evidence is unavailable for this older scan. Run a fresh scan to build a complete compatibility map.</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-[#FDE68A] bg-[#FEF8EC] p-4 text-amber-900">Integration evidence is unavailable for this older scan. Run a fresh scan to build a complete compatibility map.</p>
           ) : currentRepo.integrations.length === 0 ? (
-            <p className="rounded-lg border border-[#E8E8E5] bg-white p-4 text-[#686868]">No supported API integrations detected.</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-[#E8E8E5] bg-white p-4 text-[#686868]">No supported API integrations detected.</p>
           ) : (
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {currentRepo.integrations.map((integration) => {
@@ -259,7 +259,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
           )}
 
           {currentRepo.latestCompletedScan && currentRepo.analysisEvidenceAvailable && currentRepo.findings.length === 0 && (
-            <p className="text-[11px] text-[#686868]">No findings in this completed scan.</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="text-[11px] text-[#686868]">No findings in this completed scan.</p>
           )}
         </div>
       </div>

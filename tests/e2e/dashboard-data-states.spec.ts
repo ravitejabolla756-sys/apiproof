@@ -111,6 +111,10 @@ test.describe('authenticated dashboard data states', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const firstRepository = page.getByRole('button', { name: 'Show compatibility for owl-one' });
     const secondRepository = page.getByRole('button', { name: 'Show compatibility for owl-two' });
+    const awaitingScan = page.getByRole('status').filter({ hasText: 'Awaiting first completed scan.' });
+    await expect(awaitingScan).toBeVisible();
+    await expect(awaitingScan).toHaveAttribute('aria-live', 'polite');
+    await expect(awaitingScan).toHaveAttribute('aria-atomic', 'true');
     await expect(firstRepository).toHaveAttribute('aria-pressed', 'true');
     await expect(secondRepository).toHaveAttribute('aria-pressed', 'false');
     await secondRepository.click();

@@ -590,6 +590,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; dashboard data-state suite passed 14/14; full rebuilt-bundle CI-mode Playwright suite passed 57/57.
 - Scope: local provider-review semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 compatibility-map empty-state announcements
+
+- Change: compatibility-map awaiting-scan, unavailable-evidence, no-integration and no-findings messages now expose atomic polite status regions without changing scan or evidence behavior.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; dashboard data-state suite passed 14/14; full rebuilt-bundle CI-mode Playwright suite passed 57/57.
+- Scope: local compatibility-map semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
