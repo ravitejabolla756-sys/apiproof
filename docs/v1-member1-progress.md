@@ -312,3 +312,8 @@ Phase 0 read-only checks:
 
 - The shared persistent rate limiter previously selected a counter and incremented it in a later statement, allowing concurrent requests to pass a quota based on the same stale value. It now atomically inserts, increments or resets a fixed-window bucket and returns the updated counter from one UPSERT statement.
 - New tests launch 40 concurrent requests against a quota of 7 and verify exactly 7 are allowed and all 40 are counted; expired-window reset is covered. Password-reset tests pass 11/11 and production-integrity tests pass 17/17; targeted ESLint, full workspace typecheck, and `pnpm build` pass. SQLite-local concurrency evidence only; PostgreSQL and trusted-proxy IP behavior still require approved staging verification.
+
+### 2026-11-08 BILL-10 status enforcement regression matrix
+
+- Expanded local checks so each existing non-granting status (`incomplete`, unknown, `past_due`, `unpaid`, `canceled`) denies repositories, scans, and draft PRs; `active` and `trialing` are checked across all three metrics. This preserves current fail-closed behavior without selecting a grace/suspension policy.
+- Billing foundation and webhook boundary suites pass 24/24; targeted ESLint passes. Grace-period semantics, customer notification timing and any restoration policy still require owner/product approval; PostgreSQL and provider lifecycle evidence remain outstanding.

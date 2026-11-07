@@ -113,24 +113,39 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(check.allowed).toBe(true);
   });
 
-  it('denies usage when subscription status is incomplete or unknown, while allowing trialing', async () => {
+  it('applies the existing subscription-status contract consistently to every billable metric', async () => {
     const user = await createUserAsync('billing-status-policy@apiproof.test', 'Pass123!#$', 'Billing Status');
     const workspace = await getDefaultWorkspaceForUser(user.id);
     const db = getDatabase();
     await getWorkspaceSubscription(workspace.id);
 
-    for (const status of ['incomplete', 'unexpected_status']) {
+    const metrics = ['repositories', 'scans', 'draft_prs'] as const;
+    const deniedStatuses = [
+      ['incomplete', 'SUBSCRIPTION_INACTIVE'],
+      ['unexpected_status', 'SUBSCRIPTION_INACTIVE'],
+      ['past_due', 'PAYMENT_PAST_DUE'],
+      ['unpaid', 'PAYMENT_PAST_DUE'],
+      ['canceled', 'SUBSCRIPTION_CANCELED'],
+    ] as const;
+
+    for (const [status, reasonCode] of deniedStatuses) {
       await db.execute('UPDATE workspace_subscriptions SET status = ? WHERE workspace_id = ?', [status, workspace.id]);
-      await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({
-        allowed: false,
-        limit: 0,
-        current: 0,
-        reason: 'SUBSCRIPTION_INACTIVE: Workspace subscription is not active.',
-      });
+      for (const metric of metrics) {
+        await expect(checkWorkspaceLimit(workspace.id, metric)).resolves.toMatchObject({
+          allowed: false,
+          limit: 0,
+          current: 0,
+          reason: expect.stringContaining(reasonCode),
+        });
+      }
     }
 
-    await db.execute("UPDATE workspace_subscriptions SET status = 'trialing' WHERE workspace_id = ?", [workspace.id]);
-    await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({ allowed: true });
+    for (const status of ['active', 'trialing']) {
+      await db.execute('UPDATE workspace_subscriptions SET status = ? WHERE workspace_id = ?', [status, workspace.id]);
+      for (const metric of metrics) {
+        await expect(checkWorkspaceLimit(workspace.id, metric)).resolves.toMatchObject({ allowed: true });
+      }
+    }
   });
 
   // -------------------------------------------------------------------------
