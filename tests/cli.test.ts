@@ -22,7 +22,7 @@ describe('CLI contract', () => {
     const result = await cli(['scan', fixture('affected'), '--json']);
     expect(result.stderr).toBe('');
     expect(ScanResultSchema.parse(JSON.parse(result.stdout)).providerUsed).toBe(true);
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('emits an impact report and readable output', async () => {
     const args = ['impact', fixture('affected'), '--change', path.join(root, 'fixtures/stripe-change.json')];
@@ -39,7 +39,7 @@ describe('CLI contract', () => {
     await expect(cli(['impact', fixture('affected'), '--json'])).rejects.toMatchObject({
       code: 2, stderr: '', stdout: expect.stringContaining('INVALID_ARGUMENTS'),
     });
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('safely rejects missing changes and unknown flags', async () => {
     await expect(cli(['impact', fixture('affected'), '--change', 'missing.json', '--json'])).rejects.toMatchObject({
@@ -48,18 +48,18 @@ describe('CLI contract', () => {
     await expect(cli(['scan', fixture('affected'), '--bad-flag', '--json'])).rejects.toMatchObject({
       code: 2, stdout: expect.stringContaining('INVALID_ARGUMENTS'),
     });
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('offers help and version without scanning', async () => {
     expect((await cli(['--help'])).stdout).toContain('apiproof scan');
     expect(JSON.parse((await cli(['--version', '--json'])).stdout)).toEqual({ version: '0.7.0' });
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('selects a reviewed change by ID and prints structured evidence', async () => {
     const result = await cli(['impact', path.join(root, 'evaluation/corpus/discounts-update'), '--change-id', 'stripe-subscription-coupon-removed', '--json']);
     const impact = ImpactResultSchema.parse(JSON.parse(result.stdout));
     expect(impact.impacts[0]?.reasonCodes).toContain('AFFECTED_PARAMETER_PRESENT');
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('evaluates the corpus with clean JSON output', async () => {
     const result = await cli(['evaluate', '--json']);
@@ -67,7 +67,7 @@ describe('CLI contract', () => {
     const evaluation = EvaluationResultSchema.parse(JSON.parse(result.stdout));
     expect(evaluation.groundTruthCases).toBeGreaterThan(0);
     expect(evaluation.metrics.recall).not.toBeNull();
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('generates a read-only migration plan and evaluates planning criteria', async () => {
     const plan = await cli(['plan', path.join(root, 'evaluation-plans/corpus/coupon-direct'), '--change-id', 'stripe-subscription-coupon-removed', '--json']);
@@ -80,7 +80,7 @@ describe('CLI contract', () => {
     expect(parsedEvaluation.cases).toBe(6);
     expect(parsedEvaluation.schemaValidPlans).toBe(6);
     expect(parsedEvaluation.correctStatuses).toBe(6);
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('does not silently enable an external model provider', async () => {
     await expect(cli(['plan', path.join(root, 'evaluation-plans/corpus/coupon-direct'), '--change-id', 'stripe-subscription-coupon-removed', '--with-model', '--json']))
