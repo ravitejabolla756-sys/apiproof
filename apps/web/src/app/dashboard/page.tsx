@@ -234,7 +234,7 @@ export default function DashboardOverviewPage() {
               </a>
             </article>
           )) : (
-            <p className="py-5 text-xs text-[#686868]">No provider changelog entries have been recorded yet.</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="py-5 text-xs text-[#686868]">No provider changelog entries have been recorded yet.</p>
           )}
         </div>
       </div>
@@ -299,7 +299,7 @@ export default function DashboardOverviewPage() {
                 )}
               </div>
             )) : (
-              <p className="py-5 text-xs text-[#686868]">No migration plans or draft fixes yet.</p>
+              <p role="status" aria-live="polite" aria-atomic="true" className="py-5 text-xs text-[#686868]">No migration plans or draft fixes yet.</p>
             )}
           </div>
         </div>
@@ -524,7 +524,7 @@ export default function DashboardOverviewPage() {
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center text-[#686868] text-xs space-y-3">
+                <div role="status" aria-live="polite" aria-atomic="true" className="py-8 text-center text-[#686868] text-xs space-y-3">
                   <p>No repositories connected yet.</p>
                   <Button size="sm" variant="outline" onClick={() => setIsConnectOpen(true)}>
                     Connect Your First Repository
@@ -562,7 +562,7 @@ export default function DashboardOverviewPage() {
                   </div>
                 ))
               ) : (
-                <div className="p-4 text-center text-xs text-[#686868]">
+                <div role="status" aria-live="polite" aria-atomic="true" className="p-4 text-center text-xs text-[#686868]">
                   No activity recorded yet.
                 </div>
               )}

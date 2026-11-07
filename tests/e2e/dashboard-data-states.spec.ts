@@ -18,6 +18,37 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/overview');
   });
 
+  test('announces dashboard empty collections as status regions', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/overview', async (route) => {
+      const response = await route.fetch();
+      const body = await response.json() as {
+        repositories?: unknown[];
+        recentActivities?: unknown[];
+        recentProviderChanges?: unknown[];
+        recentFixes?: unknown[];
+      };
+      body.repositories = [];
+      body.recentActivities = [];
+      body.recentProviderChanges = [];
+      body.recentFixes = [];
+      await route.fulfill({ response, body: JSON.stringify(body) });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    for (const message of [
+      'No provider changelog entries have been recorded yet.',
+      'No migration plans or draft fixes yet.',
+      'No repositories connected yet.',
+      'No activity recorded yet.',
+    ]) {
+      const status = page.getByRole('status').filter({ hasText: message });
+      await expect(status).toBeVisible();
+      await expect(status).toHaveAttribute('aria-live', 'polite');
+      await expect(status).toHaveAttribute('aria-atomic', 'true');
+    }
+    await page.unroute('**/api/overview');
+  });
+
   test('announces pull-request loading before the response resolves', async ({ page }) => {
     await signIn(page);
     let releasePullRequests: (() => void) | undefined;
