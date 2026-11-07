@@ -154,6 +154,23 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     });
   });
 
+  it('rejects unsafe or unbounded scenario labels before executing operations', async () => {
+    let operationCalled = false;
+    await expect(runLocalLoadScenario({
+      name: 'scenario secret=must-not-be-recorded',
+      iterations: 1,
+      concurrency: 1,
+      operation: () => { operationCalled = true; },
+    })).rejects.toThrow('SEC16_INVALID_SCENARIO_NAME');
+    await expect(runLocalLoadScenario({
+      name: 'x'.repeat(65),
+      iterations: 1,
+      concurrency: 1,
+      operation: () => { operationCalled = true; },
+    })).rejects.toThrow('SEC16_INVALID_SCENARIO_NAME');
+    expect(operationCalled).toBe(false);
+  });
+
   it('injects deterministic operation failures and reports only bounded error codes', async () => {
     const report = await runLocalLoadScenario({
       name: 'injected-local-api-failure',

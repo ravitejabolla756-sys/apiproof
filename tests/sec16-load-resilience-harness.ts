@@ -88,6 +88,9 @@ function withTimeout(operation: Promise<void>, timeoutMs: number, onTimeout: () 
  */
 export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<LoadReport> {
   assertLocalHarnessEnvironment();
+  if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(options.name)) {
+    throw new Error('SEC16_INVALID_SCENARIO_NAME');
+  }
   assertBoundedInteger('iterations', options.iterations, 1, SEC16_MAX_ITERATIONS);
   assertBoundedInteger('concurrency', options.concurrency, 1, SEC16_MAX_CONCURRENCY);
   const timeoutMs = options.timeoutMs ?? SEC16_DEFAULT_TIMEOUT_MS;

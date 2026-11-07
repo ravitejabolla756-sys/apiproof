@@ -190,3 +190,9 @@ Phase 0 read-only checks:
 - Added a SQLite-backed regression that authenticates as one user, targets another user's workspace, verifies the generic 403, and confirms no repository row was created.
 - The focused repository route suite passes 5/5 with an ephemeral process-only local seed value; targeted ESLint and full `pnpm typecheck` pass. The initial test attempt without the required seed failed during database setup and cleanup; no assertions ran in that attempt.
 - ORG-05 remains PARTIAL pending Member 2's role/API contract and PostgreSQL isolation evidence.
+
+### 2026-11-08 SEC-16 measurement label bounds
+
+- Local load scenario labels are now restricted to a lowercase alphanumeric/hyphen identifier of at most 64 characters before any workload runs, preventing arbitrary or unbounded text from entering stored measurement reports.
+- Added rejection coverage for secret-like and overlong names, including proof that the operation callback is not invoked. SEC-16 harness tests pass 6/6; targeted ESLint and full `pnpm typecheck` pass. A local measurement run also completed for the four existing in-process workloads; its timings are environment-specific and do not establish SLOs.
+- SEC-16 remains PARTIAL pending approved staging scenarios and agreed SLO/recovery evidence.
