@@ -238,6 +238,21 @@ test.describe('authenticated product surfaces', () => {
     expect(results.violations, 'workspace context selector').toEqual([]);
   });
 
+  test('keeps collapsed workspace navigation links accessible', async ({ page }) => {
+    await signIn(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/dashboard');
+
+    const sidebar = page.getByRole('complementary', { name: 'Workspace navigation' });
+    await sidebar.getByRole('button', { name: 'Collapse workspace navigation' }).click();
+
+    const overview = sidebar.getByRole('link', { name: 'Overview' });
+    const repositories = sidebar.getByRole('link', { name: 'Repositories' });
+    await expect(overview).toHaveAttribute('aria-current', 'page');
+    await expect(repositories).toHaveAttribute('aria-label', 'Repositories');
+    await expect(repositories).not.toHaveAttribute('aria-current');
+  });
+
   test('switches between authorized workspace contexts through the picker', async ({ page }) => {
     await signIn(page);
     let activeWorkspaceId = 'ws_primary';

@@ -186,6 +186,8 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={collapsed ? item.name : undefined}
+                aria-current={isActive ? 'page' : undefined}
                 className={`flex shrink-0 items-center justify-between px-2.5 py-2 md:px-3 rounded-xl transition-all ${
                   isActive
                     ? "bg-[#F4F0FA] text-[#111111] font-semibold border border-[#E4D9F5]"
@@ -216,6 +218,8 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={collapsed ? item.name : undefined}
+                aria-current={isActive ? 'page' : undefined}
                 className={`flex shrink-0 items-center gap-3 px-2.5 py-2 md:px-3 rounded-xl transition-all ${
                   isActive
                     ? "bg-[#F4F0FA] text-[#111111] font-semibold border border-[#E4D9F5]"
