@@ -444,3 +444,10 @@ Statuses are current baseline findings, not completion claims.
 
 - Evidence: CI-mode Playwright `tests/e2e/accessibility-routes.spec.ts` passed 5/5 in 26.8 seconds against the current production build. Coverage included axe checks on the public landing page, all audited public routes, all audited authenticated routes, and the complete public/authenticated route sets at 390px mobile and 768px tablet widths.
 - Scope: this strengthens local automated UI-12 evidence; it is not a substitute for full screen-reader/manual assistive-technology review, hosted CI, staging or production verification. UI-12 remains PARTIAL. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 repository dialog Escape recovery
+
+- Change: the GitHub repository connection dialog now dismisses on Escape while preserving its existing Tab trap, initial focus and focus restoration behavior. The keyboard dialog journey now verifies Escape dismissal and return of focus to the trigger in both disconnected and connected repository states.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
+- Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

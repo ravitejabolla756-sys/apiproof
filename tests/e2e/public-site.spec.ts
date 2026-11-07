@@ -433,11 +433,10 @@ test.describe('authenticated product surfaces', () => {
     expect(repositoryDialogResults.violations, 'repository connection dialog').toEqual([]);
     const closeRepositoryDialog = page.getByRole('button', { name: 'Close repository connection dialog' });
     await expect(closeRepositoryDialog).toBeFocused();
-    await page.keyboard.press('Shift+Tab');
-    await expect(repositoryDialog.getByRole('button', { name: 'Connect GitHub', exact: true })).toBeFocused();
+    await page.keyboard.press('Shift+Tab'); await expect(repositoryDialog.getByRole('button', { name: 'Connect GitHub', exact: true })).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(closeRepositoryDialog).toBeFocused();
-    await closeRepositoryDialog.click();
+    await page.keyboard.press('Escape'); await expect(repositoryDialog).toHaveCount(0);
     await expect(connectTrigger).toBeFocused();
     await page.unroute('**/api/github/repositories');
 
@@ -454,7 +453,8 @@ test.describe('authenticated product surfaces', () => {
     await repositoryRadio.focus();
     await page.keyboard.press('Space');
     await expect(repositoryRadio).toBeChecked();
-    await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
+    await page.keyboard.press('Escape'); await expect(page.getByRole('dialog', { name: 'Connect GitHub Repository' })).toHaveCount(0);
+    await expect(connectTrigger).toBeFocused();
     await page.unroute('**/api/github/repositories');
   });
 

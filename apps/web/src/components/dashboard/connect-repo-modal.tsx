@@ -59,6 +59,12 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
   }, [isOpen]);
 
   function handleDialogKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
     if (event.key !== 'Tab') return;
     const focusable = dialogRef.current?.querySelectorAll<HTMLElement>('input, button:not([disabled]), [href]');
     if (!focusable?.length) return;
