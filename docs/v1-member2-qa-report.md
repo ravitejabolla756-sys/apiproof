@@ -2,6 +2,13 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Repository picker load recovery
+
+- PASS: Focused connect-repository recovery journey passed 1/1 in 2.5 seconds with an axe-clean dialog; isolated mobile-route accessibility audit passed 1/1 in 15.7 seconds.
+- PASS: Targeted ESLint, `git diff --check`, and production build passed; build generated 83 static pages. The impeccable anti-pattern detector returned no findings for the changed modal.
+- Note: The subsequent full 88-test run passed 87 tests; one existing broad mobile-route audit timed out. It passed immediately when rerun alone, so the full-run result is recorded as transient rather than claimed green.
+- Scope: local UI-12/WEB-15 evidence only. Hosted CI, staging, GitHub configuration, PostgreSQL/RBAC, provider integrations, transactional email and production remain unverified or blocked by the master goal.
+
 ## 2026-11-08 — Workspace context-switch recovery
 
 - PASS: Rebuilt-bundle CI-mode Playwright suite passed 87/87, including the workspace context-switch failure/recovery journey; focused journey passed 1/1 with an axe-clean alert.

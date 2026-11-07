@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `73f1b66` (`codex/v1-frontend-product`)
+Current HEAD: `e6a6021` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — UI-12 GitHub repository picker load recovery
+
+- Change: The connect-repository modal now distinguishes an initial GitHub repository request failure from a genuinely disconnected GitHub App, exposes a keyboard-operable Retry repositories action, and preserves the disconnected/empty states for successful responses only.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`.
+- Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; rebuilt web production bundle passed with 83 generated pages; focused modal recovery journey passed 1/1 in 2.5 seconds with an axe-clean dialog; isolated mobile-route accessibility audit passed 1/1 in 15.7 seconds. The subsequent full browser run passed 87/88, with one existing broad mobile-route audit timing out; that same audit passed in isolation immediately afterward. Artifacts: `/tmp/myowl-v1-connect-recovery-artifacts`, `/tmp/myowl-v1-mobile-audit-rerun-artifacts`.
+- Scope: local UI-12/WEB-15 state truthfulness and recovery only; no GitHub reconfiguration, backend/shared contract, remote Git, staging, production, payment or email action was performed.
 
 ## 2026-11-08 checkpoint — ORG-02/UI-12 workspace switch recovery
 
