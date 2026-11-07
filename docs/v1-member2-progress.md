@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 dashboard selection keyboard semantics
+
+- Change: Extended dashboard data-state coverage so compatibility-map repository selection is exercised by focus and Enter, with the existing `aria-pressed` assertions preserved. The Slack failure fixture now holds its initial 503 through expected development effect replay before the explicit retry, preventing a transient success from erasing the state under test.
+- Evidence: Targeted ESLint and `git diff --check` passed; dashboard data-state suite passed 16/16 in 1.5 minutes, including axe checks and repository/error/recovery states. Artifacts: `/tmp/myowl-v1-dashboard-data-keyboard-artifacts`.
+- Scope: local UI-12 keyboard/state and UI-13 test-harness reliability evidence only; no Slack connection, backend contract, provider, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 repository picker keyboard recovery
 
 - Change: Extended the connected GitHub repository picker’s filtered-empty journey to focus “Clear filter,” activate it with Enter, and verify that the repository choice returns; existing dialog axe and disconnected/empty-state assertions remain unchanged.

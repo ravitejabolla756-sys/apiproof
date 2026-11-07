@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Dashboard selection keyboard semantics
+
+- PASS: Dashboard data-state suite passed 16/16 in 1.5 minutes; compatibility-map repository selection now verifies keyboard focus and Enter activation, while existing `aria-pressed`, axe, loading, empty, error and recovery assertions remain green.
+- PASS: Targeted ESLint and `git diff --check` passed. The Slack failure fixture is bounded against development effect replay and still requires explicit retry recovery.
+- Scope: local UI-12/UI-13 evidence only. Slack/provider delivery, hosted CI, integrated staging, full manual assistive-technology review, backend contracts and production remain open.
+
 ## 2026-11-08 — Repository picker keyboard recovery
 
 - PASS: Complete repository-connection modal suite passed 3/3 in 22.9 seconds; filtered-empty recovery now verifies focus and Enter activation of “Clear filter,” alongside connected-empty, disconnected, axe and Escape coverage.
