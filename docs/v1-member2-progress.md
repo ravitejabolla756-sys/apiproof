@@ -660,6 +660,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; auth-entry state suite passed 2/2 with axe-clean main content in both journeys.
 - Scope: local auth/invitation state evidence only; approved email delivery, manual assistive technology, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-13 browser failure artifacts
+
+- Change: configured the committed Playwright harness to retain screenshots and video on failure alongside its existing retain-on-failure traces and CI-uploaded HTML/test-results artifacts.
+- Files: `playwright.config.ts`.
+- Evidence: targeted ESLint passed; CI-mode auth-entry browser suite passed 2/2 with the updated harness.
+- Scope: local/hosted-CI artifact configuration only; a hosted CI run and integrated staging verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
