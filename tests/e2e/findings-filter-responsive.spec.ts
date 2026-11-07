@@ -40,6 +40,20 @@ test('wraps findings filters for multi-provider mobile results', async ({ page }
   await expect(page.getByRole('group', { name: 'Filter by provider' }).getByRole('button')).toHaveCount(5);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+
+  const providerGroup = page.getByRole('group', { name: 'Filter by provider' });
+  const githubFilter = providerGroup.getByRole('button', { name: 'github', exact: true });
+  await githubFilter.focus();
+  await expect(githubFilter).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(githubFilter).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('heading', { name: 'github compatibility finding' })).toBeVisible();
+
+  const allProviders = providerGroup.getByRole('button', { name: 'all', exact: true });
+  await allProviders.focus();
+  await page.keyboard.press('Enter');
+  await expect(allProviders).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('heading', { name: 'twilio compatibility finding' })).toBeVisible();
 });
 
 test('recovers from a filtered-empty findings state', async ({ page }) => {
