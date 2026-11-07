@@ -71,6 +71,23 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/provider-rules');
   });
 
+  test('exposes the selected repository in the compatibility map', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/compatibility-map', async (route) => {
+      const repository = (id: string, name: string) => ({ id, owner: 'fixture', name, fullName: `fixture/${name}`, defaultBranch: 'main', latestScanStatus: 'completed', latestCompletedScan: null, analysisEvidenceAvailable: false, integrations: [], openFindingCount: 0, findings: [] });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [repository('repo-one', 'owl-one'), repository('repo-two', 'owl-two')] }) });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const firstRepository = page.getByRole('button', { name: 'Show compatibility for owl-one' });
+    const secondRepository = page.getByRole('button', { name: 'Show compatibility for owl-two' });
+    await expect(firstRepository).toHaveAttribute('aria-pressed', 'true');
+    await expect(secondRepository).toHaveAttribute('aria-pressed', 'false');
+    await secondRepository.click();
+    await expect(firstRepository).toHaveAttribute('aria-pressed', 'false');
+    await expect(secondRepository).toHaveAttribute('aria-pressed', 'true');
+    await page.unroute('**/api/compatibility-map');
+  });
+
   test('announces Slack connection failures as alerts', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/slack/connection', async (route) => {

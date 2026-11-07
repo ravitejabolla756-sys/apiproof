@@ -139,7 +139,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   if (error && repositories.length === 0) {
     return <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
       <p>{error}</p>
-      <button onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
+      <button type="button" onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
         <RefreshCw className="h-3.5 w-3.5" />Retry
       </button>
     </div>;
@@ -148,7 +148,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   if (repositories.length === 0) {
     return <div className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
       <p>Connect a GitHub repository to build your compatibility map.</p>
-      {onConnect && <button onClick={onConnect} className="mt-3 rounded-lg bg-[#111111] px-4 py-2 font-medium text-white">Connect repository</button>}
+      {onConnect && <button type="button" onClick={onConnect} className="mt-3 rounded-lg bg-[#111111] px-4 py-2 font-medium text-white">Connect repository</button>}
     </div>;
   }
 
@@ -179,7 +179,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {repositories.map((repository) => (
-            <button key={repository.id} onClick={() => setSelectedRepoId(repository.id)}
+            <button key={repository.id} type="button" aria-label={`Show compatibility for ${repository.name}`} aria-pressed={selectedRepoId === repository.id} onClick={() => setSelectedRepoId(repository.id)}
               className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-colors ${selectedRepoId === repository.id ? "border-[#111111] bg-white font-semibold text-[#111111]" : "border-[#E8E8E5] bg-white text-[#686868] hover:text-[#111111]"}`}>
               <GitBranch className="h-3.5 w-3.5 text-zinc-400" />
               <span className="font-mono text-[11px]">{repository.name}</span>
@@ -188,7 +188,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
                 : <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
             </button>
           ))}
-          <button onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Refresh compatibility map"
+          <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Refresh compatibility map"
             className="rounded-lg border border-[#E8E8E5] bg-white p-2 text-[#686868] disabled:opacity-50">
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
           </button>

@@ -463,3 +463,10 @@ Statuses are current baseline findings, not completion claims.
 
 - Evidence: CI-mode Playwright production-build matrix passed 43/43 in 57.5 seconds after the mobile navigation backdrop change. This includes public/authenticated route axe and responsive checks, keyboard/dialog behavior, reduced motion, auth and workspace flows, notification states, repository recovery and degraded data states.
 - Scope: this is local hermetic browser evidence only; hosted CI, integrated staging, full screen-reader/manual review and production verification remain open. UI-12 and UI-13 remain PARTIAL. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 compatibility-map selected state
+
+- Change: compatibility-map repository selectors now expose an accessible name and `aria-pressed` selected state; standalone retry, connect and refresh controls explicitly declare `type="button"`.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused selected-repository journey passed 1/1 in 2.6 seconds; full dashboard data-state suite passed 10/10 in 10.0 seconds.
+- Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
