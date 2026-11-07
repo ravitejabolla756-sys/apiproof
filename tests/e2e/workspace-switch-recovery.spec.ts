@@ -23,7 +23,10 @@ test('recovers a failed workspace context switch', async ({ page }) => {
   const alert = page.getByRole('alert').filter({ hasText: 'Workspace could not be changed.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace switch error').toEqual([]);
-  await alert.getByRole('button', { name: 'Retry workspace switch' }).click();
+  const retryWorkspaceSwitch = alert.getByRole('button', { name: 'Retry workspace switch' });
+  await retryWorkspaceSwitch.focus();
+  await expect(retryWorkspaceSwitch).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect.poll(() => attempts).toBe(2);
   await expect(page).toHaveURL(/\/dashboard/);
   await page.unroute('**/api/workspaces');

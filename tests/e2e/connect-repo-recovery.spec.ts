@@ -22,7 +22,10 @@ test('keeps initial GitHub repository failures distinct from a disconnected app'
   await expect(unavailable).toBeVisible({ timeout: 30_000 });
   await expect(dialog.getByRole('status').filter({ hasText: 'GitHub App Not Connected' })).toHaveCount(0);
   expect((await new AxeBuilder({ page }).include('[role="dialog"]').analyze()).violations, 'GitHub repository load failure').toEqual([]);
-  await unavailable.getByRole('button', { name: 'Retry repositories' }).click();
+  const retryRepositories = unavailable.getByRole('button', { name: 'Retry repositories' });
+  await retryRepositories.focus();
+  await expect(retryRepositories).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(dialog.getByRole('status').filter({ hasText: 'GitHub App Not Connected' })).toBeVisible({ timeout: 30_000 });
   expect(attempts).toBe(3);
   await page.getByRole('button', { name: 'Close repository connection dialog' }).click();

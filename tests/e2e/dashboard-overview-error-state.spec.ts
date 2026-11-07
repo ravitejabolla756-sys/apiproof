@@ -26,7 +26,10 @@ test('does not render zero-valued dashboard metrics after an initial overview fa
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'initial dashboard error state').toEqual([]);
 
   allowSuccess = true;
-  await errorState.getByRole('button', { name: 'Retry' }).click();
+  const retry = errorState.getByRole('button', { name: 'Retry' });
+  await retry.focus();
+  await expect(retry).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 30_000 });
   expect(overviewRequests).toBeGreaterThanOrEqual(2);
   await page.unroute('**/api/overview');
