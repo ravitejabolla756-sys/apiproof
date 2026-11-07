@@ -298,3 +298,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; web production build PASS with 83 generated static pages; focused delayed-save browser contract PASS — 1/1. Impeccable detector reported only the incumbent purple heading accent warning; no new structural finding was introduced.
 - Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 notification save error coverage
+
+- Change: extended the notification UI contract to exercise a rejected save response after a successful save; the focused assertion targets the product alert rather than Next’s route announcer and includes an axe scan of the recovered error state.
+- Files: `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; focused CI-mode browser journey PASS — 1/1, covering delayed progress, success and 503 error announcement states. The test remains local production-build evidence, not hosted CI or screen-reader sign-off.
+- Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.

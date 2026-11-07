@@ -163,7 +163,7 @@ test.describe('authenticated product surfaces', () => {
   });
 
   test('saves an optional notification preference through the UI contract', async ({ page }) => {
-    await signIn(page); let postedUpdates: unknown;
+    await signIn(page); let postedUpdates: unknown; let failSave = false;
     let releaseSave: (() => void) | undefined;
     const saveResponse = new Promise<void>((resolve) => { releaseSave = resolve; });
     await page.route('**/api/account/notifications', async (route) => {
@@ -179,7 +179,7 @@ test.describe('authenticated product surfaces', () => {
           }),
         }); return;
       }
-      postedUpdates = JSON.parse(route.request().postData() || '{}');
+      postedUpdates = JSON.parse(route.request().postData() || '{}'); if (failSave) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Notification preferences are temporarily unavailable.' }) }); return; }
       await saveResponse;
       await route.fulfill({
         status: 200,
@@ -198,6 +198,7 @@ test.describe('authenticated product surfaces', () => {
       { category: 'findings', channel: 'slack', enabled: false },
     ] });
     await expect(findingsSlack).not.toBeChecked();
+    failSave = true; await findingsSlack.check(); await page.getByRole('button', { name: 'Save preferences' }).click(); await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 }); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification save error').toEqual([]);
     await page.unroute('**/api/account/notifications');
   });
 
@@ -529,5 +530,4 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); const preferencesRegion = page.getByRole('region', { name: 'Notification preferences table' }); await preferencesRegion.focus();
     await expect(preferencesRegion).toBeFocused(); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
     expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3);
-    await page.unroute('**/api/account/notifications');
-  }); });
+    await page.unroute('**/api/account/notifications'); }); });

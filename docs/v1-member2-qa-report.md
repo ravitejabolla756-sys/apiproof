@@ -97,6 +97,7 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages after the patch-workspace change; repository-wide `pnpm typecheck` and `pnpm lint` remain PASS.
 - `pnpm exec eslint apps/web/src/app/dashboard/settings/workspace/page.tsx tests/e2e/organization-audit.spec.ts --max-warnings 0` — PASS; `pnpm --filter @apiproof/web typecheck` — PASS; focused production-build workspace audit suite — 2/2 PASS with the delayed audit-pagination status announcement and axe checks. The detector reported only incumbent purple accent palette warnings; this remains automated/browser evidence, not a full screen-reader sign-off.
 - `pnpm exec eslint apps/web/src/app/dashboard/settings/notifications/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; the delayed notification-save browser contract — 1/1 PASS. Saving progress, busy metadata, success feedback and rejected-fetch recovery are covered; this remains automated/browser evidence, not a full screen-reader sign-off.
+- `pnpm exec eslint apps/web/src/app/dashboard/settings/notifications/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; focused CI-mode notification-save journey — 1/1 PASS. The contract now verifies delayed saving, successful persistence, a 503 alert narrowed away from Next’s route announcer, and an axe-clean error state.
 
 ## Required next checks
 
