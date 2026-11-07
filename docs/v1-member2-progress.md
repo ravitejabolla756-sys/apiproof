@@ -521,6 +521,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; fresh-database CI-mode control-semantics suite passed 3/3 in 3.7 seconds.
 - Scope: local keyboard-focus evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 mobile dashboard overflow fix
+
+- Change: constrained the dashboard header’s mobile flex item and collapsed nonessential GitHub/search labels below the small-screen breakpoint while retaining accessible names; constrained notification settings to a responsive table layout instead of propagating a fixed 540px minimum into the document.
+- Files: `apps/web/src/components/dashboard/header.tsx`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: web production build passed with 83 generated pages; targeted ESLint passed; repository typecheck passed; fresh-database accessibility matrix passed 6/6 in 31.3 seconds, including the new all-authenticated-route mobile overflow assertion.
+- Scope: local responsive/accessibility evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

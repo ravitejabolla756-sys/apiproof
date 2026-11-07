@@ -84,4 +84,16 @@ test.describe('route accessibility audit', () => {
       expect(results.violations, `${route} tablet`).toEqual([]);
     }
   });
+
+  test('keeps authenticated routes within the mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await signIn(page);
+    for (const route of authenticatedRoutes) {
+      await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      await expect(page.locator('main#main-content'), route).toBeVisible({ timeout: 30_000 });
+      if (route === '/dashboard/settings/notifications') await expect(page.getByRole('region', { name: 'Notification preferences table' }).locator('table')).toBeVisible({ timeout: 30_000 });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+      expect(overflow, `${route} creates document-level horizontal overflow`).toBe(true);
+    }
+  });
 });
