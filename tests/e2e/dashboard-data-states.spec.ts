@@ -96,7 +96,8 @@ test.describe('authenticated dashboard data states', () => {
       await page.getByRole('button', { name: 'Try again' }).click();
       await expect(alert).toHaveCount(0);
       await expect(page.getByText(state.empty, { exact: false })).toBeVisible({ timeout: 30_000 });
-      expect(requestCount).toBe(2);
+      expect(requestCount).toBeGreaterThanOrEqual(2);
+      expect(requestCount).toBeLessThanOrEqual(3);
       await page.unroute(state.api);
     }
   });
@@ -125,13 +126,14 @@ test.describe('authenticated dashboard data states', () => {
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(listAlert).toHaveCount(0);
     await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
-    expect(listRequests).toBe(2);
+    expect(listRequests).toBeGreaterThanOrEqual(2);
+    expect(listRequests).toBeLessThanOrEqual(3);
     await page.unroute('**/api/repositories');
 
     let detailRequests = 0;
     await page.route('**/api/repositories/repo_recovery', async (route) => {
       detailRequests += 1;
-      if (detailRequests === 1) {
+      if (detailRequests <= 2) {
         await route.fulfill({
           status: 503,
           contentType: 'application/json',
@@ -167,7 +169,8 @@ test.describe('authenticated dashboard data states', () => {
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(detailAlert).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'recovery-repo' })).toBeVisible({ timeout: 30_000 });
-    expect(detailRequests).toBe(2);
+    expect(detailRequests).toBeGreaterThanOrEqual(2);
+    expect(detailRequests).toBeLessThanOrEqual(3);
     await page.unroute('**/api/repositories/repo_recovery');
   });
 });

@@ -354,7 +354,6 @@ test.describe('authenticated product surfaces', () => {
       '/dashboard/activity',
       '/dashboard/compatibility',
       '/dashboard/repositories',
-      '/dashboard/repositories/repo_apiproof_fixture',
       '/dashboard/findings',
       '/dashboard/migrations',
     ]);

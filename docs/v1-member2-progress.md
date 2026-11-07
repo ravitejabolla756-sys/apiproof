@@ -104,3 +104,9 @@ Statuses are current baseline findings, not completion claims.
 - Files: `tests/e2e/repository-recovery.spec.ts`.
 - Evidence: `pnpm exec eslint tests/e2e/public-site.spec.ts tests/e2e/repository-recovery.spec.ts --max-warnings 0` PASS; `pnpm --filter @apiproof/web typecheck` PASS; `pnpm exec playwright test tests/e2e/repository-recovery.spec.ts --workers=1 --timeout=300000` PASS (1/1, 9.6s, local hermetic server).
 - Scope: no production/provider/backend contract changed; no hosted CI execution or external repository access was used.
+
+## 2026-11-07 checkpoint — UI-13 browser harness stability
+
+- Change: bounded dashboard retry request assertions to the observed 2–3 request range under React development effect replay; repository detail retry fixtures now hold both initial requests at failure and succeed only after the user retry. The generic mobile browsing matrix no longer depends on a live seeded detail endpoint; deterministic detail coverage remains in `repository-recovery.spec.ts`.
+- Evidence: `pnpm exec eslint tests/e2e/helpers.ts tests/e2e/public-site.spec.ts tests/e2e/dashboard-data-states.spec.ts tests/e2e/repository-recovery.spec.ts --max-warnings 0` PASS; `pnpm --filter @apiproof/web typecheck` PASS; dashboard data-state suite 2/2 PASS (24.1s); repository recovery 1/1 PASS (3.0s) in the clean local server.
+- Remaining limitation: a broader dev-mode browser run still has a notification-loading timing failure; prior committed CI-mode production-build evidence remains 25/25, and hosted CI is still NOT_RUN.
