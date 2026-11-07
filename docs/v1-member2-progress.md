@@ -632,6 +632,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; dedicated accessibility route matrix passed 8/8; full rebuilt-bundle CI-mode Playwright suite passed 60/60.
 - Scope: local public-route QA only; manual assistive technology, hosted CI, staging and production remain open.
 
+## 2026-11-07 checkpoint — WEB-15/UI-12 contact required-field recovery
+
+- Change: added a non-destructive browser journey for the public contact form’s empty submission, verifying native required-field focus/validation and that no success status is rendered before valid input.
+- Files: `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint passed; focused contact journeys passed 2/2; the complete public-site/authenticated product-surface suite passed 26/26.
+- Scope: local form-state evidence only; manual assistive technology, hosted CI, staging, delivery-service and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

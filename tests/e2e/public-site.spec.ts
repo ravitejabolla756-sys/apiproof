@@ -138,8 +138,9 @@ test.describe('public beta surfaces', () => {
     await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
     await page.getByRole('button', { name: 'Review inquiry state' }).click();
     const contactStatus = page.getByRole('status'); await expect(contactStatus).toBeVisible(); await expect(contactStatus).toContainText('No message was sent'); await expect(contactStatus).toHaveAttribute('aria-atomic', 'true');
-    await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible();
-  });
+    await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible(); });
+
+  test('keeps the contact form on required-field validation', async ({ page }) => { await page.goto('/contact'); await page.getByRole('button', { name: 'Review inquiry state' }).click(); const name = page.getByLabel('Full Name'); await expect(name).toBeFocused(); await expect(page.getByRole('status')).toHaveCount(0); expect(await name.evaluate((input: HTMLInputElement) => input.validationMessage)).toBe('Please fill out this field.'); });
 });
 
 test.describe('authenticated product surfaces', () => {
