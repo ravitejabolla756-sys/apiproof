@@ -137,6 +137,34 @@ describe('password recovery', () => {
       .rejects.toThrow('RATE_LIMIT_STORE_UNAVAILABLE');
   });
 
+  it('enforces the persistent quota atomically under concurrent requests', async () => {
+    const results = await Promise.all(Array.from({ length: 40 }, () =>
+      checkRateLimit('auth:concurrent-quota:test', 7, 60_000, { failClosed: true }),
+    ));
+
+    expect(results.filter((result) => result.allowed)).toHaveLength(7);
+    expect(results.filter((result) => !result.allowed)).toHaveLength(33);
+    const row = await getDatabase().queryOne<{ points: number }>(
+      'SELECT points FROM rate_limits WHERE key = ?', ['auth:concurrent-quota:test'],
+    );
+    expect(Number(row?.points)).toBe(40);
+  });
+
+  it('restarts an expired fixed window on the next atomic request', async () => {
+    await getDatabase().execute(
+      'INSERT INTO rate_limits (key, points, reset_at) VALUES (?, ?, ?)',
+      ['auth:expired-window:test', 9, Date.now() - 1],
+    );
+
+    await expect(checkRateLimit('auth:expired-window:test', 3, 60_000, { failClosed: true }))
+      .resolves.toMatchObject({ allowed: true, remaining: 2 });
+    const row = await getDatabase().queryOne<{ points: number; reset_at: number }>(
+      'SELECT points, reset_at FROM rate_limits WHERE key = ?', ['auth:expired-window:test'],
+    );
+    expect(Number(row?.points)).toBe(1);
+    expect(Number(row?.reset_at)).toBeGreaterThan(Date.now());
+  });
+
   it('generates a token link in the URL fragment and escapes user-controlled HTML', () => {
     configureMail();
     const message = buildPasswordResetMessage({ email: 'owner@example.test', name: '<script>alert(1)</script>', token: 'a'.repeat(43) });

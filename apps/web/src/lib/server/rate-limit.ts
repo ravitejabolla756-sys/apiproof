@@ -43,43 +43,20 @@ export async function checkRateLimit(
   try {
     const db = getDatabase();
     const row = await db.queryOne<{ points: number; reset_at: number | string }>(`
-      SELECT points, reset_at FROM rate_limits WHERE key = ?
-    `, [key]);
-
-    if (!row || Number(row.reset_at) <= now) {
-      const resetAt = now + windowMs;
-      // SQLite and PostgreSQL support ON CONFLICT (key) DO UPDATE
-      await db.execute(`
-        INSERT INTO rate_limits (key, points, reset_at)
-        VALUES (?, 1, ?)
-        ON CONFLICT (key) DO UPDATE SET points = 1, reset_at = EXCLUDED.reset_at
-      `, [key, resetAt]);
-
-      return {
-        allowed: true,
-        remaining: Math.max(0, limit - 1),
-        resetInMs: windowMs,
-      };
-    }
+      INSERT INTO rate_limits (key, points, reset_at)
+      VALUES (?, 1, ?)
+      ON CONFLICT (key) DO UPDATE SET
+        points = CASE WHEN rate_limits.reset_at <= ? THEN 1 ELSE rate_limits.points + 1 END,
+        reset_at = CASE WHEN rate_limits.reset_at <= ? THEN excluded.reset_at ELSE rate_limits.reset_at END
+      RETURNING points, reset_at
+    `, [key, now + windowMs, now, now]);
+    if (!row) throw new Error('RATE_LIMIT_UPDATE_RETURNED_NO_ROW');
 
     const resetAt = Number(row.reset_at);
     const points = Number(row.points);
-
-    if (points >= limit) {
-      return {
-        allowed: false,
-        remaining: 0,
-        resetInMs: Math.max(0, resetAt - now),
-      };
-    }
-
-    await db.execute(`
-      UPDATE rate_limits SET points = points + 1 WHERE key = ?
-    `, [key]);
-
     return {
-      allowed: true,
-      remaining: Math.max(0, limit - points - 1),
+      allowed: points <= limit,
+      remaining: Math.max(0, limit - points),
       resetInMs: Math.max(0, resetAt - now),
     };
   } catch (err) {

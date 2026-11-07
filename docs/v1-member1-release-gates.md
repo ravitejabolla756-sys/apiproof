@@ -87,3 +87,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - BILL-04 atomic usage counter regression: PASS locally, billing foundation and webhook boundary suites 2 files / 24 tests; 40 concurrent increments retain the exact count in one unique bucket. Targeted ESLint and full `pnpm typecheck` pass. PostgreSQL concurrency and provider-specific event reconciliation remain unverified.
 
 - ORG-05/ORG-10 Slack OAuth revocation regression: PASS, `slack-phase1` 21/21; revoked membership prevents callback token exchange and persistence. Targeted ESLint and full `pnpm typecheck` pass. This is SQLite-local only; PostgreSQL/RLS verification and Member 2 role-contract approval remain open.
+
+- SEC-04 rate-limit concurrency: PASS locally, password-reset suite 11/11 and production-integrity suite 17/17. Concurrent SQLite checks enforce the configured quota without lost increments; expired fixed-window reset passes. Targeted ESLint, full workspace typecheck, and `pnpm build` pass. PostgreSQL concurrency and trusted proxy header behavior remain unverified in staging.

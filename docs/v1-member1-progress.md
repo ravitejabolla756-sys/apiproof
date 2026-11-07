@@ -307,3 +307,8 @@ Phase 0 read-only checks:
 
 - Slack OAuth callback now reloads current workspace membership immediately after consuming the user-bound state and before exchanging the authorization code. The token-persistence path still rechecks membership, covering revocation during the external exchange window.
 - Added a regression that removes the initiating user's workspace membership after authorization starts; callback redirects with a generic error, makes no Slack token-exchange request, and persists no connection. `slack-phase1` passes 21/21; targeted ESLint and full workspace `pnpm typecheck` pass. SQLite-local evidence only; PostgreSQL/RLS and Member 2 capability approval remain outstanding.
+
+### 2026-11-08 SEC-04 persistent rate-limit concurrency
+
+- The shared persistent rate limiter previously selected a counter and incremented it in a later statement, allowing concurrent requests to pass a quota based on the same stale value. It now atomically inserts, increments or resets a fixed-window bucket and returns the updated counter from one UPSERT statement.
+- New tests launch 40 concurrent requests against a quota of 7 and verify exactly 7 are allowed and all 40 are counted; expired-window reset is covered. Password-reset tests pass 11/11 and production-integrity tests pass 17/17; targeted ESLint, full workspace typecheck, and `pnpm build` pass. SQLite-local concurrency evidence only; PostgreSQL and trusted-proxy IP behavior still require approved staging verification.
