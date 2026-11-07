@@ -21,7 +21,10 @@ test.describe('repository recovery journeys', () => {
 
     await page.goto('/dashboard/repositories');
     await expect(page.getByRole('alert').filter({ hasText: 'Repository list temporarily unavailable.' })).toBeVisible();
-    await page.getByRole('button', { name: 'Try again' }).click();
+    const listRetry = page.getByRole('button', { name: 'Try again' });
+    await listRetry.focus();
+    await expect(listRetry).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page.getByRole('link', { name: 'owl', exact: true })).toBeVisible();
 
     let detailAttempts = 0;
@@ -46,7 +49,11 @@ test.describe('repository recovery journeys', () => {
     await page.goto('/dashboard/repositories/repo-ui13');
     await expect(page.locator('#main-content')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('alert').filter({ hasText: 'Repository details temporarily unavailable.' })).toBeVisible();
-    detailRetryStarted = true; await page.getByRole('button', { name: 'Try again' }).click();
+    detailRetryStarted = true;
+    const detailRetry = page.getByRole('button', { name: 'Try again' });
+    await detailRetry.focus();
+    await expect(detailRetry).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'owl', exact: true })).toBeVisible();
     const scanStatus = page.getByRole('status').filter({ hasText: 'Scan Status:' });
     await expect(scanStatus).toBeVisible();
