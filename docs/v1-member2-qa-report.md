@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Full browser suite stabilization
+
+- PASS: Fresh rebuilt-bundle CI-mode Playwright suite passed 88/88 in 2.2 minutes after increasing only the broad mobile route audit’s test budget; all existing assertions remain intact.
+- PASS: The repository-picker recovery journey remains covered with an axe-clean focused test, and targeted ESLint/`git diff --check` pass.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, staging, GitHub configuration, PostgreSQL/RBAC, provider integrations, transactional email and production remain unverified or blocked by the master goal.
+
 ## 2026-11-08 — Repository picker load recovery
 
 - PASS: Focused connect-repository recovery journey passed 1/1 in 2.5 seconds with an axe-clean dialog; isolated mobile-route accessibility audit passed 1/1 in 15.7 seconds.

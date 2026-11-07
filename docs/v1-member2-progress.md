@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `e6a6021` (`codex/v1-frontend-product`)
+Current HEAD: `4074af4` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — UI-13 mobile audit timeout stabilization
+
+- Change: The broad 36-route mobile accessibility audit now has a route-count-proportional 300-second test budget instead of inheriting the 120-second global budget; this preserves all assertions while preventing serial-suite load from being misreported as a product failure.
+- Files: `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: Targeted ESLint and `git diff --check` passed; the affected mobile audit passed 1/1 in 19.4 seconds; rebuilt-bundle CI-mode full Playwright suite passed 88/88 in 2.2 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-full-repository-picker-timeout-artifacts`.
+- Scope: local UI-13 test-harness reliability only; no product/backend/shared contract, remote Git, staging, production, payment or email action was performed.
 
 ## 2026-11-08 checkpoint — UI-12 GitHub repository picker load recovery
 
@@ -180,7 +187,7 @@ Current HEAD: `e6a6021` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
-Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 87/87, with compatibility-map, provider-rule, and workspace-switch recovery journeys added in the checkpoints above.
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 88/88, with compatibility-map, provider-rule, workspace-switch, and repository-picker recovery journeys added in the checkpoints above.
 
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
