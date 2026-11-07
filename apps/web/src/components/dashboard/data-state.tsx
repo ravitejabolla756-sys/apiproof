@@ -10,6 +10,8 @@ export function DashboardDataError({ message, onRetry }: DashboardDataErrorProps
   return (
     <div
       role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       className="flex flex-col gap-3 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-rose-900 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-start gap-3">

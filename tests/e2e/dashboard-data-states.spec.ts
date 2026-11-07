@@ -29,6 +29,19 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/pull-requests');
   });
 
+  test('announces findings loading before the response resolves', async ({ page }) => {
+    await signIn(page);
+    let releaseFindings: (() => void) | undefined;
+    const findingsLoading = new Promise<void>((resolve) => { releaseFindings = resolve; });
+    await page.route('**/api/findings', async (route) => { await findingsLoading; await route.continue(); });
+
+    await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('status')).toContainText('Querying database findings...');
+    releaseFindings?.();
+    await expect(page.getByRole('heading', { name: 'API Compatibility Findings' })).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/findings');
+  });
+
   test('announces compatibility-map and provider-rule failures as alerts', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/compatibility-map', async (route) => {
