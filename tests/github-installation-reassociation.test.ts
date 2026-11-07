@@ -114,6 +114,31 @@ describe('GitHub Installation Reassociation Hardening', () => {
     expect(allRows.length).toBe(1);
   });
 
+  it('denies a callback for an unknown persisted workspace role before provider access', async () => {
+    const { user, session } = await createUserWithSession('unknown-role@example.com', 'Pass12345!', 'Unknown Role');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, ws.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['owner-like', ws.id, user.id],
+    );
+
+    const response = await callbackGet(new Request(
+      `http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&state=${state}`,
+      { headers: { cookie: `apiproof_session=${session.id}` } },
+    ));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'FORBIDDEN' });
+    expect(githubModule.verifyGitHubAppInstallation).not.toHaveBeenCalled();
+    expect(await getDatabase().queryOne(
+      'SELECT id FROM github_installations WHERE installation_id = ?', [TEST_INSTALLATION_ID],
+    )).toBeUndefined();
+    expect(await getDatabase().queryOne<{ consumed_at: string | null }>(
+      'SELECT consumed_at FROM github_installation_states WHERE state = ?', [state],
+    )).toMatchObject({ consumed_at: null });
+  });
+
   it('redirects HTML OAuth completion with a no-store response for cross-tab refresh', async () => {
     const { user, session } = await createUserWithSession('html-callback@example.com', 'Pass12345!', 'HTML Callback');
     const ws = await getDefaultWorkspaceForUser(user.id);

@@ -250,6 +250,11 @@ Phase 0 read-only checks:
 - `GET /api/overview` now maps recognized default-workspace authorization errors to a generic 403 before calling the dashboard data service. No dashboard query is made for an invalid role.
 - Added SQLite-backed unknown-role regression. `overview-role-route` passes 1/1 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. ORG-05 remains PARTIAL pending Member 2 role-contract approval and effective PostgreSQL/RLS verification.
 
+### 2026-11-08 ORG-05 GitHub installation callback denial
+
+- Added a negative regression for an unknown persisted role at the GitHub App installation callback. It verifies generic 403 denial before provider verification or installation persistence, and leaves the one-time callback state unconsumed for safe retry after an authorized repair.
+- All current `getDefaultWorkspaceForUser` API callers map expected authorization errors. The only API route that directly calls `requireWorkspaceMember`/`requireWorkspaceOwner` without the shared mapper now has explicit denial coverage. This is SQLite-local evidence only; ORG-05 remains PARTIAL pending Member 2's approved role contract and PostgreSQL/RLS verification.
+
 ### 2026-11-08 SEC-13 legacy stalled-job metrics
 
 - Queue stalled-job metrics now count both expired leases and legacy processing rows without leases once their creation timestamp passes the same five-minute safety threshold used by worker recovery. A recent lease-less processing row is excluded.
