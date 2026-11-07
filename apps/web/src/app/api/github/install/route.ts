@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getGitHubAppInstallUrl } from '@/lib/server/github';
 import {
   getDefaultWorkspaceForUser,
+  isWorkspaceAuthorizationError,
   requireWorkspaceMember,
 } from '@/lib/server/workspace-service';
 
@@ -24,8 +25,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'FORBIDDEN' }, { status: 403 });
     }
   } else {
-    const defaultWs = await getDefaultWorkspaceForUser(user.id);
-    workspaceId = defaultWs.id;
+    try {
+      const defaultWs = await getDefaultWorkspaceForUser(user.id);
+      workspaceId = defaultWs.id;
+    } catch (error: unknown) {
+      if (isWorkspaceAuthorizationError(error)) {
+        return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403 });
+      }
+      throw error;
+    }
   }
 
   try {

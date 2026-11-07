@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { GET } from '../apps/web/src/app/api/github/repositories/status/route.js';
+import { GET as getGitHubInstallUrl } from '../apps/web/src/app/api/github/install/route.js';
+import { GET as getGitHubRepositories } from '../apps/web/src/app/api/github/repositories/route.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
@@ -76,5 +78,28 @@ describe('GET /api/github/repositories/status', () => {
     expect(response.status).toBe(403);
     expect(response.headers.get('cache-control')).toContain('no-store');
     expect(await response.json()).toEqual({ error: 'Workspace access denied.' });
+  });
+
+  it('denies GitHub installation and repository access for an unknown default-workspace role', async () => {
+    const { user, session } = await createUserWithSession('github-unknown-role@example.com', 'Strong-password-1!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.id],
+    );
+    const request = () => new Request('http://localhost/api/github/repositories', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    });
+
+    const installResponse = await getGitHubInstallUrl(new Request('http://localhost/api/github/install', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }));
+    const repositoriesResponse = await getGitHubRepositories(request());
+
+    expect(installResponse.status).toBe(403);
+    expect(await installResponse.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    expect(repositoriesResponse.status).toBe(403);
+    expect(repositoriesResponse.headers.get('cache-control')).toContain('no-store');
+    expect(await repositoriesResponse.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
   });
 });

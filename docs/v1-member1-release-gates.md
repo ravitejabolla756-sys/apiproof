@@ -58,6 +58,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 GitHub status-role regression: PASS, `github-repository-status-route` 4/4 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown default-workspace role yields generic 403/private response; PostgreSQL/RLS remains unverified.
 - SEC-16 concurrency regression: PASS on rerun, `sec16-load-resilience` 8/8; targeted ESLint and full `pnpm typecheck` pass. An earlier run had an intermittent SQLite setup-hook timeout (7/8 completed); the same suite rerun passed. Concurrency proof is local in-process only.
 - ORG-05 Slack authorization regression: PASS, `slack-phase1` 20/20 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown persisted roles cannot read connection status or disconnect Slack; the active connection remains unchanged. PostgreSQL/RLS remains unverified.
+- ORG-05 GitHub integration regression: PASS, `github-repository-status-route` 5/5 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown default-workspace roles cannot obtain an install URL or list repositories; no GitHub request is made. PostgreSQL/RLS remains unverified.
 
 ## Approval boundaries not crossed
 
