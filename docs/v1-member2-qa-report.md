@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Findings filter mobile wrapping
+
+- PASS: Focused mobile fixture journey passed 1/1 in 14.0 seconds with four provider options, no document-level horizontal overflow at 390px, and an axe-clean main content region.
+- PASS: Targeted ESLint, `git diff --check`, Impeccable detector, and production build passed; the build generated 83 static pages.
+- Scope: local UI-12 responsive evidence only. Full screen-reader review, hosted CI, integrated staging, provider delivery, PostgreSQL/RBAC and production remain open.
+
 ## 2026-11-08 — GitHub action retry semantics
 
 - PASS: Focused GitHub installation recovery journey passed 1/1 in 2.4 seconds with an axe-clean action error and the correct Retry GitHub connection control.

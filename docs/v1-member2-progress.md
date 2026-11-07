@@ -5,6 +5,13 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 findings filter mobile wrapping
+
+- Change: Findings severity and provider controls now wrap at narrow widths, keep each action label together, and retain full-width mobile composition; this prevents a multi-provider response from creating document-level horizontal overflow.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/findings-filter-responsive.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused mobile fixture journey passed 1/1 in 14.0 seconds with four provider options, no document overflow and an axe-clean main content region; rebuilt web production bundle passed with 83 generated pages.
+- Scope: local UI-12 responsive/accessibility hardening only; no backend/shared contract, provider, remote Git, staging, production, payment or email action was performed.
+
 ## 2026-11-08 checkpoint — ORG-02/UI-12 GitHub action retry semantics
 
 - Change: Workspace Settings now distinguishes settings-load failures from GitHub installation failures and exposes the matching recovery action: Retry settings load or Retry GitHub connection. A failed installation URL request no longer offers a misleading status reload.
