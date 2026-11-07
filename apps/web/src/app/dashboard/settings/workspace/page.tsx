@@ -87,6 +87,19 @@ export default function WorkspaceSettingsPage() {
     }
   }
 
+  async function retryAudit() {
+    setAuditError(null);
+    try {
+      const response = await fetch('/api/workspace/audit');
+      const data = await readJson<{ events?: AuditEvent[]; nextCursor?: string | null }>(response);
+      if (!response.ok || !data.events) throw new Error(data.error || 'Unable to load administrative audit events.');
+      setAudit(data.events);
+      setAuditCursor(data.nextCursor || null);
+    } catch (loadError) {
+      setAuditError(loadError instanceof Error ? loadError.message : 'Unable to load administrative audit events.');
+    }
+  }
+
   async function saveWorkspace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true); setActionStatus('Saving workspace settings…'); setError(null); setMessage(null);
@@ -221,7 +234,7 @@ export default function WorkspaceSettingsPage() {
 
       <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="audit-heading">
         <div className="mb-5 flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="audit-heading" className="text-base font-semibold text-[#111111]">Administrative audit trail</h2><p className="mt-1 text-xs text-[#686868]">Workspace membership and settings changes are attributed to the acting account.</p></div></div>
-        {auditError ? <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{auditError}</div> : audit.length === 0 ? <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">No administrative events recorded yet.</p> : <div className="divide-y divide-[#E8E8E5]">{audit.map((event) => <div key={event.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-medium text-[#333333]">{event.action}</p><p className="text-[11px] text-[#686868]">{event.actorEmail || 'System'} · {event.targetType}</p></div><time className="text-[11px] font-mono text-[#686868]" dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleString()}</time></div>)}</div>}
+        {auditError ? <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><span>{auditError}</span><Button type="button" variant="outline" size="sm" onClick={() => void retryAudit()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry audit</Button></div> : audit.length === 0 ? <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">No administrative events recorded yet.</p> : <div className="divide-y divide-[#E8E8E5]">{audit.map((event) => <div key={event.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-medium text-[#333333]">{event.action}</p><p className="text-[11px] text-[#686868]">{event.actorEmail || 'System'} · {event.targetType}</p></div><time className="text-[11px] font-mono text-[#686868]" dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleString()}</time></div>)}</div>}
         {auditCursor && <Button type="button" variant="outline" className="mt-4 min-h-10" disabled={auditLoading} aria-busy={auditLoading ? 'true' : undefined} onClick={() => void loadMoreAudit()}>{auditLoading ? 'Loading audit events…' : 'Load more audit events'}</Button>}
       </section>
     </div>

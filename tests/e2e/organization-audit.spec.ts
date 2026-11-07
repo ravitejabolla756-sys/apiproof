@@ -87,11 +87,21 @@ test.describe('workspace audit trail', () => {
     const settingsLoading = new Promise<void>((resolve) => { releaseSettings = resolve; });
     await page.route('**/api/workspace/settings', async (route) => { await settingsLoading; await route.continue(); });
 
+    let auditRequests = 0;
     await page.route('**/api/workspace/audit**', async (route) => {
+      auditRequests += 1;
+      if (auditRequests === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Audit history is temporarily unavailable.' }),
+        });
+        return;
+      }
       await route.fulfill({
-        status: 503,
+        status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'Audit history is temporarily unavailable.' }),
+        body: JSON.stringify({ events: [{ id: 'audit-recovered', action: 'audit.recovered', actorEmail: 'owner@example.test', targetType: 'workspace', createdAt: '2026-11-08T00:00:00.000Z' }], nextCursor: null }),
       });
     });
 
@@ -101,6 +111,11 @@ test.describe('workspace audit trail', () => {
     const auditAlert = page.getByRole('alert').filter({ hasText: 'Audit history is temporarily unavailable.' }); await expect(auditAlert).toBeVisible({ timeout: 30_000 }); await expect(auditAlert).toHaveAttribute('aria-live', 'assertive'); await expect(auditAlert).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('No administrative events recorded yet.')).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit failure state').toEqual([]);
+
+    await page.getByRole('button', { name: 'Retry audit' }).click();
+    await expect(page.getByText('Audit history is temporarily unavailable.')).toHaveCount(0);
+    await expect(page.getByText('audit.recovered')).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit recovered state').toEqual([]);
 
     await page.unroute('**/api/workspace/settings');
     await page.unroute('**/api/workspace/audit**');
