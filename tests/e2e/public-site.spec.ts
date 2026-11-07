@@ -168,6 +168,18 @@ test.describe('authenticated product surfaces', () => {
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
 
+  test('exposes an accessible server-backed workspace context selector', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard');
+    const selector = page.getByLabel('Active workspace');
+    await expect(selector).toBeVisible({ timeout: 30_000 });
+    await expect(selector).toHaveValue(/.+/);
+    await expect(selector.locator('option')).toHaveCount(1);
+    await expect(selector).toBeDisabled();
+    const results = await new AxeBuilder({ page }).include('aside').analyze();
+    expect(results.violations, 'workspace context selector').toEqual([]);
+  });
+
   test('creates and cancels a manual workspace invitation without sending email', async ({ page }) => {
     await signIn(page);
     await page.goto('/dashboard/settings/workspace');

@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
-import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import { getDefaultWorkspaceForUser, createWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import { resolveWorkspaceForRequest } from '../apps/web/src/lib/server/organization-route.js';
+import { POST as setWorkspaceContext } from '../apps/web/src/app/api/workspace/context/route.js';
 import {
   acceptWorkspaceInvitation,
   createWorkspaceInvitation,
@@ -126,5 +128,51 @@ describe('workspace administration', () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const workspace = await getDefaultWorkspaceForUser(owner.user.id);
     await expect(updateWorkspaceSettings(owner.user.id, workspace.id, 'Workspace', 'bad slug')).rejects.toMatchObject({ code: 'INVALID_WORKSPACE_SLUG' });
+  });
+
+  it('resolves the selected workspace from a server-validated cookie and falls back after revocation', async () => {
+    const owner = await createUserWithSession('context-owner@example.test', 'OwnerPassword123!', 'Context Owner');
+    const otherOwner = await createUserWithSession('context-other@example.test', 'OtherPassword123!', 'Other Owner');
+    const defaultWorkspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const selectedWorkspace = await createWorkspaceForUser(owner.user.id, 'Selected Workspace', 'selected-workspace');
+    const otherWorkspace = await getDefaultWorkspaceForUser(otherOwner.user.id);
+
+    const selected = await resolveWorkspaceForRequest(new Request('https://apiproof.test/api/overview', {
+      headers: { cookie: `apiproof_workspace_id=${selectedWorkspace.id}` },
+    }), owner.user.id);
+    expect(selected.id).toBe(selectedWorkspace.id);
+
+    const stale = await resolveWorkspaceForRequest(new Request('https://apiproof.test/api/overview', {
+      headers: { cookie: `apiproof_workspace_id=${otherWorkspace.id}` },
+    }), owner.user.id);
+    expect(stale.id).toBe(defaultWorkspace.id);
+    await expect(resolveWorkspaceForRequest(new Request(`https://apiproof.test/api/overview?workspaceId=${otherWorkspace.id}`), owner.user.id))
+      .rejects.toThrow(/access denied/i);
+  });
+
+  it('changes workspace context only after membership authorization and emits an httpOnly cookie', async () => {
+    const owner = await createUserWithSession('context-route@example.test', 'OwnerPassword123!', 'Context Route');
+    const selectedWorkspace = await createWorkspaceForUser(owner.user.id, 'Route Workspace', 'route-workspace');
+    const response = await setWorkspaceContext(new Request('https://apiproof.test/api/workspace/context', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${owner.session.id}`,
+      },
+      body: JSON.stringify({ workspaceId: selectedWorkspace.id }),
+    }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('set-cookie')).toContain(`apiproof_workspace_id=${selectedWorkspace.id}`);
+    expect(response.headers.get('set-cookie')).toContain('HttpOnly');
+
+    const forbidden = await setWorkspaceContext(new Request('https://apiproof.test/api/workspace/context', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${owner.session.id}`,
+      },
+      body: JSON.stringify({ workspaceId: 'ws_not_owned' }),
+    }));
+    expect(forbidden.status).toBe(404);
   });
 });

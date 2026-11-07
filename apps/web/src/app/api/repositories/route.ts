@@ -4,8 +4,8 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
 import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import {
-  getDefaultWorkspaceForUser,
   requireWorkspaceMember,
   getWorkspaceGitHubInstallation,
 } from '@/lib/server/workspace-service.js';
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const db = getDatabase();
   const repos = await db.query(`
     SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
@@ -66,14 +66,14 @@ export async function POST(req: Request) {
       return badRequestResponse(validation.error || 'Invalid repository connection payload.');
     }
 
-    // Resolve target workspace: if provided, verify membership; else use default
+    // Resolve target workspace: explicit IDs remain supported for deep links;
+    // otherwise use the server-validated active workspace context.
     let workspaceId: string;
     if (body.workspaceId && typeof body.workspaceId === 'string') {
       const ws = await requireWorkspaceMember(user.id, body.workspaceId);
       workspaceId = ws.id;
     } else {
-      const defaultWs = await getDefaultWorkspaceForUser(user.id);
-      workspaceId = defaultWs.id;
+      workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
     }
 
     // Billing plan repository limit check (runs after workspace authorization)

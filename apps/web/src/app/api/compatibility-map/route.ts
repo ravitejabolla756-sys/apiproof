@@ -4,7 +4,7 @@ import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { buildCompatibilityProofSnapshot } from '@apiproof/shared';
 import { getCurrentUser } from '../../../lib/server/auth.js';
 import { getDatabase } from '../../../lib/server/db/index.js';
-import { getDefaultWorkspaceForUser } from '../../../lib/server/workspace-service.js';
+import { resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
 import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
 import { parseBoundedProductizationProjection } from '../../../lib/server/productization-persistence.js';
@@ -44,12 +44,12 @@ interface FindingRow {
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
-/** Compatibility snapshot for only the authenticated user's default workspace. */
+/** Compatibility snapshot for only the authenticated user's active workspace. */
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateNoStore });
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const db = getDatabase();
   const repositories = await db.query<RepositoryRow>(`
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch,

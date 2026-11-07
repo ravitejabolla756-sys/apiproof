@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
 import { seedOfficialProviderReviewQueue } from '../../../../lib/server/provider-review-queue-seed.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '../../../../lib/server/workspace-service.js';
+import { resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
+import { requireWorkspaceOwner } from '../../../../lib/server/workspace-service.js';
 import { assertCsrfProtection } from '../../../../lib/server/validation.js';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -25,7 +26,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStore });
 
   try {
-    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const workspace = await resolveWorkspaceForRequest(request, user.id);
     await requireWorkspaceOwner(user.id, workspace.id);
     const result = await seedOfficialProviderReviewQueue();
     return NextResponse.json({

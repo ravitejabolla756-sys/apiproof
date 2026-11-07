@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
 import { getDashboardData } from '@/lib/server/dashboard/get-dashboard-data';
 
 export async function GET(req: Request) {
@@ -9,8 +9,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Resolve user's active/default workspace
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const dashboard = await getDashboardData(workspace.id);
 
   return NextResponse.json({

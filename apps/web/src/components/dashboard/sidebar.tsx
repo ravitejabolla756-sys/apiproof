@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
@@ -30,6 +30,10 @@ export function Sidebar() {
   const [openFindingsCount, setOpenFindingsCount] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [workspaceName, setWorkspaceName] = useState<string>('');
+  const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string }>>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
+  const [workspaceSwitching, setWorkspaceSwitching] = useState(false);
+  const [workspaceContextError, setWorkspaceContextError] = useState<string | null>(null);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const logoutPending = useRef(false);
@@ -56,6 +60,42 @@ export function Sidebar() {
     }
     loadStats();
   }, [pathname]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadWorkspaces() {
+      try {
+        const response = await fetch('/api/workspaces', { cache: 'no-store' });
+        if (!active || !response.ok) return;
+        const data = await response.json();
+        if (Array.isArray(data.workspaces)) setWorkspaces(data.workspaces);
+        if (typeof data.activeWorkspaceId === 'string') setActiveWorkspaceId(data.activeWorkspaceId);
+      } catch {
+        // Workspace selection remains unavailable if the background request fails.
+      }
+    }
+    void loadWorkspaces();
+    return () => { active = false; };
+  }, []);
+
+  async function handleWorkspaceChange(event: ChangeEvent<HTMLSelectElement>) {
+    const workspaceId = event.target.value;
+    if (!workspaceId || workspaceId === activeWorkspaceId || workspaceSwitching) return;
+    setWorkspaceSwitching(true);
+    setWorkspaceContextError(null);
+    try {
+      const response = await fetch('/api/workspace/context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId }),
+      });
+      if (!response.ok) throw new Error('Workspace could not be changed.');
+      window.location.reload();
+    } catch {
+      setWorkspaceContextError('Workspace could not be changed. Please try again.');
+      setWorkspaceSwitching(false);
+    }
+  }
 
   const mainNav = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -192,6 +232,24 @@ export function Sidebar() {
 
       {/* Account Footer with Logout */}
       <div className="flex flex-col p-2 md:block md:p-4 border-t border-[#E8E8E5] bg-white font-sans text-xs">
+        <div className={`mb-3 ${collapsed ? "md:hidden" : ""}`}>
+          <label htmlFor="workspace-context" className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-[#686868]">
+            Workspace
+          </label>
+          <select
+            id="workspace-context"
+            aria-label="Active workspace"
+            value={activeWorkspaceId}
+            onChange={handleWorkspaceChange}
+            disabled={workspaceSwitching || workspaces.length < 2}
+            className="w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
+          >
+            {workspaces.length === 0 && <option value="">Loading workspace…</option>}
+            {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
+          </select>
+          {workspaceSwitching && <p className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
+          {workspaceContextError && <p role="alert" className="mt-1 text-[10px] text-rose-700">{workspaceContextError}</p>}
+        </div>
         <div className="flex items-center justify-between">
             <div className={`flex flex-col min-w-0 pr-2 ${collapsed ? "md:hidden" : ""}`}>
               <span className="truncate text-[11px] font-semibold text-[#111111]" title={workspaceName || 'Active Workspace'}>

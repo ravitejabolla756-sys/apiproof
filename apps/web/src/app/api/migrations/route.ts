@@ -3,6 +3,7 @@ import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -10,6 +11,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const db = getDatabase();
   const migrations = await db.query(`
     SELECT m.id, m.finding_id, m.repository_id, m.plan_id, m.status, m.patch_diff, m.patch_digest, m.verification_report, m.created_at,
@@ -20,10 +22,9 @@ export async function GET(req: Request) {
     JOIN findings f ON f.id = m.finding_id
     JOIN repositories r ON r.id = m.repository_id
     LEFT JOIN pull_requests pr ON pr.migration_id = m.id
-    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY m.created_at DESC
-  `, [user.id]);
+  `, [workspace.id]);
 
   const mapped = (migrations as Array<Record<string, unknown>>).map((m) => ({
     ...m,

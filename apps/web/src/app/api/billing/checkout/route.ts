@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
-import { getDefaultWorkspaceForUser } from '../../../../lib/server/workspace-service.js';
+import { resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
 import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
 import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
   const planId = body.planId;
 

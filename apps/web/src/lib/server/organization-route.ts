@@ -3,12 +3,38 @@ import { getDefaultWorkspaceForUser, requireWorkspaceMember, type WorkspaceWithR
 import { OrganizationServiceError } from './organization-service.js';
 import { validateSafeId } from './validation.js';
 
+export const WORKSPACE_CONTEXT_COOKIE = 'apiproof_workspace_id';
+
+function readCookieValue(req: Request, name: string): string | null {
+  const cookieHeader = req.headers.get('cookie');
+  if (!cookieHeader) return null;
+  const pair = cookieHeader.split(';').map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
+  return pair ? pair.slice(name.length + 1) || null : null;
+}
+
 export async function resolveWorkspaceForRequest(req: Request, userId: string): Promise<WorkspaceWithRole> {
-  const requestedId = new URL(req.url).searchParams.get('workspaceId');
-  if (!requestedId) return getDefaultWorkspaceForUser(userId);
-  const validation = validateSafeId(requestedId, 'workspaceId');
-  if (!validation.valid || !validation.data) throw new Error(validation.error || 'Invalid workspaceId.');
-  return requireWorkspaceMember(userId, validation.data);
+  const explicitId = new URL(req.url).searchParams.get('workspaceId');
+  if (explicitId) {
+    const validation = validateSafeId(explicitId, 'workspaceId');
+    if (!validation.valid || !validation.data) throw new Error(validation.error || 'Invalid workspaceId.');
+    return requireWorkspaceMember(userId, validation.data);
+  }
+
+  const contextId = readCookieValue(req, WORKSPACE_CONTEXT_COOKIE);
+  if (contextId) {
+    const validation = validateSafeId(contextId, 'workspaceId');
+    if (validation.valid && validation.data) {
+      try {
+        return await requireWorkspaceMember(userId, validation.data);
+      } catch (error) {
+        // A workspace can be revoked between requests. Treat a stale browser
+        // context as recoverable and fall back to the user's authorized default.
+        if (!(error instanceof Error) || !error.message.includes('access denied')) throw error;
+      }
+    }
+  }
+
+  return getDefaultWorkspaceForUser(userId);
 }
 
 export function organizationErrorResponse(error: unknown): Response {

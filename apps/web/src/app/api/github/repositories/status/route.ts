@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../../lib/server/auth.js';
+import { resolveWorkspaceForRequest } from '../../../../../lib/server/organization-route.js';
 import {
-  getDefaultWorkspaceForUser,
   getWorkspaceGitHubInstallation,
   requireWorkspaceMember,
 } from '../../../../../lib/server/workspace-service.js';
@@ -21,7 +21,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers });
     }
   } else {
-    workspaceId = (await getDefaultWorkspaceForUser(user.id)).id;
+    workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
   }
 
   const installation = await getWorkspaceGitHubInstallation(workspaceId);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
+import { requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
 import { editProviderRuleCandidate } from '@/lib/server/provider-rule-service';
 
@@ -12,7 +13,7 @@ export async function PATCH(request: Request, context: RouteContext): Promise<Ne
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   try {
-    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const workspace = await resolveWorkspaceForRequest(request, user.id);
     await requireWorkspaceOwner(user.id, workspace.id);
     const { candidateId } = await context.params;
     const body = await request.json() as { title?: unknown; description?: unknown; apiOperationPatterns?: unknown; replacement?: unknown; migrationTemplate?: unknown; notes?: unknown };

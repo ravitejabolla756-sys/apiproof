@@ -12,6 +12,7 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 
 - Client controls are advisory. Every account, workspace, membership, billing and preference mutation must enforce the current session and workspace role server-side.
 - Workspace-changing endpoints must derive tenant scope from membership and return safe generic denial/not-found responses; the client must not infer authorization from hidden controls.
+- Workspace context is server-authoritative: `POST /api/workspace/context` validates membership before setting the `HttpOnly`, `SameSite=Lax` `apiproof_workspace_id` cookie; `GET /api/workspaces` returns the authorized list and active ID. Explicit `workspaceId` query parameters remain supported for deep links and are membership-checked. Invalid or revoked cookies fall back to the authorized default workspace, never to an arbitrary tenant. Client role/visibility state is not trusted.
 - Billing UI may display canonical plan/entitlement projections and “coming soon” states, but must not grant access from redirects or client state. Provider-backed checkout, portal, invoice and plan-change acceptance stays blocked until the approved backend provider exists.
 - Notification preferences are optional-message controls only. Security, account recovery and legally required messages cannot be silently suppressed.
 - Draft legal, refund, status and incident content must show review/source status and must not claim approval, uptime or current incidents without authoritative evidence.
@@ -20,6 +21,7 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 
 - Account: `GET/PATCH /api/account` and `POST /api/account/password`; profile names are validated server-side, password changes require the current password, other sessions are invalidated, and OAuth-only accounts are explicitly blocked until local-password enrollment exists.
 - Organization: `/api/workspace/settings`, `/api/workspace/members`, `/api/workspace/invitations`, `/api/workspace/invitations/accept`, and `/api/workspace/audit`; owner/member remains the complete local role model, invitation tokens are hashed/expiring/single-use, member removal invalidates sessions, and audit events use a stable `(created_at,id)` cursor with bounded pages.
+- Workspace context: `GET /api/workspaces` and `POST /api/workspace/context`, with selected workspace propagation across dashboard overview, repository/GitHub, billing, Slack, provider-rule, activity, finding, migration and pull-request APIs. Resource-specific routes continue to authorize through their repository/finding/migration membership checks.
 - Notifications: `GET/PATCH /api/account/notifications`; preferences are server-owned, required security/account-recovery categories cannot be disabled, and unavailable email delivery is represented as unavailable rather than silently accepted.
 
 ## Proposed interfaces requiring review before shared backend changes
@@ -43,3 +45,4 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 - 2026-11-07: Slack finding deliveries now re-check the current `findings/slack` preference before enqueue and before provider I/O; opt-out suppression is covered locally without sending external messages.
 - 2026-11-07: Terminal scan failures now have a local Slack outbox/worker slice with idempotency, bounded retry and safe-content tests; no external Slack delivery or production migration was performed.
 - 2026-11-07: Migration/PR Slack notifications now cover direct proposal outcomes and authoritative PR state webhooks with state-key dedupe, preference enforcement and non-resolution wording for merges; PR-08 post-merge resolution events remain an explicit integration dependency.
+- 2026-11-07: Added server-validated workspace context selection with stale-cookie fallback, selected-scope API propagation, accessible picker coverage and no production/provider side effects; Member 1 review and PostgreSQL tenant/RLS evidence remain pending.
