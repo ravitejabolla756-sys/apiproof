@@ -489,6 +489,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: fresh explicit SQLite database `/tmp/myowl-v1-full-sidebar-brand-a11y.db`; rebuilt-bundle CI-mode Playwright suite passed 69/69 in 1.6 minutes after the collapsed-sidebar brand accessible-name fix. Playwright artifacts were retained at `/tmp/myowl-v1-full-sidebar-brand-artifacts.7mXY31`.
 - Scope: complete local hermetic browser evidence only; hosted CI, integrated staging, manual screen-reader review and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 dedicated collapsed-brand regression
+
+- Change: added a focused browser regression for the collapsed sidebar brand accessible name; the test runs against the rebuilt production bundle so source changes cannot be masked by a stale `.next` artifact.
+- Files: `tests/e2e/sidebar-brand-accessibility.spec.ts`.
+- Evidence: `pnpm --filter @apiproof/web build` passed with 83 generated pages; targeted ESLint passed; rebuilt-bundle focused Playwright test passed 1/1 in 3.0 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-sidebar-brand-dedicated-artifacts.pxTUPh`.
+- Scope: local sidebar accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository connection dialog semantics
 
 - Change: the repository connection modal now hides decorative status, provider, repository-type, branch and action icons from the accessibility tree, and announces the in-progress GitHub authorization handoff through a polite live region. Existing focus trapping, Escape dismissal and repository connection behavior are unchanged.
