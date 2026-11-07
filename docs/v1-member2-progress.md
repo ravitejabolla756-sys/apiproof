@@ -343,3 +343,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/app/dashboard/activity/page.tsx`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector reports only incumbent dashboard purple palette warnings; web production build PASS with 83 generated static pages; dashboard data-state suite PASS — 9/9; full CI-mode browser matrix PASS — 43/43 in 54.4 seconds.
 - Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — ORG-02 workspace switch status
+
+- Change: the shared workspace selector now announces context switching through a polite atomic status and exposes workspace-switch failures as assertive atomic alerts; existing server-authorized context selection and reload behavior are unchanged.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; delayed authorized workspace-switch journey PASS — 1/1; full CI-mode browser matrix PASS — 43/43 in 55.1 seconds.
+- Scope: no backend/shared contract changed; PostgreSQL/RBAC proof and full screen-reader review remain open. No production/provider/remote Git operation was performed.

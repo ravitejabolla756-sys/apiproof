@@ -251,8 +251,8 @@ export function Sidebar() {
             {workspaces.length === 0 && <option value="">Loading workspace…</option>}
             {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
           </select>
-          {workspaceSwitching && <p className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
-          {workspaceContextError && <p role="alert" className="mt-1 text-[10px] text-rose-700">{workspaceContextError}</p>}
+          {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
+          {workspaceContextError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">{workspaceContextError}</p>}
         </div>
         <div className="flex items-center justify-between">
             <div className={`flex flex-col min-w-0 pr-2 ${collapsed ? "md:hidden" : ""}`}>

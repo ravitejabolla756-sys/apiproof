@@ -261,7 +261,7 @@ test.describe('authenticated product surfaces', () => {
   test('switches between authorized workspace contexts through the picker', async ({ page }) => {
     await signIn(page);
     let activeWorkspaceId = 'ws_primary';
-    let postedWorkspaceId: string | undefined;
+    let postedWorkspaceId: string | undefined; let releaseContext: (() => void) | undefined; const contextResponse = new Promise<void>((resolve) => { releaseContext = resolve; });
     await page.route('**/api/workspaces', async (route) => {
       await route.fulfill({
         status: 200,
@@ -277,7 +277,7 @@ test.describe('authenticated product surfaces', () => {
     });
     await page.route('**/api/workspace/context', async (route) => {
       postedWorkspaceId = (JSON.parse(route.request().postData() || '{}') as { workspaceId?: string }).workspaceId;
-      activeWorkspaceId = postedWorkspaceId || activeWorkspaceId;
+      activeWorkspaceId = postedWorkspaceId || activeWorkspaceId; await contextResponse;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -289,7 +289,7 @@ test.describe('authenticated product surfaces', () => {
     const selector = page.getByLabel('Active workspace');
     await expect(selector).toHaveValue('ws_primary', { timeout: 30_000 });
     await expect(selector.locator('option')).toHaveCount(2);
-    await selector.selectOption('ws_secondary');
+    await selector.selectOption('ws_secondary'); await expect(page.getByRole('status')).toContainText('Switching workspace…'); releaseContext?.();
     await expect.poll(() => postedWorkspaceId).toBe('ws_secondary');
     await expect(selector).toHaveValue('ws_secondary', { timeout: 30_000 });
     await expect(selector.locator('option:checked')).toHaveText('Secondary Workspace');
