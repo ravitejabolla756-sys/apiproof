@@ -34,6 +34,31 @@ test.describe('workspace audit trail', () => {
     await page.unroute('**/api/workspace/invitations');
   });
 
+  test('recovers from an initial workspace-settings failure', async ({ page }) => {
+    await signIn(page);
+    let settingsRequests = 0;
+    await page.route('**/api/workspace/settings', async (route) => {
+      settingsRequests += 1;
+      if (settingsRequests === 1) {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace settings are temporarily unavailable.' }) });
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.goto('/dashboard/settings/workspace');
+    const alert = page.getByRole('alert').filter({ hasText: 'Workspace settings are temporarily unavailable.' });
+    await expect(alert).toBeVisible({ timeout: 30_000 });
+    await expect(alert.getByRole('button', { name: 'Retry' })).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings initial failure').toEqual([]);
+    await alert.getByRole('button', { name: 'Retry' }).click();
+    await expect(alert).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'workspace settings recovered state').toEqual([]);
+    expect(settingsRequests).toBeGreaterThanOrEqual(2);
+    await page.unroute('**/api/workspace/settings');
+  });
+
   test('announces when invitation-link copying is unavailable', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'clipboard', {
