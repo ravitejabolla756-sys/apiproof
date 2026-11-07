@@ -25,7 +25,7 @@ This document records backend contracts that require coordination with Member 2.
 - Proposed durable revocation event shape for review: `workspace.member_revocation.v1` with `{ eventId, workspaceId, subjectUserId, actorUserId, membershipId, reason, occurredAt, idempotencyKey }`. Consumers must treat `eventId`/`idempotencyKey` as durable deduplication keys and must not infer authorization from the event alone.
 - Revocation processing must invalidate only the removed subject's sessions, email/password-reset/OAuth state and workspace-scoped queued jobs; it must preserve unrelated personal sessions and other workspace memberships. All resource queries must re-check current membership at execution time.
 - `workspace-policy.ts` is the local central role/capability boundary. It fails closed on unknown persisted roles, keeps owner-only destructive capabilities separate from member operations, and is not yet adopted by routes whose final permissions depend on the Member 2 organization contract.
-- The revocation flow is not implemented yet because the invitation schema, member-management UI, audit-event ownership and final-owner policy require Member 2/owner approval.
+- The durable revocation flow is not implemented yet because the invitation schema, member-management UI, audit-event ownership, session binding/revocation marker and final-owner policy require Member 2/owner approval. `member-revocation.ts` is only a pure non-destructive plan builder and does not authorize persistence or mutation.
 
 ## Retention and deletion (SEC-19)
 
@@ -124,3 +124,4 @@ The following tests are implementation-ready but remain contract-gated; they int
 - 2026-11-07: Added the local ORG-05 role/capability policy with fail-closed unknown-role handling; route adoption and admin provisioning remain contract-gated.
 - 2026-11-07: Added implementation-ready ORG-10/SEC-19 acceptance scenarios and recorded missing Member 2, legal and owner decisions; no destructive endpoint or migration was added.
 - 2026-11-07: Added the local-only SEC-16 harness contract; staging load, failure-injection and recovery evidence remain external gates.
+- 2026-11-07: Added the non-destructive ORG-10 revocation-plan boundary and contract tests; durable request persistence, selective session invalidation and membership mutation remain gated.
