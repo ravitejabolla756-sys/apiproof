@@ -195,7 +195,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         </div>
       </div>
 
-      {error && <p role="alert" aria-live="assertive" aria-atomic="true" className="rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900">Refresh failed: {error}</p>}
+      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Retry compatibility map refresh" className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
 
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs md:grid-cols-3">
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
