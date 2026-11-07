@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
 import { hashPassword } from './auth.js';
 import { sendPasswordResetEmail } from './password-reset-email.js';
+import { sendTrackedEmail } from './email-delivery-state.js';
 
 export const PASSWORD_RESET_TTL_MS = 20 * 60 * 1000;
 
@@ -36,7 +37,12 @@ export async function requestPasswordReset(
   });
 
   try {
-    await sendEmail({ email: user.email, name: user.name, token });
+    await sendTrackedEmail({
+      eventKey: `password-reset:${id}`,
+      templateKey: 'account.password_reset',
+      templateVersion: 'v1',
+      recipientUserId: user.id,
+    }, () => sendEmail({ email: user.email, name: user.name, token }));
   } catch {
     await db.execute('DELETE FROM password_reset_tokens WHERE id = ? AND token_hash = ?', [id, tokenHash]);
     throw new Error('PASSWORD_RESET_DELIVERY_FAILED');
