@@ -491,7 +491,7 @@ test.describe('authenticated product surfaces', () => {
     let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; }); let accountRequests = 0;
     await page.route('**/api/account', async (route) => { accountRequests += 1; if (accountRequests === 1) { await accountLoading; await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) }); return; } await route.continue(); });
     await page.goto('/dashboard/settings/account'); const accountStatus = page.getByRole('status'); await expect(accountStatus).toContainText('Loading account settings…'); await expect(accountStatus).toHaveAttribute('aria-atomic', 'true'); releaseAccount?.();
-    const accountAlert = page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' }); await expect(accountAlert).toBeVisible({ timeout: 30_000 }); await expect(accountAlert).toHaveAttribute('aria-live', 'assertive'); await expect(accountAlert).toHaveAttribute('aria-atomic', 'true'); await accountAlert.getByRole('button', { name: 'Retry account load' }).click(); await expect(accountAlert).toHaveCount(0); await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 }); expect(accountRequests).toBeGreaterThanOrEqual(2);
+    const accountAlert = page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' }); await expect(accountAlert).toBeVisible({ timeout: 30_000 }); await expect(accountAlert).toHaveAttribute('aria-live', 'assertive'); await expect(accountAlert).toHaveAttribute('aria-atomic', 'true'); const accountRetry = accountAlert.getByRole('button', { name: 'Retry account load' }); await accountRetry.focus(); await expect(accountRetry).toBeFocused(); await page.keyboard.press('Enter'); await expect(accountAlert).toHaveCount(0); await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 }); expect(accountRequests).toBeGreaterThanOrEqual(2);
     await page.unroute('**/api/account');
   });
   test('renders notification loading and error states safely', async ({ page }) => {
@@ -523,7 +523,7 @@ test.describe('authenticated product surfaces', () => {
     initialPreferenceRequestsClosed = true; releasePreferences?.();
     await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('table')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Try again' }).click();
+    const notificationRetry = page.getByRole('button', { name: 'Try again' }); await notificationRetry.focus(); await expect(notificationRetry).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); const preferencesRegion = page.getByRole('region', { name: 'Notification preferences table' }); await preferencesRegion.focus();
     await expect(preferencesRegion).toBeFocused(); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
     expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3);
