@@ -27,6 +27,21 @@ test('dashboard interactive controls expose explicit button semantics', async ({
   await page.unroute('**/api/repositories');
 });
 
+test('dashboard findings trend bars expose accessible graphics', async ({ page }) => {
+  await signIn(page);
+  await page.route('**/api/overview', async (route) => {
+    const response = await route.fetch();
+    const body = await response.json() as { findingsThisWeek?: unknown[] };
+    body.findingsThisWeek = [{ day: '2026-11-07', total: 3, critical: 1, high: 1, warning: 1 }];
+    await route.fulfill({ response, body: JSON.stringify(body) });
+  });
+  await page.goto('/dashboard');
+  const trendBars = page.getByRole('img', { name: /findings on/ });
+  await expect(trendBars).not.toHaveCount(0);
+  for (const bar of await trendBars.all()) await expect(bar).toHaveAttribute('aria-label', /findings on/);
+  await page.unroute('**/api/overview');
+});
+
 test('audited dashboard routes do not nest interactive elements', async ({ page }) => {
   await signIn(page);
   for (const route of ['/dashboard', '/dashboard/findings', '/dashboard/migrations', '/dashboard/pull-requests', '/dashboard/repositories']) {

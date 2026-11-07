@@ -550,6 +550,18 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: repository `pnpm lint` passed; repository `pnpm typecheck` passed; fresh explicit SQLite database `/tmp/myowl-v1-full-current.db`; rebuilt-bundle CI-mode Playwright suite passed 53/53 in 1.2 minutes. The suite includes public/authenticated axe and responsive checks, mobile overflow guards, keyboard focus, nested-interactive semantics, auth, organizations, invitations/member management, billing boundaries, findings, PR/workflow, degraded states and recovery.
 - Scope: local evidence only; hosted CI, integrated staging, full screen-reader/manual review and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-13 post-semantics regression
+
+- Evidence: fresh explicit SQLite database `/tmp/myowl-v1-chart-a11y-full.db`; rebuilt-bundle CI-mode Playwright suite passed 54/54 in 1.2 minutes after the dashboard trend-graphic semantics change.
+- Scope: local hermetic browser evidence only; hosted CI, integrated staging, full screen-reader/manual review and production verification remain open.
+
+## 2026-11-07 checkpoint — UI-12 dashboard trend semantics
+
+- Change: dashboard “Findings this week” trend bars now expose each bar as a labeled graphic, making the daily finding count available to assistive technology without changing the visual chart.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/control-semantics.spec.ts`.
+- Evidence: Impeccable detector reported only incumbent purple-palette warnings; targeted ESLint and repository typecheck passed; deterministic CI-mode control-semantics suite passed 4/4 in 3.8 seconds with a local overview-response fixture.
+- Scope: local screen-reader semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
