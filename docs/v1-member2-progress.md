@@ -489,6 +489,12 @@ Statuses are current baseline findings, not completion claims.
 - Files: `tests/e2e/billing-boundaries.spec.ts`.
 - Scope: local UI-13/BILL-07/BILL-08 evidence only; provider-backed billing, signed webhook reconciliation, approvals and production verification remain blocked/not run.
 
+## 2026-11-07 checkpoint — UI-12 finding external-action semantics
+
+- Change: the finding detail “View on GitHub” action is now a single styled external link instead of a link wrapping a nested button, preserving focus styling and eliminating invalid nested interactive markup.
+- Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`.
+- Scope: local accessibility correctness only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
