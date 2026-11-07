@@ -149,7 +149,7 @@ export default function RepositoriesTablePage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadRepositories()} />}
 
       {/* Filter & Search Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
@@ -162,7 +162,7 @@ export default function RepositoriesTablePage() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5" role="group" aria-label="Filter repositories by health">
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter repositories by health">
           <span className="text-[#686868] mr-1">Filter:</span>
           {(["all", "healthy", "affected"] as const).map((f) => (
             <button
@@ -170,7 +170,7 @@ export default function RepositoriesTablePage() {
               type="button"
               aria-pressed={filter === f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
+              className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                 filter === f
                   ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
                   : "bg-transparent text-[#686868] border-transparent hover:text-[#111111]"

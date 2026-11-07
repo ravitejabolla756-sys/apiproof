@@ -35,5 +35,19 @@ test('distinguishes filtered repository emptiness and clears filters', async ({ 
   await filteredEmpty.getByRole('button', { name: 'Clear filters' }).click();
   await expect(search).toHaveValue('');
   await expect(page.getByRole('link', { name: 'owl-platform' })).toBeVisible();
+
+  const healthFilters = page.getByRole('group', { name: 'Filter repositories by health' });
+  const affected = healthFilters.getByRole('button', { name: 'affected', exact: true });
+  await affected.focus();
+  await expect(affected).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(affected).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('status').filter({ hasText: 'No repositories found matching your filter.' })).toBeVisible();
+
+  const all = healthFilters.getByRole('button', { name: 'all', exact: true });
+  await all.focus();
+  await page.keyboard.press('Enter');
+  await expect(all).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('link', { name: 'owl-platform' })).toBeVisible();
   await page.unroute('**/api/repositories');
 });
