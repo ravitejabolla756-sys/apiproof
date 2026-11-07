@@ -11,6 +11,7 @@ test.describe('authenticated dashboard data states', () => {
 
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('status')).toContainText('Loading workspace overview...');
+    await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
     releaseOverview?.();
     await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/overview');
@@ -24,6 +25,7 @@ test.describe('authenticated dashboard data states', () => {
 
     await page.goto('/dashboard/pull-requests', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('status')).toContainText('Loading pull requests...');
+    await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
     releasePullRequests?.();
     await expect(page.getByRole('heading', { name: 'Pull Request Queue' })).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/pull-requests');

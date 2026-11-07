@@ -77,7 +77,7 @@ export default function CompatibilityPage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadCompatibility()} />}
 
       {error ? null : loading ? (
-        <div role="status" aria-live="polite" className="py-20 text-center text-[#686868]">
+        <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
           <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />
           Loading reviewed compatibility records...
         </div>

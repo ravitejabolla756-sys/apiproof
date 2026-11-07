@@ -98,7 +98,7 @@ export default function ApiInventoryPage() {
       </div>
 
       {error ? null : loading ? (
-        <div role="status" aria-live="polite" className="py-20 text-center text-[#686868]">
+        <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading API provider registry...</span>
         </div>

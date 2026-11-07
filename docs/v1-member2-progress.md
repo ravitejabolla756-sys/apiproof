@@ -336,3 +336,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; dashboard data-state suite PASS — 9/9; full CI-mode browser matrix PASS — 43/43 in 55.1 seconds.
 - Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 atomic dashboard loading states
+
+- Change: dashboard overview, activity, compatibility, inventory, migrations, pull-request and repository loading announcements now use atomic polite live regions; representative overview and pull-request tests assert the atomic contract.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/app/dashboard/activity/page.tsx`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector reports only incumbent dashboard purple palette warnings; web production build PASS with 83 generated static pages; dashboard data-state suite PASS — 9/9; full CI-mode browser matrix PASS — 43/43 in 54.4 seconds.
+- Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
