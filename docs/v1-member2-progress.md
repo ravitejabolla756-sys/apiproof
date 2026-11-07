@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `27ca454` (`codex/v1-frontend-product`)
+Current HEAD: `b7978a2` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — NOT-03/UI-12 provider-rule load recovery
+
+- Change: Provider-rule review now distinguishes an unavailable initial rule collection from a genuine empty queue, exposes a keyboard-operable Retry provider rules action, and suppresses the false empty-queue status while the collection is unavailable.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-recovery.spec.ts`.
+- Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; rebuilt web production bundle passed with 83 generated pages; focused browser recovery journey passed 1/1 in 2.9 seconds with an axe-clean alert; rebuilt-bundle CI-mode full Playwright suite passed 86/86 in 1.5 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-provider-rule-recovery-artifacts`, `/tmp/myowl-v1-full-provider-rule-recovery-artifacts`.
+- Scope: local NOT-03/UI-12 state truthfulness and recovery only; no provider delivery, backend/shared contract, remote Git, staging, production, payment or email action was performed.
 
 ## 2026-11-08 checkpoint — UI-12 compatibility-map refresh recovery
 

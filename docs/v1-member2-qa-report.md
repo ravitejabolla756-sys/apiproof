@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Provider-rule load recovery
+
+- PASS: Rebuilt-bundle CI-mode Playwright suite passed 86/86, including the provider-rule initial-load recovery journey; focused journey passed 1/1 with an axe-clean alert and no false empty-queue status.
+- PASS: Targeted ESLint, `git diff --check`, and production build passed; build generated 83 static pages. The impeccable anti-pattern detector returned no findings for the changed component.
+- Scope: local NOT-03/UI-12 evidence only. Hosted CI, staging, PostgreSQL/RBAC, provider integrations, transactional email and production remain unverified or blocked by the master goal.
+
 ## Tooling baseline
 
 - Repository scripts provide Vitest, TypeScript, ESLint and Next production build.
