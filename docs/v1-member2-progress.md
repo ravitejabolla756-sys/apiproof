@@ -3,7 +3,7 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `128e6d5` (`codex/v1-frontend-product`)
+Current HEAD: `a37cf1e` (`codex/v1-frontend-product`)
 
 ## 2026-11-08 checkpoint — UI-12 filtered findings empty state
 
