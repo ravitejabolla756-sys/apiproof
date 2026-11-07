@@ -29,6 +29,23 @@ describe('GET /api/repositories', () => {
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
 
+  it('fails closed with a generic denial for an unknown persisted workspace role', async () => {
+    const user = await createUserWithSession('unknown-role@example.test', 'Strong-password-1!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(user.user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.user.id],
+    );
+
+    const response = await GET(new Request('http://localhost/api/repositories', {
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+  });
+
   it('returns only the authenticated user default workspace repositories and no global GitHub metadata', async () => {
     const ownerA = await createUserWithSession('workspace-a@example.test', 'Strong-password-1!', 'Workspace A');
     const ownerB = await createUserWithSession('workspace-b@example.test', 'Strong-password-1!', 'Workspace B');

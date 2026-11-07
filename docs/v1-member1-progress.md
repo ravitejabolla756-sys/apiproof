@@ -202,3 +202,8 @@ Phase 0 read-only checks:
 
 - Corrected `docs/database-backup-and-safety.md`: production provider, PITR, backup schedule/geography, RPO/RTO, deployed FK behavior, and retention periods are now explicitly proposals or unverified claims. The document states that legal/owner retention approval and a timed restore rehearsal are required; it does not authorize deletion or imply backup controls are active.
 - Documentation-only correction; no database, migration, backup, or retention behavior changed. SEC-10 remains BLOCKED pending approved isolated backup access and restore rehearsal. SEC-19 remains PARTIAL pending legal/owner policy and Member 2 deletion contract.
+
+### 2026-11-08 ORG-05 repository-list denial mapping
+
+- `GET /api/repositories` now maps an unknown persisted workspace role encountered during default-workspace resolution to a generic 403 with private/no-store headers. Non-authorization errors continue to propagate.
+- Added SQLite regression coverage proving the response contains no role detail. `repositories-list-route` passes 6/6 with the process-only local seed, targeted ESLint passes, and full `pnpm typecheck` passes. ORG-05 remains PARTIAL pending approved Member 2 capability contracts and PostgreSQL isolation evidence.

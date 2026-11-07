@@ -53,6 +53,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - 2026-11-08 SEC-16 harness label-bound regression: PASS, `sec16-load-resilience` 6/6; targeted ESLint and full `pnpm typecheck` pass. Scenario labels are bounded before execution; local workload measurements are not staging capacity or SLO evidence.
 - SEC-16 local-only boundary regression: PASS, `sec16-load-resilience` now 7/7; production mode and configured remote database URLs are rejected before workload invocation. Targeted ESLint passes.
 - SEC-10/SEC-19 document audit: `docs/database-backup-and-safety.md` now labels production backup/PITR/RPO/RTO and retention values as unverified proposals; no restore proof or legal retention approval is claimed. An approved isolated backup/restore rehearsal and legal/owner/Member 2 retention contract remain required.
+- ORG-05 repository-list role regression: PASS, `repositories-list-route` 6/6 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown persisted roles receive generic 403 and private/no-store headers; this is SQLite-local evidence only.
 
 ## Approval boundaries not crossed
 

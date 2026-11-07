@@ -25,7 +25,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  let workspace: Awaited<ReturnType<typeof getDefaultWorkspaceForUser>>;
+  try {
+    workspace = await getDefaultWorkspaceForUser(user.id);
+  } catch (error: unknown) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403, headers: privateNoStoreHeaders });
+    }
+    throw error;
+  }
   const db = getDatabase();
   const repos = await db.query(`
     SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
