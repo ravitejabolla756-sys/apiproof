@@ -545,6 +545,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: rebuilt production bundle served on loopback; `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load times were 10–34 ms and encoded HTML sizes were 5.9–16.9 KiB.
 - Scope: reproducible local performance evidence only; this is not Lighthouse/Core Web Vitals, public-network, staging or production evidence.
 
+## 2026-11-07 checkpoint — UI-12/13 final local regression baseline
+
+- Evidence: repository `pnpm lint` passed; repository `pnpm typecheck` passed; fresh explicit SQLite database `/tmp/myowl-v1-full-current.db`; rebuilt-bundle CI-mode Playwright suite passed 53/53 in 1.2 minutes. The suite includes public/authenticated axe and responsive checks, mobile overflow guards, keyboard focus, nested-interactive semantics, auth, organizations, invitations/member management, billing boundaries, findings, PR/workflow, degraded states and recovery.
+- Scope: local evidence only; hosted CI, integrated staging, full screen-reader/manual review and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
