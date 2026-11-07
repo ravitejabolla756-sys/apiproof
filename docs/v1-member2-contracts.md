@@ -26,7 +26,7 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 
 - Account: authenticated `GET/PATCH /api/account` plus password-change action with current-password/reauthentication semantics; OAuth-only accounts receive no unusable password control.
 - Organization: workspace-scoped settings, members, invitations and audit queries with cursor pagination and explicit role capabilities.
-- Notifications: server-owned preference categories/channels, immutable domain event IDs, recipient snapshot/authorization at delivery time, and delivery outcome states.
+- Notifications: server-owned preference categories/channels, immutable domain event IDs, recipient snapshot/authorization at delivery time, and delivery outcome states. The local transactional adapter accepts `EMAIL_FROM` (with `PASSWORD_RESET_FROM` compatibility fallback), requires a trusted app URL, and supports `EMAIL_DELIVERY_MODE=smtp` or a non-production-only `sink`; the sink never reaches production.
 - Billing: canonical plans/subscription state, provider portal session, provider-backed invoices and idempotent change requests; no mock result may be labeled paid/live.
 
 ## Release-sensitive decisions
