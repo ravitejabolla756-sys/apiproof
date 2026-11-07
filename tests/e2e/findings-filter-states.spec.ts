@@ -23,7 +23,10 @@ test('distinguishes filtered findings from an empty backend result', async ({ pa
   await expect(filteredEmpty).toBeVisible();
   await expect(filteredEmpty.getByRole('button', { name: 'Clear filters' })).toBeVisible();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'filtered findings empty state').toEqual([]);
-  await filteredEmpty.getByRole('button', { name: 'Clear filters' }).click();
+  const clearFilters = filteredEmpty.getByRole('button', { name: 'Clear filters' });
+  await clearFilters.focus();
+  await expect(clearFilters).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Fixture finding' })).toBeVisible();
   await page.unroute('**/api/findings');
 });
