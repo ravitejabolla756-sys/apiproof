@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 async function signIn(page: Page) {
@@ -7,6 +7,36 @@ async function signIn(page: Page) {
   await page.getByLabel('Password').fill('local-test-seed-password');
   await page.getByRole('button', { name: 'Sign In', exact: true }).last().click();
   await page.waitForURL('**/dashboard');
+}
+
+async function createAndAcceptInvitation(ownerPage: Page, browser: Browser, inviteEmail: string) {
+  await ownerPage.goto('/dashboard/settings/workspace');
+  await ownerPage.getByLabel('Invite email').fill(inviteEmail);
+  await ownerPage.getByRole('button', { name: 'Create invite link' }).click();
+  await expect(ownerPage.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
+
+  const inviteUrl = await ownerPage.locator('code').filter({ hasText: '/invite/accept?token=' }).innerText();
+  const invitedPage = await browser.newPage();
+  try {
+    const password = 'InviteePassword123!';
+    await invitedPage.goto('/login');
+    const signupResult = await invitedPage.evaluate(async ({ email, password: signupPassword }) => {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signup', email, password: signupPassword, name: 'Browser Invitee' }),
+      });
+      return { status: response.status, body: await response.json() as { error?: string } };
+    }, { email: inviteEmail, password });
+    expect(signupResult.status, signupResult.body.error).toBe(200);
+
+    const parsedInviteUrl = new URL(inviteUrl, ownerPage.url());
+    await invitedPage.goto(`${parsedInviteUrl.pathname}${parsedInviteUrl.search}`);
+    await invitedPage.getByRole('button', { name: 'Accept invitation' }).click();
+    await expect(invitedPage.getByRole('status')).toContainText('You joined', { timeout: 30_000 });
+  } finally {
+    await invitedPage.close();
+  }
 }
 
 async function scanAuthenticatedRoutes(page: Page, routes: string[]) {
@@ -240,34 +270,29 @@ test.describe('authenticated product surfaces', () => {
 
   test('accepts a real generated invitation with the invited account', async ({ page, browser }) => {
     await signIn(page);
-    await page.goto('/dashboard/settings/workspace');
     const inviteEmail = `browser-accept-${Date.now()}@example.test`;
-    await page.getByLabel('Invite email').fill(inviteEmail);
-    await page.getByRole('button', { name: 'Create invite link' }).click();
-    await expect(page.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
+    await createAndAcceptInvitation(page, browser, inviteEmail);
+  });
 
-    const inviteUrl = await page.locator('code').filter({ hasText: '/invite/accept?token=' }).innerText();
-    const invitedPage = await browser.newPage();
-    try {
-      const password = 'InviteePassword123!';
-      await invitedPage.goto('/login');
-      const signupResult = await invitedPage.evaluate(async ({ email, password: signupPassword }) => {
-        const response = await fetch('/api/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'signup', email, password: signupPassword, name: 'Browser Invitee' }),
-        });
-        return { status: response.status, body: await response.json() as { error?: string } };
-      }, { email: inviteEmail, password });
-      expect(signupResult.status, signupResult.body.error).toBe(200);
+  test('updates and removes a real accepted workspace member', async ({ page, browser }) => {
+    await signIn(page);
+    const memberEmail = `browser-member-${Date.now()}@example.test`;
+    await createAndAcceptInvitation(page, browser, memberEmail);
 
-      const parsedInviteUrl = new URL(inviteUrl, page.url());
-      await invitedPage.goto(`${parsedInviteUrl.pathname}${parsedInviteUrl.search}`);
-      await invitedPage.getByRole('button', { name: 'Accept invitation' }).click();
-      await expect(invitedPage.getByRole('status')).toContainText('You joined', { timeout: 30_000 });
-    } finally {
-      await invitedPage.close();
-    }
+    await page.goto('/dashboard/settings/workspace');
+    const roleSelector = page.getByLabel(`Role for ${memberEmail}`);
+    await expect(roleSelector).toHaveValue('member', { timeout: 30_000 });
+    await roleSelector.selectOption('owner');
+    await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
+    await expect(roleSelector).toHaveValue('owner');
+    await roleSelector.selectOption('member');
+    await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
+    await expect(roleSelector).toHaveValue('member');
+
+    page.once('dialog', (dialog) => void dialog.accept());
+    await roleSelector.locator('..').getByRole('button', { name: 'Remove' }).click();
+    await expect(page.getByRole('status')).toContainText('Member removed.', { timeout: 30_000 });
+    await expect(page.getByLabel(`Role for ${memberEmail}`)).toHaveCount(0);
   });
 
   test('covers the seeded dashboard primary browsing routes', async ({ page }) => {
