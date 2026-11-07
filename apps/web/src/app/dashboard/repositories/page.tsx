@@ -160,11 +160,13 @@ export default function RepositoriesTablePage() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" role="group" aria-label="Filter repositories by health">
           <span className="text-[#686868] mr-1">Filter:</span>
           {(["all", "healthy", "affected"] as const).map((f) => (
             <button
               key={f}
+              type="button"
+              aria-pressed={filter === f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                 filter === f

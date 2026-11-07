@@ -477,3 +477,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused priority-filter journey passed 1/1 in 2.7 seconds; full dashboard data-state suite passed 11/11 in 11.3 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 repository health filter state
+
+- Change: repository health filters now expose a semantic group and `aria-pressed` state for the active filter; each filter control explicitly declares `type="button"`.
+- Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused health-filter journey passed 1/1 in 2.7 seconds; full dashboard data-state suite passed 12/12 in 10.7 seconds.
+- Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

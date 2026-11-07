@@ -108,6 +108,26 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/provider-rules');
   });
 
+  test('exposes the selected repository health filter', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/repositories', async (route) => {
+      const repository = (id: string, name: string, findingsCount: number) => ({ id, owner: 'fixture', name, full_name: `fixture/${name}`, github_repository_id: id, default_branch: 'main', status: 'connected', last_scan_at: null, created_at: '2026-11-07T00:00:00.000Z', findings_count: findingsCount, scans_count: 0, last_scan_sha: null });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [repository('repo-healthy', 'owl-healthy', 0), repository('repo-affected', 'owl-affected', 2)] }) });
+    });
+    await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
+    const filter = page.getByRole('group', { name: 'Filter repositories by health' });
+    const all = filter.getByRole('button', { name: 'all' });
+    const affected = filter.getByRole('button', { name: 'affected' });
+    await expect(all).toHaveAttribute('aria-pressed', 'true');
+    await expect(affected).toHaveAttribute('aria-pressed', 'false');
+    await affected.click();
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    await expect(affected).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('link', { name: 'owl-affected' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'owl-healthy' })).toHaveCount(0);
+    await page.unroute('**/api/repositories');
+  });
+
   test('announces Slack connection failures as alerts', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/slack/connection', async (route) => {
