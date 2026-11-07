@@ -305,6 +305,11 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
               <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin text-purple-700" />
               <span className="text-xs">Loading available repositories...</span>
             </div>
+          ) : error && !initialRepositoryLoadComplete.current ? (
+            <div role="alert" aria-live="assertive" aria-atomic="true" className="py-8 text-center space-y-4">
+              <p className="text-xs text-rose-800">GitHub repositories are temporarily unavailable.</p>
+              <Button type="button" variant="outline" size="sm" onClick={() => void loadRepositories(true)}>Retry repositories</Button>
+            </div>
           ) : !connected ? (
             <div role="status" aria-live="polite" aria-atomic="true" className="py-8 text-center space-y-4">
               <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center mx-auto text-zinc-700">
