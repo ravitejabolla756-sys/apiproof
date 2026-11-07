@@ -238,6 +238,38 @@ test.describe('authenticated product surfaces', () => {
     await expect(invitationRow).toContainText('Revoked');
   });
 
+  test('accepts a real generated invitation with the invited account', async ({ page, browser }) => {
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    const inviteEmail = `browser-accept-${Date.now()}@example.test`;
+    await page.getByLabel('Invite email').fill(inviteEmail);
+    await page.getByRole('button', { name: 'Create invite link' }).click();
+    await expect(page.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
+
+    const inviteUrl = await page.locator('code').filter({ hasText: '/invite/accept?token=' }).innerText();
+    const invitedPage = await browser.newPage();
+    try {
+      const password = 'InviteePassword123!';
+      await invitedPage.goto('/login');
+      const signupResult = await invitedPage.evaluate(async ({ email, password: signupPassword }) => {
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'signup', email, password: signupPassword, name: 'Browser Invitee' }),
+        });
+        return { status: response.status, body: await response.json() as { error?: string } };
+      }, { email: inviteEmail, password });
+      expect(signupResult.status, signupResult.body.error).toBe(200);
+
+      const parsedInviteUrl = new URL(inviteUrl, page.url());
+      await invitedPage.goto(`${parsedInviteUrl.pathname}${parsedInviteUrl.search}`);
+      await invitedPage.getByRole('button', { name: 'Accept invitation' }).click();
+      await expect(invitedPage.getByRole('status')).toContainText('You joined', { timeout: 30_000 });
+    } finally {
+      await invitedPage.close();
+    }
+  });
+
   test('covers the seeded dashboard primary browsing routes', async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });
