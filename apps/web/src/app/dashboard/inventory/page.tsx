@@ -57,6 +57,7 @@ export default function ApiInventoryPage() {
       item.category.toLowerCase().includes(search.toLowerCase()) ||
       item.rules.some((r) => r.title.toLowerCase().includes(search.toLowerCase()))
   );
+  const hasActiveFilter = search.trim().length > 0;
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
@@ -108,6 +109,11 @@ export default function ApiInventoryPage() {
           <Boxes aria-hidden="true" className="mx-auto mb-3 h-8 w-8 text-purple-700" />
           <p className="font-semibold text-base text-[#111111]">{providers.length === 0 ? "No API inventory records are available yet" : "No provider rules match this filter"}</p>
           <p className="mt-2 text-xs">{providers.length === 0 ? "Provider rules will appear here when the reviewed registry is available." : "Try a different provider or rule search."}</p>
+          {hasActiveFilter && (
+            <Button type="button" variant="outline" size="sm" onClick={() => setSearch("")} className="mt-4">
+              Clear filter
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
