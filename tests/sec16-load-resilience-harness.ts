@@ -15,6 +15,8 @@ export interface LocalLoadScenario {
 export interface LoadReport {
   name: string;
   iterations: number;
+  started: number;
+  notStarted: number;
   succeeded: number;
   failed: number;
   durationMs: number;
@@ -99,6 +101,8 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
   const latencies: number[] = [];
   const errors = new Map<string, number>();
   let nextIteration = 0;
+  let started = 0;
+  let stopScheduling = false;
   let succeeded = 0;
   let failed = 0;
   let inFlight = 0;
@@ -111,7 +115,10 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
     inFlight += 1;
     maxInFlight = Math.max(maxInFlight, inFlight);
     try {
-      await withTimeout(Promise.resolve(options.operation(iteration, controller.signal)), timeoutMs, () => controller.abort());
+      await withTimeout(Promise.resolve(options.operation(iteration, controller.signal)), timeoutMs, () => {
+        stopScheduling = true;
+        controller.abort();
+      });
       succeeded += 1;
     } catch (error) {
       failed += 1;
@@ -125,9 +132,11 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
 
   async function worker(): Promise<void> {
     while (true) {
+      if (stopScheduling) return;
       const iteration = nextIteration;
       nextIteration += 1;
       if (iteration >= options.iterations) return;
+      started += 1;
       await runOne(iteration);
     }
   }
@@ -143,6 +152,8 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
   return {
     name: options.name,
     iterations: options.iterations,
+    started,
+    notStarted: options.iterations - started,
     succeeded,
     failed,
     durationMs,

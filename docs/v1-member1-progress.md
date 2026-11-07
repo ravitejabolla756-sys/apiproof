@@ -256,3 +256,8 @@ Phase 0 read-only checks:
 - Extracted queue-metrics types and implementation to `scan-worker-metrics.ts`; `scan-worker.ts` continues to re-export the same public function/type names. This keeps the worker module under the linted file-length limit without changing callers.
 - Added an additive migration (`028`) and fresh-schema indexes for queue health scans over status, lease expiry, creation time and attempt count. The metrics regression verifies the index exists in local SQLite; the migration applies the same index to existing SQLite/PostgreSQL databases.
 - `phase5-production-operations` passes 10/10; targeted ESLint and full `pnpm typecheck` pass. Targeted Postgres migration execution and large-queue query-plan/latency measurements remain unverified. SEC-13 remains PARTIAL pending owner-approved alert thresholds/destination, worker cadence confirmation, and staged worker-death/retry-storm rehearsal.
+
+### 2026-11-08 SEC-16 timeout scheduling containment
+
+- A timed-out in-process operation previously released its worker slot and allowed additional iterations to start even if the original callback had not settled after abort. The harness now stops scheduling when any operation times out and reports `started`/`notStarted` alongside the requested iteration count.
+- Regression coverage includes a deliberately non-settling callback and verifies only the configured active slot starts work. Cooperative abort remains part of the operation contract; JavaScript cannot forcibly terminate arbitrary in-process promises, so real external load remains gated to an isolated staging runner.

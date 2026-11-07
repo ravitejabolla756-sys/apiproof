@@ -19,6 +19,8 @@ function signedBody(rawBody: string): string {
 
 function expectHealthyReport(report: LoadReport, expectedIterations: number, concurrency: number): void {
   expect(report.iterations).toBe(expectedIterations);
+  expect(report.started).toBe(expectedIterations);
+  expect(report.notStarted).toBe(0);
   expect(report.succeeded).toBe(expectedIterations);
   expect(report.failed).toBe(0);
   expect(report.maxInFlight).toBeLessThanOrEqual(concurrency);
@@ -254,5 +256,30 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
 
     expect(signalAborted).toBe(true);
     expect(report).toMatchObject({ iterations: 1, succeeded: 0, failed: 1, errors: { OPERATION_TIMEOUT: 1 } });
+  });
+
+  it('stops scheduling after timeout when an operation does not settle on abort', async () => {
+    let started = 0;
+    const report = await runLocalLoadScenario({
+      name: 'timeout-stops-schedule',
+      iterations: 5,
+      concurrency: 1,
+      timeoutMs: 5,
+      operation: () => {
+        started += 1;
+        return new Promise<void>(() => undefined);
+      },
+    });
+
+    expect(started).toBe(1);
+    expect(report).toMatchObject({
+      iterations: 5,
+      started: 1,
+      notStarted: 4,
+      succeeded: 0,
+      failed: 1,
+      maxInFlight: 1,
+      errors: { OPERATION_TIMEOUT: 1 },
+    });
   });
 });
