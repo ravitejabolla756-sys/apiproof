@@ -64,7 +64,7 @@ export default function ApiInventoryPage() {
       <div className="border-b border-[#E8E8E5] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-            <Boxes className="w-6 h-6 text-purple-700" />
+            <Boxes aria-hidden="true" className="w-6 h-6 text-purple-700" />
             API Inventory & Rule Registry
           </h1>
           <p className="text-xs text-[#686868] mt-1">
@@ -76,7 +76,7 @@ export default function ApiInventoryPage() {
           onClick={loadInventory}
           variant="outline"
           size="sm"
-          icon={<RefreshCw className="w-3.5 h-3.5" />}
+          icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
           className="font-medium text-xs"
         >
           Refresh
@@ -87,7 +87,7 @@ export default function ApiInventoryPage() {
 
       {/* SEARCH */}
       <div className="relative w-full sm:w-80">
-        <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+        <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
         <input
           type="text"
           aria-label="Filter provider integrations"
@@ -100,12 +100,12 @@ export default function ApiInventoryPage() {
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading API provider registry...</span>
         </div>
       ) : items.length === 0 ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">
-          <Boxes className="mx-auto mb-3 h-8 w-8 text-purple-700" />
+          <Boxes aria-hidden="true" className="mx-auto mb-3 h-8 w-8 text-purple-700" />
           <p className="font-semibold text-base text-[#111111]">{providers.length === 0 ? "No API inventory records are available yet" : "No provider rules match this filter"}</p>
           <p className="mt-2 text-xs">{providers.length === 0 ? "Provider rules will appear here when the reviewed registry is available." : "Try a different provider or rule search."}</p>
         </div>
@@ -138,7 +138,7 @@ export default function ApiInventoryPage() {
               <div className="pt-3 border-t border-[#E8E8E5] space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[#686868] font-medium flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-purple-700" />
+                    <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-purple-700" />
                     Active Rule Coverage
                   </span>
                   <span className="font-semibold text-[#111111] bg-purple-50 text-purple-800 px-2.5 py-0.5 rounded-full text-[11px] border border-purple-200">

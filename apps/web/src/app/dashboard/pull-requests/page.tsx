@@ -55,7 +55,7 @@ export default function PullRequestsPage() {
       <div className="border-b border-[#E8E8E5] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-            <GitPullRequest className="w-6 h-6 text-blue-600" />
+            <GitPullRequest aria-hidden="true" className="w-6 h-6 text-blue-600" />
             Pull Request Queue
           </h1>
           <p className="text-xs text-[#686868] mt-1">
@@ -67,7 +67,7 @@ export default function PullRequestsPage() {
           onClick={loadPRs}
           variant="outline"
           size="sm"
-          icon={<RefreshCw className="w-3.5 h-3.5" />}
+          icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
           className="font-medium text-xs"
         >
           Refresh
@@ -78,12 +78,12 @@ export default function PullRequestsPage() {
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading pull requests...</span>
         </div>
       ) : pullRequests.length === 0 ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
-          <GitPullRequest className="w-8 h-8 text-blue-600 mx-auto" />
+          <GitPullRequest aria-hidden="true" className="w-8 h-8 text-blue-600 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No pull requests created yet</p>
           <p className="text-xs text-[#686868]">
             Propose a draft pull request only after execution-bound verification passes.
@@ -123,7 +123,7 @@ export default function PullRequestsPage() {
                 <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                   <div className="text-[10px] text-[#686868] uppercase font-semibold">Merge Policy</div>
                   <div className="text-emerald-700 font-semibold flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Human Review Required
+                    <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5" /> Human Review Required
                   </div>
                 </div>
               </div>
