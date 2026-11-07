@@ -101,7 +101,7 @@ export default function SettingsPage() {
       {/* HEADER */}
       <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
         <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-          <Sliders className="w-6 h-6 text-purple-700" />
+          <Sliders aria-hidden="true" className="w-6 h-6 text-purple-700" />
           Workspace Settings & Billing
         </h1>
         <p className="text-xs text-[#686868]">
@@ -138,7 +138,7 @@ export default function SettingsPage() {
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-purple-700" />
+                <CreditCard aria-hidden="true" className="w-4 h-4 text-purple-700" />
                 Subscription & Usage Quotas
               </h3>
               {billing && (
@@ -150,7 +150,7 @@ export default function SettingsPage() {
 
             {loading ? (
               <div role="status" aria-live="polite" aria-atomic="true" className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
-                <Loader2 className="w-4 h-4 animate-spin text-purple-700" />
+                <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin text-purple-700" />
                 <span>Loading workspace billing summary...</span>
               </div>
             ) : billing ? (
@@ -246,20 +246,20 @@ export default function SettingsPage() {
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-                <Github className="w-4 h-4 text-[#111111]" />
+                <Github aria-hidden="true" className="w-4 h-4 text-[#111111]" />
                 GitHub App Integration
               </h3>
               {installation && (
                 <span className="px-2.5 py-1 rounded-full bg-[#EEF7F2] text-emerald-800 border border-[#D1EBE0] text-[11px] font-medium flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <CheckCircle2 aria-hidden="true" className="w-3 h-3 text-emerald-600" />
                   GitHub connected
                 </span>
               )}
             </div>
 
             {loading ? (
-              <div className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
-                <Loader2 className="w-4 h-4 animate-spin text-purple-700" />
+              <div role="status" aria-live="polite" aria-atomic="true" className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
+                <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin text-purple-700" />
                 <span>Checking GitHub installation status...</span>
               </div>
             ) : installation ? (
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                   disabled={connecting}
                   className="font-medium text-xs gap-1.5"
                 >
-                  {connecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" />}
+                  {connecting ? <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />}
                   <span>Adjust Repositories</span>
                 </Button>
               </div>
@@ -299,7 +299,7 @@ export default function SettingsPage() {
                   disabled={connecting}
                   className="font-medium text-xs gap-1.5 shrink-0"
                 >
-                  {connecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Github className="w-3.5 h-3.5" />}
+                  {connecting ? <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" /> : <Github aria-hidden="true" className="w-3.5 h-3.5" />}
                   <span>Connect GitHub</span>
                 </Button>
               </div>

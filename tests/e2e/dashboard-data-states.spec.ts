@@ -255,6 +255,19 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/billing/subscription');
     await page.unroute('**/api/slack/connection');
   });
+  test('announces workspace settings loading state while data is pending', async ({ page }) => {
+    await signIn(page); let releaseRequests: (() => void) | undefined;
+    const pending = new Promise<void>((resolve) => { releaseRequests = resolve; });
+    await page.route('**/api/github/repositories', async (route) => { await pending; await route.continue(); });
+    await page.route('**/api/billing/subscription', async (route) => { await pending; await route.continue(); });
+    await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
+    const githubLoading = page.getByRole('status').filter({ hasText: 'Checking GitHub installation status...' });
+    await expect(githubLoading).toBeVisible();
+    await expect(githubLoading).toHaveAttribute('aria-live', 'polite'); await expect(githubLoading).toHaveAttribute('aria-atomic', 'true');
+    releaseRequests?.();
+    await page.unroute('**/api/github/repositories');
+    await page.unroute('**/api/billing/subscription');
+  });
 
   test('announces finding workbench action feedback and busy states', async ({ page }) => {
     await signIn(page);
