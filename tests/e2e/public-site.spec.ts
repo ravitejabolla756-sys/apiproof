@@ -49,11 +49,13 @@ test.describe('public beta surfaces', () => {
     await page.locator('.skip-link').focus();
     await expect(page.locator('.skip-link')).toBeFocused();
     await expect(page.locator('#main-content')).toHaveAttribute('tabindex', '-1');
+    await expect(page.locator('nav[aria-label="Primary site navigation"] a[href="/pricing"]')).toHaveAttribute('aria-current', 'page');
 
     const toggle = page.locator('button[aria-controls="mobile-site-navigation"]');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('#mobile-site-navigation')).toBeVisible();
+    await expect(page.locator('#mobile-site-navigation a[href="/pricing"]')).toHaveAttribute('aria-current', 'page');
     await page.keyboard.press('Escape');
     await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false');
     await expect(toggle).toBeFocused();
