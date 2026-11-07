@@ -562,6 +562,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector reported only incumbent purple-palette warnings; targeted ESLint and repository typecheck passed; deterministic CI-mode control-semantics suite passed 4/4 in 3.8 seconds with a local overview-response fixture.
 - Scope: local screen-reader semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 inventory capability grouping
+
+- Change: API inventory capability badges now expose an explicit accessible group instead of relying on an `aria-label` on a generic container; the visual presentation and provider contract are unchanged.
+- Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `tests/e2e/control-semantics.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; deterministic CI-mode control-semantics suite passed 5/5, including a local inventory-response fixture.
+- Scope: local semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

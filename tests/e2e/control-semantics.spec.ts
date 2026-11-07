@@ -42,6 +42,33 @@ test('dashboard findings trend bars expose accessible graphics', async ({ page }
   await page.unroute('**/api/overview');
 });
 
+test('inventory capability badges expose an accessible group', async ({ page }) => {
+  await signIn(page);
+  await page.route('**/api/inventory**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        providers: [{
+          id: 'inventory-semantics',
+          name: 'Example SDK',
+          category: 'Payments',
+          status: 'reviewed',
+          rulesCount: 1,
+          description: 'Fixture for capability grouping semantics.',
+          capabilities: ['discovery', 'compatibility'],
+          rules: [{ id: 'rule-semantics', title: 'Example rule', severity: 'warning', description: 'Fixture rule.' }],
+        }],
+      }),
+    });
+  });
+  await page.goto('/dashboard/inventory');
+  const capabilities = page.getByRole('group', { name: 'Provider capabilities' }).first();
+  await expect(capabilities).toBeVisible();
+  await expect(capabilities.locator('span')).not.toHaveCount(0);
+  await page.unroute('**/api/inventory**');
+});
+
 test('audited dashboard routes do not nest interactive elements', async ({ page }) => {
   await signIn(page);
   for (const route of ['/dashboard', '/dashboard/findings', '/dashboard/migrations', '/dashboard/pull-requests', '/dashboard/repositories']) {

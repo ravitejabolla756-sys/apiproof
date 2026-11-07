@@ -127,7 +127,7 @@ export default function ApiInventoryPage() {
                 {item.description}
               </p>
 
-              <div className="flex flex-wrap items-center gap-1.5" aria-label="Provider capabilities">
+              <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Provider capabilities">
                 {(item.capabilities ?? (item.capability ? [item.capability] : [])).map((capability) => (
                   <span key={capability} className="rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2 py-0.5 text-[10px] font-medium text-[#686868]">
                     {capability}
