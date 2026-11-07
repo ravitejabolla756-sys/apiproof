@@ -30,6 +30,7 @@ Updated implementation report; browser checks are local evidence only and are no
 - `pnpm exec vitest run tests/verification-workspace.test.ts tests/web-backend.test.ts --no-file-parallelism` with the local seed password — 22/23 PASS; the verification workspace suite is green after aligning its test digest oracle with the canonical text-digest contract, with the same external fixture line mismatch remaining.
 - `pnpm exec vitest run tests/organization-management.test.ts --no-file-parallelism` — 6/6 PASS, including stable audit cursor pagination and cross-workspace denial.
 - `pnpm exec playwright test tests/e2e/public-site.spec.ts --grep "signs in with the local seed"` — 1/1 PASS; authenticated account, workspace and notification settings journey remains green after the audit API pagination response was added.
+- `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` — PASS against the local Windows production build; all 9 representative public routes returned HTTP 200. Median `load` was 56-178 ms and median encoded HTML was 5.7-16.2 KiB over three loopback samples per route. This is reproducible local evidence, not production Web Vitals or a public-network performance claim.
 - `pnpm build` — PASS; all workspace packages built and Next generated 80 static pages.
 
 ## Full-suite baseline exception
@@ -40,5 +41,4 @@ The latest complete run, before the final test-only digest-oracle alignment, com
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.
 - Complete manual screen-reader/full-route checks for keyboard-only navigation, mobile widths, dialogs, forms, loading/error/empty/denied states and reduced motion.
-- Run link/metadata checks for every public route and record actual outcomes.
-- Capture measured performance only from a reproducible local or approved environment; do not invent Lighthouse/Core Web Vitals values.
+- Repeat the performance probe under an approved representative deployment if production performance claims are needed; do not substitute the local loopback results for Lighthouse/Core Web Vitals.

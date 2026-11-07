@@ -26,7 +26,8 @@
     "provider:seed-review-queue": "tsx --conditions=apiproof-source apps/web/scripts/seed-provider-review-queue.ts",
     "db:migrate": "pnpm --filter @apiproof/web db:migrate",
     "db:bootstrap:staging": "tsx apps/web/scripts/bootstrap-staging.ts",
-    "verification:worker": "tsx apps/web/scripts/verification-worker.ts"
+    "verification:worker": "tsx apps/web/scripts/verification-worker.ts",
+    "website:performance": "tsx apps/web/scripts/public-performance.ts"
   },
   "devDependencies": {
     "@apiproof/analyzers": "workspace:*",
