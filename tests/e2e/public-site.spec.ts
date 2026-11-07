@@ -8,7 +8,6 @@ import {
   signIn,
   withAcceptedInvitation,
 } from './helpers.js';
-
 test.describe('public beta surfaces', () => {
   test('loads the core public pages and evidence-backed content', async ({ page }) => {
     for (const route of ['/features', '/how-it-works', '/security', '/docs', '/pricing', '/faq', '/refunds', '/status', '/privacy', '/terms', '/invite/accept']) {
@@ -31,7 +30,6 @@ test.describe('public beta surfaces', () => {
     await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, '/verify-email missing-token state').toEqual([]);
   });
-
   test('exposes crawl controls and avoids unsupported operational status copy', async ({ page, request }) => {
     const sitemap = await request.get('/sitemap.xml');
     expect(sitemap.status()).toBe(200);
@@ -39,7 +37,6 @@ test.describe('public beta surfaces', () => {
     const robots = await request.get('/robots.txt');
     expect(robots.status()).toBe(200);
     expect(await robots.text()).toContain('Disallow: /dashboard');
-
     await page.goto('/');
     await expect(page.getByText('Beta · Read-only safety boundary')).toBeVisible();
     await expect(page.getByText('All systems operational')).toHaveCount(0);
@@ -155,22 +152,20 @@ test.describe('authenticated product surfaces', () => {
     await page.goto('/dashboard/settings/account');
     await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer', { timeout: 30_000 });
-
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
-
     await page.goto('/dashboard/settings/notifications');
     await expect(page.getByRole('heading', { name: 'Notification preferences' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 });
-
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
 
   test('saves an optional notification preference through the UI contract', async ({ page }) => {
-    await signIn(page);
-    let postedUpdates: unknown;
+    await signIn(page); let postedUpdates: unknown;
+    let releaseSave: (() => void) | undefined;
+    const saveResponse = new Promise<void>((resolve) => { releaseSave = resolve; });
     await page.route('**/api/account/notifications', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({
@@ -182,22 +177,22 @@ test.describe('authenticated product surfaces', () => {
               { category: 'findings', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
             ],
           }),
-        });
-        return;
+        }); return;
       }
       postedUpdates = JSON.parse(route.request().postData() || '{}');
+      await saveResponse;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ preferences: [{ category: 'findings', channel: 'slack', enabled: false, required: false, deliveryAvailable: true }] }),
       });
-    });
-    await page.goto('/dashboard/settings/notifications');
+    }); await page.goto('/dashboard/settings/notifications');
     const findingsSlack = page.getByLabel('Breaking findings via slack');
     await expect(findingsSlack).toBeChecked();
     await findingsSlack.uncheck();
     await page.getByRole('button', { name: 'Save preferences' }).click();
-    await expect(page.getByRole('status')).toContainText('Notification preferences saved.', { timeout: 30_000 });
+    await expect(page.getByRole('status')).toContainText('Saving notification preferences…', { timeout: 30_000 });
+    releaseSave?.(); await expect(page.getByRole('status')).toContainText('Notification preferences saved.', { timeout: 30_000 });
     expect(postedUpdates).toEqual({ updates: [
       { category: 'security', channel: 'email', enabled: true },
       { category: 'findings', channel: 'slack', enabled: false },
@@ -535,5 +530,4 @@ test.describe('authenticated product surfaces', () => {
     await expect(preferencesRegion).toBeFocused(); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
     expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3);
     await page.unroute('**/api/account/notifications');
-  });
-});
+  }); });

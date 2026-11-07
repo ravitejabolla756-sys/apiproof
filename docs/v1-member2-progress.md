@@ -291,3 +291,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: targeted ESLint PASS; web typecheck PASS; production web build PASS with 83 generated pages; focused workspace audit browser suite PASS — 2/2 with axe coverage. Impeccable detector reports only the page’s existing purple accent palette warnings; no new structural finding was introduced.
 - Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 notification save announcements
+
+- Change: notification preference saves now announce polite progress, mark the preference section and save control busy, expose atomic success/error live regions, and convert rejected fetches into user-facing recovery messages. The existing notification API contract and beta delivery boundary are unchanged.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; web production build PASS with 83 generated static pages; focused delayed-save browser contract PASS — 1/1. Impeccable detector reported only the incumbent purple heading accent warning; no new structural finding was introduced.
+- Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.

@@ -96,6 +96,7 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - The shared patch-workspace temp-root portability fix canonicalizes macOS `os.tmpdir()` before safety checks; the notification preference contract now asserts the current 12 server-owned defaults. Focused coverage for those changes is 130/130.
 - `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages after the patch-workspace change; repository-wide `pnpm typecheck` and `pnpm lint` remain PASS.
 - `pnpm exec eslint apps/web/src/app/dashboard/settings/workspace/page.tsx tests/e2e/organization-audit.spec.ts --max-warnings 0` — PASS; `pnpm --filter @apiproof/web typecheck` — PASS; focused production-build workspace audit suite — 2/2 PASS with the delayed audit-pagination status announcement and axe checks. The detector reported only incumbent purple accent palette warnings; this remains automated/browser evidence, not a full screen-reader sign-off.
+- `pnpm exec eslint apps/web/src/app/dashboard/settings/notifications/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; the delayed notification-save browser contract — 1/1 PASS. Saving progress, busy metadata, success feedback and rejected-fetch recovery are covered; this remains automated/browser evidence, not a full screen-reader sign-off.
 
 ## Required next checks
 
