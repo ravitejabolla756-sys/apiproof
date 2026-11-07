@@ -197,3 +197,8 @@ Phase 0 read-only checks:
 - Added rejection coverage for secret-like and overlong names, including proof that the operation callback is not invoked. SEC-16 harness tests pass 6/6; targeted ESLint and full `pnpm typecheck` pass. A local measurement run also completed for the four existing in-process workloads; its timings are environment-specific and do not establish SLOs.
 - SEC-16 remains PARTIAL pending approved staging scenarios and agreed SLO/recovery evidence.
 - Added a local-only guard regression proving production mode and a configured remote database URL are rejected before an operation callback runs; the SEC-16 harness suite now passes 7/7 with ESLint passing.
+
+### 2026-11-08 SEC-10 / SEC-19 documentation accuracy
+
+- Corrected `docs/database-backup-and-safety.md`: production provider, PITR, backup schedule/geography, RPO/RTO, deployed FK behavior, and retention periods are now explicitly proposals or unverified claims. The document states that legal/owner retention approval and a timed restore rehearsal are required; it does not authorize deletion or imply backup controls are active.
+- Documentation-only correction; no database, migration, backup, or retention behavior changed. SEC-10 remains BLOCKED pending approved isolated backup access and restore rehearsal. SEC-19 remains PARTIAL pending legal/owner policy and Member 2 deletion contract.
