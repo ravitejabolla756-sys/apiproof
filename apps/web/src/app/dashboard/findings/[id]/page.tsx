@@ -486,8 +486,8 @@ export default function FindingDetailPage({
               <Sparkles className="w-4 h-4 text-purple-700" />
               Review Actions
             </h3>
-            {actionLoading === 'plan' && <p role="status" aria-live="polite" className="sr-only">Creating migration plan…</p>}
-            {actionLoading === 'propose' && <p role="status" aria-live="polite" className="sr-only">Starting secure verification…</p>}
+            {actionLoading === 'plan' && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Creating migration plan…</p>}
+            {actionLoading === 'propose' && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Starting secure verification…</p>}
 
             {!migration ? (
               <div className="space-y-3">

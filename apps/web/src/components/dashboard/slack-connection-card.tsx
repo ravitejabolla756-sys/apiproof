@@ -64,8 +64,8 @@ export function SlackConnectionCard() {
         </span>}
       </div>
       <p className="text-xs text-[#686868]">Receive new breaking-finding alerts by direct message. The invite-only beta keeps repository changes disabled and requires human review.</p>
-      {error && <p role="alert" className="text-xs text-rose-700">{error}</p>}
-      {status === null ? <div role="status" aria-live="polite" className="text-xs text-[#686868] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />Checking Slack connection…</div> : status.connected ? (
+      {error && <p role="alert" aria-live="assertive" aria-atomic="true" className="text-xs text-rose-700">{error}</p>}
+      {status === null ? <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />Checking Slack connection…</div> : status.connected ? (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] p-4">
           <div className="text-xs"><span className="font-semibold text-[#111111]">{status.teamName}</span><span className="block text-[#686868] mt-1">Finding alerts are sent privately to the Slack account that connected this workspace.</span></div>
           <Button type="button" variant="outline" size="sm" onClick={disconnect} disabled={busy} className="gap-1.5">

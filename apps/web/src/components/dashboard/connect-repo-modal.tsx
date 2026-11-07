@@ -274,28 +274,28 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         {/* Content */}
         <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
           {error && (
-            <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+            <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {statusMessage && (
-            <div role="status" aria-live="polite" className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-purple-900 text-xs flex items-center gap-2">
+            <div role="status" aria-live="polite" aria-atomic="true" className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-purple-900 text-xs flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {success && !statusMessage && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-xs flex items-center gap-2">
+            <div role="status" aria-live="polite" aria-atomic="true" className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Repository connected successfully! Updating workspace...</span>
             </div>
           )}
 
           {loadingRepos ? (
-            <div role="status" aria-live="polite" className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
+            <div role="status" aria-live="polite" aria-atomic="true" className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
               <Loader2 className="w-6 h-6 animate-spin text-purple-700" />
               <span className="text-xs">Loading available repositories...</span>
             </div>

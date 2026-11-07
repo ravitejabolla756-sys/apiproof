@@ -20,7 +20,7 @@ test.describe('workspace audit trail', () => {
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('status')).toContainText('Loading workspace settings…');
     releaseSettings?.();
-    await expect(page.getByRole('alert').filter({ hasText: 'Audit history is temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
+    const auditAlert = page.getByRole('alert').filter({ hasText: 'Audit history is temporarily unavailable.' }); await expect(auditAlert).toBeVisible({ timeout: 30_000 }); await expect(auditAlert).toHaveAttribute('aria-live', 'assertive'); await expect(auditAlert).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('No administrative events recorded yet.')).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit failure state').toEqual([]);
 

@@ -220,7 +220,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div role="alert" aria-live="polite" className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+            <div role="alert" aria-live="assertive" aria-atomic="true" className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
               {error}
             </div>
           )}
@@ -233,7 +233,7 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                <span role="status" aria-live="polite">{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
+                <span role="status" aria-live="polite" aria-atomic="true">{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
               </>
             ) : mode === 'login' ? (
               'Sign In'

@@ -16,9 +16,9 @@ test.describe('authentication loading announcements', () => {
     await page.getByLabel('Email').fill('unknown@example.test');
     await page.getByLabel('Password').fill('wrong-password');
     await page.locator('form button[type="submit"]').click();
-    await expect(page.getByText('Signing in...', { exact: true })).toBeVisible();
+    const signInStatus = page.getByText('Signing in...', { exact: true }); await expect(signInStatus).toBeVisible(); await expect(signInStatus).toHaveAttribute('aria-atomic', 'true');
     releaseLogin?.();
-    await expect(page.getByRole('alert').filter({ hasText: 'Invalid email or password.' })).toBeVisible();
+    const loginAlert = page.getByRole('alert').filter({ hasText: 'Invalid email or password.' }); await expect(loginAlert).toBeVisible(); await expect(loginAlert).toHaveAttribute('aria-live', 'assertive'); await expect(loginAlert).toHaveAttribute('aria-atomic', 'true');
     await page.unroute('**/api/auth');
 
     let releaseRequest: (() => void) | undefined;
@@ -36,7 +36,7 @@ test.describe('authentication loading announcements', () => {
     await page.getByRole('button', { name: 'Send reset link' }).click();
     await expect(page.getByText('Sending…', { exact: true })).toBeVisible();
     releaseRequest?.();
-    await expect(page.getByRole('status')).toContainText('If an account exists');
+    const requestStatus = page.getByRole('status'); await expect(requestStatus).toContainText('If an account exists'); await expect(requestStatus).toHaveAttribute('aria-atomic', 'true');
     await page.unroute('**/api/auth');
 
     let releaseReset: (() => void) | undefined;
@@ -54,6 +54,6 @@ test.describe('authentication loading announcements', () => {
     await page.getByRole('button', { name: 'Reset password' }).click();
     await expect(page.getByText('Updating…', { exact: true })).toBeVisible();
     releaseReset?.();
-    await expect(page.getByRole('status')).toContainText('Password updated.');
+    const resetStatus = page.getByRole('status'); await expect(resetStatus).toContainText('Password updated.'); await expect(resetStatus).toHaveAttribute('aria-atomic', 'true');
   });
 });
