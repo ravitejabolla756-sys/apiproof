@@ -105,6 +105,21 @@ describe('email verification', () => {
     expect((await getDatabase().queryOne<{ email_verified_at: string | null }>('SELECT email_verified_at FROM users WHERE id = ?', [other.user.id]))?.email_verified_at).toBeNull();
   });
 
+  it('allows exactly one concurrent email verification to consume a single-use token', async () => {
+    configureMail();
+    const account = await createUserWithSession('verify-race@example.test', 'OriginalPassword123!', 'Verify Race');
+    let token = '';
+    await requestEmailVerification(account.user.id, async (message) => { token = message.token; });
+
+    const outcomes = await Promise.all([verifyEmail(token), verifyEmail(token)]);
+
+    expect(outcomes.sort()).toEqual(['invalid', 'verified']);
+    expect((await getDatabase().queryOne<{ email_verified_at: string | null }>(
+      'SELECT email_verified_at FROM users WHERE id = ?', [account.user.id],
+    ))?.email_verified_at).toBeTruthy();
+    expect(await getDatabase().query('SELECT id FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL', [account.user.id])).toHaveLength(0);
+  });
+
   it('rejects expired and malformed tokens without changing verification state', async () => {
     configureMail();
     const account = await createUserWithSession('verify-expired@example.test', 'OriginalPassword123!', 'Verify Expired');

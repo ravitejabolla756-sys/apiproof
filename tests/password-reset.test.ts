@@ -102,6 +102,24 @@ describe('password recovery', () => {
     expect(await completePasswordReset(token, 'AnotherPassword123!')).toBe(false);
   });
 
+  it('allows exactly one concurrent password reset to consume a single-use token', async () => {
+    const target = await createAccount('reset-race@example.test');
+    let token = '';
+    await requestPasswordReset(target.user.email, async (message) => { token = message.token; });
+
+    const outcomes = await Promise.all([
+      completePasswordReset(token, 'ConcurrentPasswordOne123!'),
+      completePasswordReset(token, 'ConcurrentPasswordTwo123!'),
+    ]);
+
+    expect(outcomes.sort()).toEqual([false, true]);
+    const acceptedPasswords = await Promise.all([
+      authenticateUser(target.user.email, 'ConcurrentPasswordOne123!'),
+      authenticateUser(target.user.email, 'ConcurrentPasswordTwo123!'),
+    ]);
+    expect(acceptedPasswords.filter(Boolean)).toHaveLength(1);
+  });
+
   it('rejects expired and unknown reset tokens', async () => {
     const user = await createAccount('expired@example.test');
     let token = '';
