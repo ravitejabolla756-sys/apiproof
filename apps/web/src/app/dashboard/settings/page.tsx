@@ -45,11 +45,15 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function loadStatus() {
+    setLoading(true);
+    setError(null);
     try {
       const [repoRes, billingRes] = await Promise.all([
         fetch('/api/github/repositories'),
         fetch('/api/billing/subscription'),
       ]);
+
+      if (!repoRes.ok || !billingRes.ok) throw new Error('Workspace settings data is temporarily unavailable.');
 
       if (repoRes.ok) {
         const repoData = await repoRes.json();
@@ -66,6 +70,7 @@ export default function SettingsPage() {
       }
     } catch (err: unknown) {
       console.error("Failed to load settings data:", err);
+      setError(err instanceof Error ? err.message : 'Workspace settings data is temporarily unavailable.');
     } finally {
       setLoading(false);
     }
@@ -105,9 +110,10 @@ export default function SettingsPage() {
       </div>
 
       {error && (
-        <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+        <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" aria-hidden="true" />
           <span>{error}</span>
+          <Button type="button" variant="outline" size="sm" onClick={() => void loadStatus()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry</Button>
         </div>
       )}
 

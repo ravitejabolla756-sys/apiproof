@@ -62,6 +62,29 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/slack/connection');
   });
 
+  test('announces workspace settings data failures and exposes retry', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/github/repositories', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) });
+    });
+    await page.route('**/api/billing/subscription', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Billing is temporarily unavailable.' }) });
+    });
+    await page.route('**/api/slack/connection', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) });
+    });
+    await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
+    const settingsAlert = page.getByRole('alert').filter({ hasText: 'Workspace settings data is temporarily unavailable.' });
+    await expect(settingsAlert).toBeVisible({ timeout: 30_000 });
+    await expect(settingsAlert.getByRole('button', { name: 'Retry' })).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings error state').toEqual([]);
+    await settingsAlert.getByRole('button', { name: 'Retry' }).click();
+    await expect(settingsAlert).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/github/repositories');
+    await page.unroute('**/api/billing/subscription');
+    await page.unroute('**/api/slack/connection');
+  });
+
   test('shows recoverable errors instead of false empty states', async ({ page }) => {
     await signIn(page);
 
