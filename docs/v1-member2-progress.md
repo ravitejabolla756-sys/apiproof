@@ -471,6 +471,12 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/landing/scroll-pipeline.tsx`, `apps/web/src/components/landing/product-video.tsx`, `apps/web/src/app/faq/page.tsx`, `tests/e2e/pipeline-accessibility.spec.ts`.
 - Scope: local accessibility work only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-13 hermetic CI browser reliability
+
+- Change: hardened the workspace-list retry fixture against duplicate/background requests, relaxed a dev-mode-only duplicate GET assertion to validate successful retrieval, and isolated newly created invitation pages with their own rate-limit client identity.
+- Files: `tests/e2e/public-site.spec.ts`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/helpers.ts`.
+- Evidence: fresh-database CI-mode Playwright suite passed 48/48 in 1.2 minutes; targeted affected journeys passed; targeted ESLint passed. This is local production-style browser evidence only; hosted CI and integrated staging remain NOT_RUN.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

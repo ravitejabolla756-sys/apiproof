@@ -50,6 +50,7 @@ export async function withAcceptedInvitation(ownerPage: Page, browser: Browser, 
   const inviteUrl = await ownerPage.locator('code').filter({ hasText: '/invite/accept?token=' }).innerText();
   const invitedPage = await browser.newPage();
   try {
+    await invitedPage.setExtraHTTPHeaders({ 'x-forwarded-for': nextBrowserClientIp() });
     const password = 'InviteePassword123!';
     await invitedPage.goto('/login');
     const signupResult = await invitedPage.evaluate(async ({ email, password: signupPassword }) => {

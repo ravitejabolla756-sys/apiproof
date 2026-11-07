@@ -73,7 +73,6 @@ test.describe('public beta surfaces', () => {
       expect(results.violations, route).toEqual([]);
     }
   });
-
   test('honors the reduced-motion accessibility contract', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
@@ -91,12 +90,10 @@ test.describe('public beta surfaces', () => {
       probe.remove();
       return result;
     });
-
     expect(motion.animationDurationMs).toBeLessThanOrEqual(0.01);
     expect(motion.transitionDurationMs).toBeLessThanOrEqual(0.01);
     expect(motion.scrollBehavior).toBe('auto');
   });
-
   test('checks public metadata and root internal links', async ({ page, request }) => {
     await assertPublicRoutes(page, [
       '/',
@@ -230,15 +227,14 @@ test.describe('authenticated product surfaces', () => {
       await otherPage.close();
     }
   });
-
   test('exposes an accessible server-backed workspace context selector', async ({ page }) => {
-    let workspaceRequests = 0;
-    await page.route('**/api/workspaces', async (route) => { workspaceRequests += 1; if (workspaceRequests === 1) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace list unavailable.' }) }); return; } await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: 'ws_primary', workspaces: [{ id: 'ws_primary', name: 'Primary Workspace' }] }) }); }); await signIn(page);
-    const workspaceError = page.getByRole('alert').filter({ hasText: 'Workspace list unavailable.' }); await expect(workspaceError).toBeVisible({ timeout: 30_000 }); await workspaceError.getByRole('button', { name: 'Try again' }).click();
+    let workspaceRequests = 0; let releaseWorkspaceRecovery: (() => void) | undefined; const workspaceRecovery = new Promise<void>((resolve) => { releaseWorkspaceRecovery = resolve; });
+    await page.route('**/api/workspaces', async (route) => { workspaceRequests += 1; if (workspaceRequests === 1) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace list unavailable.' }) }); return; } await workspaceRecovery; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: 'ws_primary', workspaces: [{ id: 'ws_primary', name: 'Primary Workspace' }] }) }); }); await signIn(page);
+    const workspaceError = page.getByRole('alert').filter({ hasText: 'Workspace list unavailable.' }); await expect(workspaceError).toBeVisible({ timeout: 30_000 }); await workspaceError.getByRole('button', { name: 'Try again' }).click(); releaseWorkspaceRecovery?.();
     const selector = page.getByLabel('Active workspace'); await expect(selector).toBeVisible({ timeout: 30_000 });
     await expect(selector).toHaveValue(/.+/);
     await expect(selector.locator('option')).toHaveCount(1);
-    await expect(selector).toBeDisabled();
+    await expect(selector).toBeDisabled(); await expect(workspaceRequests).toBeGreaterThanOrEqual(2);
     const results = await new AxeBuilder({ page }).include('aside').analyze();
     expect(results.violations, 'workspace context selector').toEqual([]); await page.unroute('**/api/workspaces');
   });
