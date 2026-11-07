@@ -154,8 +154,9 @@ test.describe('public beta surfaces', () => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('#mobile-site-navigation')).toBeVisible();
-    await page.getByRole('button', { name: 'Close menu' }).click();
+    await page.keyboard.press('Escape');
     await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
   });
 
   test('passes automated accessibility scans on representative public pages', async ({ page }) => {

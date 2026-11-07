@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Menu, X } from "lucide-react";
@@ -28,6 +28,7 @@ export function LandingNavbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const mobileMenuToggleRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -53,6 +54,19 @@ export function LandingNavbar() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setMobileMenuOpen(false);
+      mobileMenuToggleRef.current?.focus();
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen]);
 
   const isLinkActive = (href: string) => {
     if (!pathname) return false;
@@ -129,6 +143,7 @@ export function LandingNavbar() {
           <div className="flex items-center md:hidden">
             <button
               type="button"
+              ref={mobileMenuToggleRef}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white flex items-center justify-center transition-colors focus:outline-hidden"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
