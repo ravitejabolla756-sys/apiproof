@@ -66,6 +66,10 @@ Statuses are current baseline findings, not completion claims.
 - Change: the populated notification-preferences recovery journey now runs an axe scan after the table is restored following an initial 503 and retry.
 - Evidence: `pnpm exec eslint tests/e2e/public-site.spec.ts --max-warnings 0` PASS; focused notification loading/error/recovery journey PASS — 1/1. Full assistive-technology review remains open.
 
+## 2026-11-07 checkpoint — UI-12/UI-13 combined recovery regression
+
+- Evidence: `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts tests/e2e/dashboard-data-states.spec.ts tests/e2e/repository-recovery.spec.ts --workers=1 --timeout=300000` PASS — 7/7 in 1.8 minutes. This confirms the committed route accessibility, mobile accessibility, dashboard state recovery and repository retry coverage together; hosted CI and full assistive-technology review remain open.
+
 ## 2026-11-07 checkpoint — UI-12 public/authentication failure states
 
 - Change: added focused axe checks while missing-token invitation/verification alerts, invalid-login feedback, and workspace permission-denied feedback are rendered.
