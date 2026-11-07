@@ -505,10 +505,11 @@ test.describe('authenticated product surfaces', () => {
     await signIn(page);
     let releasePreferences: (() => void) | undefined;
     let requestCount = 0;
+    let initialPreferenceRequestsClosed = false;
     const preferencesLoading = new Promise<void>((resolve) => { releasePreferences = resolve; });
     await page.route('**/api/account/notifications', async (route) => {
       requestCount += 1;
-      if (requestCount <= 2) {
+      if (!initialPreferenceRequestsClosed) {
         await preferencesLoading;
         await route.fulfill({
           status: 503,
@@ -526,7 +527,7 @@ test.describe('authenticated product surfaces', () => {
 
     await page.goto('/dashboard/settings/notifications');
     await expect(page.getByText('Loading preferences…')).toBeVisible({ timeout: 30_000 });
-    releasePreferences?.();
+    initialPreferenceRequestsClosed = true; releasePreferences?.();
     await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('table')).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();

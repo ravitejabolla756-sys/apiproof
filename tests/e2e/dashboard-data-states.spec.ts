@@ -166,9 +166,10 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/repositories');
 
     let detailRequests = 0;
+    let detailRetryStarted = false;
     await page.route('**/api/repositories/repo_recovery', async (route) => {
       detailRequests += 1;
-      if (detailRequests <= 2) {
+      if (!detailRetryStarted) {
         await route.fulfill({
           status: 503,
           contentType: 'application/json',
@@ -203,7 +204,7 @@ test.describe('authenticated dashboard data states', () => {
     const detailAlertResults = await new AxeBuilder({ page }).include('[role="alert"]').analyze();
     expect(detailAlertResults.violations, '/dashboard/repositories detail error state').toEqual([]);
     await expect(page.getByRole('heading', { name: 'recovery-repo' })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Try again' }).click();
+    detailRetryStarted = true; await page.getByRole('button', { name: 'Try again' }).click();
     await expect(detailAlert).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'recovery-repo' })).toBeVisible({ timeout: 30_000 });
     expect(detailRequests).toBeGreaterThanOrEqual(2);
