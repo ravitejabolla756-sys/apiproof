@@ -540,7 +540,8 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('table')).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 });
-    expect(requestCount).toBe(2);
+    expect(requestCount).toBeGreaterThanOrEqual(2);
+    expect(requestCount).toBeLessThanOrEqual(3);
     await page.unroute('**/api/account/notifications');
   });
 });

@@ -110,3 +110,7 @@ Statuses are current baseline findings, not completion claims.
 - Change: bounded dashboard retry request assertions to the observed 2–3 request range under React development effect replay; repository detail retry fixtures now hold both initial requests at failure and succeed only after the user retry. The generic mobile browsing matrix no longer depends on a live seeded detail endpoint; deterministic detail coverage remains in `repository-recovery.spec.ts`.
 - Evidence: `pnpm exec eslint tests/e2e/helpers.ts tests/e2e/public-site.spec.ts tests/e2e/dashboard-data-states.spec.ts tests/e2e/repository-recovery.spec.ts --max-warnings 0` PASS; `pnpm --filter @apiproof/web typecheck` PASS; dashboard data-state suite 2/2 PASS (24.1s); repository recovery 1/1 PASS (3.0s) in the clean local server.
 - Remaining limitation: a broader dev-mode browser run still has a notification-loading timing failure; prior committed CI-mode production-build evidence remains 25/25, and hosted CI is still NOT_RUN.
+
+## 2026-11-07 checkpoint — UI-13 full local browser suite
+
+- Evidence: `pnpm exec playwright test tests/e2e --workers=1 --timeout=300000` PASS — 28/28 in 2.5 minutes, including dashboard data states, public/authenticated route coverage, accessibility scans, dialog focus, notification loading/error/retry, and repository list/detail recovery. This is local dev-server evidence; hosted CI and production verification remain NOT_RUN.
