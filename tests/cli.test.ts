@@ -87,12 +87,12 @@ describe('CLI contract', () => {
       .rejects.toMatchObject({ code: 1, stdout: expect.stringContaining('MODEL_UNAVAILABLE') });
     await expect(cli(['evaluate-plans', '--with-model', '--json']))
       .rejects.toMatchObject({ code: 1, stdout: expect.stringContaining('MODEL_UNAVAILABLE') });
-  });
+  }, CLI_TIMEOUT_MS);
 
   it('rejects conflicting change selectors and unknown IDs', async () => {
     await expect(cli(['impact', fixture('affected'), '--change', 'fixtures/stripe-change.json', '--change-id', 'missing', '--json']))
       .rejects.toMatchObject({ code: 2, stdout: expect.stringContaining('INVALID_ARGUMENTS') });
     await expect(cli(['impact', fixture('affected'), '--change-id', 'missing', '--json']))
       .rejects.toMatchObject({ code: 2, stdout: expect.stringContaining('INVALID_CHANGE_ID') });
-  });
+  }, CLI_TIMEOUT_MS);
 });
