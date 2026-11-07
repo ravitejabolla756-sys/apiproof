@@ -138,7 +138,7 @@ export default function DashboardOverviewPage() {
 
   if (loading) {
     return (
-      <div className="py-24 text-center text-xs text-[#686868] font-sans">
+      <div role="status" aria-live="polite" className="py-24 text-center text-xs text-[#686868] font-sans">
         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>

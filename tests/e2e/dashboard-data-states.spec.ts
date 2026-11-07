@@ -3,6 +3,19 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers';
 
 test.describe('authenticated dashboard data states', () => {
+  test('announces dashboard overview loading before the response resolves', async ({ page }) => {
+    await signIn(page);
+    let releaseOverview: (() => void) | undefined;
+    const overviewLoading = new Promise<void>((resolve) => { releaseOverview = resolve; });
+    await page.route('**/api/overview', async (route) => { await overviewLoading; await route.continue(); });
+
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('status')).toContainText('Loading workspace overview...');
+    releaseOverview?.();
+    await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/overview');
+  });
+
   test('shows recoverable errors instead of false empty states', async ({ page }) => {
     await signIn(page);
 
