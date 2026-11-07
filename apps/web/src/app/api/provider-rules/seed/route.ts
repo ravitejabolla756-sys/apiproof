@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
 import { seedOfficialProviderReviewQueue } from '../../../../lib/server/provider-review-queue-seed.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '../../../../lib/server/workspace-service.js';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '../../../../lib/server/workspace-service.js';
 import { assertCsrfProtection } from '../../../../lib/server/validation.js';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -34,7 +34,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       safety: 'evidence-only; imported candidates remain needs_review; no rescans or repository writes were performed',
     }, { headers: privateNoStore });
   } catch (error) {
-    if (error instanceof Error && error.message.includes('access denied')) {
+    if (isWorkspaceAuthorizationError(error)) {
       return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403, headers: privateNoStore });
     }
     return NextResponse.json({ error: 'Unable to populate provider review queue.', code: 'INTERNAL_ERROR' }, { status: 500, headers: privateNoStore });

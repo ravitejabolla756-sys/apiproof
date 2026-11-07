@@ -9,7 +9,7 @@ import {
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { PROVIDER_CHANGE_SOURCES } from '@/lib/server/provider-change-monitor';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -99,7 +99,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       }),
     }, { headers: privateNoStore });
   } catch (error) {
-    if (error instanceof Error && error.message.includes('access denied')) {
+    if (isWorkspaceAuthorizationError(error)) {
       return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403, headers: privateNoStore });
     }
     return NextResponse.json({ error: 'Unable to load provider rules', code: 'INTERNAL_ERROR' }, { status: 500, headers: privateNoStore });

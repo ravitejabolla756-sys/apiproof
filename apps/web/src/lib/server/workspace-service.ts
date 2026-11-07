@@ -259,6 +259,15 @@ export async function requireWorkspaceOwner(userId: string, workspaceId: string)
   return workspace;
 }
 
+/** Identifies expected authorization denials for consistent HTTP 403 mapping. */
+export function isWorkspaceAuthorizationError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.message === 'Workspace not found or access denied.'
+    || error.message === 'Action requires workspace owner privileges.'
+    || error.message === 'WORKSPACE_ROLE_INVALID'
+    || error.message === 'WORKSPACE_CAPABILITY_DENIED';
+}
+
 /**
  * Central capability boundary for future role-aware routes. Existing owner-only
  * routes keep their stricter requireWorkspaceOwner contract until the shared
