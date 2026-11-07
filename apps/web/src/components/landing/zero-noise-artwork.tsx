@@ -20,7 +20,7 @@ export function ZeroNoiseArtwork() {
 
         {/* 27 Node Mesh Diagram */}
         <div className="relative w-full h-[240px] my-auto flex items-center justify-center">
-          <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 500 240" fill="none">
+          <svg aria-hidden="true" className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 500 240" fill="none">
             {/* Center Twilio Node */}
             <circle cx="250" cy="120" r="26" fill="#111111" />
             <circle cx="250" cy="120" r="6" fill="#A855F7" className="animate-pulse" />

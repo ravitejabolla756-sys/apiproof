@@ -12,7 +12,7 @@ export function HeroGlassSculpture() {
       <div className="relative w-full max-w-[620px] h-full flex items-center justify-center animate-float-glass">
         
         {/* SVG Multi-Layered Glass Petal & Refraction Render */}
-        <svg className="w-full h-full overflow-visible drop-shadow-[0_25px_50px_rgba(120,119,198,0.18)]" viewBox="0 0 600 600" fill="none">
+        <svg aria-hidden="true" className="w-full h-full overflow-visible drop-shadow-[0_25px_50px_rgba(120,119,198,0.18)]" viewBox="0 0 600 600" fill="none">
           <defs>
             {/* Iridescent Gradient Filters */}
             <linearGradient id="glass-petal-1" x1="0%" y1="0%" x2="100%" y2="100%">

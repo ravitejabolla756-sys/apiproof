@@ -20,7 +20,7 @@ export function ImpactArtwork() {
 
         {/* Trace Flow Diagram SVG */}
         <div className="relative w-full h-[240px] my-auto flex items-center justify-center">
-          <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 500 240" fill="none">
+          <svg aria-hidden="true" className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 500 240" fill="none">
             <path
               d="M 90 60 C 190 60, 180 150, 270 150 C 350 150, 340 210, 420 210"
               stroke="#10B981"

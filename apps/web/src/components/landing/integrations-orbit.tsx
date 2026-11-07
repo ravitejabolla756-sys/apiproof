@@ -16,7 +16,7 @@ export function IntegrationsOrbit() {
   return (
     <div className="relative w-full h-[420px] max-w-[680px] mx-auto flex items-center justify-center select-none overflow-visible">
       {/* Outer Orbit SVG */}
-      <svg className="absolute inset-0 w-full h-full overflow-visible pointer-events-none" viewBox="0 0 680 420" fill="none">
+      <svg aria-hidden="true" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none" viewBox="0 0 680 420" fill="none">
         <circle cx="340" cy="210" r="160" stroke="#E8E8E5" strokeWidth="1.5" strokeDasharray="4 6" />
         <circle cx="340" cy="210" r="95" stroke="#D1D1D6" strokeWidth="1.5" strokeDasharray="2 4" />
       </svg>

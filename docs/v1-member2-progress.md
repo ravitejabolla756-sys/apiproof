@@ -679,6 +679,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: fresh explicit SQLite database `/tmp/myowl-v1-full-current-63.db`; rebuilt-bundle CI-mode Playwright suite passed 65/65 after the auth-entry, truthful product-video, provider semantics and failure-artifact changes. `test-results/.last-run.json` reported `status: "passed"` with no failed tests.
 - Scope: complete local hermetic browser evidence only; hosted CI, integrated staging, manual assistive technology and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 decorative landing artwork semantics
+
+- Change: decorative SVG layers in the landing zero-noise, glass-sculpture, impact and integrations artwork now explicitly use `aria-hidden="true"`; the meaningful hero scan SVG remains exposed because it contains the visual evidence labels.
+- Files: `apps/web/src/components/landing/zero-noise-artwork.tsx`, `apps/web/src/components/landing/hero-glass-sculpture.tsx`, `apps/web/src/components/landing/impact-artwork.tsx`, `apps/web/src/components/landing/integrations-orbit.tsx`.
+- Evidence: targeted ESLint passed; rebuilt web production bundle passed with 83 generated pages; route accessibility and public media-state matrix passed 9/9.
+- Scope: local landing accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
