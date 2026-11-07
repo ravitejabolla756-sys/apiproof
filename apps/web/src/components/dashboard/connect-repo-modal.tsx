@@ -369,7 +369,14 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
               </div>
 
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {filteredRepos.map((repo) => {
+                {filteredRepos.length === 0 ? (
+                  <div role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 text-center text-xs text-[#686868]">
+                    <p>No repositories match your filter.</p>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setSearchQuery("")} className="mt-3">
+                      Clear filter
+                    </Button>
+                  </div>
+                ) : filteredRepos.map((repo) => {
                   const isSelected = selectedRepoId === repo.id;
                   return (
                     <label
