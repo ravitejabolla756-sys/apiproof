@@ -509,6 +509,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; fresh-database CI-mode control-semantics suite passed 2/2 in 3.9 seconds.
 - Scope: local UI-13/UI-12 regression protection only; hosted CI, integrated staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-13 full browser regression
+
+- Evidence: fresh explicit SQLite database `/tmp/myowl-v1-ui13-full.db`; CI-mode Playwright suite passed 50/50 in 1.1 minutes. The run includes the nested-interactive guard plus authentication, organizations, invitations/member management, billing boundaries, findings, PR/workflow, accessibility, degraded states and repository recovery.
+- Scope: complete local hermetic browser evidence only; hosted CI, integrated staging, screen-reader/manual review and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
