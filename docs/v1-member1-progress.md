@@ -289,7 +289,7 @@ Phase 0 read-only checks:
 
 ### 2026-11-08 seeded serial full-suite verification
 
-- Full suite passes on code HEAD 9d94ceb: 167 test files passed / 1 skipped; 1,396 tests passed / 4 skipped. Runtime 340.11 seconds. The run removed both remote database URL variables and used only a process-scoped throwaway local seed. PostgreSQL/RLS, staging, and production evidence remain unverified.
+- Latest seeded serial full suite passes on code HEAD `b848217`: 167 test files passed / 1 skipped (168 total); 1,402 tests passed / 4 skipped (1,406 total), runtime 474.17 seconds. Both remote database URL variables were removed and the only seed was process-scoped/local. No test failures. PostgreSQL/RLS, staging, and production evidence remain unverified.
 
 ### 2026-11-08 BILL-03 bounded webhook request stream
 
