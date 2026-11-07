@@ -483,6 +483,12 @@ Statuses are current baseline findings, not completion claims.
 - Files: `tests/e2e/public-site.spec.ts`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/helpers.ts`.
 - Evidence: fresh explicit `/tmp` SQLite database, `CI=1` Playwright suite, 48/48 passed in 1.2 minutes; repository typecheck passed; targeted ESLint passed. Hosted CI and integrated staging remain NOT_RUN.
 
+## 2026-11-07 checkpoint — UI-13 billing boundary browser contract
+
+- Change: added browser coverage for the public no-checkout pricing boundary and authenticated checkout/portal `403` refusals; no payment provider or live charge is contacted.
+- Files: `tests/e2e/billing-boundaries.spec.ts`.
+- Scope: local UI-13/BILL-07/BILL-08 evidence only; provider-backed billing, signed webhook reconciliation, approvals and production verification remain blocked/not run.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
