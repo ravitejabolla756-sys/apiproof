@@ -667,6 +667,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; CI-mode auth-entry browser suite passed 2/2 with the updated harness.
 - Scope: local/hosted-CI artifact configuration only; a hosted CI run and integrated staging verification remain open.
 
+## 2026-11-07 checkpoint — WEB-15/UI-12 truthful product-video state
+
+- Change: the landing product-film control is now disabled and visibly announces that the preview is unavailable when no video ID is configured; the decorative play icon is hidden from the accessibility tree. A configured video remains playable.
+- Files: `apps/web/src/components/landing/product-video.tsx`, `tests/e2e/public-media-states.spec.ts`.
+- Evidence: targeted ESLint passed; rebuilt web production bundle passed with 83 generated pages; public media-state journey passed 1/1 with axe-clean main content.
+- Scope: local public-site truthfulness/accessibility evidence only; hosted deployment, manual assistive technology and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

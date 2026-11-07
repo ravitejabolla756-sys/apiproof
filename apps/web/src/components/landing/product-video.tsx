@@ -52,12 +52,15 @@ export function ProductVideo({
       <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 my-auto">
         <button
           type="button"
-          onClick={() => setIsPlaying(true)}
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 hover:bg-[#D0F100] border border-white/20 hover:border-transparent backdrop-blur-md flex items-center justify-center text-white hover:text-black transition-all duration-300 group-hover:scale-105 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0F100] focus-visible:ring-offset-2 focus-visible:ring-offset-[#00081C]"
-          aria-label="Play product video"
+          onClick={() => { if (videoId) setIsPlaying(true); }}
+          disabled={!videoId}
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 hover:bg-[#D0F100] border border-white/20 hover:border-transparent backdrop-blur-md flex items-center justify-center text-white hover:text-black transition-all duration-300 group-hover:scale-105 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0F100] focus-visible:ring-offset-2 focus-visible:ring-offset-[#00081C] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white/10 disabled:hover:text-white"
+          aria-label={videoId ? 'Play product video' : 'Product video unavailable in this beta'}
         >
-          <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-current ml-1" />
+          <Play aria-hidden="true" className="w-6 h-6 sm:w-8 sm:h-8 fill-current ml-1" />
         </button>
+
+        {!videoId && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-slate-400">Video preview unavailable in this beta.</p>}
 
         <div className="space-y-1">
           <p className="font-serif text-xl sm:text-2xl text-white font-normal tracking-tight">
