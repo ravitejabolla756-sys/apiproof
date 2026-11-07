@@ -439,3 +439,8 @@ Statuses are current baseline findings, not completion claims.
 
 - Evidence: after a fresh local web production build generated 83 static pages, the CI-mode Playwright harness passed `tests/e2e/repository-recovery.spec.ts` — 1/1 in 2.6 seconds. The journey injects transient 503 responses for both repository-list and repository-detail routes, verifies the accessible error states, activates each retry control, and verifies successful recovery with bounded request counts.
 - Scope: this strengthens local UI-13 evidence only. Hosted CI, integrated staging, broader backend integration and production verification remain open; UI-13 remains PARTIAL. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 full route accessibility matrix
+
+- Evidence: CI-mode Playwright `tests/e2e/accessibility-routes.spec.ts` passed 5/5 in 26.8 seconds against the current production build. Coverage included axe checks on the public landing page, all audited public routes, all audited authenticated routes, and the complete public/authenticated route sets at 390px mobile and 768px tablet widths.
+- Scope: this strengthens local automated UI-12 evidence; it is not a substitute for full screen-reader/manual assistive-technology review, hosted CI, staging or production verification. UI-12 remains PARTIAL. No backend/shared contract, provider, production or remote Git operation was performed.
