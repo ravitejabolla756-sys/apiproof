@@ -3,7 +3,7 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `6526b13` (`codex/v1-frontend-product`)
+Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
 ## 2026-11-08 checkpoint — ORG-02/UI-12 GitHub action retry semantics
 
