@@ -299,7 +299,7 @@ export default function RepositoryDetailPage({
         </h2>
 
         {findings.length === 0 ? (
-          <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px] space-y-2">
+          <div role="status" aria-live="polite" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px] space-y-2">
             {latestScanIsActive ? (
               <>
                 <Loader2 className="w-6 h-6 text-purple-700 animate-spin mx-auto" />
@@ -397,7 +397,7 @@ export default function RepositoryDetailPage({
         </h2>
 
         {scans.length === 0 ? (
-          <p className="text-xs text-[#686868] py-4 text-center">No scans recorded yet.</p>
+          <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868] py-4 text-center">No scans recorded yet.</p>
         ) : (
           <div role="region" aria-label="Repository scan history" tabIndex={0} className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-inset">
             <table className="w-full text-left border-collapse text-xs">

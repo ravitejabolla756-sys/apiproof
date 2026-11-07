@@ -48,6 +48,8 @@ test.describe('repository recovery journeys', () => {
     await expect(page.getByRole('alert').filter({ hasText: 'Repository details temporarily unavailable.' })).toBeVisible();
     detailRetryStarted = true; await page.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByRole('heading', { name: 'owl', exact: true })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'No scan completed yet' })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'No scans recorded yet.' })).toBeVisible();
     expect(listAttempts).toBeGreaterThanOrEqual(2);
     expect(listAttempts).toBeLessThanOrEqual(3);
     expect(detailAttempts).toBeGreaterThanOrEqual(2);

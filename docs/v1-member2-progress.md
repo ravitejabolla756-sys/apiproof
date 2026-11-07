@@ -576,6 +576,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector reported only the three incumbent dashboard purple-palette warnings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; dashboard data-state suite passed 13/13; full rebuilt-bundle CI-mode Playwright suite passed 56/56.
 - Scope: local empty-state semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 repository-detail empty-state announcements
+
+- Change: repository detail’s no-scan/findings and scan-history empty states now expose atomic polite status regions; retry and scan behavior remain unchanged.
+- Files: `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/e2e/repository-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; focused repository recovery journey passed 1/1; full rebuilt-bundle CI-mode Playwright suite passed 56/56.
+- Scope: local repository-detail semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
