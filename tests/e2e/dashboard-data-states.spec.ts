@@ -249,13 +249,13 @@ test.describe('authenticated dashboard data states', () => {
     await expect(settingsAlert).toHaveAttribute('aria-atomic', 'true');
     await expect(settingsAlert.getByRole('button', { name: 'Retry' })).toBeVisible();
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings error state').toEqual([]);
+    await expect(page.getByText('Not connected to GitHub', { exact: true })).toHaveCount(0); await expect(page.getByRole('status').filter({ hasText: 'GitHub connection status is unavailable' })).toBeVisible(); await expect(page.getByRole('status').filter({ hasText: 'Billing summary is unavailable' })).toBeVisible();
     await settingsAlert.getByRole('button', { name: 'Retry' }).click();
     await expect(settingsAlert).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/github/repositories');
     await page.unroute('**/api/billing/subscription');
     await page.unroute('**/api/slack/connection');
-  });
-  test('announces workspace settings loading state while data is pending', async ({ page }) => {
+  }); test('announces workspace settings loading state while data is pending', async ({ page }) => {
     await signIn(page); let releaseRequests: (() => void) | undefined;
     const pending = new Promise<void>((resolve) => { releaseRequests = resolve; });
     await page.route('**/api/github/repositories', async (route) => { await pending; await route.continue(); });

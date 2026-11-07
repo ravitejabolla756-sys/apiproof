@@ -238,6 +238,10 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+            ) : error ? (
+              <div role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
+                Billing summary is unavailable until workspace settings reload.
+              </div>
             ) : null}
           </div>
 
@@ -283,6 +287,10 @@ export default function SettingsPage() {
                   {connecting ? <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />}
                   <span>Adjust Repositories</span>
                 </Button>
+              </div>
+            ) : error ? (
+              <div role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
+                GitHub connection status is unavailable until workspace settings reload.
               </div>
             ) : (
               <div role="status" aria-live="polite" aria-atomic="true" className="p-5 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
