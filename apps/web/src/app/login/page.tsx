@@ -137,7 +137,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} aria-busy={loading} className="space-y-5">
           <button
             type="button"
             disabled={loading}
@@ -232,8 +232,8 @@ export default function LoginPage() {
           >
             {loading ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                <span role="status" aria-live="polite">{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
               </>
             ) : mode === 'login' ? (
               'Sign In'

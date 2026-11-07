@@ -212,6 +212,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --timeout=300000` PASS — 5/5 in 1.9 minutes across desktop, 390px mobile and 768px tablet routes.
 - Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 authentication submission announcements
+
+- Change: login, password-reset request, and password-reset completion forms now expose their deferred submission states as polite live regions and mark the active form busy; existing copy, disabled controls, error handling and API contracts are unchanged.
+- Files: `apps/web/src/app/login/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; focused auth loading journey PASS — 1/1; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
+- Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-13 full local browser suite
 
 - Evidence: `pnpm exec playwright test tests/e2e --workers=1 --timeout=300000` PASS — 28/28 in 2.5 minutes, including dashboard data states, public/authenticated route coverage, accessibility scans, dialog focus, notification loading/error/retry, and repository list/detail recovery. This is local dev-server evidence; hosted CI and production verification remain NOT_RUN.
