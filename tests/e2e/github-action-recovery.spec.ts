@@ -29,7 +29,10 @@ test('labels GitHub installation recovery for the failed action', async ({ page 
   await expect(alert.getByRole('button', { name: 'Retry GitHub connection' })).toBeVisible();
   await expect(alert.getByRole('button', { name: 'Retry settings load' })).toHaveCount(0);
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'GitHub connection action error').toEqual([]);
-  await alert.getByRole('button', { name: 'Retry GitHub connection' }).click();
+  const retryGitHub = alert.getByRole('button', { name: 'Retry GitHub connection' });
+  await retryGitHub.focus();
+  await expect(retryGitHub).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/dashboard\/settings\?github=connected/);
   expect(installAttempts).toBe(2);
   await page.unroute('**/api/github/repositories');
