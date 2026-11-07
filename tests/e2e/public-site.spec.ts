@@ -62,8 +62,8 @@ test.describe('public beta surfaces', () => {
     await expect(mobileMenuLinks.first()).toBeFocused();
     await expect(page.locator('#mobile-site-navigation a[href="/pricing"]')).toHaveAttribute('aria-current', 'page');
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false');
-    await expect(toggle).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).toBeFocused(); await toggle.click(); await expect(mobileMenuLinks.first()).toBeFocused();
+    await page.getByTestId('mobile-menu-backdrop').click({ position: { x: 10, y: 10 } }); await expect(toggle).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).toBeFocused();
   });
 
   test('passes automated accessibility scans on representative public pages', async ({ page }) => {

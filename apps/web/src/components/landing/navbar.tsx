@@ -31,6 +31,7 @@ export function LandingNavbar() {
   const mobileMenuToggleRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuFirstLinkRef = useRef<HTMLAnchorElement>(null);
+  const restoreMobileMenuFocusRef = useRef(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -57,6 +58,17 @@ export function LandingNavbar() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  function closeMobileMenu() {
+    restoreMobileMenuFocusRef.current = true;
+    setMobileMenuOpen(false);
+  }
+
+  useEffect(() => {
+    if (mobileMenuOpen || !restoreMobileMenuFocusRef.current) return;
+    restoreMobileMenuFocusRef.current = false;
+    mobileMenuToggleRef.current?.focus();
+  }, [mobileMenuOpen]);
+
   useEffect(() => {
     if (!mobileMenuOpen) return;
 
@@ -64,8 +76,7 @@ export function LandingNavbar() {
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
-      setMobileMenuOpen(false);
-      mobileMenuToggleRef.current?.focus();
+      closeMobileMenu();
     };
 
     window.addEventListener('keydown', handleEscape);
@@ -185,15 +196,19 @@ export function LandingNavbar() {
         {mobileMenuOpen && (
           <>
             <div
-              className="fixed inset-0 z-[-1] bg-black/50 backdrop-blur-xs md:hidden pointer-events-auto"
-              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-menu-backdrop"
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs md:hidden pointer-events-auto"
+              onMouseDown={(event) => {
+                event.preventDefault();
+                closeMobileMenu();
+              }}
               aria-hidden="true"
             />
             <div
               id="mobile-site-navigation"
               ref={mobileMenuRef}
               onKeyDown={handleMobileMenuKeyDown}
-              className="md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200"
+              className="relative z-50 md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200"
             >
               <nav aria-label="Mobile site navigation" className="flex flex-col gap-1">
                 {MOBILE_NAV_LINKS.map((link) => {
