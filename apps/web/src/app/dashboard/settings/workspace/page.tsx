@@ -28,6 +28,7 @@ export default function WorkspaceSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -124,6 +125,28 @@ export default function WorkspaceSettingsPage() {
     setMessage('Invitation link copied.');
   }
 
+  async function revokeInvitation(invitation: Invitation) {
+    if (invitation.acceptedAt || invitation.revokedAt) return;
+    if (!window.confirm(`Cancel the invitation for ${invitation.email}? The current link will stop working.`)) return;
+    setRevokingInvitationId(invitation.id); setError(null); setMessage(null);
+    try {
+      const response = await fetch('/api/workspace/invitations', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invitationId: invitation.id }),
+      });
+      const data = await readJson<{ error?: string }>(response);
+      if (!response.ok) throw new Error(data.error || 'Unable to cancel invitation.');
+      setInvitations((current) => current.map((item) => item.id === invitation.id
+        ? { ...item, revokedAt: new Date().toISOString() }
+        : item));
+      setInviteUrl(null);
+      setMessage('Invitation cancelled.');
+    } catch (revokeError) {
+      setError(revokeError instanceof Error ? revokeError.message : 'Unable to cancel invitation.');
+    } finally { setRevokingInvitationId(null); }
+  }
+
   if (loading) return <div className="flex items-center gap-2 text-xs text-[#686868] outline-none"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading workspace settings…</div>;
 
   return (
@@ -159,15 +182,15 @@ export default function WorkspaceSettingsPage() {
       </section>
 
       {workspace?.role === 'owner' && <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="invite-heading">
-        <div className="mb-5 flex items-start gap-3"><UserPlus className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="invite-heading" className="text-base font-semibold text-[#111111]">Invite a member</h2><p className="mt-1 text-xs text-[#686868]">Email delivery is not enabled in the beta. Create a single-use link and share it manually.</p></div></div>
+        <div className="mb-5 flex items-start gap-3"><UserPlus className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="invite-heading" className="text-base font-semibold text-[#111111]">Invite a member</h2><p className="mt-1 text-xs text-[#686868]">Email delivery is not enabled in the beta. Create a single-use link and share it manually. Creating another link for the same email cancels the previous pending link.</p></div></div>
         <form onSubmit={inviteMember} className="flex flex-col gap-3 sm:flex-row"><label htmlFor="invite-email" className="sr-only">Invite email</label><input id="invite-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="teammate@example.com" required className="min-h-10 min-w-0 flex-1 rounded-lg border border-[#D9D9D4] px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /><Button type="submit" disabled={inviting} className="min-h-10">{inviting ? 'Creating…' : 'Create invite link'}</Button></form>
         {inviteUrl && <div className="mt-4 flex flex-col gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 sm:flex-row sm:items-center"><code className="min-w-0 flex-1 break-all text-[11px] text-blue-900">{inviteUrl}</code><Button type="button" size="sm" variant="outline" onClick={() => void copyInvite()} icon={<Clipboard className="h-3.5 w-3.5" aria-hidden="true" />}>Copy link</Button></div>}
-        {invitations.length > 0 && <div className="mt-5 space-y-2"><h3 className="text-xs font-semibold text-[#333333]">Recent invitations</h3>{invitations.slice(0, 5).map((invitation) => <div key={invitation.id} className="flex flex-col gap-1 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] p-3 text-xs sm:flex-row sm:items-center sm:justify-between"><span className="text-[#333333]">{invitation.email}</span><span className="text-[#686868]">{invitation.acceptedAt ? 'Accepted' : invitation.revokedAt ? 'Revoked' : new Date(invitation.expiresAt).toLocaleDateString()}</span></div>)}</div>}
+        {invitations.length > 0 && <div className="mt-5 space-y-2"><h3 className="text-xs font-semibold text-[#333333]">Recent invitations</h3>{invitations.slice(0, 5).map((invitation) => <div key={invitation.id} className="flex flex-col gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] p-3 text-xs sm:flex-row sm:items-center sm:justify-between"><div><p className="text-[#333333]">{invitation.email}</p><p className="text-[#686868]">{invitation.acceptedAt ? 'Accepted' : invitation.revokedAt ? 'Revoked' : new Date(invitation.expiresAt).toLocaleDateString()}</p></div>{!invitation.acceptedAt && !invitation.revokedAt && <Button type="button" size="sm" variant="outline" disabled={revokingInvitationId !== null} onClick={() => void revokeInvitation(invitation)} aria-label={`Cancel invitation for ${invitation.email}`}>{revokingInvitationId === invitation.id ? 'Cancelling…' : 'Cancel'}</Button>}</div>)}</div>}
       </section>}
 
       <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="audit-heading">
         <div className="mb-5 flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="audit-heading" className="text-base font-semibold text-[#111111]">Administrative audit trail</h2><p className="mt-1 text-xs text-[#686868]">Workspace membership and settings changes are attributed to the acting account.</p></div></div>
-        {audit.length === 0 ? <p className="text-xs text-[#686868]">No administrative events recorded yet.</p> : <div className="divide-y divide-[#E8E8E5]">{audit.map((event) => <div key={event.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-medium text-[#333333]">{event.action}</p><p className="text-[11px] text-[#686868]">{event.actorEmail || 'System'} · {event.targetType}</p></div><time className="text-[11px] font-mono text-[#888888]" dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleString()}</time></div>)}</div>}
+        {audit.length === 0 ? <p className="text-xs text-[#686868]">No administrative events recorded yet.</p> : <div className="divide-y divide-[#E8E8E5]">{audit.map((event) => <div key={event.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-medium text-[#333333]">{event.action}</p><p className="text-[11px] text-[#686868]">{event.actorEmail || 'System'} · {event.targetType}</p></div><time className="text-[11px] font-mono text-[#686868]" dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleString()}</time></div>)}</div>}
         {auditCursor && <Button type="button" variant="outline" className="mt-4 min-h-10" disabled={auditLoading} onClick={() => void loadMoreAudit()}>{auditLoading ? 'Loading audit events…' : 'Load more audit events'}</Button>}
       </section>
     </div>

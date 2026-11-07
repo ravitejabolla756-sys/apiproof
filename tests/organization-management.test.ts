@@ -80,6 +80,24 @@ describe('workspace administration', () => {
     await expect(acceptWorkspaceInvitation(invited.user.id, created.token)).rejects.toMatchObject({ code: 'INVITATION_ALREADY_USED' });
   });
 
+  it('rotates a pending invitation for resend and revokes the previous token', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const first = await createWorkspaceInvitation(owner.user.id, workspace.id, 'member@example.test', 'member');
+    const second = await createWorkspaceInvitation(owner.user.id, workspace.id, 'MEMBER@example.test', 'member');
+    const firstRow = await getDatabase().queryOne<{ id: string; token_hash: string; revoked_at: string | null }>(
+      'SELECT id, token_hash, revoked_at FROM workspace_invitations WHERE id = ?', [first.invitation.id],
+    );
+    const secondRow = await getDatabase().queryOne<{ id: string; revoked_at: string | null }>(
+      'SELECT id, revoked_at FROM workspace_invitations WHERE id = ?', [second.invitation.id],
+    );
+    expect(firstRow).toMatchObject({ id: first.invitation.id });
+    expect(firstRow!.token_hash).not.toBe(first.token);
+    expect(firstRow!.revoked_at).toEqual(expect.any(String));
+    expect(secondRow).toMatchObject({ id: second.invitation.id, revoked_at: null });
+    await expect(acceptWorkspaceInvitation(owner.user.id, first.token)).rejects.toMatchObject({ code: 'INVITATION_ALREADY_USED' });
+  });
+
   it('protects invitations from email mismatch and retains at least one owner', async () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const wrongUser = await createUserWithSession('wrong@example.test', 'WrongPassword123!', 'Wrong');

@@ -168,6 +168,22 @@ test.describe('authenticated product surfaces', () => {
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
 
+  test('creates and cancels a manual workspace invitation without sending email', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    const inviteEmail = `browser-invite-${Date.now()}@example.test`;
+    await page.getByLabel('Invite email').fill(inviteEmail);
+    await page.getByRole('button', { name: 'Create invite link' }).click();
+    await expect(page.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(inviteEmail)).toBeVisible();
+
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
+    await expect(page.getByText('Invitation cancelled.')).toBeVisible({ timeout: 30_000 });
+    const invitationRow = page.getByText(inviteEmail).locator('..');
+    await expect(invitationRow).toContainText('Revoked');
+  });
+
   test('covers the seeded dashboard primary browsing routes', async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });

@@ -131,7 +131,7 @@ export default function AccountSettingsPage() {
                 <div className="flex min-h-10 items-center gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] px-3 text-sm text-[#686868]">
                   <Mail className="h-4 w-4" aria-hidden="true" /><input id="account-email" value={account.email} readOnly className="min-w-0 flex-1 bg-transparent outline-none" />
                 </div>
-                <p className="mt-1.5 text-[11px] text-[#888888]">Email changes require a verified account-recovery flow and are not available here.</p>
+                <p className="mt-1.5 text-[11px] text-[#686868]">Email changes require a verified account-recovery flow and are not available here.</p>
               </div>
               <Button type="submit" disabled={savingName || name.trim() === account.name} className="min-h-10">{savingName ? 'Saving…' : 'Save profile'}</Button>
             </form>
