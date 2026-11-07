@@ -421,12 +421,19 @@ test.describe('authenticated product surfaces', () => {
     const searchTrigger = page.getByRole('button', { name: /Search repos, findings, SDKs/ });
     await searchTrigger.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('dialog', { name: 'Search MY OWL' })).toBeVisible();
+    const commandPalette = page.getByRole('dialog', { name: 'Search MY OWL' });
+    await expect(commandPalette).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Search repositories and workspace navigation' })).toBeFocused();
     const commandPaletteResults = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
     expect(commandPaletteResults.violations, 'command palette').toEqual([]);
+    const commandButtons = commandPalette.getByRole('button');
+    await page.keyboard.press('Shift+Tab');
+    await expect(commandButtons.last()).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('textbox', { name: 'Search repositories and workspace navigation' })).toBeFocused();
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog', { name: 'Search MY OWL' })).toHaveCount(0);
+    await expect(commandPalette).toHaveCount(0);
+    await expect(searchTrigger).toBeFocused();
 
     await page.route('**/api/github/repositories', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, FolderGit2, Boxes, AlertTriangle, FileCheck2, GitPullRequest, Settings, ShieldCheck, X, ChevronRight } from 'lucide-react';
 
@@ -29,6 +29,20 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [repositories, setRepositories] = useState<RepositoryItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const router = useRouter();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      previousActiveElementRef.current?.focus();
+      previousActiveElementRef.current = null;
+      return;
+    }
+
+    previousActiveElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    searchInputRef.current?.focus();
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -73,6 +87,22 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  function handleDialogKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') return;
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>('input, button:not([disabled])');
+    if (!focusable?.length) return;
+
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   if (!isOpen) return null;
 
   const navigate = (href: string) => {
@@ -104,6 +134,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="command-palette-title"
+        ref={dialogRef}
+        onKeyDown={handleDialogKeyDown}
         className="bg-white border border-[#E8E8E5] w-full max-w-xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col"
       >
         <h2 id="command-palette-title" className="sr-only">Search MY OWL</h2>
@@ -111,13 +143,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         <div className="flex items-center px-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
           <Search className="h-4 w-4 text-zinc-400 shrink-0" />
           <input
+            ref={searchInputRef}
             type="text"
             aria-label="Search repositories and workspace navigation"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command, search repositories or SDK rules..."
             className="w-full bg-transparent border-0 px-3 py-3.5 text-xs text-[#111111] placeholder:text-zinc-400 focus:outline-none"
-            autoFocus
           />
           <button type="button" aria-label="Close search" onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
             <X className="h-4 w-4" />
