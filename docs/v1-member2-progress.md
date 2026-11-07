@@ -484,3 +484,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused health-filter journey passed 1/1 in 2.7 seconds; full dashboard data-state suite passed 12/12 in 10.7 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 dashboard control labels
+
+- Change: added explicit accessible labels to inventory search, repository search, repository-dialog filtering, and provider-rule sample-code controls; placeholder copy and behavior remain unchanged.
+- Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; full route accessibility matrix passed 5/5 in 30.2 seconds across desktop, 390px mobile and 768px tablet checks.
+- Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

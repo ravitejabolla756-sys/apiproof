@@ -353,6 +353,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                   <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
                   <input
                     type="text"
+                    aria-label="Filter available repositories"
                     placeholder="Filter repositories..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

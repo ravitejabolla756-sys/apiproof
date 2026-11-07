@@ -90,6 +90,7 @@ export default function ApiInventoryPage() {
         <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
         <input
           type="text"
+          aria-label="Filter provider integrations"
           placeholder="Filter provider integrations..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}

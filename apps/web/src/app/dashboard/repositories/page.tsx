@@ -153,6 +153,7 @@ export default function RepositoriesTablePage() {
           <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
             type="text"
+            aria-label="Search repositories"
             placeholder="Search repositories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
