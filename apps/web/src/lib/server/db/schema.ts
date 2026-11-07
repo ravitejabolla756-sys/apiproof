@@ -253,6 +253,7 @@ CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_delive
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_claim ON github_scan_requests(status, lease_expires_at, created_at);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_health ON github_scan_requests(status, lease_expires_at, created_at, attempt_count);
 CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;
@@ -534,6 +535,7 @@ CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_delive
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_claim ON github_scan_requests(status, lease_expires_at, created_at);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_health ON github_scan_requests(status, lease_expires_at, created_at, attempt_count);
 CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;

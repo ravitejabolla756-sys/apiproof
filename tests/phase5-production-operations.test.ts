@@ -298,12 +298,14 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     `, [old, staleLease, old, old, '2026-11-07T11:58:00.000Z', old]);
 
     const metrics = await getScanWorkerMetrics(now);
+    const indexes = await db.query<{ name: string }>('PRAGMA index_list(github_scan_requests)');
 
     expect(metrics.oldestPendingAt).toBe(old);
     expect(metrics.oldestPendingAgeMs).toBe(15 * 60 * 1000);
     expect(metrics.retryingJobs).toBe(2);
     expect(metrics.stalledProcessingJobs).toBe(2);
     expect(metrics.retryExhaustedJobs).toBe(2);
+    expect(indexes.some((index) => index.name === 'idx_scan_requests_health')).toBe(true);
   });
 
   // -------------------------------------------------------------------------

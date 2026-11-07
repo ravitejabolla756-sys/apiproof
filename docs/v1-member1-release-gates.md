@@ -62,7 +62,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 billing role regression: PASS, `phase7-billing-foundation` 14/14 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown roles are denied before subscription response/provider operations; PostgreSQL/RLS remains unverified.
 - ORG-05 compatibility-map regression: PASS, `compatibility-map-api` 12/12 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown persisted roles are denied before compatibility queries; PostgreSQL/RLS remains unverified.
 - ORG-05 dashboard overview regression: PASS, `overview-role-route` 1/1 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown roles are denied before dashboard queries; PostgreSQL/RLS remains unverified.
-- SEC-13 stalled-job metrics regression: PASS, production-operations metrics suite 10/10 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Expired leases and legacy lease-less rows past the worker's five-minute recovery threshold are counted; a newer lease-less row is not. Staging alert/recovery behavior remains unverified.
+- SEC-13 stalled-job metrics and index regression: PASS, production-operations metrics suite 10/10 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Expired leases and legacy lease-less rows past the worker's five-minute recovery threshold are counted; a newer lease-less row is not. Additive migration `028` and fresh SQLite/PostgreSQL schemas include a covering health index. Postgres migration execution and large-queue query-plan/latency measurements are unverified; staging alert/recovery behavior remains unverified.
 
 ## Approval boundaries not crossed
 
