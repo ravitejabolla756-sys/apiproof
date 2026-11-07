@@ -96,4 +96,14 @@ test.describe('route accessibility audit', () => {
       expect(overflow, `${route} creates document-level horizontal overflow`).toBe(true);
     }
   });
+
+  test('keeps public routes within the mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const route of publicRoutes) {
+      await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      await expect(page.locator('main#main-content'), route).toBeVisible({ timeout: 30_000 });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+      expect(overflow, `${route} creates document-level horizontal overflow`).toBe(true);
+    }
+  });
 });
