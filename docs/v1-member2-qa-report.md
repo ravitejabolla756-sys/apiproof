@@ -133,3 +133,5 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.
 - Complete assistive-technology/full-route checks for keyboard-only navigation, mobile widths, dialogs, forms, loading/error/empty/denied states and reduced motion; the browser accessibility-tree review is not a substitute for a screen reader.
 - Repeat the performance probe under an approved representative deployment if production performance claims are needed; do not substitute the local loopback results for Lighthouse/Core Web Vitals.
+
+- Local keyboard/accessibility-tree review — PASS for the login entry surface: unauthenticated dashboard access redirected to the login route; named heading, labelled fields, native submit control and navigation links were discoverable; empty submit focused the required email field and exposed the browser validation message. No credentials or external data were entered. This does not replace the required screen-reader and full-route manual review.

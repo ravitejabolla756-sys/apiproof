@@ -428,3 +428,9 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: read-only `pnpm beta:readiness` returned `ready: false`. Local catalog/artifact gates passed: 19/19 monitored providers with HTTPS sources, 62 discovery providers, 50/50 official candidates with bounded review artifacts, valid scheduler configuration, all required automation artifacts, 19/19 reviewed providers, 50/50 reviewed rules, and a clean tree.
 - Unresolved gates are explicit and unchanged: `PROVIDER_INTELLIGENCE_V1_ENABLED=true` is not enabled, only 12/19 providers have 15 verified executable migration templates, and the live evidence manifest is unset/unverified. No production/provider configuration was changed.
 - Scope: local readiness evidence only; do not treat this preflight as hosted, staging, production, payment, email or monitoring verification.
+
+## 2026-11-07 checkpoint — UI-12 local keyboard/accessibility-tree review
+
+- Evidence: opened the local dashboard route in the in-app browser; unauthenticated access correctly redirected to `/login?from=%2Fdashboard`. The login surface exposed a named heading, keyboard-operable sign-in/create-account/social controls, labelled email/password fields, a forgot-password link and the deterministic-analysis footer. Activating the email sign-in submit with empty required fields focused the email field and exposed the truthful browser validation message `Please fill in this field.` in the accessibility tree.
+- DOM evidence: both authentication inputs are `required`; the email field is `type=email`; the submit control is a native `type=submit` button; no password, account or external form data was entered or transmitted.
+- Scope: this adds local keyboard/accessibility-tree evidence only. It is not a full screen-reader, mobile, hosted CI, staging or production sign-off; UI-12 remains PARTIAL and UI-13 remains open. No backend/shared contract, provider, production or remote Git operation was performed.
