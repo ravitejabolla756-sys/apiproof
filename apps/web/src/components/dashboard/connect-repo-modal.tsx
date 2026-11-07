@@ -268,7 +268,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700">
-              <Github className="h-4 w-4" />
+              <Github aria-hidden="true" className="h-4 w-4" />
             </div>
             <h3 id="connect-repository-title" className="text-sm font-semibold text-[#111111]">Connect GitHub Repository</h3>
           </div>
@@ -281,34 +281,34 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
           {error && (
             <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertCircle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {statusMessage && (
             <div role="status" aria-live="polite" aria-atomic="true" className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-purple-900 text-xs flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
+              <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {success && !statusMessage && (
             <div role="status" aria-live="polite" aria-atomic="true" className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Repository connected successfully! Updating workspace...</span>
             </div>
           )}
 
           {loadingRepos ? (
             <div role="status" aria-live="polite" aria-atomic="true" className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
-              <Loader2 className="w-6 h-6 animate-spin text-purple-700" />
+              <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin text-purple-700" />
               <span className="text-xs">Loading available repositories...</span>
             </div>
           ) : !connected ? (
             <div className="py-8 text-center space-y-4">
               <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center mx-auto text-zinc-700">
-                <Github className="h-6 w-6" />
+                <Github aria-hidden="true" className="h-6 w-6" />
               </div>
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-[#111111]">GitHub App Not Connected</h4>
@@ -323,9 +323,12 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 disabled={connectingGitHub}
                 className="gap-1.5"
               >
-                {connectingGitHub ? <Loader2 className="w-4 h-4 animate-spin" /> : <Github className="w-4 h-4" />}
+                {connectingGitHub ? <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin" /> : <Github aria-hidden="true" className="w-4 h-4" />}
                 <span>Connect GitHub</span>
               </Button>
+              {connectingGitHub && (
+                <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">Opening GitHub authorization...</div>
+              )}
             </div>
           ) : repositories.length === 0 ? (
             <div className="py-8 text-center space-y-4">
@@ -342,7 +345,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 disabled={connectingGitHub}
                 className="gap-1.5"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink aria-hidden="true" className="w-4 h-4" />
                 <span>Adjust Repositories</span>
               </Button>
             </div>
@@ -350,7 +353,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             <form onSubmit={handleConnectRepository} className="space-y-4">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
+                  <Search aria-hidden="true" className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
                   <input
                     type="text"
                     aria-label="Filter available repositories"
@@ -361,7 +364,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                   />
                 </div>
                 <Button type="button" variant="outline" size="sm" aria-label="Refresh repositories" disabled={loadingRepos} onClick={() => void loadRepositories(true)}>
-                  <RefreshCw className={`w-3.5 h-3.5 ${loadingRepos ? 'animate-spin' : ''}`} />
+                  <RefreshCw aria-hidden="true" className={`w-3.5 h-3.5 ${loadingRepos ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
 
@@ -382,16 +385,16 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                           {repo.fullName}
                           {repo.private ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-normal bg-zinc-100 text-zinc-600">
-                              <Lock className="w-2.5 h-2.5" /> Private
+                              <Lock aria-hidden="true" className="w-2.5 h-2.5" /> Private
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-normal bg-emerald-50 text-emerald-700">
-                              <Globe className="w-2.5 h-2.5" /> Public
+                              <Globe aria-hidden="true" className="w-2.5 h-2.5" /> Public
                             </span>
                           )}
                         </div>
                         <div className="text-[11px] text-[#686868] flex items-center gap-1">
-                          <GitBranch className="w-3 h-3 text-zinc-400" />
+                          <GitBranch aria-hidden="true" className="w-3 h-3 text-zinc-400" />
                           <span>{repo.defaultBranch}</span>
                         </div>
                       </div>
@@ -410,7 +413,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
               </div>
 
               <div className="bg-[#EEF7F2] border border-[#D1EBE0] rounded-2xl p-3.5 flex items-start gap-2.5">
-                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                 <p className="text-emerald-800 leading-relaxed text-[11px]">
                   Connecting a repository authorizes MY OWL in read-only observe mode. Real AST compatibility scans run in memory without altering repository files.
                 </p>
@@ -428,7 +431,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                   disabled={!selectedRepoId || submitting || success}
                   className="gap-1.5"
                 >
-                  {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {submitting && <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />}
                   <span>{submitting ? 'Connecting...' : 'Connect Repository'}</span>
                 </Button>
               </div>

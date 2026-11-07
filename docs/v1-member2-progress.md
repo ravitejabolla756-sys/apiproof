@@ -458,6 +458,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 repository connection dialog semantics
+
+- Change: the repository connection modal now hides decorative status, provider, repository-type, branch and action icons from the accessibility tree, and announces the in-progress GitHub authorization handoff through a polite live region. Existing focus trapping, Escape dismissal and repository connection behavior are unchanged.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; CI-mode focused keyboard/dialog journey passed 1/1 in 3.7 seconds with an axe-clean dialog. Playwright artifacts were retained at `/tmp/myowl-v1-connect-modal-artifacts.o6fgRo`.
+- Scope: local repository-dialog accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
 
 - Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.
