@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Slack action retry semantics
+
+- PASS: Focused Slack action-recovery journey passed 1/1 in 2.9 seconds with an axe-clean alert and the correct Retry Slack connection action.
+- PASS: Rebuilt-bundle CI-mode Playwright suite passed 89/89 in 2.3 minutes; targeted ESLint, `git diff --check`, and production build passed with 83 generated pages.
+- Scope: local NOT-03/UI-12 evidence only. Slack/provider delivery, hosted CI, staging, PostgreSQL/RBAC, Member 1 contracts, transactional email and production remain unverified or blocked by the master goal.
+
 ## 2026-11-08 — Full browser suite stabilization
 
 - PASS: Fresh rebuilt-bundle CI-mode Playwright suite passed 88/88 in 2.2 minutes after increasing only the broad mobile route audit’s test budget; all existing assertions remain intact.

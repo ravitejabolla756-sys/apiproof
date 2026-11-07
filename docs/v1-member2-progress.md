@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `4074af4` (`codex/v1-frontend-product`)
+Current HEAD: `d014b16` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — NOT-03/UI-12 Slack action retry semantics
+
+- Change: Slack errors now retain the failed operation and expose the matching recovery action: Retry Slack status, Retry Slack connection, or Retry Slack disconnect. A connect failure no longer offers a misleading status-only retry.
+- Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/e2e/slack-action-recovery.spec.ts`.
+- Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; rebuilt web production bundle passed with 83 generated pages; focused Slack action-recovery journey passed 1/1 in 2.9 seconds with an axe-clean alert; rebuilt-bundle CI-mode full Playwright suite passed 89/89 in 2.3 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-slack-action-recovery-artifacts`, `/tmp/myowl-v1-full-slack-action-recovery-artifacts`.
+- Scope: local NOT-03/UI-12 action-state recovery only; no Slack connection activation, provider delivery, backend/shared contract, remote Git, staging, production, payment or email action was performed.
 
 ## 2026-11-08 checkpoint — UI-13 mobile audit timeout stabilization
 
@@ -187,7 +194,7 @@ Current HEAD: `4074af4` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
-Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 88/88, with compatibility-map, provider-rule, workspace-switch, and repository-picker recovery journeys added in the checkpoints above.
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 89/89, with compatibility-map, provider-rule, workspace-switch, repository-picker, and Slack action recovery journeys added in the checkpoints above.
 
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
