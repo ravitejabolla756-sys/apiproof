@@ -618,6 +618,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; authentication/loading suite passed 2/2; full rebuilt-bundle CI-mode Playwright suite passed 58/58.
 - Scope: local session-state semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 dashboard session progress announcements
+
+- Change: added deterministic coverage for the authenticated dashboard’s in-progress session validation state, confirming its polite atomic status before the successful session response resolves.
+- Files: `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: targeted ESLint passed; authentication/loading suite passed 3/3; full rebuilt-bundle CI-mode Playwright suite passed 59/59. The session UI contract remains covered by the dashboard layout change recorded above.
+- Scope: local session-state semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

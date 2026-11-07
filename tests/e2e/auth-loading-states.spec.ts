@@ -2,6 +2,28 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './helpers.js';
 
 test.describe('authentication loading announcements', () => {
+  test('announces dashboard session validation in progress', async ({ page }) => {
+    await signIn(page);
+    let releaseSession: (() => void) | undefined;
+    const sessionPending = new Promise<void>((resolve) => { releaseSession = resolve; });
+    await page.route('**/api/auth', async (route) => {
+      if (route.request().method() === 'GET') {
+        await sessionPending;
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ authenticated: true }) });
+        return;
+      }
+      await route.continue();
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const sessionStatus = page.getByRole('status').filter({ hasText: 'Checking your session…' });
+    await expect(sessionStatus).toBeVisible();
+    await expect(sessionStatus).toHaveAttribute('aria-live', 'polite');
+    await expect(sessionStatus).toHaveAttribute('aria-atomic', 'true');
+    releaseSession?.();
+    await expect(page.locator('main#main-content')).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/auth');
+  });
+
   test('announces dashboard session validation failure', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/auth', async (route) => {
