@@ -18,12 +18,13 @@ This document records backend contracts that require coordination with Member 2.
 
 ### Current role boundary and proposed revocation contract
 
-- The current persisted role vocabulary is deliberately limited to `owner` and `member`; no `admin` role is granted or accepted by current UI/API flows. A future `admin` role requires a reviewed capability matrix and migration before it is added.
+- The current persisted role vocabulary is deliberately limited to `owner` and `member`; the centralized policy recognizes `admin` only as a reserved capability vocabulary, and no current UI/API flow grants it. Provisioning `admin` requires a reviewed migration and cross-member contract.
 - `owner` is required for provider-rule review/seed/test operations and workspace-owner-only GitHub installation reassociation. `member` is sufficient for workspace-scoped reads and ordinary repository/integration operations that already use `requireWorkspaceMember`.
 - Every authorization decision is derived from `(session.userId, workspaceId)` and a current `workspace_members` row. A client-supplied role, workspace name, repository owner/name, or invitation state is non-authoritative.
 - Proposed removal request shape for Member 2 review: `{ workspaceId, userId, reason? }`. The server must return a non-enumerating authorization error for a missing workspace/member and must reject removal of the final owner unless an approved ownership-transfer flow exists.
 - Proposed durable revocation event shape for review: `workspace.member_revocation.v1` with `{ eventId, workspaceId, subjectUserId, actorUserId, membershipId, reason, occurredAt, idempotencyKey }`. Consumers must treat `eventId`/`idempotencyKey` as durable deduplication keys and must not infer authorization from the event alone.
 - Revocation processing must invalidate only the removed subject's sessions, email/password-reset/OAuth state and workspace-scoped queued jobs; it must preserve unrelated personal sessions and other workspace memberships. All resource queries must re-check current membership at execution time.
+- `workspace-policy.ts` is the local central role/capability boundary. It fails closed on unknown persisted roles, keeps owner-only destructive capabilities separate from member operations, and is not yet adopted by routes whose final permissions depend on the Member 2 organization contract.
 - The revocation flow is not implemented yet because the invitation schema, member-management UI, audit-event ownership and final-owner policy require Member 2/owner approval.
 
 ## Retention and deletion (SEC-19)
@@ -94,3 +95,4 @@ This document records backend contracts that require coordination with Member 2.
 - 2026-11-07: Added PR-07 merged-SHA persistence/deduplicated scan queue handling and PR-08 exact-commit finding-resolution classifications/evidence migration 026; live GitHub/PostgreSQL execution remains unverified.
 - 2026-11-07: Documented the current owner/member boundary plus proposed ORG-10 revocation event and SEC-19 retention/deletion request contracts; implementation remains gated on Member 2, legal and owner policy review.
 - 2026-11-07: Added tenant-neutral scan queue age/retry/stalled-lease telemetry to the existing protected status projection; alert delivery, heartbeat ownership and worker-death rehearsal remain external gates.
+- 2026-11-07: Added the local ORG-05 role/capability policy with fail-closed unknown-role handling; route adoption and admin provisioning remain contract-gated.

@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { assertWorkspaceCapability, normalizeWorkspaceRole, type WorkspaceCapability, type WorkspaceRole } from './workspace-policy.js';
 
-export type WorkspaceRole = 'owner' | 'member';
+export type { WorkspaceCapability, WorkspaceRole } from './workspace-policy.js';
 export type RepositoryOrigin = 'connected' | 'seeded_fixture' | 'imported';
 export type RepositoryLifecycle = 'active' | 'historical' | 'disconnected';
 
@@ -162,7 +163,7 @@ export async function getUserWorkspaces(userId: string): Promise<WorkspaceWithRo
     slug: string;
     created_at: string;
     updated_at: string;
-    role: WorkspaceRole;
+    role: string;
   }>(`
     SELECT w.id, w.name, w.slug, w.created_at, w.updated_at, wm.role
     FROM workspaces w
@@ -175,7 +176,7 @@ export async function getUserWorkspaces(userId: string): Promise<WorkspaceWithRo
     id: r.id,
     name: r.name,
     slug: r.slug,
-    role: r.role,
+    role: normalizeWorkspaceRole(r.role),
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }));
@@ -212,7 +213,7 @@ export async function requireWorkspaceMember(userId: string, workspaceId: string
     slug: string;
     created_at: string;
     updated_at: string;
-    role: WorkspaceRole;
+    role: string;
   }>(`
     SELECT w.id, w.name, w.slug, w.created_at, w.updated_at, wm.role
     FROM workspaces w
@@ -224,11 +225,12 @@ export async function requireWorkspaceMember(userId: string, workspaceId: string
     throw new Error('Workspace not found or access denied.');
   }
 
+  const role = normalizeWorkspaceRole(row.role);
   return {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    role: row.role,
+    role,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -242,6 +244,21 @@ export async function requireWorkspaceOwner(userId: string, workspaceId: string)
   if (workspace.role !== 'owner') {
     throw new Error('Action requires workspace owner privileges.');
   }
+  return workspace;
+}
+
+/**
+ * Central capability boundary for future role-aware routes. Existing owner-only
+ * routes keep their stricter requireWorkspaceOwner contract until the shared
+ * organization-management contract is approved.
+ */
+export async function requireWorkspaceCapability(
+  userId: string,
+  workspaceId: string,
+  capability: WorkspaceCapability,
+): Promise<WorkspaceWithRole> {
+  const workspace = await requireWorkspaceMember(userId, workspaceId);
+  assertWorkspaceCapability(workspace.role, capability);
   return workspace;
 }
 
@@ -276,7 +293,7 @@ export async function requireRepositoryAccess(
     workspace_slug: string;
     workspace_created_at: string;
     workspace_updated_at: string;
-    member_role: WorkspaceRole;
+    member_role: string;
   }>(`
     SELECT r.*,
            w.name as workspace_name, w.slug as workspace_slug,
@@ -338,6 +355,7 @@ export async function requireRepositoryAccess(
   }
   if (process.env.NODE_ENV !== 'test' && row.origin !== 'connected') throw new Error('Repository not found or access denied. Historical or synthetic identity is not eligible for live access.');
 
+  const memberRole = normalizeWorkspaceRole(row.member_role);
   return {
     repository: {
       id: row.id,
@@ -358,7 +376,7 @@ export async function requireRepositoryAccess(
       id: row.workspace_id,
       name: row.workspace_name,
       slug: row.workspace_slug,
-      role: row.member_role,
+      role: memberRole,
       createdAt: row.workspace_created_at,
       updatedAt: row.workspace_updated_at,
     },
