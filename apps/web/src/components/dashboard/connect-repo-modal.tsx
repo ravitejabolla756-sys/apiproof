@@ -362,9 +362,8 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 {filteredRepos.map((repo) => {
                   const isSelected = selectedRepoId === repo.id;
                   return (
-                    <div
+                    <label
                       key={repo.id}
-                      onClick={() => setSelectedRepoId(repo.id)}
                       className={`p-3 rounded-xl border cursor-pointer transition-colors flex items-center justify-between ${
                         isSelected
                           ? 'border-purple-600 bg-purple-50/50'
@@ -390,13 +389,15 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                         </div>
                       </div>
                       <input
+                        id={`repository-${repo.id}`}
                         type="radio"
                         name="selectedRepo"
+                        aria-label={`Select ${repo.fullName}`}
                         checked={isSelected}
                         onChange={() => setSelectedRepoId(repo.id)}
                         className="text-purple-600 focus:ring-purple-500"
                       />
-                    </div>
+                    </label>
                   );
                 })}
               </div>

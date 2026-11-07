@@ -454,6 +454,22 @@ test.describe('authenticated product surfaces', () => {
     await closeRepositoryDialog.click();
     await expect(connectTrigger).toBeFocused();
     await page.unroute('**/api/github/repositories');
+
+    await page.route('**/api/github/repositories', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ connected: true, repositories: [{ id: 'repo-1', name: 'owl', fullName: 'acme/owl', owner: 'acme', private: true, defaultBranch: 'main' }] }),
+      });
+    });
+    await connectTrigger.click();
+    const repositoryRadio = page.getByRole('radio', { name: 'Select acme/owl' });
+    await expect(repositoryRadio).toBeVisible();
+    await repositoryRadio.focus();
+    await page.keyboard.press('Space');
+    await expect(repositoryRadio).toBeChecked();
+    await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
+    await page.unroute('**/api/github/repositories');
   });
 
   test('shows safe invalid-login and permission-denied states without leaking data', async ({ page }) => {
