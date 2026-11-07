@@ -458,6 +458,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
+
+- Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.
+- Regression: route accessibility now asserts explicit table-column scopes on `/security` and `/dashboard/repositories`; dashboard data-state coverage asserts the empty compatibility map is announced.
+- Evidence: focused ESLint PASS; web typecheck PASS; rebuilt web production build PASS with 83 generated pages; combined route accessibility and dashboard-state suites PASS 24/24 after rebuilding the current tree.
+- Scope: this advances local UI-12 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository scan-state semantics
 
 - Change: the repository detail scan summary now exposes the current scan state as an atomic polite live region; decorative scan-state and section icons are hidden from assistive technology; scan-history column headers now declare `scope="col"`.

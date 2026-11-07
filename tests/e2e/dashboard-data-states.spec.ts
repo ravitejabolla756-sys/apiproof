@@ -108,6 +108,19 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/provider-rules');
   });
 
+  test('announces an empty compatibility map as a status region', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/compatibility-map', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const emptyMap = page.getByRole('status').filter({ hasText: 'Connect a GitHub repository to build your compatibility map.' });
+    await expect(emptyMap).toBeVisible({ timeout: 30_000 });
+    await expect(emptyMap).toHaveAttribute('aria-live', 'polite');
+    await expect(emptyMap).toHaveAttribute('aria-atomic', 'true');
+    await page.unroute('**/api/compatibility-map');
+  });
+
   test('exposes the selected repository in the compatibility map', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/compatibility-map', async (route) => {

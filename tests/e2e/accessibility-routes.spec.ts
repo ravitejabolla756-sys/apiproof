@@ -24,6 +24,23 @@ test.describe('route accessibility audit', () => {
     expect(results.violations).toEqual([]);
   });
 
+  test('exposes explicit column scopes on public and authenticated data tables', async ({ page }) => {
+    await page.goto('/security', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    const securityHeaders = page.locator('table thead th');
+    await expect(securityHeaders).not.toHaveCount(0);
+    for (let index = 0; index < await securityHeaders.count(); index += 1) {
+      await expect(securityHeaders.nth(index)).toHaveAttribute('scope', 'col');
+    }
+
+    await signIn(page);
+    await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    const repositoryHeaders = page.locator('table thead th');
+    await expect(repositoryHeaders).not.toHaveCount(0);
+    for (let index = 0; index < await repositoryHeaders.count(); index += 1) {
+      await expect(repositoryHeaders.nth(index)).toHaveAttribute('scope', 'col');
+    }
+  });
+
   test('keeps the not-found page accessible', async ({ page }) => {
     const response = await page.goto('/route-that-does-not-exist', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     expect(response?.status()).toBe(404);

@@ -204,10 +204,10 @@ export default function SecurityPage() {
             <table className="w-full text-left text-xs border-collapse font-sans">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase">
-                  <th className="py-3 px-3">Operation / Capability</th>
-                  <th className="py-3 px-3">Enforcement</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3">Implementation Detail</th>
+                  <th scope="col" className="py-3 px-3">Operation / Capability</th>
+                  <th scope="col" className="py-3 px-3">Enforcement</th>
+                  <th scope="col" className="py-3 px-3">Status</th>
+                  <th scope="col" className="py-3 px-3">Implementation Detail</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700 text-xs">

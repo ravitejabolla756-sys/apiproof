@@ -132,7 +132,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
 
   if (loading && repositories.length === 0) {
     return <div role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
-      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
+      <Loader2 aria-hidden="true" className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
     </div>;
   }
 
@@ -140,13 +140,13 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
     return <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
       <p>{error}</p>
       <button type="button" onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
-        <RefreshCw className="h-3.5 w-3.5" />Retry
+        <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />Retry
       </button>
     </div>;
   }
 
   if (repositories.length === 0) {
-    return <div className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
+    return <div role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
       <p>Connect a GitHub repository to build your compatibility map.</p>
       {onConnect && <button type="button" onClick={onConnect} className="mt-3 rounded-lg bg-[#111111] px-4 py-2 font-medium text-white">Connect repository</button>}
     </div>;

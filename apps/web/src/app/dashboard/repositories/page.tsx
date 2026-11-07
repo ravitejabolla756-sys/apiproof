@@ -193,20 +193,20 @@ export default function RepositoriesTablePage() {
             <thead>
               <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">
                 <th scope="col" className="py-3 px-4 w-10"><span className="sr-only">Repository type</span></th>
-                <th className="py-3 px-4">Repository</th>
-                <th className="py-3 px-4">Branch</th>
-                <th className="py-3 px-4 text-center">Scans</th>
-                <th className="py-3 px-4 text-center">Findings</th>
-                <th className="py-3 px-4">Last Analyzed</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th scope="col" className="py-3 px-4">Repository</th>
+                <th scope="col" className="py-3 px-4">Branch</th>
+                <th scope="col" className="py-3 px-4 text-center">Scans</th>
+                <th scope="col" className="py-3 px-4 text-center">Findings</th>
+                <th scope="col" className="py-3 px-4">Last Analyzed</th>
+                <th scope="col" className="py-3 px-4">Status</th>
+                <th scope="col" className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8E8E5] text-xs">
               {error ? null : loading ? (
                 <tr>
                   <td colSpan={8} role="status" aria-live="polite" aria-atomic="true" className="py-12 text-center text-[#686868]">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
+                    <Loader2 aria-hidden="true" className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
                     <span>Loading repositories from database...</span>
                   </td>
                 </tr>
