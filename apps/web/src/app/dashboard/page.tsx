@@ -146,6 +146,19 @@ export default function DashboardOverviewPage() {
     );
   }
 
+  if (error && !data) {
+    return (
+      <div className="flex min-h-64 items-center justify-center">
+        <div role="alert" aria-live="assertive" aria-atomic="true" className="flex max-w-lg flex-col items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-center text-xs text-rose-900">
+          <span>{error}</span>
+          <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} className="border-rose-300 bg-white text-rose-900">
+            {refreshing ? "Retrying..." : "Retry"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 font-sans">
       <ConnectRepoModal
