@@ -4,12 +4,55 @@ import {
   BillingProviderUnavailableError,
   BillingWebhookInputError,
   BillingWebhookSignatureError,
+  MAX_BILLING_WEBHOOK_BYTES,
 } from '../../../../lib/server/billing/provider.js';
 import { processBillingWebhookEvent } from '../../../../lib/server/billing/service.js';
 
+async function readBoundedRawBody(req: Request): Promise<string> {
+  const contentLength = req.headers.get('content-length');
+  if (contentLength !== null) {
+    if (!/^\d+$/.test(contentLength)) throw new BillingWebhookInputError();
+    const declaredBytes = Number(contentLength);
+    if (!Number.isSafeInteger(declaredBytes) || declaredBytes > MAX_BILLING_WEBHOOK_BYTES) {
+      throw new BillingWebhookInputError();
+    }
+  }
+
+  if (!req.body) return '';
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_BILLING_WEBHOOK_BYTES) {
+        try { await reader.cancel(); } catch { /* the body is rejected regardless */ }
+        throw new BillingWebhookInputError();
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+  } catch {
+    throw new BillingWebhookInputError();
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const rawBody = await req.text();
+    const rawBody = await readBoundedRawBody(req);
     const signature =
       req.headers.get('x-billing-signature') ||
       req.headers.get('stripe-signature') ||

@@ -6,6 +6,7 @@ import {
   BillingWebhookInputError,
   BillingWebhookSignatureError,
   getBillingProvider,
+  MAX_BILLING_WEBHOOK_BYTES,
   MockBillingProvider,
 } from '../apps/web/src/lib/server/billing/provider.js';
 
@@ -73,6 +74,28 @@ describe('billing provider environment and webhook boundary', () => {
     process.env.NODE_ENV = 'test';
     process.env.BILLING_WEBHOOK_SECRET = TEST_SECRET;
     const rawBody = '{';
+
+    const response = await receiveBillingWebhook(webhookRequest(rawBody, signed(rawBody)));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'Invalid billing webhook' });
+  });
+
+  it('rejects oversized webhook streams at the route boundary', async () => {
+    process.env.NODE_ENV = 'test';
+    process.env.BILLING_WEBHOOK_SECRET = TEST_SECRET;
+    const oversizedBody = 'x'.repeat(MAX_BILLING_WEBHOOK_BYTES + 1);
+
+    const response = await receiveBillingWebhook(webhookRequest(oversizedBody, signed(oversizedBody)));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'Invalid billing webhook' });
+  });
+
+  it('preserves signed UTF-8 bytes during bounded decoding before JSON validation', async () => {
+    process.env.NODE_ENV = 'test';
+    process.env.BILLING_WEBHOOK_SECRET = TEST_SECRET;
+    const rawBody = '\uFEFF{"id":"evt_bom","type":"subscription.updated"}';
 
     const response = await receiveBillingWebhook(webhookRequest(rawBody, signed(rawBody)));
 

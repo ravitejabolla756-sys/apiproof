@@ -50,6 +50,7 @@ export class BillingWebhookSignatureError extends Error {
 
 const SUBSCRIPTION_STATUSES = new Set(['active', 'past_due', 'canceled', 'trialing', 'incomplete', 'unpaid']);
 const BILLING_PLAN_IDS = new Set(['free', 'pro', 'team', 'enterprise']);
+export const MAX_BILLING_WEBHOOK_BYTES = 256 * 1024;
 
 export class MockBillingProvider implements BillingProvider {
   name = 'mock';
@@ -76,7 +77,7 @@ export class MockBillingProvider implements BillingProvider {
 
     const secret = process.env.BILLING_WEBHOOK_SECRET;
     if (!secret || Buffer.byteLength(secret, 'utf8') < 32) throw new BillingProviderUnavailableError();
-    if (Buffer.byteLength(rawBody, 'utf8') > 256 * 1024) throw new BillingWebhookInputError();
+    if (Buffer.byteLength(rawBody, 'utf8') > MAX_BILLING_WEBHOOK_BYTES) throw new BillingWebhookInputError();
 
     const expected = crypto.createHmac('sha256', secret).update(rawBody).digest();
     const supplied = /^[a-f\d]{64}$/i.test(signature) ? Buffer.from(signature, 'hex') : Buffer.alloc(0);

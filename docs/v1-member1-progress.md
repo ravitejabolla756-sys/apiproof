@@ -290,3 +290,8 @@ Phase 0 read-only checks:
 ### 2026-11-08 seeded serial full-suite verification
 
 - Full suite passes on code HEAD 9d94ceb: 167 test files passed / 1 skipped; 1,396 tests passed / 4 skipped. Runtime 340.11 seconds. The run removed both remote database URL variables and used only a process-scoped throwaway local seed. PostgreSQL/RLS, staging, and production evidence remain unverified.
+
+### 2026-11-08 BILL-03 bounded webhook request stream
+
+- The billing webhook route now enforces the 256 KiB ceiling while reading the request stream, before buffering the complete payload. It rejects malformed/oversized Content-Length values, cancels an over-limit stream, and uses strict UTF-8 decoding while preserving the exact signed bytes for HMAC verification.
+- Boundary regressions cover over-limit streamed requests and BOM-prefixed signed input. Billing provider boundary and foundation suites pass 23/23; targeted ESLint and full workspace `pnpm typecheck` pass. BILL-03 remains PARTIAL until an approved provider adapter and sandbox delivery/signature proof are available.
