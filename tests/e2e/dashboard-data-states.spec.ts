@@ -136,7 +136,7 @@ test.describe('authenticated dashboard data states', () => {
     await expect(awaitingScan).toHaveAttribute('aria-atomic', 'true');
     await expect(firstRepository).toHaveAttribute('aria-pressed', 'true');
     await expect(secondRepository).toHaveAttribute('aria-pressed', 'false');
-    await secondRepository.click();
+    await secondRepository.focus(); await expect(secondRepository).toBeFocused(); await page.keyboard.press('Enter');
     await expect(firstRepository).toHaveAttribute('aria-pressed', 'false');
     await expect(secondRepository).toHaveAttribute('aria-pressed', 'true');
     await page.unroute('**/api/compatibility-map');
@@ -222,13 +222,13 @@ test.describe('authenticated dashboard data states', () => {
   test('announces Slack connection failures as alerts', async ({ page }) => {
     await signIn(page);
     let slackRequests = 0;
-    await page.route('**/api/slack/connection', async (route) => { slackRequests += 1; if (slackRequests === 1) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Slack status is unavailable.' }) }); return; } await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) }); });
+    await page.route('**/api/slack/connection', async (route) => { slackRequests += 1; if (slackRequests <= 2) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Slack status is unavailable.' }) }); return; } await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) }); });
     await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
     const slackAlert = page.getByRole('alert').filter({ hasText: 'Slack status is unavailable.' });
     await expect(slackAlert).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'Slack connection error state').toEqual([]);
     await expect(slackAlert.getByRole('button', { name: 'Retry Slack status' })).toBeVisible(); await expect(page.getByRole('status').filter({ hasText: 'Slack connection status is unavailable.' })).toBeVisible();
-    await slackAlert.getByRole('button', { name: 'Retry Slack status' }).click(); await expect(slackAlert).toHaveCount(0); await expect(page.getByRole('button', { name: 'Connect Slack' })).toBeVisible(); expect(slackRequests).toBeGreaterThanOrEqual(2);
+    await slackAlert.getByRole('button', { name: 'Retry Slack status' }).click(); await expect(slackAlert).toHaveCount(0); await expect(page.getByRole('button', { name: 'Connect Slack' })).toBeVisible(); expect(slackRequests).toBeGreaterThanOrEqual(3);
     await page.unroute('**/api/slack/connection');
   }); test('announces workspace settings data failures and exposes retry', async ({ page }) => {
     await signIn(page);
@@ -522,8 +522,7 @@ test.describe('authenticated dashboard data states', () => {
     detailRetryStarted = true; await page.getByRole('button', { name: 'Try again' }).click();
     await expect(detailAlert).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'recovery-repo' })).toBeVisible({ timeout: 30_000 });
-    expect(detailRequests).toBeGreaterThanOrEqual(2);
-    expect(detailRequests).toBeLessThanOrEqual(3);
+    expect(detailRequests).toBeGreaterThanOrEqual(2); expect(detailRequests).toBeLessThanOrEqual(3);
     await page.unroute('**/api/repositories/repo_recovery');
   });
 });
