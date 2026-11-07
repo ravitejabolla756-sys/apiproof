@@ -55,6 +55,12 @@ test.describe('public beta surfaces', () => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('#mobile-site-navigation')).toBeVisible();
+    const mobileMenuLinks = page.locator('#mobile-site-navigation a');
+    await expect(mobileMenuLinks.first()).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(mobileMenuLinks.last()).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(mobileMenuLinks.first()).toBeFocused();
     await expect(page.locator('#mobile-site-navigation a[href="/pricing"]')).toHaveAttribute('aria-current', 'page');
     await page.keyboard.press('Escape');
     await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false');

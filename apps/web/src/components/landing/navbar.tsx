@@ -29,6 +29,8 @@ export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const mobileMenuToggleRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuFirstLinkRef = useRef<HTMLAnchorElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -58,6 +60,8 @@ export function LandingNavbar() {
   useEffect(() => {
     if (!mobileMenuOpen) return;
 
+    mobileMenuFirstLinkRef.current?.focus();
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       setMobileMenuOpen(false);
@@ -67,6 +71,22 @@ export function LandingNavbar() {
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [mobileMenuOpen]);
+
+  function handleMobileMenuKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') return;
+    const focusable = mobileMenuRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+    if (!focusable?.length) return;
+
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   const isLinkActive = (href: string) => {
     if (!pathname) return false;
@@ -169,7 +189,12 @@ export function LandingNavbar() {
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
-            <div id="mobile-site-navigation" className="md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200">
+            <div
+              id="mobile-site-navigation"
+              ref={mobileMenuRef}
+              onKeyDown={handleMobileMenuKeyDown}
+              className="md:hidden mt-2 p-4 rounded-[20px] bg-[#071328]/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2 duration-200"
+            >
               <nav aria-label="Mobile site navigation" className="flex flex-col gap-1">
                 {MOBILE_NAV_LINKS.map((link) => {
                   const active = isLinkActive(link.href);
@@ -177,6 +202,7 @@ export function LandingNavbar() {
                     <Link
                       key={link.href}
                       href={link.href}
+                      ref={link === MOBILE_NAV_LINKS[0] ? mobileMenuFirstLinkRef : undefined}
                       aria-current={active ? 'page' : undefined}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
