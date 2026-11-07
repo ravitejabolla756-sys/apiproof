@@ -65,6 +65,7 @@ Updated implementation report; browser checks are local evidence only and are no
 - `pnpm exec eslint tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; focused notification loading/error/recovery journey — 1/1 PASS. The recovered preference table now receives an axe scan after retry from the deterministic 503 fixture.
 - `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts tests/e2e/dashboard-data-states.spec.ts tests/e2e/repository-recovery.spec.ts --workers=1 --timeout=300000` — 7/7 PASS in 1.8 minutes. The combined regression covers desktop/mobile route accessibility, dashboard error/empty recovery and repository list/detail retry recovery on the current committed tree.
 - `pnpm exec eslint tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; focused workspace invitation create/cancel journey — 1/1 PASS. The populated workspace administration/audit surface now receives an axe scan after the real local invitation mutation flow.
+- `pnpm exec eslint tests/e2e/organization-audit.spec.ts --max-warnings 0` — PASS; `pnpm --filter @apiproof/web typecheck` — PASS; `pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --timeout=300000` — 1/1 PASS. Cursor pagination, appended audit events, terminal load-more state and before/after axe checks are covered with a hermetic API fixture.
 
 ## Full-suite baseline exception
 
