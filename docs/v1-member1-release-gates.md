@@ -21,7 +21,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Migration recommendations and sandbox | PARTIAL / EXTERNAL BLOCKED | Deterministic planner, bounded redacted context, strict model-output validation and isolated verification are locally covered; production AI provider/credentials/cost policy/runtime adapter are not approved |
 | Finding lifecycle and resolution evidence | PASS (local only) | Migration 025, audited state transitions, workspace checks, idempotency/concurrency tests and completed-scan regression handling pass locally; live PostgreSQL/RLS and merged-SHA evidence remain unverified |
 | Draft PR merge/rescan/resolution verification | PASS (local only) | PR-07/PR-08 focused webhook, async-worker and lifecycle suites pass; merge SHA is persisted, exact-commit rescan is durable/deduplicated, and resolution classifications/evidence are tenant-scoped; live GitHub/PostgreSQL execution remains unverified |
-| RBAC and access revocation | PARTIAL | Workspace predicates exist; complete revocation workflow and PostgreSQL tests remain |
+| RBAC and access revocation | PARTIAL / CONTRACT REVIEW | Current owner/member predicates remain; proposed revocation request/event, final-owner and session/job invalidation boundaries are documented; implementation awaits cross-member approval |
 | Payment sandbox checkout/webhooks/lifecycle | BLOCKED | Current provider is `MockBillingProvider`; provider approval/credentials absent |
 | Backup restore | BLOCKED | Requires approved isolated non-production backup/restore access |
 | Error monitoring and alert routing | BLOCKED | Approved observability provider/destination absent |
@@ -29,7 +29,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Branch protection | BLOCKED | Requires GitHub repository-admin read-back and approval |
 | Load/resilience evidence | NOT_TESTED | No safe reproducible harness/results yet |
 | Deployment rollback rehearsal | BLOCKED | Hosting stack/staging rehearsal not authorized or verified |
-| Retention/deletion | PARTIAL | Policy and schema review incomplete; durable deletion workflow remains |
+| Retention/deletion | PARTIAL / POLICY BLOCKED | Account/workspace/billing/backup inventory and request-state contract are documented; legal retention policy and durable workflow remain unapproved |
 | Final release security audit | NOT_TESTED | Must use a frozen candidate after all other gates |
 
 ## SEC-09 regression evidence

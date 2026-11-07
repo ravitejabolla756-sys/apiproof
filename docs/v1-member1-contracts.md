@@ -16,6 +16,25 @@ This document records backend contracts that require coordination with Member 2.
 - Member 2 owns member/invitation screens. Removal requests must identify `workspaceId` and `userId`; the server derives authorization from the current session and never trusts client role labels.
 - Any new role or visible invitation state requires contract review before migration.
 
+### Current role boundary and proposed revocation contract
+
+- The current persisted role vocabulary is deliberately limited to `owner` and `member`; no `admin` role is granted or accepted by current UI/API flows. A future `admin` role requires a reviewed capability matrix and migration before it is added.
+- `owner` is required for provider-rule review/seed/test operations and workspace-owner-only GitHub installation reassociation. `member` is sufficient for workspace-scoped reads and ordinary repository/integration operations that already use `requireWorkspaceMember`.
+- Every authorization decision is derived from `(session.userId, workspaceId)` and a current `workspace_members` row. A client-supplied role, workspace name, repository owner/name, or invitation state is non-authoritative.
+- Proposed removal request shape for Member 2 review: `{ workspaceId, userId, reason? }`. The server must return a non-enumerating authorization error for a missing workspace/member and must reject removal of the final owner unless an approved ownership-transfer flow exists.
+- Proposed durable revocation event shape for review: `workspace.member_revocation.v1` with `{ eventId, workspaceId, subjectUserId, actorUserId, membershipId, reason, occurredAt, idempotencyKey }`. Consumers must treat `eventId`/`idempotencyKey` as durable deduplication keys and must not infer authorization from the event alone.
+- Revocation processing must invalidate only the removed subject's sessions, email/password-reset/OAuth state and workspace-scoped queued jobs; it must preserve unrelated personal sessions and other workspace memberships. All resource queries must re-check current membership at execution time.
+- The revocation flow is not implemented yet because the invitation schema, member-management UI, audit-event ownership and final-owner policy require Member 2/owner approval.
+
+## Retention and deletion (SEC-19)
+
+- Account security data (`users`, password hash, OAuth identities, sessions, password-reset tokens and email-verification tokens) is user-scoped. Account closure must invalidate sessions/tokens first, then delete or anonymize the account according to the approved legal policy; it must not delete another user's workspaces or memberships implicitly.
+- Workspace operational data (`workspace_members`, repositories, scans, findings, migrations, pull requests, resolution/lifecycle evidence, activity, provider rescans, Slack deliveries/actions and worker jobs) is workspace-scoped. A workspace deletion request must either cascade through an approved retention plan or enter an auditable anonymization workflow; no current endpoint performs this operation.
+- Billing records (`workspace_subscriptions`, usage and provider webhook/event records) and future invoice identifiers are retention-sensitive. They must be retained for the approved statutory/provider period while access is revoked and personal data is minimized where legally permitted.
+- Backups are an independent retention boundary. A successful application deletion request cannot claim that backup copies were erased; the response must expose the approved backup-expiry policy/status instead.
+- Proposed durable request states for review are `requested`, `processing`, `completed`, `failed` and `cancelled`, keyed by an idempotency key and carrying `workspaceId`/`subjectUserId`, actor, timestamps, policy version, scrubbed outcome and audit reference. Cross-tenant requests must fail before any mutation.
+- Member 2 review is required for confirmation/re-authentication UX, workspace selection, impact disclosure, status polling and account-vs-workspace deletion wording. Legal/owner approval is required for retention periods, statutory billing retention and backup expiry before implementation or destructive testing.
+
 ## Billing (BILL-02 / BILL-03 / BILL-04 / BILL-10)
 
 - Browser redirects are informational only. Entitlements are granted only from authenticated provider webhooks or an approved server reconciliation.
@@ -71,3 +90,4 @@ This document records backend contracts that require coordination with Member 2.
 - 2026-11-07: Added the local AUTH-05 token/API/schema contract. Provider delivery, Member 2 template approval, and final unverified-account enforcement remain separate gates.
 - 2026-11-07: Added the local IMP-09 audited finding lifecycle, migration 025, scan/plan/PR integrations, idempotency/concurrency tests and explicit completed-scan evidence requirements.
 - 2026-11-07: Added PR-07 merged-SHA persistence/deduplicated scan queue handling and PR-08 exact-commit finding-resolution classifications/evidence migration 026; live GitHub/PostgreSQL execution remains unverified.
+- 2026-11-07: Documented the current owner/member boundary plus proposed ORG-10 revocation event and SEC-19 retention/deletion request contracts; implementation remains gated on Member 2, legal and owner policy review.

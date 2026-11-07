@@ -30,7 +30,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | PR-07 | DONE_VERIFIED_LOCAL | `github-webhooks.ts`, `github-merge-scan.ts`, `github-pull-request-webhook.test.ts`: 13/13; authentic merged PRs persist merge SHA, queue one durable scan request/scan per effective commit, and tolerate duplicate/missing-SHA delivery paths | Live GitHub App auth, permissions, out-of-order delivery and worker execution remain unverified |
 | PR-08 | DONE_VERIFIED_LOCAL | `finding-resolution-verification.ts`, migration 026, scan-worker integration, finding API projection, `finding-lifecycle.test.ts` and `phase4-async-scan-worker.test.ts`: local classification/evidence/idempotency coverage passes | Live merged-PR scan, provider failure/retry and PostgreSQL/RLS evidence remain unverified |
 | ORG-05 | PARTIAL | `apps/web/src/lib/server/workspace-service.ts`, workspace-scoped routes | Centralize/document role matrix and PostgreSQL isolation tests |
-| ORG-10 | MISSING | No complete member-removal/revocation flow found in current backend inventory | Coordinate API contract with Member 2 |
+| ORG-10 | MISSING | No complete member-removal/revocation flow found; proposed request/event contract is now documented for review | Coordinate invitation schema, final-owner policy and Member 2 API/UI contract before implementation |
 | BILL-02 | PARTIAL | `apps/web/src/lib/server/billing/provider.ts` contains `MockBillingProvider`; checkout route exists | Provider selection/approval and sandbox credentials required |
 | BILL-03 | PARTIAL | `apps/web/src/app/api/webhooks/billing/route.ts`, `billing/service.ts` | Replace mock verification with approved provider raw-signature adapter |
 | BILL-04 | PARTIAL | `apps/web/src/lib/server/billing/service.ts`, `apps/web/src/lib/server/billing/plans.ts` | Authoritative provider lifecycle reconciliation |
@@ -46,7 +46,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | SEC-15 | BLOCKED | Local CI/workflow can be inspected; GitHub branch settings are external | Repository-admin read-back/approval required |
 | SEC-16 | NOT_STARTED | No reproducible load/resilience harness found in current inventory | Define safe local/staging scenarios and metrics |
 | SEC-17 | PARTIAL | Deployment/readiness docs exist; no rehearsal evidence | Verify actual hosting stack and approved staging rollback rehearsal |
-| SEC-19 | PARTIAL | Schema and deletion/security docs contain retention concerns; no complete durable deletion workflow | Coordinate legal policy and account/member deletion contracts |
+| SEC-19 | PARTIAL | Account/workspace/billing/backup data inventory and proposed auditable request states are documented; no destructive endpoint exists | Obtain legal/owner retention policy and Member 2 account/workspace deletion contract |
 | SEC-20 | NOT_STARTED | Candidate is not frozen and assigned tasks are incomplete | Run only after task and release-gate evidence is complete |
 
 ## Verification evidence
@@ -90,5 +90,5 @@ Phase 0 read-only checks:
 - Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, and IMP-09 lifecycle/migration/adapter/worker integration files.
 - Completed tasks: `SCAN-12`, `PROV-05`, `SEC-08`, `SEC-09`, `PR-07`, and `PR-08` are locally verified; `IMP-09` remains locally verified with live gates open. `SEC-01`/`SEC-02`, `SEC-04`, `AUTH-05`, and the PR live gates remain limited by external PostgreSQL, GitHub App and approved email/enforcement contracts where noted above.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: rerun the full suite in a dedicated verification window, then define the ORG-05/ORG-10 contract handoff before implementing any member-removal route.
+- Next safe task: obtain review of the documented ORG-05/ORG-10/SEC-19 contracts, then implement only the approved non-destructive authorization/revocation slice; keep deletion and final-owner changes gated.
 - Remote status: existing development backup remains at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); PROV-05 is committed locally as `da11cdfb506a11a35df61f7f517737ee9a2db1b8` and has not been pushed.
