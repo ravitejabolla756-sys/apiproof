@@ -87,7 +87,11 @@ export default function CompatibilityPage() {
             <p className="font-semibold">Reviewed records available</p>
             <p className="mt-1">Only records with official-source provenance and reviewed status can produce compatibility claims.</p>
           </div>
-          {data.changes.map((change) => (
+          {data.changes.length === 0 ? <section role="status" aria-live="polite" aria-atomic="true" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center shadow-xs">
+            <Info aria-hidden="true" className="mx-auto mb-3 h-8 w-8 text-[#686868]" />
+            <h2 className="text-base font-semibold text-[#111111]">No reviewed compatibility records are available yet</h2>
+            <p className="mx-auto mt-2 max-w-xl leading-relaxed text-[#686868]">Reviewed provider changes will appear here after an official change record is available and its scope has been confirmed.</p>
+          </section> : data.changes.map((change) => (
             <article key={change.changeId} className="space-y-4 rounded-[28px] border border-[#E8E8E5] bg-white p-6 shadow-xs">
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                 <div>
