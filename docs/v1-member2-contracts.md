@@ -19,7 +19,7 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 ## Implemented local interfaces
 
 - Account: `GET/PATCH /api/account` and `POST /api/account/password`; profile names are validated server-side, password changes require the current password, other sessions are invalidated, and OAuth-only accounts are explicitly blocked until local-password enrollment exists.
-- Organization: `/api/workspace/settings`, `/api/workspace/members`, `/api/workspace/invitations`, `/api/workspace/invitations/accept`, and `/api/workspace/audit`; owner/member remains the complete local role model, invitation tokens are hashed/expiring/single-use, and member removal invalidates sessions.
+- Organization: `/api/workspace/settings`, `/api/workspace/members`, `/api/workspace/invitations`, `/api/workspace/invitations/accept`, and `/api/workspace/audit`; owner/member remains the complete local role model, invitation tokens are hashed/expiring/single-use, member removal invalidates sessions, and audit events use a stable `(created_at,id)` cursor with bounded pages.
 - Notifications: `GET/PATCH /api/account/notifications`; preferences are server-owned, required security/account-recovery categories cannot be disabled, and unavailable email delivery is represented as unavailable rather than silently accepted.
 
 ## Proposed interfaces requiring review before shared backend changes

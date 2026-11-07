@@ -9,6 +9,7 @@ import {
   createWorkspaceInvitation,
   listOrganizationMembers,
   listWorkspaceAuditEvents,
+  listWorkspaceAuditPage,
   removeOrganizationMember,
   updateMemberRole,
   updateWorkspaceSettings,
@@ -39,6 +40,28 @@ describe('workspace administration', () => {
     expect(updated).toMatchObject({ name: 'Platform Team', slug: 'platform-team', role: 'owner' });
     const events = await listWorkspaceAuditEvents(owner.user.id, workspace.id);
     expect(events[0]).toMatchObject({ action: 'workspace.updated', actorEmail: 'owner@example.test' });
+  });
+
+  it('paginates audit events with a stable cursor and keeps workspace scope', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const otherOwner = await createUserWithSession('other@example.test', 'OtherPassword123!', 'Other');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const otherWorkspace = await getDefaultWorkspaceForUser(otherOwner.user.id);
+    for (const [index, createdAt] of ['2026-01-01T00:00:03.000Z', '2026-01-01T00:00:02.000Z', '2026-01-01T00:00:01.000Z'].entries()) {
+      await getDatabase().execute(
+        `INSERT INTO workspace_audit_events (id, workspace_id, actor_user_id, action, target_type, target_id, metadata_json, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [`audit_${index}`, workspace.id, owner.user.id, `test.event.${index}`, 'test', `target_${index}`, '{}', createdAt],
+      );
+    }
+    const first = await listWorkspaceAuditPage(owner.user.id, workspace.id, undefined, 2);
+    expect(first.events.map((event) => event.id)).toEqual(['audit_0', 'audit_1']);
+    expect(first.nextCursor).toEqual(expect.any(String));
+    const second = await listWorkspaceAuditPage(owner.user.id, workspace.id, first.nextCursor!, 2);
+    expect(second.events.map((event) => event.id)).toEqual(['audit_2']);
+    expect(second.nextCursor).toBeNull();
+    await expect(listWorkspaceAuditPage(owner.user.id, workspace.id, 'not-a-valid-cursor')).rejects.toMatchObject({ code: 'INVALID_AUDIT_CURSOR' });
+    await expect(listWorkspaceAuditPage(owner.user.id, otherWorkspace.id)).rejects.toThrow(/access denied/i);
   });
 
   it('creates a single-use expiring invitation and accepts it only for the invited email', async () => {

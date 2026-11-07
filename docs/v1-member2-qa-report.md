@@ -28,6 +28,8 @@ Updated implementation report; browser checks are local evidence only and are no
 - `pnpm exec vitest run tests/analyzer.test.ts tests/patching.test.ts --no-file-parallelism` — 116/116 PASS, including CRLF/LF-independent source audit and patch fixture digest regression coverage.
 - `pnpm exec vitest run tests/evaluation.test.ts tests/patch-cli.test.ts tests/patching.test.ts tests/web-backend.test.ts --no-file-parallelism` with the local seed password — 126/127 PASS; patching, evaluation and patch CLI now pass, while the external `C:\apiproof-github-fixture` assertion still expects line 5 and observes line 4.
 - `pnpm exec vitest run tests/verification-workspace.test.ts tests/web-backend.test.ts --no-file-parallelism` with the local seed password — 22/23 PASS; the verification workspace suite is green after aligning its test digest oracle with the canonical text-digest contract, with the same external fixture line mismatch remaining.
+- `pnpm exec vitest run tests/organization-management.test.ts --no-file-parallelism` — 6/6 PASS, including stable audit cursor pagination and cross-workspace denial.
+- `pnpm exec playwright test tests/e2e/public-site.spec.ts --grep "signs in with the local seed"` — 1/1 PASS; authenticated account, workspace and notification settings journey remains green after the audit API pagination response was added.
 - `pnpm build` — PASS; all workspace packages built and Next generated 80 static pages.
 
 ## Full-suite baseline exception

@@ -34,6 +34,11 @@ export interface WorkspaceAuditEvent {
   createdAt: string;
 }
 
+export interface WorkspaceAuditPage {
+  events: WorkspaceAuditEvent[];
+  nextCursor: string | null;
+}
+
 export class OrganizationServiceError extends Error {
   constructor(
     message: string,
@@ -46,10 +51,31 @@ export class OrganizationServiceError extends Error {
       | 'INVITATION_EMAIL_MISMATCH'
       | 'INVITATION_ALREADY_USED'
       | 'LAST_OWNER_REQUIRED'
-      | 'ALREADY_A_MEMBER',
+      | 'ALREADY_A_MEMBER'
+      | 'INVALID_AUDIT_CURSOR',
   ) {
     super(message);
     this.name = 'OrganizationServiceError';
+  }
+}
+
+const AUDIT_PAGE_SIZE = 50;
+
+function encodeAuditCursor(createdAt: string, id: string): string {
+  return Buffer.from(JSON.stringify({ createdAt, id }), 'utf8').toString('base64url');
+}
+
+function decodeAuditCursor(cursor: string): { createdAt: string; id: string } {
+  if (cursor.length > 512) throw new OrganizationServiceError('Invalid audit cursor.', 'INVALID_AUDIT_CURSOR');
+  try {
+    const parsed = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as { createdAt?: unknown; id?: unknown };
+    if (typeof parsed.createdAt !== 'string' || !Number.isFinite(Date.parse(parsed.createdAt))
+      || typeof parsed.id !== 'string' || parsed.id.length < 1 || parsed.id.length > 255) {
+      throw new Error('invalid cursor');
+    }
+    return { createdAt: parsed.createdAt, id: parsed.id };
+  } catch {
+    throw new OrganizationServiceError('Invalid audit cursor.', 'INVALID_AUDIT_CURSOR');
   }
 }
 
@@ -212,11 +238,27 @@ export async function acceptWorkspaceInvitation(userId: string, token: string): 
 }
 
 export async function listWorkspaceAuditEvents(userId: string, workspaceId: string): Promise<WorkspaceAuditEvent[]> {
+  return (await listWorkspaceAuditPage(userId, workspaceId)).events;
+}
+
+export async function listWorkspaceAuditPage(userId: string, workspaceId: string, cursor?: string, limit = AUDIT_PAGE_SIZE): Promise<WorkspaceAuditPage> {
   await requireWorkspaceMember(userId, workspaceId);
+  const pageSize = Number.isSafeInteger(limit) ? Math.min(Math.max(limit, 1), AUDIT_PAGE_SIZE) : AUDIT_PAGE_SIZE;
+  const decoded = cursor ? decodeAuditCursor(cursor) : undefined;
+  const conditions = decoded
+    ? `AND (a.created_at < ? OR (a.created_at = ? AND a.id < ?))`
+    : '';
+  const parameters = decoded
+    ? [workspaceId, decoded.createdAt, decoded.createdAt, decoded.id, pageSize + 1]
+    : [workspaceId, pageSize + 1];
   const rows = await getDatabase().query<{ id: string; action: string; target_type: string; target_id: string | null; metadata_json: string; actor_email: string | null; created_at: string }>(
     `SELECT a.id, a.action, a.target_type, a.target_id, a.metadata_json, u.email as actor_email, a.created_at
      FROM workspace_audit_events a LEFT JOIN users u ON u.id = a.actor_user_id
-     WHERE a.workspace_id = ? ORDER BY a.created_at DESC LIMIT 100`, [workspaceId],
+     WHERE a.workspace_id = ? ${conditions} ORDER BY a.created_at DESC, a.id DESC LIMIT ?`, parameters,
   );
-  return rows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: JSON.parse(row.metadata_json) as Record<string, unknown>, actorEmail: row.actor_email, createdAt: row.created_at }));
+  const hasMore = rows.length > pageSize;
+  const pageRows = hasMore ? rows.slice(0, pageSize) : rows;
+  const events = pageRows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: JSON.parse(row.metadata_json) as Record<string, unknown>, actorEmail: row.actor_email, createdAt: row.created_at }));
+  const last = pageRows.at(-1);
+  return { events, nextCursor: hasMore && last ? encodeAuditCursor(last.created_at, last.id) : null };
 }
