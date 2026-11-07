@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
-import { collectProviderRuleTestTokens, findProviderRuleTestMatches } from '@/lib/server/provider-rule-test';
+import { collectProviderRuleTestTokens, findProviderRuleTestMatches } from '@/lib/server/provider-rule-test.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
 

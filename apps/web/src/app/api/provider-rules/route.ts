@@ -8,7 +8,7 @@ import {
 } from '@apiproof/providers';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
-import { PROVIDER_CHANGE_SOURCES } from '@/lib/server/provider-change-monitor';
+import { PROVIDER_CHANGE_SOURCES } from '@/lib/server/provider-change-monitor.js';
 import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };

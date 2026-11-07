@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
-import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service';
+import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service.js';
 import { processRepositoryRescans } from '@/lib/server/repository-rescan-worker.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
