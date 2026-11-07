@@ -62,14 +62,14 @@ export default function CompatibilityPage() {
       <div className="flex flex-col justify-between gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-center">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-medium tracking-tight text-[#111111]">
-            <ShieldCheck className="h-6 w-6 text-purple-700" />
+            <ShieldCheck aria-hidden="true" className="h-6 w-6 text-purple-700" />
             Compatibility Intelligence
           </h1>
           <p className="mt-1 text-xs text-[#686868]">
             Reviewed upstream changes and repository-bound compatibility proofs.
           </p>
         </div>
-        <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />}>
+        <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>
           Refresh
         </Button>
       </div>
@@ -78,7 +78,7 @@ export default function CompatibilityPage() {
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
-          <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />
+          <Loader2 aria-hidden="true" className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />
           Loading reviewed compatibility records...
         </div>
       ) : data?.claimsAvailable ? (
@@ -122,14 +122,14 @@ export default function CompatibilityPage() {
                 <p className="mt-1 text-[10px]">Reviewed by {change.reviewer} on {change.reviewedAt}</p>
               </div>
               <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-purple-700 hover:underline">
-                Official source <ExternalLink className="h-3.5 w-3.5" />
+                Official source <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
               </a>
             </article>
           ))}
         </section>
       ) : (
         <section role="status" aria-live="polite" aria-atomic="true" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center shadow-xs">
-          <Info className="mx-auto mb-3 h-8 w-8 text-[#686868]" />
+          <Info aria-hidden="true" className="mx-auto mb-3 h-8 w-8 text-[#686868]" />
           <h2 className="text-base font-semibold text-[#111111]">No reviewed compatibility claims are available</h2>
           <p className="mx-auto mt-2 max-w-xl leading-relaxed text-[#686868]">
             MY OWL will show a provider, version, upstream change, and code location here only after an official change record has been reviewed. Discovery evidence alone does not create a compatibility claim.
