@@ -313,10 +313,9 @@ test.describe('authenticated product surfaces', () => {
     page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
     await expect(page.getByText('Invitation cancelled.')).toBeVisible({ timeout: 30_000 });
-    const invitationRow = page.getByText(inviteEmail).locator('..');
-    await expect(invitationRow).toContainText('Revoked');
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'workspace administration populated state').toEqual([]);
+    await expect(page.getByText(inviteEmail).locator('..')).toContainText('Revoked');
   });
-
   test('accepts a real generated invitation with the invited account', async ({ page, browser }) => {
     await signIn(page);
     const inviteEmail = `browser-accept-${Date.now()}@example.test`;

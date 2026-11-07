@@ -27,7 +27,7 @@ Statuses are current baseline findings, not completion claims.
 | ORG-02 | PARTIAL | Server-validated `apiproof_workspace_id` context cookie, workspace picker, selected-scope API migration, stale-context fallback and explicit workspace override | `organization-management` 10/10; browser selector/axe 1/1; hermetic two-workspace switching journey 1/1; primary and secondary dashboard journeys 1/1 each | ORG-05 role matrix remains PARTIAL | PostgreSQL tenant/RLS proof | Reconcile role matrix and run approved checks |
 | ORG-03 | PARTIAL | Hashed 7-day single-use invites, email binding, accept page/API, owner UI cancellation, and same-address resend rotation that revokes the previous pending token | `organization-management` 10/10; browser invitation create/cancel journey 1/1 and real generated-invitation acceptance journey 1/1 without email delivery | ORG-05/ORG-10 coordination | Approved transactional email unavailable | Add provider-backed acceptance/resend delivery after approval |
 | ORG-04 | PARTIAL | Owner-only role/removal UI/API, explicit workspace/user mutation contract, last-owner guard and session invalidation | Organization suite 10/10 covers HTTP contract and owner/member boundaries; real accepted-member role update/removal/session-invalidation browser journey 1/1 | ORG-10 is MISSING; revocation contract absent | PostgreSQL/concurrent proof | Integrate reviewed backend contract |
-| ORG-11 | PARTIAL | Tenant-scoped read-only audit API/service/page records settings, invitation, role and removal actions with stable bounded cursor pagination and accessible load-more UI | `organization-management` 10/10; authenticated browser settings journey PASS | Member 1 RBAC/retention contract | PostgreSQL tenant/RLS and retention review | Review event taxonomy, RBAC visibility and retention with Member 1 |
+| ORG-11 | PARTIAL | Tenant-scoped read-only audit API/service/page records settings, invitation, role and removal actions with stable bounded cursor pagination and accessible load-more UI | `organization-management` 10/10; authenticated browser settings journey PASS; populated workspace administration invitation/cancellation journey with focused axe scan 1/1 | Member 1 RBAC/retention contract | PostgreSQL tenant/RLS and retention review | Review event taxonomy, RBAC visibility and retention with Member 1 |
 | BILL-07 | PARTIAL | Paid checkout server-blocked; pricing/settings show beta states | Billing boundaries 2/2; pricing included in 29/29 | Provider lifecycle remains PARTIAL | Provider sandbox/signatures/reconciliation | Owner selects and approves provider |
 | BILL-08 | PARTIAL | Portal endpoint returns beta-unavailable; no simulated URL | Billing boundary test covers refusal | Provider contract required | Real provider portal/authorization | Implement projection after approval |
 | BILL-09 | MISSING | No invoice schema/API/UI | No invoice test | Provider lifecycle contract | Invoice source/retention policy | Define provider-backed contract |
@@ -69,6 +69,11 @@ Statuses are current baseline findings, not completion claims.
 ## 2026-11-07 checkpoint — UI-12/UI-13 combined recovery regression
 
 - Evidence: `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts tests/e2e/dashboard-data-states.spec.ts tests/e2e/repository-recovery.spec.ts --workers=1 --timeout=300000` PASS — 7/7 in 1.8 minutes. This confirms the committed route accessibility, mobile accessibility, dashboard state recovery and repository retry coverage together; hosted CI and full assistive-technology review remain open.
+
+## 2026-11-07 checkpoint — ORG-11 workspace administration accessibility
+
+- Change: the real local invitation create/cancel journey now runs an axe scan against the populated workspace administration page and audit trail surface.
+- Evidence: `pnpm exec eslint tests/e2e/public-site.spec.ts --max-warnings 0` PASS; focused invitation create/cancel journey PASS — 1/1. PostgreSQL tenant/RLS, retention and Member 1 RBAC review remain open.
 
 ## 2026-11-07 checkpoint — UI-12 public/authentication failure states
 
