@@ -331,7 +331,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
               )}
             </div>
           ) : repositories.length === 0 ? (
-            <div className="py-8 text-center space-y-4">
+            <div role="status" aria-live="polite" aria-atomic="true" className="py-8 text-center space-y-4">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-[#111111]">No Repositories Available</h4>
                 <p className="text-xs text-[#686868] max-w-sm mx-auto">
