@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-13 repository list/detail keyboard recovery
+
+- Change: Extended the repository list and detail transient-failure journey to focus each “Try again” action, verify focus visibility, and activate both recoveries with Enter while preserving the existing loading, status and axe-related assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused repository recovery journey passed 1/1 in 16.3 seconds. Artifacts: `/tmp/myowl-v1-repository-recovery-keyboard-artifacts`.
+- Scope: local UI-12/UI-13 keyboard/recovery evidence only; no GitHub, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 findings filtered-empty keyboard recovery
 
 - Change: Extended the dedicated findings filtered-empty journey to focus the “Clear filters” recovery action, verify focus visibility, activate it with Enter, and preserve the existing result-restoration and axe assertions.

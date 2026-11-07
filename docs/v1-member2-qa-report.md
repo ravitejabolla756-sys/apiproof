@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Repository list/detail keyboard recovery
+
+- PASS: Focused repository recovery journey passed 1/1 in 16.3 seconds; list and detail “Try again” actions now verify keyboard focus and Enter activation while retaining transient-failure recovery and status assertions.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12/UI-13 evidence only. GitHub integration, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Findings filtered-empty keyboard recovery
 
 - PASS: Focused findings filter journey passed 1/1 in 14.1 seconds; the filtered-empty “Clear filters” action now verifies keyboard focus and Enter activation before restoring the finding, with the existing axe-clean assertion intact.
