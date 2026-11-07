@@ -36,6 +36,25 @@ This document records backend contracts that require coordination with Member 2.
 - Proposed durable request states for review are `requested`, `processing`, `completed`, `failed` and `cancelled`, keyed by an idempotency key and carrying `workspaceId`/`subjectUserId`, actor, timestamps, policy version, scrubbed outcome and audit reference. Cross-tenant requests must fail before any mutation.
 - Member 2 review is required for confirmation/re-authentication UX, workspace selection, impact disclosure, status polling and account-vs-workspace deletion wording. Legal/owner approval is required for retention periods, statutory billing retention and backup expiry before implementation or destructive testing.
 
+### Missing decisions and implementation-ready acceptance scenarios
+
+- Member 2 must confirm whether the member-management action is `remove member`, `leave workspace`, or `close account`; these are different authorization and retention operations and must not share a destructive endpoint accidentally.
+- Member 2 must confirm confirmation/re-authentication requirements, workspace/member selection behavior, impact disclosure, status polling, and the UI treatment of `requested`, `processing`, `completed`, `failed` and `cancelled` states.
+- Owner/legal must confirm final-owner behavior (ownership transfer required versus an approved owner-only workspace closure), statutory billing/invoice retention, backup expiry wording, and whether anonymization is preferred over deletion for retained records.
+- The current `sessions` table is user-scoped rather than workspace-scoped. Before ORG-10 implementation, the owner and Member 2 must choose a workspace-session binding or an equivalent revocation marker; deleting every session for the user would incorrectly terminate unrelated personal sessions and other workspace memberships.
+- Member 2 must confirm whether pending invitations are invalidated immediately, whether queued workspace jobs are cancelled or allowed to drain, and which audit events are visible to workspace owners versus platform operators.
+
+The following tests are implementation-ready but remain contract-gated; they intentionally do not authorize a deletion endpoint or destructive migration:
+
+- ORG-10-A: an authorized owner removes a non-owner member; the membership is revoked, the removed subject's workspace-scoped API/session/job paths deny access, and unrelated personal sessions plus memberships in another workspace remain valid.
+- ORG-10-B: a non-owner, non-member, cross-workspace, missing-member, or client-role-manipulated request fails with a non-enumerating authorization response and performs no mutation.
+- ORG-10-C: removal of the final owner is rejected unless the approved ownership-transfer contract is present; concurrent removal attempts produce one durable revocation event and one terminal request outcome.
+- ORG-10-D: duplicate idempotency keys return the existing request/event outcome; a reused key with a different workspace, subject, or operation fails closed.
+- ORG-10-E: pending invitations and queued workspace operations follow the approved cancel/drain policy, and every queued operation re-checks current membership at execution time.
+- SEC-19-A: account closure invalidates sessions and account-recovery tokens before deletion/anonymization; a retry is idempotent and cannot affect another user's workspace.
+- SEC-19-B: workspace deletion/anonymization is tenant-scoped, records an auditable request state, preserves statutory billing records according to the approved policy, and exposes backup-expiry status without claiming backups were erased.
+- SEC-19-C: cross-tenant deletion requests fail before mutation; failed processing is resumable and records a scrubbed outcome plus audit reference.
+
 ## Billing (BILL-02 / BILL-03 / BILL-04 / BILL-10)
 
 - Browser redirects are informational only. Entitlements are granted only from authenticated provider webhooks or an approved server reconciliation.
@@ -81,6 +100,13 @@ This document records backend contracts that require coordination with Member 2.
 - `stalledProcessingJobs` is derived only from an expired persisted lease; `retryExhaustedJobs` is derived from the queue's bounded attempt count. These are indicators for an owner-approved monitor, not automatic authorization, deletion or retry decisions.
 - Alert destinations, retention and escalation policy require owner approval before staging/production configuration.
 
+## Load and resilience testing (SEC-16)
+
+- The local SEC-16 harness is test-only and in-process. It refuses `NODE_ENV=production`, creates no HTTP client or socket, and uses an isolated SQLite database path under `.tmp`.
+- Workloads are bounded by hard iteration, concurrency, timeout and retry limits. Reports include total/success/failure counts, sanitized error categories, throughput, max in-flight operations, and p50/p95/p99 latency.
+- Local scenarios cover health/API execution, signed webhook verification and durable delivery claim/record, SQLite queries, and queue telemetry. Failure injection is deterministic and limited to the harness callback; it cannot reach a provider or production resource.
+- Staging execution remains a separate gate requiring approved traffic limits, fixture data, metrics/SLO thresholds, worker failure injection, and recovery evidence.
+
 ## HTTP security (SEC-08)
 
 - `APIPROOF_CORS_ORIGINS` is an optional comma-separated allowlist of exact HTTP(S) origins. Empty means same-origin only; wildcard origins are rejected.
@@ -96,3 +122,5 @@ This document records backend contracts that require coordination with Member 2.
 - 2026-11-07: Documented the current owner/member boundary plus proposed ORG-10 revocation event and SEC-19 retention/deletion request contracts; implementation remains gated on Member 2, legal and owner policy review.
 - 2026-11-07: Added tenant-neutral scan queue age/retry/stalled-lease telemetry to the existing protected status projection; alert delivery, heartbeat ownership and worker-death rehearsal remain external gates.
 - 2026-11-07: Added the local ORG-05 role/capability policy with fail-closed unknown-role handling; route adoption and admin provisioning remain contract-gated.
+- 2026-11-07: Added implementation-ready ORG-10/SEC-19 acceptance scenarios and recorded missing Member 2, legal and owner decisions; no destructive endpoint or migration was added.
+- 2026-11-07: Added the local-only SEC-16 harness contract; staging load, failure-injection and recovery evidence remain external gates.

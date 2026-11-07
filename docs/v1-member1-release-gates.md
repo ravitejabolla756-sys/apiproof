@@ -4,7 +4,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 
 | Gate | Status | Evidence / required next action |
 |---|---|---|
-| Clean isolated workstream baseline | PASS | `C:\YC-my-owl-v1-member1`, branch `codex/v1-backend-security`, reviewed from `d1cd9f4d`; current local implementation checkpoint `da11cdf` |
+| Clean isolated workstream baseline | PASS | `C:\YC-my-owl-v1-member1`, branch `codex/v1-backend-security`, reviewed from `d1cd9f4d`; current local implementation checkpoint `fa7d511` plus uncommitted generated `.codebase-memory/` only |
 | Original dirty work preserved | PASS | Original `C:\YC-my-owl-v1` remains separate with 238 status entries |
 | Dependency vulnerabilities | PASS (high/critical) | `pnpm audit --prod --audit-level=high` exits 0 after patched dependency updates; four moderate advisories remain (three Nodemailer, one minimatch) and require risk disposition |
 | Security headers and exact-origin CORS | PASS (local) | Middleware tests cover protected API responses, approved/denied preflight, CSP, HSTS-on-HTTPS and OAuth-compatible popup policy; staging/browser smoke remains not tested |
@@ -27,7 +27,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Error monitoring and alert routing | BLOCKED | Approved observability provider/destination absent |
 | Queue/scheduler monitoring | PARTIAL | Protected status exposes queue depth/age/retry/stalled-lease/exhaustion indicators and local 32/32 operations/cron/scan tests pass; approved alerts, heartbeat and failure rehearsal remain |
 | Branch protection | BLOCKED | Requires GitHub repository-admin read-back and approval |
-| Load/resilience evidence | NOT_TESTED | No safe reproducible harness/results yet |
+| Load/resilience evidence | PARTIAL | Local-only SEC-16 harness covers bounded API, webhook, SQLite and worker-metrics workloads plus deterministic retry recovery/exhaustion; approved staging traffic, p50/p95/p99 thresholds, bottleneck and worker-failure-recovery evidence remain |
 | Deployment rollback rehearsal | BLOCKED | Hosting stack/staging rehearsal not authorized or verified |
 | Retention/deletion | PARTIAL / POLICY BLOCKED | Account/workspace/billing/backup inventory and request-state contract are documented; legal retention policy and durable workflow remain unapproved |
 | Final release security audit | NOT_TESTED | Must use a frozen candidate after all other gates |
@@ -39,7 +39,9 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 - `pnpm build`: PASS; Next.js 15.5.29, 63 static pages generated.
 - Targeted backend/security tests: PASS, 7 files / 58 tests.
 - Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 157 passed files / 1 skipped (158 total); 1,327 passed tests / 4 skipped (1,331 total).
-- Current PROV-05 seeded full-suite rerun: NOT_COMPLETE; the process remained active after bounded waiting and was stopped without an aggregate result. No full-suite pass is claimed for this checkpoint.
+- Current PROV-05/SEC-16 seeded full-suite rerun: NOT_COMPLETE; the 161-file process remained active beyond the bounded runtime window and was stopped without an aggregate result. No full-suite pass is claimed for this checkpoint.
+- SEC-16/ORG-05 targeted suite: PASS, 4 files / 26 tests; includes one load test covering four local workloads, two deterministic retry tests, three SQLite-backed ORG-05 tests, the pure role-policy tests, and existing multi-tenant workspace regressions.
+- Targeted ESLint: PASS for the new SEC-16 and ORG-05 files; `pnpm typecheck`: PASS.
 - IMP-09 focused regression suites: PASS, 3 files / 46 tests (`finding-lifecycle`, `proposal-recovery`, `phase4-async-scan-worker`); lifecycle acceptance includes transitions, duplicate/conflicting idempotency keys, concurrent retries, tenant mismatch, regression reopen and completed-scan evidence.
 - PR-07/PR-08 focused regression suites: PASS, 3 files / 38 tests (`github-pull-request-webhook`, `finding-lifecycle`, `phase4-async-scan-worker`); coverage includes merge-SHA deduplication, missing-SHA rejection, persisted merge linkage, resolution classifications and idempotent evidence.
 - The deterministic fixture stabilization uses repository-owned synthetic source for offline scan/verification tests plus committed LF rules for `evaluation/` and `evaluation-patches/`; no arbitrary local checkout is analyzed.

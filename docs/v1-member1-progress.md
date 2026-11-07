@@ -10,7 +10,7 @@ Reviewed baseline: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8`; current refreshed
 - The authoritative repository is `C:\YC-my-owl-v1`; its remote is `https://github.com/ravitejabolla756-sys/apiproof.git`.
 - The original worktree remains untouched and has 238 pre-existing status entries. It is on `codex/my-owl-v1-development` at the same baseline commit.
 - Member 1 work is isolated in this worktree, created directly from the reviewed baseline. The original and Member 2 worktrees remain separate.
-- At the start of this continuation, `HEAD...origin/main` was `15 4`: the feature branch retains its reviewed work while `origin/main` has advanced independently. The approved backup branch exists remotely at `882b0200eac913bd0eb08f5e7921250b90d0e73e`.
+- The current refreshed divergence is `origin/main...HEAD = 4 20`: `origin/main` has advanced independently while the feature branch retains its reviewed work plus five new local commits. The approved backup branch exists remotely at `882b0200eac913bd0eb08f5e7921250b90d0e73e`.
 - Package manager: pnpm 10.30.3; repository requires Node >=22.14.0 and pnpm >=10 <11.
 - Architecture: Next.js web app with direct PostgreSQL/SQLite adapters, workspace-scoped services, CLI/core/analyzer/provider packages, GitHub and Slack integrations, and durable worker tables.
 - Production and staging credentials were not used. No production DB, GitHub settings, payment provider, email service, deployment, secret, or live data was changed.
@@ -29,7 +29,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | MIG-01 | PARTIAL_EXTERNAL_BLOCKED | `planning-service.ts` uses bounded `DeterministicPlanner`; core `LLMPlanner`/`validateModelOutput` provide a tested future-adapter boundary; `tests/planning.test.ts` covers valid/invalid model output, provider failure and deterministic fallback | No approved production model/provider, credentials, structured-output/cost/retry contract or runtime adapter; keep web route deterministic-only |
 | PR-07 | DONE_VERIFIED_LOCAL | `github-webhooks.ts`, `github-merge-scan.ts`, `github-pull-request-webhook.test.ts`: 13/13; authentic merged PRs persist merge SHA, queue one durable scan request/scan per effective commit, and tolerate duplicate/missing-SHA delivery paths | Live GitHub App auth, permissions, out-of-order delivery and worker execution remain unverified |
 | PR-08 | DONE_VERIFIED_LOCAL | `finding-resolution-verification.ts`, migration 026, scan-worker integration, finding API projection, `finding-lifecycle.test.ts` and `phase4-async-scan-worker.test.ts`: local classification/evidence/idempotency coverage passes | Live merged-PR scan, provider failure/retry and PostgreSQL/RLS evidence remain unverified |
-| ORG-05 | PARTIAL | `workspace-policy.ts` centralizes owner/admin/member capability vocabulary and fails closed on unknown roles; workspace-policy, multi-tenant and operations regressions pass 27/27 | Adopt reviewed capabilities across organization/invitation/billing/audit routes and run effective PostgreSQL role/isolation tests |
+| ORG-05 | PARTIAL | `workspace-policy.ts` centralizes owner/admin/member capability vocabulary and fails closed on unknown roles; three SQLite-backed boundary tests plus the existing policy/multi-tenant regressions pass in the combined 4-file 26/26 run | Adopt reviewed capabilities across organization/invitation/billing/audit routes and run effective PostgreSQL role/isolation tests |
 | ORG-10 | MISSING | No complete member-removal/revocation flow found; proposed request/event contract is now documented for review | Coordinate invitation schema, final-owner policy and Member 2 API/UI contract before implementation |
 | BILL-02 | PARTIAL | `apps/web/src/lib/server/billing/provider.ts` contains `MockBillingProvider`; checkout route exists | Provider selection/approval and sandbox credentials required |
 | BILL-03 | PARTIAL | `apps/web/src/app/api/webhooks/billing/route.ts`, `billing/service.ts` | Replace mock verification with approved provider raw-signature adapter |
@@ -44,7 +44,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | SEC-11 | BLOCKED | No approved error-monitoring provider/configuration found | Owner must approve tool, destination, retention and staging access |
 | SEC-13 | PARTIAL | Protected status projection now reports scan queue depth, oldest pending age, retries, expired processing leases and retry exhaustion; operations/cron/scan tests pass 32/32 | Add owner-approved alert destination, worker heartbeat ownership and staged worker-death/retry-storm rehearsal |
 | SEC-15 | BLOCKED | Local CI/workflow can be inspected; GitHub branch settings are external | Repository-admin read-back/approval required |
-| SEC-16 | NOT_STARTED | No reproducible load/resilience harness found in current inventory | Define safe local/staging scenarios and metrics |
+| SEC-16 | PARTIAL | Test-only `sec16-load-resilience-harness.ts` bounds iterations/concurrency/timeouts, reports p50/p95/p99/throughput/errors, and exercises local API, webhook, SQLite and worker-metrics paths; deterministic transient-failure and retry-exhaustion tests pass in the combined 26/26 run | Execute approved staging scenarios against real API/webhook/database/worker infrastructure and record bottlenecks, recovery, SLO thresholds and failure-injection evidence |
 | SEC-17 | PARTIAL | Deployment/readiness docs exist; no rehearsal evidence | Verify actual hosting stack and approved staging rollback rehearsal |
 | SEC-19 | PARTIAL | Account/workspace/billing/backup data inventory and proposed auditable request states are documented; no destructive endpoint exists | Obtain legal/owner retention policy and Member 2 account/workspace deletion contract |
 | SEC-20 | NOT_STARTED | Candidate is not frozen and assigned tasks are incomplete | Run only after task and release-gate evidence is complete |
@@ -54,7 +54,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 Phase 0 read-only checks:
 
 - `git rev-parse --show-toplevel`, `git worktree list --porcelain`, `git status --short`, `git remote -v`: passed; identity and dirty-worktree inventory recorded above.
-- `git rev-list --left-right --count HEAD...origin/main`: `15 4` at the refreshed checkpoint; the feature branch is ahead by its reviewed commits while `origin/main` has advanced independently.
+- `git rev-list --left-right --count origin/main...HEAD`: `4 20`; the feature branch is ahead by 20 commits while `origin/main` has advanced independently by 4 commits.
 - `pnpm audit --prod --audit-level=high`: PASS after remediation; four moderate advisories remain at the `moderate` threshold and are not suppressed.
 - Codebase-memory full index: 7,140 nodes / 17,829 edges; five dashboard files have parse-partial ranges and are not used as authoritative backend evidence.
 
@@ -85,10 +85,20 @@ Phase 0 read-only checks:
 - Acceptance evidence: focused compatibility/changelog, provider-registry, human-review and rescan suites — 6 files / 66 tests passed; `pnpm typecheck`, targeted ESLint and `pnpm build` passed; `git diff --check` passed. An environment-corrected full `pnpm test` run was started but stopped after bounded waiting without an aggregate result; it is not claimed as a pass.
 - This is local development evidence only. It does not promote candidates, change the production registry, or establish live provider accuracy.
 
+## SEC-16 / ORG-05 implementation checkpoint
+
+- Added test-only `tests/sec16-load-resilience-harness.ts` with hard iteration/concurrency/retry bounds, per-operation timeout accounting, sanitized error codes, throughput and percentile latency reporting, and a production-environment guard.
+- Added `tests/sec16-load-resilience.test.ts`: local in-process health/API, signed webhook verification/claim/record, SQLite query, and worker queue-metrics scenarios plus deterministic transient recovery and retry exhaustion.
+- Added `tests/workspace-policy-integration.test.ts`: persisted unknown-role fail-closed behavior, member capability denial, and cross-workspace denial without changing the owner/member persisted role contract.
+- Targeted validation: 4 files / 26 tests passed; targeted ESLint passed; `pnpm typecheck` passed.
+- The corrected seeded `pnpm test` rerun covered the normal 161-file suite invocation but remained silent beyond the prior runtime ceiling and was stopped without an aggregate result. It is recorded as `NOT_COMPLETE`, not as a pass or a diagnosed failure.
+- The interrupted full run left generated `.tmp` SQLite artifacts; no tracked source changes were created by the test runner.
+
 ## Current checkpoint
 
-- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, IMP-09 lifecycle/migration/adapter/worker integration files, PROV-05 classification/parser/tests, ORG-05 policy/service/tests, ORG-10/SEC-19 contract documentation, and SEC-13 queue telemetry/tests.
+- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, IMP-09 lifecycle/migration/adapter/worker integration files, PROV-05 classification/parser/tests, ORG-05 policy/service/tests, ORG-10/SEC-19 contract documentation, SEC-13 queue telemetry/tests, and the new SEC-16 local harness/tests.
+- Current task accounting: 7 locally `DONE_VERIFIED`, 15 `PARTIAL`, 1 `MISSING`, 3 `BLOCKED`, 1 `NOT_STARTED`; production-verified remains 0.
 - Completed tasks: `SCAN-12`, `PROV-05`, `SEC-08`, `SEC-09`, `PR-07`, and `PR-08` are locally verified; `IMP-09` remains locally verified with live gates open. `SEC-01`/`SEC-02`, `SEC-04`, `AUTH-05`, and the PR live gates remain limited by external PostgreSQL, GitHub App and approved email/enforcement contracts where noted above.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: obtain review of the documented ORG-05/ORG-10/SEC-19 contracts, then implement only the approved non-destructive authorization/revocation slice; keep deletion and final-owner changes gated. SEC-13 still needs approved monitoring/rehearsal evidence.
-- Remote status: existing development backup remains at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); PROV-05 is committed locally as `da11cdfb506a11a35df61f7f517737ee9a2db1b8` and has not been pushed.
+- Next safe task: obtain review of the documented ORG-05/ORG-10/SEC-19 contracts, then implement only the approved non-destructive authorization/revocation slice; keep deletion and final-owner changes gated. SEC-16 still needs approved staging execution and SEC-13 still needs approved monitoring/rehearsal evidence.
+- Remote status: existing development backup remains at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); five reviewed commits through `fa7d511fe46fe18405e626b591348af56ece4e4e` remain local and have not been pushed.
