@@ -322,3 +322,10 @@ Statuses are current baseline findings, not completion claims.
 
 - Evidence: CI-mode production-build Playwright run across all committed `tests/e2e` specs PASS — 43/43 in 54.9 seconds with a fresh isolated SQLite database; retained artifacts were moved to `/tmp/myowl-v1-ui13-findings-current-artifacts/`.
 - Scope: this is local production-build evidence only; hosted CI, integrated staging, full assistive-technology review and production verification remain open. No remote Git, deployment or production operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 dashboard empty-state announcements
+
+- Change: activity, inventory, migration, compatibility, pull-request and repository empty states now expose polite atomic status regions; the existing 9-case dashboard data-state test asserts each empty-state announcement after retry.
+- Files: `apps/web/src/app/dashboard/activity/page.tsx`, `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; dashboard data-state suite PASS — 9/9; full CI-mode browser matrix PASS — 43/43 in 54.6 seconds.
+- Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.

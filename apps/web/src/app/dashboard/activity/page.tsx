@@ -64,7 +64,7 @@ export default function ActivityPage() {
           <span>Loading activity log...</span>
         </div>
       ) : activities.length === 0 ? (
-        <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
+        <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
           <Activity className="w-8 h-8 text-purple-700 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No activity recorded yet</p>
           <p className="text-xs text-[#686868]">

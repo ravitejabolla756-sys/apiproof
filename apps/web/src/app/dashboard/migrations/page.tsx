@@ -90,7 +90,7 @@ export default function MigrationsWorkbenchPage() {
           <span>Loading review records...</span>
         </div>
       ) : migrations.length === 0 ? (
-        <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
+        <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
           <FileCheck2 className="w-8 h-8 text-emerald-600 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No active evidence review records yet</p>
           <p className="text-xs text-[#686868]">

@@ -254,6 +254,7 @@ test.describe('authenticated dashboard data states', () => {
       await page.getByRole('button', { name: 'Try again' }).click();
       await expect(alert).toHaveCount(0);
       await expect(page.getByText(state.empty, { exact: false })).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByRole('status')).toContainText(state.empty);
       const emptyResults = await new AxeBuilder({ page }).include('#main-content').analyze();
       expect(emptyResults.violations, `${state.path} empty state`).toEqual([]);
       expect(requestCount).toBeGreaterThanOrEqual(2);

@@ -128,7 +128,7 @@ export default function CompatibilityPage() {
           ))}
         </section>
       ) : (
-        <section className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center shadow-xs">
+        <section role="status" aria-live="polite" aria-atomic="true" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center shadow-xs">
           <Info className="mx-auto mb-3 h-8 w-8 text-[#686868]" />
           <h2 className="text-base font-semibold text-[#111111]">No reviewed compatibility claims are available</h2>
           <p className="mx-auto mt-2 max-w-xl leading-relaxed text-[#686868]">

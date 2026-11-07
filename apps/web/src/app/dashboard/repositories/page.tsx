@@ -209,7 +209,7 @@ export default function RepositoriesTablePage() {
                 </tr>
               ) : filteredRepos.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#686868]">
+                  <td colSpan={8} role="status" aria-live="polite" aria-atomic="true" className="py-12 text-center text-[#686868]">
                     No repositories found matching your filter.
                   </td>
                 </tr>

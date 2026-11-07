@@ -82,7 +82,7 @@ export default function PullRequestsPage() {
           <span>Loading pull requests...</span>
         </div>
       ) : pullRequests.length === 0 ? (
-        <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
+        <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
           <GitPullRequest className="w-8 h-8 text-blue-600 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No pull requests created yet</p>
           <p className="text-xs text-[#686868]">

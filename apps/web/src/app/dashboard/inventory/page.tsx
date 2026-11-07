@@ -103,7 +103,7 @@ export default function ApiInventoryPage() {
           <span>Loading API provider registry...</span>
         </div>
       ) : items.length === 0 ? (
-        <div role="status" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">
+        <div role="status" aria-live="polite" aria-atomic="true" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">
           <Boxes className="mx-auto mb-3 h-8 w-8 text-purple-700" />
           <p className="font-semibold text-base text-[#111111]">{providers.length === 0 ? "No API inventory records are available yet" : "No provider rules match this filter"}</p>
           <p className="mt-2 text-xs">{providers.length === 0 ? "Provider rules will appear here when the reviewed registry is available." : "Try a different provider or rule search."}</p>
