@@ -202,6 +202,45 @@ test.describe('authenticated product surfaces', () => {
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
 
+  test('saves an optional notification preference through the UI contract', async ({ page }) => {
+    await signIn(page);
+    let postedUpdates: unknown;
+    await page.route('**/api/account/notifications', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            preferences: [
+              { category: 'security', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+              { category: 'findings', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
+            ],
+          }),
+        });
+        return;
+      }
+      postedUpdates = JSON.parse(route.request().postData() || '{}');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ preferences: [{ category: 'findings', channel: 'slack', enabled: false, required: false, deliveryAvailable: true }] }),
+      });
+    });
+
+    await page.goto('/dashboard/settings/notifications');
+    const findingsSlack = page.getByLabel('Breaking findings via slack');
+    await expect(findingsSlack).toBeChecked();
+    await findingsSlack.uncheck();
+    await page.getByRole('button', { name: 'Save preferences' }).click();
+    await expect(page.getByRole('status')).toContainText('Notification preferences saved.', { timeout: 30_000 });
+    expect(postedUpdates).toEqual({ updates: [
+      { category: 'security', channel: 'email', enabled: true },
+      { category: 'findings', channel: 'slack', enabled: false },
+    ] });
+    await expect(findingsSlack).not.toBeChecked();
+    await page.unroute('**/api/account/notifications');
+  });
+
   test('exposes an accessible server-backed workspace context selector', async ({ page }) => {
     await signIn(page);
     await page.goto('/dashboard');
