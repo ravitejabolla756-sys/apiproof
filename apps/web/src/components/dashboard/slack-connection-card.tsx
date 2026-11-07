@@ -10,16 +10,20 @@ export function SlackConnectionCard() {
   const [status, setStatus] = useState<SlackStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorAction, setErrorAction] = useState<'status' | 'connect' | 'disconnect' | null>(null);
 
   const loadStatus = useCallback(async () => {
     setError(null);
+    setErrorAction(null);
     try {
       const response = await fetch('/api/slack/connection', { cache: 'no-store' });
       const data = await response.json() as SlackStatus & { error?: string };
       if (!response.ok) throw new Error(data.error || 'Slack status is unavailable.');
       setStatus({ connected: data.connected, teamName: data.teamName });
+      setErrorAction(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack status is unavailable.');
+      setErrorAction('status');
     }
   }, []);
 
@@ -28,6 +32,7 @@ export function SlackConnectionCard() {
   async function connect() {
     setBusy(true);
     setError(null);
+    setErrorAction(null);
     try {
       const response = await fetch('/api/slack/connect', { method: 'POST' });
       const data = await response.json() as { url?: string; error?: string };
@@ -35,6 +40,7 @@ export function SlackConnectionCard() {
       window.location.assign(data.url);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack connection could not be started.');
+      setErrorAction('connect');
       setBusy(false);
     }
   }
@@ -42,6 +48,7 @@ export function SlackConnectionCard() {
   async function disconnect() {
     setBusy(true);
     setError(null);
+    setErrorAction(null);
     try {
       const response = await fetch('/api/slack/connection', { method: 'DELETE' });
       const data = await response.json() as { error?: string };
@@ -49,6 +56,7 @@ export function SlackConnectionCard() {
       setStatus({ connected: false });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack could not be disconnected.');
+      setErrorAction('disconnect');
     } finally {
       setBusy(false);
     }
@@ -65,7 +73,7 @@ export function SlackConnectionCard() {
         </span>}
       </div>
       <p className="text-xs text-[#686868]">Receive new breaking-finding alerts by direct message. The invite-only beta keeps repository changes disabled and requires human review.</p>
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 text-xs text-rose-700"><span>{error}</span><Button type="button" variant="outline" size="sm" onClick={() => void loadStatus()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry Slack status</Button></div>}
+      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 text-xs text-rose-700"><span>{error}</span><Button type="button" variant="outline" size="sm" onClick={() => void (errorAction === 'connect' ? connect() : errorAction === 'disconnect' ? disconnect() : loadStatus())} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? 'Retry Slack connection' : errorAction === 'disconnect' ? 'Retry Slack disconnect' : 'Retry Slack status'}</Button></div>}
       {busy && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{status?.connected ? 'Disconnecting Slack…' : 'Connecting Slack…'}</p>}
       {status === null ? error ? <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">Slack connection status is unavailable.</div> : <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />Checking Slack connection…</div> : status.connected ? (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] p-4">
