@@ -436,9 +436,10 @@ test.describe('authenticated dashboard data states', () => {
       const alertResults = await new AxeBuilder({ page }).include('[role="alert"]').analyze();
       expect(alertResults.violations, `${state.path} error state`).toEqual([]);
       await expect(page.getByText(state.empty, { exact: false })).toHaveCount(0);
-      await page.getByRole('button', { name: 'Try again' }).click();
-      await expect(alert).toHaveCount(0);
-      await expect(page.getByText(state.empty, { exact: false })).toBeVisible({ timeout: 30_000 });
+      const retry = page.getByRole('button', { name: 'Try again' });
+      await retry.focus(); await expect(retry).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(alert).toHaveCount(0); await expect(page.getByText(state.empty, { exact: false })).toBeVisible({ timeout: 30_000 });
       await expect(page.getByRole('status')).toContainText(state.empty);
       const emptyResults = await new AxeBuilder({ page }).include('#main-content').analyze();
       expect(emptyResults.violations, `${state.path} empty state`).toEqual([]);
