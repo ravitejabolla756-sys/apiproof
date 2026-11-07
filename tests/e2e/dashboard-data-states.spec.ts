@@ -221,14 +221,14 @@ test.describe('authenticated dashboard data states', () => {
 
   test('announces Slack connection failures as alerts', async ({ page }) => {
     await signIn(page);
-    let slackRequests = 0;
-    await page.route('**/api/slack/connection', async (route) => { slackRequests += 1; if (slackRequests <= 2) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Slack status is unavailable.' }) }); return; } await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) }); });
+    let slackRequests = 0; let allowSlackSuccess = false;
+    await page.route('**/api/slack/connection', async (route) => { slackRequests += 1; if (!allowSlackSuccess) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Slack status is unavailable.' }) }); return; } await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) }); });
     await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
     const slackAlert = page.getByRole('alert').filter({ hasText: 'Slack status is unavailable.' });
     await expect(slackAlert).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'Slack connection error state').toEqual([]);
     await expect(slackAlert.getByRole('button', { name: 'Retry Slack status' })).toBeVisible(); await expect(page.getByRole('status').filter({ hasText: 'Slack connection status is unavailable.' })).toBeVisible();
-    await slackAlert.getByRole('button', { name: 'Retry Slack status' }).click(); await expect(slackAlert).toHaveCount(0); await expect(page.getByRole('button', { name: 'Connect Slack' })).toBeVisible(); expect(slackRequests).toBeGreaterThanOrEqual(3);
+    allowSlackSuccess = true; await slackAlert.getByRole('button', { name: 'Retry Slack status' }).click(); await expect(slackAlert).toHaveCount(0); await expect(page.getByRole('button', { name: 'Connect Slack' })).toBeVisible({ timeout: 30_000 }); expect(slackRequests).toBeGreaterThanOrEqual(2); expect(slackRequests).toBeLessThanOrEqual(3);
     await page.unroute('**/api/slack/connection');
   }); test('announces workspace settings data failures and exposes retry', async ({ page }) => {
     await signIn(page);
