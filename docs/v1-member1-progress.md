@@ -302,3 +302,8 @@ Phase 0 read-only checks:
 
 - Replaced the usage counter read-then-update/insert path with one `INSERT ... ON CONFLICT ... DO UPDATE` statement using the existing workspace/metric/period unique key. This removes the lost-update and duplicate-insert window for concurrent usage recording across SQLite and PostgreSQL adapters.
 - Added a 40-way concurrent scan-usage regression that verifies both the final count and a single persisted bucket. Billing foundation plus webhook boundary suites pass 24/24; targeted ESLint and full workspace `pnpm typecheck` pass. PostgreSQL concurrency has not been exercised against a real PostgreSQL instance; provider event mapping and lifecycle reconciliation remain external/contract gates.
+
+### 2026-11-08 ORG-05 Slack OAuth membership revalidation
+
+- Slack OAuth callback now reloads current workspace membership immediately after consuming the user-bound state and before exchanging the authorization code. The token-persistence path still rechecks membership, covering revocation during the external exchange window.
+- Added a regression that removes the initiating user's workspace membership after authorization starts; callback redirects with a generic error, makes no Slack token-exchange request, and persists no connection. `slack-phase1` passes 21/21; targeted ESLint and full workspace `pnpm typecheck` pass. SQLite-local evidence only; PostgreSQL/RLS and Member 2 capability approval remain outstanding.

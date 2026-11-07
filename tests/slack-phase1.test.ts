@@ -125,6 +125,27 @@ describe('MY OWL Slack Phase 1', () => {
     expect(await getDefaultWorkspaceForUser(user.id)).toBeTruthy();
   });
 
+  it('rejects a callback after workspace membership is revoked before exchanging credentials', async () => {
+    const account = await createUserWithSession('oauth-revoked-role@example.test', 'Pass1234!', 'Revoked Role');
+    const workspace = await getDefaultWorkspaceForUser(account.user.id);
+    const authUrl = new URL(await createSlackAuthorizationUrl(account.user.id));
+    const state = authUrl.searchParams.get('state')!;
+    await getDatabase().execute(
+      'DELETE FROM workspace_members WHERE workspace_id = ? AND user_id = ?',
+      [workspace.id, account.user.id],
+    );
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await slackCallback(new Request(`https://myowl.example.test/api/slack/callback?state=${encodeURIComponent(state)}&code=oauth-code`, {
+      headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+
+    expect(response.headers.get('location')).toContain('slack=error');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await getDatabase().queryOne('SELECT id FROM slack_connections')).toBeUndefined();
+  });
+
   it('returns only the authenticated workspace connection state from the status API', async () => {
     const a = await createUserWithSession('status-a@example.test', 'Pass1234!', 'Status A');
     const b = await createUserWithSession('status-b@example.test', 'Pass1234!', 'Status B');

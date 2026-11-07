@@ -85,3 +85,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - SEC-16 throughput accounting correction: PASS, harness regression confirms timed-out scenarios calculate throughput from operations actually started rather than requested iterations; 9/9 harness tests, targeted ESLint and full `pnpm typecheck` pass. Latest local timing observations are recorded in `docs/sec16-local-measurements.md`; no staging or production load was generated.
 
 - BILL-04 atomic usage counter regression: PASS locally, billing foundation and webhook boundary suites 2 files / 24 tests; 40 concurrent increments retain the exact count in one unique bucket. Targeted ESLint and full `pnpm typecheck` pass. PostgreSQL concurrency and provider-specific event reconciliation remain unverified.
+
+- ORG-05/ORG-10 Slack OAuth revocation regression: PASS, `slack-phase1` 21/21; revoked membership prevents callback token exchange and persistence. Targeted ESLint and full `pnpm typecheck` pass. This is SQLite-local only; PostgreSQL/RLS verification and Member 2 role-contract approval remain open.
