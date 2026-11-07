@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `b7978a2` (`codex/v1-frontend-product`)
+Current HEAD: `73f1b66` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — ORG-02/UI-12 workspace switch recovery
+
+- Change: A failed workspace context switch now exposes a keyboard-operable Retry workspace switch action for the requested workspace, preserving the truthful active context until recovery succeeds without changing the context API contract.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`.
+- Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; rebuilt web production bundle passed with 83 generated pages; focused browser recovery journey passed 1/1 in 2.7 seconds with an axe-clean alert; rebuilt-bundle CI-mode full Playwright suite passed 87/87 in 1.5 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-workspace-switch-recovery-artifacts`, `/tmp/myowl-v1-full-workspace-switch-recovery-artifacts`.
+- Scope: local ORG-02/UI-12 state and recovery evidence only; PostgreSQL/RBAC, Member 1 contracts, remote Git, staging, production, payment and email actions remain untouched.
 
 ## 2026-11-08 checkpoint — NOT-03/UI-12 provider-rule load recovery
 
@@ -164,7 +171,7 @@ Current HEAD: `b7978a2` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
-Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 86/86, with compatibility-map and provider-rule recovery journeys added in the checkpoints above.
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 87/87, with compatibility-map, provider-rule, and workspace-switch recovery journeys added in the checkpoints above.
 
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
