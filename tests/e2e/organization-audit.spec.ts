@@ -3,6 +3,28 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
+  test('announces when invitation-link copying is unavailable', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: async () => { throw new Error('Clipboard unavailable'); } },
+      });
+    });
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    const inviteEmail = `browser-clipboard-${Date.now()}@example.test`;
+    await page.getByLabel('Invite email').fill(inviteEmail);
+    await page.getByRole('button', { name: 'Create invite link' }).click();
+    await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('button', { name: 'Copy link' }).click();
+    const alert = page.getByRole('alert').filter({ hasText: 'Unable to copy the invitation link.' });
+    await expect(alert).toBeVisible();
+    await expect(alert).toHaveAttribute('aria-live', 'assertive');
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'clipboard failure state').toEqual([]);
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
+  });
+
   test('does not present an audit failure as an empty trail', async ({ page }) => {
     await signIn(page);
     let releaseSettings: (() => void) | undefined;

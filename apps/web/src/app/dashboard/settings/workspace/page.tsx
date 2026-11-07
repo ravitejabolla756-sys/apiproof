@@ -141,8 +141,13 @@ export default function WorkspaceSettingsPage() {
 
   async function copyInvite() {
     if (!inviteUrl) return;
-    await navigator.clipboard.writeText(inviteUrl);
-    setMessage('Invitation link copied.');
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setMessage('Invitation link copied.');
+    } catch {
+      setError('Unable to copy the invitation link. Select the link and copy it manually.');
+    }
   }
 
   async function revokeInvitation(invitation: Invitation) {
