@@ -46,4 +46,24 @@ test.describe('route accessibility audit', () => {
       expect(results.violations, route).toEqual([]);
     }
   });
+
+  test('keeps representative public and authenticated screens accessible at mobile width', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const route of ['/', '/pricing', '/docs', '/login', '/forgot-password', '/reset-password']) {
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      expect(response?.status(), route).toBe(200);
+      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+      const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+      expect(results.violations, `${route} mobile`).toEqual([]);
+    }
+
+    await signIn(page);
+    for (const route of ['/dashboard', '/dashboard/repositories', '/dashboard/settings/workspace']) {
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      expect(response?.status(), route).toBe(200);
+      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+      const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+      expect(results.violations, `${route} mobile`).toEqual([]);
+    }
+  });
 });

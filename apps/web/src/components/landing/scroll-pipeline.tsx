@@ -478,7 +478,12 @@ export function ScrollPipeline() {
                 </div>
 
                 {/* Code Snippet with Diff Lines */}
-                <div className="text-[11px] sm:text-xs leading-[1.7] sm:leading-[1.8] space-y-0.5 text-slate-700 overflow-x-auto font-mono">
+                <div
+                  role="region"
+                  aria-label="Code transformation example"
+                  tabIndex={0}
+                  className="text-[11px] sm:text-xs leading-[1.7] sm:leading-[1.8] space-y-0.5 text-slate-700 overflow-x-auto font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2"
+                >
                   <div className="flex gap-2 sm:gap-4 whitespace-nowrap">
                     <span className="text-slate-600 w-5 sm:w-6 text-right select-none shrink-0">40</span>
                     <span>

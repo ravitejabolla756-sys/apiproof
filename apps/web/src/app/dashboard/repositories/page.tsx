@@ -180,7 +180,12 @@ export default function RepositoriesTablePage() {
 
       {/* Repositories Table */}
       <div className="rounded-[24px] border border-[#E8E8E5] bg-white overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+        <div
+          role="region"
+          aria-label="Repositories table"
+          tabIndex={0}
+          className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-inset"
+        >
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">
