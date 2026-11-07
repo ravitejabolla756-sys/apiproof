@@ -422,3 +422,9 @@ Statuses are current baseline findings, not completion claims.
 
 - Evidence: `pnpm lint` passed with ESLint `--max-warnings 0` across the repository.
 - Scope: local static-quality evidence only; hosted CI, staging, screen-reader/manual review and production gates remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — beta-readiness preflight
+
+- Evidence: read-only `pnpm beta:readiness` returned `ready: false`. Local catalog/artifact gates passed: 19/19 monitored providers with HTTPS sources, 62 discovery providers, 50/50 official candidates with bounded review artifacts, valid scheduler configuration, all required automation artifacts, 19/19 reviewed providers, 50/50 reviewed rules, and a clean tree.
+- Unresolved gates are explicit and unchanged: `PROVIDER_INTELLIGENCE_V1_ENABLED=true` is not enabled, only 12/19 providers have 15 verified executable migration templates, and the live evidence manifest is unset/unverified. No production/provider configuration was changed.
+- Scope: local readiness evidence only; do not treat this preflight as hosted, staging, production, payment, email or monitoring verification.

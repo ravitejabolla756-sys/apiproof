@@ -126,6 +126,8 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 
 - `pnpm lint` — PASS with ESLint `--max-warnings 0` across the repository after the cumulative UI/accessibility changes. This is local static-quality evidence; hosted CI and production verification remain separate gates.
 
+- `pnpm beta:readiness` — read-only preflight completed with `ready: false`; local catalogs, scheduler configuration, automation artifacts, reviewed-provider breadth/volume and clean-tree gates pass. Productization enablement, missing verified executable templates for 7 providers, and the unset live evidence manifest remain explicitly unresolved. The command exited non-zero by design for the unready report; no production/provider configuration was changed.
+
 ## Required next checks
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.
