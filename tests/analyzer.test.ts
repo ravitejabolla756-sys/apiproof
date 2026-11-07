@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ScanResultSchema } from '@apiproof/shared';
-import { TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
+import { RepositorySnapshot, TypeScriptRepositoryAnalyzer } from '@apiproof/analyzers';
 import { fixture, proof, repository } from './helpers.js';
 
 describe('TypeScript Stripe analysis', () => {
@@ -151,5 +151,15 @@ let client = new Stripe(''); client = unrelated; client.customers.retrieve('');`
     expect(first).toEqual(second);
     expect(await readFile(path.join(directory, 'src.ts'))).toEqual(before);
     expect(first.audit.inputDigest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('canonicalizes source line endings in audit digests', () => {
+    const lf = RepositorySnapshot.fromMemory('/fixture', new Map([
+      ['src/index.ts', 'const value = 1;\nexport default value;\n'],
+    ]));
+    const crlf = RepositorySnapshot.fromMemory('/fixture', new Map([
+      ['src/index.ts', 'const value = 1;\r\nexport default value;\r\n'],
+    ]));
+    expect(crlf.digest()).toBe(lf.digest());
   });
 });

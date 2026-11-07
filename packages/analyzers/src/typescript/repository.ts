@@ -7,6 +7,11 @@ import type { Diagnostic } from '@apiproof/shared';
 export const LIMITS = { files: 5_000, entries: 50_000, depth: 64, fileBytes: 1_048_576, metadataBytes: 4_194_304, totalBytes: 33_554_432 } as const;
 const sourceExtension = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
 
+/** Audit digests bind canonical text, independent of the checkout line ending. */
+function textDigest(value: string): string {
+  return createHash('sha256').update(value.replace(/\r\n?/g, '\n')).digest('hex');
+}
+
 export function portable(value: string): string { return value.split(path.sep).join('/'); }
 export function isInside(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
@@ -32,7 +37,7 @@ export class RepositorySnapshot {
       if (norm === 'package.json' || norm.endsWith('/package.json')) snapshot.manifests.push(norm);
       if (sourceExtension.test(norm)) {
         snapshot.sources.set(norm, content);
-        snapshot.hashes.set(norm, createHash('sha256').update(content).digest('hex'));
+        snapshot.hashes.set(norm, textDigest(content));
       }
     }
     if (!snapshot.manifests.includes('package.json')) {
@@ -93,8 +98,9 @@ export class RepositorySnapshot {
         }
         this.bytes += length;
         const content = buffer.subarray(0, length);
-        this.hashes.set(relative, createHash('sha256').update(content).digest('hex'));
-        return new TextDecoder('utf-8', { fatal: true }).decode(content);
+        const text = new TextDecoder('utf-8', { fatal: true }).decode(content);
+        this.hashes.set(relative, textDigest(text));
+        return text;
       } finally { await handle.close(); }
     } catch {
       this.warn('UNREADABLE_FILE', 'File could not be read as UTF-8.', relative);

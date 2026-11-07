@@ -3,7 +3,15 @@ import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { AnalysisError } from '@apiproof/shared';
 
-export const sha256 = (text: string | Buffer): string => createHash('sha256').update(text).digest('hex');
+/**
+ * Patch digests bind canonical text, not the checkout's platform line endings.
+ * Buffers containing NUL bytes remain byte-exact so this cannot normalize binary data.
+ */
+export const sha256 = (value: string | Buffer): string => {
+  if (typeof value === 'string') return createHash('sha256').update(value.replace(/\r\n?/g, '\n')).digest('hex');
+  if (value.includes(0)) return createHash('sha256').update(value).digest('hex');
+  return createHash('sha256').update(value.toString('utf8').replace(/\r\n?/g, '\n')).digest('hex');
+};
 export function fail(code: string): never { throw new AnalysisError(code, `Phase 4 patch safety check failed: ${code}.`); }
 export function allowedPatchPath(file: string): boolean {
   return /^(?:src|tests|__tests__)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+(?:\.(?:test|spec))?\.tsx?$/.test(file)

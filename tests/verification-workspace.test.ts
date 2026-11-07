@@ -28,7 +28,7 @@ import { proof, root } from './helpers.js';
 import { validatePersistedMigrationEvidence } from '../apps/web/src/lib/server/migration-verification.js';
 
 const fixtureRoot = path.join(root, 'test-fixtures/verification-typescript');
-const sha256 = (value: string) => import('node:crypto').then(({ createHash }) => createHash('sha256').update(value).digest('hex'));
+const sha256 = (value: string) => import('node:crypto').then(({ createHash }) => createHash('sha256').update(value.replace(/\r\n?/g, '\n')).digest('hex'));
 
 async function fixtureFiles(): Promise<Record<string, string>> {
   const names = ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.json', 'tsconfig.test.json', 'packages/contracts/package.json', 'src/billing.ts', 'src/billing.test.ts'];
