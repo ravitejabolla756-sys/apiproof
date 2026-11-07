@@ -331,4 +331,35 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(res2.success).toBe(true);
     expect(res2.duplicate).toBe(true);
   });
+
+  it('serializes concurrent duplicate webhook deliveries with one atomic subscription update', async () => {
+    const user = await createUserAsync('billing-concurrent-event@apiproof.test', 'Pass123!#$', 'Concurrent Event');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_concurrent_event' WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    const rawPayload = JSON.stringify({
+      id: 'evt_concurrent_01',
+      type: 'invoice.payment_failed',
+      customer_id: 'cus_concurrent_event',
+      status: 'past_due',
+    });
+    const signature = crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(rawPayload).digest('hex');
+    const event = await new MockBillingProvider().verifyAndParseWebhook(rawPayload, signature);
+
+    const results = await Promise.all([
+      processBillingWebhookEvent(event),
+      processBillingWebhookEvent(event),
+    ]);
+
+    expect(results.map((result) => result.duplicate).sort()).toEqual([false, true]);
+    expect((await getWorkspaceSubscription(workspace.id)).status).toBe('past_due');
+    const recordedEvents = await db.queryOne<{ count: number }>(`
+      SELECT COUNT(*) as count FROM billing_webhook_events WHERE provider = ? AND payload_hash = ?
+    `, [event.provider, crypto.createHash('sha256').update(event.rawPayload).digest('hex')]);
+    expect(Number(recordedEvents?.count)).toBe(1);
+  });
 });
