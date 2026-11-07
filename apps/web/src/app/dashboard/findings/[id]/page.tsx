@@ -194,7 +194,7 @@ export default function FindingDetailPage({
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-xs text-[#686868] font-sans">
+      <div role="status" aria-live="polite" className="py-20 text-center text-xs text-[#686868] font-sans">
         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading AST finding workbench...</span>
       </div>

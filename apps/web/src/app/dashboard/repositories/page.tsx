@@ -202,7 +202,7 @@ export default function RepositoriesTablePage() {
             <tbody className="divide-y divide-[#E8E8E5] text-xs">
               {error ? null : loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#686868]">
+                  <td colSpan={8} role="status" aria-live="polite" className="py-12 text-center text-[#686868]">
                     <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
                     <span>Loading repositories from database...</span>
                   </td>
