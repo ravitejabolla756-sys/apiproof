@@ -67,7 +67,10 @@ test('recovers from a repository search with no matches', async ({ page }) => {
   await expect(filteredEmpty.getByRole('button', { name: 'Clear filter' })).toBeVisible();
   expect((await new AxeBuilder({ page }).include('[role="dialog"]').analyze()).violations, 'filtered repository picker state').toEqual([]);
 
-  await filteredEmpty.getByRole('button', { name: 'Clear filter' }).click();
+  const clearFilter = filteredEmpty.getByRole('button', { name: 'Clear filter' });
+  await clearFilter.focus();
+  await expect(clearFilter).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(search).toHaveValue('');
   await expect(dialog.getByRole('radio', { name: 'Select fixture/owl-platform' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Close repository connection dialog' }).click();
