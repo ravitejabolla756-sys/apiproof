@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Dashboard state retry keyboard coverage
+
+- PASS: Complete dashboard data-state suite passed 16/16 in 1.9 minutes; generic retry controls across findings, migrations, pull requests, activity, inventory, compatibility and provider coverage now verify keyboard focus and Enter activation, with repository list/detail recovery and axe checks retained.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Repository list/detail keyboard recovery
 
 - PASS: Focused repository recovery journey passed 1/1 in 16.3 seconds; list and detail “Try again” actions now verify keyboard focus and Enter activation while retaining transient-failure recovery and status assertions.

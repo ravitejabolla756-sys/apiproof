@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 dashboard state retry keyboard coverage
+
+- Change: The shared dashboard data-state matrix now focuses each generic “Try again” control, verifies focus visibility, and activates recovery with Enter across findings, migrations, pull requests, activity, inventory, compatibility and provider-coverage routes; repository list/detail recovery remains covered in the same suite.
+- Evidence: Targeted ESLint and `git diff --check` passed; the complete dashboard data-state suite passed 16/16 in 1.9 minutes, retaining axe checks and empty/error/recovery assertions. Artifacts: `/tmp/myowl-v1-dashboard-state-keyboard-artifacts`.
+- Scope: local UI-12/UI-13 keyboard/state evidence only; hosted CI, integrated staging, backend contracts and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-13 repository list/detail keyboard recovery
 
 - Change: Extended the repository list and detail transient-failure journey to focus each “Try again” action, verify focus visibility, and activate both recoveries with Enter while preserving the existing loading, status and axe-related assertions.
