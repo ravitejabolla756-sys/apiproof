@@ -141,13 +141,14 @@ describe('password recovery', () => {
     const results = await Promise.all(Array.from({ length: 40 }, () =>
       checkRateLimit('auth:concurrent-quota:test', 7, 60_000, { failClosed: true }),
     ));
-
-    expect(results.filter((result) => result.allowed)).toHaveLength(7);
-    expect(results.filter((result) => !result.allowed)).toHaveLength(33);
     const row = await getDatabase().queryOne<{ points: number }>(
       'SELECT points FROM rate_limits WHERE key = ?', ['auth:concurrent-quota:test'],
     );
-    expect(Number(row?.points)).toBe(40);
+
+    expect(results.filter((result) => result.allowed)).toHaveLength(7);
+    expect(results.filter((result) => !result.allowed)).toHaveLength(33);
+    expect(results.filter((result) => !result.allowed).every((result) => result.remaining === 0)).toBe(true);
+    expect(Number(row?.points)).toBe(8);
   });
 
   it('restarts an expired fixed window on the next atomic request', async () => {

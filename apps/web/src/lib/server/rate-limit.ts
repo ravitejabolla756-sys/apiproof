@@ -46,10 +46,14 @@ export async function checkRateLimit(
       INSERT INTO rate_limits (key, points, reset_at)
       VALUES (?, 1, ?)
       ON CONFLICT (key) DO UPDATE SET
-        points = CASE WHEN rate_limits.reset_at <= ? THEN 1 ELSE rate_limits.points + 1 END,
+        points = CASE
+          WHEN rate_limits.reset_at <= ? THEN 1
+          WHEN rate_limits.points >= ? THEN ? + 1
+          ELSE rate_limits.points + 1
+        END,
         reset_at = CASE WHEN rate_limits.reset_at <= ? THEN excluded.reset_at ELSE rate_limits.reset_at END
       RETURNING points, reset_at
-    `, [key, now + windowMs, now, now]);
+    `, [key, now + windowMs, now, limit, limit, now]);
     if (!row) throw new Error('RATE_LIMIT_UPDATE_RETURNED_NO_ROW');
 
     const resetAt = Number(row.reset_at);
