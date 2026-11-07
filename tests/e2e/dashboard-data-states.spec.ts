@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { signIn } from './helpers';
+import { signIn } from './helpers.js';
 
 test.describe('authenticated dashboard data states', () => {
   test('announces dashboard overview loading before the response resolves', async ({ page }) => {

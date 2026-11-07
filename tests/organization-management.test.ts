@@ -140,7 +140,7 @@ describe('workspace administration', () => {
       body: JSON.stringify({ workspaceId: workspace.id, userId: member.user.id, role: 'owner' }),
     }));
     expect(updated.status).toBe(200);
-    expect((await updated.json()).members).toEqual(expect.arrayContaining([expect.objectContaining({ userId: member.user.id, role: 'owner' })]));
+    expect((await updated.json() as { members: Array<{ userId: string; role: string }> }).members).toEqual(expect.arrayContaining([expect.objectContaining({ userId: member.user.id, role: 'owner' })]));
 
     const crossWorkspace = await updateMemberRoute(new Request('https://apiproof.test/api/workspace/members', {
       method: 'PATCH',

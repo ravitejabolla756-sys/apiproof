@@ -15,11 +15,12 @@ function request(url: string, sessionId: string, options: { method?: string; bod
     host: 'apiproof.test',
     cookie: `apiproof_session=${sessionId}`,
   });
-  return new Request(url, {
+  const init: RequestInit = {
     method: options.method || (options.body ? 'POST' : 'GET'),
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
-  });
+  };
+  if (options.body !== undefined) init.body = JSON.stringify(options.body);
+  return new Request(url, init);
 }
 
 describe('account settings', () => {
@@ -44,14 +45,14 @@ describe('account settings', () => {
 
     const getResponse = await accountGet(request('https://apiproof.test/api/account', first.session.id));
     expect(getResponse.status).toBe(200);
-    expect((await getResponse.json()).account).toMatchObject({ email: 'first@example.test', name: 'First User' });
+    expect((await getResponse.json() as { account: { email: string; name: string } }).account).toMatchObject({ email: 'first@example.test', name: 'First User' });
 
     const updateResponse = await accountPatch(request('https://apiproof.test/api/account', first.session.id, {
       method: 'PATCH',
       body: { name: 'Updated First' },
     }));
     expect(updateResponse.status).toBe(200);
-    expect((await updateResponse.json()).account.name).toBe('Updated First');
+    expect((await updateResponse.json() as { account: { name: string } }).account.name).toBe('Updated First');
     expect(await getDatabase().queryOne('SELECT name FROM users WHERE id = ?', [second.user.id])).toMatchObject({ name: 'Second User' });
   });
 
@@ -75,7 +76,7 @@ describe('account settings', () => {
       body: { currentPassword: 'WrongPassword123!', newPassword: 'NewSecurePassword123!' },
     }));
     expect(response.status).toBe(400);
-    expect((await response.json()).code).toBe('INVALID_CURRENT_PASSWORD');
+    expect((await response.json() as { code: string }).code).toBe('INVALID_CURRENT_PASSWORD');
   });
 
   it('does not offer password changes for an OAuth-only account', async () => {
@@ -86,13 +87,13 @@ describe('account settings', () => {
     );
 
     const getResponse = await accountGet(request('https://apiproof.test/api/account', account.session.id));
-    expect((await getResponse.json()).account).toMatchObject({ hasLocalPassword: false, authProviders: ['google'] });
+    expect((await getResponse.json() as { account: { hasLocalPassword: boolean; authProviders: string[] } }).account).toMatchObject({ hasLocalPassword: false, authProviders: ['google'] });
 
     const response = await passwordPost(request('https://apiproof.test/api/account/password', account.session.id, {
       body: { currentPassword: 'RandomInternalPassword123!', newPassword: 'NewSecurePassword123!' },
     }));
     expect(response.status).toBe(400);
-    expect((await response.json()).code).toBe('OAUTH_ONLY_ACCOUNT');
+    expect((await response.json() as { code: string }).code).toBe('OAUTH_ONLY_ACCOUNT');
   });
 
   it('rejects cross-site account mutations', async () => {
@@ -108,6 +109,6 @@ describe('account settings', () => {
       body: JSON.stringify({ name: 'Attacker' }),
     }));
     expect(response.status).toBe(403);
-    expect((await response.json()).code).toBe('CSRF_REJECTED');
+    expect((await response.json() as { code: string }).code).toBe('CSRF_REJECTED');
   });
 });

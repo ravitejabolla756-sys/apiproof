@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {
   assertDashboardRoutes,
@@ -7,7 +7,7 @@ import {
   scanAuthenticatedRoutes,
   signIn,
   withAcceptedInvitation,
-} from './helpers';
+} from './helpers.js';
 
 test.describe('public beta surfaces', () => {
   test('loads the core public pages and evidence-backed content', async ({ page }) => {
@@ -126,7 +126,7 @@ test.describe('public beta surfaces', () => {
       anchors
         .map((anchor) => anchor.getAttribute('href'))
         .filter((href): href is string => Boolean(href))
-        .map((href) => href.split('#', 1)[0])
+        .map((href) => href.split('#', 1)[0] ?? '')
         .filter((href) => href.length > 0),
     )]);
 
@@ -322,7 +322,7 @@ test.describe('authenticated product surfaces', () => {
   test('updates and removes a real accepted workspace member', async ({ page, browser }) => {
     await signIn(page);
     const memberEmail = `browser-member-${Date.now()}@example.test`;
-    await withAcceptedInvitation(page, browser, memberEmail, async (invitedPage) => {
+    await withAcceptedInvitation(page, browser, memberEmail, async (invitedPage: Page) => {
       await page.goto('/dashboard/settings/workspace');
       const roleSelector = page.getByLabel(`Role for ${memberEmail}`);
       await expect(roleSelector).toHaveValue('member', { timeout: 30_000 });

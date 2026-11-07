@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { signIn } from './helpers';
+import { signIn } from './helpers.js';
 
 const publicRoutes = [
   '/', '/about', '/blog', '/features', '/how-it-works', '/security', '/docs', '/pricing',

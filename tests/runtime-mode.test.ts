@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isE2ETestRuntime, isProductionRuntime, isTestRuntime } from '../apps/web/src/lib/server/runtime-mode';
+import { isE2ETestRuntime, isProductionRuntime, isTestRuntime } from '../apps/web/src/lib/server/runtime-mode.js';
 
 describe('runtime mode classification', () => {
   it('enables the hermetic E2E runtime only for CI SQLite processes', () => {

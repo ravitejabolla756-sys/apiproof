@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { signIn } from './helpers';
+import { signIn } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
   test('does not present an audit failure as an empty trail', async ({ page }) => {

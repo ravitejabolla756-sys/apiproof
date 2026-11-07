@@ -32,7 +32,7 @@ describe('beta billing boundaries', () => {
       body: JSON.stringify({ planId: 'pro' }),
     }));
     expect(response.status).toBe(403);
-    expect((await response.json()).error).toContain('cannot be purchased');
+    expect((await response.json() as { error: string }).error).toContain('cannot be purchased');
   });
 
   it('does not expose a simulated customer portal during beta', async () => {
@@ -42,6 +42,6 @@ describe('beta billing boundaries', () => {
       headers: { cookie: `apiproof_session=${account.session.id}` },
     }));
     expect(response.status).toBe(403);
-    expect((await response.json()).error).toContain('not enabled');
+    expect((await response.json() as { error: string }).error).toContain('not enabled');
   });
 });

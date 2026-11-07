@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { signIn } from './helpers';
+import { signIn } from './helpers.js';
 
 test.describe('repository recovery journeys', () => {
   test('recovers repository list and detail routes after transient failures', async ({ page }) => {
