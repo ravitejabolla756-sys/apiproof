@@ -100,4 +100,74 @@ test.describe('authenticated dashboard data states', () => {
       await page.unroute(state.api);
     }
   });
+
+  test('recovers repository list and detail loading failures', async ({ page }) => {
+    await signIn(page);
+
+    let listRequests = 0;
+    await page.route('**/api/repositories', async (route) => {
+      listRequests += 1;
+      if (listRequests === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Repositories are temporarily unavailable.' }),
+        });
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });
+    });
+
+    await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
+    const listAlert = page.getByRole('alert').filter({ hasText: 'Repositories are temporarily unavailable.' });
+    await expect(listAlert).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('No repositories found matching your filter.')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Try again' }).click();
+    await expect(listAlert).toHaveCount(0);
+    await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
+    expect(listRequests).toBe(2);
+    await page.unroute('**/api/repositories');
+
+    let detailRequests = 0;
+    await page.route('**/api/repositories/repo_recovery', async (route) => {
+      detailRequests += 1;
+      if (detailRequests === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Repository details are temporarily unavailable.' }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          repository: {
+            id: 'repo_recovery',
+            owner: 'fixture',
+            name: 'recovery-repo',
+            full_name: 'fixture/recovery-repo',
+            github_repository_id: '123',
+            default_branch: 'main',
+            status: 'connected',
+            last_scan_at: null,
+            created_at: '2026-11-07T00:00:00.000Z',
+          },
+          scans: [],
+          findings: [],
+        }),
+      });
+    });
+
+    await page.goto('/dashboard/repositories/repo_recovery', { waitUntil: 'domcontentloaded' });
+    const detailAlert = page.getByRole('alert').filter({ hasText: 'Repository details are temporarily unavailable.' });
+    await expect(detailAlert).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: 'recovery-repo' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Try again' }).click();
+    await expect(detailAlert).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'recovery-repo' })).toBeVisible({ timeout: 30_000 });
+    expect(detailRequests).toBe(2);
+    await page.unroute('**/api/repositories/repo_recovery');
+  });
 });

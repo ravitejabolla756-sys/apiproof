@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 import {
   GitBranch,
   AlertTriangle,
@@ -64,20 +65,23 @@ export default function RepositoryDetailPage({
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [findings, setFindings] = useState<FindingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   async function loadData() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`/api/repositories/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        setRepo(json.repository);
-        setScans(json.scans || []);
-        setFindings(json.findings || []);
-      }
+      const json = await res.json() as { repository?: RepositoryDetail; scans?: ScanRecord[]; findings?: FindingRecord[]; error?: string };
+      if (!res.ok || !json.repository) throw new Error(json.error || (res.ok ? "Repository not found or access denied." : "Unable to load repository details."));
+      setRepo(json.repository);
+      setScans(json.scans || []);
+      setFindings(json.findings || []);
     } catch (err) {
       console.error("Failed to load repository detail:", err);
+      setError(err instanceof Error ? err.message : "Unable to load repository details.");
     } finally {
       setLoading(false);
     }
@@ -128,9 +132,7 @@ export default function RepositoryDetailPage({
         <Link href="/dashboard/repositories" className="text-zinc-500 hover:text-black flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Repositories
         </Link>
-        <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
-          Repository not found or access denied.
-        </div>
+        <DashboardDataError message={error || "Repository not found or access denied."} onRetry={() => void loadData()} />
       </div>
     );
   }

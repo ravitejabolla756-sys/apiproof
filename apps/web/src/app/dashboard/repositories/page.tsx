@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 import {
   GitBranch,
   ChevronDown,
@@ -35,6 +36,7 @@ interface RepositoryRecord {
 export default function RepositoriesTablePage() {
   const [repositories, setRepositories] = useState<RepositoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [scanningRepoId, setScanningRepoId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "healthy" | "affected">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,17 +45,20 @@ export default function RepositoriesTablePage() {
   const [scanMessage, setScanMessage] = useState<{ id: string; text: string; error?: boolean } | null>(null);
 
   async function loadRepositories() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/repositories");
-      if (res.ok) {
-        const json = await res.json();
-        setRepositories(json.repositories || []);
-        if (json.repositories?.length > 0 && !expandedRepo) {
-          setExpandedRepo(json.repositories[0].id);
-        }
+      const json = await res.json() as { repositories?: RepositoryRecord[]; error?: string };
+      if (!res.ok) throw new Error(json.error || "Unable to load repositories.");
+      const nextRepositories = json.repositories || [];
+      setRepositories(nextRepositories);
+      if (nextRepositories.length > 0 && !expandedRepo) {
+        setExpandedRepo(nextRepositories[0]!.id);
       }
     } catch (err) {
       console.error("Failed to load repositories:", err);
+      setError(err instanceof Error ? err.message : "Unable to load repositories.");
     } finally {
       setLoading(false);
     }
@@ -140,6 +145,8 @@ export default function RepositoriesTablePage() {
         </div>
       </div>
 
+      {error && <DashboardDataError message={error} onRetry={() => void loadRepositories()} />}
+
       {/* Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
@@ -188,7 +195,7 @@ export default function RepositoriesTablePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8E8E5] text-xs">
-              {loading ? (
+              {error ? null : loading ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-[#686868]">
                     <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
