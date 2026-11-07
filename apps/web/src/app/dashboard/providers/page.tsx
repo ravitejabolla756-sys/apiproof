@@ -112,12 +112,12 @@ export default function ProvidersPage() {
       <div className="flex flex-col justify-between gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-center">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-medium tracking-tight text-[#111111]">
-            <ShieldCheck className="h-6 w-6 text-purple-700" />
+            <ShieldCheck aria-hidden="true" className="h-6 w-6 text-purple-700" />
             Provider Coverage
           </h1>
           <p className="mt-1 text-xs text-[#686868]">The honest boundary between monitored sources, reviewed rules, scanner coverage, and guarded fixes.</p>
         </div>
-        <Button onClick={() => void loadCoverage()} variant="outline" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />}>Refresh</Button>
+        <Button onClick={() => void loadCoverage()} variant="outline" size="sm" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>Refresh</Button>
       </div>
 
       {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
@@ -128,7 +128,7 @@ export default function ProvidersPage() {
         <div className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">Provider coverage is temporarily unavailable.</div>
       ) : data.providers.length === 0 ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">
-          <ShieldCheck className="mx-auto mb-3 h-8 w-8 text-purple-700" />
+          <ShieldCheck aria-hidden="true" className="mx-auto mb-3 h-8 w-8 text-purple-700" />
           <p className="font-semibold text-base text-[#111111]">No provider coverage records are available yet</p>
           <p className="mt-2 text-xs">Coverage appears here after reviewed provider sources are configured.</p>
         </div>
@@ -176,7 +176,7 @@ export default function ProvidersPage() {
           <section role="region" aria-label="Provider coverage table" tabIndex={0} className="overflow-x-auto rounded-[28px] border border-[#E8E8E5] bg-white shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-inset">
             <table className="w-full min-w-[980px] border-collapse text-left">
               <thead className="border-b border-[#E8E8E5] bg-[#FAFAF8] text-[10px] uppercase tracking-[0.12em] text-[#686868]">
-                <tr><th className="px-5 py-4">Provider</th><th className="px-5 py-4">Source</th><th className="px-5 py-4">Parser</th><th className="px-5 py-4">Rules</th><th className="px-5 py-4">Scanner</th><th className="px-5 py-4">Rescan</th><th className="px-5 py-4">Templates</th><th className="px-5 py-4">Fix policy</th></tr>
+                <tr><th scope="col" className="px-5 py-4">Provider</th><th scope="col" className="px-5 py-4">Source</th><th scope="col" className="px-5 py-4">Parser</th><th scope="col" className="px-5 py-4">Rules</th><th scope="col" className="px-5 py-4">Scanner</th><th scope="col" className="px-5 py-4">Rescan</th><th scope="col" className="px-5 py-4">Templates</th><th scope="col" className="px-5 py-4">Fix policy</th></tr>
               </thead>
               <tbody>
                 {data.providers.map((provider) => (

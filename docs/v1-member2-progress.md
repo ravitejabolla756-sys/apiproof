@@ -639,6 +639,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; focused contact journeys passed 2/2; the complete public-site/authenticated product-surface suite passed 26/26.
 - Scope: local form-state evidence only; manual assistive technology, hosted CI, staging, delivery-service and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 provider-coverage table semantics
+
+- Change: provider-coverage table columns now expose explicit `scope="col"` semantics, and decorative heading/empty-state/refresh icons are hidden from the accessibility tree without changing provider data or actions.
+- Files: `apps/web/src/app/dashboard/providers/page.tsx`.
+- Evidence: targeted ESLint passed; repository typecheck passed; combined public/authenticated route accessibility and dashboard-state suite passed 22/22.
+- Scope: local semantic/accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
