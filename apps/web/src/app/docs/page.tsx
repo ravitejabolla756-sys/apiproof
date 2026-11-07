@@ -178,9 +178,9 @@ export default function DocsPage() {
             >
               {/* Category Header */}
               <div className="pb-4 border-b border-slate-100 space-y-1">
-                <span className="text-xs font-mono font-bold text-[#004EE8] uppercase tracking-wider">
+                <h2 className="text-xs font-mono font-bold text-[#004EE8] uppercase tracking-wider">
                   {category.name}
-                </span>
+                </h2>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                   {category.description}
                 </p>
@@ -216,9 +216,9 @@ export default function DocsPage() {
         {/* BOTTOM HELP BANNER */}
         <div className="rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
-            <h3 className="font-serif text-2xl font-normal">
+            <h2 className="font-serif text-2xl font-normal">
               Have technical questions or custom API requirements?
-            </h3>
+            </h2>
             <p className="text-xs text-slate-300 font-sans leading-relaxed">
               Explore our engineering articles on AST analysis and verification, or reach out to our team for custom rule integration.
             </p>

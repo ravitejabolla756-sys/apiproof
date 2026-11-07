@@ -43,7 +43,7 @@ export default function ContactPage() {
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h3 className="font-serif text-2xl text-[#000E29]">No message was sent</h3>
+                <h2 className="font-serif text-2xl text-[#000E29]">No message was sent</h2>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
                   Contact intake is not connected to a delivery service in this beta. Please use an owner-provided support channel before sharing sensitive details.
                 </p>
@@ -121,7 +121,7 @@ export default function ContactPage() {
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <Server className="w-4 h-4" />
               </div>
-              <h3 className="font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h3>
+              <h2 className="font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h2>
               <p className="text-xs text-slate-600">Questions about private runners, GitHub Enterprise Server, or future deployment options.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-500 font-mono">Owner-provided contact only</span>
@@ -132,7 +132,7 @@ export default function ContactPage() {
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <ShieldCheck className="w-4 h-4" />
               </div>
-              <h3 className="font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h3>
+              <h2 className="font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h2>
               <p className="text-xs text-slate-600">Read-only inspection and evidence boundaries documented for beta review.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-500 font-mono">See the security page</span>
@@ -143,7 +143,7 @@ export default function ContactPage() {
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <FileCode className="w-4 h-4" />
               </div>
-              <h3 className="font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h3>
+              <h2 className="font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h2>
               <p className="text-xs text-slate-600">Discuss future rule coverage for private internal services and SDKs.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-500 font-mono">Planned evaluation</span>
@@ -154,7 +154,7 @@ export default function ContactPage() {
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <HelpCircle className="w-4 h-4" />
               </div>
-              <h3 className="font-serif text-lg text-[#000E29] font-medium">Technical Support</h3>
+              <h2 className="font-serif text-lg text-[#000E29] font-medium">Technical Support</h2>
               <p className="text-xs text-slate-600">Review the beta documentation for GitHub permissions and scan boundaries.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-500 font-mono">No staffed inbox is connected</span>

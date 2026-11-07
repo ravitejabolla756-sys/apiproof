@@ -23,10 +23,11 @@ export default function HomePage() {
       {/* FLOATING CAPSULE NAVBAR */}
       <LandingNavbar />
 
-      {/* ========================================================================= */}
-      {/* 01. HERO SECTION                                                          */}
-      {/* ========================================================================= */}
-      <main id="main-content" tabIndex={-1} className="relative w-full min-h-[90vh] flex flex-col items-center justify-start pt-28 sm:pt-36 pb-20 sm:pb-24 px-4 sm:px-6 overflow-hidden outline-none bg-[linear-gradient(180deg,#001033_0%,#002B80_15%,#004EE8_38%,#3B9EF8_60%,#68BCF9_74%,#96D0FB_85%,#BDE3FC_92%,#D8EEFD_96.5%,#EEF5FF_100%)]">
+      <main id="main-content" tabIndex={-1} className="outline-none">
+        {/* ========================================================================= */}
+        {/* 01. HERO SECTION                                                          */}
+        {/* ========================================================================= */}
+        <section aria-labelledby="hero-heading" className="relative w-full min-h-[90vh] flex flex-col items-center justify-start pt-28 sm:pt-36 pb-20 sm:pb-24 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(180deg,#001033_0%,#002B80_15%,#004EE8_38%,#3B9EF8_60%,#68BCF9_74%,#96D0FB_85%,#BDE3FC_92%,#D8EEFD_96.5%,#EEF5FF_100%)]">
         {/* Interactive Spotlight & Background */}
         <InteractiveHeroBackground />
 
@@ -46,7 +47,7 @@ export default function HomePage() {
           </Link>
 
           {/* Headline */}
-          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl font-normal tracking-tight text-white max-w-3xl leading-[1.08] drop-shadow-sm">
+          <h1 id="hero-heading" className="font-serif text-5xl sm:text-6xl md:text-7xl font-normal tracking-tight text-white max-w-3xl leading-[1.08] drop-shadow-sm">
             Stop silent API breakage before it reaches production.
           </h1>
 
@@ -108,7 +109,7 @@ export default function HomePage() {
             <span className="text-slate-200 font-semibold">PROPOSE</span>
           </div>
         </div>
-      </main>
+        </section>
 
       {/* ========================================================================= */}
       {/* 02. THE PROBLEM (Two-Column Editorial Composition)                        */}
@@ -133,7 +134,7 @@ export default function HomePage() {
             <div className="pb-8 space-y-2">
               <div className="flex items-baseline justify-between font-mono text-xs">
                 <span className="text-2xl font-serif text-[#004EE8]">01</span>
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
+                <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest">
                   MANIFEST RESOLUTION
                 </span>
               </div>
@@ -148,7 +149,7 @@ export default function HomePage() {
             <div className="py-8 space-y-2">
               <div className="flex items-baseline justify-between font-mono text-xs">
                 <span className="text-2xl font-serif text-[#004EE8]">02</span>
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
+                <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest">
                   CALL-SITE ISOLATION
                 </span>
               </div>
@@ -163,7 +164,7 @@ export default function HomePage() {
             <div className="pt-8 space-y-2">
               <div className="flex items-baseline justify-between font-mono text-xs">
                 <span className="text-2xl font-serif text-[#004EE8]">03</span>
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
+                <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest">
                   SAFE TRANSFORMATION
                 </span>
               </div>
@@ -195,19 +196,19 @@ export default function HomePage() {
           {/* Simple Horizontal Flow with Typography and Subtle Lines */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 font-mono text-xs">
             <div className="border-l-2 border-slate-300 pl-4 space-y-1">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">01 INGEST</span>
+              <span className="text-[10px] text-slate-600 uppercase tracking-widest font-bold">01 INGEST</span>
               <div className="font-bold text-[#000E29] text-sm font-sans">Upstream Change</div>
               <p className="text-slate-500 font-sans text-xs">Vendor changelog parsed</p>
             </div>
 
             <div className="border-l-2 border-slate-300 pl-4 space-y-1">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">02 TRACE</span>
+              <span className="text-[10px] text-slate-600 uppercase tracking-widest font-bold">02 TRACE</span>
               <div className="font-bold text-[#000E29] text-sm font-sans">Affected Call Site</div>
               <p className="text-slate-500 font-sans text-xs">ts-morph AST analysis</p>
             </div>
 
             <div className="border-l-2 border-slate-300 pl-4 space-y-1">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">03 PLAN</span>
+              <span className="text-[10px] text-slate-600 uppercase tracking-widest font-bold">03 PLAN</span>
               <div className="font-bold text-[#000E29] text-sm font-sans">Deterministic Patch</div>
               <p className="text-slate-500 font-sans text-xs">Minimal diff synthesized</p>
             </div>
@@ -247,7 +248,7 @@ export default function HomePage() {
             <h2 className="font-serif text-4xl sm:text-5xl font-normal tracking-tight">
               See MY OWL work.
             </h2>
-            <p className="text-sm sm:text-base text-slate-400 font-sans leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-300 font-sans leading-relaxed">
               From an upstream breaking change to a verified GitHub Draft PR.
             </p>
           </div>
@@ -255,7 +256,7 @@ export default function HomePage() {
           {/* Reusable YouTube-Ready Product Film Component */}
           <ProductVideo />
 
-          <p className="text-center text-xs sm:text-sm text-slate-400 font-sans">
+          <p className="text-center text-xs sm:text-sm text-slate-300 font-sans">
             Watch the complete workflow on a real repository.
           </p>
         </div>
@@ -305,7 +306,7 @@ export default function HomePage() {
 
             <div className="space-y-4 pt-2">
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest block pb-1">BEFORE</span>
+                <span className="text-[10px] text-slate-600 uppercase tracking-widest block pb-1">BEFORE</span>
                 <div className="text-rose-700 font-semibold bg-rose-50/70 p-2.5 rounded border border-rose-100">
                   coupon: promoCouponId
                 </div>
@@ -314,7 +315,7 @@ export default function HomePage() {
               <div className="text-center text-slate-400 font-bold">↓</div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest block pb-1">AFTER</span>
+                <span className="text-[10px] text-slate-600 uppercase tracking-widest block pb-1">AFTER</span>
                 <div className="text-emerald-800 font-semibold bg-emerald-50/70 p-2.5 rounded border border-emerald-100">
                   discounts: [&#123; coupon: promoCouponId &#125;]
                 </div>
@@ -468,7 +469,7 @@ export default function HomePage() {
                 </span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-serif text-lg text-slate-400 line-through">$29/month</span>
+                <span className="font-serif text-lg text-slate-600 line-through">$29/month</span>
                 <span className="sr-only">planned price</span>
               </div>
               <div className="flex items-baseline gap-1">
@@ -507,7 +508,7 @@ export default function HomePage() {
                 <div className="text-xs text-slate-500 font-sans">For engineering orgs</div>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-serif text-lg text-slate-400 line-through">$99/month</span>
+                <span className="font-serif text-lg text-slate-600 line-through">$99/month</span>
                 <span className="sr-only">planned price</span>
               </div>
               <div className="flex items-baseline gap-1">
@@ -600,6 +601,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      </main>
 
       {/* ========================================================================= */}
       {/* 10. FOOTER                                                                */}

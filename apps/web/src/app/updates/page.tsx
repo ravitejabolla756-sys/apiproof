@@ -86,9 +86,9 @@ export default function UpdatesPage() {
                   <div className="w-2.5 h-2.5 rounded-full bg-[#000E29]" />
                   <span className="text-xs font-mono text-slate-500">{item.date}</span>
                 </div>
-                <h3 className="font-serif text-xl sm:text-2xl text-[#000E29] font-medium leading-snug">
+                <h2 className="font-serif text-xl sm:text-2xl text-[#000E29] font-medium leading-snug">
                   {item.title}
-                </h3>
+                </h2>
                 <div className="md:hidden text-xs font-mono text-slate-500 pt-1">
                   {item.date}
                 </div>

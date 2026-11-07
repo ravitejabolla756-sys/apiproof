@@ -44,7 +44,7 @@ export default function VerifyEmailPage() {
   const heading = state === 'loading' ? 'Verifying your email' : state === 'success' ? 'Email verified' : 'Verification unavailable';
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#F5F5F7] px-4 font-sans">
+    <main id="main-content" tabIndex={-1} className="flex min-h-screen flex-col items-center justify-center bg-[#F5F5F7] px-4 font-sans outline-none">
       <Link href="/" className="mb-10 flex items-center gap-3" aria-label="MY OWL home">
         <ApiProofLogo className="h-8 w-auto shrink-0" variant="dark" />
         <span className="text-2xl font-bold tracking-tight text-[#0F172A]">MY OWL</span>
