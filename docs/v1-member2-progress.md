@@ -646,6 +646,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; repository typecheck passed; combined public/authenticated route accessibility and dashboard-state suite passed 22/22.
 - Scope: local semantic/accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 auth-entry failure states
+
+- Change: added browser coverage for missing/invalid password-reset links and unavailable password-recovery requests; the reset form keeps its password control disabled and hides the reset action until a token exists, while recovery failures remain assertive alerts.
+- Files: `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: targeted ESLint passed; authentication/loading suite passed 4/4.
+- Scope: local auth-entry semantics only; provider delivery, manual assistive technology, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

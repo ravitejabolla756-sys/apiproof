@@ -96,4 +96,14 @@ test.describe('authentication loading announcements', () => {
     releaseReset?.();
     const resetStatus = page.getByRole('status'); await expect(resetStatus).toContainText('Password updated.'); await expect(resetStatus).toHaveAttribute('aria-atomic', 'true');
   });
+
+  test('announces auth-entry recovery failures without enabling unsafe reset actions', async ({ page }) => {
+    await page.goto('/reset-password');
+    const missingToken = page.getByRole('alert').filter({ hasText: 'This reset link is missing or invalid.' });
+    await expect(missingToken).toBeVisible(); await expect(missingToken).toHaveAttribute('aria-live', 'assertive'); await expect(page.getByLabel('New password')).toBeDisabled(); await expect(page.getByRole('button', { name: 'Reset password' })).toHaveCount(0);
+
+    await page.route('**/api/auth', async (route) => { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Password recovery is temporarily unavailable.' }) }); });
+    await page.goto('/forgot-password'); await page.getByLabel('Email').fill('member@example.test'); await page.getByRole('button', { name: 'Send reset link' }).click();
+    const recoveryAlert = page.getByRole('alert').filter({ hasText: 'Password recovery is temporarily unavailable.' }); await expect(recoveryAlert).toBeVisible(); await expect(recoveryAlert).toHaveAttribute('aria-atomic', 'true'); await page.unroute('**/api/auth');
+  });
 });
