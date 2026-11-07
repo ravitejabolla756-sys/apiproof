@@ -477,6 +477,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: after the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load times were 10–29 ms, response times 2–8 ms, and encoded HTML sizes 5.9–16.9 KiB over loopback.
 - Scope: reproducible local performance evidence only; this is not Lighthouse/Core Web Vitals, public-network, staging or production evidence. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 collapsed sidebar brand name
+
+- Change: the shared dashboard brand link now retains the explicit accessible name `MY OWL dashboard` when the desktop sidebar is collapsed and its visible wordmark is hidden. Existing navigation, collapse control and routing behavior are unchanged.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; existing collapsed-workspace-navigation journey passed 1/1 in 3.0 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-sidebar-brand-artifacts.jtKhHK`.
+- Scope: local sidebar accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository connection dialog semantics
 
 - Change: the repository connection modal now hides decorative status, provider, repository-type, branch and action icons from the accessibility tree, and announces the in-progress GitHub authorization handoff through a polite live region. Existing focus trapping, Escape dismissal and repository connection behavior are unchanged.
