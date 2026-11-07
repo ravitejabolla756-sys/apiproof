@@ -1,3 +1,5 @@
+import { isTestRuntime } from './lib/server/runtime-mode.js';
+
 export const runtime = 'nodejs';
 
 /**
@@ -10,7 +12,7 @@ export const runtime = 'nodejs';
  * same schema without exposing migration SQL to request handlers.
  */
 export async function register(): Promise<void> {
-  if (process.env.NODE_ENV === 'test') return;
+  if (isTestRuntime()) return;
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { migrateProductionDatabase } = await import('./instrumentation-node.js');
     try {

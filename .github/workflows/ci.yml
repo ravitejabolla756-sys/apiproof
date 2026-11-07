@@ -90,6 +90,9 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Build web for browser E2E
+        run: pnpm --filter @apiproof/web build
+
       - name: Run browser E2E
         run: pnpm exec playwright test tests/e2e/public-site.spec.ts
 

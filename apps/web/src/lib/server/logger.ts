@@ -6,6 +6,7 @@
  * - Standardizes context fields (requestId, workspaceId, repositoryId, scanId, etc.).
  * - Prevents sensitive credential leakage to stdout/stderr.
  */
+import { isProductionRuntime } from './runtime-mode.js';
 
 export interface LogContext {
   requestId?: string;
@@ -148,7 +149,7 @@ export const logger = {
     console.error(formatLogEntry('error', message, context, error));
   },
   debug(message: string, context?: LogContext): void {
-    if (process.env.NODE_ENV !== 'production') {
+    if (!isProductionRuntime()) {
       console.debug(formatLogEntry('debug', message, context));
     }
   },

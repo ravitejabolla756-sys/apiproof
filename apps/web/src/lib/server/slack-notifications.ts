@@ -6,6 +6,7 @@ import { withSqliteClaimLock } from './scan-worker-state.js';
 import { requireSlackFindingAuthorization } from './slack-authorization.js';
 import { isNotificationPreferenceEnabled } from './notification-preferences-service.js';
 import { requireAuthoritativeSlackDraftPr } from './slack-outcomes.js';
+import { isProductionRuntime } from './runtime-mode.js';
 import { slackApi, SlackApiFailure, slackErrorCategory, slackRetryAt, isRetryableSlackFailure } from './slack-retry.js';
 export { queueSlackInteractionOutcome, queueSlackProposalOutcome } from './slack-outcomes.js';
 
@@ -86,7 +87,7 @@ function findingUrl(findingId: string): string {
   const base = process.env.APIPROOF_APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (!base) throw new Error('APIPROOF_APP_URL_NOT_CONFIGURED');
   const url = new URL(`/dashboard/findings/${encodeURIComponent(findingId)}`, base);
-  if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') throw new Error('SLACK_FINDING_URL_HTTPS_REQUIRED');
+  if (isProductionRuntime() && url.protocol !== 'https:') throw new Error('SLACK_FINDING_URL_HTTPS_REQUIRED');
   return url.toString();
 }
 

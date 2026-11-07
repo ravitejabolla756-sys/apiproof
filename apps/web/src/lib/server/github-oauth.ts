@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { createSessionAsync, hashPassword, type Session, type User } from './auth.js';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
 import { createWorkspaceForUser } from './workspace-service.js';
+import { isProductionRuntime } from './runtime-mode.js';
 
 const GITHUB_TOKEN_ENDPOINT = 'https://github.com/login/oauth/access_token';
 const GITHUB_USER_ENDPOINT = 'https://api.github.com/user';
@@ -88,7 +89,7 @@ export function getGitHubLoginStateCookieOptions(expiresAt?: Date): {
 } {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProductionRuntime(),
     sameSite: 'lax',
     path: '/api/auth/github',
     maxAge: expiresAt ? Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000)) : 600,

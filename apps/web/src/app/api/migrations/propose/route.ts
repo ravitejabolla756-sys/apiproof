@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
+import { isProductionRuntime } from '@/lib/server/runtime-mode.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
       return badRequestResponse(idValidation.error || 'migrationId is required.');
     }
 
-    if (process.env.NODE_ENV === 'production') {
+    if (isProductionRuntime()) {
       const job = await enqueueMigrationProposal(idValidation.data, user.id);
       if (job.status === 'execution_unavailable') {
         return NextResponse.json({

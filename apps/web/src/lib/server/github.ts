@@ -13,6 +13,7 @@ import {
   type GitHubInstallationMetadata,
 } from '@apiproof/core';
 import { EXCLUDED_DIRECTORIES } from '@apiproof/shared';
+import { isProductionRuntime } from './runtime-mode.js';
 import { getDatabase } from './db/index.js';
 import { getWorkspaceGitHubInstallation, type GitHubInstallationRecord } from './workspace-service.js';
 
@@ -168,7 +169,7 @@ export async function verifyGitHubAppInstallation(
   customFetch?: typeof fetch
 ): Promise<GitHubInstallationMetadata> {
   const config = loadGitHubAppConfig();
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
 
   if (!config.appId) {
     throw new Error('GITHUB_CONFIG_MISSING_APP_ID');

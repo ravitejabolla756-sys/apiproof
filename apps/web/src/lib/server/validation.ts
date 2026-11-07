@@ -1,3 +1,5 @@
+import { isTestRuntime } from './runtime-mode.js';
+
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const GITHUB_NAME_REGEX = /^[a-zA-Z0-9_.-]{1,100}$/;
 const GIT_BRANCH_REGEX = /^[a-zA-Z0-9/_.-]{1,100}$/;
@@ -193,7 +195,7 @@ export function validateSafeId(id: unknown, fieldName = 'ID'): ValidationResult<
  * Validates Origin and Sec-Fetch-Site to protect mutating API routes from cross-site requests.
  */
 export function assertCsrfProtection(req: Request): { valid: boolean; error?: string } {
-  const isTest = process.env.NODE_ENV === 'test';
+  const isTest = isTestRuntime();
 
   const secFetchSite = req.headers.get('sec-fetch-site');
   if (secFetchSite === 'cross-site') {

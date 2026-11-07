@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { organizationErrorResponse, WORKSPACE_CONTEXT_COOKIE } from '@/lib/server/organization-route.js';
 import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse, validateSafeId } from '@/lib/server/validation.js';
 import { requireWorkspaceMember } from '@/lib/server/workspace-service.js';
+import { isProductionRuntime } from '@/lib/server/runtime-mode.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
     response.cookies.set(WORKSPACE_CONTEXT_COOKIE, workspace.id, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProductionRuntime(),
       path: '/',
       maxAge: 60 * 60 * 24 * 30,
     });

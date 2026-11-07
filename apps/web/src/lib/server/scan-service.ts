@@ -12,6 +12,7 @@ import { getDatabase } from './db/index.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
+import { isTestRuntime } from './runtime-mode.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
@@ -66,7 +67,7 @@ export async function runRepositoryScan(
   
   // 1. Verify workspace repository access (central authorization / IDOR protection)
   const { repository: repo } = await requireRepositoryAccess(repositoryId, userId);
-  if (customProvider && process.env.NODE_ENV !== 'test') throw new Error('GITHUB_TEST_PROVIDER_FORBIDDEN: Source provider overrides are available only to automated tests.');
+  if (customProvider && !isTestRuntime()) throw new Error('GITHUB_TEST_PROVIDER_FORBIDDEN: Source provider overrides are available only to automated tests.');
   if (repo.lifecycle !== 'active') {
     throw new Error('REPOSITORY_NOT_ACTIVE: Historical or disconnected repositories cannot be scanned.');
   }
@@ -102,7 +103,7 @@ export async function runRepositoryScan(
     // 3. Fetch source files from the workspace-owned GitHub installation.
     // Synthetic/local fixture material is available only to automated tests.
     const installation = repo.workspace_id ? await getWorkspaceGitHubInstallation(repo.workspace_id) : null;
-    const isTestFixture = process.env.NODE_ENV === 'test';
+    const isTestFixture = isTestRuntime();
 
     let githubProvider = customProvider ?? null;
     if (!customProvider && repo.workspace_id && installation) {

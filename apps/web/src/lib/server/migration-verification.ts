@@ -25,6 +25,7 @@ import {
   type ExecutionSandbox,
   type VerifiedMigrationArtifact,
 } from '@apiproof/core';
+import { isProductionRuntime, isTestRuntime } from './runtime-mode.js';
 import { MigrationPlanSchema, VerificationReportSchema } from '@apiproof/shared';
 import type { PlanningInput, VerificationReport } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
@@ -68,7 +69,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
   let attemptedPatch: { patchDigest: string; patchContent: Record<string, string>; patchDiff: string; targetFiles: string[]; sourceDigests: Record<string, string>; resultingDigests: Record<string, string> } | undefined;
   let failurePersisted = false;
   try {
-    if (process.env.NODE_ENV !== 'test' && input.options && Object.keys(input.options).length) throw new Error('VERIFICATION_TEST_OVERRIDE_FORBIDDEN: Captured source and sandbox overrides are test-only.');
+    if (!isTestRuntime() && input.options && Object.keys(input.options).length) throw new Error('VERIFICATION_TEST_OVERRIDE_FORBIDDEN: Captured source and sandbox overrides are test-only.');
     if (input.repo.lifecycle && input.repo.lifecycle !== 'active') throw new Error('REPOSITORY_NOT_ACTIVE: Historical or disconnected repositories cannot produce migration verification evidence.');
     baselineSha = input.migration.baseline_sha?.trim();
     if (!baselineSha || !/^[a-f0-9]{40}$/i.test(baselineSha)) throw new Error('BASELINE_SHA_INVALID: Migration is not bound to a valid scan commit.');
@@ -89,7 +90,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     if (source === undefined) throw new Error(`SOURCE_FILE_NOT_FOUND: ${input.finding.file_path} was not present at baseline ${baselineSha}.`);
     const sourceDigest = digest(source);
     if (input.finding.source_digest && sourceDigest !== input.finding.source_digest) throw new Error('SOURCE_DIGEST_MISMATCH: Baseline source differs from scan evidence.');
-    if (!input.finding.source_digest && process.env.NODE_ENV === 'production') throw new Error('SOURCE_DIGEST_MISSING: Scan evidence lacks the exact target source digest.');
+    if (!input.finding.source_digest && isProductionRuntime()) throw new Error('SOURCE_DIGEST_MISSING: Scan evidence lacks the exact target source digest.');
     if (input.options?.sourceSha && input.options.sourceSha !== baselineSha) throw new Error('BASELINE_SHA_MISMATCH: Source provider returned a different commit.');
 
     const planningInput = buildPlanningInput(input.finding, input.repo.full_name, change as unknown as PlanningInput['change']);
@@ -122,8 +123,8 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
     await getDatabase().execute(`UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = NULL
       WHERE id = ? AND status <> 'pr_created'`, [patchDigest, JSON.stringify(patchContent), patchDiff, input.migration.id]);
 
-    const sandbox = input.options?.sandbox ?? (process.env.NODE_ENV === 'test' ? new FakeSandbox() : new DockerSandbox());
-    if (process.env.NODE_ENV === 'production' && !(sandbox instanceof DockerSandbox)) {
+    const sandbox = input.options?.sandbox ?? (isTestRuntime() ? new FakeSandbox() : new DockerSandbox());
+    if (isProductionRuntime() && !(sandbox instanceof DockerSandbox)) {
       throw new Error('VERIFICATION_EXECUTION_SANDBOX_REQUIRED: Production proposals require the isolated Docker sandbox.');
     }
     const fixture = buildVerificationWorkspaceCommands(
@@ -210,7 +211,7 @@ export function validatePersistedMigrationEvidence(raw: string | null | undefine
 async function fetchExactSource(repo: MigrationVerificationRepo, baselineSha: string): Promise<Map<string, string>> {
   const installation = await getWorkspaceGitHubInstallation(repo.workspace_id);
   if (!installation) {
-    if (process.env.NODE_ENV !== 'test') throw new Error('WORKSPACE_GITHUB_NOT_CONNECTED: Exact source retrieval requires an active GitHub installation.');
+    if (!isTestRuntime()) throw new Error('WORKSPACE_GITHUB_NOT_CONNECTED: Exact source retrieval requires an active GitHub installation.');
     const fixtureRoot = 'C:\\apiproof-github-fixture';
     const files = new Map<string, string>();
     try {

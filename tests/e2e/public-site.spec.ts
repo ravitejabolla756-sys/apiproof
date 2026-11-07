@@ -1,8 +1,19 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+const localSeedPassword = process.env.APIPROOF_LOCAL_SEED_PASSWORD ?? 'local-test-seed-password';
+let browserClientCounter = 0;
+
+function nextBrowserClientIp(): string {
+  browserClientCounter = (browserClientCounter % 254) + 1;
+  return `198.51.100.${browserClientCounter}`;
+}
+
 async function signIn(page: Page) {
-  await signInWithCredentials(page, 'developer@apiproof.dev', 'local-test-seed-password');
+  // Each test page models a separate browser client so the production rate
+  // limiter is exercised without one CI runner IP exhausting the shared seed.
+  await page.setExtraHTTPHeaders({ 'x-forwarded-for': nextBrowserClientIp() });
+  await signInWithCredentials(page, 'developer@apiproof.dev', localSeedPassword);
 }
 
 async function signInWithCredentials(page: Page, email: string, password: string) {

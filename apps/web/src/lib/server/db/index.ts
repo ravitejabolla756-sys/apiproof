@@ -17,6 +17,7 @@ import { SQLITE_NOTIFICATION_SCHEMA } from './notification-migration.js';
 import { SQLITE_EMAIL_DELIVERY_SCHEMA } from './email-delivery-migration.js';
 import { SQLITE_SCAN_FAILURE_NOTIFICATION_SCHEMA } from './scan-failure-notification-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
+import { isProductionRuntime } from '../runtime-mode.js';
 
 export * from './types.js';
 export * from './sql-utils.js';
@@ -46,7 +47,7 @@ export type ResolvedDatabaseConfig =
 
 export function resolveDatabaseConfig(): ResolvedDatabaseConfig {
   const dbUrl = process.env.DATABASE_URL || process.env.APIPROOF_DATABASE_URL;
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
 
   if (dbUrl && dbUrl.trim().length > 0) {
     return { type: 'postgres', url: dbUrl.trim() };

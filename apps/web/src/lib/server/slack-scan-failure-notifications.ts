@@ -7,6 +7,7 @@ import { isNotificationPreferenceEnabled } from './notification-preferences-serv
 import { requireRepositoryAccess, requireWorkspaceMember } from './workspace-service.js';
 import { isRetryableSlackFailure, SlackApiFailure, slackErrorCategory, slackRetryAt } from './slack-retry.js';
 import { sendSlackDmMessage, type SlackMessageConnection } from './slack-notifications.js';
+import { isProductionRuntime } from './runtime-mode.js';
 
 const DELIVERY_LEASE_MS = 2 * 60_000;
 const MAX_ATTEMPTS = 5;
@@ -80,7 +81,7 @@ function appUrl(pathname: string): string {
   const base = process.env.APIPROOF_APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (!base) throw new Error('APIPROOF_APP_URL_NOT_CONFIGURED');
   const url = new URL(pathname, base);
-  if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') throw new Error('SLACK_SCAN_FAILURE_URL_HTTPS_REQUIRED');
+  if (isProductionRuntime() && url.protocol !== 'https:') throw new Error('SLACK_SCAN_FAILURE_URL_HTTPS_REQUIRED');
   return url.toString();
 }
 

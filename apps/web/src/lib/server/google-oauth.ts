@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { createSessionAsync, hashPassword, type Session, type User } from './auth.js';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
 import { createWorkspaceForUser } from './workspace-service.js';
+import { isProductionRuntime } from './runtime-mode.js';
 
 const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 const GOOGLE_JWKS_ENDPOINT = 'https://www.googleapis.com/oauth2/v3/certs';
@@ -145,7 +146,7 @@ export function getGoogleOAuthStateCookieOptions(expiresAt?: Date): {
 } {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProductionRuntime(),
     sameSite: 'lax',
     path: '/api/auth/google',
     maxAge: expiresAt ? Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000)) : 600,

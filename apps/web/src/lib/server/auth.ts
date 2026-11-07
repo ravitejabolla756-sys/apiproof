@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { getDatabase, type SqliteDatabaseAdapter } from './db/index.js';
+import { isProductionRuntime } from './runtime-mode.js';
 
 export interface User {
   id: string;
@@ -29,7 +30,7 @@ export interface AuthCookieOptions {
 }
 
 export function getAuthCookieOptions(expiresAt?: string | Date): AuthCookieOptions {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
   const expiresDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + SESSION_TTL_MS);
   return {
     httpOnly: true,
@@ -42,7 +43,7 @@ export function getAuthCookieOptions(expiresAt?: string | Date): AuthCookieOptio
 }
 
 export function getClearAuthCookieOptions(): AuthCookieOptions {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
   return {
     httpOnly: true,
     secure: isProduction,

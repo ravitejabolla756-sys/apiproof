@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { isTestRuntime } from './runtime-mode.js';
 
 export type WorkspaceRole = 'owner' | 'member';
 export type RepositoryOrigin = 'connected' | 'seeded_fixture' | 'imported';
@@ -316,7 +317,7 @@ export async function requireRepositoryAccess(
     `, [repositoryIdOrSlug, repositoryIdOrSlug, repositoryIdOrSlug, userId]);
 
     if (legacyRow) {
-      if (process.env.NODE_ENV !== 'test') {
+      if (!isTestRuntime()) {
         throw new Error('Repository not found or access denied. Legacy repository identity is not eligible for production access.');
       }
       const defaultWs = await getDefaultWorkspaceForUser(userId);
@@ -336,7 +337,7 @@ export async function requireRepositoryAccess(
   if (!row) {
     throw new Error('Repository not found or access denied.');
   }
-  if (process.env.NODE_ENV !== 'test' && row.origin !== 'connected') throw new Error('Repository not found or access denied. Historical or synthetic identity is not eligible for live access.');
+  if (!isTestRuntime() && row.origin !== 'connected') throw new Error('Repository not found or access denied. Historical or synthetic identity is not eligible for live access.');
 
   return {
     repository: {

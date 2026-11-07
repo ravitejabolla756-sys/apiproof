@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { getVerifierSecret } from '@apiproof/core';
+import { isProductionRuntime } from './runtime-mode.js';
 
 export interface SlackOAuthConfig {
   clientId: string;
@@ -28,7 +29,7 @@ export function getSlackOAuthConfig(): SlackOAuthConfig {
   const configuredBase = process.env.APIPROOF_APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (!clientId || !clientSecret || !configuredBase) throw new Error('SLACK_OAUTH_NOT_CONFIGURED');
   const base = new URL(configuredBase);
-  if (process.env.NODE_ENV === 'production' && base.protocol !== 'https:') throw new Error('SLACK_OAUTH_HTTPS_REQUIRED');
+  if (isProductionRuntime() && base.protocol !== 'https:') throw new Error('SLACK_OAUTH_HTTPS_REQUIRED');
   return { clientId, clientSecret, redirectUri: new URL('/api/slack/callback', base).toString() };
 }
 

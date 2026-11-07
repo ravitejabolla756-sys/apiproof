@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { verifyEvidenceBinding, type VerifiedMigrationArtifact } from '@apiproof/core';
 import { VerificationReportSchema, type VerificationReport } from '@apiproof/shared';
+import { isProductionRuntime } from './runtime-mode.js';
 
 export interface BoundMigrationProof { evidence: VerifiedMigrationArtifact; report: VerificationReport }
 
@@ -23,7 +24,7 @@ export function readBoundMigrationProof(raw: string | null | undefined, expected
     || report.data.networkPolicy.mode !== 'NETWORK_DISABLED' || !report.data.networkPolicy.enforced) {
     throw new Error('GITHUB_EVIDENCE_STALE: Persisted verification evidence is incomplete or belongs to another migration state.');
   }
-  if (process.env.NODE_ENV === 'production' && evidence.proofLevel !== 'EXECUTION_VERIFIED') throw new Error('GITHUB_EVIDENCE_INCOMPLETE: Production proposal evidence must be execution-verified.');
+  if (isProductionRuntime() && evidence.proofLevel !== 'EXECUTION_VERIFIED') throw new Error('GITHUB_EVIDENCE_INCOMPLETE: Production proposal evidence must be execution-verified.');
   if (evidence.verificationId !== report.data.verificationId || evidence.verificationReportDigest !== crypto.createHash('sha256').update(JSON.stringify(wrapper.report)).digest('hex')) {
     throw new Error('GITHUB_EVIDENCE_MISMATCH: Persisted execution report is not bound to the signed evidence.');
   }

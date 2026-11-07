@@ -12,6 +12,7 @@ import {
   type GitHubControlledWriteTransport,
 } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
+import { isProductionRuntime } from './runtime-mode.js';
 import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
 import { validatePersistedMigrationEvidence, verifyMigrationForProposal } from './migration-verification.js';
@@ -170,7 +171,7 @@ export async function createGitHubProposal(
   }
 
   // 5. Select transport: custom transport only for local/test execution, or the live controlled GitHub transport.
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProductionRuntime();
   const isLiveWrite = process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE === 'true';
   let transport: GitHubControlledWriteTransport;
 
