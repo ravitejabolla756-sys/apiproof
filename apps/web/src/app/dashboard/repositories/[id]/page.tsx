@@ -207,7 +207,7 @@ export default function RepositoryDetailPage({
         {/* HONEST SCAN STATE BANNER */}
         <div className="p-4 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
+            <div aria-hidden="true" className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
               scanning
                 ? "bg-purple-50 text-purple-700 border-purple-200"
                 : scans.length === 0
@@ -227,7 +227,7 @@ export default function RepositoryDetailPage({
               )}
             </div>
 
-            <div className="space-y-0.5">
+            <div role="status" aria-live="polite" aria-atomic="true" className="space-y-0.5">
               <div className="font-semibold text-[#111111] flex items-center gap-2">
                 <span>Scan Status:</span>
                 <span className="font-mono uppercase text-[11px] text-purple-800">
@@ -294,7 +294,7 @@ export default function RepositoryDetailPage({
       {/* REPOSITORY FINDINGS */}
       <div className="space-y-4">
         <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-purple-700" />
+          <AlertTriangle aria-hidden="true" className="w-4 h-4 text-purple-700" />
           Compatibility Findings ({findings.length})
         </h2>
 
@@ -302,25 +302,25 @@ export default function RepositoryDetailPage({
           <div role="status" aria-live="polite" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px] space-y-2">
             {latestScanIsActive ? (
               <>
-                <Loader2 className="w-6 h-6 text-purple-700 animate-spin mx-auto" />
+                <Loader2 aria-hidden="true" className="w-6 h-6 text-purple-700 animate-spin mx-auto" />
                 <p className="font-semibold text-sm text-[#111111]">Scan in progress</p>
                 <p className="text-xs text-[#686868]">MY OWL is analyzing the latest repository snapshot. Findings will appear when the scan completes.</p>
               </>
             ) : latestScan?.status === "failed" ? (
               <>
-                <AlertTriangle className="w-6 h-6 text-rose-600 mx-auto" />
+                <AlertTriangle aria-hidden="true" className="w-6 h-6 text-rose-600 mx-auto" />
                 <p className="font-semibold text-sm text-[#111111]">Scan failed</p>
                 <p className="text-xs text-[#686868]">The latest scan did not complete. Review the status above and retry when the repository connection is available.</p>
               </>
             ) : latestScan ? (
               <>
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
+                <CheckCircle2 aria-hidden="true" className="w-6 h-6 text-emerald-600 mx-auto" />
                 <p className="font-semibold text-sm text-[#111111]">No breaking changes detected</p>
                 <p className="text-xs text-[#686868]">The latest completed scan found no affected call sites in the reviewed provider rules.</p>
               </>
             ) : (
               <>
-                <FileCode className="w-6 h-6 text-zinc-500 mx-auto" />
+                <FileCode aria-hidden="true" className="w-6 h-6 text-zinc-500 mx-auto" />
                 <p className="font-semibold text-sm text-[#111111]">No scan completed yet</p>
                 <p className="text-xs text-[#686868]">Run an AST scan to inspect the repository with the reviewed provider rules.</p>
               </>
@@ -392,7 +392,7 @@ export default function RepositoryDetailPage({
       {/* SCAN HISTORY TABLE */}
       <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
         <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-          <FileCode className="w-4 h-4 text-purple-700" />
+          <FileCode aria-hidden="true" className="w-4 h-4 text-purple-700" />
           Scan History ({scans.length})
         </h2>
 
@@ -403,11 +403,11 @@ export default function RepositoryDetailPage({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">
-                  <th className="py-2.5 px-3">Commit SHA</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3">Files Analyzed</th>
-                  <th className="py-2.5 px-3">Findings</th>
-                  <th className="py-2.5 px-3">Completed At</th>
+                  <th scope="col" className="py-2.5 px-3">Commit SHA</th>
+                  <th scope="col" className="py-2.5 px-3">Status</th>
+                  <th scope="col" className="py-2.5 px-3">Files Analyzed</th>
+                  <th scope="col" className="py-2.5 px-3">Findings</th>
+                  <th scope="col" className="py-2.5 px-3">Completed At</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E8E8E5]">

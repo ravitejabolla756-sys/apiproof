@@ -458,6 +458,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 repository scan-state semantics
+
+- Change: the repository detail scan summary now exposes the current scan state as an atomic polite live region; decorative scan-state and section icons are hidden from assistive technology; scan-history column headers now declare `scope="col"`.
+- Regression: `tests/e2e/repository-recovery.spec.ts` now asserts the no-scan state is visible, named and announced with the expected polite/atomic status semantics after detail recovery.
+- Evidence: focused ESLint PASS; `pnpm --filter @apiproof/web typecheck` PASS; rebuilt web production build PASS with 83 generated pages; CI-mode repository recovery journey PASS 1/1.
+- Scope: this advances local UI-12 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 landing pipeline stage semantics
 
 - Change: landing-page mobile and desktop stage navigation buttons now declare native button type, accessible stage names and `aria-pressed` state for the active stage; click behavior and visual system are unchanged.

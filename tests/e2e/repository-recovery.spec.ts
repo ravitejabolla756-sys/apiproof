@@ -48,6 +48,11 @@ test.describe('repository recovery journeys', () => {
     await expect(page.getByRole('alert').filter({ hasText: 'Repository details temporarily unavailable.' })).toBeVisible();
     detailRetryStarted = true; await page.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByRole('heading', { name: 'owl', exact: true })).toBeVisible();
+    const scanStatus = page.getByRole('status').filter({ hasText: 'Scan Status:' });
+    await expect(scanStatus).toBeVisible();
+    await expect(scanStatus).toHaveAttribute('aria-live', 'polite');
+    await expect(scanStatus).toHaveAttribute('aria-atomic', 'true');
+    await expect(scanStatus).toContainText('Not Scanned');
     await expect(page.getByRole('status').filter({ hasText: 'No scan completed yet' })).toBeVisible();
     await expect(page.getByRole('status').filter({ hasText: 'No scans recorded yet.' })).toBeVisible();
     expect(listAttempts).toBeGreaterThanOrEqual(2);
