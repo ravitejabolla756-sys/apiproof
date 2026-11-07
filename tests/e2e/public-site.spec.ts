@@ -183,6 +183,45 @@ test.describe('authenticated product surfaces', () => {
     expect(results.violations, 'workspace context selector').toEqual([]);
   });
 
+  test('switches between authorized workspace contexts through the picker', async ({ page }) => {
+    await signIn(page);
+    let activeWorkspaceId = 'ws_primary';
+    let postedWorkspaceId: string | undefined;
+    await page.route('**/api/workspaces', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          activeWorkspaceId,
+          workspaces: [
+            { id: 'ws_primary', name: 'Primary Workspace', role: 'owner' },
+            { id: 'ws_secondary', name: 'Secondary Workspace', role: 'member' },
+          ],
+        }),
+      });
+    });
+    await page.route('**/api/workspace/context', async (route) => {
+      postedWorkspaceId = (JSON.parse(route.request().postData() || '{}') as { workspaceId?: string }).workspaceId;
+      activeWorkspaceId = postedWorkspaceId || activeWorkspaceId;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ workspace: { id: activeWorkspaceId, name: 'Secondary Workspace', role: 'member' } }),
+      });
+    });
+
+    await page.goto('/dashboard');
+    const selector = page.getByLabel('Active workspace');
+    await expect(selector).toHaveValue('ws_primary', { timeout: 30_000 });
+    await expect(selector.locator('option')).toHaveCount(2);
+    await selector.selectOption('ws_secondary');
+    await expect.poll(() => postedWorkspaceId).toBe('ws_secondary');
+    await expect(selector).toHaveValue('ws_secondary', { timeout: 30_000 });
+    await expect(selector.locator('option:checked')).toHaveText('Secondary Workspace');
+    await page.unroute('**/api/workspaces');
+    await page.unroute('**/api/workspace/context');
+  });
+
   test('creates and cancels a manual workspace invitation without sending email', async ({ page }) => {
     await signIn(page);
     await page.goto('/dashboard/settings/workspace');
