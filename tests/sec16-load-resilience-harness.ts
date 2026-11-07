@@ -9,7 +9,7 @@ export interface LocalLoadScenario {
   iterations: number;
   concurrency: number;
   timeoutMs?: number;
-  operation: (iteration: number) => Promise<void> | void;
+  operation: (iteration: number, signal: AbortSignal) => Promise<void> | void;
 }
 
 export interface LoadReport {
@@ -63,9 +63,12 @@ function percentile(sortedValues: ReadonlyArray<number>, percentileValue: number
   return sortedValues[lower]! + (sortedValues[upper]! - sortedValues[lower]!) * weight;
 }
 
-function withTimeout(operation: Promise<void>, timeoutMs: number): Promise<void> {
+function withTimeout(operation: Promise<void>, timeoutMs: number, onTimeout: () => void): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('OPERATION_TIMEOUT')), timeoutMs);
+    const timer = setTimeout(() => {
+      onTimeout();
+      reject(new Error('OPERATION_TIMEOUT'));
+    }, timeoutMs);
     operation.then(
       () => {
         clearTimeout(timer);
@@ -101,10 +104,11 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
 
   async function runOne(iteration: number): Promise<void> {
     const operationStartedAt = performance.now();
+    const controller = new AbortController();
     inFlight += 1;
     maxInFlight = Math.max(maxInFlight, inFlight);
     try {
-      await withTimeout(Promise.resolve(options.operation(iteration)), timeoutMs);
+      await withTimeout(Promise.resolve(options.operation(iteration, controller.signal)), timeoutMs, () => controller.abort());
       succeeded += 1;
     } catch (error) {
       failed += 1;

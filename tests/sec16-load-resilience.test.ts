@@ -172,4 +172,23 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     expect(report.errors).toEqual({ INJECTED_API_FAILURE: 2, OPERATION_FAILED: 1 });
     expect(JSON.stringify(report)).not.toContain('secret-must-not-escape');
   });
+
+  it('signals cooperative cancellation when an operation exceeds its deadline', async () => {
+    let signalAborted = false;
+    const report = await runLocalLoadScenario({
+      name: 'injected-timeout',
+      iterations: 1,
+      concurrency: 1,
+      timeoutMs: 5,
+      operation: (_iteration, signal) => new Promise<void>((_resolve, reject) => {
+        signal.addEventListener('abort', () => {
+          signalAborted = true;
+          reject(new Error('OPERATION_ABORTED'));
+        }, { once: true });
+      }),
+    });
+
+    expect(signalAborted).toBe(true);
+    expect(report).toMatchObject({ iterations: 1, succeeded: 0, failed: 1, errors: { OPERATION_TIMEOUT: 1 } });
+  });
 });
