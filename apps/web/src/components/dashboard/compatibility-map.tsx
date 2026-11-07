@@ -131,7 +131,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   }, [loadMap]);
 
   if (loading && repositories.length === 0) {
-    return <div className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
+    return <div role="status" aria-live="polite" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
       <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
     </div>;
   }

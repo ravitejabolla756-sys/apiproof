@@ -123,7 +123,7 @@ export default function ProvidersPage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
 
       {error ? null : loading ? (
-        <div className="py-20 text-center text-[#686868]"><Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
+        <div role="status" aria-live="polite" className="py-20 text-center text-[#686868]"><Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
       ) : !data ? (
         <div className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">Provider coverage is temporarily unavailable.</div>
       ) : data.providers.length === 0 ? (

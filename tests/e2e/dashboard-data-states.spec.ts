@@ -16,6 +16,19 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/overview');
   });
 
+  test('announces pull-request loading before the response resolves', async ({ page }) => {
+    await signIn(page);
+    let releasePullRequests: (() => void) | undefined;
+    const pullRequestsLoading = new Promise<void>((resolve) => { releasePullRequests = resolve; });
+    await page.route('**/api/pull-requests', async (route) => { await pullRequestsLoading; await route.continue(); });
+
+    await page.goto('/dashboard/pull-requests', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('status')).toContainText('Loading pull requests...');
+    releasePullRequests?.();
+    await expect(page.getByRole('heading', { name: 'Pull Request Queue' })).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/pull-requests');
+  });
+
   test('shows recoverable errors instead of false empty states', async ({ page }) => {
     await signIn(page);
 
