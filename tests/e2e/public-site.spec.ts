@@ -9,7 +9,7 @@ async function signIn(page: Page) {
   await page.waitForURL('**/dashboard');
 }
 
-async function createAndAcceptInvitation(ownerPage: Page, browser: Browser, inviteEmail: string) {
+async function withAcceptedInvitation(ownerPage: Page, browser: Browser, inviteEmail: string, action: (invitedPage: Page) => Promise<void>) {
   await ownerPage.goto('/dashboard/settings/workspace');
   await ownerPage.getByLabel('Invite email').fill(inviteEmail);
   await ownerPage.getByRole('button', { name: 'Create invite link' }).click();
@@ -34,6 +34,7 @@ async function createAndAcceptInvitation(ownerPage: Page, browser: Browser, invi
     await invitedPage.goto(`${parsedInviteUrl.pathname}${parsedInviteUrl.search}`);
     await invitedPage.getByRole('button', { name: 'Accept invitation' }).click();
     await expect(invitedPage.getByRole('status')).toContainText('You joined', { timeout: 30_000 });
+    await action(invitedPage);
   } finally {
     await invitedPage.close();
   }
@@ -271,28 +272,31 @@ test.describe('authenticated product surfaces', () => {
   test('accepts a real generated invitation with the invited account', async ({ page, browser }) => {
     await signIn(page);
     const inviteEmail = `browser-accept-${Date.now()}@example.test`;
-    await createAndAcceptInvitation(page, browser, inviteEmail);
+    await withAcceptedInvitation(page, browser, inviteEmail, async () => {});
   });
 
   test('updates and removes a real accepted workspace member', async ({ page, browser }) => {
     await signIn(page);
     const memberEmail = `browser-member-${Date.now()}@example.test`;
-    await createAndAcceptInvitation(page, browser, memberEmail);
+    await withAcceptedInvitation(page, browser, memberEmail, async (invitedPage) => {
+      await page.goto('/dashboard/settings/workspace');
+      const roleSelector = page.getByLabel(`Role for ${memberEmail}`);
+      await expect(roleSelector).toHaveValue('member', { timeout: 30_000 });
+      await roleSelector.selectOption('owner');
+      await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
+      await expect(roleSelector).toHaveValue('owner');
+      await roleSelector.selectOption('member');
+      await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
+      await expect(roleSelector).toHaveValue('member');
 
-    await page.goto('/dashboard/settings/workspace');
-    const roleSelector = page.getByLabel(`Role for ${memberEmail}`);
-    await expect(roleSelector).toHaveValue('member', { timeout: 30_000 });
-    await roleSelector.selectOption('owner');
-    await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
-    await expect(roleSelector).toHaveValue('owner');
-    await roleSelector.selectOption('member');
-    await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
-    await expect(roleSelector).toHaveValue('member');
+      page.once('dialog', (dialog) => void dialog.accept());
+      await roleSelector.locator('..').getByRole('button', { name: 'Remove' }).click();
+      await expect(page.getByRole('status')).toContainText('Member removed.', { timeout: 30_000 });
+      await expect(page.getByLabel(`Role for ${memberEmail}`)).toHaveCount(0);
 
-    page.once('dialog', (dialog) => void dialog.accept());
-    await roleSelector.locator('..').getByRole('button', { name: 'Remove' }).click();
-    await expect(page.getByRole('status')).toContainText('Member removed.', { timeout: 30_000 });
-    await expect(page.getByLabel(`Role for ${memberEmail}`)).toHaveCount(0);
+      await invitedPage.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+      await expect(invitedPage).toHaveURL(/\/login/);
+    });
   });
 
   test('covers the seeded dashboard primary browsing routes', async ({ page }) => {
