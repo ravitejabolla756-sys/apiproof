@@ -164,6 +164,8 @@ Current HEAD: `b7978a2` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 86/86, with compatibility-map and provider-rule recovery journeys added in the checkpoints above.
+
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
 | AUTH-08 | DONE_VERIFIED_LOCAL | `GET/PATCH /api/account`, password-change route/page and session invalidation | `account-settings` 5/5; `auth-session` 13/13; real local-account password-change/session-invalidation browser journey 1/1 | AUTH-05 enforcement remains separate | Recovery/email policy | Review linked-account password semantics |
