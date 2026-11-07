@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers';
 
 test.describe('authenticated dashboard data states', () => {
@@ -92,10 +93,14 @@ test.describe('authenticated dashboard data states', () => {
       await page.goto(state.path, { waitUntil: 'domcontentloaded' });
       const alert = page.getByRole('alert').filter({ hasText: state.message });
       await expect(alert).toBeVisible({ timeout: 30_000 });
+      const alertResults = await new AxeBuilder({ page }).include('[role="alert"]').analyze();
+      expect(alertResults.violations, `${state.path} error state`).toEqual([]);
       await expect(page.getByText(state.empty, { exact: false })).toHaveCount(0);
       await page.getByRole('button', { name: 'Try again' }).click();
       await expect(alert).toHaveCount(0);
       await expect(page.getByText(state.empty, { exact: false })).toBeVisible({ timeout: 30_000 });
+      const emptyResults = await new AxeBuilder({ page }).include('#main-content').analyze();
+      expect(emptyResults.violations, `${state.path} empty state`).toEqual([]);
       expect(requestCount).toBeGreaterThanOrEqual(2);
       expect(requestCount).toBeLessThanOrEqual(3);
       await page.unroute(state.api);
@@ -122,10 +127,14 @@ test.describe('authenticated dashboard data states', () => {
     await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
     const listAlert = page.getByRole('alert').filter({ hasText: 'Repositories are temporarily unavailable.' });
     await expect(listAlert).toBeVisible({ timeout: 30_000 });
+    const listAlertResults = await new AxeBuilder({ page }).include('[role="alert"]').analyze();
+    expect(listAlertResults.violations, '/dashboard/repositories error state').toEqual([]);
     await expect(page.getByText('No repositories found matching your filter.')).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(listAlert).toHaveCount(0);
     await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
+    const listEmptyResults = await new AxeBuilder({ page }).include('#main-content').analyze();
+    expect(listEmptyResults.violations, '/dashboard/repositories empty state').toEqual([]);
     expect(listRequests).toBeGreaterThanOrEqual(2);
     expect(listRequests).toBeLessThanOrEqual(3);
     await page.unroute('**/api/repositories');
@@ -165,6 +174,8 @@ test.describe('authenticated dashboard data states', () => {
     await page.goto('/dashboard/repositories/repo_recovery', { waitUntil: 'domcontentloaded' });
     const detailAlert = page.getByRole('alert').filter({ hasText: 'Repository details are temporarily unavailable.' });
     await expect(detailAlert).toBeVisible({ timeout: 30_000 });
+    const detailAlertResults = await new AxeBuilder({ page }).include('[role="alert"]').analyze();
+    expect(detailAlertResults.violations, '/dashboard/repositories detail error state').toEqual([]);
     await expect(page.getByRole('heading', { name: 'recovery-repo' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(detailAlert).toHaveCount(0);
