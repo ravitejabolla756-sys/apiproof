@@ -60,6 +60,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 Slack authorization regression: PASS, `slack-phase1` 20/20 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown persisted roles cannot read connection status or disconnect Slack; the active connection remains unchanged. PostgreSQL/RLS remains unverified.
 - ORG-05 GitHub integration regression: PASS, `github-repository-status-route` 5/5 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown default-workspace roles cannot obtain an install URL or list repositories; no GitHub request is made. PostgreSQL/RLS remains unverified.
 - ORG-05 billing role regression: PASS, `phase7-billing-foundation` 14/14 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown roles are denied before subscription response/provider operations; PostgreSQL/RLS remains unverified.
+- ORG-05 compatibility-map regression: PASS, `compatibility-map-api` 12/12 with process-only local seed; targeted ESLint and full `pnpm typecheck` pass. Unknown persisted roles are denied before compatibility queries; PostgreSQL/RLS remains unverified.
 
 ## Approval boundaries not crossed
 
