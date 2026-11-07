@@ -4,6 +4,7 @@ import { decryptSlackToken, encryptSlackToken, createSlackActionValue, type Encr
 import { logger } from './logger.js';
 import { withSqliteClaimLock } from './scan-worker-state.js';
 import { requireSlackFindingAuthorization } from './slack-authorization.js';
+import { isNotificationPreferenceEnabled } from './notification-preferences-service.js';
 import { requireAuthoritativeSlackDraftPr } from './slack-outcomes.js';
 import { slackApi, SlackApiFailure, slackErrorCategory, slackRetryAt, isRetryableSlackFailure } from './slack-retry.js';
 export { queueSlackInteractionOutcome, queueSlackProposalOutcome } from './slack-outcomes.js';
@@ -32,13 +33,15 @@ export async function enqueueNewFindingNotifications(findingIds: string[], trans
   const db = transaction ?? getDatabase();
   const now = new Date().toISOString();
   for (const findingId of [...new Set(findingIds)]) {
-    const row = await db.queryOne<{ finding_id: string; repository_id: string; workspace_id: string; status: string; connection_id: string }>(`
+    const row = await db.queryOne<{ finding_id: string; repository_id: string; workspace_id: string; status: string; connection_id: string; connected_by: string }>(`
       SELECT f.id AS finding_id, f.repository_id, r.workspace_id, f.status, sc.id AS connection_id
+             , sc.connected_by
       FROM findings f JOIN repositories r ON r.id = f.repository_id
       JOIN slack_connections sc ON sc.workspace_id = r.workspace_id AND sc.status = 'active'
       WHERE f.id = ? AND r.lifecycle = 'active'
     `, [findingId]);
     if (!row || row.status !== 'open') continue;
+    if (!(await isNotificationPreferenceEnabled(row.connected_by, 'findings', 'slack', db))) continue;
     const id = `sld_${crypto.randomBytes(12).toString('hex')}`;
     const eventKey = `${row.workspace_id}:${row.finding_id}:breaking-finding`;
     await db.execute(`INSERT INTO slack_notification_deliveries
@@ -90,6 +93,9 @@ function findingUrl(findingId: string): string {
 async function postDelivery(row: DeliveryRow, workerId: string): Promise<void> {
   const db = getDatabase();
   const { connection, finding, repository } = await requireSlackFindingAuthorization(row);
+  if (!(await isNotificationPreferenceEnabled(connection.connected_by, 'findings', 'slack', db))) {
+    throw new Error('SLACK_NOTIFICATION_SUPPRESSED');
+  }
   let text: string;
   let blocks: unknown[] | undefined;
   let resultUrl: string | null = null;

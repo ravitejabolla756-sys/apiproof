@@ -1,4 +1,4 @@
-import { getDatabase } from './db/index.js';
+import { getDatabase, type DatabaseAdapter } from './db/index.js';
 
 export type NotificationCategory = 'security' | 'account' | 'findings' | 'migration' | 'provider_change' | 'weekly_digest';
 export type NotificationChannel = 'email' | 'slack';
@@ -33,6 +33,25 @@ export async function getNotificationPreferences(userId: string): Promise<Notifi
   );
   const stored = new Map(rows.map((row) => [`${row.category}:${row.channel}`, Boolean(row.enabled)]));
   return DEFAULTS.map((item) => ({ ...item, enabled: stored.get(`${item.category}:${item.channel}`) ?? item.enabled }));
+}
+
+/**
+ * Delivery workers must evaluate optional preferences from the current server
+ * state, not from a client snapshot captured when an event was queued.
+ */
+export async function isNotificationPreferenceEnabled(
+  userId: string,
+  category: NotificationCategory,
+  channel: NotificationChannel,
+  database: DatabaseAdapter = getDatabase(),
+): Promise<boolean> {
+  const fallback = DEFAULTS.find((item) => item.category === category && item.channel === channel);
+  if (!fallback) return false;
+  const row = await database.queryOne<{ enabled: number | boolean }>(
+    'SELECT enabled FROM user_notification_preferences WHERE user_id = ? AND category = ? AND channel = ?',
+    [userId, category, channel],
+  );
+  return row ? Boolean(row.enabled) : fallback.enabled;
 }
 
 export async function updateNotificationPreferences(userId: string, updates: Array<{ category: NotificationCategory; channel: NotificationChannel; enabled: boolean }>): Promise<NotificationPreference[]> {

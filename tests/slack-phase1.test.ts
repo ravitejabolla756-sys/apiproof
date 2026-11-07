@@ -17,6 +17,7 @@ import { createSlackAuthorizationUrl, consumeSlackOAuthState, saveSlackConnectio
 import { decryptSlackToken, encryptSlackToken, verifySlackActionValue, verifySlackRequestSignature } from '../apps/web/src/lib/server/slack-security.js';
 import { enqueueNewFindingNotifications, processOneSlackNotificationDelivery, queueSlackProposalOutcome } from '../apps/web/src/lib/server/slack-notifications.js';
 import { acceptSlackAction, processOneSlackInteractionJob } from '../apps/web/src/lib/server/slack-interactions.js';
+import { updateNotificationPreferences } from '../apps/web/src/lib/server/notification-preferences-service.js';
 import { GET as getSlackConnection } from '../apps/web/src/app/api/slack/connection/route.js';
 import { GET as slackCallback } from '../apps/web/src/app/api/slack/callback/route.js';
 import { POST as slackInteraction } from '../apps/web/src/app/api/slack/interactions/route.js';
@@ -182,6 +183,34 @@ describe('MY OWL Slack Phase 1', () => {
       'SELECT id, event_key FROM slack_notification_deliveries WHERE finding_id = ?', [finding.findingId]);
     expect(rows).toHaveLength(1);
     expect(rows[0]!.event_key).toContain(finding.findingId);
+  });
+
+  it('suppresses optional finding notifications when the connecting user opts out before enqueue', async () => {
+    const a = await user('notify-optout@example.test');
+    await connectSlack(a.workspace.id, a.userId);
+    await updateNotificationPreferences(a.userId, [{ category: 'findings', channel: 'slack', enabled: false }]);
+    const finding = await createFinding(a.workspace.id, a.userId, 'optout');
+
+    await enqueueNewFindingNotifications([finding.findingId]);
+
+    expect(await getDatabase().queryOne('SELECT id FROM slack_notification_deliveries WHERE finding_id = ?', [finding.findingId])).toBeUndefined();
+  });
+
+  it('suppresses a queued finding notification when the preference changes before delivery', async () => {
+    const a = await user('notify-queued-optout@example.test');
+    await connectSlack(a.workspace.id, a.userId);
+    const finding = await createFinding(a.workspace.id, a.userId, 'queued-optout');
+    await enqueueNewFindingNotifications([finding.findingId]);
+    await updateNotificationPreferences(a.userId, [{ category: 'findings', channel: 'slack', enabled: false }]);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(processOneSlackNotificationDelivery('preference-review-worker')).resolves.toBe(true);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await getDatabase().queryOne<{ status: string; error_category: string }>(
+      'SELECT status, error_category FROM slack_notification_deliveries WHERE finding_id = ?', [finding.findingId],
+    )).toMatchObject({ status: 'failed', error_category: 'SLACK_NOTIFICATION_SUPPRESSED' });
   });
 
   it('verifies Slack raw-body HMAC and rejects tampering, missing headers, and stale timestamps', () => {
