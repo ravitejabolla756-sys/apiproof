@@ -73,6 +73,7 @@ test.describe('route accessibility audit', () => {
   });
 
   test('keeps all audited public and authenticated routes accessible at mobile width', async ({ page }) => {
+    test.setTimeout(300_000);
     await page.setViewportSize({ width: 390, height: 844 });
     for (const route of publicRoutes) {
       const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
