@@ -139,6 +139,33 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/provider-rules');
   });
 
+  test('announces an empty provider-rule review queue', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/provider-rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          candidates: [],
+          coverageSummary: {
+            candidates: 0,
+            pendingCandidates: 0,
+            reviewedCandidates: 0,
+            reviewedProviders: 0,
+            providersMissingReviewedRules: [],
+            providersWithExecutableTemplates: [],
+          },
+        }),
+      });
+    });
+    await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
+    const emptyQueue = page.getByRole('status').filter({ hasText: 'No provider rule candidates are waiting for review.' });
+    await expect(emptyQueue).toBeVisible();
+    await expect(emptyQueue).toHaveAttribute('aria-live', 'polite');
+    await expect(emptyQueue).toHaveAttribute('aria-atomic', 'true');
+    await page.unroute('**/api/provider-rules');
+  });
+
   test('exposes the selected repository health filter', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/repositories', async (route) => {
