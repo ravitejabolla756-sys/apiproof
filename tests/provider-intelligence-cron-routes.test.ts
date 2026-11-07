@@ -73,6 +73,10 @@ describe('provider intelligence cron route contracts', () => {
         jobsFailed: 0,
       },
     });
+    const heartbeat = await getDatabase().queryOne<{ status: string }>(
+      "SELECT status FROM worker_run_heartbeats WHERE component = 'nightly-rescan-scheduler'",
+    );
+    expect(heartbeat?.status).toBe('succeeded');
   });
 
   it('exposes protected rollout, source, and queue readiness without source contents', async () => {
@@ -88,6 +92,7 @@ describe('provider intelligence cron route contracts', () => {
       runtime: { productizationV1Enabled: boolean; providerRegistryDigest: string };
       sources: Array<{ providerId: string; status: string; parserStatus: string }>;
       queues: { approvedCandidates: number; reviewCandidates: number; pendingRescans: number; pendingProviderRescans: number; pendingRepositoryRescans: number; pendingScanRequests: number };
+      heartbeats: Array<{ component: string; status: string; freshness: string }>;
     };
     expect(body.ok).toBe(true);
     expect(body.configuration).toMatchObject({ readyForLiveBeta: false, liveGithubWriteEnabled: false });
@@ -96,6 +101,8 @@ describe('provider intelligence cron route contracts', () => {
     expect(body.sources).toHaveLength(19);
     expect(body.sources.every((source) => source.status === 'never-run' && source.parserStatus === 'not-run')).toBe(true);
     expect(body.queues).toMatchObject({ approvedCandidates: 0, reviewCandidates: 0, pendingRescans: 0, pendingProviderRescans: 0, pendingRepositoryRescans: 0, pendingScanRequests: 0 });
+    expect(body.heartbeats).toHaveLength(3);
+    expect(body.heartbeats.every((heartbeat) => heartbeat.freshness === 'unknown')).toBe(true);
     expect(JSON.stringify(body)).not.toContain('source body');
   });
 

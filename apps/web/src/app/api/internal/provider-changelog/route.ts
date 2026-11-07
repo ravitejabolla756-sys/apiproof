@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getProviderChangeSource, refreshAllProviderChangelogs, refreshProviderChangelog } from '../../../../lib/server/provider-change-monitor.js';
 import { processRepositoryRescans } from '../../../../lib/server/repository-rescan-worker.js';
+import { tryFinishWorkerRun, tryStartWorkerRun } from '../../../../lib/server/worker-observability.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,10 +25,15 @@ async function run(request: NextRequest): Promise<NextResponse> {
     // GET and empty POST requests refresh the full catalog.
   }
   if (providerId && !getProviderChangeSource(providerId)) return NextResponse.json({ error: 'UNKNOWN_PROVIDER_SOURCE' }, { status: 400 });
+  let heartbeatId: string | undefined;
   try {
+    heartbeatId = await tryStartWorkerRun('provider-changelog-scheduler');
     const results = providerId ? [await refreshProviderChangelog(providerId)] : await refreshAllProviderChangelogs();
     const failed = results.filter((result) => result.status === 'failed');
     const rescanProcessing = await processRepositoryRescans({ includeScheduled: false, batchSize: 10 });
+    const runStatus = failed.length > 0 || rescanProcessing.jobsFailed > 0 ? 'degraded' : 'succeeded';
+    await tryFinishWorkerRun('provider-changelog-scheduler', heartbeatId, runStatus,
+      runStatus === 'degraded' ? 'SCHEDULED_WORK_DEGRADED' : null);
     return NextResponse.json({
       ok: failed.length === 0,
       results,
@@ -38,6 +44,7 @@ async function run(request: NextRequest): Promise<NextResponse> {
       rescanProcessing,
     }, { status: failed.length > 0 ? 207 : 200 });
   } catch {
+    await tryFinishWorkerRun('provider-changelog-scheduler', heartbeatId, 'failed', 'PROVIDER_CHANGE_REFRESH_FAILED');
     return NextResponse.json({ ok: false, error: 'PROVIDER_CHANGE_REFRESH_FAILED' }, { status: 500 });
   }
 }

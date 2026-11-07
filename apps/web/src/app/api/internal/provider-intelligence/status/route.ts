@@ -6,6 +6,7 @@ import { getProviderSourceHealth } from '../../../../../lib/server/provider-sour
 import { workerRuntimeIdentity } from '../../../../../lib/server/provider-intelligence-feature.js';
 import { getRuntimeConfiguration } from '../../../../../lib/server/runtime-configuration.js';
 import { getScanWorkerMetrics } from '../../../../../lib/server/scan-worker.js';
+import { getWorkerHeartbeats } from '../../../../../lib/server/worker-observability.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,9 +30,10 @@ async function countWhere(table: string, where: string): Promise<number> {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const [sourceHealth, worker, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
+    const [sourceHealth, worker, heartbeats, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
       getProviderSourceHealth(),
       getScanWorkerMetrics(),
+      getWorkerHeartbeats(),
       countWhere('provider_rule_candidates', "status = 'approved'"),
       countWhere('provider_rule_candidates', "status = 'needs_review'"),
       countWhere('provider_rescan_jobs', "status IN ('pending', 'processing', 'queued')"),
@@ -52,6 +54,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         pendingScanRequests,
         worker,
       },
+      heartbeats,
       generatedAt: new Date().toISOString(),
     });
   } catch {

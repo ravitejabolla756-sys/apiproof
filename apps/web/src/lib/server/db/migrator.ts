@@ -12,6 +12,7 @@ import { emailVerificationMigrations } from './email-verification-migration.js';
 import { findingLifecycleMigrations } from './finding-lifecycle-migration.js';
 import { findingResolutionMigrations } from './finding-resolution-migration.js';
 import { memberRevocationMigrations } from './member-revocation-migration.js';
+import { workerObservabilityMigrations } from './worker-observability-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
@@ -488,6 +489,7 @@ export const migrations: Migration[] = [
   ...findingLifecycleMigrations,
   ...findingResolutionMigrations,
   ...memberRevocationMigrations,
+  ...workerObservabilityMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {

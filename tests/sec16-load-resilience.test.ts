@@ -118,6 +118,7 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     }));
 
     for (const report of reports) expectHealthyReport(report, iterations, concurrency);
+    console.info(`SEC16_LOCAL_MEASUREMENTS ${JSON.stringify(reports.map(({ name, iterations: count, durationMs, throughputPerSecond, maxInFlight, latencyMs }) => ({ name, iterations: count, durationMs, throughputPerSecond, maxInFlight, latencyMs })))}`);
     expect(reports.map((report) => report.name)).toEqual([
       'api-health', 'github-webhook-ping', 'sqlite-query', 'worker-queue-metrics',
     ]);
@@ -151,5 +152,24 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
       attempts: 3,
       errors: ['INJECTED_RETRY_EXHAUSTION', 'INJECTED_RETRY_EXHAUSTION', 'INJECTED_RETRY_EXHAUSTION'],
     });
+  });
+
+  it('injects deterministic operation failures and reports only bounded error codes', async () => {
+    const report = await runLocalLoadScenario({
+      name: 'injected-local-api-failure',
+      iterations: 8,
+      concurrency: 2,
+      operation: (iteration) => {
+        if (iteration === 2 || iteration === 6) throw new Error('INJECTED_API_FAILURE');
+        if (iteration === 4) throw new Error('token=secret-must-not-escape');
+      },
+    });
+
+    expect(report.iterations).toBe(8);
+    expect(report.succeeded).toBe(5);
+    expect(report.failed).toBe(3);
+    expect(report.maxInFlight).toBeLessThanOrEqual(2);
+    expect(report.errors).toEqual({ INJECTED_API_FAILURE: 2, OPERATION_FAILED: 1 });
+    expect(JSON.stringify(report)).not.toContain('secret-must-not-escape');
   });
 });

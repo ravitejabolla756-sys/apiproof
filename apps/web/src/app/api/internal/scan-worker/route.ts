@@ -18,6 +18,7 @@ import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
 import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
+import { tryFinishWorkerRun, tryStartWorkerRun } from '../../../../lib/server/worker-observability.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -74,6 +75,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
   let timeoutMs: number | undefined;
   let metricsOnly = false;
   let repositoryId: string | undefined;
+  let heartbeatId: string | undefined;
 
   try {
     const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown; repositoryId?: unknown };
@@ -98,7 +100,11 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ ok: false, error: 'REPOSITORY_SCOPE_REQUIRED', code: 'REPOSITORY_SCOPE_REQUIRED' }, { status: 400 });
     }
 
+    heartbeatId = await tryStartWorkerRun('scan-worker');
     const result = await processPendingGitHubScans({ batchSize, timeoutMs, repositoryId });
+    await tryFinishWorkerRun('scan-worker', heartbeatId,
+      result.timedOut || result.jobsFailed > 0 ? 'degraded' : 'succeeded',
+      result.timedOut || result.jobsFailed > 0 ? 'SCAN_WORKER_DEGRADED' : null);
     const metrics = await getScanWorkerMetrics();
 
     return NextResponse.json({
@@ -112,6 +118,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       results: result.results,
     });
   } catch (error) {
+    await tryFinishWorkerRun('scan-worker', heartbeatId, 'failed', 'SCAN_WORKER_FAILED');
     console.error('[scan-worker-route] Unhandled error', { code: safeFailureCode(error, 'SCAN_WORKER_FAILED') });
     return NextResponse.json({ ok: false, error: 'SCAN_WORKER_FAILED' }, { status: 500 });
   }
