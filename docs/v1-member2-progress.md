@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 inventory filter keyboard recovery
+
+- Change: Extended the inventory filtered-empty journey to focus the “Clear filter” recovery action, verify focus visibility, activate it with Enter, and preserve the existing result-restoration assertion.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused inventory filter journey passed 1/1 in 12.4 seconds with an axe-clean filtered-empty state. Artifacts: `/tmp/myowl-v1-inventory-filter-keyboard-artifacts`.
+- Scope: local UI-12 keyboard/recovery evidence only; no provider publishing, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 dashboard selection keyboard semantics
 
 - Change: Extended dashboard data-state coverage so compatibility-map repository selection is exercised by focus and Enter, with the existing `aria-pressed` assertions preserved. The Slack failure fixture now holds its initial 503 through expected development effect replay before the explicit retry, preventing a transient success from erasing the state under test.

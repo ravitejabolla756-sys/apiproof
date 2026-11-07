@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Inventory filter keyboard recovery
+
+- PASS: Focused inventory filter journey passed 1/1 in 12.4 seconds; the filtered-empty “Clear filter” action now verifies keyboard focus and Enter activation before restoring the provider result, with an axe-clean state.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Provider publishing, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Dashboard selection keyboard semantics
 
 - PASS: Dashboard data-state suite passed 16/16 in 1.5 minutes; compatibility-map repository selection now verifies keyboard focus and Enter activation, while existing `aria-pressed`, axe, loading, empty, error and recovery assertions remain green.
