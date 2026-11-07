@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { FileCheck2, CheckCircle2, GitPullRequest, Loader2, RefreshCw, ExternalLink } from "lucide-react";
 
@@ -34,16 +35,19 @@ interface MigrationItem {
 export default function MigrationsWorkbenchPage() {
   const [migrations, setMigrations] = useState<MigrationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadMigrations() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/migrations");
-      if (res.ok) {
-        const json = await res.json();
-        setMigrations(json.migrations || []);
-      }
+      const json = await res.json() as { migrations?: MigrationItem[]; error?: string };
+      if (!res.ok) throw new Error(json.error || "Unable to load migration records.");
+      setMigrations(json.migrations || []);
     } catch (err) {
       console.error("Failed to load migrations:", err);
+      setError(err instanceof Error ? err.message : "Unable to load migration records.");
     } finally {
       setLoading(false);
     }
@@ -78,7 +82,9 @@ export default function MigrationsWorkbenchPage() {
         </Button>
       </div>
 
-      {loading ? (
+      {error && <DashboardDataError message={error} onRetry={() => void loadMigrations()} />}
+
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading review records...</span>

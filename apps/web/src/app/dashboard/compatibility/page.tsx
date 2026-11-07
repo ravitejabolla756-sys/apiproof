@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, Info, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 
 type ReviewedChange = {
   providerId: string;
@@ -36,15 +37,19 @@ type CompatibilityProofResponse = {
 export default function CompatibilityPage() {
   const [data, setData] = useState<CompatibilityProofResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadCompatibility() {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/compatibility-proof", { cache: "no-store" });
-      if (response.ok) setData(await response.json() as CompatibilityProofResponse);
-      else setData(null);
-    } catch {
+      const payload = await response.json() as CompatibilityProofResponse & { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Unable to load compatibility records.");
+      setData(payload);
+    } catch (caught) {
       setData(null);
+      setError(caught instanceof Error ? caught.message : "Unable to load compatibility records.");
     } finally {
       setLoading(false);
     }
@@ -69,7 +74,9 @@ export default function CompatibilityPage() {
         </Button>
       </div>
 
-      {loading ? (
+      {error && <DashboardDataError message={error} onRetry={() => void loadCompatibility()} />}
+
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />
           Loading reviewed compatibility records...

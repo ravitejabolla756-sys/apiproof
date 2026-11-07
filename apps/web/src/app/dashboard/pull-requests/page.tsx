@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { GitPullRequest, ExternalLink, ShieldCheck, Loader2, RefreshCw } from "lucide-react";
 
@@ -26,16 +27,19 @@ interface PullRequestItem {
 export default function PullRequestsPage() {
   const [pullRequests, setPullRequests] = useState<PullRequestItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadPRs() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/pull-requests");
-      if (res.ok) {
-        const json = await res.json();
-        setPullRequests(json.pullRequests || []);
-      }
+      const json = await res.json() as { pullRequests?: PullRequestItem[]; error?: string };
+      if (!res.ok) throw new Error(json.error || "Unable to load pull requests.");
+      setPullRequests(json.pullRequests || []);
     } catch (err) {
       console.error("Failed to load pull requests:", err);
+      setError(err instanceof Error ? err.message : "Unable to load pull requests.");
     } finally {
       setLoading(false);
     }
@@ -70,7 +74,9 @@ export default function PullRequestsPage() {
         </Button>
       </div>
 
-      {loading ? (
+      {error && <DashboardDataError message={error} onRetry={() => void loadPRs()} />}
+
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading pull requests...</span>

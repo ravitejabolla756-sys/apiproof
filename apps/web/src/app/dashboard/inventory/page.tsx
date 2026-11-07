@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ProviderBadge } from "@/components/ui/status-pill";
 import { Search, Boxes, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 
 interface InventoryRule {
   id: string;
@@ -27,17 +28,20 @@ interface ProviderInventoryItem {
 export default function ApiInventoryPage() {
   const [providers, setProviders] = useState<ProviderInventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   async function loadInventory() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/inventory");
-      if (res.ok) {
-        const json = await res.json();
-        setProviders(json.providers || []);
-      }
+      const json = await res.json() as { providers?: ProviderInventoryItem[]; error?: string };
+      if (!res.ok) throw new Error(json.error || "Unable to load API inventory.");
+      setProviders(json.providers || []);
     } catch (err) {
       console.error("Failed to load API inventory:", err);
+      setError(err instanceof Error ? err.message : "Unable to load API inventory.");
     } finally {
       setLoading(false);
     }
@@ -79,6 +83,8 @@ export default function ApiInventoryPage() {
         </Button>
       </div>
 
+      {error && <DashboardDataError message={error} onRetry={() => void loadInventory()} />}
+
       {/* SEARCH */}
       <div className="relative w-full sm:w-80">
         <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
@@ -91,10 +97,16 @@ export default function ApiInventoryPage() {
         />
       </div>
 
-      {loading ? (
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading API provider registry...</span>
+        </div>
+      ) : items.length === 0 ? (
+        <div role="status" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">
+          <Boxes className="mx-auto mb-3 h-8 w-8 text-purple-700" />
+          <p className="font-semibold text-base text-[#111111]">{providers.length === 0 ? "No API inventory records are available yet" : "No provider rules match this filter"}</p>
+          <p className="mt-2 text-xs">{providers.length === 0 ? "Provider rules will appear here when the reviewed registry is available." : "Try a different provider or rule search."}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

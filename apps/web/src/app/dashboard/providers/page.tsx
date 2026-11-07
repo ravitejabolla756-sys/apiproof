@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ExternalLink, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { DashboardDataError } from '@/components/dashboard/data-state';
 
 type ProviderCoverage = {
   providerId: string;
@@ -86,15 +87,19 @@ function ParserBadge({ status }: { status: ProviderCoverage['sourceHealth']['par
 export default function ProvidersPage() {
   const [data, setData] = useState<CoverageResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadCoverage() {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch('/api/provider-coverage', { cache: 'no-store' });
-      if (response.ok) setData(await response.json() as CoverageResponse);
-      else setData(null);
-    } catch {
+      const payload = await response.json() as CoverageResponse & { error?: string };
+      if (!response.ok) throw new Error(payload.error || 'Unable to load provider coverage.');
+      setData(payload);
+    } catch (caught) {
       setData(null);
+      setError(caught instanceof Error ? caught.message : 'Unable to load provider coverage.');
     } finally {
       setLoading(false);
     }
@@ -115,10 +120,18 @@ export default function ProvidersPage() {
         <Button onClick={() => void loadCoverage()} variant="outline" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />}>Refresh</Button>
       </div>
 
-      {loading ? (
+      {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
+
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]"><Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
       ) : !data ? (
         <div className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">Provider coverage is temporarily unavailable.</div>
+      ) : data.providers.length === 0 ? (
+        <div role="status" className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">
+          <ShieldCheck className="mx-auto mb-3 h-8 w-8 text-purple-700" />
+          <p className="font-semibold text-base text-[#111111]">No provider coverage records are available yet</p>
+          <p className="mt-2 text-xs">Coverage appears here after reviewed provider sources are configured.</p>
+        </div>
       ) : (
         <>
           <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">

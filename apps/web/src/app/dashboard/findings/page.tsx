@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import {
   AlertTriangle,
@@ -42,19 +43,22 @@ interface FindingRecord {
 export default function FindingsListPage() {
   const [findings, setFindings] = useState<FindingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [providerFilter, setProviderFilter] = useState<string>("all");
 
   async function loadFindings() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/findings");
-      if (res.ok) {
-        const json = await res.json();
-        setFindings(json.findings || []);
-      }
+      const json = await res.json() as { findings?: FindingRecord[]; error?: string };
+      if (!res.ok) throw new Error(json.error || "Unable to load compatibility findings.");
+      setFindings(json.findings || []);
     } catch (err) {
       console.error("Failed to load findings:", err);
+      setError(err instanceof Error ? err.message : "Unable to load compatibility findings.");
     } finally {
       setLoading(false);
     }
@@ -107,6 +111,8 @@ export default function FindingsListPage() {
         </Button>
       </div>
 
+      {error && <DashboardDataError message={error} onRetry={() => void loadFindings()} />}
+
       {/* FILTER & SEARCH */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
@@ -158,7 +164,7 @@ export default function FindingsListPage() {
       </div>
 
       {/* FINDING ROW CARDS */}
-      {loading ? (
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Querying database findings...</span>

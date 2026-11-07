@@ -3,21 +3,25 @@
 import { useEffect, useState } from "react";
 import { Activity, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardDataError } from "@/components/dashboard/data-state";
 import { formatActivityTimestamp, getActivityTypeLabel, type ActivityItem } from "@/lib/activity-utils";
 
 export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadActivity() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/activity");
-      if (res.ok) {
-        const json = await res.json();
-        setActivities(json.activities || []);
-      }
+      const json = await res.json() as { activities?: ActivityItem[]; error?: string };
+      if (!res.ok) throw new Error(json.error || "Unable to load activity.");
+      setActivities(json.activities || []);
     } catch (err) {
       console.error("Failed to load activity:", err);
+      setError(err instanceof Error ? err.message : "Unable to load activity.");
     } finally {
       setLoading(false);
     }
@@ -52,7 +56,9 @@ export default function ActivityPage() {
         </Button>
       </div>
 
-      {loading ? (
+      {error && <DashboardDataError message={error} onRetry={() => void loadActivity()} />}
+
+      {error ? null : loading ? (
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading activity log...</span>
