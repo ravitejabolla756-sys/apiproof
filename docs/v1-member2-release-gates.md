@@ -4,7 +4,7 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 | Gate | Status | Required evidence or unblock |
 |---|---|---|
-| Isolated worktree | PASS | `/Users/sandstone/Documents/myowl/MY-OWL-V1`, branch `codex/v1-frontend-product`, current HEAD `975f715` |
+| Isolated worktree | PASS | `/Users/sandstone/Documents/myowl/MY-OWL-V1`, branch `codex/v1-frontend-product`, current HEAD `8f98f06` |
 | Original dirty work preserved | PASS | Current worktree preserves the two pre-existing GSAP dependency edits in `apps/web/package.json` and `pnpm-lock.yaml`; no reset, clean, stash, or overwrite was performed |
 | Member 1 integration | NOT_INTEGRATED | Deliberately integrate reviewed commits/contracts only after shared changes are complete |
 | Typecheck/lint/build | PASS | Current-tree `pnpm lint` and `pnpm typecheck` pass; `pnpm --filter @apiproof/web build` generated 83 static pages. The build emitted only the existing non-blocking Next.js ESLint-plugin configuration warning |
