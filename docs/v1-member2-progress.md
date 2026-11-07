@@ -686,6 +686,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; rebuilt web production bundle passed with 83 generated pages; route accessibility and public media-state matrix passed 9/9.
 - Scope: local landing accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 footer navigation landmark
+
+- Change: the shared public footer link columns now sit inside a labeled `Footer navigation` landmark, preserving all existing links and copy while improving landmark navigation for assistive technology.
+- Files: `apps/web/src/components/landing/footer.tsx`, `tests/e2e/public-media-states.spec.ts`.
+- Evidence: targeted ESLint passed; rebuilt web production bundle passed with 83 generated pages; route accessibility and public media-state matrix passed 9/9.
+- Scope: local public navigation semantics only; manual screen-reader, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

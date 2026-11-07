@@ -31,7 +31,7 @@ export function LandingFooter() {
         <div className="border-t border-white/10" />
 
         {/* 3 COLUMNS OF SECONDARY NAVIGATION */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+        <nav aria-label="Footer navigation" className="grid grid-cols-2 md:grid-cols-3 gap-8">
 
           {/* Column 1: PRODUCT */}
           <div className="space-y-3">
@@ -140,7 +140,7 @@ export function LandingFooter() {
             </ul>
           </div>
 
-        </div>
+        </nav>
 
         {/* BOTTOM COPYRIGHT */}
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-300 gap-2">
