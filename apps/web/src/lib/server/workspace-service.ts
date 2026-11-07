@@ -237,6 +237,18 @@ export async function requireWorkspaceMember(userId: string, workspaceId: string
 }
 
 /**
+ * Worker-time authorization boundary. Queued work must re-read membership at
+ * execution time because the session and job payload may outlive revocation.
+ */
+export async function assertCurrentWorkspaceMembership(userId: string, workspaceId: string): Promise<void> {
+  try {
+    await requireWorkspaceMember(userId, workspaceId);
+  } catch {
+    throw new Error('WORKSPACE_ACCESS_REVOKED');
+  }
+}
+
+/**
  * Enforces that a user is an owner of the given workspace.
  */
 export async function requireWorkspaceOwner(userId: string, workspaceId: string): Promise<WorkspaceWithRole> {

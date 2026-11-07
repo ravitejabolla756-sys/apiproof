@@ -15,6 +15,7 @@ import { SQLITE_EMAIL_VERIFICATION_SCHEMA } from './email-verification-migration
 import { SQLITE_FINDING_LIFECYCLE_EVENTS_SCHEMA } from './finding-lifecycle-migration.js';
 import { SQLITE_FINDING_RESOLUTION_SCHEMA } from './finding-resolution-migration.js';
 import { SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA } from './provider-change-monitor-migration.js';
+import { SQLITE_MEMBER_REVOCATION_SCHEMA } from './member-revocation-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
 export * from './types.js';
@@ -165,6 +166,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec(SQLITE_FINDING_LIFECYCLE_EVENTS_SCHEMA);
   db.exec(SQLITE_FINDING_RESOLUTION_SCHEMA);
   db.exec(SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA);
+  db.exec(SQLITE_MEMBER_REVOCATION_SCHEMA);
   initializeSlackReliabilitySqlite(db);
 
   if (!skipDefaultSeed()) seedDefaultUserAndFixtureSqlite(db);
