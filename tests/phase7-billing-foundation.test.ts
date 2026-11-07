@@ -31,6 +31,7 @@ import { MockBillingProvider } from '../apps/web/src/lib/server/billing/provider
 import { PLANS } from '../apps/web/src/lib/server/billing/plans.js';
 import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout/route.js';
 import { POST as createBillingPortal } from '../apps/web/src/app/api/billing/portal/route.js';
+import { GET as getBillingSubscription } from '../apps/web/src/app/api/billing/subscription/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase7-billing.db');
 
@@ -218,6 +219,35 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     const enterpriseResponse = await createCheckout(request('enterprise'));
     expect(enterpriseResponse.status).toBe(400);
     expect(await enterpriseResponse.json()).toMatchObject({ error: expect.stringContaining('purchasable') });
+  });
+
+  it('denies billing reads and mutations for an unknown persisted workspace role', async () => {
+    const user = await createUserAsync('billing-unknown-role@apiproof.test', 'Pass123!#$', 'Unknown Billing Role');
+    const session = createSession(user.id);
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.id],
+    );
+    const cookie = `apiproof_session=${session.id}`;
+
+    const subscriptionResponse = await getBillingSubscription(new Request('http://localhost/api/billing/subscription', {
+      headers: { cookie },
+    }));
+    const portalResponse = await createBillingPortal(new Request('http://localhost/api/billing/portal', {
+      method: 'POST',
+      headers: { cookie },
+    }));
+    const checkoutResponse = await createCheckout(new Request('http://localhost/api/billing/checkout', {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json' },
+      body: JSON.stringify({ planId: 'pro' }),
+    }));
+
+    for (const response of [subscriptionResponse, portalResponse, checkoutResponse]) {
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    }
   });
 
   it('fails closed with a safe response when the billing portal has no production provider', async () => {
