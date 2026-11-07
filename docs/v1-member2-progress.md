@@ -43,7 +43,7 @@ Statuses are current baseline findings, not completion claims.
 | WEB-11 | PARTIAL | Privacy/terms marked draft; unsupported guarantees removed | Public route reachability | None | Owner/legal approval | Obtain sign-off |
 | WEB-12 | PARTIAL | Refund page marked draft; no paid entitlement claimed | Public route reachability | Billing contract remains partial | Owner/legal/provider approval | Finalize after billing decision |
 | WEB-13 | PARTIAL | Status says no live monitor; footer avoids uptime claim | Status/truthful-copy assertions | Monitoring SEC-11/13 incomplete | Approved status source | Connect after monitoring approval |
-| WEB-14 | DONE_VERIFIED_LOCAL | `sitemap.ts`, `robots.ts`, inherited metadata and public route targets; reproducible `website:performance` probe samples the production build | Public metadata/crawl checks pass; `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` reports median route load 56-178 ms and encoded HTML 5.7-16.2 KiB on loopback | None | Approved deployment/network Lighthouse or Core Web Vitals evidence absent | Repeat the probe under an approved representative deployment before production claims |
+| WEB-14 | DONE_VERIFIED_LOCAL | `sitemap.ts`, `robots.ts`, inherited metadata and public route targets; reproducible `website:performance` probe samples the production build | Public metadata/crawl checks pass; current `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` run passes all 9 routes with median load 10-34 ms and encoded HTML 5.9-16.9 KiB on loopback | None | Approved deployment/network Lighthouse or Core Web Vitals evidence absent | Repeat the probe under an approved representative deployment before production claims |
 | WEB-15 | PARTIAL | Public navigation, contact copy, invitation and verification errors, mobile menu, truthful contact form and crawl surfaces | Composite browser evidence covers 23 journeys including metadata/link/form/axe checks, generated invitation acceptance, member management, notification settings and account security; full manual/perf incomplete | None | Live contact/production proof absent | Complete public matrix and performance |
 | SEC-18 | PARTIAL | Draft runbook covers severity, roles, containment, evidence, recovery and tabletop | Document review only; no owner tabletop | Monitoring/alert contracts partial | Approved channels and reviewed exercise | Owner + Member 1 review and record |
 
@@ -539,6 +539,11 @@ Statuses are current baseline findings, not completion claims.
 - Files: `tests/e2e/accessibility-routes.spec.ts`.
 - Evidence: targeted ESLint passed; fresh-database CI-mode accessibility matrix passed 7/7 in 31.9 seconds, covering public/authenticated axe checks, desktop/mobile/tablet routes, authenticated mobile overflow and public mobile overflow.
 - Scope: local responsive/public-site QA evidence only; full manual assistive-technology review, hosted CI, staging and production verification remain open.
+
+## 2026-11-07 checkpoint — WEB-15 current local performance probe
+
+- Evidence: rebuilt production bundle served on loopback; `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load times were 10–34 ms and encoded HTML sizes were 5.9–16.9 KiB.
+- Scope: reproducible local performance evidence only; this is not Lighthouse/Core Web Vitals, public-network, staging or production evidence.
 
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
