@@ -468,6 +468,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: repository-wide `pnpm lint` passed with zero warnings; repository-wide `pnpm typecheck` passed across all workspace projects and the test TypeScript project; `pnpm --filter @apiproof/web build` passed with 83 generated pages. The build emitted the existing non-blocking Next.js ESLint-plugin configuration warning.
 - Scope: local quality/build evidence only; hosted CI, integrated staging, manual screen-reader review and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — current-tree seeded Vitest regression
+
+- Evidence: with `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password`, `pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 passing test files, with 4 skipped tests and 1 skipped file, in 113.56 seconds.
+- Scope: local SQLite/contract regression evidence only; PostgreSQL, hosted CI, external providers, staging, manual screen-reader review and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 repository connection dialog semantics
 
 - Change: the repository connection modal now hides decorative status, provider, repository-type, branch and action icons from the accessibility tree, and announces the in-progress GitHub authorization handoff through a polite live region. Existing focus trapping, Escape dismissal and repository connection behavior are unchanged.
