@@ -32,7 +32,10 @@ test('clears an inventory search that has no matches', async ({ page }) => {
   await expect(filteredEmpty.getByRole('button', { name: 'Clear filter' })).toBeVisible();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'inventory filtered empty state').toEqual([]);
 
-  await filteredEmpty.getByRole('button', { name: 'Clear filter' }).click();
+  const clearFilter = filteredEmpty.getByRole('button', { name: 'Clear filter' });
+  await clearFilter.focus();
+  await expect(clearFilter).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(search).toHaveValue('');
   await expect(page.getByText('Example SDK')).toBeVisible();
   await page.unroute('**/api/inventory');
