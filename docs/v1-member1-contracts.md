@@ -76,6 +76,8 @@ This document records backend contracts that require coordination with Member 2.
 
 - Backend emits stable, scrubbed domain event categories and identifiers, not secrets, raw webhook payloads, repository content or tokens.
 - Member 2 may render/deliver notifications, but delivery failure must not change authorization or billing truth.
+- The protected provider-intelligence status response exposes tenant-neutral scan queue telemetry under `queues.worker`: depth counters, `oldestPendingAt`, bounded `oldestPendingAgeMs`, `retryingJobs`, `stalledProcessingJobs` and `retryExhaustedJobs`. It exposes no workspace, repository, source body or credential data.
+- `stalledProcessingJobs` is derived only from an expired persisted lease; `retryExhaustedJobs` is derived from the queue's bounded attempt count. These are indicators for an owner-approved monitor, not automatic authorization, deletion or retry decisions.
 - Alert destinations, retention and escalation policy require owner approval before staging/production configuration.
 
 ## HTTP security (SEC-08)
@@ -91,3 +93,4 @@ This document records backend contracts that require coordination with Member 2.
 - 2026-11-07: Added the local IMP-09 audited finding lifecycle, migration 025, scan/plan/PR integrations, idempotency/concurrency tests and explicit completed-scan evidence requirements.
 - 2026-11-07: Added PR-07 merged-SHA persistence/deduplicated scan queue handling and PR-08 exact-commit finding-resolution classifications/evidence migration 026; live GitHub/PostgreSQL execution remains unverified.
 - 2026-11-07: Documented the current owner/member boundary plus proposed ORG-10 revocation event and SEC-19 retention/deletion request contracts; implementation remains gated on Member 2, legal and owner policy review.
+- 2026-11-07: Added tenant-neutral scan queue age/retry/stalled-lease telemetry to the existing protected status projection; alert delivery, heartbeat ownership and worker-death rehearsal remain external gates.

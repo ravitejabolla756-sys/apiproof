@@ -25,7 +25,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Payment sandbox checkout/webhooks/lifecycle | BLOCKED | Current provider is `MockBillingProvider`; provider approval/credentials absent |
 | Backup restore | BLOCKED | Requires approved isolated non-production backup/restore access |
 | Error monitoring and alert routing | BLOCKED | Approved observability provider/destination absent |
-| Queue/scheduler monitoring | PARTIAL | Worker registries/tables exist; metrics, alerts and failure rehearsal remain |
+| Queue/scheduler monitoring | PARTIAL | Protected status exposes queue depth/age/retry/stalled-lease/exhaustion indicators and local 32/32 operations/cron/scan tests pass; approved alerts, heartbeat and failure rehearsal remain |
 | Branch protection | BLOCKED | Requires GitHub repository-admin read-back and approval |
 | Load/resilience evidence | NOT_TESTED | No safe reproducible harness/results yet |
 | Deployment rollback rehearsal | BLOCKED | Hosting stack/staging rehearsal not authorized or verified |

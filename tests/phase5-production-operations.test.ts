@@ -192,6 +192,37 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(metrics.lastProcessedAt).toBe(now);
   });
 
+  it('TEST 5b: Worker metrics expose bounded queue age, retry, and stalled-job indicators', async () => {
+    const db = getDatabase();
+    const now = new Date('2026-11-07T12:00:00.000Z');
+    const old = '2026-11-07T11:45:00.000Z';
+    const staleLease = '2026-11-07T11:59:00.000Z';
+
+    await db.execute(`
+      INSERT INTO workspaces (id, name, slug, created_at, updated_at)
+      VALUES ('ws_metrics_2', 'Metrics Workspace', 'metrics-ws-2', ?, ?)
+    `, [old, old]);
+    await db.execute(`
+      INSERT INTO repositories (id, workspace_id, owner, name, full_name, github_repository_id, default_branch, created_at)
+      VALUES ('repo_metrics_2', 'ws_metrics_2', 'test-org', 'metrics-repo', 'test-org/metrics-repo', '12346', 'main', ?)
+    `, [old]);
+    await db.execute(`
+      INSERT INTO github_scan_requests (id, workspace_id, repository_id, commit_sha, ref, status, attempt_count, lease_expires_at, created_at)
+      VALUES
+        ('sr_metrics_pending', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_1', 'main', 'pending', 1, NULL, ?),
+        ('sr_metrics_stalled', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_2', 'main', 'processing', 3, ?, ?),
+        ('sr_metrics_exhausted', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_3', 'main', 'failed', 3, NULL, ?)
+    `, [old, staleLease, old, old]);
+
+    const metrics = await getScanWorkerMetrics(now);
+
+    expect(metrics.oldestPendingAt).toBe(old);
+    expect(metrics.oldestPendingAgeMs).toBe(15 * 60 * 1000);
+    expect(metrics.retryingJobs).toBe(2);
+    expect(metrics.stalledProcessingJobs).toBe(1);
+    expect(metrics.retryExhaustedJobs).toBe(2);
+  });
+
   // -------------------------------------------------------------------------
   // TEST 6: Health check database failure
   // -------------------------------------------------------------------------

@@ -42,7 +42,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | SEC-09 | DONE_VERIFIED | Patched dependency ranges/overrides; `pnpm audit --prod --audit-level=high` exits 0; typecheck/lint/build pass; current full suite 157 passed files / 1,327 passed tests / 4 skipped; four moderate advisories remain explicitly documented | Keep moderate Nodemailer/minimatch advisories on risk register; no critical/high suppression used |
 | SEC-10 | BLOCKED | `docs/database-backup-and-safety.md` documents procedure only | Approved isolated non-production DB and backup access required |
 | SEC-11 | BLOCKED | No approved error-monitoring provider/configuration found | Owner must approve tool, destination, retention and staging access |
-| SEC-13 | PARTIAL | Worker/runtime registries and worker tables exist | Add queue health metrics, alerts and safe simulated failure evidence |
+| SEC-13 | PARTIAL | Protected status projection now reports scan queue depth, oldest pending age, retries, expired processing leases and retry exhaustion; operations/cron/scan tests pass 32/32 | Add owner-approved alert destination, worker heartbeat ownership and staged worker-death/retry-storm rehearsal |
 | SEC-15 | BLOCKED | Local CI/workflow can be inspected; GitHub branch settings are external | Repository-admin read-back/approval required |
 | SEC-16 | NOT_STARTED | No reproducible load/resilience harness found in current inventory | Define safe local/staging scenarios and metrics |
 | SEC-17 | PARTIAL | Deployment/readiness docs exist; no rehearsal evidence | Verify actual hosting stack and approved staging rollback rehearsal |
@@ -87,8 +87,8 @@ Phase 0 read-only checks:
 
 ## Current checkpoint
 
-- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, and IMP-09 lifecycle/migration/adapter/worker integration files.
+- Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, IMP-09 lifecycle/migration/adapter/worker integration files, PROV-05 classification/parser/tests, ORG-05/ORG-10/SEC-19 contract documentation, and SEC-13 queue telemetry/tests.
 - Completed tasks: `SCAN-12`, `PROV-05`, `SEC-08`, `SEC-09`, `PR-07`, and `PR-08` are locally verified; `IMP-09` remains locally verified with live gates open. `SEC-01`/`SEC-02`, `SEC-04`, `AUTH-05`, and the PR live gates remain limited by external PostgreSQL, GitHub App and approved email/enforcement contracts where noted above.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: obtain review of the documented ORG-05/ORG-10/SEC-19 contracts, then implement only the approved non-destructive authorization/revocation slice; keep deletion and final-owner changes gated.
+- Next safe task: obtain review of the documented ORG-05/ORG-10/SEC-19 contracts, then implement only the approved non-destructive authorization/revocation slice; keep deletion and final-owner changes gated. SEC-13 still needs approved monitoring/rehearsal evidence.
 - Remote status: existing development backup remains at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); PROV-05 is committed locally as `da11cdfb506a11a35df61f7f517737ee9a2db1b8` and has not been pushed.
