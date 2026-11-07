@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
 import { InteractiveHeroBackground } from "@/components/landing/interactive-hero-background";
+import { AuthTrigger } from "@/components/auth/auth-modal";
 import { ScrollPipeline } from "@/components/landing/scroll-pipeline";
 import { ProductVideo } from "@/components/landing/product-video";
 import {
@@ -57,13 +58,13 @@ export default function HomePage() {
 
           {/* CTAs */}
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-            <Link
-              href="/login"
+            <AuthTrigger
+              mode="signup"
               className="btn-lime text-sm sm:text-base px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 font-semibold"
             >
               <span>Connect GitHub Free</span>
               <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
-            </Link>
+            </AuthTrigger>
 
             <Link
               href="/how-it-works"
@@ -447,12 +448,12 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <Link
-              href="/login"
+            <AuthTrigger
+              mode="signup"
               className="w-full py-2.5 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all font-sans"
             >
               Get Started Free
-            </Link>
+            </AuthTrigger>
           </div>
 
           {/* Pro */}
@@ -491,12 +492,12 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <Link
-              href="/login"
+            <AuthTrigger
+              mode="signup"
               className="w-full py-2.5 rounded-full bg-[#004EE8] hover:bg-[#003BB5] text-white text-xs font-semibold text-center transition-all font-sans shadow-sm"
             >
               Start Pro Plan
-            </Link>
+            </AuthTrigger>
           </div>
 
           {/* Team */}
@@ -530,12 +531,12 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <Link
-              href="/login"
+            <AuthTrigger
+              mode="signup"
               className="w-full py-2.5 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold text-center transition-all font-sans"
             >
               Start Team Plan
-            </Link>
+            </AuthTrigger>
           </div>
 
           {/* Enterprise */}
@@ -590,13 +591,13 @@ export default function HomePage() {
           </p>
 
           <div className="pt-2">
-            <Link
-              href="/login"
+            <AuthTrigger
+              mode="signup"
               className="btn-lime text-sm sm:text-base px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 font-semibold"
             >
               <span>Connect GitHub Free</span>
               <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
-            </Link>
+            </AuthTrigger>
           </div>
         </div>
       </section>

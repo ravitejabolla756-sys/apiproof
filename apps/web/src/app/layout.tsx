@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono, Newsreader } from 'next/font/google';
 import './globals.css';
+import { AuthModalProvider } from '@/components/auth/auth-modal';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-[#FBFBFA] text-[#0A1128] font-sans antialiased selection:bg-blue-500/20 selection:text-blue-900">
-        {children}
+        <AuthModalProvider>{children}</AuthModalProvider>
       </body>
     </html>
   );

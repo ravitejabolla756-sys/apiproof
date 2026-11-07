@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Menu, X } from "lucide-react";
 import { MyOwlLogo } from "@/components/ui/logo";
+import { AuthTrigger } from "@/components/auth/auth-modal";
 
 // Desktop navbar links: Product, How it works, Security, Docs, Pricing
 const DESKTOP_NAV_LINKS = [
@@ -124,13 +125,12 @@ export function LandingNavbar() {
                 <span>Dashboard</span>
               </Link>
             ) : (
-              <Link
-                href="/login"
-                prefetch={true}
+              <AuthTrigger
+                mode="signup"
                 className="px-4 py-1.5 bg-[#D0F100] hover:bg-[#bce000] text-black text-xs font-semibold rounded-full transition-all shadow-xs hover:shadow-[0_0_16px_rgba(208,241,0,0.35)] active:scale-95"
               >
                 Get Started
-              </Link>
+              </AuthTrigger>
             )}
           </div>
 
@@ -195,13 +195,13 @@ export function LandingNavbar() {
                 </Link>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
+                  <AuthTrigger
+                    mode="signup"
+                    onClick={() => { setMobileMenuOpen(false); }}
                     className="w-full text-center py-2.5 px-4 rounded-xl bg-[#D0F100] hover:bg-[#bce000] text-black text-sm font-semibold transition-colors shadow-xs"
                   >
                     Get Started
-                  </Link>
+                  </AuthTrigger>
                 </div>
               )}
             </div>
