@@ -189,7 +189,7 @@ export default function DashboardOverviewPage() {
             >
               {refreshing ? "Refreshing..." : "Refresh"}
             </Button>
-            <span className="hidden text-[10px] text-[#686868] sm:inline" aria-live="polite">
+            <span role="status" aria-live="polite" aria-atomic="true" className="hidden text-[10px] text-[#686868] sm:inline">
               {lastUpdatedAt ? `Updated ${lastUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Not refreshed"}
             </span>
             {data?.criticalFinding ? (

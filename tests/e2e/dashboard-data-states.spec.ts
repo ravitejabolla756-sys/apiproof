@@ -14,6 +14,7 @@ test.describe('authenticated dashboard data states', () => {
     await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
     releaseOverview?.();
     await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 30_000 });
+    const updatedStatus = page.getByRole('status').filter({ hasText: 'Updated' }); await expect(updatedStatus).toBeVisible(); await expect(updatedStatus).toHaveAttribute('aria-atomic', 'true');
     await page.unroute('**/api/overview');
   });
 

@@ -404,3 +404,10 @@ Statuses are current baseline findings, not completion claims.
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=ci-local-seed-password-only-for-tests APIPROOF_SECRET=ci-test-apiproof-secret-minimum-32-chars-long NODE_ENV=test pnpm test` passed 161 test files and 1,340 tests, with 1 skipped file and 4 skipped tests in 105.19 seconds.
 - Scope: this is local hermetic regression evidence; hosted CI, integrated staging, assistive-technology review and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 dashboard refresh status
+
+- Change: the dashboard’s last-updated/not-refreshed indicator now exposes a named atomic polite status region; the workspace-switch test was narrowed to its specific switching message after the new status became correctly discoverable.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector reported only incumbent dashboard purple-palette warnings; web production build PASS with 83 generated static pages; dashboard data-state suite PASS — 9/9; workspace-switch journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 56.1 seconds. Retained artifacts were moved to `/tmp/myowl-v1-ui12-refresh-status-artifacts/`.
+- Scope: local automated/browser evidence only; full screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
