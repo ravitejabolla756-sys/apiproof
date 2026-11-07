@@ -62,6 +62,9 @@ test.describe('public beta surfaces', () => {
     await page.goto('/invite/accept');
     await expect(page.getByRole('heading', { name: 'Workspace invitation' })).toBeVisible();
     await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
+    await page.goto('/verify-email');
+    await expect(page.getByRole('heading', { name: 'Verification unavailable' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'missing its token' })).toBeVisible({ timeout: 30_000 });
   });
 
   test('exposes crawl controls and avoids unsupported operational status copy', async ({ page, request }) => {
