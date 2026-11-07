@@ -16,6 +16,8 @@ import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './worksp
 import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
 import { validatePersistedMigrationEvidence, verifyMigrationForProposal } from './migration-verification.js';
 import { describeMigrationProof } from './migration-proof.js';
+import { queueSlackMigrationLifecycleEvent } from './slack-outcomes.js';
+import { logger } from './logger.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -419,6 +421,7 @@ async function persistPullRequestRecord(
     });
 
     await recordWorkspaceUsage(params.workspaceId, 'draft_prs');
+    await queueDraftPrNotification(params.migrationId, params.workspaceId, params.repositoryId);
 
     return {
       pullRequestId,
@@ -450,6 +453,7 @@ async function persistPullRequestRecord(
     `, [params.migrationId]);
 
     if (existingPr) {
+      await queueDraftPrNotification(params.migrationId, params.workspaceId, params.repositoryId);
       return {
         pullRequestId: existingPr.id,
         number: existingPr.number,
@@ -466,5 +470,20 @@ async function persistPullRequestRecord(
     }
 
     throw err;
+  }
+}
+
+async function queueDraftPrNotification(migrationId: string, workspaceId: string, repositoryId: string): Promise<void> {
+  try {
+    await queueSlackMigrationLifecycleEvent({ migrationId, state: 'draft_pr_created' });
+  } catch (error) {
+    // A notification outbox failure must not change successful proposal truth.
+    // The verification worker reconciliation path can recover the event later.
+    logger.warn('slack_draft_pr_notification_enqueue_failed', {
+      workspaceId,
+      repositoryId,
+      migrationId,
+      category: error instanceof Error ? error.message.match(/\b[A-Z][A-Z0-9_]{3,}\b/)?.[0] ?? 'OUTBOX_ENQUEUE_FAILED' : 'OUTBOX_ENQUEUE_FAILED',
+    });
   }
 }

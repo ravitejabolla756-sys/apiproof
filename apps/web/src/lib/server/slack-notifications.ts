@@ -93,7 +93,8 @@ function findingUrl(findingId: string): string {
 async function postDelivery(row: DeliveryRow, workerId: string): Promise<void> {
   const db = getDatabase();
   const { connection, finding, repository } = await requireSlackFindingAuthorization(row);
-  if (!(await isNotificationPreferenceEnabled(connection.connected_by, 'findings', 'slack', db))) {
+  const preferenceCategory = row.event_type === 'proposal_result' ? 'migration' : 'findings';
+  if (!(await isNotificationPreferenceEnabled(connection.connected_by, preferenceCategory, 'slack', db))) {
     throw new Error('SLACK_NOTIFICATION_SUPPRESSED');
   }
   let text: string;
@@ -119,6 +120,23 @@ async function postDelivery(row: DeliveryRow, workerId: string): Promise<void> {
     resultState = 'draft_pr_created';
     text = 'Draft PR created.';
     blocks = [{ type: 'section', text: { type: 'mrkdwn', text: `<${resultUrl}|Open the Draft PR>` } }];
+  } else if (row.result_state && ['pr_open', 'pr_closed', 'pr_merged'].includes(row.result_state)) {
+    const pr = row.migration_id ? await db.queryOne<{ state: string; number: number; url: string; owner: string; name: string }>(`
+      SELECT pr.state, pr.number, pr.url, r.owner, r.name
+      FROM pull_requests pr JOIN repositories r ON r.id = pr.repository_id
+      WHERE pr.migration_id = ? AND pr.repository_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'
+    `, [row.migration_id, row.repository_id, row.workspace_id]) : undefined;
+    const expectedState = row.result_state.replace('pr_', '');
+    if (!pr || pr.state !== expectedState || pr.url !== `https://github.com/${pr.owner}/${pr.name}/pull/${pr.number}`) {
+      throw new Error('SLACK_PR_STATE_SUPERSEDED');
+    }
+    resultUrl = pr.url;
+    text = row.result_state === 'pr_open'
+      ? 'Migration Draft PR is open for review.'
+      : row.result_state === 'pr_closed'
+        ? 'Migration Draft PR was closed without verified resolution.'
+        : 'Migration Draft PR was merged. Post-merge verification is still pending; MY OWL has not marked the finding resolved.';
+    blocks = [{ type: 'section', text: { type: 'mrkdwn', text: `<${pr.url}|Open the GitHub PR>\n${text}` } }];
   } else {
     if (!['execution_unavailable', 'verification_failed'].includes(row.result_state ?? '')) throw new Error('SLACK_OUTCOME_INVALID');
     // A failed earlier attempt must not claim that no PR exists after a later attempt succeeds.
@@ -137,6 +155,9 @@ async function postDelivery(row: DeliveryRow, workerId: string): Promise<void> {
     if (current.connection.connected_by !== connection.connected_by || current.connection.team_id !== connection.team_id
       || current.connection.installer_slack_user_id !== connection.installer_slack_user_id
       || (row.event_type === 'breaking_finding' && current.finding.status !== 'open')) throw new Error('SLACK_DELIVERY_UNAUTHORIZED');
+    if (!(await isNotificationPreferenceEnabled(current.connection.connected_by, preferenceCategory, 'slack', db))) {
+      throw new Error('SLACK_NOTIFICATION_SUPPRESSED');
+    }
   };
   await assertRecipient();
   const opened = await slackApi<{ channel?: { id?: string } }>(credential.accessToken, 'conversations.open', { users: connection.installer_slack_user_id, return_im: true });

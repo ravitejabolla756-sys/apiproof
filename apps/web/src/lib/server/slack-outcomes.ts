@@ -4,9 +4,11 @@ import { getDatabase } from './db/index.js';
 import { readBoundMigrationProof } from './migration-proof.js';
 import type { SlackFindingBinding } from './slack-authorization.js';
 import { logger } from './logger.js';
+import { isNotificationPreferenceEnabled } from './notification-preferences-service.js';
 
 type Outcome = 'draft_pr_created' | 'verification_failed' | 'execution_unavailable';
-interface OutcomeBinding extends SlackFindingBinding { migration_id: string | null }
+export type MigrationNotificationState = Outcome | 'pr_open' | 'pr_closed' | 'pr_merged';
+interface OutcomeBinding extends SlackFindingBinding { migration_id: string | null; connected_by?: string }
 
 function eventKey(row: OutcomeBinding, outcome: Outcome, interactionId: string): string {
   return row.migration_id ? `${row.workspace_id}:${row.migration_id}:proposal:${outcome}`
@@ -14,6 +16,7 @@ function eventKey(row: OutcomeBinding, outcome: Outcome, interactionId: string):
 }
 
 async function enqueueOutcome(row: OutcomeBinding, outcome: Outcome, interactionId: string): Promise<void> {
+  if (!row.connected_by || !(await isNotificationPreferenceEnabled(row.connected_by, 'migration', 'slack'))) return;
   const now = new Date().toISOString();
   // Completion is an intent to reconcile, not proof that a PR exists. The sender resolves the PR/evidence afresh.
   await getDatabase().execute(`INSERT INTO slack_notification_deliveries
@@ -32,7 +35,8 @@ function validateUrlInput(url?: string): void {
 export async function queueSlackProposalOutcome(input: { migrationId: string; outcome: Outcome; proposalUrl?: string }): Promise<void> {
   validateUrlInput(input.proposalUrl);
   const linked = await getDatabase().query<OutcomeBinding & { id: string }>(`
-    SELECT ij.id, ij.workspace_id, ij.repository_id, ij.finding_id, ij.migration_id, ij.slack_connection_id
+    SELECT ij.id, ij.workspace_id, ij.repository_id, ij.finding_id, ij.migration_id, ij.slack_connection_id,
+      sc.connected_by
     FROM slack_interaction_jobs ij JOIN slack_connections sc ON sc.id = ij.slack_connection_id
       AND sc.workspace_id = ij.workspace_id AND sc.status = 'active'
     JOIN migrations m ON m.id = ij.migration_id AND m.repository_id = ij.repository_id AND m.finding_id = ij.finding_id
@@ -46,7 +50,8 @@ export async function queueSlackProposalOutcome(input: { migrationId: string; ou
 export async function queueSlackInteractionOutcome(interactionJobId: string, outcome: Outcome, proposalUrl?: string): Promise<void> {
   validateUrlInput(proposalUrl);
   const row = await getDatabase().queryOne<OutcomeBinding>(`
-    SELECT ij.workspace_id, ij.repository_id, ij.finding_id, ij.migration_id, ij.slack_connection_id
+    SELECT ij.workspace_id, ij.repository_id, ij.finding_id, ij.migration_id, ij.slack_connection_id,
+      sc.connected_by
     FROM slack_interaction_jobs ij JOIN slack_connections sc ON sc.id = ij.slack_connection_id
       AND sc.workspace_id = ij.workspace_id AND sc.status = 'active'
     JOIN findings f ON f.id = ij.finding_id AND f.repository_id = ij.repository_id
@@ -56,13 +61,66 @@ export async function queueSlackInteractionOutcome(interactionJobId: string, out
   if (row) await enqueueOutcome(row, outcome, interactionJobId);
 }
 
+/**
+ * Enqueues a trusted migration/PR lifecycle event for the workspace's active
+ * Slack connection. State identity is the dedupe key; a repeated webhook or
+ * worker retry cannot produce another alert for the same state.
+ */
+export async function queueSlackMigrationLifecycleEvent(input: {
+  migrationId: string;
+  state: MigrationNotificationState;
+}): Promise<number> {
+  const db = getDatabase();
+  const row = await db.queryOne<OutcomeBinding & { id: string; result_url: string | null }>(`
+    SELECT m.id, m.repository_id, m.finding_id, r.workspace_id, sc.id AS slack_connection_id,
+      sc.connected_by, pr.url AS result_url
+    FROM migrations m
+    JOIN findings f ON f.id = m.finding_id AND f.repository_id = m.repository_id
+    JOIN repositories r ON r.id = m.repository_id AND r.workspace_id IS NOT NULL AND r.lifecycle = 'active'
+    JOIN slack_connections sc ON sc.workspace_id = r.workspace_id AND sc.status = 'active'
+    LEFT JOIN pull_requests pr ON pr.migration_id = m.id AND pr.repository_id = m.repository_id
+    WHERE m.id = ?
+  `, [input.migrationId]);
+  if (!row || !row.connected_by || !(await isNotificationPreferenceEnabled(row.connected_by, 'migration', 'slack', db))) return 0;
+  if (input.state === 'draft_pr_created' && await db.queryOne(
+    "SELECT id FROM slack_interaction_jobs WHERE migration_id = ? AND action = 'create_pr' LIMIT 1", [input.migrationId],
+  )) return 0;
+  if (input.state === 'draft_pr_created' && !row.result_url) return 0;
+  if (input.state.startsWith('pr_') && !row.result_url) return 0;
+  const now = new Date().toISOString();
+  const eventKey = ['draft_pr_created', 'verification_failed', 'execution_unavailable'].includes(input.state)
+    ? `${row.workspace_id}:${input.migrationId}:proposal:${input.state}`
+    : `${row.workspace_id}:${input.migrationId}:pr:${input.state}`;
+  const result = await db.execute(`
+    INSERT INTO slack_notification_deliveries
+      (id, event_key, workspace_id, repository_id, finding_id, migration_id, slack_connection_id,
+       event_type, result_state, result_url, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'proposal_result', ?, ?, 'pending', ?, ?)
+    ON CONFLICT(event_key) DO NOTHING
+  `, [
+    `sld_${crypto.randomBytes(12).toString('hex')}`,
+    eventKey,
+    row.workspace_id,
+    row.repository_id,
+    row.finding_id,
+    input.migrationId,
+    row.slack_connection_id,
+    input.state,
+    row.result_url,
+    now,
+    now,
+  ]);
+  return result.changes;
+}
+
 /** Terminal DB jobs ARE the durable outcome facts. Recover missing outbox rows after any enqueue/crash window.
  * No Slack I/O, no GitHub writes, and no dependency on a transient result_json URL.
  */
 export async function reconcileSlackTerminalOutcomes(): Promise<void> {
   const rows = await getDatabase().query<OutcomeBinding & { id: string; outcome: Outcome }>(`
     SELECT * FROM (
-      SELECT ij.id, ij.workspace_id, ij.repository_id, ij.finding_id, ij.migration_id, ij.slack_connection_id,
+        SELECT ij.id, ij.workspace_id, ij.repository_id, ij.finding_id, ij.migration_id, ij.slack_connection_id,
+          sc.connected_by,
         CASE WHEN vj.status = 'completed' OR ij.error_category = 'SLACK_PROPOSAL_COMPLETED' THEN 'draft_pr_created'
           WHEN vj.status = 'execution_unavailable' OR ij.error_category = 'VERIFICATION_EXECUTION_UNAVAILABLE' THEN 'execution_unavailable'
           WHEN vj.status = 'failed' OR ij.status = 'failed' THEN 'verification_failed' END AS outcome
@@ -80,6 +138,26 @@ export async function reconcileSlackTerminalOutcomes(): Promise<void> {
     ) LIMIT 25
   `);
   for (const row of rows) await enqueueOutcome(row, row.outcome, row.id);
+
+  // Proposal jobs can be created from the dashboard rather than Slack. Their
+  // terminal state is still a trusted backend event for an already-connected
+  // workspace and must survive an outbox enqueue crash.
+  const proposalRows = await getDatabase().query<OutcomeBinding & { id: string; outcome: Outcome | null }>(`
+    SELECT m.id, m.id AS migration_id, m.repository_id, m.finding_id, r.workspace_id, sc.id AS slack_connection_id,
+      sc.connected_by, vj.status,
+      CASE WHEN vj.status = 'completed' THEN 'draft_pr_created'
+           WHEN vj.status = 'execution_unavailable' THEN 'execution_unavailable'
+           WHEN vj.status = 'failed' THEN 'verification_failed' END AS outcome
+    FROM migration_verification_jobs vj
+    JOIN migrations m ON m.id = vj.migration_id
+    JOIN findings f ON f.id = m.finding_id AND f.repository_id = m.repository_id
+    JOIN repositories r ON r.id = m.repository_id AND r.workspace_id = vj.workspace_id AND r.lifecycle = 'active'
+    JOIN slack_connections sc ON sc.workspace_id = r.workspace_id AND sc.status = 'active'
+    WHERE vj.status IN ('completed', 'execution_unavailable', 'failed')
+  `);
+  for (const row of proposalRows) {
+    if (row.outcome) await enqueueOutcome(row, row.outcome, row.id);
+  }
 }
 
 export async function safelyReconcileSlackTerminalOutcomes(): Promise<void> {

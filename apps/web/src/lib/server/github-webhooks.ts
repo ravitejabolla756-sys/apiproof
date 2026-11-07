@@ -5,6 +5,8 @@ import {
   updateGitHubInstallationStatus,
 } from './workspace-service.js';
 import { getConfiguredFounderUserId, isLiveScanProtectionEnabled } from './founder-scan-authorization.js';
+import { queueSlackMigrationLifecycleEvent } from './slack-outcomes.js';
+import { logger } from './logger.js';
 
 export interface WebhookResult {
   received: boolean;
@@ -390,6 +392,27 @@ export async function processGitHubWebhook(params: {
     if (result.changes === 0) {
       await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Pull request is not mapped to a local proposal');
       return { received: true, handled: false, reason: 'unmapped_pull_request' };
+    }
+
+    const migration = await db.queryOne<{ id: string }>(`
+      SELECT migration_id AS id FROM pull_requests WHERE repository_id = ? AND number = ?
+    `, [repository.id, number]);
+    const notificationState = state === 'merged' ? 'pr_merged'
+      : state === 'open' ? 'pr_open'
+        : state === 'closed' ? 'pr_closed' : 'draft_pr_created';
+    if (migration) {
+      try {
+        await queueSlackMigrationLifecycleEvent({ migrationId: migration.id, state: notificationState });
+      } catch (error) {
+        // Notification enqueue failure must not roll back an authoritative
+        // GitHub lifecycle update; the worker reconciliation path can retry it.
+        logger.warn('slack_migration_lifecycle_enqueue_failed', {
+          workspaceId: repository.workspace_id,
+          repositoryId: repository.id,
+          migrationId: migration.id,
+          category: error instanceof Error ? error.message.match(/\b[A-Z][A-Z0-9_]{3,}\b/)?.[0] ?? 'OUTBOX_ENQUEUE_FAILED' : 'OUTBOX_ENQUEUE_FAILED',
+        });
+      }
     }
 
     await recordWebhookDelivery(deliveryId, event, 'processed', now);
