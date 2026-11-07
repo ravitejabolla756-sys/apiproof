@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Findings filtered-empty keyboard recovery
+
+- PASS: Focused findings filter journey passed 1/1 in 14.1 seconds; the filtered-empty “Clear filters” action now verifies keyboard focus and Enter activation before restoring the finding, with the existing axe-clean assertion intact.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Provider delivery, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Inventory filter keyboard recovery
 
 - PASS: Focused inventory filter journey passed 1/1 in 12.4 seconds; the filtered-empty “Clear filter” action now verifies keyboard focus and Enter activation before restoring the provider result, with an axe-clean state.
