@@ -18,11 +18,23 @@ test.describe('workspace audit trail', () => {
 
   test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
     await signIn(page);
+    let memberRequests = 0;
     await page.route('**/api/workspace/members', async (route) => {
-      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Member history is temporarily unavailable.' }) });
+      memberRequests += 1;
+      if (memberRequests === 1) {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Member history is temporarily unavailable.' }) });
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ members: [{ id: 'member-recovered', userId: 'user-recovered', name: 'Recovered Member', email: 'recovered@example.test', role: 'member', createdAt: '2026-11-08T00:00:00.000Z' }] }) });
     });
+    let invitationRequests = 0;
     await page.route('**/api/workspace/invitations', async (route) => {
-      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Invitation history is temporarily unavailable.' }) });
+      invitationRequests += 1;
+      if (invitationRequests === 1) {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Invitation history is temporarily unavailable.' }) });
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitations: [{ id: 'invitation-recovered', email: 'recovered-invite@example.test', role: 'member', expiresAt: '2026-11-15T00:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: '2026-11-08T00:00:00.000Z' }] }) });
     });
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('alert').filter({ hasText: 'Member history is temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
@@ -30,6 +42,15 @@ test.describe('workspace audit trail', () => {
     await expect(page.getByText('No workspace members found.')).toHaveCount(0);
     await expect(page.getByText('No recent invitations.')).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'organization fetch failure states').toEqual([]);
+    await page.getByRole('button', { name: 'Retry members' }).click();
+    await page.getByRole('button', { name: 'Retry invitations' }).click();
+    await expect(page.getByText('Member history is temporarily unavailable.')).toHaveCount(0);
+    await expect(page.getByText('Invitation history is temporarily unavailable.')).toHaveCount(0);
+    await expect(page.getByText('Recovered Member')).toBeVisible();
+    await expect(page.getByText('recovered-invite@example.test')).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'organization recovered states').toEqual([]);
+    expect(memberRequests).toBeGreaterThanOrEqual(2);
+    expect(invitationRequests).toBeGreaterThanOrEqual(2);
     await page.unroute('**/api/workspace/members');
     await page.unroute('**/api/workspace/invitations');
   });
