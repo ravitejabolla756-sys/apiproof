@@ -170,6 +170,20 @@ export function validateSafeId(id: unknown, fieldName = 'ID'): ValidationResult<
 /**
  * Validates Origin and Sec-Fetch-Site to protect mutating API routes from cross-site requests.
  */
+function getExpectedRequestOrigin(req: Request, host: string): string | undefined {
+  const forwardedProtocol = req.headers.get('x-forwarded-proto')?.split(',')[0]?.trim().toLowerCase();
+  const protocol = forwardedProtocol || new URL(req.url).protocol.slice(0, -1).toLowerCase();
+  if (protocol !== 'http' && protocol !== 'https') return undefined;
+
+  try {
+    const expected = new URL(`${protocol}://${host}`);
+    if (expected.username || expected.password || expected.pathname !== '/') return undefined;
+    return expected.origin;
+  } catch {
+    return undefined;
+  }
+}
+
 export function assertCsrfProtection(req: Request): { valid: boolean; error?: string } {
   const isTest = process.env.NODE_ENV === 'test';
 
@@ -186,9 +200,13 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
       return { valid: false, error: 'Forbidden: Request host is unavailable.' };
     }
     try {
-      const originHost = new URL(origin).host;
-      if (originHost !== host) {
-        return { valid: false, error: 'Forbidden: Origin header does not match host.' };
+      const originUrl = new URL(origin);
+      const expectedOrigin = getExpectedRequestOrigin(req, host);
+      if (!expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Request origin is unavailable.' };
+      }
+      if (originUrl.origin !== expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Origin header does not match request origin.' };
       }
     } catch {
       return { valid: false, error: 'Forbidden: Invalid Origin header.' };
@@ -202,9 +220,13 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
       return { valid: false, error: 'Forbidden: Request host is unavailable.' };
     }
     try {
-      const refererHost = new URL(referer).host;
-      if (refererHost !== host) {
-        return { valid: false, error: 'Forbidden: Referer header does not match host.' };
+      const refererUrl = new URL(referer);
+      const expectedOrigin = getExpectedRequestOrigin(req, host);
+      if (!expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Request origin is unavailable.' };
+      }
+      if (refererUrl.origin !== expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Referer header does not match request origin.' };
       }
     } catch {
       return { valid: false, error: 'Forbidden: Invalid Referer header.' };

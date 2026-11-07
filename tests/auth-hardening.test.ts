@@ -46,7 +46,7 @@ describe('authentication hardening', () => {
       headers: { host: 'myowl.dev', origin: 'https://evil.example' },
     }));
 
-    expect(result).toEqual({ valid: false, error: 'Forbidden: Origin header does not match host.' });
+    expect(result).toEqual({ valid: false, error: 'Forbidden: Origin header does not match request origin.' });
   });
 
   it('rejects malformed Origin values and explicit cross-site fetch metadata', () => {
@@ -62,6 +62,31 @@ describe('authentication hardening', () => {
 
     expect(malformed).toEqual({ valid: false, error: 'Forbidden: Invalid Origin header.' });
     expect(crossSite).toEqual({ valid: false, error: 'Forbidden: Cross-site request rejected.' });
+  });
+
+  it('compares the complete Origin tuple and honors trusted forwarded proxy origin headers', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const wrongScheme = assertCsrfProtection(new Request('https://myowl.dev/api/repositories', {
+      method: 'POST',
+      headers: { host: 'myowl.dev', origin: 'http://myowl.dev' },
+    }));
+    const forwardedOrigin = assertCsrfProtection(new Request('http://internal.local/api/repositories', {
+      method: 'POST',
+      headers: {
+        host: 'internal.local',
+        'x-forwarded-host': 'myowl.dev',
+        'x-forwarded-proto': 'https',
+        origin: 'https://myowl.dev',
+      },
+    }));
+    const wrongRefererScheme = assertCsrfProtection(new Request('https://myowl.dev/api/repositories', {
+      method: 'POST',
+      headers: { host: 'myowl.dev', referer: 'http://myowl.dev/dashboard' },
+    }));
+
+    expect(wrongScheme).toEqual({ valid: false, error: 'Forbidden: Origin header does not match request origin.' });
+    expect(forwardedOrigin).toEqual({ valid: true });
+    expect(wrongRefererScheme).toEqual({ valid: false, error: 'Forbidden: Referer header does not match request origin.' });
   });
 
   it('marks the session cookie secure in production', () => {
