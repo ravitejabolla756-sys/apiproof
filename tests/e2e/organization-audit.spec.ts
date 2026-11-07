@@ -30,6 +30,8 @@ test.describe('workspace audit trail', () => {
 
   test('loads the next audit page through the cursor contract', async ({ page }) => {
     await signIn(page);
+    let releaseNextAudit: (() => void) | undefined;
+    const nextAuditResponse = new Promise<void>((resolve) => { releaseNextAudit = resolve; });
 
     await page.route('**/api/workspace/audit**', async (route) => {
       const cursor = new URL(route.request().url()).searchParams.get('cursor');
@@ -46,6 +48,7 @@ test.describe('workspace audit trail', () => {
       }
 
       expect(cursor).toBe('cursor-1');
+      await nextAuditResponse;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -62,6 +65,8 @@ test.describe('workspace audit trail', () => {
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'initial audit page').toEqual([]);
 
     await page.getByRole('button', { name: 'Load more audit events' }).click();
+    await expect(page.getByRole('status')).toContainText('Loading more audit events…');
+    releaseNextAudit?.();
     await expect(page.getByText('member.removed')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('button', { name: 'Load more audit events' })).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'expanded audit page').toEqual([]);

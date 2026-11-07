@@ -95,6 +95,7 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - The run used `APIPROOF_LOCAL_SEED_PASSWORD=ci-local-seed-password-only-for-tests APIPROOF_SECRET=ci-test-apiproof-secret-minimum-32-chars-long NODE_ENV=test pnpm test`, matching the repository’s required local SQLite seed contract.
 - The shared patch-workspace temp-root portability fix canonicalizes macOS `os.tmpdir()` before safety checks; the notification preference contract now asserts the current 12 server-owned defaults. Focused coverage for those changes is 130/130.
 - `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages after the patch-workspace change; repository-wide `pnpm typecheck` and `pnpm lint` remain PASS.
+- `pnpm exec eslint apps/web/src/app/dashboard/settings/workspace/page.tsx tests/e2e/organization-audit.spec.ts --max-warnings 0` — PASS; `pnpm --filter @apiproof/web typecheck` — PASS; focused production-build workspace audit suite — 2/2 PASS with the delayed audit-pagination status announcement and axe checks. The detector reported only incumbent purple accent palette warnings; this remains automated/browser evidence, not a full screen-reader sign-off.
 
 ## Required next checks
 
