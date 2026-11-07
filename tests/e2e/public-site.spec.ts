@@ -439,12 +439,20 @@ test.describe('authenticated product surfaces', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
-    await expect(page.getByRole('dialog', { name: 'Connect GitHub Repository' })).toBeVisible();
+    const connectTrigger = page.getByRole('button', { name: 'Connect GitHub', exact: true });
+    await connectTrigger.click();
+    const repositoryDialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
+    await expect(repositoryDialog).toBeVisible();
     const repositoryDialogResults = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
     expect(repositoryDialogResults.violations, 'repository connection dialog').toEqual([]);
-    await expect(page.getByRole('button', { name: 'Close repository connection dialog' })).toBeFocused();
-    await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
+    const closeRepositoryDialog = page.getByRole('button', { name: 'Close repository connection dialog' });
+    await expect(closeRepositoryDialog).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(repositoryDialog.getByRole('button', { name: 'Connect GitHub', exact: true })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(closeRepositoryDialog).toBeFocused();
+    await closeRepositoryDialog.click();
+    await expect(connectTrigger).toBeFocused();
     await page.unroute('**/api/github/repositories');
   });
 

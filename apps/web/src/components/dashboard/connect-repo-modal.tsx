@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { X, ShieldCheck, CheckCircle2, Github, AlertCircle, Loader2, Search, ExternalLink, GitBranch, Lock, Globe, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { openGitHubAuthorizationPopup } from '@/lib/github-oauth-popup';
@@ -43,6 +43,36 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
   const statusRequestId = useRef(0);
   const initialRepositoryLoadComplete = useRef(false);
   const connectedRef = useRef<boolean | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      previousActiveElementRef.current?.focus();
+      previousActiveElementRef.current = null;
+      return;
+    }
+
+    previousActiveElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeButtonRef.current?.focus();
+  }, [isOpen]);
+
+  function handleDialogKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') return;
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>('input, button:not([disabled]), [href]');
+    if (!focusable?.length) return;
+
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   const loadRepositories = useCallback(async (showLoading: boolean) => {
     const requestId = ++repositoryRequestId.current;
@@ -224,6 +254,8 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         role="dialog"
         aria-modal="true"
         aria-labelledby="connect-repository-title"
+        ref={dialogRef}
+        onKeyDown={handleDialogKeyDown}
         className="bg-white border border-[#E8E8E5] w-full max-w-lg rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
       >
         {/* Header */}
@@ -234,7 +266,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             </div>
             <h3 id="connect-repository-title" className="text-sm font-semibold text-[#111111]">Connect GitHub Repository</h3>
           </div>
-          <button type="button" autoFocus aria-label="Close repository connection dialog" onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
+          <button type="button" ref={closeButtonRef} aria-label="Close repository connection dialog" onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
             <X className="h-4 w-4" />
           </button>
         </div>
