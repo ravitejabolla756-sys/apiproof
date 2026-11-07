@@ -18,6 +18,7 @@ import { decryptSlackToken, encryptSlackToken, verifySlackActionValue, verifySla
 import { enqueueNewFindingNotifications, processOneSlackNotificationDelivery, queueSlackProposalOutcome } from '../apps/web/src/lib/server/slack-notifications.js';
 import { acceptSlackAction, processOneSlackInteractionJob } from '../apps/web/src/lib/server/slack-interactions.js';
 import { GET as getSlackConnection } from '../apps/web/src/app/api/slack/connection/route.js';
+import { DELETE as deleteSlackConnection } from '../apps/web/src/app/api/slack/connection/route.js';
 import { GET as slackCallback } from '../apps/web/src/app/api/slack/callback/route.js';
 import { POST as slackInteraction } from '../apps/web/src/app/api/slack/interactions/route.js';
 
@@ -145,6 +146,34 @@ describe('MY OWL Slack Phase 1', () => {
     }));
     expect(await otherResponse.json()).toMatchObject({ connected: false });
     expect(workspaceB.id).not.toBe(workspaceA.id);
+  });
+
+  it('denies Slack status and disconnect for an unknown persisted workspace role', async () => {
+    const account = await createUserWithSession('slack-unknown-role@example.test', 'Pass1234!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(account.user.id);
+    await connectSlack(workspace.id, account.user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, account.user.id],
+    );
+
+    const headers = { cookie: `apiproof_session=${account.session.id}` };
+    const statusResponse = await getSlackConnection(new Request('https://myowl.example.test/api/slack/connection', { headers }));
+    expect(statusResponse.status).toBe(403);
+    expect(statusResponse.headers.get('cache-control')).toContain('no-store');
+    expect(await statusResponse.json()).toEqual({ error: 'Workspace access denied.' });
+
+    const disconnectResponse = await deleteSlackConnection(new Request('https://myowl.example.test/api/slack/connection', {
+      method: 'DELETE',
+      headers: { ...headers, host: 'myowl.example.test', origin: 'https://myowl.example.test' },
+    }));
+    expect(disconnectResponse.status).toBe(403);
+    expect(await disconnectResponse.json()).toEqual({ error: 'Workspace access denied.' });
+    const connection = await getDatabase().queryOne<{ status: string }>(
+      'SELECT status FROM slack_connections WHERE workspace_id = ?',
+      [workspace.id],
+    );
+    expect(connection?.status).toBe('active');
   });
 
   it('rejects malformed/expired OAuth state and requires encryption configuration', async () => {
