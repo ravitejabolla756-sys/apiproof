@@ -300,7 +300,6 @@ test.describe('authenticated product surfaces', () => {
     await page.unroute('**/api/workspaces');
     await page.unroute('**/api/workspace/context');
   });
-
   test('creates and cancels a manual workspace invitation without sending email', async ({ page }) => {
     await signIn(page);
     await page.goto('/dashboard/settings/workspace');
@@ -309,7 +308,6 @@ test.describe('authenticated product surfaces', () => {
     await page.getByRole('button', { name: 'Create invite link' }).click();
     await expect(page.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(inviteEmail)).toBeVisible();
-
     page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
     await expect(page.getByText('Invitation cancelled.')).toBeVisible({ timeout: 30_000 });
@@ -321,7 +319,6 @@ test.describe('authenticated product surfaces', () => {
     const inviteEmail = `browser-accept-${Date.now()}@example.test`;
     await withAcceptedInvitation(page, browser, inviteEmail, async () => {});
   });
-
   test('updates and removes a real accepted workspace member', async ({ page, browser }) => {
     await signIn(page);
     const memberEmail = `browser-member-${Date.now()}@example.test`;
@@ -335,17 +332,14 @@ test.describe('authenticated product surfaces', () => {
       await roleSelector.selectOption('member');
       await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
       await expect(roleSelector).toHaveValue('member');
-
       page.once('dialog', (dialog) => void dialog.accept());
       await roleSelector.locator('..').getByRole('button', { name: 'Remove' }).click();
       await expect(page.getByRole('status')).toContainText('Member removed.', { timeout: 30_000 });
       await expect(page.getByLabel(`Role for ${memberEmail}`)).toHaveCount(0);
-
       await invitedPage.goto('/dashboard', { waitUntil: 'domcontentloaded' });
       await expect(invitedPage).toHaveURL(/\/login/);
     });
   });
-
   test('covers the seeded dashboard primary browsing routes', async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });
@@ -358,7 +352,6 @@ test.describe('authenticated product surfaces', () => {
       '/dashboard/migrations',
     ]);
   });
-
   test('covers the seeded dashboard secondary workflow routes', async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });
@@ -369,7 +362,6 @@ test.describe('authenticated product surfaces', () => {
       '/dashboard/settings',
     ]);
   });
-
   test('covers protected finding detail and provider-rule review routes', async ({ page }) => {
     await signIn(page);
     const findingResponse = await page.goto('/dashboard/findings/not-a-real-finding', { waitUntil: 'domcontentloaded', timeout: 60_000 });
@@ -384,7 +376,6 @@ test.describe('authenticated product surfaces', () => {
     const reviewResults = await new AxeBuilder({ page }).analyze();
     expect(reviewResults.violations, '/dashboard/rules/pending').toEqual([]);
   });
-
   test('scans core authenticated data routes', async ({ page }) => {
     await signIn(page);
     await scanAuthenticatedRoutes(page, [
@@ -518,7 +509,7 @@ test.describe('authenticated product surfaces', () => {
     const preferencesLoading = new Promise<void>((resolve) => { releasePreferences = resolve; });
     await page.route('**/api/account/notifications', async (route) => {
       requestCount += 1;
-      if (requestCount === 1) {
+      if (requestCount <= 2) {
         await preferencesLoading;
         await route.fulfill({
           status: 503,
@@ -540,8 +531,8 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('table')).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();
-    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 });
-    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); const preferencesRegion = page.getByRole('region', { name: 'Notification preferences table' }); await preferencesRegion.focus();
+    await expect(preferencesRegion).toBeFocused(); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
     expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3);
     await page.unroute('**/api/account/notifications');
   });
