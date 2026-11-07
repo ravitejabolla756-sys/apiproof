@@ -471,10 +471,10 @@ test.describe('authenticated dashboard data states', () => {
     await expect(listAlert).toBeVisible({ timeout: 30_000 });
     const listAlertResults = await new AxeBuilder({ page }).include('[role="alert"]').analyze();
     expect(listAlertResults.violations, '/dashboard/repositories error state').toEqual([]);
-    await expect(page.getByText('No repositories found matching your filter.')).toHaveCount(0);
+    await expect(page.getByText('No repositories connected yet.')).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(listAlert).toHaveCount(0);
-    await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('No repositories connected yet.')).toBeVisible({ timeout: 30_000 });
     const listEmptyResults = await new AxeBuilder({ page }).include('#main-content').analyze();
     expect(listEmptyResults.violations, '/dashboard/repositories empty state').toEqual([]);
     expect(listRequests).toBeGreaterThanOrEqual(2);

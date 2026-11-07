@@ -485,7 +485,7 @@ test.describe('authenticated product surfaces', () => {
     await page.goto('/dashboard/repositories');
     await expect(page.getByText('Loading repositories from database...')).toBeVisible({ timeout: 30_000 });
     releaseRepositories?.();
-    await expect(page.getByText('No repositories found matching your filter.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('No repositories connected yet.')).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/repositories');
 
     let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; });

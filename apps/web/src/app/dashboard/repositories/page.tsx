@@ -104,6 +104,7 @@ export default function RepositoriesTablePage() {
       repo.full_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+  const hasActiveFilters = filter !== "all" || searchQuery.trim().length > 0;
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
@@ -213,7 +214,24 @@ export default function RepositoriesTablePage() {
               ) : filteredRepos.length === 0 ? (
                 <tr>
                   <td colSpan={8} role="status" aria-live="polite" aria-atomic="true" className="py-12 text-center text-[#686868]">
-                    No repositories found matching your filter.
+                    {hasActiveFilters ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <span>No repositories found matching your filter.</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setFilter("all");
+                            setSearchQuery("");
+                          }}
+                        >
+                          Clear filters
+                        </Button>
+                      </div>
+                    ) : (
+                      "No repositories connected yet."
+                    )}
                   </td>
                 </tr>
               ) : (
