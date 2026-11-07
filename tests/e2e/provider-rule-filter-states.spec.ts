@@ -32,13 +32,20 @@ test('recovers from an empty provider-rule priority filter', async ({ page }) =>
   await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Rule review' })).toBeVisible();
   const filter = page.getByRole('group', { name: 'Review priority filter' });
-  await filter.getByRole('button', { name: 'P0 (0)' }).click();
+  const p0 = filter.getByRole('button', { name: 'P0 (0)' });
+  await p0.focus();
+  await expect(p0).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(p0).toHaveAttribute('aria-pressed', 'true');
   const filteredEmpty = page.getByRole('status').filter({ hasText: 'No candidates match this review priority.' });
   await expect(filteredEmpty).toBeVisible();
   await expect(filteredEmpty.getByRole('button', { name: 'Show all candidates' })).toBeVisible();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'provider-rule filtered empty state').toEqual([]);
 
-  await filteredEmpty.getByRole('button', { name: 'Show all candidates' }).click();
+  const showAll = filteredEmpty.getByRole('button', { name: 'Show all candidates' });
+  await showAll.focus();
+  await expect(showAll).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'P1 candidate' })).toBeVisible();
   await page.unroute('**/api/provider-rules');
 });
