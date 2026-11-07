@@ -91,4 +91,4 @@ Phase 0 read-only checks:
 - Completed tasks: `SCAN-12`, `PROV-05`, `SEC-08`, `SEC-09`, `PR-07`, and `PR-08` are locally verified; `IMP-09` remains locally verified with live gates open. `SEC-01`/`SEC-02`, `SEC-04`, `AUTH-05`, and the PR live gates remain limited by external PostgreSQL, GitHub App and approved email/enforcement contracts where noted above.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
 - Next safe task: rerun the full suite in a dedicated verification window, then define the ORG-05/ORG-10 contract handoff before implementing any member-removal route.
-- Remote status: existing development backup is at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); current PROV-05 changes are local and uncommitted pending review.
+- Remote status: existing development backup remains at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); PROV-05 is committed locally as `da11cdfb506a11a35df61f7f517737ee9a2db1b8` and has not been pushed.
