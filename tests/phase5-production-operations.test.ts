@@ -171,6 +171,38 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(parsed.message).toContain('[REDACTED]');
   });
 
+  it('redacts credential key variants and safely formats circular log context', () => {
+    const context: Record<string, unknown> = {
+      passwordHash: 'stored-password-hash',
+      privateKeyPem: 'private-key-material',
+      oauthAccessToken: 'oauth-token-material',
+      secret_value: 'secret-value-material',
+      signingKey: 'signing-key-material',
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+    };
+    context.self = context;
+
+    const parsed = JSON.parse(formatLogEntry('error', 'circular diagnostic context', context)) as {
+      context: Record<string, unknown>;
+    };
+
+    expect(parsed.context).toMatchObject({
+      passwordHash: '[REDACTED]',
+      privateKeyPem: '[REDACTED]',
+      oauthAccessToken: '[REDACTED]',
+      secret_value: '[REDACTED]',
+      signingKey: '[REDACTED]',
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+      self: '[CIRCULAR]',
+    });
+    const serialized = JSON.stringify(parsed);
+    for (const secret of ['stored-password-hash', 'private-key-material', 'oauth-token-material', 'secret-value-material', 'signing-key-material']) {
+      expect(serialized).not.toContain(secret);
+    }
+  });
+
   it('preserves known operational error categories while redacting token-like values', () => {
     const formatted = formatLogEntry('warn', 'Slack delivery failed', {
       category: 'SLACK_API_TOKEN_REVOKED',

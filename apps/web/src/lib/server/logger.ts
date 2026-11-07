@@ -60,7 +60,14 @@ const SENSITIVE_KEYS = new Set([
   'session',
   'password',
   'secret',
+  'signingkey',
+  'encryptionkey',
 ]);
+
+// Credential-bearing key names often include a provider prefix or a storage
+// suffix (for example `oauthAccessToken`, `passwordHash`, or `privateKeyPem`).
+// Diagnostic labels such as `secretName` intentionally remain visible.
+const SENSITIVE_KEY_PATTERN = /^(?:[a-z0-9]+)*(?:token|secret|password|privatekey|apikey|authorization|credential|signature)(?:value|raw|text|contents?|pem|hash|ciphertext|encoded)?$/;
 
 // Sensitive regex patterns (GitHub tokens, Bearer headers, RSA private keys)
 const SECRET_REGEX_PATTERNS = [
@@ -99,29 +106,42 @@ export function redactSecretString(str: string): string {
  * Deeply redacts sensitive keys and values from objects.
  */
 export function redactSensitiveData<T>(val: T): T {
+  return redactSensitiveValue(val, new WeakSet<object>()) as T;
+}
+
+function redactSensitiveValue(val: unknown, ancestors: WeakSet<object>): unknown {
   if (val === null || val === undefined) return val;
 
   if (typeof val === 'string') {
-    return redactSecretString(val) as T;
-  }
-
-  if (Array.isArray(val)) {
-    return val.map((item) => redactSensitiveData(item)) as T;
+    return redactSecretString(val);
   }
 
   if (typeof val === 'object') {
-    const obj = val as Record<string, unknown>;
-    const clean: Record<string, unknown> = {};
+    if (ancestors.has(val)) return '[CIRCULAR]';
+    ancestors.add(val);
+    try {
+      if (Array.isArray(val)) return val.map((item) => redactSensitiveValue(item, ancestors));
 
-    for (const [key, value] of Object.entries(obj)) {
-      const lowerKey = key.toLowerCase();
-      if (SENSITIVE_KEYS.has(lowerKey) || SENSITIVE_KEYS.has(lowerKey.replace(/[^a-z]/g, ''))) {
-        clean[key] = '[REDACTED]';
-      } else {
-        clean[key] = redactSensitiveData(value);
+      const obj = val as Record<string, unknown>;
+      const clean: Record<string, unknown> = {};
+
+      for (const [key, value] of Object.entries(obj)) {
+        const lowerKey = key.toLowerCase();
+        const normalizedKey = lowerKey.replace(/[^a-z0-9]/g, '');
+        if (
+          SENSITIVE_KEYS.has(lowerKey)
+          || SENSITIVE_KEYS.has(normalizedKey)
+          || SENSITIVE_KEY_PATTERN.test(normalizedKey)
+        ) {
+          clean[key] = '[REDACTED]';
+        } else {
+          clean[key] = redactSensitiveValue(value, ancestors);
+        }
       }
+      return clean;
+    } finally {
+      ancestors.delete(val);
     }
-    return clean as T;
   }
 
   return val;
