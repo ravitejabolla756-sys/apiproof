@@ -65,6 +65,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 - Webhook deduplication claim and subscription projection update share one database transaction. A unique `(provider, payload_hash)` conflict is an acknowledged duplicate; database failure rolls back both receipt and state change. Production PostgreSQL concurrency still requires staging verification.
 - Billing webhook HTTP errors expose only stable safe categories; parser, provider and database exception details are not returned to callers. Production billing/portal routes fail closed with 503 until an approved provider adapter is selected and configured.
 - Subscription state, plan, period boundaries and failure/grace semantics are server-owned. Member 2 may display the resulting projection but cannot write entitlements.
+- Local usage authorization permits only `active` and `trialing` subscriptions; `canceled`, `past_due`, `unpaid`, `incomplete`, and unrecognized persisted states fail closed. The exact grace period and notification/suspension sequence remain owner decisions.
 - Provider and price identifiers must be server-side allowlisted. Live payment activation requires explicit owner approval.
 
 ## Migration and PRs (MIG-01 / PR-07 / PR-08)
@@ -135,3 +136,4 @@ The following tests are implementation-ready but remain contract-gated; they int
 - 2026-11-07: Added the local-only SEC-16 harness contract; staging load, failure-injection and recovery evidence remain external gates.
 - 2026-11-07: Added the non-destructive ORG-10 revocation-plan boundary and contract tests; durable request persistence, selective session invalidation and membership mutation remain gated.
 - 2026-11-08: Hardened the local billing boundary so mock verification cannot run in production, removed the built-in signing-secret fallback, required stable event identity/type, bounded payloads and fixed-length HMACs, and sanitized webhook/portal unavailability responses. Provider selection, sandbox credentials and paid activation remain blocked pending owner approval.
+- 2026-11-08: Made billing event receipt and projection updates atomic, and aligned limit enforcement with the subscription activity projection so incomplete/unrecognized states cannot grant usage. Added concurrent delivery and subscription-state regression tests; PostgreSQL and provider-sandbox proof remain open.

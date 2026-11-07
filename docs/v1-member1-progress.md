@@ -34,7 +34,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | BILL-02 | PARTIAL | Mock provider is now unavailable in production; explicit >=32-byte secret required for local verification; paid checkout remains disabled | Provider selection/approval and sandbox credentials required |
 | BILL-03 | PARTIAL | Webhook parser enforces bounded raw payload, fixed-length HMAC, stable event ID/type, and generic safe errors; seeded local contract tests cover rejection cases | Replace local mock verification with approved provider raw-signature adapter and sandbox delivery proof |
 | BILL-04 | PARTIAL | Local webhook claim and subscription projection are now transactional with unique-key conflict handling; seeded sequential/concurrent SQLite tests cover idempotency and failure transitions | Approved provider event/price mapping, PostgreSQL concurrency, unmatched-customer policy and authoritative lifecycle reconciliation |
-| BILL-10 | PARTIAL | `billing/service.ts` maps payment failure to `past_due` | Written grace/suspension policy and notification contract |
+| BILL-10 | PARTIAL | `billing/service.ts` maps payment failure to `past_due`; only `active`/`trialing` permit usage, while incomplete and unknown states fail closed | Written grace/suspension policy and notification contract |
 | SEC-01 | PARTIAL | `docs/v1-member1-db-access-matrix.md`; 40-table source inventory, RLS decisions and repeatable PostgreSQL catalog/isolation contract; app predicates exist | PostgreSQL policies/roles require approved staging or production read-only access |
 | SEC-02 | PARTIAL | `docs/v1-member1-db-access-matrix.md`; intended runtime/migration/ops role matrix and read-only ACL/default-privilege query pack; no grant migration found | Effective grants, role separation and impersonation tests require approved staging role environment |
 | SEC-04 | PARTIAL | Closed production missing-Origin/Referer CSRF path; `tests/auth-hardening.test.ts` 3/3 plus auth/security matrix and AUTH-05 verification tests pass; OAuth provider-verified state is persisted | Central unverified-account enforcement and approved email delivery remain AUTH-05 coordination work |
@@ -132,6 +132,14 @@ Phase 0 read-only checks:
 - Prevented the mock billing provider from being returned or used for webhook verification when `NODE_ENV=production`; removed the implicit mock signing secret and require an explicit secret of at least 32 UTF-8 bytes.
 - Bounded mock webhook payload size, validate stable event identity/type, compare decoded 32-byte HMAC digests, and map invalid/provider-unavailable/internal errors to generic HTTP responses. The portal now reports a safe 503 when no production provider is configured. Paid checkout remains disabled.
 - Seeded `billing-provider-boundary` plus `phase7-billing-foundation` tests pass 19/19; `pnpm typecheck`, targeted ESLint, and `pnpm build` pass. External vendor selection, credentials, provider-specific sandbox verification, production lifecycle, and PostgreSQL webhook idempotency remain blocked.
+
+### 2026-11-08 Full repository suite rerun
+- Seeded serial `pnpm test -- --reporter=dot` passes on current HEAD `4d4a4e2`: 164 files passed / 1 skipped; 1,369 tests passed / 4 skipped (1,373 total), duration 584.57s. The prior single CLI timeout no longer reproduces after matching each real-process test's Vitest timeout to its existing child-process budget. No test assertion was changed or skipped to obtain this result.
+- The suite includes the billing-provider boundary and concurrent webhook-idempotency cases. This is full local SQLite/test-fixture evidence only; PostgreSQL/RLS, provider sandbox and staging/production checks remain separate gates.
+
+### 2026-11-08 BILL-10 entitlement guard
+- `checkWorkspaceLimit` now denies every state except `active` and `trialing`; this aligns its enforcement with `getWorkspaceUsageSummary` and prevents incomplete or unrecognized persisted states from granting below-quota usage.
+- Added regression coverage for `incomplete`, an unknown state, and allowed `trialing`. Seeded billing tests pass 20/20; `pnpm typecheck`, billing ESLint and `pnpm build` pass. Full suite passes on `4d4a4e2` as recorded above; owner approval is still required for grace duration, suspension behavior and notifications.
 
 ### 2026-11-07 ORG-05 route authorization continuation
 
