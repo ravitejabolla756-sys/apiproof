@@ -114,6 +114,8 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 
 - `pnpm exec eslint apps/web/src/app/login/page.tsx apps/web/src/app/forgot-password/page.tsx apps/web/src/app/reset-password/page.tsx apps/web/src/app/invite/accept/page.tsx apps/web/src/app/dashboard/settings/workspace/page.tsx apps/web/src/app/dashboard/findings/[id]/page.tsx apps/web/src/components/dashboard/connect-repo-modal.tsx apps/web/src/components/dashboard/slack-connection-card.tsx tests/e2e/auth-loading-states.spec.ts tests/e2e/organization-audit.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; the detector reported only incumbent purple-palette warnings; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; combined auth/audit journeys — 3/3 PASS; full CI-mode production-build browser matrix — 43/43 PASS in 58.3 seconds. Auth, invitation, dialog, Slack and audit live-region semantics are covered locally; this remains automated/browser evidence, not a full screen-reader or hosted CI sign-off.
 
+- `pnpm exec eslint apps/web/src/app/contact/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; Impeccable detector returned no findings; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; focused contact journey — 1/1 PASS with atomic no-send status assertion; full CI-mode production-build browser matrix — 43/43 PASS in 60 seconds. Contact intake remains intentionally non-sending; this is local public-site evidence, not manual assistive-technology or hosted deployment sign-off.
+
 ## Required next checks
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.

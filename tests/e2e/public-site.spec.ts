@@ -140,7 +140,7 @@ test.describe('public beta surfaces', () => {
     await page.getByLabel('Inquiry Type').selectOption('support');
     await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
     await page.getByRole('button', { name: 'Review inquiry state' }).click();
-    await expect(page.getByRole('heading', { name: 'No message was sent' })).toBeVisible();
+    const contactStatus = page.getByRole('status'); await expect(contactStatus).toBeVisible(); await expect(contactStatus).toContainText('No message was sent'); await expect(contactStatus).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible();
   });
 });

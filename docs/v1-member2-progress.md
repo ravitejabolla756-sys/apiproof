@@ -385,3 +385,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/login/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `apps/web/src/app/invite/accept/page.tsx`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `apps/web/src/components/dashboard/slack-connection-card.tsx`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector reported only incumbent purple-palette warnings; web production build PASS with 83 generated static pages; combined auth/audit browser journeys PASS — 3/3; full CI-mode production-build browser matrix PASS — 43/43 in 58.3 seconds. Retained artifacts were moved to `/tmp/myowl-v1-ui12-auth-audit-artifacts/`.
 - Scope: this advances local UI-12 evidence but does not constitute full screen-reader, hosted CI, staging or production verification. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — WEB-15 contact intake safety state
+
+- Change: the non-sending contact form’s truthful completion state now exposes a polite atomic status region; the beta’s no-delivery boundary and copy are unchanged.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; focused non-sending contact journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 60 seconds. Retained artifacts were moved to `/tmp/myowl-v1-web15-contact-artifacts/`.
+- Scope: local public-site evidence only; manual assistive-technology, hosted CI, representative deployment performance, legal and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

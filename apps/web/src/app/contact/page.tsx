@@ -39,7 +39,7 @@ export default function ContactPage() {
           {/* Right Column: Form Card */}
           <div className="lg:col-span-7 bg-[#EFF1F5] rounded-[32px] p-8 md:p-10 border border-black/[0.04] shadow-xs">
             {submitted ? (
-              <div className="py-16 text-center space-y-4">
+              <div role="status" aria-live="polite" aria-atomic="true" className="py-16 text-center space-y-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
