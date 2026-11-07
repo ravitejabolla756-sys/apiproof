@@ -458,3 +458,8 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/landing/navbar.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; dev-mode focused mobile-menu journey passed 1/1; CI-mode production-build journey passed 1/1 in 2.3 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — cumulative browser regression after mobile focus fix
+
+- Evidence: CI-mode Playwright production-build matrix passed 43/43 in 57.5 seconds after the mobile navigation backdrop change. This includes public/authenticated route axe and responsive checks, keyboard/dialog behavior, reduced motion, auth and workspace flows, notification states, repository recovery and degraded data states.
+- Scope: this is local hermetic browser evidence only; hosted CI, integrated staging, full screen-reader/manual review and production verification remain open. UI-12 and UI-13 remain PARTIAL. No backend/shared contract, provider, production or remote Git operation was performed.
