@@ -133,6 +133,44 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(formatted).toContain('[REDACTED]');
   });
 
+  it('redacts provider credential formats and secret-bearing fields while preserving diagnostic names', () => {
+    const providerSecrets = [
+      'sk_live_1234567890abcdefghijkl',
+      'whsec_1234567890abcdefghijklmn',
+      'xoxb-123456789012-123456789012-123456789012-abcdefghij',
+      'AKIAIOSFODNN7EXAMPLE',
+      'AIzaSyDUMMYKEY0123456789abcdefghijklmn',
+      'sb_secret_1234567890abcdefghijkl',
+    ];
+    const fields = {
+      apiKey: providerSecrets[0],
+      clientSecret: providerSecrets[1],
+      refresh_token: providerSecrets[2],
+      databaseUrl: 'postgres://user:password@db.example.test/app',
+      connectionString: 'Host=db.example.test;Password=hidden',
+      webhookSignature: providerSecrets[3],
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+    };
+
+    const formatted = formatLogEntry('error', `provider failure ${providerSecrets.join(' ')}`, fields, new Error(providerSecrets[4]!));
+    const parsed = JSON.parse(formatted) as { context: Record<string, unknown>; error: string; message: string };
+
+    for (const secret of providerSecrets) expect(formatted).not.toContain(secret);
+    expect(parsed.context).toMatchObject({
+      apiKey: '[REDACTED]',
+      clientSecret: '[REDACTED]',
+      refresh_token: '[REDACTED]',
+      databaseUrl: '[REDACTED]',
+      connectionString: '[REDACTED]',
+      webhookSignature: '[REDACTED]',
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+    });
+    expect(parsed.error).toContain('[REDACTED]');
+    expect(parsed.message).toContain('[REDACTED]');
+  });
+
   // -------------------------------------------------------------------------
   // TEST 4: Health check route
   // -------------------------------------------------------------------------
