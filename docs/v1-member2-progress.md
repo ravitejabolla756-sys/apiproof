@@ -399,3 +399,8 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/verify-email/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; verification-link public journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 57.6 seconds. Retained artifacts were moved to `/tmp/myowl-v1-ui12-verification-state-artifacts/`.
 - Scope: local automated/browser evidence only; full screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-07 checkpoint — cumulative repository regression after UI-12 pass
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=ci-local-seed-password-only-for-tests APIPROOF_SECRET=ci-test-apiproof-secret-minimum-32-chars-long NODE_ENV=test pnpm test` passed 161 test files and 1,340 tests, with 1 skipped file and 4 skipped tests in 105.19 seconds.
+- Scope: this is local hermetic regression evidence; hosted CI, integrated staging, assistive-technology review and production verification remain open. No production/provider/remote Git operation was performed.
