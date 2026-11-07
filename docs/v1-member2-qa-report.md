@@ -90,7 +90,11 @@ Updated implementation report; browser checks are local evidence only and are no
 
 ## Full-suite baseline exception
 
-The latest complete run completed with 157 test files passing, 1 failing and 1 skipped (1,322 passed, 1 failed, 4 skipped across 159 files). The sole failure is the external `C:\apiproof-github-fixture` line-number assertion (`expected 5`, observed 4), which was not edited from this isolated worktree. These results prevent a clean release gate and require fixture-owner remediation; failures were not suppressed or weakened.
+The latest CI-configured complete run passed 161 test files and 1,340 tests, with 1 skipped file and 4 skipped tests. The local full-test release gate is green; hosted CI/staging and production verification remain separate open gates.
+
+- The run used `APIPROOF_LOCAL_SEED_PASSWORD=ci-local-seed-password-only-for-tests APIPROOF_SECRET=ci-test-apiproof-secret-minimum-32-chars-long NODE_ENV=test pnpm test`, matching the repository’s required local SQLite seed contract.
+- The shared patch-workspace temp-root portability fix canonicalizes macOS `os.tmpdir()` before safety checks; the notification preference contract now asserts the current 12 server-owned defaults. Focused coverage for those changes is 130/130.
+- `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages after the patch-workspace change; repository-wide `pnpm typecheck` and `pnpm lint` remain PASS.
 
 ## Required next checks
 

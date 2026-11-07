@@ -26,7 +26,7 @@ describe('notification preferences', () => {
   it('returns complete server-owned defaults with required security controls', async () => {
     const account = await createUserWithSession('notifications@example.test', 'NotifyPassword123!', 'Notify User');
     const preferences = await getNotificationPreferences(account.user.id);
-    expect(preferences).toHaveLength(10);
+    expect(preferences).toHaveLength(12);
     expect(preferences.find((item) => item.category === 'security' && item.channel === 'email')).toMatchObject({ enabled: true, required: true });
     expect(preferences.find((item) => item.category === 'findings' && item.channel === 'email')).toMatchObject({ enabled: false, deliveryAvailable: false });
   });

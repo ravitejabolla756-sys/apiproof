@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -80,7 +81,7 @@ describe('production verification workspace preparation', () => {
       'src/index.ts': 'export const value = 1;',
     });
     try {
-      const tempRoot = path.resolve(os.tmpdir());
+      const tempRoot = realpathSync(os.tmpdir());
       const workspaceRoot = path.resolve(patchWorkspaceRunsRoot);
       expect(path.relative(tempRoot, workspaceRoot)).not.toMatch(/^\.\./);
       expect(path.relative(workspaceRoot, path.resolve(workspace.directory))).not.toMatch(/^\.\./);

@@ -3,14 +3,15 @@ import { randomUUID } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { AnalysisError } from '@apiproof/shared';
 import { allowedPatchPath, assertPlainPath, fail, sha256 } from './policy.js';
 
 export const patchToolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../');
 export const patchCorpusRoot = path.join(patchToolRoot, 'evaluation-patches');
 /** Writable runtime state must not be derived from the package/build location. */
-export const patchWorkspaceRunsRoot = path.join(os.tmpdir(), 'apiproof', 'patch-runs');
+const canonicalTempRoot = realpathSync(os.tmpdir());
+export const patchWorkspaceRunsRoot = path.join(canonicalTempRoot, 'apiproof', 'patch-runs');
 const MAX_WORKSPACE_FILES = 500;
 const MAX_WORKSPACE_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_WORKSPACE_BYTES = 32 * 1024 * 1024;
@@ -71,7 +72,7 @@ async function inventory(root: string, relative = ''): Promise<string[]> {
   return files.sort();
 }
 async function ensurePatchWorkspaceRunsRoot(): Promise<string> {
-  const tempRoot = path.resolve(os.tmpdir());
+  const tempRoot = canonicalTempRoot;
   const relative = path.relative(tempRoot, path.resolve(patchWorkspaceRunsRoot));
   if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) fail('WORKSPACE_TEMP_PATH_INVALID');
   let parent = tempRoot;
