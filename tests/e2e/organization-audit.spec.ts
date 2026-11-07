@@ -3,6 +3,25 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers';
 
 test.describe('workspace audit trail', () => {
+  test('does not present an audit failure as an empty trail', async ({ page }) => {
+    await signIn(page);
+
+    await page.route('**/api/workspace/audit**', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Audit history is temporarily unavailable.' }),
+      });
+    });
+
+    await page.goto('/dashboard/settings/workspace');
+    await expect(page.getByRole('alert').filter({ hasText: 'Audit history is temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('No administrative events recorded yet.')).toHaveCount(0);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit failure state').toEqual([]);
+
+    await page.unroute('**/api/workspace/audit**');
+  });
+
   test('loads the next audit page through the cursor contract', async ({ page }) => {
     await signIn(page);
 
