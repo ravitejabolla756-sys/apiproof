@@ -108,6 +108,8 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm exec eslint apps/web/src/components/dashboard/sidebar.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; workspace-list error/retry journey — 1/1 PASS with axe; full CI-mode browser matrix — 43/43 PASS in 54.8 seconds. Workspace-list failures now have an explicit retry path; PostgreSQL/RBAC and full screen-reader review remain open.
 - `pnpm exec eslint apps/web/src/components/dashboard/sidebar.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; workspace context journeys — 2/2 PASS; full CI-mode browser matrix — 43/43 PASS in 54.3 seconds. Workspace selector busy/error semantics are covered; PostgreSQL/RBAC and full screen-reader review remain open.
 
+- `pnpm exec eslint apps/web/src/app/dashboard/settings/account/page.tsx tests/e2e/public-site.spec.ts --max-warnings 0` — PASS; `pnpm typecheck` — PASS; Impeccable detector returned no findings; `pnpm --filter @apiproof/web build` — PASS with 83 generated static pages; focused account loading/error journey — 1/1 PASS with atomic status/alert assertions; full CI-mode production-build browser matrix — 43/43 PASS in 55.8 seconds. Account feedback semantics are covered locally; this remains automated/browser evidence, not a full screen-reader or hosted CI sign-off.
+
 ## Required next checks
 
 - Run the new CI browser job and inspect its retained artifacts, then complete the remaining manual browser checks before claiming UI-13 complete.

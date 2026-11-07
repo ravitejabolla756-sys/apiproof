@@ -364,3 +364,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; workspace context journeys PASS — 2/2; full CI-mode browser matrix PASS — 43/43 in 54.3 seconds.
 - Scope: no backend/shared contract changed; PostgreSQL/RBAC proof and full screen-reader review remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 account feedback semantics
+
+- Change: account settings success and error feedback now exposes explicit polite/assertive atomic live-region metadata, and the loading region is atomic; the existing account and password API contracts are unchanged.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint PASS; repository-wide `pnpm typecheck` PASS; Impeccable detector returned no findings; web production build PASS with 83 generated static pages; focused account loading/error journey PASS — 1/1; full CI-mode production-build browser matrix PASS — 43/43 in 55.8 seconds. Retained artifacts were moved to `/tmp/myowl-v1-ui12-account-artifacts/` and `/tmp/myowl-v1-ui13-account-artifacts/`.
+- Scope: this is local automated/browser evidence, not screen-reader, hosted CI, staging or production verification. No backend/shared contract, provider, production or remote Git operation was performed.

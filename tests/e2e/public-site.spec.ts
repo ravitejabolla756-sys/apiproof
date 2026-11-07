@@ -493,8 +493,8 @@ test.describe('authenticated product surfaces', () => {
 
     let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; });
     await page.route('**/api/account', async (route) => { await accountLoading; await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) }); });
-    await page.goto('/dashboard/settings/account'); await expect(page.getByRole('status')).toContainText('Loading account settings…'); releaseAccount?.();
-    await expect(page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' })).toBeVisible({ timeout: 30_000 });
+    await page.goto('/dashboard/settings/account'); const accountStatus = page.getByRole('status'); await expect(accountStatus).toContainText('Loading account settings…'); await expect(accountStatus).toHaveAttribute('aria-atomic', 'true'); releaseAccount?.();
+    const accountAlert = page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' }); await expect(accountAlert).toBeVisible({ timeout: 30_000 }); await expect(accountAlert).toHaveAttribute('aria-live', 'assertive'); await expect(accountAlert).toHaveAttribute('aria-atomic', 'true');
     await page.unroute('**/api/account');
   });
   test('renders notification loading and error states safely', async ({ page }) => {
