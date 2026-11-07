@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
 import { getWorkspaceSubscription } from '@/lib/server/billing/service';
-import { getBillingProvider } from '@/lib/server/billing/provider';
+import { BillingProviderUnavailableError, getBillingProvider } from '../../../../lib/server/billing/provider.js';
 
 export async function POST(req: Request) {
   const user = await getCurrentUser(req);
@@ -12,7 +12,15 @@ export async function POST(req: Request) {
 
   const workspace = await getDefaultWorkspaceForUser(user.id);
   const sub = await getWorkspaceSubscription(workspace.id);
-  const provider = getBillingProvider();
+  let provider;
+  try {
+    provider = getBillingProvider();
+  } catch (error) {
+    if (error instanceof BillingProviderUnavailableError) {
+      return NextResponse.json({ error: 'Billing portal is unavailable' }, { status: 503 });
+    }
+    throw error;
+  }
 
   let customerId = sub.customerId;
   if (!customerId) {

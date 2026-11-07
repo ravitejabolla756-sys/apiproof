@@ -30,6 +30,7 @@ import {
 import { MockBillingProvider } from '../apps/web/src/lib/server/billing/provider.js';
 import { PLANS } from '../apps/web/src/lib/server/billing/plans.js';
 import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout/route.js';
+import { POST as createBillingPortal } from '../apps/web/src/app/api/billing/portal/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase7-billing.db');
 
@@ -197,6 +198,25 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     const enterpriseResponse = await createCheckout(request('enterprise'));
     expect(enterpriseResponse.status).toBe(400);
     expect(await enterpriseResponse.json()).toMatchObject({ error: expect.stringContaining('purchasable') });
+  });
+
+  it('fails closed with a safe response when the billing portal has no production provider', async () => {
+    const user = await createUserAsync('billing-portal-unavailable@apiproof.test', 'Pass123!#$', 'Portal User');
+    const session = createSession(user.id);
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    try {
+      const response = await createBillingPortal(new Request('http://localhost/api/billing/portal', {
+        method: 'POST',
+        headers: { cookie: `apiproof_session=${session.id}` },
+      }));
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ error: 'Billing portal is unavailable' });
+    } finally {
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+    }
   });
 
   // -------------------------------------------------------------------------

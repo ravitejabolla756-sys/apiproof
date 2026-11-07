@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getBillingProvider } from '@/lib/server/billing/provider';
-import { processBillingWebhookEvent } from '@/lib/server/billing/service';
+import {
+  getBillingProvider,
+  BillingProviderUnavailableError,
+  BillingWebhookInputError,
+  BillingWebhookSignatureError,
+} from '../../../../lib/server/billing/provider.js';
+import { processBillingWebhookEvent } from '../../../../lib/server/billing/service.js';
 
 export async function POST(req: Request) {
   try {
@@ -21,10 +26,15 @@ export async function POST(req: Request) {
       eventId: event.id,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('INVALID_BILLING_SIGNATURE')) {
+    if (err instanceof BillingWebhookSignatureError) {
       return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
     }
-    return NextResponse.json({ error: 'Webhook processing failed', details: message }, { status: 400 });
+    if (err instanceof BillingWebhookInputError) {
+      return NextResponse.json({ error: 'Invalid billing webhook' }, { status: 400 });
+    }
+    if (err instanceof BillingProviderUnavailableError) {
+      return NextResponse.json({ error: 'Billing webhook processing is unavailable' }, { status: 503 });
+    }
+    return NextResponse.json({ error: 'Billing webhook processing failed' }, { status: 500 });
   }
 }
