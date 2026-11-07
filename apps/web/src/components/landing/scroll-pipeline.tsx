@@ -381,8 +381,11 @@ export function ScrollPipeline() {
                 {STAGES.map((s, idx) => (
                   <button
                     key={s.number}
+                    type="button"
                     onClick={() => scrollToStep(idx)}
                     className="flex items-center gap-1.5 focus:outline-none z-10"
+                    aria-label={`Jump to stage ${s.number}: ${s.tag}`}
+                    aria-pressed={activeStep === idx}
                   >
                     <div className="w-2 h-2 rounded-full bg-white border border-slate-300" />
                     <span
@@ -435,9 +438,11 @@ export function ScrollPipeline() {
                 {STAGES.map((s, idx) => (
                   <button
                     key={s.number}
+                    type="button"
                     onClick={() => scrollToStep(idx)}
                     className="group relative flex items-center justify-center w-4 h-4 focus:outline-none z-10"
                     aria-label={`Jump to stage ${s.number}: ${s.tag}`}
+                    aria-pressed={activeStep === idx}
                   >
                     <div className="w-2.5 h-2.5 rounded-full bg-white border border-slate-300 group-hover:border-slate-500 transition-colors" />
 

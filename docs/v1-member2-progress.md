@@ -452,6 +452,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 landing pipeline stage semantics
+
+- Change: landing-page mobile and desktop stage navigation buttons now declare native button type, accessible stage names and `aria-pressed` state for the active stage; click behavior and visual system are unchanged.
+- Files: `apps/web/src/components/landing/scroll-pipeline.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; focused ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused pipeline navigation journey passed 1/1. The test verifies four visible desktop stage buttons, accessible names, native button semantics and pressed-state transition.
+- Scope: this advances local automated UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
