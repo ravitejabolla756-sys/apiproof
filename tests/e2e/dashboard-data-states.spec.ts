@@ -88,6 +88,26 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/compatibility-map');
   });
 
+  test('exposes the selected provider-rule priority filter', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/provider-rules', async (route) => {
+      const candidate = (id: string, priority: 'P0' | 'P1') => ({ id, providerId: 'fixture', title: `${priority} candidate`, description: 'Fixture candidate', status: 'needs_review', severity: 'high', payload: null, source: { url: 'https://fixture.test/change', type: 'official' }, createdAt: '2026-11-07T00:00:00.000Z', reviewNotes: null, coverage: { priority, reviewBlockers: [], evidenceClaims: 1, hasExecutableTemplate: false, nextAction: 'human-review' }, reviewPack: null });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ candidates: [candidate('candidate-p0', 'P0'), candidate('candidate-p1', 'P1')], coverageSummary: { candidates: 2, pendingCandidates: 2, reviewedCandidates: 0, reviewedProviders: 0, providersMissingReviewedRules: [], providersWithExecutableTemplates: [] } }) });
+    });
+    await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
+    const filter = page.getByRole('group', { name: 'Review priority filter' });
+    const all = filter.getByRole('button', { name: 'All (2)' });
+    const p0 = filter.getByRole('button', { name: 'P0 (1)' });
+    await expect(all).toHaveAttribute('aria-pressed', 'true');
+    await expect(p0).toHaveAttribute('aria-pressed', 'false');
+    await p0.click();
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    await expect(p0).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: 'P0 candidate' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'P1 candidate' })).toHaveCount(0);
+    await page.unroute('**/api/provider-rules');
+  });
+
   test('announces Slack connection failures as alerts', async ({ page }) => {
     await signIn(page);
     await page.route('**/api/slack/connection', async (route) => {
