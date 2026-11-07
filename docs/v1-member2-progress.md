@@ -205,6 +205,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: `pnpm exec eslint tests/e2e/helpers.ts tests/e2e/public-site.spec.ts tests/e2e/dashboard-data-states.spec.ts tests/e2e/repository-recovery.spec.ts --max-warnings 0` PASS; `pnpm --filter @apiproof/web typecheck` PASS; dashboard data-state suite 2/2 PASS (24.1s); repository recovery 1/1 PASS (3.0s) in the clean local server.
 - Remaining limitation: a broader dev-mode browser run still has a notification-loading timing failure; prior committed CI-mode production-build evidence remains 25/25, and hosted CI is still NOT_RUN.
 
+## 2026-11-07 checkpoint — UI-12 invitation loading announcements
+
+- Change: invitation acceptance now exposes both the Suspense fallback and the post-submit `Accepting invitation…` state as polite live regions, so assistive technology receives progress feedback without changing invitation API contracts or visual styling.
+- Files: `apps/web/src/app/invite/accept/page.tsx`.
+- Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; `pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --timeout=300000` PASS — 5/5 in 1.9 minutes across desktop, 390px mobile and 768px tablet routes.
+- Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-13 full local browser suite
 
 - Evidence: `pnpm exec playwright test tests/e2e --workers=1 --timeout=300000` PASS — 28/28 in 2.5 minutes, including dashboard data states, public/authenticated route coverage, accessibility scans, dialog focus, notification loading/error/retry, and repository list/detail recovery. This is local dev-server evidence; hosted CI and production verification remain NOT_RUN.
