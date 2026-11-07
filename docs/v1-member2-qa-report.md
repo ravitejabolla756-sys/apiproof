@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Full findings recovery regression
+
+- PASS: Rebuilt-bundle CI-mode Playwright suite passed 92/92 in 2.4 minutes on isolated SQLite `/tmp/myowl-v1-findings-full.db`; the run includes the responsive multi-provider and filtered-empty findings journeys. Production build generated 83 static pages.
+- Artifacts: `/tmp/myowl-v1-findings-full-artifacts`, `/tmp/myowl-v1-findings-full-report`.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, integrated staging, full manual assistive-technology review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Findings filtered-empty recovery
 
 - PASS: Focused findings suite passed 2/2 in 17.6 seconds: multi-provider mobile wrapping plus search-to-filtered-empty, axe-clean status, clear-filters and result recovery.

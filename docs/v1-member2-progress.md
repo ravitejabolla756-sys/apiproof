@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 full findings recovery regression
+
+- Change: Rebuilt the web bundle and ran the complete committed browser matrix after the findings responsive and filtered-empty journeys were added.
+- Evidence: Production build generated 83 static pages; rebuilt-bundle CI-mode Playwright suite passed 92/92 in 2.4 minutes on isolated SQLite `/tmp/myowl-v1-findings-full.db`; artifacts were retained at `/tmp/myowl-v1-findings-full-artifacts` and `/tmp/myowl-v1-findings-full-report`.
+- Scope: local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, full screen-reader review, backend/provider contracts and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 findings filtered-empty recovery
 
 - Change: Added a deterministic browser journey for the findings filtered-empty state: search with no matches, verify the truthful status and clear-filters recovery action, then restore the result set. The journey also retains the multi-provider mobile wrapping and overflow assertions.
@@ -215,7 +221,7 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
-Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 90/90, with compatibility-map, provider-rule, workspace-switch, repository-picker, Slack action, and GitHub action recovery journeys added in the checkpoints above.
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the rebuilt-bundle browser suite is now 92/92, with compatibility-map, provider-rule, workspace-switch, repository-picker, Slack action, GitHub action, responsive findings, and filtered-empty recovery journeys added in the checkpoints above.
 
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
