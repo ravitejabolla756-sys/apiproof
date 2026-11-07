@@ -103,6 +103,29 @@ describe('GET /api/repositories', () => {
     expect(after?.count).toBe(before?.count ?? 0);
   });
 
+  it('denies repository creation in a workspace where the authenticated user is not a member', async () => {
+    const actor = await createUserWithSession('repo-actor@example.test', 'Strong-password-1!', 'Repository Actor');
+    const otherUser = await createUserWithSession('repo-other@example.test', 'Strong-password-1!', 'Other Workspace');
+    const foreignWorkspace = await getDefaultWorkspaceForUser(otherUser.user.id);
+
+    const response = await POST(new Request('http://localhost/api/repositories', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${actor.session.id}`,
+      },
+      body: JSON.stringify({ githubRepositoryId: '12345', workspaceId: foreignWorkspace.id }),
+    }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    const repositoryCount = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ?',
+      [foreignWorkspace.id],
+    );
+    expect(Number(repositoryCount?.count)).toBe(0);
+  });
+
   it('does not promote an unscoped legacy repository into production workspace access', async () => {
     const owner = await createUserWithSession('legacy-access@example.test', 'Strong-password-1!', 'Legacy Access');
     await getDatabase().execute(`

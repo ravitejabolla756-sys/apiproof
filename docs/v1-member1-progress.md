@@ -183,3 +183,10 @@ Phase 0 read-only checks:
 - ORG-05 remains PARTIAL pending Member 2 role-contract approval and effective PostgreSQL role/isolation tests.
 - SEC-11 is now `PARTIAL` (previously `BLOCKED`): local redaction is implemented and tested, but owner approval of monitoring provider, destination, retention, alert thresholds/escalation, and staging rehearsal is still required. This does not establish external error-monitoring coverage.
 - Updated accounting: 7 locally `DONE_VERIFIED`, 17 `PARTIAL`, 0 `MISSING`, 2 `BLOCKED`, 1 `NOT_STARTED`; production-verified remains 0.
+
+### 2026-11-08 ORG-05 repository-connect denial mapping
+
+- Audited the repository-connect route and found expected cross-tenant/unknown-role membership denials were returned through the generic internal-error path. The route now maps recognized workspace authorization errors to a generic 403 without exposing tenant or role details; database/internal errors retain the existing 500 handling.
+- Added a SQLite-backed regression that authenticates as one user, targets another user's workspace, verifies the generic 403, and confirms no repository row was created.
+- The focused repository route suite passes 5/5 with an ephemeral process-only local seed value; targeted ESLint and full `pnpm typecheck` pass. The initial test attempt without the required seed failed during database setup and cleanup; no assertions ran in that attempt.
+- ORG-05 remains PARTIAL pending Member 2's role/API contract and PostgreSQL isolation evidence.
