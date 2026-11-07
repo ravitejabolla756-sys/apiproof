@@ -53,7 +53,7 @@ export function ProductVideo({
         <button
           type="button"
           onClick={() => setIsPlaying(true)}
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 hover:bg-[#D0F100] border border-white/20 hover:border-transparent backdrop-blur-md flex items-center justify-center text-white hover:text-black transition-all duration-300 group-hover:scale-105 shadow-2xl focus:outline-none"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 hover:bg-[#D0F100] border border-white/20 hover:border-transparent backdrop-blur-md flex items-center justify-center text-white hover:text-black transition-all duration-300 group-hover:scale-105 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D0F100] focus-visible:ring-offset-2 focus-visible:ring-offset-[#00081C]"
           aria-label="Play product video"
         >
           <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-current ml-1" />

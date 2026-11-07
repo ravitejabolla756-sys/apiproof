@@ -465,6 +465,12 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/ui/button.tsx`, `apps/web/src/components/dashboard/command-palette.tsx`, `apps/web/src/app/dashboard/layout.tsx`, `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `apps/web/src/components/landing/product-video.tsx`, `tests/e2e/control-semantics.spec.ts`.
 - Scope: local UI-12 work only; backend contracts and production/provider behavior are unchanged. Full screen-reader/manual review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 keyboard-visible focus indicators
+
+- Change: landing pipeline stage controls, product-video trigger and FAQ disclosures now retain a visible keyboard focus ring after their existing outline reset; pipeline browser coverage verifies stage-button focus recovery.
+- Files: `apps/web/src/components/landing/scroll-pipeline.tsx`, `apps/web/src/components/landing/product-video.tsx`, `apps/web/src/app/faq/page.tsx`, `tests/e2e/pipeline-accessibility.spec.ts`.
+- Scope: local accessibility work only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
