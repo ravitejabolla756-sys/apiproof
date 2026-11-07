@@ -85,6 +85,7 @@ export default function FindingsListPage() {
     return matchesSearch && matchesSeverity && matchesProvider;
   });
   const providerOptions = ["all", ...Array.from(new Set(findings.map((finding) => finding.provider))).sort()];
+  const hasActiveFilters = searchQuery.trim().length > 0 || severityFilter !== "all" || providerFilter !== "all";
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
@@ -178,10 +179,9 @@ export default function FindingsListPage() {
       ) : filteredFindings.length === 0 ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
           <CheckCircle2 aria-hidden="true" className="w-8 h-8 text-emerald-600 mx-auto" />
-          <p className="font-semibold text-base text-[#111111]">No compatibility findings detected</p>
-          <p className="text-xs text-[#686868]">
-            Either all code call sites are compatible with upstream APIs, or repositories have not yet been scanned.
-          </p>
+          <p className="font-semibold text-base text-[#111111]">{hasActiveFilters ? "No findings match the current filters" : "No compatibility findings detected"}</p>
+          <p className="text-xs text-[#686868]">{hasActiveFilters ? "Try clearing the filters or choosing a different severity, provider, or search term." : "Either all code call sites are compatible with upstream APIs, or repositories have not yet been scanned."}</p>
+          {hasActiveFilters && <Button type="button" variant="outline" onClick={() => { setSearchQuery(""); setSeverityFilter("all"); setProviderFilter("all"); }}>Clear filters</Button>}
         </div>
       ) : (
         <div className="space-y-4">
