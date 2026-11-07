@@ -22,6 +22,8 @@ export default function WorkspaceSettingsPage() {
   const [auditCursor, setAuditCursor] = useState<string | null>(null);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditError, setAuditError] = useState<string | null>(null);
+  const [membersError, setMembersError] = useState<string | null>(null);
+  const [invitationsError, setInvitationsError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
@@ -51,6 +53,8 @@ export default function WorkspaceSettingsPage() {
       setSlug(settings.workspace.slug);
       setMembers(responses[1]!.ok ? memberData.members || [] : []);
       setInvitations(responses[2]!.ok ? invitationData.invitations || [] : []);
+      setMembersError(responses[1]!.ok ? null : memberData.error || 'Unable to load workspace members.');
+      setInvitationsError(responses[2]!.ok ? null : invitationData.error || 'Unable to load workspace invitations.');
       setAudit(responses[3]!.ok ? auditData.events || [] : []);
       setAuditCursor(responses[3]!.ok ? auditData.nextCursor || null : null);
       setAuditError(responses[3]!.ok ? null : auditData.error || 'Unable to load administrative audit events.');
@@ -202,16 +206,16 @@ export default function WorkspaceSettingsPage() {
 
       <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="members-heading">
         <div className="mb-5 flex items-start gap-3"><Users className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="members-heading" className="text-base font-semibold text-[#111111]">Members</h2><p className="mt-1 text-xs text-[#686868]">Owners can grant or remove access. At least one owner is always required.</p></div></div>
-        <div className="divide-y divide-[#E8E8E5]">
+        {membersError ? <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{membersError}</div> : members.length === 0 ? <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">No workspace members found.</p> : <div className="divide-y divide-[#E8E8E5]">
           {members.map((member) => <div key={member.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="truncate text-sm font-medium text-[#111111]">{member.name}</p><p className="truncate text-xs text-[#686868]">{member.email}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2.5 py-1 text-[11px] font-medium capitalize text-[#686868]">{member.role}</span>{workspace?.role === 'owner' && <><select aria-label={`Role for ${member.email}`} value={member.role} disabled={memberAction !== null} onChange={(event) => void changeRole(member, event.target.value as 'owner' | 'member')} className="min-h-10 rounded-lg border border-[#D9D9D4] bg-white px-2 text-xs"><option value="member">Member</option><option value="owner">Owner</option></select><Button type="button" size="sm" variant="danger" disabled={memberAction !== null} aria-busy={memberAction === member.id ? 'true' : undefined} onClick={() => void removeMember(member)}>{memberAction === member.id ? 'Removing…' : 'Remove'}</Button></>}</div></div>)}
-        </div>
+        </div>}
       </section>
 
       {workspace?.role === 'owner' && <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="invite-heading">
         <div className="mb-5 flex items-start gap-3"><UserPlus className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" /><div><h2 id="invite-heading" className="text-base font-semibold text-[#111111]">Invite a member</h2><p className="mt-1 text-xs text-[#686868]">Email delivery is not enabled in the beta. Create a single-use link and share it manually. Creating another link for the same email cancels the previous pending link.</p></div></div>
         <form onSubmit={inviteMember} aria-busy={inviting ? 'true' : undefined} className="flex flex-col gap-3 sm:flex-row"><label htmlFor="invite-email" className="sr-only">Invite email</label><input id="invite-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="teammate@example.com" required className="min-h-10 min-w-0 flex-1 rounded-lg border border-[#D9D9D4] px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /><Button type="submit" disabled={inviting} className="min-h-10">{inviting ? 'Creating…' : 'Create invite link'}</Button></form>
         {inviteUrl && <div className="mt-4 flex flex-col gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 sm:flex-row sm:items-center"><code className="min-w-0 flex-1 break-all text-[11px] text-blue-900">{inviteUrl}</code><Button type="button" size="sm" variant="outline" onClick={() => void copyInvite()} icon={<Clipboard className="h-3.5 w-3.5" aria-hidden="true" />}>Copy link</Button></div>}
-        {invitations.length > 0 && <div className="mt-5 space-y-2"><h3 className="text-xs font-semibold text-[#333333]">Recent invitations</h3>{invitations.slice(0, 5).map((invitation) => <div key={invitation.id} className="flex flex-col gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] p-3 text-xs sm:flex-row sm:items-center sm:justify-between"><div><p className="text-[#333333]">{invitation.email}</p><p className="text-[#686868]">{invitation.acceptedAt ? 'Accepted' : invitation.revokedAt ? 'Revoked' : new Date(invitation.expiresAt).toLocaleDateString()}</p></div>{!invitation.acceptedAt && !invitation.revokedAt && <Button type="button" size="sm" variant="outline" disabled={revokingInvitationId !== null} aria-busy={revokingInvitationId === invitation.id ? 'true' : undefined} onClick={() => void revokeInvitation(invitation)} aria-label={`Cancel invitation for ${invitation.email}`}>{revokingInvitationId === invitation.id ? 'Cancelling…' : 'Cancel'}</Button>}</div>)}</div>}
+        {invitationsError ? <div role="alert" aria-live="assertive" aria-atomic="true" className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{invitationsError}</div> : invitations.length > 0 ? <div className="mt-5 space-y-2"><h3 className="text-xs font-semibold text-[#333333]">Recent invitations</h3>{invitations.slice(0, 5).map((invitation) => <div key={invitation.id} className="flex flex-col gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] p-3 text-xs sm:flex-row sm:items-center sm:justify-between"><div><p className="text-[#333333]">{invitation.email}</p><p className="text-[#686868]">{invitation.acceptedAt ? 'Accepted' : invitation.revokedAt ? 'Revoked' : new Date(invitation.expiresAt).toLocaleDateString()}</p></div>{!invitation.acceptedAt && !invitation.revokedAt && <Button type="button" size="sm" variant="outline" disabled={revokingInvitationId !== null} aria-busy={revokingInvitationId === invitation.id ? 'true' : undefined} onClick={() => void revokeInvitation(invitation)} aria-label={`Cancel invitation for ${invitation.email}`}>{revokingInvitationId === invitation.id ? 'Cancelling…' : 'Cancel'}</Button>}</div>)}</div> : <p role="status" aria-live="polite" aria-atomic="true" className="mt-5 text-xs text-[#686868]">No recent invitations.</p>}
       </section>}
 
       <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="audit-heading">

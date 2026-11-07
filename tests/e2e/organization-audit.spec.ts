@@ -3,6 +3,24 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
+  test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/workspace/members', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Member history is temporarily unavailable.' }) });
+    });
+    await page.route('**/api/workspace/invitations', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Invitation history is temporarily unavailable.' }) });
+    });
+    await page.goto('/dashboard/settings/workspace');
+    await expect(page.getByRole('alert').filter({ hasText: 'Member history is temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Invitation history is temporarily unavailable.' })).toBeVisible();
+    await expect(page.getByText('No workspace members found.')).toHaveCount(0);
+    await expect(page.getByText('No recent invitations.')).toHaveCount(0);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'organization fetch failure states').toEqual([]);
+    await page.unroute('**/api/workspace/members');
+    await page.unroute('**/api/workspace/invitations');
+  });
+
   test('announces when invitation-link copying is unavailable', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'clipboard', {
