@@ -698,6 +698,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: fresh explicit SQLite database `/tmp/myowl-v1-full-footer-regression.db`; rebuilt-bundle CI-mode Playwright suite passed 65/65 after the shared footer-navigation landmark change; `test-results/.last-run.json` reported `status: "passed"` with no failed tests.
 - Scope: complete local hermetic browser evidence only; hosted CI, integrated staging, manual assistive technology and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 interactive hero background semantics
+
+- Change: the cursor-following hero spotlight background is now explicitly hidden from the accessibility tree; its pointer-only decorative layers cannot add noise to keyboard or screen-reader navigation.
+- Files: `apps/web/src/components/landing/interactive-hero-background.tsx`.
+- Evidence: targeted ESLint passed; rebuilt web production bundle passed with 83 generated pages; route accessibility and public media-state matrix passed 9/9.
+- Scope: local landing accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
