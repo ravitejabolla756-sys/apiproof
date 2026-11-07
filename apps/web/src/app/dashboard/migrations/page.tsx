@@ -63,7 +63,7 @@ export default function MigrationsWorkbenchPage() {
       <div className="border-b border-[#E8E8E5] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-            <FileCheck2 className="w-6 h-6 text-emerald-600" />
+            <FileCheck2 aria-hidden="true" className="w-6 h-6 text-emerald-600" />
             Evidence Review Workbench
           </h1>
           <p className="text-xs text-[#686868] mt-1">
@@ -75,7 +75,7 @@ export default function MigrationsWorkbenchPage() {
           onClick={loadMigrations}
           variant="outline"
           size="sm"
-          icon={<RefreshCw className="w-3.5 h-3.5" />}
+          icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
           className="font-medium text-xs"
         >
           Refresh
@@ -86,12 +86,12 @@ export default function MigrationsWorkbenchPage() {
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading review records...</span>
         </div>
       ) : migrations.length === 0 ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
-          <FileCheck2 className="w-8 h-8 text-emerald-600 mx-auto" />
+          <FileCheck2 aria-hidden="true" className="w-8 h-8 text-emerald-600 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No active evidence review records yet</p>
           <p className="text-xs text-[#686868]">
             Open a finding to review its affected call site, matched rule, and official evidence.
@@ -151,7 +151,7 @@ export default function MigrationsWorkbenchPage() {
                 <div className="lg:col-span-5 bg-[#EEF7F2] rounded-[24px] border border-[#D1EBE0] p-5 space-y-4 flex flex-col justify-between">
                   <div className="space-y-1">
                     <div className="text-xs font-semibold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Verification Invariants
+                      <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600" /> Verification Invariants
                     </div>
                     <p className="text-[11px] text-emerald-800">
                       {mig.execution_verified
@@ -168,14 +168,14 @@ export default function MigrationsWorkbenchPage() {
                         <div className="font-semibold text-[#111111]">Patch Scope Check</div>
                         <div className="text-[11px] text-[#686868]">{mig.execution_verified ? `Validated target: ${mig.file_path}` : `Planned target: ${mig.file_path}; checked during verification`}</div>
                       </div>
-                      {mig.execution_verified ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
+                      {mig.execution_verified ? <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
                     </div>
                     <div className="p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between shadow-2xs">
                       <div>
                         <div className="font-semibold text-[#111111]">{mig.execution_verified ? 'Resulting Patch Digest' : 'Planned Digest (not verified)'}</div>
                         <div className="text-[11px] text-[#686868] font-mono truncate">{mig.patch_digest ? `${mig.patch_digest.slice(0, 18)}...` : 'Resulting patch digest pending'}</div>
                       </div>
-                      {mig.execution_verified ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
+                      {mig.execution_verified ? <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
                     </div>
                   </div>
 

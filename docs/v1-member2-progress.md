@@ -507,6 +507,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; focused shared-control and keyboard/dialog journeys passed 3/3 in 4.1 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-shared-dashboard-artifacts.OKCVqv`.
 - Scope: local shared-component accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 migrations and compatibility-map semantics
+
+- Change: migrations and the compatibility-map component now hide decorative refresh, loading, verification, branch, topology, finding and proof icons from the accessibility tree. Existing review-only guards, repository selection, retry, empty and verification states are unchanged.
+- Files: `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/components/dashboard/compatibility-map.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; combined dashboard data-state and accessibility-route suites passed 25/25 in 51.5 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-migrations-map-artifacts.Yh0ye0`.
+- Scope: local migrations/compatibility accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
 
 - Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.

@@ -173,7 +173,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
       <div className="flex flex-col justify-between gap-4 border-b border-[#E8E8E5] pb-4 sm:flex-row sm:items-center">
         <div>
           <h3 className="flex items-center gap-2 text-sm font-semibold text-[#111111]">
-            <Layers className="h-4 w-4 text-purple-700" />Compatibility topology
+            <Layers aria-hidden="true" className="h-4 w-4 text-purple-700" />Compatibility topology
           </h3>
           <p className="mt-0.5 text-xs text-[#686868]">Integrations and findings from the latest completed repository scan</p>
         </div>
@@ -181,7 +181,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
           {repositories.map((repository) => (
             <button key={repository.id} type="button" aria-label={`Show compatibility for ${repository.name}`} aria-pressed={selectedRepoId === repository.id} onClick={() => setSelectedRepoId(repository.id)}
               className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-colors ${selectedRepoId === repository.id ? "border-[#111111] bg-white font-semibold text-[#111111]" : "border-[#E8E8E5] bg-white text-[#686868] hover:text-[#111111]"}`}>
-              <GitBranch className="h-3.5 w-3.5 text-zinc-400" />
+              <GitBranch aria-hidden="true" className="h-3.5 w-3.5 text-zinc-400" />
               <span className="font-mono text-[11px]">{repository.name}</span>
               {repository.latestScanStatus === "failed"
                 ? <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -190,7 +190,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
           ))}
           <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Refresh compatibility map"
             className="rounded-lg border border-[#E8E8E5] bg-white p-2 text-[#686868] disabled:opacity-50">
-            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw aria-hidden="true" className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
@@ -202,7 +202,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
           <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">Selected repository</div>
           <div className="space-y-1">
             <Link href={`/dashboard/repositories/${currentRepo.id}`} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-[#111111] hover:text-purple-700">
-              {currentRepo.name}<ArrowUpRight className="h-3.5 w-3.5 text-zinc-400" />
+              {currentRepo.name}<ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 text-zinc-400" />
             </Link>
             <div className="font-mono text-[11px] text-[#686868]">{currentRepo.fullName}</div>
           </div>
@@ -237,7 +237,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
                   <div key={integration.provider} className={`space-y-1 rounded-xl border p-3 ${currentRepo.openFindingCount > 0 && currentRepo.findings.some((finding) => finding.provider === integration.provider && (finding.status === "open" || finding.status === "affected")) ? "border-[#F8D7DA] bg-[#FDF2F2]" : reviewed ? "border-[#C6E1FA] bg-[#EBF3FC]" : "border-[#E8E8E5] bg-white"}`}>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-semibold text-[#111111]">{providerName}</span>
-                      <CheckCircle2 className={`h-3.5 w-3.5 ${reviewed ? "text-blue-600" : "text-zinc-400"}`} />
+                      <CheckCircle2 aria-hidden="true" className={`h-3.5 w-3.5 ${reviewed ? "text-blue-600" : "text-zinc-400"}`} />
                     </div>
                     <div className="flex items-center justify-between gap-1 text-[11px] text-[#686868]">
                       <span title={getRegistryCoverageDescription()}>{getRegistryCoverageLabel(integration.reviewedChangeCount)}</span>
@@ -266,7 +266,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
 
       {currentRepo.latestCompletedScan && currentRepo.findings.length > 0 && (
         <div className="space-y-2 rounded-xl border border-[#E8E8E5] bg-white p-4">
-          <div className="flex items-center gap-2 font-semibold text-[#111111]"><AlertTriangle className="h-3.5 w-3.5 text-amber-600" />Findings and linked migration state</div>
+          <div className="flex items-center gap-2 font-semibold text-[#111111]"><AlertTriangle aria-hidden="true" className="h-3.5 w-3.5 text-amber-600" />Findings and linked migration state</div>
           {currentRepo.findings.map((finding) => (
             <div key={finding.id} className="flex flex-col justify-between gap-2 border-t border-[#E8E8E5] pt-2 sm:flex-row sm:items-center">
               <Link href={`/dashboard/findings/${finding.id}`} className="min-w-0 text-[#111111] hover:text-purple-700">
@@ -284,7 +284,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
 
       {currentRepo.compatibilityProofs && currentRepo.compatibilityProofs.length > 0 && (
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-white p-4">
-          <div className="flex items-center gap-2 font-semibold text-[#111111]"><ShieldCheck className="h-3.5 w-3.5 text-purple-700" />Repository-bound compatibility proofs</div>
+          <div className="flex items-center gap-2 font-semibold text-[#111111]"><ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-purple-700" />Repository-bound compatibility proofs</div>
           {currentRepo.compatibilityProofs.map((proof) => (
             <div key={proof.changeId} className="space-y-1 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] p-3">
               <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium text-[#111111]">{proof.changeTitle ?? proof.changeId}</span><StatusPill status={proofStatusVariant(proof.status)} label={proof.status} /></div>
