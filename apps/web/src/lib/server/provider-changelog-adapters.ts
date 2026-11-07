@@ -98,7 +98,7 @@ export type ProviderChangelogChange = {
 
 export type ParserRejection = {
   readonly provider: LaunchProvider;
-  readonly reason: 'missing_identifier' | 'unsupported_change' | 'invalid_date';
+  readonly reason: 'missing_identifier' | 'unsupported_change' | 'invalid_date' | 'contradictory_evidence';
   readonly excerpt: string;
   readonly locator: string;
 };
@@ -125,6 +125,8 @@ type ParseDecision =
   | { readonly kind: 'reject'; readonly reason: ParserRejection['reason'] };
 
 const LIFECYCLE_RE = /\b(?:breaking change|deprecated|deprecation|sunset|retired|retirement|removed|removal|shutdown|end[- ]of[- ]support|no longer supported|will be removed)\b/i;
+const SEMANTIC_CHANGE_RE = /\b(?:behavior|behaviour|semantics|meaning|contract)\b.{0,160}\bchanged\b|\bchange(?:d|s)?\s+in\s+(?:behavior|behaviour|semantics|meaning|contract)\b/i;
+const CONTRADICTORY_SUPPORT_RE = /\b(?:not|never)\s+(?:being\s+)?(?:removed|deprecated|retired|sunset)|\b(?:removal|deprecation|retirement)\s+(?:was\s+)?cancelled\b|\b(?:remains?|continues?)\s+(?:fully\s+)?supported\b/i;
 const DATE_RE = /\b(?:20\d{2}[-/]\d{1,2}[-/]\d{1,2}|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2})\b/i;
 const CODE_RE = /`([^`]+)`/g;
 const ENDPOINT_RE = /(?<![@A-Za-z0-9_.-])\/(?:v\d+(?:\.\d+)?\/)?[A-Za-z0-9_.:{}-]+(?:\/[A-Za-z0-9_.:{}-]+){0,8}/g;
@@ -267,8 +269,16 @@ function sourceResult(provider: LaunchProvider, input: string, options: Provider
   const rejected: ParserRejection[] = [];
   const seen = new Set<string>();
   for (const [index, block] of toTextBlocks(input).entries()) {
-    if (!qualifies(block)) continue;
+    if (!qualifies(block) && !SEMANTIC_CHANGE_RE.test(block)) continue;
     const locator = `entry-${index + 1}`;
+    if (CONTRADICTORY_SUPPORT_RE.test(block) && LIFECYCLE_RE.test(block)) {
+      rejected.push({ provider, reason: 'contradictory_evidence', excerpt: block.slice(0, 500), locator });
+      continue;
+    }
+    if (SEMANTIC_CHANGE_RE.test(block)) {
+      rejected.push({ provider, reason: 'unsupported_change', excerpt: block.slice(0, 500), locator });
+      continue;
+    }
     const decision = decide(block);
     if (decision.kind === 'reject') {
       rejected.push({ provider, reason: decision.reason, excerpt: block.slice(0, 500), locator });

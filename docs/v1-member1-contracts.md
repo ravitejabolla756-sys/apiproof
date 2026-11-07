@@ -31,6 +31,13 @@ This document records backend contracts that require coordination with Member 2.
 - Resolution evidence is immutable and idempotent per migration/scan. `resolved` requires absence from a completed exact-commit scan; `unresolved` means the finding remains; `regressed` means it reappears after a prior verified state; `ambiguous` protects a matching active change; `inconclusive` covers missing baseline evidence. No classification grants merge or deployment authority.
 - Draft PRs remain review-only; no auto-merge contract exists.
 
+## Provider change classification (PROV-05)
+
+- Candidate and compatibility evidence remains review-gated. A source parser must preserve the provider, source URL, excerpt and locator when it rejects a record; it must not convert contradictory support/removal claims or unsupported semantic-change prose into a reviewed removal.
+- A compatibility record scoped to `resource` or `api_version` cannot be classified `NOT_AFFECTED` when the corresponding usage evidence is absent. The result is `NEEDS_REVIEW` with an explicit unresolved reason (`RESOURCE_UNRESOLVED` or `API_VERSION_UNRESOLVED`).
+- Renamed/removed targets, version ranges and semantic parameter conditions remain deterministic only when the provider, target and version evidence are affirmative. Dynamic, low-confidence, contradictory or incomplete evidence remains `NEEDS_REVIEW`.
+- Cross-provider evidence is isolated by provider identity; a usage from another provider cannot satisfy a reviewed change. These rules are locally tested and are not production/provider-freshness proof.
+
 ### MIG-01 AI recommendation boundary
 
 - The production planning route currently uses `DeterministicPlanner` only. It constructs a bounded, redacted `PlanningInput` from the reviewed provider registry, exact finding location, scan evidence and source digest, then persists a human-review-required plan; it does not modify source code.

@@ -162,7 +162,7 @@ describe('OpenAI Assistants explicit local human review', () => {
     expect(conversations.status).toBe('NOT_AFFECTED');
     expect(unrelatedResource.status).toBe('NOT_AFFECTED');
     expect(dynamic.status).toBe('NEEDS_REVIEW');
-    expect(dynamic.reasonCodes).toContain('NO_AFFIRMATIVE_USAGE_MATCH');
+    expect(dynamic.reasonCodes).toContain('RESOURCE_UNRESOLVED');
     expect(dynamic.evidenceCoverage).toBe('partial');
 
     const unrelatedProviderUsage = normalizedUsage({ id: 'anthropic-resource', providerId: 'anthropic', resource: 'Messages API' });
@@ -196,7 +196,7 @@ describe('OpenAI Assistants explicit local human review', () => {
     expect(proofs.map((proof) => proof?.status)).toEqual(outcomes.map((outcome) => outcome.status));
     expect(proofs.every((proof) => proof?.changeId === CHANGE_ID && proof.reviewStatus === 'reviewed' && proof.provenance === 'official')).toBe(true);
     expect(proofs[0]).toMatchObject({ exactFile: 'src/assistants-api.ts', exactLine: 18, exactSymbol: 'Assistants API' });
-    expect(proofs[3]).toMatchObject({ status: 'NEEDS_REVIEW', exactFile: null, exactLine: null, recommendedNextAction: 'MANUAL_REVIEW' });
-    expect(proofs[3]?.reasonCodes).toContain('NO_AFFIRMATIVE_USAGE_MATCH');
+    expect(proofs[3]).toMatchObject({ status: 'NEEDS_REVIEW', exactFile: 'src/wrapper.ts', exactLine: 40, recommendedNextAction: 'MANUAL_REVIEW' });
+    expect(proofs[3]?.reasonCodes).toContain('RESOURCE_UNRESOLVED');
   });
 });

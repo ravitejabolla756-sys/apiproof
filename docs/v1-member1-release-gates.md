@@ -9,6 +9,7 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 | Dependency vulnerabilities | PASS (high/critical) | `pnpm audit --prod --audit-level=high` exits 0 after patched dependency updates; four moderate advisories remain (three Nodemailer, one minimatch) and require risk disposition |
 | Security headers and exact-origin CORS | PASS (local) | Middleware tests cover protected API responses, approved/denied preflight, CSP, HSTS-on-HTTPS and OAuth-compatible popup policy; staging/browser smoke remains not tested |
 | Scanner accuracy benchmark | PASS (curated) | `pnpm scanner:accuracy`: 24 fixtures, six supported adapters, TP 18/TN 6/FP 0/FN 0, precision/recall/version accuracy 1.0; limitations are explicit |
+| Breaking-change classification | PASS (local) | PROV-05 compatibility/changelog, provider-registry, human-review and rescan suites pass 66/66; contradictory support/removal and semantic-change prose remain review-only with source evidence, and incomplete resource/API-version evidence remains `NEEDS_REVIEW` |
 | Database source access inventory | PASS (local only) | `docs/v1-member1-db-access-matrix.md` inventories 40 tables and records RLS decisions, intended roles, catalog queries and blocked PostgreSQL isolation tests |
 | PostgreSQL tenant isolation / RLS | BLOCKED | No approved production/staging role access; local SQLite tests are insufficient |
 | PostgreSQL least-privilege grants | BLOCKED | No approved role/grant read-back environment |
@@ -38,11 +39,12 @@ Last updated: 2026-11-07. This is a checklist, not a production approval.
 - `pnpm build`: PASS; Next.js 15.5.29, 63 static pages generated.
 - Targeted backend/security tests: PASS, 7 files / 58 tests.
 - Full `pnpm test` with process-scoped `APIPROOF_LOCAL_SEED_PASSWORD`: PASS, 157 passed files / 1 skipped (158 total); 1,327 passed tests / 4 skipped (1,331 total).
+- Current PROV-05 seeded full-suite rerun: NOT_COMPLETE; the process remained active after bounded waiting and was stopped without an aggregate result. No full-suite pass is claimed for this checkpoint.
 - IMP-09 focused regression suites: PASS, 3 files / 46 tests (`finding-lifecycle`, `proposal-recovery`, `phase4-async-scan-worker`); lifecycle acceptance includes transitions, duplicate/conflicting idempotency keys, concurrent retries, tenant mismatch, regression reopen and completed-scan evidence.
 - PR-07/PR-08 focused regression suites: PASS, 3 files / 38 tests (`github-pull-request-webhook`, `finding-lifecycle`, `phase4-async-scan-worker`); coverage includes merge-SHA deduplication, missing-SHA rejection, persisted merge linkage, resolution classifications and idempotent evidence.
 - The deterministic fixture stabilization uses repository-owned synthetic source for offline scan/verification tests plus committed LF rules for `evaluation/` and `evaluation-patches/`; no arbitrary local checkout is analyzed.
 
 ## Approval boundaries not crossed
 
-- No production deployment, migration, DB write, live billing, real email, secret rotation, GitHub setting change, or remote push was performed.
+- No production deployment, migration, DB write, live billing, real email, secret rotation, GitHub setting change, merge, or pull request was performed. The previously authorized development backup push created `origin/codex/v1-backend-security`; no production system was touched.
 - Any live/staging gate above marked `BLOCKED` requires explicit owner authorization and external access before it can be verified.

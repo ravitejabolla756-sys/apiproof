@@ -3,14 +3,14 @@
 Last updated: 2026-11-07
 Workstream: `codex/v1-backend-security`
 Worktree: `C:\YC-my-owl-v1-member1`
-Baseline: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8` (`origin/main`)
+Reviewed baseline: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8`; current refreshed `origin/main`: `2d63d80d8a5c64f7f4547f70f7e0e0598d60f194`
 
 ## Phase 0 preflight
 
 - The authoritative repository is `C:\YC-my-owl-v1`; its remote is `https://github.com/ravitejabolla756-sys/apiproof.git`.
 - The original worktree remains untouched and has 238 pre-existing status entries. It is on `codex/my-owl-v1-development` at the same baseline commit.
-- Member 1 work is isolated in this clean worktree, created directly from the reviewed baseline. No dirty files, staging history, or other worktree changes were copied.
-- `HEAD...origin/main` is `0 0` (same commit). The workstream branch has no upstream tracking branch yet; no push was performed.
+- Member 1 work is isolated in this worktree, created directly from the reviewed baseline. The original and Member 2 worktrees remain separate.
+- At the start of this continuation, `HEAD...origin/main` was `15 4`: the feature branch retains its reviewed work while `origin/main` has advanced independently. The approved backup branch exists remotely at `882b0200eac913bd0eb08f5e7921250b90d0e73e`.
 - Package manager: pnpm 10.30.3; repository requires Node >=22.14.0 and pnpm >=10 <11.
 - Architecture: Next.js web app with direct PostgreSQL/SQLite adapters, workspace-scoped services, CLI/core/analyzer/provider packages, GitHub and Slack integrations, and durable worker tables.
 - Production and staging credentials were not used. No production DB, GitHub settings, payment provider, email service, deployment, secret, or live data was changed.
@@ -24,7 +24,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 | AUTH-05 | PARTIAL | Migration 024, `email-verification.ts`, `POST /api/auth` `verify_email`/authenticated `resend_email_verification`, `/verify-email` page; `tests/email-verification.test.ts`: 8/8 pass; Google/GitHub provider-verified accounts persist `email_verified_at` | Approve Member 2 template/provider contract and define/enforce the full unverified-account action policy; live delivery remains gated |
 | AUTH-10 | PARTIAL | Existing auth/OAuth/recovery coverage plus `tests/email-verification.test.ts` 8/8: digest-at-rest, expiry, replay, resend invalidation, delivery cleanup, safe UI/API responses, rate-limit path and migration idempotency | Add central verified-user enforcement and concurrent PostgreSQL verification evidence |
 | SCAN-12 | DONE_VERIFIED | `evaluation/scanner-accuracy-{fixtures,benchmark,cli}.ts`, `tests/scanner-accuracy-benchmark.test.ts`; `pnpm scanner:accuracy` and 2 benchmark tests pass: 24 fixtures, TP 18/TN 6/FP 0/FN 0, precision/recall/version accuracy 1.0 | Curated corpus limitations are documented; add representative samples only as scope expands |
-| PROV-05 | PARTIAL | `packages/providers/src/candidate-review.ts`, `packages/providers/src/compatibility-registry.ts`, `tests/provider-changelog-adapters.test.ts` | Add adversarial/contradictory evidence classification tests |
+| PROV-05 | DONE_VERIFIED_LOCAL | `packages/analyzers/src/typescript/compatibility.ts` now keeps missing resource/API-version evidence at `NEEDS_REVIEW`; changelog parsing rejects contradictory support/removal claims and semantic-change prose with source excerpt/locator evidence; focused compatibility/changelog tests pass 27/27 and provider-review regressions pass 30/30 | Production/source freshness and live provider behavior remain unverified; no automatic promotion is allowed |
 | IMP-09 | DONE_VERIFIED_LOCAL | `finding-lifecycle.ts`, migration 025, scan/plan/PR integrations, `tests/finding-lifecycle.test.ts`: 5/5 plus proposal-recovery/async-worker regression suites 46/46 | Live PostgreSQL migration/RLS and post-merge GitHub evidence remain unverified |
 | MIG-01 | PARTIAL_EXTERNAL_BLOCKED | `planning-service.ts` uses bounded `DeterministicPlanner`; core `LLMPlanner`/`validateModelOutput` provide a tested future-adapter boundary; `tests/planning.test.ts` covers valid/invalid model output, provider failure and deterministic fallback | No approved production model/provider, credentials, structured-output/cost/retry contract or runtime adapter; keep web route deterministic-only |
 | PR-07 | DONE_VERIFIED_LOCAL | `github-webhooks.ts`, `github-merge-scan.ts`, `github-pull-request-webhook.test.ts`: 13/13; authentic merged PRs persist merge SHA, queue one durable scan request/scan per effective commit, and tolerate duplicate/missing-SHA delivery paths | Live GitHub App auth, permissions, out-of-order delivery and worker execution remain unverified |
@@ -54,7 +54,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 Phase 0 read-only checks:
 
 - `git rev-parse --show-toplevel`, `git worktree list --porcelain`, `git status --short`, `git remote -v`: passed; identity and dirty-worktree inventory recorded above.
-- `git rev-list --left-right --count HEAD...origin/main`: `0 0`.
+- `git rev-list --left-right --count HEAD...origin/main`: `15 4` at the refreshed checkpoint; the feature branch is ahead by its reviewed commits while `origin/main` has advanced independently.
 - `pnpm audit --prod --audit-level=high`: PASS after remediation; four moderate advisories remain at the `moderate` threshold and are not suppressed.
 - Codebase-memory full index: 7,140 nodes / 17,829 edges; five dashboard files have parse-partial ranges and are not used as authoritative backend evidence.
 
@@ -77,10 +77,18 @@ Phase 0 read-only checks:
 - AUTH-05 local backend/UI flow: PASS, 8 verification tests plus Google/GitHub OAuth suites; real SMTP delivery and final account enforcement are not claimed.
 - PR-07/PR-08 local flow: PASS, webhook/worker/lifecycle regression suites pass; merge SHA is stored on the PR, exact-commit scan work is deduplicated, and resolution evidence records `resolved`, `unresolved`, `regressed`, `ambiguous` or `inconclusive` without auto-merge authority.
 
+## PROV-05 implementation checkpoint
+
+- Changed files: `packages/analyzers/src/typescript/compatibility.ts`, `apps/web/src/lib/server/provider-changelog-adapters.ts`, `tests/compatibility-engine.test.ts`, and `tests/provider-changelog-adapters.test.ts`.
+- Compatibility evidence is now conservative for incomplete required resource and API-version dimensions: dynamic/low-confidence absent values are `uncertain`, emit `RESOURCE_UNRESOLVED` or `API_VERSION_UNRESOLVED`, and retain their source location; affirmative static evidence still preserves established non-applicability classification.
+- Source parsing now retains contradictory lifecycle prose as `contradictory_evidence` rejection evidence and retains semantic-change prose as `unsupported_change` review-only evidence instead of manufacturing a removal classification.
+- Acceptance evidence: focused compatibility/changelog, provider-registry, human-review and rescan suites — 6 files / 66 tests passed; `pnpm typecheck`, targeted ESLint and `pnpm build` passed; `git diff --check` passed. An environment-corrected full `pnpm test` run was started but stopped after bounded waiting without an aggregate result; it is not claimed as a pass.
+- This is local development evidence only. It does not promote candidates, change the production registry, or establish live provider accuracy.
+
 ## Current checkpoint
 
 - Changed files: three Phase 0 artifacts, four dependency/lockfile files, `.env.example`, security headers/middleware/tests, CSRF validation/tests, scanner benchmark files, deterministic fixture-source changes, `.gitattributes`, the production-route test contract, the database access matrix, AUTH-05 schema/service/API/UI/OAuth/test files, and IMP-09 lifecycle/migration/adapter/worker integration files.
-- Completed tasks: `SCAN-12`, `SEC-08`, `SEC-09`, `PR-07`, and `PR-08` are locally verified. `SEC-01`/`SEC-02`, `SEC-04`, `AUTH-05`, `IMP-09`, and the PR live gates remain limited by external PostgreSQL, GitHub App and approved email/enforcement contracts where noted above.
+- Completed tasks: `SCAN-12`, `PROV-05`, `SEC-08`, `SEC-09`, `PR-07`, and `PR-08` are locally verified; `IMP-09` remains locally verified with live gates open. `SEC-01`/`SEC-02`, `SEC-04`, `AUTH-05`, and the PR live gates remain limited by external PostgreSQL, GitHub App and approved email/enforcement contracts where noted above.
 - Release status: `NO-GO` while external PostgreSQL, billing, backup, monitoring, branch-protection and staging gates remain unresolved.
-- Next safe task: run the full suite against the IMP-09 checkpoint, then continue with the next unblocked task while retaining the external PostgreSQL, email and provider gates.
-- Last verified implementation commit before the current uncommitted PR-07/PR-08 changes: `5d8af75`; the implementation remains isolated and unpushed pending final commit review.
+- Next safe task: rerun the full suite in a dedicated verification window, then define the ORG-05/ORG-10 contract handoff before implementing any member-removal route.
+- Remote status: existing development backup is at `origin/codex/v1-backend-security` (`882b0200eac913bd0eb08f5e7921250b90d0e73e`); current PROV-05 changes are local and uncommitted pending review.

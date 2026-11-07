@@ -97,6 +97,19 @@ describe('provider changelog adapters', () => {
     expect(first.rejected).toEqual([{ provider: 'stripe', reason: 'missing_identifier', excerpt: '2027-09-01 breaking change: an unspecified endpoint is removed.', locator: 'entry-1' }]);
   });
 
+  it('rejects contradictory support/removal claims instead of creating an overconfident change', () => {
+    const result = parseStripeChangelog('<article><p>2027-09-10: the <code>/v1/coupons</code> endpoint is removed.</p><p>The endpoint remains supported and the removal was cancelled.</p></article>');
+    expect(result.changes).toHaveLength(0);
+    expect(result.rejected).toEqual([expect.objectContaining({ reason: 'contradictory_evidence', locator: 'entry-1' })]);
+    expect(result.rejected[0]?.excerpt).toContain('/v1/coupons');
+  });
+
+  it('retains semantic changes as review-only rejections', () => {
+    const result = parseOpenAiChangelog('<p>2027-09-11: the behavior of <code>chat.completions.create</code> has changed.</p>');
+    expect(result.changes).toHaveLength(0);
+    expect(result.rejected).toEqual([expect.objectContaining({ reason: 'unsupported_change', locator: 'entry-1' })]);
+  });
+
   it('ignores stable prose without a lifecycle notice and does not invent identifiers', () => {
     const result = parseAwsChangelog('<p>AWS SDK for JavaScript v3 is supported and current.</p>');
     expect(result.changes).toHaveLength(0);
