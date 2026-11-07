@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 provider-rule filter keyboard semantics
+
+- Change: Extended the provider-rule review empty-filter journey to focus the priority control, activate it with Enter, verify `aria-pressed`, then restore all candidates through the keyboard-accessible recovery action.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused provider-rule filter journey passed 1/1 in 14.7 seconds with an axe-clean filtered-empty state. Artifacts: `/tmp/myowl-v1-provider-rule-filter-keyboard-artifacts`.
+- Scope: local UI-12 keyboard/accessibility evidence only; provider-rule publishing, backend contracts, hosted CI, integrated staging, full screen-reader review and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 repository filter regression
 
 - Change: Rebuilt the web bundle and ran the complete committed browser matrix after the responsive and keyboard repository-filter change.

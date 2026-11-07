@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Provider-rule filter keyboard semantics
+
+- PASS: Focused provider-rule filter journey passed 1/1 in 14.7 seconds with keyboard focus, Enter activation, `aria-pressed` state, axe-clean filtered-empty feedback and keyboard recovery.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Provider publishing, hosted CI, integrated staging, full manual assistive-technology review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Full repository-filter regression
 
 - PASS: Rebuilt-bundle CI-mode Playwright suite passed 92/92 in 2.7 minutes on isolated SQLite `/tmp/myowl-v1-repository-filter-full.db`; the run includes repository responsive/keyboard filter recovery and all prior auth, organization, billing-boundary, findings, PR/workflow, degraded-state and accessibility journeys. Production build generated 83 static pages.
