@@ -292,15 +292,17 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       VALUES
         ('sr_metrics_pending', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_1', 'main', 'pending', 1, NULL, ?),
         ('sr_metrics_stalled', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_2', 'main', 'processing', 3, ?, ?),
-        ('sr_metrics_exhausted', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_3', 'main', 'failed', 3, NULL, ?)
-    `, [old, staleLease, old, old]);
+        ('sr_metrics_legacy_stalled', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_3', 'main', 'processing', 0, NULL, ?),
+        ('sr_metrics_legacy_active', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_4', 'main', 'processing', 0, NULL, ?),
+        ('sr_metrics_exhausted', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_5', 'main', 'failed', 3, NULL, ?)
+    `, [old, staleLease, old, old, '2026-11-07T11:58:00.000Z', old]);
 
     const metrics = await getScanWorkerMetrics(now);
 
     expect(metrics.oldestPendingAt).toBe(old);
     expect(metrics.oldestPendingAgeMs).toBe(15 * 60 * 1000);
     expect(metrics.retryingJobs).toBe(2);
-    expect(metrics.stalledProcessingJobs).toBe(1);
+    expect(metrics.stalledProcessingJobs).toBe(2);
     expect(metrics.retryExhaustedJobs).toBe(2);
   });
 
