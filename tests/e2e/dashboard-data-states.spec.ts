@@ -50,6 +50,18 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/provider-rules');
   });
 
+  test('announces Slack connection failures as alerts', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/slack/connection', async (route) => {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Slack status is unavailable.' }) });
+    });
+    await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
+    const slackAlert = page.getByRole('alert').filter({ hasText: 'Slack status is unavailable.' });
+    await expect(slackAlert).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'Slack connection error state').toEqual([]);
+    await page.unroute('**/api/slack/connection');
+  });
+
   test('shows recoverable errors instead of false empty states', async ({ page }) => {
     await signIn(page);
 

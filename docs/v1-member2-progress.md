@@ -229,3 +229,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; focused dashboard state journey PASS — 1/1; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
 - Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-12 Slack/settings state announcements
+
+- Change: Slack connection checks now announce their loading state, and the workspace settings error banner is an alert; added focused browser/axe coverage for Slack connection failure.
+- Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; focused Slack failure journey PASS — 1/1; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
+- Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
