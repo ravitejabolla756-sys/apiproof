@@ -92,13 +92,20 @@ describe('workspace read route role validation', () => {
     }
 
     await db.execute('UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?', ['owner-like', workspace.id, user.id]);
+    await db.execute(`
+      INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
+      VALUES ('role_personal_activity', ?, NULL, 'account_updated', 'Personal activity', 'Own account event', ?)
+    `, [user.id, now]);
     for (const route of routes) {
       const response = await route.get(new Request(route.url, {
         headers: { cookie: `apiproof_session=${session.id}` },
       }));
       expect(response.status, route.url).toBe(200);
       const payload = await response.json() as Record<string, unknown[]>;
-      expect(payload[route.key], route.url).toHaveLength(0);
+      expect(payload[route.key], route.url).toHaveLength(route.key === 'activities' ? 1 : 0);
+      if (route.key === 'activities') {
+        expect(payload.activities![0]).toMatchObject({ id: 'role_personal_activity' });
+      }
     }
   });
 });
