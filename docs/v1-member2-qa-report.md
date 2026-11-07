@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Repository picker keyboard recovery
+
+- PASS: Complete repository-connection modal suite passed 3/3 in 22.9 seconds; filtered-empty recovery now verifies focus and Enter activation of “Clear filter,” alongside connected-empty, disconnected, axe and Escape coverage.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 modal evidence only. GitHub activation, hosted CI, integrated staging, full manual assistive-technology review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Provider-rule filter keyboard semantics
 
 - PASS: Focused provider-rule filter journey passed 1/1 in 14.7 seconds with keyboard focus, Enter activation, `aria-pressed` state, axe-clean filtered-empty feedback and keyboard recovery.

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 repository picker keyboard recovery
+
+- Change: Extended the connected GitHub repository picker’s filtered-empty journey to focus “Clear filter,” activate it with Enter, and verify that the repository choice returns; existing dialog axe and disconnected/empty-state assertions remain unchanged.
+- Evidence: Targeted ESLint and `git diff --check` passed; complete repository-connection modal suite passed 3/3 in 22.9 seconds. Artifacts: `/tmp/myowl-v1-connect-repo-keyboard-artifacts`.
+- Scope: local UI-12 modal keyboard/recovery evidence only; no GitHub activation/reconfiguration, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 provider-rule filter keyboard semantics
 
 - Change: Extended the provider-rule review empty-filter journey to focus the priority control, activate it with Enter, verify `aria-pressed`, then restore all candidates through the keyboard-accessible recovery action.
