@@ -240,24 +240,17 @@ export async function recordWorkspaceUsage(
   const db = getDatabase();
   const sub = await getWorkspaceSubscription(workspaceId);
   const now = new Date().toISOString();
+  const id = `use_${crypto.randomBytes(12).toString('hex')}`;
 
-  // Upsert usage record
-  const existing = await db.queryOne<{ id: string; count: number }>(`
-    SELECT id, count FROM workspace_usage
-    WHERE workspace_id = ? AND metric = ? AND period_start = ?
-  `, [workspaceId, metric, sub.currentPeriodStart]);
-
-  if (existing) {
-    await db.execute(`
-      UPDATE workspace_usage SET count = count + 1, updated_at = ? WHERE id = ?
-    `, [now, existing.id]);
-  } else {
-    const id = `use_${crypto.randomBytes(12).toString('hex')}`;
-    await db.execute(`
-      INSERT INTO workspace_usage (id, workspace_id, metric, period_start, period_end, count, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 1, ?, ?)
-    `, [id, workspaceId, metric, sub.currentPeriodStart, sub.currentPeriodEnd, now, now]);
-  }
+  // A single statement makes concurrent usage increments atomic on SQLite and
+  // PostgreSQL. The unique period key is present in both supported schemas.
+  await db.execute(`
+    INSERT INTO workspace_usage (id, workspace_id, metric, period_start, period_end, count, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+    ON CONFLICT (workspace_id, metric, period_start) DO UPDATE
+    SET count = workspace_usage.count + 1,
+        updated_at = excluded.updated_at
+  `, [id, workspaceId, metric, sub.currentPeriodStart, sub.currentPeriodEnd, now, now]);
 }
 
 export async function processBillingWebhookEvent(event: BillingWebhookEvent): Promise<{ success: boolean; duplicate: boolean }> {

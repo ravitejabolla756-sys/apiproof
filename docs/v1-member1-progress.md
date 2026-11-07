@@ -297,3 +297,8 @@ Phase 0 read-only checks:
 - Boundary regressions cover over-limit streamed requests and BOM-prefixed signed input. Billing provider boundary and foundation suites pass 23/23; targeted ESLint and full workspace `pnpm typecheck` pass. BILL-03 remains PARTIAL until an approved provider adapter and sandbox delivery/signature proof are available.
 
 - SEC-16 accounting regression: throughput now reflects started operations when timeouts prevent later iterations from starting; regression test passes. Repeat local measurements (24 operations, concurrency 4) recorded in `docs/sec16-local-measurements.md`; keep those observations separate from SLO or staging evidence.
+
+### 2026-11-08 BILL-04 atomic usage increments
+
+- Replaced the usage counter read-then-update/insert path with one `INSERT ... ON CONFLICT ... DO UPDATE` statement using the existing workspace/metric/period unique key. This removes the lost-update and duplicate-insert window for concurrent usage recording across SQLite and PostgreSQL adapters.
+- Added a 40-way concurrent scan-usage regression that verifies both the final count and a single persisted bucket. Billing foundation plus webhook boundary suites pass 24/24; targeted ESLint and full workspace `pnpm typecheck` pass. PostgreSQL concurrency has not been exercised against a real PostgreSQL instance; provider event mapping and lifecycle reconciliation remain external/contract gates.

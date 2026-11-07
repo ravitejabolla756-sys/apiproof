@@ -79,6 +79,23 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(summaryB.metrics.scans.current).toBe(0);
   });
 
+  it('increments a workspace usage bucket atomically under concurrent writes', async () => {
+    const user = await createUserAsync('billing-concurrent-usage@apiproof.test', 'Pass123!#$', 'Concurrent Usage');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const increments = 40;
+
+    await Promise.all(Array.from({ length: increments }, () => recordWorkspaceUsage(workspace.id, 'scans')));
+
+    const summary = await getWorkspaceUsageSummary(workspace.id);
+    expect(summary.metrics.scans.current).toBe(increments);
+    const rows = await getDatabase().query<{ metric: string; count: number }>(
+      'SELECT metric, count FROM workspace_usage WHERE workspace_id = ? AND metric = ?',
+      [workspace.id, 'scans'],
+    );
+    expect(rows).toHaveLength(1);
+    expect(Number(rows[0]?.count)).toBe(increments);
+  });
+
   // -------------------------------------------------------------------------
   // TEST 2: Usage Counting & Scoping
   // -------------------------------------------------------------------------
