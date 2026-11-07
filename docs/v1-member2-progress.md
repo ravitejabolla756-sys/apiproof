@@ -250,3 +250,10 @@ Statuses are current baseline findings, not completion claims.
 - Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; focused workspace settings failure/retry journey PASS — 1/1 with axe coverage; route accessibility audit PASS — 5/5 across desktop, 390px mobile and 768px tablet routes.
 - Scope: no backend/shared contract changed; full assistive-technology review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.
+
+## 2026-11-07 checkpoint — UI-13 full committed CI matrix
+
+- Change: the GitHub Actions browser job now runs every committed `tests/e2e` spec with the same serial, 300-second configuration used for deterministic local CI-mode evidence, plus an isolated SQLite path and explicit E2E test mode. Artifact retention remains 14 days.
+- Files: `.github/workflows/ci.yml`.
+- Evidence: `pnpm --filter @apiproof/web build` PASS with 83 generated static pages; CI-mode local production-build browser run `CI=1 NODE_ENV=test APIPROOF_E2E_TEST_MODE=true APIPROOF_DB_PATH=.tmp/playwright-ci-current.db APIPROOF_LOCAL_SEED_PASSWORD=ci-local-seed-password-only-for-tests pnpm exec playwright test tests/e2e --workers=1 --timeout=300000` PASS — 41/41 in 54.3 seconds; CI YAML parse PASS.
+- Remaining limitation: the hosted GitHub Actions job and integrated staging remain NOT_RUN; no remote Git or production operation was performed.

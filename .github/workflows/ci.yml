@@ -68,6 +68,8 @@ jobs:
       NODE_ENV: test
       APIPROOF_SECRET: ci-test-apiproof-secret-minimum-32-chars-long
       APIPROOF_LOCAL_SEED_PASSWORD: ci-local-seed-password-only-for-tests
+      APIPROOF_E2E_TEST_MODE: "true"
+      APIPROOF_DB_PATH: .tmp/playwright-ci.db
 
     steps:
       - name: Checkout repository
@@ -94,7 +96,7 @@ jobs:
         run: pnpm --filter @apiproof/web build
 
       - name: Run browser E2E
-        run: pnpm exec playwright test tests/e2e/public-site.spec.ts
+        run: pnpm exec playwright test tests/e2e --workers=1 --timeout=300000
 
       - name: Upload browser artifacts
         if: ${{ always() }}
