@@ -493,6 +493,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; combined dashboard data-state and accessibility-route suites passed 25/25 in 51.1 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-compatibility-a11y-artifacts.Lc0L3P`.
 - Scope: local compatibility-route accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 repository and finding detail semantics
+
+- Change: repository-detail scan controls, branch metadata, verification states and finding-detail lifecycle, traversal and safety icons now hide decorative artwork from the accessibility tree. Existing live progress, recovery, verification and review actions are unchanged.
+- Files: `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; focused finding-workbench and repository-recovery journeys passed 2/2 in 3.6 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-detail-routes-artifacts.iZLnPI`.
+- Scope: local detail-route accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
 
 - Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.

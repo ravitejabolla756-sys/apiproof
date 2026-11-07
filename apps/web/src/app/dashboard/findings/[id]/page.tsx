@@ -312,7 +312,7 @@ export default function FindingDetailPage({
             }`}>
               <div className="flex items-center justify-between pb-1">
                 <span className="font-semibold text-emerald-950 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                   1. Detected
                 </span>
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
@@ -335,7 +335,7 @@ export default function FindingDetailPage({
               <div className="flex items-center justify-between pb-1">
                 <span className={`font-semibold flex items-center gap-1.5 ${currentStep >= 2 ? 'text-emerald-950' : 'text-purple-950'}`}>
                   {currentStep >= 2 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-purple-600 flex items-center justify-center text-[10px] font-bold text-purple-700">2</div>
                   )}
@@ -367,7 +367,7 @@ export default function FindingDetailPage({
               <div className="flex items-center justify-between pb-1">
                 <span className={`font-semibold flex items-center gap-1.5 ${currentStep >= 3 ? 'text-emerald-950' : 'text-zinc-700'}`}>
                   {currentStep >= 3 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-zinc-400 flex items-center justify-center text-[10px] font-bold text-zinc-600">3</div>
                   )}
@@ -403,14 +403,14 @@ export default function FindingDetailPage({
               <div className="font-mono text-purple-700 font-semibold">{finding.change_id}</div>
             </div>
 
-            <ArrowRight className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
+            <ArrowRight aria-hidden="true" className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
 
             <div className="w-full md:w-auto p-3 rounded-xl bg-white border border-[#E8E8E5] space-y-0.5">
               <div className="text-[10px] text-[#686868] font-semibold">2. Target Symbol</div>
               <div className="font-mono text-blue-700 font-semibold">{finding.symbol}</div>
             </div>
 
-            <ArrowRight className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
+            <ArrowRight aria-hidden="true" className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
 
             <div className="w-full md:w-auto p-3 rounded-xl bg-white border border-[#E8E8E5] space-y-0.5">
               <div className="text-[10px] text-[#686868] font-semibold">3. Repository Call Site</div>
@@ -419,7 +419,7 @@ export default function FindingDetailPage({
               </div>
             </div>
 
-            <ArrowRight className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
+            <ArrowRight aria-hidden="true" className="w-4 h-4 text-zinc-400 hidden md:block shrink-0" />
 
             <div className="w-full md:w-auto p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">
               <div className="text-[10px] text-emerald-800 font-semibold">4. Detector Confidence</div>
@@ -606,7 +606,7 @@ export default function FindingDetailPage({
           {/* VERIFICATION CONTRACT CARD */}
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <ShieldCheck aria-hidden="true" className="w-4 h-4 text-emerald-600" />
               Safety & Verification Invariants
             </h3>
 
@@ -614,7 +614,7 @@ export default function FindingDetailPage({
               <div className="p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-emerald-950">Draft-Only Policy</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                 </div>
                 <div className="text-[11px] text-emerald-800">Direct merges & auto-merges are strictly blocked.</div>
               </div>
@@ -622,7 +622,7 @@ export default function FindingDetailPage({
               <div className="p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-emerald-950">Isolated Branch Target</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                 </div>
                 <div className="text-[11px] text-emerald-800">Default branch protected from automatic writes.</div>
               </div>
@@ -630,7 +630,7 @@ export default function FindingDetailPage({
               <div className="p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-emerald-950">Patch Scope Enforcement</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                 </div>
                 <div className="text-[11px] text-emerald-800">Critical files (.env, workflows, package configs) protected.</div>
               </div>
@@ -638,7 +638,7 @@ export default function FindingDetailPage({
               <div className="p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-emerald-950">Canonical Digest Verification</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
                 </div>
                 <div className="text-[11px] text-emerald-800 font-mono truncate">
                   {migration?.patch_digest ? `SHA256: ${migration.patch_digest.slice(0, 16)}...` : 'Computed prior to write.'}

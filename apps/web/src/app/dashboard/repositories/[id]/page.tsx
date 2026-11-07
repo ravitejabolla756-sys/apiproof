@@ -120,7 +120,7 @@ export default function RepositoryDetailPage({
   if (loading) {
     return (
       <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading repository details...</span>
       </div>
     );
@@ -170,7 +170,7 @@ export default function RepositoryDetailPage({
               <span>{repo.full_name}</span>
               <span>·</span>
               <span className="flex items-center gap-1">
-                <GitBranch className="w-3.5 h-3.5 text-purple-700" /> {repo.default_branch}
+                <GitBranch aria-hidden="true" className="w-3.5 h-3.5 text-purple-700" /> {repo.default_branch}
               </span>
               <span>·</span>
               <span>GitHub ID: {repo.github_repository_id}</span>
@@ -182,7 +182,7 @@ export default function RepositoryDetailPage({
               size="sm"
               variant="outline"
               onClick={loadData}
-              icon={<RefreshCw className="w-3.5 h-3.5" />}
+              icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
               className="text-xs font-medium"
             >
               Refresh
@@ -195,9 +195,9 @@ export default function RepositoryDetailPage({
               className="gap-1.5 text-xs font-medium"
             >
               {scanning ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Play className="w-3.5 h-3.5" />
+                <Play aria-hidden="true" className="w-3.5 h-3.5" />
               )}
               <span>{scanning ? "Analyzing AST..." : "Run AST Scan"}</span>
             </Button>
@@ -217,13 +217,13 @@ export default function RepositoryDetailPage({
                 : "bg-emerald-50 text-emerald-700 border-emerald-200"
             }`}>
               {scanning ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin" />
               ) : scans.length === 0 ? (
                 <FileCode className="w-4 h-4" />
               ) : scans[0]?.status === "failed" ? (
                 <AlertTriangle className="w-4 h-4" />
               ) : (
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 aria-hidden="true" className="w-4 h-4" />
               )}
             </div>
 
@@ -261,9 +261,9 @@ export default function RepositoryDetailPage({
               className="gap-1.5 text-xs font-medium"
             >
               {scanning ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Play className="w-3.5 h-3.5" />
+                <Play aria-hidden="true" className="w-3.5 h-3.5" />
               )}
               <span>{scanning ? "Analyzing AST..." : scans[0]?.status === "failed" ? "Retry Scan" : "Run AST Scan"}</span>
             </Button>
@@ -284,7 +284,7 @@ export default function RepositoryDetailPage({
             {message.error ? (
               <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
             )}
             <span>{message.text}</span>
           </div>
