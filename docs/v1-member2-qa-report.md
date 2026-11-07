@@ -8,6 +8,8 @@ Updated implementation report; browser checks are local evidence only and are no
 - PASS: Targeted ESLint, `git diff --check`, and production build passed; build generated 83 static pages. The impeccable anti-pattern detector returned no findings for the changed sidebar.
 - Scope: local ORG-02/UI-12 evidence only. Hosted CI, staging, PostgreSQL/RBAC, Member 1 contracts, provider integrations, transactional email and production remain unverified or blocked by the master goal.
 
+- Fresh current-tree seeded Vitest regression: PASS, 1,340 tests across 161 files, 1 skipped file, and 4 skipped tests in 100.82 seconds.
+
 ## 2026-11-08 — Provider-rule load recovery
 
 - PASS: Rebuilt-bundle CI-mode Playwright suite passed 86/86, including the provider-rule initial-load recovery journey; focused journey passed 1/1 with an axe-clean alert and no false empty-queue status.

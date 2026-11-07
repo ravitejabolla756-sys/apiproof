@@ -12,6 +12,8 @@ Current HEAD: `73f1b66` (`codex/v1-frontend-product`)
 - Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; rebuilt web production bundle passed with 83 generated pages; focused browser recovery journey passed 1/1 in 2.7 seconds with an axe-clean alert; rebuilt-bundle CI-mode full Playwright suite passed 87/87 in 1.5 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-workspace-switch-recovery-artifacts`, `/tmp/myowl-v1-full-workspace-switch-recovery-artifacts`.
 - Scope: local ORG-02/UI-12 state and recovery evidence only; PostgreSQL/RBAC, Member 1 contracts, remote Git, staging, production, payment and email actions remain untouched.
 
+- Fresh current-tree seeded regression after this checkpoint: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 files, with 1 skipped file and 4 skipped tests, in 100.82 seconds.
+
 ## 2026-11-08 checkpoint — NOT-03/UI-12 provider-rule load recovery
 
 - Change: Provider-rule review now distinguishes an unavailable initial rule collection from a genuine empty queue, exposes a keyboard-operable Retry provider rules action, and suppresses the false empty-queue status while the collection is unavailable.
