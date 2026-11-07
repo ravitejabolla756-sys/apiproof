@@ -115,7 +115,7 @@ export default function FindingsListPage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadFindings()} />}
 
       {/* FILTER & SEARCH */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <label htmlFor="findings-search" className="sr-only">Search findings</label>
@@ -129,8 +129,8 @@ export default function FindingsListPage() {
           />
         </div>
 
-          <div className="flex items-center gap-3">
-          <div role="group" aria-label="Filter by severity" className="flex items-center gap-1.5">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <div role="group" aria-label="Filter by severity" className="flex flex-wrap items-center gap-1.5">
             <span className="text-[#686868]">Severity:</span>
             {["all", "critical", "high"].map((sev) => (
               <button
@@ -138,7 +138,7 @@ export default function FindingsListPage() {
                 type="button"
                 onClick={() => setSeverityFilter(sev)}
                 aria-pressed={severityFilter === sev}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
+                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   severityFilter === sev
                     ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
                     : "bg-transparent text-[#686868] border-transparent hover:text-[#111111]"
@@ -149,7 +149,7 @@ export default function FindingsListPage() {
             ))}
           </div>
 
-          <div role="group" aria-label="Filter by provider" className="flex items-center gap-1.5">
+          <div role="group" aria-label="Filter by provider" className="flex flex-wrap items-center gap-1.5">
             <span className="text-[#686868]">Provider:</span>
             {providerOptions.map((prov) => (
               <button
@@ -157,7 +157,7 @@ export default function FindingsListPage() {
                 type="button"
                 onClick={() => setProviderFilter(prov)}
                 aria-pressed={providerFilter === prov}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
+                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   providerFilter === prov
                     ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
                     : "bg-transparent text-[#686868] border-transparent hover:text-[#111111]"
