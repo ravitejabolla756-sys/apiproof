@@ -181,7 +181,10 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
   const origin = req.headers.get('origin');
   const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
 
-  if (origin && host) {
+  if (origin) {
+    if (!host) {
+      return { valid: false, error: 'Forbidden: Request host is unavailable.' };
+    }
     try {
       const originHost = new URL(origin).host;
       if (originHost !== host) {
@@ -190,7 +193,7 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
     } catch {
       return { valid: false, error: 'Forbidden: Invalid Origin header.' };
     }
-  } else if (!origin && !isTest) {
+  } else if (!isTest) {
     const referer = req.headers.get('referer');
     if (!referer) {
       return { valid: false, error: 'Forbidden: Origin or Referer header is required.' };
