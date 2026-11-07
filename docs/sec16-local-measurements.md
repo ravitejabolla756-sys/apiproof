@@ -16,3 +16,8 @@ Host: Node `v24.14.1`, Windows `10.0.26300`, Intel Core Ultra 5 125H, 18 logical
 | Scan-worker queue metrics | 1.19 | 3.53 | 4.61 | 2,150.48 | 4 |
 
 The run passed all 4 SEC-16 tests. Separate deterministic scenarios verified transient recovery within three attempts, exhaustion at the configured retry limit, and injected operation failures with sanitized error reporting. These values are a single local regression baseline, not an SLO or a capacity claim; host load and SQLite scheduling affect timing. Staging load, provider/database infrastructure behavior, operational thresholds, and worker-death recovery remain separately gated.
+
+## 2026-11-08 SEC-16 throughput accounting correction
+
+- When a timeout stopped the harness from starting remaining iterations, `throughputPerSecond` still divided requested iterations by elapsed duration. The metric now uses actual started operations, and the timeout regression verifies the numerator reflects `started` rather than `iterations`.
+- A repeat of `pnpm exec vitest run tests/sec16-load-resilience.test.ts --reporter=dot` passes 9/9. The emitted run measured 24 operations per scenario at concurrency 4: API health p50/p95 0.59/4.83 ms; GitHub webhook p50/p95 5.08/6.69 ms; SQLite SELECT p50/p95 0.052/0.085 ms; queue metrics p50/p95 0.32/0.74 ms. These are local single-run observations; they vary by host load and are not SLOs. ESLint and full workspace typecheck pass. Staging infrastructure and failure-recovery rehearsal remain unverified.

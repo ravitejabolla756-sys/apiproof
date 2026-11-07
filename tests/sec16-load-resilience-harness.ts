@@ -157,7 +157,7 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
     succeeded,
     failed,
     durationMs,
-    throughputPerSecond: durationMs === 0 ? 0 : (options.iterations / durationMs) * 1_000,
+    throughputPerSecond: durationMs === 0 ? 0 : (started / durationMs) * 1_000,
     maxInFlight,
     latencyMs: {
       min: sortedLatencies[0] ?? 0,

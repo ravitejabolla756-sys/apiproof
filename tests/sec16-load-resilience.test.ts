@@ -281,5 +281,6 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
       maxInFlight: 1,
       errors: { OPERATION_TIMEOUT: 1 },
     });
+    expect(report.throughputPerSecond).toBeCloseTo((report.started / report.durationMs) * 1_000, 8);
   });
 });

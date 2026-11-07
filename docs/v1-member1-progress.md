@@ -295,3 +295,5 @@ Phase 0 read-only checks:
 
 - The billing webhook route now enforces the 256 KiB ceiling while reading the request stream, before buffering the complete payload. It rejects malformed/oversized Content-Length values, cancels an over-limit stream, and uses strict UTF-8 decoding while preserving the exact signed bytes for HMAC verification.
 - Boundary regressions cover over-limit streamed requests and BOM-prefixed signed input. Billing provider boundary and foundation suites pass 23/23; targeted ESLint and full workspace `pnpm typecheck` pass. BILL-03 remains PARTIAL until an approved provider adapter and sandbox delivery/signature proof are available.
+
+- SEC-16 accounting regression: throughput now reflects started operations when timeouts prevent later iterations from starting; regression test passes. Repeat local measurements (24 operations, concurrency 4) recorded in `docs/sec16-local-measurements.md`; keep those observations separate from SLO or staging evidence.
