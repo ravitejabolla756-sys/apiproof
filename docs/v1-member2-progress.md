@@ -502,6 +502,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: repository search found no remaining link/button nesting in `apps/web/src/app` or `apps/web/src/components`; targeted ESLint and repository typecheck passed; CI-mode accessibility route audit passed 5/5 and control-semantics coverage passed 1/1 in 28.9 seconds.
 - Scope: local accessibility correctness only; full screen-reader/manual review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-13 nested-interactive regression guard
+
+- Change: added a browser regression over dashboard overview, findings, migrations, pull requests and repositories that fails if links/buttons/forms become nested interactive descendants.
+- Files: `tests/e2e/control-semantics.spec.ts`.
+- Evidence: targeted ESLint passed; fresh-database CI-mode control-semantics suite passed 2/2 in 3.9 seconds.
+- Scope: local UI-13/UI-12 regression protection only; hosted CI, integrated staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

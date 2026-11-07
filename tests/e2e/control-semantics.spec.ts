@@ -26,3 +26,13 @@ test('dashboard interactive controls expose explicit button semantics', async ({
   await expect(page.getByRole('button', { name: 'Expand owl' })).toHaveAttribute('aria-expanded', 'false');
   await page.unroute('**/api/repositories');
 });
+
+test('audited dashboard routes do not nest interactive elements', async ({ page }) => {
+  await signIn(page);
+  for (const route of ['/dashboard', '/dashboard/findings', '/dashboard/migrations', '/dashboard/pull-requests', '/dashboard/repositories']) {
+    await page.goto(route);
+    await expect(page.locator('main#main-content')).toBeVisible();
+    const nestedInteractiveCount = await page.locator('a button, a input, a select, a textarea, button a, button input, button select, button textarea, [role="link"] [role="button"], [role="button"] [role="link"]').count();
+    expect(nestedInteractiveCount, `${route} contains nested interactive elements`).toBe(0);
+  }
+});
