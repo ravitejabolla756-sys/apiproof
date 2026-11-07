@@ -457,6 +457,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-13 axe-compatible collapsed brand label
+
+- Change: the collapsed-sidebar brand link now includes the rendered `MY OWLv0.7` text in its accessible name, satisfying axe label-content-name-mismatch while retaining the dashboard purpose; the dedicated regression assertion was updated accordingly.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/sidebar-brand-accessibility.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; dedicated brand/public-site subset passed 27/27; rebuilt-bundle CI-mode full Playwright suite passed 70/70 in 8.5 minutes on `/tmp/myowl-v1-full-brand-final.db`. Artifacts: `/tmp/myowl-v1-full-brand-final-artifacts.v2LhDb`.
+- Scope: local UI-13 and accessibility evidence only; hosted CI, staging, manual assistive-technology and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-13 cumulative browser regression after dashboard accessibility audit
 
 - Evidence: fresh explicit SQLite database `/tmp/myowl-v1-full-cumulative-a11y.db`; rebuilt-bundle CI-mode Playwright suite passed 69/69 in 1.5 minutes after the cumulative dashboard route, detail, shared-component and sidebar accessibility changes. Artifacts were retained at `/tmp/myowl-v1-full-cumulative-artifacts.uFwc8A`.
