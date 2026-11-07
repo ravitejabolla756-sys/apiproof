@@ -477,6 +477,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: focused ESLint PASS; web typecheck PASS; rebuilt web production build PASS with 83 generated pages; focused finding action journey PASS 1/1; full rebuilt-bundle Playwright suite PASS 67/67 on `/tmp/myowl-v1-full-finding-verification-a11y.db`.
 - Scope: this advances local UI-12/UI-13 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 provider-rule sample result semantics
+
+- Change: provider-rule sample-test results now announce through an atomic polite status region; review controls and source/action icons explicitly hide decorative SVGs from assistive technology.
+- Regression: the provider-rule priority journey now submits a fixture sample and verifies the announced matching-occurrence result and live-region attributes.
+- Evidence: focused ESLint PASS; web typecheck PASS; rebuilt web production build PASS with 83 generated pages; focused provider-rule journey PASS 1/1; full rebuilt-bundle Playwright suite PASS 67/67 on `/tmp/myowl-v1-full-provider-sample-status.db`.
+- Scope: this advances local UI-12/UI-13 evidence only. Full screen-reader/manual review, hosted CI, integrated staging and production verification remain open; no backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository scan-state semantics
 
 - Change: the repository detail scan summary now exposes the current scan state as an atomic polite live region; decorative scan-state and section icons are hidden from assistive technology; scan-history column headers now declare `scope="col"`.

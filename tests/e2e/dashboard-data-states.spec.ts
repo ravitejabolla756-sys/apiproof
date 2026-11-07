@@ -159,6 +159,16 @@ test.describe('authenticated dashboard data states', () => {
     await expect(p0).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByRole('heading', { name: 'P0 candidate' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'P1 candidate' })).toHaveCount(0);
+    await page.route('**/api/provider-rules/candidate-p0/test', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ matches: [{ token: 'fixture', line: 1, snippet: 'fixture()' }] }) });
+    });
+    await page.getByLabel('Sample code for P0 candidate').fill('fixture()');
+    await page.getByRole('button', { name: 'Test sample' }).click();
+    const sampleResult = page.getByRole('status').filter({ hasText: '1 matching occurrence(s)' });
+    await expect(sampleResult).toBeVisible();
+    await expect(sampleResult).toHaveAttribute('aria-live', 'polite');
+    await expect(sampleResult).toHaveAttribute('aria-atomic', 'true');
+    await page.unroute('**/api/provider-rules/candidate-p0/test');
     await page.unroute('**/api/provider-rules');
   });
 
