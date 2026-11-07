@@ -51,6 +51,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - The deterministic fixture stabilization uses repository-owned synthetic source for offline scan/verification tests plus committed LF rules for `evaluation/` and `evaluation-patches/`; no arbitrary local checkout is analyzed.
 - 2026-11-08 repository-connect authorization regression: PASS, `repositories-list-route` 5/5 with the required process-only SQLite seed; full `pnpm typecheck` and targeted ESLint pass. Cross-tenant membership denial is generic 403 and creates no repository row. This is local SQLite evidence, not PostgreSQL/RLS verification.
 - 2026-11-08 SEC-16 harness label-bound regression: PASS, `sec16-load-resilience` 6/6; targeted ESLint and full `pnpm typecheck` pass. Scenario labels are bounded before execution; local workload measurements are not staging capacity or SLO evidence.
+- SEC-16 local-only boundary regression: PASS, `sec16-load-resilience` now 7/7; production mode and configured remote database URLs are rejected before workload invocation. Targeted ESLint passes.
 
 ## Approval boundaries not crossed
 

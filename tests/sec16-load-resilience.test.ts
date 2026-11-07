@@ -171,6 +171,31 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     expect(operationCalled).toBe(false);
   });
 
+  it('refuses production mode and configured remote databases before invoking work', async () => {
+    let operationCalled = false;
+    const scenario = {
+      name: 'safety-boundary',
+      iterations: 1,
+      concurrency: 1,
+      operation: () => { operationCalled = true; },
+    };
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousDatabaseUrl = process.env.DATABASE_URL;
+    try {
+      process.env.NODE_ENV = 'production';
+      await expect(runLocalLoadScenario(scenario)).rejects.toThrow('SEC16_LOCAL_ONLY');
+      process.env.NODE_ENV = 'test';
+      process.env.DATABASE_URL = 'postgres://example.invalid/local-safety-test';
+      await expect(runLocalLoadScenario(scenario)).rejects.toThrow('SEC16_LOCAL_ONLY');
+      expect(operationCalled).toBe(false);
+    } finally {
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+      if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+      else process.env.DATABASE_URL = previousDatabaseUrl;
+    }
+  });
+
   it('injects deterministic operation failures and reports only bounded error codes', async () => {
     const report = await runLocalLoadScenario({
       name: 'injected-local-api-failure',

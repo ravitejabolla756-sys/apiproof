@@ -196,3 +196,4 @@ Phase 0 read-only checks:
 - Local load scenario labels are now restricted to a lowercase alphanumeric/hyphen identifier of at most 64 characters before any workload runs, preventing arbitrary or unbounded text from entering stored measurement reports.
 - Added rejection coverage for secret-like and overlong names, including proof that the operation callback is not invoked. SEC-16 harness tests pass 6/6; targeted ESLint and full `pnpm typecheck` pass. A local measurement run also completed for the four existing in-process workloads; its timings are environment-specific and do not establish SLOs.
 - SEC-16 remains PARTIAL pending approved staging scenarios and agreed SLO/recovery evidence.
+- Added a local-only guard regression proving production mode and a configured remote database URL are rejected before an operation callback runs; the SEC-16 harness suite now passes 7/7 with ESLint passing.
