@@ -192,7 +192,6 @@ test.describe('authenticated product surfaces', () => {
         body: JSON.stringify({ preferences: [{ category: 'findings', channel: 'slack', enabled: false, required: false, deliveryAvailable: true }] }),
       });
     });
-
     await page.goto('/dashboard/settings/notifications');
     const findingsSlack = page.getByLabel('Breaking findings via slack');
     await expect(findingsSlack).toBeChecked();
@@ -513,7 +512,6 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' })).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/account');
   });
-
   test('renders notification loading and error states safely', async ({ page }) => {
     await signIn(page);
     let releasePreferences: (() => void) | undefined;
@@ -544,8 +542,8 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('table')).toHaveCount(0);
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 });
-    expect(requestCount).toBeGreaterThanOrEqual(2);
-    expect(requestCount).toBeLessThanOrEqual(3);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
+    expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3);
     await page.unroute('**/api/account/notifications');
   });
 });
