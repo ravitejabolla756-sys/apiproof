@@ -1,6 +1,24 @@
 import { expect, test } from '@playwright/test';
+import { signIn } from './helpers.js';
 
 test.describe('authentication loading announcements', () => {
+  test('announces dashboard session validation failure', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/auth', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Session validation unavailable.' }) });
+        return;
+      }
+      await route.continue();
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const sessionAlert = page.getByRole('alert').filter({ hasText: 'We could not validate your session.' });
+    await expect(sessionAlert).toBeVisible();
+    await expect(sessionAlert).toHaveAttribute('aria-live', 'assertive');
+    await expect(sessionAlert).toHaveAttribute('aria-atomic', 'true');
+    await page.unroute('**/api/auth');
+  });
+
   test('announces login, reset-request and password-reset submission progress', async ({ page }) => {
     let releaseLogin: (() => void) | undefined;
     const loginPending = new Promise<void>((resolve) => { releaseLogin = resolve; });
