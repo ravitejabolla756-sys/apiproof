@@ -710,6 +710,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: fresh audit confirmed branch `codex/v1-frontend-product`; repository-wide `pnpm lint` passed with zero warnings and `pnpm typecheck` passed across all workspaces plus the test TypeScript project.
 - Scope: local static-quality evidence only; hosted CI, integrated staging, manual assistive technology and production verification remain open.
 
+## 2026-11-07 checkpoint — seeded full Vitest regression
+
+- Evidence: with `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password`, `pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 test files, with 4 skipped tests and 1 skipped file, in 117.85 seconds.
+- Scope: local SQLite/contract regression evidence only; PostgreSQL, hosted CI, external providers and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
