@@ -1,6 +1,6 @@
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
 
-export type NotificationCategory = 'security' | 'account' | 'findings' | 'migration' | 'provider_change' | 'weekly_digest';
+export type NotificationCategory = 'security' | 'account' | 'findings' | 'scan_failure' | 'migration' | 'provider_change' | 'weekly_digest';
 export type NotificationChannel = 'email' | 'slack';
 
 export interface NotificationPreference {
@@ -16,6 +16,8 @@ const DEFAULTS: Array<{ category: NotificationCategory; channel: NotificationCha
   { category: 'account', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
   { category: 'findings', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
   { category: 'findings', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
+  { category: 'scan_failure', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
+  { category: 'scan_failure', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
   { category: 'migration', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
   { category: 'migration', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
   { category: 'provider_change', channel: 'email', enabled: false, required: false, deliveryAvailable: false },

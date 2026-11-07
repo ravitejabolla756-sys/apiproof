@@ -6,7 +6,7 @@ import { ArrowLeft, Bell, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Preference { category: string; channel: 'email' | 'slack'; enabled: boolean; required: boolean; deliveryAvailable: boolean; }
-const LABELS: Record<string, string> = { security: 'Security alerts', account: 'Account and recovery', findings: 'Breaking findings', migration: 'Migration proposal outcomes', provider_change: 'Provider change alerts', weekly_digest: 'Weekly digest' };
+const LABELS: Record<string, string> = { security: 'Security alerts', account: 'Account and recovery', findings: 'Breaking findings', scan_failure: 'Scan failures', migration: 'Migration proposal outcomes', provider_change: 'Provider change alerts', weekly_digest: 'Weekly digest' };
 
 export default function NotificationSettingsPage() {
   const [preferences, setPreferences] = useState<Preference[]>([]);

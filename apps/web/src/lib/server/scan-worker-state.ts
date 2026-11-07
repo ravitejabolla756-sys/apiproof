@@ -73,6 +73,18 @@ export async function markScanWorkerJobFailed(
         last_error_category = ?, last_error_message = ?
     WHERE id = ? AND status = 'processing'
   `, [nextStatus, category, safeMessage, job.id]);
+  if (nextStatus === 'failed') {
+    try {
+      const { enqueueScanFailureNotification } = await import('./slack-scan-failure-notifications.js');
+      await enqueueScanFailureNotification(job.id, db);
+    } catch (notificationError) {
+      logger.warn('scan_failure_notification_enqueue_failed', {
+        scanRequestId: job.id,
+        repositoryId: job.repository_id,
+        category: notificationError instanceof Error ? notificationError.message.match(/\b[A-Z][A-Z0-9_]{3,}\b/)?.[0] ?? 'NOTIFICATION_ENQUEUE_FAILED' : 'NOTIFICATION_ENQUEUE_FAILED',
+      });
+    }
+  }
   logger.error('scan_worker_job_failed', {
     scanRequestId: job.id,
     repositoryId: job.repository_id,

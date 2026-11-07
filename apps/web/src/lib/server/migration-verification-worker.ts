@@ -7,6 +7,7 @@ import { probeDockerVerificationRuntime } from './verification-worker-runtime.js
 import { processOneSlackInteractionJob } from './slack-interactions.js';
 import { processOneSlackNotificationDelivery } from './slack-notifications.js';
 import { processOneSlackProviderChangeDelivery } from './slack-provider-change-notifications.js';
+import { processOneSlackScanFailureDelivery } from './slack-scan-failure-notifications.js';
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { processRepositoryRescans } from './repository-rescan-worker.js';
 
@@ -144,6 +145,8 @@ export async function runVerificationWorker(options: { workerId: string; pollInt
       catch (error) { logger.warn('slack_notification_dispatch_failed', { workerId, category: failureCategory(error) }); }
       try { processed = await processOneSlackProviderChangeDelivery(workerId) || processed; }
       catch (error) { logger.warn('slack_provider_change_dispatch_failed', { workerId, category: failureCategory(error) }); }
+      try { processed = await processOneSlackScanFailureDelivery(workerId) || processed; }
+      catch (error) { logger.warn('slack_scan_failure_dispatch_failed', { workerId, category: failureCategory(error) }); }
       // Approved provider rules and scheduled repository jobs are dispatched by
       // the same trusted worker as migration verification. The cron endpoint
       // remains the enqueue/fallback path, while this drain removes the

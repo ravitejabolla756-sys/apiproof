@@ -12,6 +12,7 @@ import { providerChangeMonitorMigrations } from './provider-change-monitor-migra
 import { organizationMigrations } from './organization-migration.js';
 import { notificationMigrations } from './notification-migration.js';
 import { emailDeliveryMigrations } from './email-delivery-migration.js';
+import { scanFailureNotificationMigrations } from './scan-failure-notification-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
 export const migrations: Migration[] = [
@@ -486,6 +487,7 @@ export const migrations: Migration[] = [
   ...organizationMigrations,
   ...notificationMigrations,
   ...emailDeliveryMigrations,
+  ...scanFailureNotificationMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {
