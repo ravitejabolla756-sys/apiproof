@@ -472,6 +472,11 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: with `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password`, `pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 passing test files, with 4 skipped tests and 1 skipped file, in 113.56 seconds.
 - Scope: local SQLite/contract regression evidence only; PostgreSQL, hosted CI, external providers, staging, manual screen-reader review and production verification remain open.
 
+## 2026-11-07 checkpoint — WEB-15 current production-build performance probe
+
+- Evidence: after the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load times were 10–29 ms, response times 2–8 ms, and encoded HTML sizes 5.9–16.9 KiB over loopback.
+- Scope: reproducible local performance evidence only; this is not Lighthouse/Core Web Vitals, public-network, staging or production evidence. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 repository connection dialog semantics
 
 - Change: the repository connection modal now hides decorative status, provider, repository-type, branch and action icons from the accessibility tree, and announces the in-progress GitHub authorization handoff through a polite live region. Existing focus trapping, Escape dismissal and repository connection behavior are unchanged.
