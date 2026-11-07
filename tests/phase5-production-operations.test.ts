@@ -171,6 +171,17 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(parsed.message).toContain('[REDACTED]');
   });
 
+  it('preserves known operational error categories while redacting token-like values', () => {
+    const formatted = formatLogEntry('warn', 'Slack delivery failed', {
+      category: 'SLACK_API_TOKEN_REVOKED',
+      providerError: 'token-1234567890',
+    });
+    const parsed = JSON.parse(formatted) as { context: Record<string, string> };
+
+    expect(parsed.context.category).toBe('SLACK_API_TOKEN_REVOKED');
+    expect(parsed.context.providerError).toBe('[REDACTED]');
+  });
+
   // -------------------------------------------------------------------------
   // TEST 4: Health check route
   // -------------------------------------------------------------------------
