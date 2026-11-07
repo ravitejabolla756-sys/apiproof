@@ -653,6 +653,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed; authentication/loading suite passed 4/4.
 - Scope: local auth-entry semantics only; provider delivery, manual assistive technology, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12/ORG-03 verification and invitation failures
+
+- Change: added browser coverage for missing verification tokens and expired invitation acceptance; both states expose assertive errors, retain a clear sign-in recovery path, and do not claim success.
+- Files: `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: targeted ESLint passed; auth-entry state suite passed 2/2 with axe-clean main content in both journeys.
+- Scope: local auth/invitation state evidence only; approved email delivery, manual assistive technology, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.
