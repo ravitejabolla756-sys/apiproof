@@ -3,7 +3,14 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `c8a5782` (`codex/v1-frontend-product`)
+Current HEAD: `27ca454` (`codex/v1-frontend-product`)
+
+## 2026-11-08 checkpoint — UI-12 compatibility-map refresh recovery
+
+- Change: When an already-loaded compatibility map refresh fails, the inline assertive alert now exposes a keyboard-operable, explicitly named Retry compatibility map refresh action; retry clears the transient error and preserves the loaded repository view without changing the API contract.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/compatibility-map-recovery.spec.ts`.
+- Evidence: Impeccable anti-pattern detector returned no findings; targeted ESLint and `git diff --check` passed; web typecheck passed; rebuilt web production bundle passed with 83 generated pages; focused browser recovery journey passed 1/1 in 2.8 seconds with an axe-clean refresh alert; rebuilt-bundle CI-mode full Playwright suite passed 85/85 in 1.5 minutes on a fresh SQLite database. Artifacts: `/tmp/myowl-v1-compatibility-recovery-artifacts`, `/tmp/myowl-v1-full-compatibility-recovery-artifacts`.
+- Scope: local UI-12 recovery hardening only; no backend/shared contract, provider, remote Git, staging, production, payment or email action was performed.
 
 ## 2026-11-08 checkpoint — UI-12 account settings load recovery
 
