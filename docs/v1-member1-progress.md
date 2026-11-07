@@ -255,6 +255,11 @@ Phase 0 read-only checks:
 - Added a negative regression for an unknown persisted role at the GitHub App installation callback. It verifies generic 403 denial before provider verification or installation persistence, and leaves the one-time callback state unconsumed for safe retry after an authorized repair.
 - All current `getDefaultWorkspaceForUser` API callers map expected authorization errors. The only API route that directly calls `requireWorkspaceMember`/`requireWorkspaceOwner` without the shared mapper now has explicit denial coverage. This is SQLite-local evidence only; ORG-05 remains PARTIAL pending Member 2's approved role contract and PostgreSQL/RLS verification.
 
+### 2026-11-08 ORG-05 workspace read-route role filters
+
+- Direct membership joins in `/api/activity`, `/api/findings`, `/api/migrations`, and `/api/pull-requests` now accept only the existing `owner`, `admin`, or `member` role values. Unknown persisted roles cannot read workspace records; personal activity without a repository remains available to its originating user.
+- SQLite integration coverage exercises all four routes with each approved role and an unknown role. The combined read-route/activity suite passes 19/19; targeted ESLint and full `pnpm typecheck` pass. This does not establish PostgreSQL/RLS isolation or change the role grants; ORG-05 remains PARTIAL pending Member 2's approved capability contract and PostgreSQL verification.
+
 ### 2026-11-08 SEC-13 legacy stalled-job metrics
 
 - Queue stalled-job metrics now count both expired leases and legacy processing rows without leases once their creation timestamp passes the same five-minute safety threshold used by worker recovery. A recent lease-less processing row is excluded.

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
-import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle';
+import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     JOIN repositories r ON r.id = m.repository_id
     LEFT JOIN pull_requests pr ON pr.migration_id = m.id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE wm.user_id = ? AND wm.role IN ('owner', 'admin', 'member') AND r.lifecycle = 'active'
     ORDER BY m.created_at DESC
   `, [user.id]);
 
