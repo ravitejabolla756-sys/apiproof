@@ -295,7 +295,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
           )}
 
           {loadingRepos ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
+            <div role="status" aria-live="polite" className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
               <Loader2 className="w-6 h-6 animate-spin text-purple-700" />
               <span className="text-xs">Loading available repositories...</span>
             </div>

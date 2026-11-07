@@ -143,7 +143,7 @@ export default function SettingsPage() {
             </div>
 
             {loading ? (
-              <div className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
+              <div role="status" aria-live="polite" className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
                 <Loader2 className="w-4 h-4 animate-spin text-purple-700" />
                 <span>Loading workspace billing summary...</span>
               </div>
