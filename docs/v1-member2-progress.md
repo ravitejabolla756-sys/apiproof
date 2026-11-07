@@ -472,6 +472,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; CI-mode repository-recovery journey passed 1/1 in 2.3 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-repositories-icons-artifacts.wiTob5`.
 - Scope: local repository-list accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-07 checkpoint — UI-12 findings and provider coverage icon semantics
+
+- Change: findings and provider-coverage routes now hide decorative heading, loading, empty-state, search, refresh and external-source icons from the accessibility tree. Existing loading, empty, error, filtering and provider-source link behavior is unchanged.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/providers/page.tsx`.
+- Evidence: targeted ESLint passed with `--max-warnings 0`; web typecheck passed; CI-mode dashboard data-state suite passed 16/16 in 15.2 seconds. Playwright artifacts were retained at `/tmp/myowl-v1-findings-providers-artifacts.Rhd6V4`.
+- Scope: local findings/provider accessibility evidence only; manual screen-reader, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-07 checkpoint — UI-12 table and compatibility empty-state semantics
 
 - Change: the public security matrix and authenticated repository table now expose explicit `scope="col"` headers; repository loading artwork is decorative; the empty compatibility map is an atomic polite status region and its retry icon is decorative.

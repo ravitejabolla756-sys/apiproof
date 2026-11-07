@@ -123,7 +123,7 @@ export default function ProvidersPage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
 
       {error ? null : loading ? (
-        <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]"><Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
+        <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]"><Loader2 aria-hidden="true" className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
       ) : !data ? (
         <div className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">Provider coverage is temporarily unavailable.</div>
       ) : data.providers.length === 0 ? (
@@ -182,7 +182,7 @@ export default function ProvidersPage() {
                 {data.providers.map((provider) => (
                   <tr key={provider.providerId} className="border-b border-[#F0F0ED] last:border-0">
                     <td className="px-5 py-4"><div className="font-semibold text-[#111111]">{provider.providerName}</div><div className="font-mono text-[10px] text-[#686868]">{provider.providerId}</div></td>
-                    <td className="px-5 py-4"><div className="flex items-center gap-2"><CoverageBadge tone="slate">Configured</CoverageBadge><SourceHealthBadge status={provider.sourceHealth.status} /><a href={provider.sourceUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.providerName} official source`}><ExternalLink className="h-3.5 w-3.5 text-purple-700" /></a></div><div className="mt-1 text-[10px] text-[#686868]">{provider.sourceType}</div></td>
+                    <td className="px-5 py-4"><div className="flex items-center gap-2"><CoverageBadge tone="slate">Configured</CoverageBadge><SourceHealthBadge status={provider.sourceHealth.status} /><a href={provider.sourceUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.providerName} official source`}><ExternalLink aria-hidden="true" className="h-3.5 w-3.5 text-purple-700" /></a></div><div className="mt-1 text-[10px] text-[#686868]">{provider.sourceType}</div></td>
                     <td className="px-5 py-4"><ParserBadge status={provider.sourceHealth.parserStatus} /></td>
                     <td className="px-5 py-4"><div className="font-semibold text-[#111111]">{provider.reviewedRuleCount}</div><div className="text-[10px] text-[#686868]">{provider.candidateCount} candidates</div></td>
                     <td className="px-5 py-4">{provider.scannerCoverage === 'reviewed-rules' ? <CoverageBadge tone="green">Reviewed rules</CoverageBadge> : <CoverageBadge tone="amber">Review needed</CoverageBadge>}</td>

@@ -92,7 +92,7 @@ export default function FindingsListPage() {
       <div className="border-b border-[#E8E8E5] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-            <AlertTriangle className="w-6 h-6 text-rose-600" />
+            <AlertTriangle aria-hidden="true" className="w-6 h-6 text-rose-600" />
             API Compatibility Findings
           </h1>
           <p className="text-xs text-[#686868] mt-1">
@@ -104,7 +104,7 @@ export default function FindingsListPage() {
           onClick={loadFindings}
           variant="outline"
           size="sm"
-          icon={<RefreshCw className="w-3.5 h-3.5" />}
+          icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
           className="font-medium text-xs"
         >
           Refresh
@@ -116,7 +116,7 @@ export default function FindingsListPage() {
       {/* FILTER & SEARCH */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+          <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <label htmlFor="findings-search" className="sr-only">Search findings</label>
           <input
             id="findings-search"
@@ -172,12 +172,12 @@ export default function FindingsListPage() {
       {/* FINDING ROW CARDS */}
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Querying database findings...</span>
         </div>
       ) : filteredFindings.length === 0 ? (
         <div role="status" aria-live="polite" aria-atomic="true" className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+          <CheckCircle2 aria-hidden="true" className="w-8 h-8 text-emerald-600 mx-auto" />
           <p className="font-semibold text-base text-[#111111]">No compatibility findings detected</p>
           <p className="text-xs text-[#686868]">
             Either all code call sites are compatible with upstream APIs, or repositories have not yet been scanned.
