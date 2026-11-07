@@ -85,6 +85,66 @@ test.describe('authenticated dashboard data states', () => {
     await page.unroute('**/api/slack/connection');
   });
 
+  test('announces finding workbench action feedback and busy states', async ({ page }) => {
+    await signIn(page);
+    let findingRequests = 0;
+    await page.route('**/api/findings/finding_a11y', async (route) => {
+      findingRequests += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          finding: {
+            id: 'finding_a11y', provider: 'Fixture', change_id: 'change_a11y', title: 'Fixture migration finding',
+            description: 'A finding used to verify action announcements.', severity: 'P1', confidence: 'high',
+            file_path: 'src/example.ts', line_number: 12, symbol: 'example', reason: 'Fixture reason', source_snippet: 'example()',
+            status: 'open', created_at: '2026-11-07T00:00:00.000Z', repo_name: 'owl', repo_full_name: 'fixture/owl',
+            repo_owner: 'fixture', default_branch: 'main', evidence: [], reasonCodes: [],
+            capability: {
+              source: 'productization', baselineSha: 'baseline', scanId: 'scan', recommendedNextAction: 'MIGRATION_AVAILABLE',
+              migrationAvailable: true, verificationAvailable: true, evidenceCoverage: 'complete', reviewStatus: 'reviewed',
+              remediation: { mode: 'transform', templateId: 'template', limitation: 'fixture', summary: 'fixture', steps: ['fixture'], validation: ['fixture'] },
+            },
+          },
+          migration: null,
+        }),
+      });
+    });
+
+    let releasePlan: (() => void) | undefined;
+    const planResponse = new Promise<void>((resolve) => { releasePlan = resolve; });
+    let planRequests = 0;
+    await page.route('**/api/migrations/plan', async (route) => {
+      planRequests += 1;
+      if (planRequests === 1) {
+        await planResponse;
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Migration planner is temporarily unavailable.' }) });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ migration: { id: 'migration_a11y', status: 'planned', patch_diff: '', patch_digest: 'digest', lifecycle_state: 'Migration Planned', target_branch: 'owl-migration' } }),
+      });
+    });
+
+    await page.goto('/dashboard/findings/finding_a11y', { waitUntil: 'domcontentloaded' });
+    const planButton = page.locator('button').filter({ hasText: /Create migration plan|Creating plan…/ });
+    await planButton.click();
+    await expect(page.getByRole('status')).toContainText('Creating migration plan…');
+    releasePlan?.();
+    const planError = page.getByRole('alert').filter({ hasText: 'Migration planner is temporarily unavailable.' });
+    await expect(planError).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'finding plan error').toEqual([]);
+    await planButton.click();
+    await expect(page.getByRole('status')).toContainText('Migration plan created. Review it before requesting a verified Draft PR.');
+    expect((await new AxeBuilder({ page }).include('[role="status"]').analyze()).violations, 'finding success status').toEqual([]);
+
+    expect(findingRequests).toBe(1);
+    expect(planRequests).toBe(2);
+    await page.unroute('**/api/migrations/plan');
+  });
+
   test('shows recoverable errors instead of false empty states', async ({ page }) => {
     await signIn(page);
 

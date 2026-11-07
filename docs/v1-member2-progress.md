@@ -263,3 +263,10 @@ Statuses are current baseline findings, not completion claims.
 - Read-only audit confirmed branch `codex/v1-frontend-product`, HEAD `7668d1b`, and a clean worktree before documentation changes.
 - Evidence: repository-wide `pnpm lint` PASS; all six workspace package typechecks PASS; the final root `tsc -p tsconfig.test.json` stage remains FAIL on pre-existing test-project configuration errors in account-settings, billing/organization, E2E, and runtime-mode tests. No changed application file was implicated.
 - The failure is recorded rather than suppressed or broadened into unrelated refactoring. The committed CI browser matrix remains locally green at 41/41, and hosted CI/staging plus production verification remain open.
+
+## 2026-11-07 checkpoint — UI-12 finding workbench action announcements
+
+- Change: finding-detail migration planning and verification actions now expose polite live progress statuses; completion feedback is a polite status, failure feedback is an assertive alert, and decorative action icons are hidden from assistive technology. Action controls retain explicit busy metadata while disabled.
+- Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: targeted ESLint PASS; web typecheck PASS; Impeccable detector returned no findings; production-build focused journey PASS — 1/1, covering delayed action loading, 503 alert recovery, success status and axe checks; complete dashboard data-state suite PASS — 8/8.
+- Scope: no backend/shared contract changed; full screen-reader review, hosted CI/staging and production verification remain open. No production/provider/remote Git operation was performed.

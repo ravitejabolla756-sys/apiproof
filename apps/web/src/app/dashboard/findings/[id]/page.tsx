@@ -261,6 +261,9 @@ export default function FindingDetailPage({
         {/* FEEDBACK BANNER */}
         {message && (
           <div
+            role={message.error ? "alert" : "status"}
+            aria-live={message.error ? "assertive" : "polite"}
+            aria-atomic="true"
             className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
               message.error
                 ? "bg-rose-50 text-rose-800 border border-rose-200"
@@ -268,9 +271,9 @@ export default function FindingDetailPage({
             }`}
           >
             {message.error ? (
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertTriangle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" />
             )}
             <span>{message.text}</span>
           </div>
@@ -483,6 +486,8 @@ export default function FindingDetailPage({
               <Sparkles className="w-4 h-4 text-purple-700" />
               Review Actions
             </h3>
+            {actionLoading === 'plan' && <p role="status" aria-live="polite" className="sr-only">Creating migration plan…</p>}
+            {actionLoading === 'propose' && <p role="status" aria-live="polite" className="sr-only">Starting secure verification…</p>}
 
             {!migration ? (
               <div className="space-y-3">
@@ -492,8 +497,8 @@ export default function FindingDetailPage({
                     : 'Review the affected call site, matched rule, and official evidence. No safe migration template is available for this finding.'}
                 </p>
                 {finding.capability?.migrationAvailable && finding.capability.verificationAvailable ? (
-                  <Button size="md" variant="primary" onClick={() => void planMigration()} disabled={actionLoading !== null} className="w-full gap-2 font-medium">
-                    {actionLoading === 'plan' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  <Button size="md" variant="primary" onClick={() => void planMigration()} disabled={actionLoading !== null} aria-busy={actionLoading === 'plan' ? 'true' : undefined} className="w-full gap-2 font-medium">
+                    {actionLoading === 'plan' ? <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin" /> : <Sparkles aria-hidden="true" className="w-4 h-4" />}
                     <span>{actionLoading === 'plan' ? 'Creating plan…' : 'Create migration plan'}</span>
                   </Button>
                 ) : (
@@ -541,9 +546,10 @@ export default function FindingDetailPage({
                   variant="primary"
                   onClick={() => void proposeMigration()}
                   disabled={actionLoading !== null || isVerificationJobActive(migration.verification_job_status)}
+                  aria-busy={actionLoading === 'propose' || isVerificationJobActive(migration.verification_job_status) ? 'true' : undefined}
                   className="w-full gap-2 font-medium"
                 >
-                  {actionLoading === 'propose' || isVerificationJobActive(migration.verification_job_status) ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                  {actionLoading === 'propose' || isVerificationJobActive(migration.verification_job_status) ? <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin" /> : <ShieldCheck aria-hidden="true" className="w-4 h-4" />}
                   <span>{isVerificationJobActive(migration.verification_job_status) ? 'Verification in progress…' : actionLoading === 'propose' ? 'Starting verification…' : 'Verify and create Draft PR'}</span>
                 </Button>
               </div>
