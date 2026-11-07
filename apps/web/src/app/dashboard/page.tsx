@@ -155,7 +155,7 @@ export default function DashboardOverviewPage() {
       />
 
       {error && (
-        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+        <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 sm:flex-row sm:items-center sm:justify-between">
           <span>{error}</span>
           <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} className="border-rose-300 bg-white text-rose-900">
             {refreshing ? "Retrying..." : "Retry"}

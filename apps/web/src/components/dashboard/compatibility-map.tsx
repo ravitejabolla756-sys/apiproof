@@ -131,13 +131,13 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   }, [loadMap]);
 
   if (loading && repositories.length === 0) {
-    return <div role="status" aria-live="polite" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
+    return <div role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
       <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
     </div>;
   }
 
   if (error && repositories.length === 0) {
-    return <div role="alert" aria-live="assertive" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
+    return <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
       <p>{error}</p>
       <button onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
         <RefreshCw className="h-3.5 w-3.5" />Retry
@@ -195,7 +195,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         </div>
       </div>
 
-      {error && <p role="alert" className="rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900">Refresh failed: {error}</p>}
+      {error && <p role="alert" aria-live="assertive" aria-atomic="true" className="rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900">Refresh failed: {error}</p>}
 
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs md:grid-cols-3">
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">

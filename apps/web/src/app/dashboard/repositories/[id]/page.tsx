@@ -119,7 +119,7 @@ export default function RepositoryDetailPage({
 
   if (loading) {
     return (
-      <div role="status" aria-live="polite" className="py-20 text-center text-xs text-[#686868] font-sans">
+      <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-xs text-[#686868] font-sans">
         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading repository details...</span>
       </div>
@@ -272,6 +272,9 @@ export default function RepositoryDetailPage({
 
         {message && (
           <div
+            role={message.error ? "alert" : "status"}
+            aria-live={message.error ? "assertive" : "polite"}
+            aria-atomic="true"
             className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
               message.error
                 ? "bg-rose-50 text-rose-800 border border-rose-200"

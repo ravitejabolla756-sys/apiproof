@@ -55,6 +55,8 @@ test.describe('authenticated dashboard data states', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const compatibilityAlert = page.getByRole('alert').filter({ hasText: 'Compatibility data could not be loaded' });
     await expect(compatibilityAlert).toBeVisible({ timeout: 30_000 });
+    await expect(compatibilityAlert).toHaveAttribute('aria-live', 'assertive');
+    await expect(compatibilityAlert).toHaveAttribute('aria-atomic', 'true');
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'compatibility-map error state').toEqual([]);
     await page.unroute('**/api/compatibility-map');
 
@@ -94,6 +96,8 @@ test.describe('authenticated dashboard data states', () => {
     await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
     const settingsAlert = page.getByRole('alert').filter({ hasText: 'Workspace settings data is temporarily unavailable.' });
     await expect(settingsAlert).toBeVisible({ timeout: 30_000 });
+    await expect(settingsAlert).toHaveAttribute('aria-live', 'assertive');
+    await expect(settingsAlert).toHaveAttribute('aria-atomic', 'true');
     await expect(settingsAlert.getByRole('button', { name: 'Retry' })).toBeVisible();
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings error state').toEqual([]);
     await settingsAlert.getByRole('button', { name: 'Retry' }).click();

@@ -110,7 +110,7 @@ export default function SettingsPage() {
       </div>
 
       {error && (
-        <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2">
+        <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" aria-hidden="true" />
           <span>{error}</span>
           <Button type="button" variant="outline" size="sm" onClick={() => void loadStatus()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry</Button>
@@ -149,7 +149,7 @@ export default function SettingsPage() {
             </div>
 
             {loading ? (
-              <div role="status" aria-live="polite" className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
+              <div role="status" aria-live="polite" aria-atomic="true" className="p-6 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-center gap-2 text-[#686868]">
                 <Loader2 className="w-4 h-4 animate-spin text-purple-700" />
                 <span>Loading workspace billing summary...</span>
               </div>

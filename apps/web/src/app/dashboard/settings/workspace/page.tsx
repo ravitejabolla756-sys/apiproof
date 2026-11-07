@@ -167,7 +167,7 @@ export default function WorkspaceSettingsPage() {
     } finally { setRevokingInvitationId(null); setActionStatus(null); }
   }
 
-  if (loading) return <div role="status" aria-live="polite" className="flex items-center gap-2 text-xs text-[#686868] outline-none"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading workspace settings…</div>;
+  if (loading) return <div role="status" aria-live="polite" aria-atomic="true" className="flex items-center gap-2 text-xs text-[#686868] outline-none"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading workspace settings…</div>;
 
   return (
     <div className="max-w-5xl space-y-6 outline-none">
