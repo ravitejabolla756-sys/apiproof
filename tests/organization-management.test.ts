@@ -6,6 +6,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser, createWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { resolveWorkspaceForRequest } from '../apps/web/src/lib/server/organization-route.js';
 import { POST as setWorkspaceContext } from '../apps/web/src/app/api/workspace/context/route.js';
+import { PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
 import {
   acceptWorkspaceInvitation,
   createWorkspaceInvitation,
@@ -122,6 +123,38 @@ describe('workspace administration', () => {
     await removeOrganizationMember(owner.user.id, workspace.id, memberRow.userId);
     expect(await getDatabase().queryOne('SELECT id FROM workspace_members WHERE id = ?', [memberRow.id])).toBeUndefined();
     expect(await getDatabase().queryOne('SELECT id FROM sessions WHERE user_id = ?', [member.user.id])).toBeUndefined();
+  });
+
+  it('uses explicit workspace and user member mutation contracts at the HTTP boundary', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const member = await createUserWithSession('member@example.test', 'MemberPassword123!', 'Member');
+    const otherOwner = await createUserWithSession('other@example.test', 'OtherPassword123!', 'Other');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const otherWorkspace = await getDefaultWorkspaceForUser(otherOwner.user.id);
+    await getDatabase().execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', ['wsm_member', workspace.id, member.user.id, 'member', new Date().toISOString()]);
+
+    const requestHeaders = { 'content-type': 'application/json', cookie: `apiproof_session=${owner.session.id}` };
+    const updated = await updateMemberRoute(new Request('https://apiproof.test/api/workspace/members', {
+      method: 'PATCH',
+      headers: requestHeaders,
+      body: JSON.stringify({ workspaceId: workspace.id, userId: member.user.id, role: 'owner' }),
+    }));
+    expect(updated.status).toBe(200);
+    expect((await updated.json()).members).toEqual(expect.arrayContaining([expect.objectContaining({ userId: member.user.id, role: 'owner' })]));
+
+    const crossWorkspace = await updateMemberRoute(new Request('https://apiproof.test/api/workspace/members', {
+      method: 'PATCH',
+      headers: requestHeaders,
+      body: JSON.stringify({ workspaceId: otherWorkspace.id, userId: member.user.id, role: 'member' }),
+    }));
+    expect(crossWorkspace.status).toBe(404);
+
+    const removed = await removeMemberRoute(new Request('https://apiproof.test/api/workspace/members', {
+      method: 'DELETE',
+      headers: requestHeaders,
+      body: JSON.stringify({ workspaceId: workspace.id, userId: member.user.id }),
+    }));
+    expect(removed.status).toBe(200);
   });
 
   it('rejects malformed workspace slugs before writing', async () => {
