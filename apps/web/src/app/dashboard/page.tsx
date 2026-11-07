@@ -266,7 +266,7 @@ export default function DashboardOverviewPage() {
                 </div>
               ));
             })() : (
-              <p className="py-5 text-xs text-[#686868]">No findings were created in the last seven days.</p>
+              <p role="status" aria-live="polite" aria-atomic="true" className="py-5 text-xs text-[#686868]">No findings were created in the last seven days.</p>
             )}
           </div>
           <div className="mt-4 flex flex-wrap gap-4 text-[10px] text-[#686868]">
@@ -470,7 +470,7 @@ export default function DashboardOverviewPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-[24px] bg-[#EEF7F2] border border-[#D1EBE0] p-6 space-y-2 shadow-xs">
+            <div role="status" aria-live="polite" aria-atomic="true" className="rounded-[24px] bg-[#EEF7F2] border border-[#D1EBE0] p-6 space-y-2 shadow-xs">
               <div className="flex items-center gap-2 text-emerald-950 font-semibold text-sm">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>All monitored repositories are up to date</span>

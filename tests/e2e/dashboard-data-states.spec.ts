@@ -27,11 +27,15 @@ test.describe('authenticated dashboard data states', () => {
         recentActivities?: unknown[];
         recentProviderChanges?: unknown[];
         recentFixes?: unknown[];
+        findingsThisWeek?: unknown[];
+        criticalFinding?: unknown;
       };
       body.repositories = [];
       body.recentActivities = [];
       body.recentProviderChanges = [];
       body.recentFixes = [];
+      body.findingsThisWeek = [];
+      body.criticalFinding = null;
       await route.fulfill({ response, body: JSON.stringify(body) });
     });
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
@@ -40,6 +44,8 @@ test.describe('authenticated dashboard data states', () => {
       'No migration plans or draft fixes yet.',
       'No repositories connected yet.',
       'No activity recorded yet.',
+      'No findings were created in the last seven days.',
+      'No breaking third-party API changes detected across active bindings.',
     ]) {
       const status = page.getByRole('status').filter({ hasText: message });
       await expect(status).toBeVisible();
