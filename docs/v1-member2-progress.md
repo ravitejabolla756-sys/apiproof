@@ -604,6 +604,13 @@ Statuses are current baseline findings, not completion claims.
 - Evidence: Impeccable detector reported only the three incumbent dashboard purple-palette warnings; targeted ESLint and repository typecheck passed; rebuilt web production bundle passed with 83 generated pages; dashboard data-state suite passed 14/14; full rebuilt-bundle CI-mode Playwright suite passed 57/57.
 - Scope: local dashboard state-semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
 
+## 2026-11-07 checkpoint — UI-12 finding access-denied alert semantics
+
+- Change: the protected finding detail not-found/access-denied state now exposes an atomic assertive alert while retaining the safe back-navigation behavior.
+- Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint passed after staying within the existing test-file line limit; repository typecheck and rebuilt web production bundle passed with 83 generated pages; focused invalid-finding journey passed 1/1; full rebuilt-bundle CI-mode Playwright suite passed 57/57.
+- Scope: local access-denied semantics evidence only; full assistive-technology review, hosted CI, staging and production verification remain open.
+
 ## 2026-11-07 checkpoint — UI-12 mobile backdrop focus recovery
 
 - Change: the public mobile navigation backdrop is now a real interactive layer above page content, while the menu sheet remains above the backdrop. Backdrop dismissal prevents accidental focus loss, closes the menu, and restores focus to the menu toggle using the same focus-recovery path as Escape dismissal.

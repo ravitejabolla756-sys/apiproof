@@ -358,7 +358,7 @@ test.describe('authenticated product surfaces', () => {
     await signIn(page);
     const findingResponse = await page.goto('/dashboard/findings/not-a-real-finding', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     expect(findingResponse?.status()).toBe(200);
-    await expect(page.getByText('Finding not found or access denied.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Finding not found or access denied.' })).toBeVisible({ timeout: 30_000 }); await expect(page.getByRole('alert').filter({ hasText: 'Finding not found or access denied.' })).toHaveAttribute('aria-live', 'assertive'); await expect(page.getByRole('alert').filter({ hasText: 'Finding not found or access denied.' })).toHaveAttribute('aria-atomic', 'true');
     const findingResults = await new AxeBuilder({ page }).analyze();
     expect(findingResults.violations, '/dashboard/findings/[id] access-denied').toEqual([]);
 

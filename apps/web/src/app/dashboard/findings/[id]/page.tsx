@@ -207,7 +207,7 @@ export default function FindingDetailPage({
         <Link href="/dashboard/findings" className="text-[#686868] hover:text-[#111111] flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Findings
         </Link>
-        <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
+        <div role="alert" aria-live="assertive" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
           <h1 className="text-xl font-semibold text-[#111111]">Finding unavailable</h1>
           <p className="mt-2 text-[#686868]">Finding not found or access denied.</p>
         </div>
