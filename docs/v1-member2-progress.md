@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 findings filter keyboard semantics
+
+- Change: Extended the findings browser journey to focus provider filters, activate them with Enter, verify `aria-pressed` selection state and restore the full provider collection through the keyboard-accessible “all” control.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused findings suite passed 2/2 in 17.4 seconds, including the existing axe-clean responsive and filtered-empty assertions. Artifacts: `/tmp/myowl-v1-findings-keyboard-artifacts`.
+- Scope: local UI-12 keyboard/accessibility evidence only; full screen-reader review, hosted CI, integrated staging, backend/provider contracts and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 full findings recovery regression
 
 - Change: Rebuilt the web bundle and ran the complete committed browser matrix after the findings responsive and filtered-empty journeys were added.

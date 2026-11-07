@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Findings filter keyboard semantics
+
+- PASS: Focused findings suite passed 2/2 in 17.4 seconds with keyboard focus, Enter activation, `aria-pressed` state verification and provider-filter restoration, alongside the existing responsive and filtered-empty checks.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 keyboard evidence only. Full screen-reader review, hosted CI, integrated staging, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Full findings recovery regression
 
 - PASS: Rebuilt-bundle CI-mode Playwright suite passed 92/92 in 2.4 minutes on isolated SQLite `/tmp/myowl-v1-findings-full.db`; the run includes the responsive multi-provider and filtered-empty findings journeys. Production build generated 83 static pages.
