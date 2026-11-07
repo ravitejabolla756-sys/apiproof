@@ -263,7 +263,7 @@ export default function SettingsPage() {
                 <span>Checking GitHub installation status...</span>
               </div>
             ) : installation ? (
-              <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-between">
+              <div role="status" aria-live="polite" aria-atomic="true" className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-xs text-[#111111] flex items-center gap-1.5">
                     <span>{installation.accountLogin}</span>
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
             ) : (
-              <div className="p-5 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div role="status" aria-live="polite" aria-atomic="true" className="p-5 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="font-semibold text-xs text-[#111111]">Not connected to GitHub</div>
                   <div className="text-[11px] text-[#686868]">
