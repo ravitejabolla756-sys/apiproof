@@ -481,7 +481,7 @@ Statuses are current baseline findings, not completion claims.
 
 - Change: the workspace retry fixture now gates recovery until the user activates Retry; the browser helper gives invited pages distinct rate-limit identities; the finding detail test asserts successful retrieval without depending on development-only duplicate-effect counts.
 - Files: `tests/e2e/public-site.spec.ts`, `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/helpers.ts`.
-- Evidence: fresh explicit `/tmp` SQLite database, `CI=1` Playwright suite, 48/48 passed in 1.2 minutes; repository typecheck passed; targeted ESLint passed. Hosted CI and integrated staging remain NOT_RUN.
+- Evidence: fresh explicit `/tmp` SQLite database, `CI=1` Playwright suite, 49/49 passed in 1.2 minutes including the billing-boundary browser contract; repository typecheck passed; targeted ESLint passed. Hosted CI and integrated staging remain NOT_RUN.
 
 ## 2026-11-07 checkpoint — UI-13 billing boundary browser contract
 
