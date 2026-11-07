@@ -3,7 +3,7 @@
 Last updated: 2026-11-08
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
-Current HEAD: `4ac31fb` (`codex/v1-frontend-product`)
+Current HEAD: `975f715` (`codex/v1-frontend-product`)
 
 ## 2026-11-08 checkpoint — UI-12 organization fetch failure states
 
