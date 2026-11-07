@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 component-specific retry keyboard coverage
+
+- Change: Extended dashboard overview, GitHub repository loading, provider-rule loading, and workspace-switch recovery journeys to verify retry-control focus and Enter activation. The provider-rule fixture also bounds expected development effect replay at 2–3 requests without weakening failure→retry assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; the combined focused suite passed 4/4 in 25.2 seconds with existing axe/error/recovery assertions. Artifacts: `/tmp/myowl-v1-component-retry-keyboard-artifacts`.
+- Scope: local UI-12 keyboard/state evidence only; no GitHub reconfiguration, provider delivery, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 dashboard state retry keyboard coverage
 
 - Change: The shared dashboard data-state matrix now focuses each generic “Try again” control, verifies focus visibility, and activates recovery with Enter across findings, migrations, pull requests, activity, inventory, compatibility and provider-coverage routes; repository list/detail recovery remains covered in the same suite.

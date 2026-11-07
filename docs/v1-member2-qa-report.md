@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Component-specific retry keyboard coverage
+
+- PASS: Combined focused suite passed 4/4 in 25.2 seconds; dashboard overview, GitHub repository loading, provider-rule loading and workspace switching now verify keyboard focus and Enter retry activation, with axe/error/recovery assertions retained.
+- PASS: Targeted ESLint and `git diff --check` passed; provider-rule request-count evidence is bounded for development effect replay.
+- Scope: local UI-12 evidence only. GitHub configuration, provider delivery, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Dashboard state retry keyboard coverage
 
 - PASS: Complete dashboard data-state suite passed 16/16 in 1.9 minutes; generic retry controls across findings, migrations, pull requests, activity, inventory, compatibility and provider coverage now verify keyboard focus and Enter activation, with repository list/detail recovery and axe checks retained.
