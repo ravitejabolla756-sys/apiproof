@@ -36,3 +36,18 @@ test('audited dashboard routes do not nest interactive elements', async ({ page 
     expect(nestedInteractiveCount, `${route} contains nested interactive elements`).toBe(0);
   }
 });
+
+test('dashboard links and controls expose visible keyboard focus', async ({ page }) => {
+  await signIn(page);
+  await page.goto('/dashboard');
+
+  for (const control of [
+    page.getByRole('link', { name: 'Repositories', exact: true }).first(),
+    page.getByRole('button', { name: /Search repos, findings, SDKs/ }),
+  ]) {
+    await control.focus();
+    await expect(control).toBeFocused();
+    await expect(control).toHaveCSS('outline-style', 'solid');
+    await expect(control).toHaveCSS('outline-width', '3px');
+  }
+});
