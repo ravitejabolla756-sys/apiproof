@@ -94,9 +94,9 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
     controller.current?.abort();
     const nextController = new AbortController();
     controller.current = nextController;
-    if (!hasRepositories.current) setLoading(true);
+    if (!hasRepositories.current && !explicitRefresh) setLoading(true);
     else if (explicitRefresh) setRefreshing(true);
-    setError(null);
+    if (!explicitRefresh || hasRepositories.current) setError(null);
 
     try {
       const response = await fetch("/api/compatibility-map", {
@@ -130,18 +130,18 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
     };
   }, [loadMap]);
 
-  if (loading && repositories.length === 0) {
-    return <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
-      <Loader2 aria-hidden="true" className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
-    </div>;
-  }
-
   if (error && repositories.length === 0) {
     return <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
       <p>{error}</p>
-      <button type="button" onClick={() => void loadMap(true)} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
-        <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />Retry
+      <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-busy={refreshing ? 'true' : undefined} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111] disabled:opacity-50">
+        <RefreshCw aria-hidden="true" className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Retrying…' : 'Retry'}
       </button>
+    </div>;
+  }
+
+  if (loading && repositories.length === 0) {
+    return <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
+      <Loader2 aria-hidden="true" className="mx-auto mb-2 h-5 w-5 animate-spin text-purple-700" />Loading compatibility data…
     </div>;
   }
 

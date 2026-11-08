@@ -24,7 +24,9 @@ test('recovers compatibility-map initial and refresh failures', async ({ page })
   let attempts = 0;
   let phase: 'initial' | 'initial-recovery' | 'refresh-failure' | 'refresh-recovery' = 'initial';
   let releaseRefresh: (() => void) | undefined;
+  let releaseInitialRecovery: (() => void) | undefined;
   const refreshResponse = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+  const initialRecoveryResponse = new Promise<void>((resolve) => { releaseInitialRecovery = resolve; });
   await page.route('**/api/compatibility-map', async (route) => {
     attempts += 1;
     if (phase === 'initial' || phase === 'refresh-failure') {
@@ -35,7 +37,10 @@ test('recovers compatibility-map initial and refresh failures', async ({ page })
       }
       await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Compatibility data could not be loaded (503).' }) });
     } else {
-      if (phase === 'initial-recovery') phase = 'refresh-failure';
+      if (phase === 'initial-recovery') {
+        await initialRecoveryResponse;
+        phase = 'refresh-failure';
+      }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [{ id: 'compat-recovery', owner: 'fixture', name: 'compat-recovery', fullName: 'fixture/compat-recovery', defaultBranch: 'main', latestScanStatus: 'completed', latestCompletedScan: null, analysisEvidenceAvailable: true, integrations: [], openFindingCount: 0, findings: [] }] }) });
     }
   });
@@ -46,6 +51,9 @@ test('recovers compatibility-map initial and refresh failures', async ({ page })
   const initialRetry = initialAlert.getByRole('button', { name: 'Retry' });
   expect((await initialRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await initialRetry.focus(); await expect(initialRetry).toBeFocused(); await page.keyboard.press('Enter');
+    await expect(initialRetry).toBeDisabled();
+    await expect(initialRetry).toHaveAttribute('aria-busy', 'true');
+    releaseInitialRecovery?.();
   await expect(page.getByRole('heading', { name: 'Compatibility topology' })).toBeVisible({ timeout: 30_000 });
   const refresh = page.getByRole('button', { name: 'Refresh compatibility map' });
   expect((await refresh.boundingBox())?.height).toBeGreaterThanOrEqual(44);

@@ -123,3 +123,5 @@ Latest secondary-workbench evidence: activity, inventory, migrations, provider c
 Latest compatibility-intelligence evidence: the reviewed compatibility refresh control exposes `aria-busy` while pending; its focused state suite passes 3/3 and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
 
 Latest findings/repository evidence: findings-list and repository-list refresh controls expose `aria-busy`, while repository detail preserves loaded content during refresh; focused coverage passes 1/1, recovery/filter regression passes 3/3, and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
+
+Latest compatibility-map evidence: the initial retry control remains visible and exposes `aria-busy` while recovery is pending; loading/recovery coverage passes 2/2 and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.

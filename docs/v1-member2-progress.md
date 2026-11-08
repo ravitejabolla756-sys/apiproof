@@ -1790,6 +1790,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported five incumbent purple-palette warnings on untouched workspace headings; targeted ESLint and `git diff --check` passed; focused Playwright coverage passed 1/1 in 10.1 seconds; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-04 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 compatibility-map retry busy semantics
+
+- Change: the dashboard compatibility-map initial retry now stays visible, disabled and marked `aria-busy="true"` while recovery is pending, preserving the truthful repository/provenance boundary.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/compatibility-map-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; compatibility-map loading/recovery coverage passed 2/2 in 15.3 seconds, including the held initial retry; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 findings and repository refresh action semantics
 
 - Change: findings-list and repository-list refresh controls now expose `aria-busy="true"` while loading; repository detail preserves its loaded surface during refresh and exposes the same busy state on its route and control.
