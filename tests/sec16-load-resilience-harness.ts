@@ -3,6 +3,8 @@ import { performance } from 'node:perf_hooks';
 export const SEC16_MAX_ITERATIONS = 200;
 export const SEC16_MAX_CONCURRENCY = 16;
 export const SEC16_DEFAULT_TIMEOUT_MS = 2_000;
+// Caps configured operation-time budgets; ignored aborts are not preemptible.
+export const SEC16_MAX_SCENARIO_DURATION_MS = 60_000;
 
 export interface LocalLoadScenario {
   name: string;
@@ -68,6 +70,13 @@ function assertBoundedInteger(name: string, value: number, minimum: number, maxi
   }
 }
 
+function assertWorstCaseDuration(operationCount: number, concurrency: number, timeoutMs: number): void {
+  const batches = Math.ceil(operationCount / concurrency);
+  if (batches * timeoutMs > SEC16_MAX_SCENARIO_DURATION_MS) {
+    throw new Error('SEC16_SCENARIO_DURATION_EXCEEDED');
+  }
+}
+
 function safeErrorCode(error: unknown): string {
   if (error instanceof Error && SAFE_ERROR_CODES.has(error.message)) return error.message;
   return 'OPERATION_FAILED';
@@ -115,6 +124,7 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
   assertBoundedInteger('concurrency', options.concurrency, 1, SEC16_MAX_CONCURRENCY);
   const timeoutMs = options.timeoutMs ?? SEC16_DEFAULT_TIMEOUT_MS;
   assertBoundedInteger('timeout_ms', timeoutMs, 1, 60_000);
+  assertWorstCaseDuration(options.iterations, Math.min(options.concurrency, options.iterations), timeoutMs);
 
   const latencies: number[] = [];
   const errors = new Map<string, number>();
@@ -202,6 +212,7 @@ export async function runBoundedRetryScenario(options: {
   assertBoundedInteger('max_attempts', options.maxAttempts, 1, 10);
   const timeoutMs = options.timeoutMs ?? SEC16_DEFAULT_TIMEOUT_MS;
   assertBoundedInteger('timeout_ms', timeoutMs, 1, 60_000);
+  assertWorstCaseDuration(options.maxAttempts, 1, timeoutMs);
   const errors: string[] = [];
 
   for (let attempt = 1; attempt <= options.maxAttempts; attempt += 1) {

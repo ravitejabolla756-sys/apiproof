@@ -217,6 +217,23 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     expect(operationCalled).toBe(false);
   });
 
+  it('rejects aggregate load and retry durations over one minute before invoking callbacks', async () => {
+    let operationCalled = false;
+    await expect(runLocalLoadScenario({
+      name: 'duration-bound',
+      iterations: 200,
+      concurrency: 1,
+      timeoutMs: 60_000,
+      operation: () => { operationCalled = true; },
+    })).rejects.toThrow('SEC16_SCENARIO_DURATION_EXCEEDED');
+    await expect(runBoundedRetryScenario({
+      maxAttempts: 10,
+      timeoutMs: 6_001,
+      operation: () => { operationCalled = true; },
+    })).rejects.toThrow('SEC16_SCENARIO_DURATION_EXCEEDED');
+    expect(operationCalled).toBe(false);
+  });
+
   it('refuses production mode and configured remote databases before invoking work', async () => {
     let operationCalled = false;
     const scenario = {
