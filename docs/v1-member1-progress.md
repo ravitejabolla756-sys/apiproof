@@ -522,3 +522,8 @@ Phase 0 read-only checks:
 - SEC-13 now allowlists heartbeat error codes on write and sanitizes persisted legacy values on read; malformed and future-dated timestamps report unknown freshness. Related worker, operations and cron regressions pass 3 files / 26 tests; the added future-timestamp focused run passes 9/9. ESLint and workspace typecheck pass.
 - SEC-16 now rejects all database URL settings used by the application and staging bootstrap before invoking any local harness callback. Its 11 tests pass serially; ESLint and workspace typecheck pass. New local measurements are recorded in `docs/sec16-local-measurements.md`; they are not staging/SLO evidence.
 - No production or staging resource was accessed; alert destinations, thresholds, remote DB permissions and failure-recovery rehearsal remain external gates.
+
+### 2026-11-08 current HEAD full verification
+
+- At code HEAD `49e042d96a07d952431fc030c68641bd852ce757`, the full serial repository suite passes: 173 files passed / 1 skipped; 1,431 tests passed / 4 skipped; 257.20 seconds. The four skipped tests require Docker and remain unverified.
+- `pnpm build` passes and generates 64 static pages. Next.js rewrote only `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; both generated edits were reviewed and restored. No deployment occurred.
