@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-09 invoice-unavailable boundary accessibility
+
+- PASS: The billing settings invoice-history boundary now verifies its truthful unavailable copy, axe-clean content, 44px status region, and absence of invoice links or buttons.
+- PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1` passed 1/1 in 2.5 seconds; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-bill09-invoice-boundary-uhJSTD`.
+- NOT_RUN: Provider-backed invoice schema/API, sandbox data, legal retention approval and production billing remain open.
+
 ## 2026-11-08 — SEC-18 severity decision and readiness prerequisites
 
 - PASS: The incident-response draft now defines highest-applicable-severity classification and records the required incident owners, alert routing, status source, provider response, PostgreSQL/restore evidence and tabletop exercise as explicit prerequisites.

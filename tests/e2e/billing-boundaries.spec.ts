@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
 test('keeps beta billing boundaries truthful in browser flows', async ({ page }) => {
@@ -15,7 +16,15 @@ test('keeps beta billing boundaries truthful in browser flows', async ({ page })
   await page.goto('/dashboard/settings');
   await expect(page.getByRole('link', { name: 'View paid-plan rollout' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Invoice history' })).toBeVisible();
-  await expect(page.getByRole('status').filter({ hasText: 'Invoice history is unavailable in the free beta.' })).toBeVisible();
+  const invoiceSection = page.locator('section[aria-labelledby="invoice-history-heading"]');
+  await expect(invoiceSection).toBeVisible();
+  const invoiceStatus = invoiceSection.getByRole('status');
+  await expect(invoiceStatus).toContainText('Invoice history is unavailable in the free beta.');
+  await expect(invoiceStatus).toContainText('No provider-backed invoices or paid entitlements are represented here.');
+  await expect(invoiceSection.getByRole('link')).toHaveCount(0);
+  await expect(invoiceSection.getByRole('button')).toHaveCount(0);
+  expect((await invoiceStatus.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'invoice history unavailable state').toEqual([]);
   const checkout = await page.request.post('/api/billing/checkout', { data: { planId: 'team' } });
   expect(checkout.status()).toBe(403);
   expect(await checkout.json()).toMatchObject({ error: expect.stringContaining('BILLING_NOT_AVAILABLE') });

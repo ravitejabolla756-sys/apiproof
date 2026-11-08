@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-09 invoice-unavailable boundary accessibility
+
+- Change: Strengthened the billing browser boundary to assert that the invoice-history beta-unavailable state is visible, axe-clean, at least 44px high, and exposes no invoice link or button that could imply provider-backed billing.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1` passed **1/1 in 2.5 seconds**; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-bill09-invoice-boundary-uhJSTD`.
+- Scope: strengthens local BILL-09 safety/UI evidence only; provider invoice schema/API, legal retention policy, sandbox provider and production billing remain unapproved and unimplemented.
+
 ## 2026-11-08 checkpoint — SEC-18 severity decision and readiness prerequisites
 
 - Change: Added an explicit highest-applicable-severity decision sequence and an operational-readiness prerequisite table to the incident-response draft. The table records missing owners, alert routing, status source, provider access, PostgreSQL/restore evidence and tabletop status as `NOT_AVAILABLE`/`NOT_RUN` rather than implying readiness.
