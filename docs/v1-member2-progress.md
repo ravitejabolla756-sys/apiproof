@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-13 auth-entry route-state touch-target evidence
+
+- Change: public verification and invitation-state E2E coverage now measures the primary missing-token sign-in link and expired-invitation accept action at 44px or larger while preserving assertive error announcements, sign-in recovery, and axe-clean states.
+- Files: `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; auth-entry state suite passed 2/2 in 8.8 seconds with missing verification-token and expired invitation recovery assertions; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13, ORG-03 and NOT-02 evidence only; hosted CI, manual screen-reader review, approved transactional email, Member 1 auth/invitation integration, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-13 repository-picker choice touch targets
 
 - Change: connected GitHub repository choice labels now expose explicit 44px minimum touch targets while preserving named radio semantics, keyboard selection, focus trapping, Escape recovery, and read-only GitHub integration behavior.

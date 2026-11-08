@@ -7,7 +7,9 @@ test.describe('public auth-entry state announcements', () => {
     const alert = page.getByRole('alert').filter({ hasText: 'This verification link is missing its token.' });
     await expect(alert).toBeVisible();
     await expect(alert).toHaveAttribute('aria-live', 'assertive');
-    await expect(page.getByRole('link', { name: 'Continue to sign in' })).toBeVisible();
+    const signInLink = page.getByRole('link', { name: 'Continue to sign in' });
+    await expect(signInLink).toBeVisible();
+    expect((await signInLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
   });
 
@@ -17,6 +19,7 @@ test.describe('public auth-entry state announcements', () => {
     });
     await page.goto('/invite/accept?token=expired-token');
     const acceptInvitation = page.getByRole('button', { name: 'Accept invitation' });
+    expect((await acceptInvitation.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await acceptInvitation.focus();
     await expect(acceptInvitation).toBeFocused();
     await page.keyboard.press('Enter');
