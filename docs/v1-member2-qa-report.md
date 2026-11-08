@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — ORG-02 stale workspace context recovery
+
+- PASS: Complete organization-audit suite passed 7/7 in 42.6 seconds; an unauthorized stale workspace cookie falls back to the authorized workspace without leaking the stale ID, with workspace-navigation axe validation.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local ORG-02/UI-12 evidence only. PostgreSQL/RBAC, Member 1 contracts, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — Public route skip-link contract
 
 - PASS: Added `tabIndex={-1}` and skip links to the previously uncovered FAQ, refunds and standalone auth/invitation routes; public-route axe and skip-link journeys passed 2/2 in 41.1 seconds across every audited public route.

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 stale workspace context recovery
+
+- Change: Added a hermetic organization journey that injects an unauthorized `apiproof_workspace_id` cookie, verifies the backend-authoritative `/api/workspaces` fallback to the authorized default, asserts no stale context leakage, and runs an axe check on the workspace navigation.
+- Evidence: Targeted ESLint and `git diff --check` passed; the complete organization-audit suite passed 7/7 in 42.6 seconds. Artifacts: `/tmp/myowl-v1-organization-audit-current-artifacts`.
+- Scope: local ORG-02/UI-12 tenancy and accessibility evidence only; PostgreSQL/RBAC, Member 1 contracts, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public route skip-link contract
 
 - Change: Added the skip-link/main-focus contract to FAQ, refunds, invitation, verification, login, password-request and password-reset surfaces, then added route-by-route keyboard coverage across every audited public route.
