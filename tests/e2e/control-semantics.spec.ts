@@ -22,7 +22,9 @@ test('dashboard interactive controls expose explicit button semantics', async ({
   const expander = page.getByRole('button', { name: 'Collapse owl' });
   await expect(expander).toHaveAttribute('type', 'button');
   await expect(expander).toHaveAttribute('aria-expanded', 'true');
-  await expander.click();
+  await expander.focus();
+  await expect(expander).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Expand owl' })).toHaveAttribute('aria-expanded', 'false');
   await page.unroute('**/api/repositories');
 });
