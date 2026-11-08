@@ -80,18 +80,33 @@ export async function requestEmailVerification(
   const expiresAt = new Date(now.getTime() + getEmailVerificationTtlMs()).toISOString();
   const id = `evt_${crypto.randomBytes(16).toString('hex')}`;
 
-  await db.transaction(async (tx) => {
+  const reservation = await db.transaction(async (tx) => {
+    const currentUser = await tx.queryOne<{
+      email: string;
+      name: string;
+      email_verified_at: string | null;
+    }>(
+      `SELECT email, name, email_verified_at FROM users WHERE id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
+      [userId],
+    );
+    if (!currentUser) return { status: 'unavailable' as const };
+    if (currentUser.email_verified_at) return { status: 'already_verified' as const };
+
     // Resend invalidates every prior outstanding token so only the newest
-    // delivered message can authorize the account.
+    // issued message can authorize the account. The user-row lock serializes
+    // issuance with verification on PostgreSQL; SQLite transactions serialize
+    // through its adapter.
     await tx.execute('DELETE FROM email_verification_tokens WHERE user_id = ?', [userId]);
     await tx.execute(`
       INSERT INTO email_verification_tokens (id, user_id, token_hash, expires_at, used_at, created_at)
       VALUES (?, ?, ?, ?, NULL, ?)
     `, [id, userId, tokenHash, expiresAt, createdAt]);
+    return { status: 'reserved' as const, user: currentUser };
   });
+  if (reservation.status !== 'reserved') return reservation.status;
 
   try {
-    await sendEmail({ email: user.email, name: user.name, token });
+    await sendEmail({ email: reservation.user.email, name: reservation.user.name, token });
   } catch {
     await db.execute('DELETE FROM email_verification_tokens WHERE id = ? AND token_hash = ?', [id, tokenHash]);
     throw new Error('EMAIL_VERIFICATION_DELIVERY_FAILED');
@@ -103,14 +118,30 @@ export async function verifyEmail(token: string): Promise<EmailVerificationResul
   if (!isValidEmailVerificationToken(token)) return 'invalid';
   const db = getDatabase();
   const tokenHash = digestToken(token);
-  const now = new Date().toISOString();
 
   return db.transaction(async (tx) => {
+    const candidate = await tx.queryOne<{ user_id: string }>(`
+      SELECT user_id
+      FROM email_verification_tokens
+      WHERE token_hash = ?
+    `, [tokenHash]);
+    if (!candidate) return 'invalid';
+
+    // Keep the lock order consistent with resend: user first, token second.
+    // This makes a concurrent resend invalidate the old token before a verify
+    // can consume it, and prevents issuance/verification deadlocks.
+    const user = await tx.queryOne<{ id: string }>(
+      `SELECT id FROM users WHERE id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
+      [candidate.user_id],
+    );
+    if (!user) return 'invalid';
+
+    const now = new Date().toISOString();
     const row = await tx.queryOne<{ id: string; user_id: string }>(`
       SELECT id, user_id
       FROM email_verification_tokens
-      WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
-    `, [tokenHash, now]);
+      WHERE token_hash = ? AND user_id = ? AND used_at IS NULL AND expires_at > ?
+    `, [tokenHash, candidate.user_id, now]);
     if (!row) return 'invalid';
 
     const consumed = await tx.execute(`

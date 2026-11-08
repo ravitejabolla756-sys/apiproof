@@ -92,6 +92,53 @@ describe('email verification', () => {
     await expect(verifyEmail(secondToken)).resolves.toBe('verified');
   });
 
+  it('serializes concurrent resends so only one outstanding token can verify', async () => {
+    configureMail();
+    const account = await createUserWithSession('verify-concurrent-resend@example.test', 'OriginalPassword123!', 'Concurrent Resend');
+    const issuedTokens: string[] = [];
+    const send = () => requestEmailVerification(account.user.id, async (message) => {
+      issuedTokens.push(message.token);
+    });
+
+    const results = await Promise.all([send(), send()]);
+    expect(results).toEqual(['sent', 'sent']);
+    expect(issuedTokens).toHaveLength(2);
+    expect(new Set(issuedTokens).size).toBe(2);
+
+    const outstanding = await getDatabase().query<{ id: string }>(
+      'SELECT id FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL', [account.user.id],
+    );
+    expect(outstanding).toHaveLength(1);
+
+    const outcomes = await Promise.all(issuedTokens.map((issuedToken) => verifyEmail(issuedToken)));
+    expect(outcomes.sort()).toEqual(['invalid', 'verified']);
+  });
+
+  it('serializes verification against a concurrent resend without reviving the old token', async () => {
+    configureMail();
+    const account = await createUserWithSession('verify-resend-race@example.test', 'OriginalPassword123!', 'Verify Resend Race');
+    let oldToken = '';
+    await requestEmailVerification(account.user.id, async (message) => { oldToken = message.token; });
+    let replacementToken = '';
+
+    const [resendResult, verifyResult] = await Promise.all([
+      requestEmailVerification(account.user.id, async (message) => { replacementToken = message.token; }),
+      verifyEmail(oldToken),
+    ]);
+
+    if (verifyResult === 'verified') {
+      expect(resendResult).toBe('already_verified');
+      expect(replacementToken).toBe('');
+      expect(await verifyEmail(oldToken)).toBe('invalid');
+    } else {
+      expect(verifyResult).toBe('invalid');
+      expect(resendResult).toBe('sent');
+      expect(replacementToken).not.toBe('');
+      expect(await verifyEmail(oldToken)).toBe('invalid');
+      expect(await verifyEmail(replacementToken)).toBe('verified');
+    }
+  });
+
   it('verifies once, rejects replay, and changes only the intended account', async () => {
     configureMail();
     const target = await createUserWithSession('verify-target@example.test', 'OriginalPassword123!', 'Verify Target');
