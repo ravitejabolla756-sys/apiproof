@@ -37,6 +37,7 @@ test('wraps findings filters for multi-provider mobile results', async ({ page }
 
   await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'API Compatibility Findings' })).toBeVisible({ timeout: 30_000 });
+  expect((await page.getByRole('button', { name: 'Refresh' }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await expect(page.getByRole('group', { name: 'Filter by provider' }).getByRole('button')).toHaveCount(5);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
@@ -97,6 +98,7 @@ test('recovers from a filtered-empty findings state', async ({ page }) => {
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 
   const clearFilters = filteredEmpty.getByRole('button', { name: 'Clear filters' });
+  expect((await clearFilters.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await clearFilters.focus();
   await expect(clearFilters).toBeFocused();
   await page.keyboard.press('Enter');

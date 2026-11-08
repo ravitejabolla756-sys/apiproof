@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 shared button touch-target baseline
+
+- Change: the reusable `Button` primitive now defaults to a 44px minimum height, closing the remaining route-level gap for controls that did not carry an explicit override while preserving variants, labels, keyboard behavior, and backend contracts.
+- Files: `apps/web/src/components/ui/button.tsx`, `tests/e2e/findings-filter-responsive.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; findings mobile filter/recovery journey passed 2/2 in 17.8 seconds with measured default Refresh and Clear filters controls at 44px or larger and axe-clean content; dashboard initial-error/retry journey passed 1/1 in 18.5 seconds; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13 and the browser-E2E baseline only; manual screen-reader review, hosted CI, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 secondary-route touch targets
 
 - Change: authenticated inventory, compatibility, provider-coverage, and activity routes now expose explicit 44px refresh, filter, clear-filter, review-queue, official-source, and provider-source touch targets without changing route behavior or backend contracts.
