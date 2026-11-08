@@ -3,12 +3,12 @@ import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db.js';
 import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle.js';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
         : formatCanonicalMigrationBranch(String(m.change_id), String(m.id)),
     }));
 
-    return NextResponse.json({ migrations: mapped });
+    return NextResponse.json({ migrations: mapped }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     return organizationErrorResponse(error);
   }

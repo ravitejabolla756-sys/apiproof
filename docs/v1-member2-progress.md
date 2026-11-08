@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — migration, pull-request and GitHub-install response cache boundaries
+
+- Change: Migration planning/list, pull-request list and GitHub installation-start responses now use the shared private `no-store` policy for unauthorized, successful and direct failure outcomes; organization errors retain their existing policy.
+- Evidence: Seeded `tests/organization-management.test.ts`, `tests/github-installation-reassociation.test.ts` and `tests/repositories-list-route.test.ts` passed 36/36; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local ORG-02/UI-13 integration-boundary privacy hardening only; provider approval, PostgreSQL/RBAC, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — beta billing response cache boundaries
 
 - Change: Billing checkout, portal and subscription responses now use the shared private `no-store` policy for authorization, beta refusal, validation and successful subscription/checkout payloads; organization failures retain their existing private boundary.

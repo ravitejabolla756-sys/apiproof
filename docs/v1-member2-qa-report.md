@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — migration, pull-request and GitHub-install response cache boundaries
+
+- PASS: Migration planning/list, pull-request list and GitHub installation-start responses are private/non-cacheable across direct unauthorized, success and failure paths.
+- PASS: Seeded organization/GitHub/repository coverage passed 36/36; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: PostgreSQL/RBAC, provider approval, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — beta billing response cache boundaries
 
 - PASS: Billing checkout, portal and subscription responses are private/non-cacheable across authorization, beta refusal, validation and successful response paths.

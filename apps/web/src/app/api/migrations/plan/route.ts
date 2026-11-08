@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
 
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   // Rate limit: 20 migration plans per 5 minutes per user
@@ -34,13 +35,13 @@ export async function POST(req: Request) {
     }
 
     const migration = await generateMigrationForFinding(idValidation.data, user.id);
-    return NextResponse.json({ success: true, migration });
+    return NextResponse.json({ success: true, migration }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Migration planning failed.';
     if (message.includes('not found') || message.includes('access denied')) {
-      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
     }
     console.error('Migration planning failed:', error);
-    return NextResponse.json({ error: message, code: 'PLANNING_FAILED' }, { status: 500 });
+    return NextResponse.json({ error: message, code: 'PLANNING_FAILED' }, { status: 500, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
