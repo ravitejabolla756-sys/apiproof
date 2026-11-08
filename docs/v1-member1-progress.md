@@ -653,3 +653,8 @@ Phase 0 read-only checks:
 ### 2026-11-08 current-HEAD serial suite
 
 - After AUTH-05 token-race serialization and AUTH-10 malformed OAuth-state expiry rejection, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,440 tests passed / 4 skipped; 239.64 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This is local SQLite/test evidence, not production or PostgreSQL proof.
+
+### 2026-11-08 AUTH-10 bounded OAuth state cleanup
+
+- Capped synchronous expired Google/GitHub login-state cleanup to 1,000 deterministic candidates per new login attempt, ordered by expiry and hash. Subsequent attempts continue pruning; active and consumed-but-unexpired replay evidence remain untouched.
+- Added a 1,001-expired-row GitHub regression proving a single login attempt prunes exactly one batch and preserves its newly issued active state. Focused GitHub and Google OAuth suites pass 2 files / 22 tests; targeted ESLint, full workspace `pnpm typecheck`, and `git diff --check` pass. PostgreSQL execution, live providers, and full-suite rerun remain unverified for this change.
