@@ -86,6 +86,13 @@ describe('LLM planner boundary and hallucination guards', () => {
     expect(() => validateModelOutput({ summary: 'Bad output', steps: [], recommendations: [{ text: 'Unsupported suggestion.', evidenceIds: ['impact:invented'] }], assumptions: [], risks: [], unresolvedQuestions: [] }, input)).toThrow(/outside the bounded context/);
   });
 
+  it('rejects duplicate model step identifiers before they enter a migration plan', async () => {
+    const { input } = await inputFor("client.subscriptions.create({ coupon: 'launch' });");
+    const evidenceId = input.evidence.find((item) => item.kind === 'impact')!.id;
+    const step = { id: 'step-1', kind: 'inspect', affectedSymbol: 'subscriptions.create', description: 'Inspect the affected subscription call.', evidenceIds: [evidenceId], assumptions: [], risks: [], unresolvedQuestions: [] };
+    expect(() => validateModelOutput({ summary: 'Review the affected call.', steps: [step, step], recommendations: [], assumptions: [], risks: [], unresolvedQuestions: [] }, input)).toThrow(/duplicate step identifiers/);
+  });
+
   it('rejects malformed output and propagates provider failures without weakening deterministic planning', async () => {
     const { input } = await inputFor("client.subscriptions.create({ coupon: 'launch' });");
     expect(() => validateModelOutput({ summary: 'missing required fields' }, input)).toThrow(/structured planning schema/);

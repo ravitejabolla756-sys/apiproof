@@ -28,7 +28,11 @@ export function validateModelOutput(input: unknown, context: PlanningInput): Mod
   const evidence = allowedEvidence(context); const symbols = allowedSymbols(context);
   const parameters = new Set(context.facts.filter((fact) => fact.kind === 'parameter' && fact.symbol).map((fact) => fact.statement.replace(/^Affected parameter: /, '').replace(/\.$/, '')));
   const files = new Set(context.snippets.map((snippet) => snippet.file));
+  // Step IDs are carried into persisted plan records; reject ambiguous model identities.
+  const stepIds = new Set<string>();
   for (const step of parsed.data.steps) {
+    if (stepIds.has(step.id)) throw new AnalysisError('INVALID_MODEL_OUTPUT', 'Model output contains duplicate step identifiers.');
+    stepIds.add(step.id);
     if (!symbols.has(step.affectedSymbol) || (step.affectedParameter && !parameters.has(step.affectedParameter)) || step.evidenceIds.some((id) => !evidence.has(id))) throw new AnalysisError('INVALID_MODEL_FACT', 'Model output attempted to redefine deterministic symbols, parameters or evidence.');
     const mentionedFiles = step.description.match(/(?:[A-Za-z0-9_.-]+\/)+[A-Za-z0-9_.-]+\.(?:ts|tsx|mts|cts)/g) ?? [];
     if (mentionedFiles.some((file) => !files.has(file))) throw new AnalysisError('INVALID_MODEL_FACT', 'Model output mentioned a source file outside bounded evidence.');

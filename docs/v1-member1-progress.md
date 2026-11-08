@@ -766,3 +766,8 @@ Phase 0 read-only checks:
 ### 2026-11-08 current-HEAD JSON full-suite runtime profile
 
 - `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=json --outputFile=.tmp/vitest-current-runtime-profile.json` completes with 176 files, 1,468 passed, 0 failed and 4 skipped. File wall durations sum to 250.52 seconds; first-file start to last-file end spans 469.76 seconds. The top files are `cli.test.ts` 41.83s, `patch-cli.test.ts` 17.60s, `proposal-recovery.test.ts` 14.90s and `slack-outcomes.test.ts` 11.58s. The CLI pair totals 59.43s, versus 102.07s in the earlier JSON profile, while total suite wall time remains materially higher than the prior 285.58-second run. This excludes CLI tests as the cause of the latest slowdown; broader per-file/import/runtime variance remains unexplained. Four Docker-dependent tests are skipped. The generated JSON report is ignored under `.tmp/` and is not a source artifact.
+
+### 2026-11-08 MIG-01 model-plan identifier validation
+
+- The provider-agnostic model-output validator now rejects duplicate step IDs before those IDs can enter a migration plan. This preserves unambiguous identity for downstream review and persistence; production planning remains deterministic-only pending provider, security, cost, timeout and owner approvals.
+- `tests/planning.test.ts` passes 9/9; targeted ESLint and `tsc -p tsconfig.test.json --noEmit` pass. No full suite or production/provider check was run for this focused change.
