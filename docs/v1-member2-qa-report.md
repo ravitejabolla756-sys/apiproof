@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-07/BILL-08 owner-only billing boundary
+
+- PASS: Checkout and billing-portal routes reject workspace members with `BILLING_OWNER_REQUIRED` before any paid or portal behavior, while owners retain the truthful beta-unavailable response.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and billing-boundary coverage passed 3/3.
+- NOT_RUN: Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 ## 2026-11-08 — NOT-03 notification preference pair validation
 
 - PASS: Notification preference updates accept only exact server-owned category/channel pairs and reject unsupported combinations without changing the preference set.

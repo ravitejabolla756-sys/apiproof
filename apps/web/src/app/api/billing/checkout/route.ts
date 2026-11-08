@@ -12,6 +12,9 @@ export async function POST(req: Request) {
   }
 
   const workspace = await resolveWorkspaceForRequest(req, user.id);
+  if (workspace.role !== 'owner') {
+    return NextResponse.json({ error: 'BILLING_OWNER_REQUIRED: Only workspace owners can manage billing.' }, { status: 403 });
+  }
   const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
   const planId = body.planId;
 

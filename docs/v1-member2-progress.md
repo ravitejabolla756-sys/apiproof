@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-07/BILL-08 owner-only billing boundary
+
+- Change: Required workspace-owner capability for checkout and billing-portal requests before any billing behavior; the beta-unavailable boundary remains intact and no provider call is made.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/member2-billing-boundaries.test.ts` passed 3/3, including a member request scoped to an owner’s workspace.
+- Scope: local BILL-07/BILL-08 authorization hardening only; provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 ## 2026-11-08 checkpoint — NOT-03 notification preference pair validation
 
 - Change: Tightened notification preference validation to the exact server-owned category/channel pairs, rejecting unsupported combinations such as security via Slack before persistence.
