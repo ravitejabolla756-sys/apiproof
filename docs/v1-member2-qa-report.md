@@ -2,6 +2,11 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Public authenticated regression
+
+- PASS: Production build generated 83 static pages; complete CI-mode public-site/authenticated suite passed 26/26 in 40.6 seconds, including account and notification keyboard recovery, public accessibility, auth, workspace and invitation journeys.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, integrated staging, full manual screen-reader review, backend contracts and production remain open.
+
 ## 2026-11-08 — Account/notification retry keyboard coverage
 
 - PASS: Focused authenticated account/notification journeys passed 2/2 in 21.9 seconds; account-load and notification-preferences retry controls now verify keyboard focus and Enter activation, retaining loading/error, table and axe assertions.

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 public authenticated regression
+
+- Change: Rebuilt the web production bundle and ran the complete public-site/authenticated product suite after adding keyboard recovery checks for account settings and notification preferences.
+- Evidence: Production build generated 83 static pages; CI-mode Playwright suite passed 26/26 in 40.6 seconds on isolated SQLite `/tmp/myowl-v1-public-site-current-2.db`. Artifacts: `/tmp/myowl-v1-public-site-current-artifacts`, `/tmp/myowl-v1-public-site-current-report`.
+- Scope: local UI-12/UI-13 public/authenticated regression evidence only; hosted CI, integrated staging, full manual screen-reader review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 account/notification retry keyboard coverage
 
 - Change: Extended the authenticated account-settings and notification-preferences recovery journeys to focus their retry controls, verify focus visibility, and activate recovery with Enter while preserving the existing loading/error, table, and axe assertions.
