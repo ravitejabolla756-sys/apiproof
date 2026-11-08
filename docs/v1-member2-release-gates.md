@@ -33,3 +33,5 @@ Latest dashboard-navigation evidence: brand and Overview breadcrumb links are me
 Latest repository-dialog evidence: selected repository labels are measured at 44px or larger with named-radio keyboard selection, focus recovery and axe-clean dialog coverage. GitHub configuration, hosted CI, PostgreSQL/RBAC, manual review, staging and production remain open.
 
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
+
+Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

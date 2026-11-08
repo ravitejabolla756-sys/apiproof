@@ -6,5 +6,6 @@ test('marks legal and refund pages as versioned drafts pending approval', async 
     const metadata = page.getByTestId('legal-draft-metadata');
     await expect(metadata, route).toHaveText('Draft version 0.1 · Effective date: pending owner/legal approval');
     await expect(metadata, route).toBeVisible();
+    if (route === '/refunds') for (const link of [page.getByRole('link', { name: 'contact page' }), page.getByRole('link', { name: 'Review beta pricing language' })]) expect((await link.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   }
 });
