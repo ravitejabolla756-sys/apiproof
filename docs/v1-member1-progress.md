@@ -358,3 +358,9 @@ Phase 0 read-only checks:
 
 - On code HEAD `27b83de2fe260b908d924edf33a8740dd0f7e683`, the full serial Vitest suite passes: 168 files passed / 1 skipped (169 total), 1,410 tests passed / 4 skipped (1,414 total), runtime 296.05 seconds. The four skips remain the conditional Docker-backed tests in `tests/docker-verification-live.test.ts`. The suite used a process-only random seed for local SQLite fixtures; no remote database URL or service was configured.
 - `pnpm build` also passes on this code state. Next.js rewrote `apps/web/next-env.d.ts` and `apps/web/tsconfig.json` during the build; both generated changes were inspected and restored, leaving only the pre-existing untracked paths.
+
+### 2026-11-08 Next.js ESLint integration and logo image optimization
+
+- Registered the matching `@next/eslint-plugin-next` flat config for `apps/web` and configured the monorepo root lookup so lint invoked from the repository root or web app resolves the Next.js project. `pnpm lint` passes without the prior plugin-detection or Pages-directory warnings.
+- Updated the shared logo component to use `next/image` with the source asset dimensions. Added the Next.js 15.5.29-matched ESLint plugin as a root development dependency with lockfile update.
+- `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass. Build-generated `apps/web/next-env.d.ts` and `apps/web/tsconfig.json` were restored and are absent from the source diff. No production task or deployment was run. This maintenance change does not independently complete a Member 1 backlog task.
