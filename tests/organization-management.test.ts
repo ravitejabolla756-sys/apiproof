@@ -14,6 +14,7 @@ import {
   listWorkspaceAuditEvents,
   listWorkspaceAuditPage,
   removeOrganizationMember,
+  revokeWorkspaceInvitation,
   updateMemberRole,
   updateWorkspaceSettings,
 } from '../apps/web/src/lib/server/organization-service.js';
@@ -123,6 +124,16 @@ describe('workspace administration', () => {
     expect(firstRow!.revoked_at).toEqual(expect.any(String));
     expect(secondRow).toMatchObject({ id: second.invitation.id, revoked_at: null });
     await expect(acceptWorkspaceInvitation(owner.user.id, first.token)).rejects.toMatchObject({ code: 'INVITATION_ALREADY_USED' });
+  });
+
+  it('records invitation cancellation in the same transaction as revocation', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const created = await createWorkspaceInvitation(owner.user.id, workspace.id, 'cancel@example.test', 'member');
+
+    await revokeWorkspaceInvitation(owner.user.id, workspace.id, created.invitation.id);
+    expect(await getDatabase().queryOne<{ revoked_at: string | null }>('SELECT revoked_at FROM workspace_invitations WHERE id = ?', [created.invitation.id])).toMatchObject({ revoked_at: expect.any(String) });
+    expect(await getDatabase().queryOne<{ action: string; target_id: string }>("SELECT action, target_id FROM workspace_audit_events WHERE action = 'invitation.revoked' AND target_id = ?", [created.invitation.id])).toEqual({ action: 'invitation.revoked', target_id: created.invitation.id });
   });
 
   it('rejects an expired invitation without creating membership', async () => {

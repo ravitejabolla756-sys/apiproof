@@ -240,9 +240,11 @@ export async function createWorkspaceInvitation(userId: string, workspaceId: str
 export async function revokeWorkspaceInvitation(userId: string, workspaceId: string, invitationId: string): Promise<void> {
   await requireWorkspaceOwner(userId, workspaceId);
   const db = getDatabase();
-  const result = await db.execute('UPDATE workspace_invitations SET revoked_at = ? WHERE id = ? AND workspace_id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitationId, workspaceId]);
-  if (result.changes !== 1) throw new OrganizationServiceError('Invitation not found or already closed.', 'INVITATION_NOT_FOUND');
-  await recordAudit(db, workspaceId, userId, 'invitation.revoked', 'invitation', invitationId);
+  await db.transaction(async (tx) => {
+    const result = await tx.execute('UPDATE workspace_invitations SET revoked_at = ? WHERE id = ? AND workspace_id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitationId, workspaceId]);
+    if (result.changes !== 1) throw new OrganizationServiceError('Invitation not found or already closed.', 'INVITATION_NOT_FOUND');
+    await recordAudit(tx, workspaceId, userId, 'invitation.revoked', 'invitation', invitationId);
+  });
 }
 
 export async function acceptWorkspaceInvitation(userId: string, token: string): Promise<WorkspaceWithRole> {

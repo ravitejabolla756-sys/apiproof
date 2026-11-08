@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-03/ORG-11 atomic invitation cancellation audit
+
+- PASS: Invitation cancellation and its administrative audit event now commit atomically.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 14/14.
+- NOT_RUN: Transactional email, final retention/RBAC contract, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 — BILL-07/BILL-08 owner-only billing boundary
 
 - PASS: Checkout and billing-portal routes reject workspace members with `BILLING_OWNER_REQUIRED` before any paid or portal behavior, while owners retain the truthful beta-unavailable response.

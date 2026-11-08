@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-03/ORG-11 atomic invitation cancellation audit
+
+- Change: Wrapped invitation cancellation and its `invitation.revoked` audit event in one transaction, preventing a revoked invitation from lacking its corresponding administrative event if audit persistence fails.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 14/14, including revocation/audit pairing.
+- Scope: local ORG-03/ORG-11 mutation and audit integrity only; transactional email, final retention/RBAC contract, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — BILL-07/BILL-08 owner-only billing boundary
 
 - Change: Required workspace-owner capability for checkout and billing-portal requests before any billing behavior; the beta-unavailable boundary remains intact and no provider call is made.
