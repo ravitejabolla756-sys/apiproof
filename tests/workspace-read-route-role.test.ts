@@ -126,6 +126,11 @@ describe('workspace read route role validation', () => {
     expect(JSON.stringify(await detailedFinding.json())).not.toContain(REPORT_LEAK_MARKER);
 
     await db.execute('UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?', ['owner-like', workspace.id, user.id]);
+    const unknownRoleFinding = await findingGet(new Request('http://localhost/api/findings/role_finding', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }), { params: Promise.resolve({ id: 'role_finding' }) });
+    expect(unknownRoleFinding.status).toBe(404);
+    expect(JSON.stringify(await unknownRoleFinding.json())).not.toContain('Role fixture finding');
     await db.execute(`
       INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
       VALUES ('role_personal_activity', ?, NULL, 'account_updated', 'Personal activity', 'Own account event', ?)
@@ -143,6 +148,11 @@ describe('workspace read route role validation', () => {
     }
 
     const outsider = await createUserWithSession('read-outsider@example.com', 'Pass12345!', 'Read Outsider');
+    const outsiderFinding = await findingGet(new Request('http://localhost/api/findings/role_finding', {
+      headers: { cookie: `apiproof_session=${outsider.session.id}` },
+    }), { params: Promise.resolve({ id: 'role_finding' }) });
+    expect(outsiderFinding.status).toBe(404);
+    expect(JSON.stringify(await outsiderFinding.json())).not.toContain('Role fixture finding');
     for (const route of routes) {
       const response = await route.get(new Request(route.url, {
         headers: { cookie: `apiproof_session=${outsider.session.id}` },
@@ -174,6 +184,12 @@ describe('workspace read route role validation', () => {
         'foreignFixture()', 'open', 'test', '[]', '{}', ?
       )
     `, [now]);
+
+    const foreignDetailedFinding = await findingGet(new Request('http://localhost/api/findings/foreign_finding', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }), { params: Promise.resolve({ id: 'foreign_finding' }) });
+    expect(foreignDetailedFinding.status).toBe(404);
+    expect(JSON.stringify(await foreignDetailedFinding.json())).not.toContain('Foreign fixture finding');
 
     const ownFindingResponse = await findingsGet(new Request('http://localhost/api/findings?repositoryId=role_repo', {
       headers: { cookie: `apiproof_session=${session.id}` },

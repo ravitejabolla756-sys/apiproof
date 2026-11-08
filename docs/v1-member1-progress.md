@@ -832,3 +832,8 @@ Phase 0 read-only checks:
 
 - On code HEAD `b1a503da24f5ad34d8d80f5795c719de1c09c67b`, `tests/sec16-load-resilience.test.ts` passes 12/12 with process-only local seed and all application/staging DB URLs unset. The four 24-operation scenarios ran at concurrency 4; latest p50/p95/p99 ms: API health 0.445/3.753/4.091, GitHub webhook ping 4.228/5.720/6.369, SQLite query 0.037/0.074/0.185, worker metrics 0.240/0.406/0.647. Full sample and throughput are recorded in `docs/sec16-local-measurements.md`.
 - These timings are single-run local observations and differ from prior samples; no network traffic was generated and no capacity/SLO or external infrastructure claim is made.
+
+### 2026-11-08 ORG-05 detailed finding authorization regression
+
+- Extended `tests/workspace-read-route-role.test.ts` to exercise the authenticated `GET /api/findings/[id]` route with an unknown persisted workspace role and with cross-tenant users, including a known foreign finding ID. All three denied responses are 404 and do not disclose the finding title.
+- The focused route test passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. The full suite was not rerun for this test-only addition. PostgreSQL/RLS isolation and Member 2's role contract remain external/shared gates.
