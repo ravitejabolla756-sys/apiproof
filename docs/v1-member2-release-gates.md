@@ -222,6 +222,8 @@ Latest organization-safety evidence: owner demotion and removal enforce the last
 
 Latest audit-data evidence: audit metadata is bounded and sensitive key names are redacted at both write and read boundaries; repository typecheck passes and organization-management coverage passes 12/12. Final audit role/retention policy, PostgreSQL, hosted CI, staging and production remain open; release recommendation stays NO-GO.
 
+Latest invitation-safety evidence: invitation acceptance validates existing membership transactionally and preserves an unaccepted invitation on `ALREADY_A_MEMBER`; repository typecheck passes and organization-management coverage passes 13/13. Transactional email, final organization contract, PostgreSQL, hosted CI, staging and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

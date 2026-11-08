@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-03 transactional invitation membership guard
+
+- Change: Moved existing-membership validation into the invitation-acceptance transaction and normalized a concurrent membership uniqueness race to stable `ALREADY_A_MEMBER` behavior, preserving the invitation as unaccepted.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 13/13.
+- Scope: local ORG-03 acceptance/race hardening only; approved transactional email, final Member 1 organization contract, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-11 bounded and redacted audit metadata
 
 - Change: Added bounded recursive audit-metadata sanitization at write and read boundaries, redacting sensitive key names and truncating oversized/deep values without exposing raw secrets through the audit API.

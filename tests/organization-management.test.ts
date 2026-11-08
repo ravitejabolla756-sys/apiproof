@@ -96,6 +96,17 @@ describe('workspace administration', () => {
     await expect(acceptWorkspaceInvitation(invited.user.id, created.token)).rejects.toMatchObject({ code: 'INVITATION_ALREADY_USED' });
   });
 
+  it('returns a stable already-member error when an invitation races membership creation', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const invited = await createUserWithSession('member@example.test', 'MemberPassword123!', 'Member');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const created = await createWorkspaceInvitation(owner.user.id, workspace.id, invited.user.email, 'member');
+    await getDatabase().execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', ['wsm_existing', workspace.id, invited.user.id, 'member', new Date().toISOString()]);
+
+    await expect(acceptWorkspaceInvitation(invited.user.id, created.token)).rejects.toMatchObject({ code: 'ALREADY_A_MEMBER' });
+    expect(await getDatabase().queryOne('SELECT accepted_at FROM workspace_invitations WHERE id = ?', [created.invitation.id])).toEqual({ accepted_at: null });
+  });
+
   it('rotates a pending invitation for resend and revokes the previous token', async () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const workspace = await getDefaultWorkspaceForUser(owner.user.id);

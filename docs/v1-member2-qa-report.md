@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-03 transactional invitation membership guard
+
+- PASS: Invitation acceptance checks membership inside the transaction and returns stable `ALREADY_A_MEMBER` behavior without consuming the invitation when membership already exists.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 13/13.
+- NOT_RUN: Approved transactional email, final Member 1 organization contract, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-11 bounded and redacted audit metadata
 
 - PASS: Audit metadata is bounded and sensitive key names are redacted both when written and when read, protecting existing rows as well as new events.

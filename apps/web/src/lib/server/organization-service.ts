@@ -256,15 +256,21 @@ export async function acceptWorkspaceInvitation(userId: string, token: string): 
   if (invitation.accepted_at || invitation.revoked_at) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
   if (Date.parse(invitation.expires_at) <= Date.now()) throw new OrganizationServiceError('Invitation has expired.', 'INVITATION_EXPIRED');
   if (cleanEmail(user.email) !== cleanEmail(invitation.email)) throw new OrganizationServiceError('Sign in with the invited email address to accept this invitation.', 'INVITATION_EMAIL_MISMATCH');
-  const existingMember = await db.queryOne('SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?', [invitation.workspace_id, userId]);
-  if (existingMember) throw new OrganizationServiceError('That account is already a workspace member.', 'ALREADY_A_MEMBER');
-
-  await db.transaction(async (tx) => {
-    const update = await tx.execute('UPDATE workspace_invitations SET accepted_at = ? WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitation.id]);
-    if (update.changes !== 1) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
-    await tx.execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', [id('wsm'), invitation.workspace_id, userId, invitation.role, new Date().toISOString()]);
-    await recordAudit(tx, invitation.workspace_id, userId, 'invitation.accepted', 'invitation', invitation.id);
-  });
+  try {
+    await db.transaction(async (tx) => {
+      const existingMember = await tx.queryOne('SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?', [invitation.workspace_id, userId]);
+      if (existingMember) throw new OrganizationServiceError('That account is already a workspace member.', 'ALREADY_A_MEMBER');
+      const update = await tx.execute('UPDATE workspace_invitations SET accepted_at = ? WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitation.id]);
+      if (update.changes !== 1) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
+      await tx.execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', [id('wsm'), invitation.workspace_id, userId, invitation.role, new Date().toISOString()]);
+      await recordAudit(tx, invitation.workspace_id, userId, 'invitation.accepted', 'invitation', invitation.id);
+    });
+  } catch (error) {
+    if (String(error).toLowerCase().includes('unique') && String(error).toLowerCase().includes('workspace_members')) {
+      throw new OrganizationServiceError('That account is already a workspace member.', 'ALREADY_A_MEMBER');
+    }
+    throw error;
+  }
   return requireWorkspaceMember(userId, invitation.workspace_id);
 }
 
