@@ -50,7 +50,7 @@ Latest public performance evidence: the current production bundle passed the 9-r
 
 Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes a polite atomic status region; Impeccable detector, targeted lint, repository typecheck and provider/repository recovery browser coverage pass 2/2. Hosted CI, manual assistive-technology review, staging and production remain open.
 
-Historical UI-13 evidence (superseded by the current 161/161 run above): the rebuilt current-worktree production bundle generated 83 pages and the complete isolated Playwright matrix passed 159/159 in 3.8 minutes on port 3101 with a fresh SQLite database. Hosted CI, integrated staging, full manual assistive-technology review and production remain open.
+Historical UI-13 evidence (superseded by the current 163/163 run above): the rebuilt current-worktree production bundle generated 83 pages and the complete isolated Playwright matrix passed 159/159 in 3.8 minutes on port 3101 with a fresh SQLite database. Hosted CI, integrated staging, full manual assistive-technology review and production remain open.
 
 Latest browser-harness evidence: Playwright now refuses existing-server reuse by default, supports `PLAYWRIGHT_PORT`, and the focused provider/repository recovery suite passes 2/2 against a newly spawned port-3101 server. Hosted CI, integrated staging and production remain open.
 
@@ -144,9 +144,9 @@ Latest provider-rule evidence: delayed provider-rule loading and existing failur
 
 Latest compatibility-map evidence: delayed shared-component loading and existing initial/refresh retry recovery pass 2/2 with the loading status marked busy. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
 
-Historical browser-E2E evidence (superseded by the current 161/161 run above): the production build generated 83 pages and the complete 49-spec Playwright matrix passed 130/130 in 4.6 minutes on one worker. Hosted CI, integrated staging, PostgreSQL/RBAC, providers, manual assistive-technology review and production remain open.
+Historical browser-E2E evidence (superseded by the current 163/163 run above): the production build generated 83 pages and the complete 49-spec Playwright matrix passed 130/130 in 4.6 minutes on one worker. Hosted CI, integrated staging, PostgreSQL/RBAC, providers, manual assistive-technology review and production remain open.
 
-Historical browser-regression evidence (superseded by the current 161/161 run above): status assertions were scoped to their intended live regions after the workspace-picker announcement was added; the 83-page production build passed the then-current 132-test Playwright matrix on one worker. Hosted CI, integrated staging, PostgreSQL/RBAC, providers, manual review and production remain open.
+Historical browser-regression evidence (superseded by the current 163/163 run above): status assertions were scoped to their intended live regions after the workspace-picker announcement was added; the 83-page production build passed the then-current 132-test Playwright matrix on one worker. Hosted CI, integrated staging, PostgreSQL/RBAC, providers, manual review and production remain open.
 
 Latest visible-loading evidence: findings and pull-request live status announcements expose busy semantics directly, with rebuilt-bundle focused coverage passing 2/2. Hosted CI, integrated staging, PostgreSQL/RBAC, provider approval, manual review and production remain open.
 
@@ -206,7 +206,7 @@ Latest findings/repository evidence: findings-list and repository-list refresh c
 
 Latest compatibility-map evidence: the initial retry control remains visible and exposes `aria-busy` while recovery is pending; loading/recovery coverage passes 2/2 and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
 
-Historical full-browser evidence (superseded by the current 161/161 run above): after correcting disabled-button contrast discovered on `/dashboard/inventory`, the complete local CI-mode matrix passed 142/142 in 3.6 minutes and the 83-page production build passed. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
+Historical full-browser evidence (superseded by the current 163/163 run above): after correcting disabled-button contrast discovered on `/dashboard/inventory`, the complete local CI-mode matrix passed 142/142 in 3.6 minutes and the 83-page production build passed. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
 
 Latest unit-regression evidence: the seeded local Vitest regression passes 1,341 tests with 4 skipped across 161 passing test files and 1 skipped file in 122.22 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
 
@@ -274,7 +274,7 @@ Slack action retries preserve their degraded-state alert and expose disabled plu
 
 Account Settings preserves its initial-load degraded state and exposes disabled plus `aria-busy` on Retry account load while recovery is pending; focused account action/recovery coverage passes 2/2, the corrected public-site account/error regression passes 1/1, and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 deletion contract and production remain open. Release recommendation stays NO-GO.
 
-## Historical full browser evidence — 2026-11-08 (superseded by the current 161/161 run above)
+## Historical full browser evidence — 2026-11-08 (superseded by the current 163/163 run above)
 
 The rebuilt production bundle passes the complete local CI-mode Playwright matrix, 158/158 in 4.5 minutes, across public/authenticated accessibility, responsive, auth, billing-boundary, organization, settings, Slack, repository, findings, migration/PR, provider-review and degraded-state journeys. This remains local evidence; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider/legal approvals and production remain open. Release recommendation stays NO-GO.
 

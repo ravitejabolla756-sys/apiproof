@@ -929,7 +929,7 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
 - The current shared workspace is authoritative for this continuation. It is on `codex/v1-frontend-product` with only the two pre-existing GSAP dependency edits in `apps/web/package.json` and `pnpm-lock.yaml`; they remain unstaged and untouched.
 - The historical Member 1/old-computer Windows worktree paths from the supplied audit are provenance notes only and were not accessed, merged, reset, cleaned or assimilated here.
-- Remote: `https://github.com/ravitejabolla756-sys/apiproof.git`; baseline `HEAD...origin/main` was `0 0`.
+- Remote: `https://github.com/ravitejabolla756-sys/apiproof.git`; no local `origin/main` ref exists, and the current branch is 488 commits ahead of `origin/codex/v1-frontend-product` with no unpushed commits from this checkpoint.
 - Architecture: Next.js App Router, Tailwind-style utility classes, direct SQLite/PostgreSQL adapters, workspace membership predicates, Vitest backend/contract coverage, and a committed single-worker Playwright/axe local browser harness.
 - No production/staging DB, provider, payment, email, deployment, secret or remote Git operation was used.
 
@@ -970,8 +970,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 ### Current evidence reconciliation — 2026-11-07
 
-- `UI-12`: the later committed evidence supersedes the older inventory counts: the dedicated route accessibility audit is 9/9, the route/media matrix is 9/9, the combined route/data-state matrix is 25/25, the focused organization administration journey is 11/11, and the isolated current browser regression is 161/161. Workspace Settings guards dependent-request failures against false disconnected/empty states; workspace administration has initial-load, member, invitation, and audit-trail retry recovery; Slack status and account settings have explicit unavailable/retry recovery; repository and finding detail populated/error states have mobile axe/overflow coverage; the landing pipeline now passes axe after contrast corrections. These remain automated/local checks; manual screen-reader and hosted verification are open.
-- `UI-13`: the latest rebuilt-bundle isolated browser regression is 161/161 in 4.0 minutes; the Playwright harness retains failure traces, screenshots and video, while the workflow uploads HTML and test-results artifacts for 14 days. Hosted CI and integrated staging remain unverified.
+- `UI-12`: the later committed evidence supersedes the older inventory counts: the dedicated route accessibility audit is 9/9, the route/media matrix is 9/9, the combined route/data-state matrix is 25/25, the focused organization administration journey is 11/11, and the isolated current browser regression is 163/163. Workspace Settings guards dependent-request failures against false disconnected/empty states; workspace administration has initial-load, member, invitation, and audit-trail retry recovery; Slack status and account settings have explicit unavailable/retry recovery; repository and finding detail populated/error states have mobile axe/overflow coverage; the landing pipeline and public/auth-entry contrast audits now pass locally. These remain automated/local checks; manual screen-reader and hosted verification are open.
+- `UI-13`: the latest rebuilt-bundle isolated browser regression is 163/163 in 4.4 minutes; the Playwright harness retains failure traces, screenshots and video, while the workflow uploads HTML and test-results artifacts for 14 days. Hosted CI and integrated staging remain unverified.
 - `WEB-15`: the latest local public-site evidence includes the explicit 404 route, contact required-field recovery, truthful unavailable media state, footer landmark, decorative-art semantics and public-route accessibility coverage; deployment performance and manual review remain open.
 
 ## Current checkpoint
