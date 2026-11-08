@@ -52,6 +52,49 @@ const SUBSCRIPTION_STATUSES = new Set(['active', 'past_due', 'canceled', 'triali
 const BILLING_PLAN_IDS = new Set(['free', 'pro', 'team', 'enterprise']);
 export const MAX_BILLING_WEBHOOK_BYTES = 256 * 1024;
 
+function isCanonicalIsoTimestamp(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
+}
+
+function normalizeProviderPeriod(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+
+  let milliseconds: number;
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    milliseconds = value * 1_000;
+    if (!Number.isFinite(milliseconds)) throw new BillingWebhookInputError();
+  } else if (typeof value === 'string') {
+    const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(Z|[+-](\d{2}):(\d{2}))$/.exec(value);
+    if (!match) throw new BillingWebhookInputError();
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6]);
+    const offsetHour = Number(match[9] ?? 0);
+    const offsetMinute = Number(match[10] ?? 0);
+    const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    if (month < 1 || month > 12 || day < 1 || day > daysInMonth[month - 1]!
+      || hour > 23 || minute > 59 || second > 59
+      || offsetHour > 23 || offsetMinute > 59) {
+      throw new BillingWebhookInputError();
+    }
+    milliseconds = Date.parse(value);
+  } else {
+    throw new BillingWebhookInputError();
+  }
+
+  const date = new Date(milliseconds);
+  if (!Number.isFinite(date.getTime())) throw new BillingWebhookInputError();
+  return date.toISOString();
+}
+
 /** Validate provider-neutral event data before any durable billing projection. */
 export function assertNormalizedBillingWebhookEvent(value: unknown): asserts value is BillingWebhookEvent {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BillingWebhookInputError();
@@ -89,7 +132,7 @@ export function assertNormalizedBillingWebhookEvent(value: unknown): asserts val
 
   for (const key of ['periodStart', 'periodEnd'] as const) {
     const period = event[key];
-    if (period !== undefined && (typeof period !== 'string' || !Number.isFinite(Date.parse(period)))) {
+    if (period !== undefined && !isCanonicalIsoTimestamp(period)) {
       throw new BillingWebhookInputError();
     }
   }
@@ -160,16 +203,8 @@ export class MockBillingProvider implements BillingProvider {
       ? (itemData as Record<string, unknown>).price : undefined;
     const plan = price && typeof price === 'object' && !Array.isArray(price)
       ? (price as Record<string, unknown>).nickname : body.plan_id;
-    const normalizePeriod = (value: unknown): string | undefined => {
-      if (value === undefined || value === null) return undefined;
-      const milliseconds = typeof value === 'number' && Number.isFinite(value) ? value * 1000
-        : typeof value === 'string' ? Date.parse(value) : Number.NaN;
-      const date = new Date(milliseconds);
-      if (!Number.isFinite(date.getTime())) throw new BillingWebhookInputError();
-      return date.toISOString();
-    };
-    const periodStart = normalizePeriod(object.current_period_start ?? body.period_start);
-    const periodEnd = normalizePeriod(object.current_period_end ?? body.period_end);
+    const periodStart = normalizeProviderPeriod(object.current_period_start ?? body.period_start);
+    const periodEnd = normalizeProviderPeriod(object.current_period_end ?? body.period_end);
 
     const event: BillingWebhookEvent = {
       id,
