@@ -14,6 +14,8 @@ test('keeps beta billing boundaries truthful in browser flows', async ({ page })
   await signIn(page);
   await page.goto('/dashboard/settings');
   await expect(page.getByRole('link', { name: 'View paid-plan rollout' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Invoice history' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Invoice history is unavailable in the free beta.' })).toBeVisible();
   const checkout = await page.request.post('/api/billing/checkout', { data: { planId: 'team' } });
   expect(checkout.status()).toBe(403);
   expect(await checkout.json()).toMatchObject({ error: expect.stringContaining('BILLING_NOT_AVAILABLE') });

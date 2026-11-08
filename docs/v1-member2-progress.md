@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-09/UI-12 truthful invoice-history state
+
+- Change: Added an explicit settings-page Invoice history section that announces provider-backed invoice history is unavailable in the free beta; no invoice API, provider call, paid entitlement or payment flow was added.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; `tests/e2e/billing-boundaries.spec.ts` passed 1/1 in 18.9 seconds; `pnpm --filter @apiproof/web build` generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-billing-boundaries-artifacts-polGlL`.
+- Scope: local BILL-09/UI-12 truthfulness and accessibility evidence only; provider selection, invoice retention policy, Member 1 billing contract, legal approval, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-03 invitation expiry contract test
 
 - Change: Added backend contract coverage for an expired invitation, asserting the stable `INVITATION_EXPIRED` refusal and verifying no workspace membership is created.

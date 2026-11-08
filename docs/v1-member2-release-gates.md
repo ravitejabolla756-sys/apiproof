@@ -198,6 +198,10 @@ Account Settings preserves its initial-load degraded state and exposes disabled 
 
 The rebuilt production bundle passes the complete local CI-mode Playwright matrix, 158/158 in 4.5 minutes, across public/authenticated accessibility, responsive, auth, billing-boundary, organization, settings, Slack, repository, findings, migration/PR, provider-review and degraded-state journeys. This remains local evidence; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider/legal approvals and production remain open. Release recommendation stays NO-GO.
 
+## Latest invoice-history evidence — 2026-11-08
+
+Workspace settings now explicitly announces that provider-backed invoice history and paid entitlements are unavailable in the free beta; the focused billing-boundary journey passes 1/1 and the production build generates 83 static pages. Provider selection, invoice policy, hosted CI, staging, manual assistive-technology review and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

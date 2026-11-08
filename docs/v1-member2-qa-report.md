@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-09/UI-12 invoice-history beta boundary
+
+- PASS: Settings now exposes an explicit `Invoice history` heading and polite status stating that provider-backed invoices and paid entitlements are unavailable in the free beta.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; `tests/e2e/billing-boundaries.spec.ts` passed 1/1 in 18.9 seconds; web production build generated 83 static pages.
+- NOT_RUN: Provider-backed invoice history, billing retention policy, legal approval, hosted CI, integrated staging, manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-member2-billing-boundaries-artifacts-polGlL`.
+
 ## 2026-11-08 — ORG-03 invitation expiry
 
 - PASS: Added an expired-invitation backend assertion covering stable refusal and no membership creation; `tests/organization-management.test.ts` passed 11/11 in 882 ms.
