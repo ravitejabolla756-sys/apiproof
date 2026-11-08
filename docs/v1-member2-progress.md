@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-04 atomic last-owner protection
+
+- Change: Moved owner-role demotion and member-removal checks into the mutation transaction and write predicates, so concurrent requests cannot bypass the at-least-one-owner invariant between a preflight count and the write.
+- Evidence: Targeted ESLint, `git diff --check` and `tests/organization-management.test.ts` passed 11/11; the regression asserts the sole owner remains an owner after both protected operations fail.
+- Scope: local ORG-04 authorization/invariant hardening only; final Member 1 revocation contract, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12/WEB-15 public decorative-icon semantics (docs, features, pipeline, legal, blog)
 
 - Change: Marked presentation-only Lucide icons as `aria-hidden="true"` across the public Docs, Features, How It Works, Privacy, Terms and Blog routes; visible labels and link names remain authoritative.

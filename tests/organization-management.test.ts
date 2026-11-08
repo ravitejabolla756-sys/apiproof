@@ -122,6 +122,8 @@ describe('workspace administration', () => {
     const ownerMember = members.find((member) => member.userId === owner.user.id)!;
     await expect(updateMemberRole(owner.user.id, workspace.id, ownerMember.userId, 'member')).rejects.toMatchObject({ code: 'LAST_OWNER_REQUIRED' });
     await expect(removeOrganizationMember(owner.user.id, workspace.id, ownerMember.userId)).rejects.toMatchObject({ code: 'LAST_OWNER_REQUIRED' });
+    expect(await getDatabase().queryOne<{ role: string }>('SELECT role FROM workspace_members WHERE id = ?', [ownerMember.id])).toEqual({ role: 'owner' });
+    expect(await getDatabase().queryOne<{ count: number }>("SELECT COUNT(*) as count FROM workspace_members WHERE workspace_id = ? AND role = 'owner'", [workspace.id])).toEqual({ count: 1 });
   });
 
   it('allows an owner to promote a member and revoke access with session invalidation', async () => {

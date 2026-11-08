@@ -145,14 +145,18 @@ export async function listOrganizationMembers(userId: string, workspaceId: strin
 export async function updateMemberRole(userId: string, workspaceId: string, targetUserId: string, role: WorkspaceRole): Promise<OrganizationMember[]> {
   await requireWorkspaceOwner(userId, workspaceId);
   const db = getDatabase();
-  const member = await db.queryOne<{ id: string; user_id: string; role: WorkspaceRole }>('SELECT id, user_id, role FROM workspace_members WHERE user_id = ? AND workspace_id = ?', [targetUserId, workspaceId]);
-  if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
-  if (member.role === 'owner' && role !== 'owner') {
-    const owners = await db.queryOne<{ count: number }>("SELECT COUNT(*) as count FROM workspace_members WHERE workspace_id = ? AND role = 'owner'", [workspaceId]);
-    if (Number(owners?.count ?? 0) <= 1) throw new OrganizationServiceError('A workspace must retain at least one owner.', 'LAST_OWNER_REQUIRED');
-  }
   await db.transaction(async (tx) => {
-    await tx.execute('UPDATE workspace_members SET role = ? WHERE user_id = ? AND workspace_id = ?', [role, targetUserId, workspaceId]);
+    const member = await tx.queryOne<{ id: string; user_id: string; role: WorkspaceRole }>('SELECT id, user_id, role FROM workspace_members WHERE user_id = ? AND workspace_id = ?', [targetUserId, workspaceId]);
+    if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
+    const update = await tx.execute(
+      `UPDATE workspace_members
+       SET role = ?
+       WHERE user_id = ? AND workspace_id = ?
+         AND (role <> 'owner' OR ? = 'owner' OR
+              (SELECT COUNT(*) FROM workspace_members WHERE workspace_id = ? AND role = 'owner') > 1)`,
+      [role, targetUserId, workspaceId, role, workspaceId],
+    );
+    if (update.changes !== 1) throw new OrganizationServiceError('A workspace must retain at least one owner.', 'LAST_OWNER_REQUIRED');
     await recordAudit(tx, workspaceId, userId, 'member.role_updated', 'member', member.id, { userId: member.user_id, role });
   });
   return listOrganizationMembers(userId, workspaceId);
@@ -161,14 +165,17 @@ export async function updateMemberRole(userId: string, workspaceId: string, targ
 export async function removeOrganizationMember(userId: string, workspaceId: string, targetUserId: string): Promise<void> {
   await requireWorkspaceOwner(userId, workspaceId);
   const db = getDatabase();
-  const member = await db.queryOne<{ id: string; user_id: string; role: WorkspaceRole }>('SELECT id, user_id, role FROM workspace_members WHERE user_id = ? AND workspace_id = ?', [targetUserId, workspaceId]);
-  if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
-  if (member.role === 'owner') {
-    const owners = await db.queryOne<{ count: number }>("SELECT COUNT(*) as count FROM workspace_members WHERE workspace_id = ? AND role = 'owner'", [workspaceId]);
-    if (Number(owners?.count ?? 0) <= 1) throw new OrganizationServiceError('A workspace must retain at least one owner.', 'LAST_OWNER_REQUIRED');
-  }
   await db.transaction(async (tx) => {
-    await tx.execute('DELETE FROM workspace_members WHERE user_id = ? AND workspace_id = ?', [targetUserId, workspaceId]);
+    const member = await tx.queryOne<{ id: string; user_id: string; role: WorkspaceRole }>('SELECT id, user_id, role FROM workspace_members WHERE user_id = ? AND workspace_id = ?', [targetUserId, workspaceId]);
+    if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
+    const removal = await tx.execute(
+      `DELETE FROM workspace_members
+       WHERE user_id = ? AND workspace_id = ?
+         AND (role <> 'owner' OR
+              (SELECT COUNT(*) FROM workspace_members WHERE workspace_id = ? AND role = 'owner') > 1)`,
+      [targetUserId, workspaceId, workspaceId],
+    );
+    if (removal.changes !== 1) throw new OrganizationServiceError('A workspace must retain at least one owner.', 'LAST_OWNER_REQUIRED');
     await tx.execute('DELETE FROM sessions WHERE user_id = ?', [member.user_id]);
     await recordAudit(tx, workspaceId, userId, 'member.removed', 'member', member.id, { userId: member.user_id });
   });
