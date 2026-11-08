@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-07/BILL-08 subscription workspace-context error boundary
+
+- Change: The billing subscription read route now translates malformed or unavailable workspace contexts through the shared organization error response; its imports also follow the repository’s explicit `.js` module-resolution convention.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `tests/member2-billing-boundaries.test.ts` passed 4/4, including typed `INVALID_WORKSPACE_ID` responses from checkout, portal and subscription routes.
+- Scope: local BILL-07/BILL-08 API-boundary hardening only; provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 ## 2026-11-08 checkpoint — WEB-13/UI-12 semantic no-monitor status
 
 - Change: The truthful no-monitor status message now exposes a polite, atomic `role="status"` region, so assistive technology receives the current unavailable-monitor state without inventing uptime or incident claims.

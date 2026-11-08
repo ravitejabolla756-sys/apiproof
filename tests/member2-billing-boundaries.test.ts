@@ -6,6 +6,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { POST as checkoutPost } from '../apps/web/src/app/api/billing/checkout/route.js';
 import { POST as portalPost } from '../apps/web/src/app/api/billing/portal/route.js';
+import { GET as subscriptionGet } from '../apps/web/src/app/api/billing/subscription/route.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-member2-billing-boundaries-${process.pid}.db`);
 
@@ -80,5 +81,12 @@ describe('beta billing boundaries', () => {
     }));
     expect(portal.status).toBe(400);
     expect(await portal.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+
+    const subscription = await subscriptionGet(new Request('https://apiproof.test/api/billing/subscription?workspaceId=not%20safe', {
+      method: 'GET',
+      headers,
+    }));
+    expect(subscription.status).toBe(400);
+    expect(await subscription.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 });

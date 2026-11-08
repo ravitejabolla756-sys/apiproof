@@ -20,6 +20,8 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest billing API evidence: checkout, portal and subscription routes normalize malformed explicit workspace contexts to typed `INVALID_WORKSPACE_ID` responses; billing-boundary coverage passes 4/4 and repository typecheck passes. Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 Latest status evidence: the no-monitor message is a polite atomic `role="status"` region; the focused status browser suite passes 2/2 after the 83-page production build, with no fabricated uptime or incident claims. Approved monitor source, incident rehearsal, hosted CI, staging, manual assistive-technology review and production remain open.
 
 Latest billing-context evidence: checkout and portal return typed `INVALID_WORKSPACE_ID` errors for malformed explicit workspace contexts, while owner-only checks and beta-unavailable responses remain covered; billing-boundary coverage passes 4/4. Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.

@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-07/BILL-08 subscription workspace-context error boundary
+
+- PASS: Billing subscription, checkout and portal return the shared typed `INVALID_WORKSPACE_ID` client error for malformed explicit workspace contexts.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and billing-boundary coverage passed 4/4.
+- NOT_RUN: Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 ## 2026-11-08 — WEB-13/UI-12 semantic no-monitor status
 
 - PASS: The no-monitor status message is now exposed as a polite atomic status region while preserving the truthful unavailable-monitor wording.
