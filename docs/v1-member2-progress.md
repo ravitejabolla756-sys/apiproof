@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 compatibility-map context error boundary
+
+- Change: The compatibility-map read endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response before loading tenant-scoped compatibility data.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/compatibility-map-api.test.ts --no-file-parallelism` passed 12/12. An initial invocation without the required seed variable failed during fixture initialization only and was rerun successfully.
+- Scope: local ORG-02 compatibility-map API hardening only; PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 migrations-context error boundary
 
 - Change: The migrations read endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response before querying tenant-scoped migration records.

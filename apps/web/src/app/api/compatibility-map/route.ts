@@ -4,7 +4,7 @@ import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { buildCompatibilityProofSnapshot } from '@apiproof/shared';
 import { getCurrentUser } from '../../../lib/server/auth.js';
 import { getDatabase } from '../../../lib/server/db/index.js';
-import { resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
 import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
 import { parseBoundedProductizationProjection } from '../../../lib/server/productization-persistence.js';
@@ -49,7 +49,12 @@ export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateNoStore });
 
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
+  let workspace: Awaited<ReturnType<typeof resolveWorkspaceForRequest>>;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    return organizationErrorResponse(error);
+  }
   const db = getDatabase();
   const repositories = await db.query<RepositoryRow>(`
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch,

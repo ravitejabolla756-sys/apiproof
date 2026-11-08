@@ -118,6 +118,15 @@ describe('GET /api/compatibility-map', () => {
     expect(JSON.stringify(body)).not.toContain('apiproof-github-fixture');
   });
 
+  it('returns a typed error for malformed explicit workspace contexts', async () => {
+    const user = await createUserWithSession('map-context@example.com', 'Strong-password-1!', 'Context User');
+    const response = await GET(new Request('http://localhost/api/compatibility-map?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
   it('selects the latest completed scan and never treats a newer failed scan as the compatibility baseline', async () => {
     const user = await createUserWithSession('map-scan@example.com', 'Strong-password-1!', 'Scan User');
     await createRepository(user.user.id, 'repo_map_scans', 'scan-repository');

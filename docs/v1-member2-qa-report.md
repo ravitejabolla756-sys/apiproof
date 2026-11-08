@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 compatibility-map context error boundary
+
+- PASS: Compatibility-map requests with malformed explicit workspace contexts return typed organization errors before tenant-scoped compatibility data is loaded.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded compatibility-map coverage passed 12/12.
+- ADVISORY: The first invocation omitted `APIPROOF_LOCAL_SEED_PASSWORD` and failed during fixture setup; the documented seeded rerun passed.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 migrations-context error boundary
 
 - PASS: The migrations endpoint returns typed organization errors for malformed explicit workspace contexts before querying tenant-scoped migration records.
