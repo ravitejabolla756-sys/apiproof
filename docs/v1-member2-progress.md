@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 provider-rule mutation context boundaries
+
+- Change: Provider-rule edit, review, test and seed mutations now translate the exact malformed workspace-ID error to the shared typed organization response while preserving owner-denial and provider-operation failure semantics.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded `tests/provider-review-queue-route.test.ts` passed 4/4.
+- Scope: local ORG-02/provider-review mutation boundary hardening only; provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 SQLite concurrent recovery and UI-12 browser recovery
 
 - Change: Serialized transaction scopes on the single SQLite adapter connection, preventing concurrent first-run/default-workspace recovery from overlapping `BEGIN TRANSACTION` calls and surfacing `SQLITE_ERROR`.

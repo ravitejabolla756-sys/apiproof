@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 provider-rule mutation context boundaries
+
+- PASS: Provider-rule edit, review, test and seed routes return typed organization errors for malformed workspace IDs without changing owner-denial behavior.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded provider-review coverage passed 4/4.
+- NOT_RUN: Provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 SQLite concurrent recovery and UI-12 browser recovery
 
 - PASS: Concurrent SQLite transaction scopes are serialized; default-workspace recovery no longer fails with overlapping `BEGIN TRANSACTION` errors.

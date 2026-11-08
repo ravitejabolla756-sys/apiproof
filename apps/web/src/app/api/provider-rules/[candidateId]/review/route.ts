@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
 import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service';
@@ -42,6 +42,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     }
     return NextResponse.json({ ok: true, decision, ...(result ?? {}), ...(rescan ? { rescan } : {}) });
   } catch (error) {
+    const errorCode = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
+    if (errorCode === 'INVALID_WORKSPACE_ID') return organizationErrorResponse(error) as NextResponse;
     if (error instanceof Error && error.message.includes('access denied')) {
       return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403 });
     }

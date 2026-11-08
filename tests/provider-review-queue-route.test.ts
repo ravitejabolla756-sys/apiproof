@@ -58,4 +58,18 @@ describe('provider review queue bootstrap route', () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
+
+  it('seed route returns a typed error for malformed explicit workspace contexts', async () => {
+    const { session } = await createUserWithSession('queue-seed-context@example.com', 'Pass1234!', 'Queue Seed Context');
+    const response = await POST(new Request('https://myowl.example/api/provider-rules/seed?workspaceId=not%20safe', {
+      method: 'POST',
+      headers: {
+        cookie: `${AUTH_COOKIE_NAME}=${session.id}`,
+        origin: 'https://myowl.example',
+        host: 'myowl.example',
+      },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
 });
