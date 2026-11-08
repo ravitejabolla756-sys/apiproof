@@ -185,6 +185,30 @@ describe('GET /api/repositories', () => {
     expect(Number(after?.count)).toBe(Number(before?.count ?? 0));
   });
 
+  it('rejects cross-site repository deletion before removing the repository', async () => {
+    const owner = await createUserWithSession('repo-delete-csrf@example.test', 'Strong-password-1!', 'Delete CSRF');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const now = new Date().toISOString();
+    await getDatabase().execute(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+      VALUES ('repo_csrf_delete', ?, ?, 'csrf-org', 'csrf-repo', 'csrf-org/csrf-repo', 'csrf-1', 'main', 'connected', 'connected', 'active', ?)
+    `, [workspace.id, owner.user.id, now]);
+    const { DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+
+    const response = await deleteRepository(new Request('https://apiproof.test/api/repositories/repo_csrf_delete', {
+      method: 'DELETE',
+      headers: {
+        cookie: `apiproof_session=${owner.session.id}`,
+        origin: 'https://attacker.example',
+        'sec-fetch-site': 'cross-site',
+      },
+    }), { params: Promise.resolve({ id: 'repo_csrf_delete' }) });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'CSRF_REJECTED' });
+    expect(await getDatabase().queryOne('SELECT id FROM repositories WHERE id = ?', ['repo_csrf_delete'])).toMatchObject({ id: 'repo_csrf_delete' });
+  });
+
   it('does not promote an unscoped legacy repository into production workspace access', async () => {
     const owner = await createUserWithSession('legacy-access@example.test', 'Strong-password-1!', 'Legacy Access');
     await getDatabase().execute(`
