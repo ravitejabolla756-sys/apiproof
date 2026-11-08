@@ -11,7 +11,10 @@ test('keeps authenticated dialog close controls touch-sized and recoverable on m
   await searchTrigger.click();
   const commandPalette = page.getByRole('dialog', { name: 'Search MY OWL' });
   const closeSearch = commandPalette.getByRole('button', { name: 'Close search' });
-  await expect(commandPalette.getByRole('textbox', { name: 'Search repositories and workspace navigation' })).toBeFocused();
+  const commandSearch = commandPalette.getByRole('textbox', { name: 'Search repositories and workspace navigation' });
+  await expect(commandSearch).toBeFocused();
+  expect((await commandSearch.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect((await commandSearch.boundingBox())?.width).toBeGreaterThanOrEqual(44);
   await closeSearch.focus();
   await expect(closeSearch).toBeFocused();
   expect((await closeSearch.boundingBox())?.height).toBeGreaterThanOrEqual(44);

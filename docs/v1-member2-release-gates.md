@@ -17,3 +17,5 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 | Legal content | BLOCKED | Privacy, terms and refund pages are explicitly drafts; owner/legal review required |
 | Status/incident source | BLOCKED | Truthful no-monitor status page and SEC-18 draft exist; approved status/monitoring source and runbook review required |
 | Production release | NO-GO | Do not deploy, activate payments, send real email or push without approval |
+
+Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
