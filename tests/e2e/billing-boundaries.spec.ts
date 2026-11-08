@@ -2,10 +2,14 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './helpers.js';
 
 test('keeps beta billing boundaries truthful in browser flows', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pricing');
   await expect(page.getByText('Paid plans are visible while they roll out, but cannot be purchased yet.')).toBeVisible();
   await expect(page.getByText('Rolling out — no checkout')).toBeVisible();
   await expect(page.getByText('Coming soon — no checkout')).toBeVisible();
+  for (const label of ['Get Started', 'Start an enterprise inquiry']) {
+    expect((await page.getByRole('link', { name: label }).boundingBox())?.height, label).toBeGreaterThanOrEqual(44);
+  }
 
   await signIn(page);
   await page.goto('/dashboard/settings');

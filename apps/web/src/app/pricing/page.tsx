@@ -57,7 +57,7 @@ function FeatureList({ features }: { features: string[] }) {
 }
 
 function ComingSoonButton({ label, href }: { label: string; href?: string }) {
-  if (href) return <Link href={href} className="block w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-200">{label}</Link>;
+  if (href) return <Link href={href} className="flex min-h-11 w-full items-center justify-center rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-200">{label}</Link>;
   return <div className="w-full rounded-full border border-slate-300 bg-slate-100 py-3 text-center text-sm font-semibold text-slate-600">{label}</div>;
 }
 
@@ -91,7 +91,7 @@ export default function PricingPage() {
                 <div><span className="font-serif text-5xl">₹0</span><span className="ml-2 text-sm text-slate-500">forever</span></div>
                 <FeatureList features={betaFeatures} />
               </div>
-              <Link href="/login" className="mt-8 w-full rounded-full bg-[#000E29] py-3 text-center text-sm font-semibold text-white transition hover:bg-black">Get Started</Link>
+              <Link href="/login" className="mt-8 flex min-h-11 w-full items-center justify-center rounded-full bg-[#000E29] py-3 text-center text-sm font-semibold text-white transition hover:bg-black">Get Started</Link>
             </article>
 
             <article className="flex h-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">

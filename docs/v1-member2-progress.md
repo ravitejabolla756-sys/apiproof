@@ -1449,3 +1449,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/faq/page.tsx`, `tests/e2e/faq-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; mobile FAQ keyboard/disclosure journey passed 1/1 with axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 pricing action touch targets
+
+- Change: actionable Free Beta and enterprise pricing links now expose explicit 44px minimum touch targets; unavailable paid-plan states remain non-interactive and checkout remains blocked.
+- Files: `apps/web/src/app/pricing/page.tsx`, `tests/e2e/billing-boundaries.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; billing-boundary browser journey passed 1/1 in 15.3 seconds with both actionable links measured at 390px; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12 and BILL-07 boundary evidence only; provider lifecycle, hosted CI, staging and production verification remain open. No backend/shared contract, provider, payment, production or remote Git operation was performed.
