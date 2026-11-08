@@ -1575,3 +1575,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/about/page.tsx`, `apps/web/src/app/features/page.tsx`, `apps/web/src/app/how-it-works/page.tsx`, `tests/e2e/public-cta-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused mobile CTA journey passed 1/1 in 9.3 seconds across all three routes with measured 44px links and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/WEB-15/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — WEB-15 homepage action touch targets
+
+- Change: homepage navigation, hero, plan comparison, enterprise contact, and final conversion links now expose explicit 44px minimum touch targets while preserving existing destinations, copy, pricing-safe beta language, and visual treatment.
+- Files: `apps/web/src/app/page.tsx`, `tests/e2e/homepage-cta-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused mobile homepage journey passed 1/1 in 7.0 seconds, measuring all eight actionable homepage links at 44px or larger with axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/WEB-15/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
