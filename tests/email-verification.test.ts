@@ -16,17 +16,17 @@ import { POST as authPost } from '../apps/web/src/app/api/auth/route.js';
 import { resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-email-verification-${process.pid}.db`);
-const environmentKeys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASSWORD', 'EMAIL_FROM', 'PASSWORD_RESET_FROM', 'APIPROOF_APP_URL', 'EMAIL_VERIFICATION_TTL_MINUTES'];
+const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASSWORD', 'EMAIL_FROM', 'PASSWORD_RESET_FROM', 'APIPROOF_APP_URL', 'EMAIL_VERIFICATION_TTL_MINUTES'];
 const savedEnvironment = new Map<string, string | undefined>();
 
 describe('email verification', () => {
   beforeEach(() => {
-    process.env.NODE_ENV = 'test';
-    process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     for (const key of environmentKeys) {
       savedEnvironment.set(key, process.env[key]);
       delete process.env[key];
     }
+    process.env.NODE_ENV = 'test';
+    process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     resetRateLimits();
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
     initDatabase(TEST_DB_PATH);
