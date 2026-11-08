@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
+
+- PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.
+- PASS: Targeted ESLint, Impeccable detector (`[]`), diff check and rebuilt 83-page bundle passed; focused public icon plus homepage touch-target regressions passed 2/2 in 2.8 seconds.
+- NOTE: An initial test attempt timed out because the fixture did not set a mobile viewport; the fixture was corrected and the rerun passed.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 repository dialog decorative icon semantics
 
 - PASS: The repository dialog close control now hides its decorative `X` SVG from the accessibility tree while retaining the explicit button name.

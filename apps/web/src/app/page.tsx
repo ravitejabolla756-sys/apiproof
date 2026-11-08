@@ -43,7 +43,7 @@ export default function HomePage() {
             <span className="font-medium text-slate-200 group-hover:text-white transition-colors">
               CONTINUOUS BREAKING CHANGE INTELLIGENCE
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+            <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
           </Link>
 
           {/* Headline */}
@@ -63,7 +63,7 @@ export default function HomePage() {
               className="btn-lime min-h-11 text-sm sm:text-base px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 font-semibold"
             >
               <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+              <ArrowRight aria-hidden="true" className="w-4 h-4 text-black stroke-[2.5]" />
             </Link>
 
             <Link
@@ -77,19 +77,19 @@ export default function HomePage() {
           {/* Trust Invariants */}
           <div className="pt-2 flex flex-wrap items-center justify-center gap-y-2 gap-x-4 text-xs font-mono text-slate-200">
             <span className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-cyan-300" /> Read-only code inspection
+              <Lock aria-hidden="true" className="w-3.5 h-3.5 text-cyan-300" /> Read-only code inspection
             </span>
             <span className="text-white/30 hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
-              <GitBranch className="w-3.5 h-3.5 text-blue-200" /> Isolated branch proposal
+              <GitBranch aria-hidden="true" className="w-3.5 h-3.5 text-blue-200" /> Isolated branch proposal
             </span>
             <span className="text-white/30 hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" /> Zero auto-merge
+              <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-emerald-300" /> Zero auto-merge
             </span>
             <span className="text-white/30 hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-lime-300" /> Human review boundary
+              <CheckCircle2 aria-hidden="true" className="w-3.5 h-3.5 text-lime-300" /> Human review boundary
             </span>
           </div>
 
@@ -416,7 +416,7 @@ export default function HomePage() {
             className="inline-flex min-h-11 items-center text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors gap-1 shrink-0 font-mono"
           >
             <span>Compare full plan matrix</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight aria-hidden="true" className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -435,15 +435,15 @@ export default function HomePage() {
               </div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span className="font-semibold text-[#000E29]">3 repositories protected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>Unlimited AST scans</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>2 verified draft PRs / mo</span>
                 </div>
               </div>
@@ -479,15 +479,15 @@ export default function HomePage() {
               <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access · Free while open</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span className="font-semibold text-[#000E29]">15 repositories protected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>Unlimited AST scans</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>20 verified draft PRs / mo</span>
                 </div>
               </div>
@@ -518,15 +518,15 @@ export default function HomePage() {
               <div className="text-[10px] text-emerald-700 font-semibold font-mono uppercase tracking-wide">Early Access · Free while open</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span className="font-semibold text-[#000E29]">50 repositories protected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>Unlimited AST scans</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>100 verified draft PRs / mo</span>
                 </div>
               </div>
@@ -552,15 +552,15 @@ export default function HomePage() {
               <div className="text-[10px] text-slate-500 font-mono">Custom plan · contact us</div>
               <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-700 font-sans">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span className="font-semibold text-[#000E29]">Unlimited repositories</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>Custom AST migration rules</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-black shrink-0" />
+                  <Check aria-hidden="true" className="w-3.5 h-3.5 text-black shrink-0" />
                   <span>Self-hosted test runners</span>
                 </div>
               </div>
@@ -596,7 +596,7 @@ export default function HomePage() {
               className="btn-lime min-h-11 text-sm sm:text-base px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 font-semibold"
             >
               <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+                  <ArrowRight aria-hidden="true" className="w-4 h-4 text-black stroke-[2.5]" />
             </Link>
           </div>
         </div>

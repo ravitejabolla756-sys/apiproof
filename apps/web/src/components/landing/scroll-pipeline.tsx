@@ -477,7 +477,7 @@ export function ScrollPipeline() {
                 {/* File & Transform Header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/90 text-xs">
                   <div className="flex items-center gap-2">
-                    <FileCode className="w-4 h-4 text-slate-700" />
+                    <FileCode aria-hidden="true" className="w-4 h-4 text-slate-700" />
                     <span className="font-bold text-[#000E29] text-sm">src/billing.ts</span>
                   </div>
                   <span className="text-slate-600 text-xs tracking-wider">AST Transform</span>
@@ -774,7 +774,7 @@ export function ScrollPipeline() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <GitPullRequest className="w-4 h-4 text-[#004EE8]" />
+                      <GitPullRequest aria-hidden="true" className="w-4 h-4 text-[#004EE8]" />
                       <span className="font-bold text-[#000E29] text-sm uppercase tracking-wide">
                         DRAFT PR READY
                       </span>

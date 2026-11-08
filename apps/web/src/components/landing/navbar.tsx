@@ -157,7 +157,7 @@ export function LandingNavbar() {
                 prefetch={true}
                 className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/15 shadow-xs"
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
+                <LayoutDashboard aria-hidden="true" className="w-3.5 h-3.5" />
                 <span>Dashboard</span>
               </Link>
             ) : (
@@ -183,9 +183,9 @@ export function LandingNavbar() {
               aria-controls="mobile-site-navigation"
             >
               {mobileMenuOpen ? (
-                <X className="w-4 h-4 text-white" />
+                <X aria-hidden="true" className="w-4 h-4 text-white" />
               ) : (
-                <Menu className="w-4 h-4 text-white" />
+                <Menu aria-hidden="true" className="w-4 h-4 text-white" />
               )}
             </button>
           </div>
@@ -240,7 +240,7 @@ export function LandingNavbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
                 >
-                  <LayoutDashboard className="w-4 h-4" />
+              <LayoutDashboard aria-hidden="true" className="w-4 h-4" />
                   <span>Dashboard</span>
                 </Link>
               ) : (
