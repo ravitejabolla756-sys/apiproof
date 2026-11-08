@@ -57,6 +57,7 @@ export default function ContactPage() {
                       id="contact-name"
                       type="text"
                       required
+                      autoComplete="name"
                       placeholder="Alex Rivera"
                       className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
                     />
@@ -67,6 +68,7 @@ export default function ContactPage() {
                       id="contact-email"
                       type="email"
                       required
+                      autoComplete="email"
                       placeholder="alex@company.com"
                       className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
                     />

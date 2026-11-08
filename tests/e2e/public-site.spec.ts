@@ -134,13 +134,12 @@ test.describe('public beta surfaces', () => {
     await page.getByLabel('Work Email').fill('qa@example.test');
     await page.getByLabel('Inquiry Type').selectOption('support');
     await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
+    await expect(page.getByLabel('Full Name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Work Email')).toHaveAttribute('autocomplete', 'email');
     const submit = page.getByRole('button', { name: 'Review inquiry state' }); for (const field of [page.getByLabel('Full Name'), page.getByLabel('Work Email'), page.getByLabel('Inquiry Type'), page.getByLabel('How can we help?'), submit]) expect((await field.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await submit.click();
     const contactStatus = page.getByRole('status'); await expect(contactStatus).toBeVisible(); await expect(contactStatus).toContainText('No message was sent'); await expect(contactStatus).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible(); });
-
-  test('keeps the contact form on required-field validation', async ({ page }) => { await page.goto('/contact'); await page.getByRole('button', { name: 'Review inquiry state' }).click(); const name = page.getByLabel('Full Name'); await expect(name).toBeFocused(); await expect(page.getByRole('status')).toHaveCount(0); expect(await name.evaluate((input: HTMLInputElement) => input.validationMessage)).toBe('Please fill out this field.'); });
-});
+  test('keeps the contact form on required-field validation', async ({ page }) => { await page.goto('/contact'); await page.getByRole('button', { name: 'Review inquiry state' }).click(); const name = page.getByLabel('Full Name'); await expect(name).toBeFocused(); await expect(page.getByRole('status')).toHaveCount(0); expect(await name.evaluate((input: HTMLInputElement) => input.validationMessage)).toBe('Please fill out this field.'); }); });
 
 test.describe('authenticated product surfaces', () => {
   test('signs in with the local seed and loads account, workspace, and notification settings', async ({ page }) => {

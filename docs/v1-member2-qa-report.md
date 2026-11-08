@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-15/UI-12 contact-form autofill metadata
+
+- PASS: Public contact name and work-email fields now expose standard browser autofill tokens while preserving the explicit no-delivery beta state.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; focused contact journeys passed 2/2; web production build generated 83 static pages.
+- NOT_RUN: Contact delivery/routing, manual assistive-technology review, hosted CI, integrated staging and production remain open. Artifacts: `/tmp/myowl-v1-member2-contact-autofill-artifacts-Nzh6jB`.
+
 ## 2026-11-08 — BILL-09/UI-12 invoice-history beta boundary
 
 - PASS: Settings now exposes an explicit `Invoice history` heading and polite status stating that provider-backed invoices and paid entitlements are unavailable in the free beta.

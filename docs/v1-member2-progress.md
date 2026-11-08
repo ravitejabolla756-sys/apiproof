@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-15/UI-12 contact-form autofill metadata
+
+- Change: Added standard `autocomplete="name"` and `autocomplete="email"` tokens to the truthful, non-sending public contact form and asserted them in the existing browser journey.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; the focused public contact journeys passed 2/2; `pnpm --filter @apiproof/web build` generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-contact-autofill-artifacts-Nzh6jB`.
+- Scope: local WEB-15/UI-12 form-accessibility evidence only; contact delivery, owner routing, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — BILL-09/UI-12 truthful invoice-history state
 
 - Change: Added an explicit settings-page Invoice history section that announces provider-backed invoice history is unavailable in the free beta; no invoice API, provider call, paid entitlement or payment flow was added.
