@@ -1401,6 +1401,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - Impeccable: incumbent-only warning set—five existing purple-palette heading findings on untouched lines; no new state or interaction finding.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — full local CI-mode browser regression
+
+- `CI=true PLAYWRIGHT_PORT=3132 pnpm exec playwright test --workers=1 --reporter=line`: PASS, 167/167 in 4.7 minutes.
+- Coverage included public/authenticated axe and viewport audits, auth-entry flows, billing boundaries, organization administration, account/notification settings, Slack, repository/connect/detail/scan journeys, findings/migration/PR workbenches, provider review, dialogs, sidebar context recovery, logout recovery, and all committed loading/recovery journeys.
+- This is local evidence only. Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

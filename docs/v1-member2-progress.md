@@ -2812,3 +2812,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; organization collection recovery coverage passed 1/1; targeted ESLint and `git diff --check` passed. Impeccable reported five incumbent purple-palette warnings on untouched headings and no new state finding.
 - Scope: local UI-12 and ORG-02/ORG-03/ORG-11 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 contract review and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-13 full local browser regression
+
+- Change: revalidated the accumulated frontend, accessibility, organization, billing-boundary, notification, dialog and degraded-state journeys on the current branch.
+- Evidence: `CI=true PLAYWRIGHT_PORT=3132 pnpm exec playwright test --workers=1 --reporter=line` passed 167/167 in 4.7 minutes.
+- Scope: local hermetic Chromium evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
