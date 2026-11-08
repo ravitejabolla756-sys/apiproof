@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — current public performance probe
+
+- PASS: The current production bundle served all 9 representative public routes over loopback for three samples; median load was 10–39 ms, response 2–5 ms, and encoded HTML 6.1–17.0 KiB.
+- NOT_RUN: Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — UI-12 public/auth-entry contrast audit
 
 - PASS: The retained color-contrast audit now covers all 21 public/auth-entry routes, plus the explicit 404 response, instead of only the 16 informational public routes.

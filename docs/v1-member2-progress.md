@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — current public performance probe
+
+- Evidence: After the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes over loopback. Median load times were 10–39 ms, response times 2–5 ms, and encoded HTML sizes 6.1–17.0 KiB.
+- Scope: refreshes local WEB-14/WEB-15 performance evidence only; this is not Lighthouse/Core Web Vitals, public-network, hosted deployment, staging or production evidence.
+
 ## 2026-11-08 checkpoint — UI-12 public/auth-entry contrast audit
 
 - Change: Expanded the retained color-contrast audit from the 16 informational public routes to all 21 public/auth-entry routes, while retaining the separate explicit HTTP-404 contrast check.
