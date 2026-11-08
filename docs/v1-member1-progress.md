@@ -376,3 +376,8 @@ Phase 0 read-only checks:
 
 - Added `docs/sec17-staging-rollback-rehearsal.md` with verified repository facts, hosting-owner approvals, preflight, smoke/monitoring criteria, abort conditions, and evidence requirements. The only source fact established locally is `apps/web/vercel.json` declaring the Next.js framework; active hosting project, preview triggers, staging alias, and rollback behavior remain unverified.
 - No hosting account, Vercel settings, deployment, staging resource, or production system was accessed or changed. SEC-17 remains `PARTIAL`; its staging rehearsal gate is blocked pending hosting-owner approval, and documentation does not count as completion.
+
+### 2026-11-08 ORG-05 cross-tenant read-route regression
+
+- Extended `tests/workspace-read-route-role.test.ts` so an authenticated user outside the fixture workspace receives no records from `/api/activity`, `/api/findings`, `/api/migrations`, or `/api/pull-requests`. The test uses an isolated SQLite fixture and does not change role grants.
+- The targeted route suite passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. This is local application-predicate coverage only; PostgreSQL/RLS isolation and Member 2 capability-contract approval remain open. ORG-05 stays PARTIAL.

@@ -107,5 +107,15 @@ describe('workspace read route role validation', () => {
         expect(payload.activities![0]).toMatchObject({ id: 'role_personal_activity' });
       }
     }
+
+    const outsider = await createUserWithSession('read-outsider@example.com', 'Pass12345!', 'Read Outsider');
+    for (const route of routes) {
+      const response = await route.get(new Request(route.url, {
+        headers: { cookie: `apiproof_session=${outsider.session.id}` },
+      }));
+      expect(response.status, `${route.url} cross-tenant outsider`).toBe(200);
+      const payload = await response.json() as Record<string, unknown[]>;
+      expect(payload[route.key], `${route.url} cross-tenant outsider`).toHaveLength(0);
+    }
   });
 });
