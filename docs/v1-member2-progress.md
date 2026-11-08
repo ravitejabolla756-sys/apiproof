@@ -2144,3 +2144,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; repository-connect recovery coverage passed 4/4 in 25.8 seconds, including the held-retry journey; adjacent submit-loading coverage passed 1/1 in 14.1 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13 and ORG-02 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 finding-detail recovery busy semantics
+
+- Change: finding-detail load failures now remain distinct from not-found/access-denied states; the error alert offers Retry finding load, preserves the alert during recovery, and exposes disabled plus `aria-busy="true"` while the request is pending.
+- Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/finding-detail-loading.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; finding-detail loading/recovery coverage passed 2/2 in 16.9 seconds; existing finding-workbench action coverage passed 1/1 in 11.7 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Scope: this advances local UI-12/UI-13 and ORG-11 degraded-state evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 event integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

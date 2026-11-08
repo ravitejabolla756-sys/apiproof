@@ -751,6 +751,15 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, GitHub/provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — finding-detail recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the finding-detail page and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/finding-detail-loading.spec.ts --reporter=line`: PASS, 2/2 in 16.9 seconds; the network failure is announced as a distinct alert, and Retry finding load remains visible with disabled/`aria-busy` while the held request recovers.
+- `pnpm exec playwright test tests/e2e/dashboard-data-states.spec.ts -g "finding workbench action" --reporter=line`: PASS, 1/1 in 11.7 seconds.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, Member 1 event integration and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

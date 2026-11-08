@@ -87,17 +87,21 @@ export default function FindingDetailPage({
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<'plan' | 'propose' | null>(null);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function loadFinding() {
+  async function loadFinding(preserveError = false) {
+    setLoading(true);
+    if (!preserveError) setError(null);
     try {
       const res = await fetch(`/api/findings/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        setFinding(json.finding);
-        setMigration(json.migration);
-      }
-    } catch (err) {
+      const json = await res.json().catch(() => ({})) as { finding?: FindingDetail | null; migration?: MigrationDetail | null; error?: string };
+      if (!res.ok) throw new Error(json.error || 'Unable to load finding details.');
+      setFinding(json.finding || null);
+      setMigration(json.migration || null);
+      setError(null);
+    } catch (err: unknown) {
       console.error("Failed to load finding:", err);
+      setError(err instanceof Error ? err.message : 'Unable to load finding details.');
     } finally {
       setLoading(false);
     }
@@ -192,7 +196,7 @@ export default function FindingDetailPage({
     }
   }
 
-  if (loading) {
+  if (loading && !error) {
     return (
       <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-xs text-[#686868] font-sans">
         <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
@@ -209,7 +213,12 @@ export default function FindingDetailPage({
         </Link>
         <div role="alert" aria-live="assertive" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
           <h1 className="text-xl font-semibold text-[#111111]">Finding unavailable</h1>
-          <p className="mt-2 text-[#686868]">Finding not found or access denied.</p>
+          <p className="mt-2 text-[#686868]">{error || 'Finding not found or access denied.'}</p>
+          {error && (
+            <Button type="button" variant="outline" size="sm" disabled={loading} aria-busy={loading ? 'true' : undefined} onClick={() => void loadFinding(true)} className="mt-4 min-h-11">
+              {loading ? 'Retrying…' : 'Retry finding load'}
+            </Button>
+          )}
         </div>
       </div>
     );
