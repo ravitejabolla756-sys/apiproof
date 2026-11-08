@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 auth-entry autofill semantics
+
+- Change: Added mode-aware autofill metadata to the login/signup form: name, email, current password for sign-in and new password for account creation.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; `tests/e2e/login-accessibility.spec.ts` passed 1/1; `pnpm --filter @apiproof/web build` generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-login-autofill-artifacts-O1Flz0`.
+- Scope: local UI-12/AUTH entry accessibility evidence only; Member 1 auth integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-03/UI-12 invitation-form autofill metadata
 
 - Change: Added `autocomplete="email"` to the owner-only manual invitation field and asserted it in the existing invitation create/cancel journey; transactional email remains disabled as intended.

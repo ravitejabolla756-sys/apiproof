@@ -208,6 +208,8 @@ Latest account-form evidence: authenticated account settings display-name/email 
 
 Latest invitation-form evidence: owner-only workspace invitation email input exposes `autocomplete="email"`; the manual invitation create/cancel journey passes 1/1 and the production build generates 83 static pages. Transactional email, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open; release recommendation stays NO-GO.
 
+Latest auth-entry evidence: login/signup name, email and password controls expose mode-aware autofill metadata; the mobile login accessibility journey passes 1/1 and the production build generates 83 static pages. Hosted CI, staging, manual assistive-technology review, Member 1 auth integration and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

@@ -180,6 +180,7 @@ export default function LoginPage() {
                 type="text"
                 required
                 disabled={loading}
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Alex Morgan"
@@ -197,6 +198,7 @@ export default function LoginPage() {
               type="email"
               required
               disabled={loading}
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
@@ -214,6 +216,7 @@ export default function LoginPage() {
               required
               minLength={8}
               disabled={loading}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimum 8 characters"
