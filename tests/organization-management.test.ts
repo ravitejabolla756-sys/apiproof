@@ -6,6 +6,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser, createWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { resolveWorkspaceForRequest } from '../apps/web/src/lib/server/organization-route.js';
 import { POST as setWorkspaceContext } from '../apps/web/src/app/api/workspace/context/route.js';
+import { GET as listWorkspacesRoute } from '../apps/web/src/app/api/workspaces/route.js';
 import { PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
 import { DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
 import {
@@ -218,6 +219,15 @@ describe('workspace administration', () => {
       body: JSON.stringify({ workspaceId: workspace.id, userId: member.user.id }),
     }));
     expect(removed.status).toBe(200);
+  });
+
+  it('returns a typed error for malformed workspace context in the workspace list route', async () => {
+    const owner = await createUserWithSession('owner-context@example.test', 'OwnerPassword123!', 'Owner Context');
+    const response = await listWorkspacesRoute(new Request('https://apiproof.test/api/workspaces?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 
   it('rejects malformed workspace slugs before writing', async () => {

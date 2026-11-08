@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 workspace-list context error boundary
+
+- Change: The workspace-list endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response instead of returning an unhandled route failure.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `tests/organization-management.test.ts` passed 15/15, including the malformed workspace-list request.
+- Scope: local ORG-02 workspace-context API hardening only; PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — BILL-07/BILL-08 subscription workspace-context error boundary
 
 - Change: The billing subscription read route now translates malformed or unavailable workspace contexts through the shared organization error response; its imports also follow the repository’s explicit `.js` module-resolution convention.

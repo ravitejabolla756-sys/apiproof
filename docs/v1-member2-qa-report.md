@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 workspace-list context error boundary
+
+- PASS: The workspace-list endpoint returns typed organization errors for malformed explicit workspace contexts instead of an unhandled failure.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 15/15.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — BILL-07/BILL-08 subscription workspace-context error boundary
 
 - PASS: Billing subscription, checkout and portal return the shared typed `INVALID_WORKSPACE_ID` client error for malformed explicit workspace contexts.
