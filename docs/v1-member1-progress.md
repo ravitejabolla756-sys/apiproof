@@ -586,6 +586,10 @@ Phase 0 read-only checks:
 
 - After the repository DELETE CSRF guard, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,442 tests passed / 4 skipped; 272.34 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This remains local evidence only.
 
+### 2026-11-08 ORG-05 unknown-role repository deletion
+
+- Added route-level coverage proving an unknown persisted workspace role cannot delete a repository; the route returns a generic 404 and the repository remains. `repositories-list-route` passes 9/9; targeted ESLint and full `pnpm typecheck` pass. Capability assignments remain unchanged.
+
 ### 2026-11-08 current-HEAD serial suite
 
 - After AUTH-05 token-race serialization and AUTH-10 malformed OAuth-state expiry rejection, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,440 tests passed / 4 skipped; 239.64 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This is local SQLite/test evidence, not production or PostgreSQL proof.

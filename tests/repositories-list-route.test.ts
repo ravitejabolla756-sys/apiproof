@@ -209,6 +209,30 @@ describe('GET /api/repositories', () => {
     expect(await getDatabase().queryOne('SELECT id FROM repositories WHERE id = ?', ['repo_csrf_delete'])).toMatchObject({ id: 'repo_csrf_delete' });
   });
 
+  it('fails closed when an unknown persisted workspace role attempts repository deletion', async () => {
+    const user = await createUserWithSession('repo-delete-role@example.test', 'Strong-password-1!', 'Delete Role');
+    const workspace = await getDefaultWorkspaceForUser(user.user.id);
+    const now = new Date().toISOString();
+    await getDatabase().execute(`
+      UPDATE workspace_members SET role = 'future_role' WHERE workspace_id = ? AND user_id = ?
+    `, [workspace.id, user.user.id]);
+    await getDatabase().execute(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+      VALUES ('repo_unknown_role_delete', ?, ?, 'role-org', 'role-repo', 'role-org/role-repo', 'role-1', 'main', 'connected', 'connected', 'active', ?)
+    `, [workspace.id, user.user.id, now]);
+    const { DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+
+    const response = await deleteRepository(new Request('http://localhost/api/repositories/repo_unknown_role_delete', {
+      method: 'DELETE',
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }), { params: Promise.resolve({ id: 'repo_unknown_role_delete' }) });
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ code: 'NOT_FOUND' });
+    expect(await getDatabase().queryOne('SELECT id FROM repositories WHERE id = ?', ['repo_unknown_role_delete']))
+      .toMatchObject({ id: 'repo_unknown_role_delete' });
+  });
+
   it('does not promote an unscoped legacy repository into production workspace access', async () => {
     const owner = await createUserWithSession('legacy-access@example.test', 'Strong-password-1!', 'Legacy Access');
     await getDatabase().execute(`
