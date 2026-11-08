@@ -119,6 +119,8 @@ describe('billing provider environment and webhook boundary', () => {
       { id: 'evt_bad_status', type: 'customer.subscription.updated', status: 'enabled' },
       { id: 'evt_bad_plan', type: 'customer.subscription.updated', plan_id: 'unreviewed-price' },
       { id: 'evt_bad_period', type: 'customer.subscription.updated', period_start: 'not-a-date' },
+      { id: 'evt_reversed_period', type: 'customer.subscription.updated', period_start: '2026-02-01T00:00:00.000Z', period_end: '2026-01-01T00:00:00.000Z' },
+      { id: 'evt_empty_period', type: 'customer.subscription.updated', period_start: '2026-01-01T00:00:00.000Z', period_end: '2026-01-01T00:00:00.000Z' },
     ];
     const provider = new MockBillingProvider();
 

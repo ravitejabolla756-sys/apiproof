@@ -126,6 +126,9 @@ export class MockBillingProvider implements BillingProvider {
     };
     const periodStart = normalizePeriod(object.current_period_start ?? body.period_start);
     const periodEnd = normalizePeriod(object.current_period_end ?? body.period_end);
+    if (periodStart && periodEnd && Date.parse(periodEnd) <= Date.parse(periodStart)) {
+      throw new BillingWebhookInputError();
+    }
 
     return {
       id,

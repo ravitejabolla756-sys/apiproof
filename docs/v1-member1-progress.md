@@ -627,6 +627,10 @@ Phase 0 read-only checks:
 - CSRF validation now rejects parsed Origin values containing credentials, path, query, fragment, or noncanonical serialization instead of normalizing them to an accepted same-origin value. `auth-hardening` passes 9/9 and `phase1-production-integrity` passes 17/17; targeted ESLint and full workspace typecheck pass. Trusted proxy provenance and PostgreSQL rate-limiter verification remain staging gates.
 - Current code-HEAD seeded serial full-suite result: 175 files passed / 1 skipped; 1,452 tests passed / 4 skipped in 264.53 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and only a process-local seed was used; this does not prove PostgreSQL or production behavior.
 
+### 2026-11-08 BILL-03 billing period interval validation
+
+- The mock webhook parser now rejects normalized billing periods whose end is equal to or earlier than the start. Added signed-input regressions for both cases; provider-specific event mapping and PostgreSQL lifecycle verification remain open.
+
 ### 2026-11-08 SEC-11 durable error current-HEAD suite
 
 - After worker error-message persistence hardening, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 174 files passed / 1 skipped; 1,447 tests passed / 4 skipped; 243.72 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This does not establish PostgreSQL or production evidence.
