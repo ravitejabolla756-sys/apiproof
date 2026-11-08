@@ -255,6 +255,7 @@ describe('Production Authentication & Session Persistence', () => {
       const authRes1 = await authGet(authReq1);
       expect(authRes1.status).toBe(200);
       const authData1 = (await authRes1.json()) as { authenticated: boolean; user: { id: string; email: string } };
+      expect(authRes1.headers.get('cache-control')).toBe('private, no-store, max-age=0');
       expect(authData1.authenticated).toBe(true);
       expect(authData1.user.email).toBe('persist@example.com');
 
@@ -266,6 +267,7 @@ describe('Production Authentication & Session Persistence', () => {
       const authRes2 = await authGet(authReq2);
       expect(authRes2.status).toBe(200);
       const authData2 = (await authRes2.json()) as { authenticated: boolean; user: { id: string; email: string } };
+      expect(authRes2.headers.get('cache-control')).toBe('private, no-store, max-age=0');
       expect(authData2.authenticated).toBe(true);
       expect(authData2.user.id).toBe(authData1.user.id);
     });

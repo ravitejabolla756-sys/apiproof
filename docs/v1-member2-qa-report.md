@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — authentication response cache boundary
+
+- PASS: `/api/auth` responses use private non-cacheable headers across session reads, auth mutations, reset outcomes, validation failures and logout while retaining session-cookie behavior.
+- PASS: Seeded auth/session coverage passed 13/13; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — authenticated account/dashboard cache boundaries
 
 - PASS: Account profile/password, notification preferences, activity, overview and findings responses are private and non-cacheable for successful and unauthorized paths; account/password service failures retain the same boundary.

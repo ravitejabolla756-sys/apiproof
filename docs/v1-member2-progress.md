@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — authentication response cache boundary
+
+- Change: All `/api/auth` GET/POST outcomes now use a shared private `no-store` JSON response helper, including session/user payloads, reset responses, validation failures and logout responses while preserving cookie operations.
+- Evidence: Seeded `tests/auth-session.test.ts` passed 13/13; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local authentication/session privacy hardening only; no account deletion flow was introduced, and hosted CI, staging, PostgreSQL/RBAC, provider delivery and production remain open.
+
 ## 2026-11-08 checkpoint — authenticated account/dashboard cache boundaries
 
 - Change: Account profile, password, notification-preference, activity, overview and findings responses now use the shared `Cache-Control: private, no-store, max-age=0` policy for successful and unauthorized responses; account/password service failures are covered as well.

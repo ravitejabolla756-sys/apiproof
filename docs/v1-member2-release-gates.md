@@ -22,6 +22,8 @@ Latest local UI-12 evidence: command-palette search textbox and dialog close con
 
 Latest authenticated-data privacy evidence: account profile/password, notification preferences, activity, overview and findings responses use private non-cacheable headers; account, notification and organization regression coverage passes 31/31 and web typecheck passes. PostgreSQL/RBAC, hosted CI, staging, provider delivery, manual assistive-technology review and production remain open.
 
+Latest authentication privacy evidence: `/api/auth` session, auth mutation and password-reset responses use the shared private non-cacheable boundary while preserving cookie behavior; seeded auth/session coverage passes 13/13 and web typecheck passes. PostgreSQL/RBAC, hosted CI, staging, provider delivery, manual assistive-technology review and production remain open.
+
 Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes a polite atomic status region; Impeccable detector, targeted lint, repository typecheck and provider/repository recovery browser coverage pass 2/2. Hosted CI, manual assistive-technology review, staging and production remain open.
 
 Latest UI-13 evidence: the rebuilt current-worktree production bundle generated 83 pages and the complete isolated Playwright matrix passed 159/159 in 3.8 minutes on port 3101 with a fresh SQLite database. Hosted CI, integrated staging, full manual assistive-technology review and production remain open.

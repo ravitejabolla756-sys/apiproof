@@ -23,13 +23,20 @@ import {
 } from '@/lib/server/validation.js';
 import { requestPasswordReset, completePasswordReset } from '@/lib/server/password-reset.js';
 import { isPasswordResetEmailConfigured } from '@/lib/server/password-reset-email.js';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
+
+function authJson(body: unknown, init: ResponseInit = {}): NextResponse {
+  const headers = new Headers(init.headers);
+  for (const [name, value] of Object.entries(PRIVATE_NO_STORE_HEADERS)) headers.set(name, value);
+  return NextResponse.json(body, { ...init, headers });
+}
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ authenticated: false, user: null, code: 'UNAUTHORIZED' }, { status: 401 });
+    return authJson({ authenticated: false, user: null, code: 'UNAUTHORIZED' }, { status: 401 });
   }
-  return NextResponse.json({ authenticated: true, user });
+  return authJson({ authenticated: true, user });
 }
 
 export async function POST(req: Request) {
@@ -47,7 +54,7 @@ export async function POST(req: Request) {
 
     if (action === 'request_password_reset') {
       if (!isPasswordResetEmailConfigured()) {
-        return NextResponse.json(
+        return authJson(
           { error: 'Password recovery is temporarily unavailable.', code: 'PASSWORD_RESET_UNAVAILABLE' },
           { status: 503 },
         );
@@ -71,7 +78,7 @@ export async function POST(req: Request) {
         // Keep the response indistinguishable for existing and unknown accounts.
         console.error('[password-reset] Email delivery failed.');
       }
-      return NextResponse.json({ success: true, message: 'If an account exists for that email, reset instructions will be sent.' }, { status: 202 });
+      return authJson({ success: true, message: 'If an account exists for that email, reset instructions will be sent.' }, { status: 202 });
     }
 
     if (action === 'complete_password_reset') {
@@ -82,9 +89,9 @@ export async function POST(req: Request) {
 
       const completed = await completePasswordReset(validation.data.token, validation.data.password);
       if (!completed) {
-        return NextResponse.json({ error: 'This reset link is invalid or expired.', code: 'INVALID_RESET_TOKEN' }, { status: 400 });
+        return authJson({ error: 'This reset link is invalid or expired.', code: 'INVALID_RESET_TOKEN' }, { status: 400 });
       }
-      return NextResponse.json({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
+      return authJson({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
     }
 
     if (action === 'logout') {
@@ -92,7 +99,7 @@ export async function POST(req: Request) {
       if (sessionId) {
         await deleteSession(sessionId);
       }
-      const res = NextResponse.json({ success: true, message: 'Logged out successfully.' });
+      const res = authJson({ success: true, message: 'Logged out successfully.' });
       const clearOptions = getClearAuthCookieOptions();
       res.cookies.set(AUTH_COOKIE_NAME, '', clearOptions);
       return res;
@@ -116,7 +123,7 @@ export async function POST(req: Request) {
       try {
         const { user, session } = await createUserWithSession(email, password, name);
         const cookieOptions = getAuthCookieOptions(session.expiresAt);
-        const res = NextResponse.json({ success: true, user });
+        const res = authJson({ success: true, user });
         res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
         return res;
       } catch (err: unknown) {
@@ -126,7 +133,7 @@ export async function POST(req: Request) {
           message.includes('unique constraint') ||
           message.includes('duplicate key')
         ) {
-          return NextResponse.json(
+          return authJson(
             { error: 'User with this email already exists.', code: 'USER_ALREADY_EXISTS' },
             { status: 409 }
           );
@@ -152,7 +159,7 @@ export async function POST(req: Request) {
 
       const user = await authenticateUser(email, password);
       if (!user) {
-        return NextResponse.json(
+        return authJson(
           { error: 'Invalid email or password.', code: 'INVALID_CREDENTIALS' },
           { status: 401 }
         );
@@ -160,13 +167,13 @@ export async function POST(req: Request) {
 
       const session = await createSession(user.id);
       const cookieOptions = getAuthCookieOptions(session.expiresAt);
-      const res = NextResponse.json({ success: true, user });
+      const res = authJson({ success: true, user });
       res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
       return res;
     }
 
-    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset.', code: 'INVALID_ACTION' }, { status: 400 });
+    return authJson({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset.', code: 'INVALID_ACTION' }, { status: 400 });
   } catch {
-    return NextResponse.json({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
+    return authJson({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }
