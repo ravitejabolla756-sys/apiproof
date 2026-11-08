@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02/NOT-03 Slack OAuth context boundary
+
+- PASS: Slack OAuth connect returns typed organization errors for malformed workspace contexts and preserves 503 handling for unrelated provider failures.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded Slack Phase 1 coverage passed 23/23.
+- NOT_RUN: Provider approval/delivery, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02/NOT-03 Slack connection context boundary
 
 - PASS: Slack connection status and disconnect requests use the shared workspace error contract and preserve private no-store responses.

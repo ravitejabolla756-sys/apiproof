@@ -19,6 +19,7 @@ import { enqueueNewFindingNotifications, processOneSlackNotificationDelivery, qu
 import { acceptSlackAction, processOneSlackInteractionJob } from '../apps/web/src/lib/server/slack-interactions.js';
 import { updateNotificationPreferences } from '../apps/web/src/lib/server/notification-preferences-service.js';
 import { GET as getSlackConnection } from '../apps/web/src/app/api/slack/connection/route.js';
+import { POST as connectSlackRoute } from '../apps/web/src/app/api/slack/connect/route.js';
 import { GET as slackCallback } from '../apps/web/src/app/api/slack/callback/route.js';
 import { POST as slackInteraction } from '../apps/web/src/app/api/slack/interactions/route.js';
 
@@ -152,6 +153,20 @@ describe('MY OWL Slack Phase 1', () => {
     const account = await createUserWithSession('status-context@example.test', 'Pass1234!', 'Status Context');
     const response = await getSlackConnection(new Request('https://myowl.example.test/api/slack/connection?workspaceId=not%20safe', {
       headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
+  it('Slack OAuth connect returns a typed error for malformed explicit workspace contexts', async () => {
+    const account = await createUserWithSession('connect-context@example.test', 'Pass1234!', 'Connect Context');
+    const response = await connectSlackRoute(new Request('https://myowl.example.test/api/slack/connect?workspaceId=not%20safe', {
+      method: 'POST',
+      headers: {
+        cookie: `apiproof_session=${account.session.id}`,
+        origin: 'https://myowl.example.test',
+        host: 'myowl.example.test',
+      },
     }));
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
