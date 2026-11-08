@@ -71,7 +71,6 @@ export default function RepositoryDetailPage({
 
   async function loadData() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/repositories/${id}`);
       const json = await res.json() as { repository?: RepositoryDetail; scans?: ScanRecord[]; findings?: FindingRecord[]; error?: string };
@@ -79,6 +78,7 @@ export default function RepositoryDetailPage({
       setRepo(json.repository);
       setScans(json.scans || []);
       setFindings(json.findings || []);
+      setError(null);
     } catch (err) {
       console.error("Failed to load repository detail:", err);
       setError(err instanceof Error ? err.message : "Unable to load repository details.");
@@ -117,7 +117,7 @@ export default function RepositoryDetailPage({
     }
   }
 
-  if (loading && !repo) {
+  if (loading && !repo && !error) {
     return (
       <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-xs text-[#686868] font-sans">
         <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
@@ -132,7 +132,7 @@ export default function RepositoryDetailPage({
         <Link href="/dashboard/repositories" className="inline-flex min-h-11 items-center gap-1 text-zinc-500 hover:text-black">
           <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" /> Back to Repositories
         </Link>
-        <DashboardDataError message={error || "Repository not found or access denied."} onRetry={() => void loadData()} />
+        <DashboardDataError message={error || "Repository not found or access denied."} onRetry={() => void loadData()} busy={loading} />
       </div>
     );
   }

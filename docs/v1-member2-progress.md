@@ -2123,3 +2123,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-recovery-loading.spec.ts`.
 - Evidence: targeted ESLint and `git diff --check` passed; Impeccable reported one incumbent purple-palette warning on an untouched heading and no new state finding; the new held-retry and existing notification journeys passed 4/4; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and NOT-06 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, provider delivery, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 repository-detail recovery busy semantics
+
+- Change: repository-detail access/error recovery now preserves its alert surface while retrying and exposes disabled plus `aria-busy="true"` on Try again until the detail request succeeds.
+- Files: `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/e2e/repository-detail-recovery-loading.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the new held-retry journey plus existing list/detail recovery coverage passed 3/3; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-02 detail recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
