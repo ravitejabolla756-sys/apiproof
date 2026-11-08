@@ -1785,6 +1785,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; focused hermetic Playwright coverage passed 2/2 in 7.1 seconds for delayed finding loading and existing migration-plan action feedback.
 - Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 compatibility-map component loading semantics
+
+- Change: the shared dashboard compatibility-map loading status now exposes `aria-busy="true"`, preserving its initial/refresh error recovery, repository selection and review-only provenance behavior.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/compatibility-map-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the compatibility-map recovery suite passed 2/2 in 4.9 seconds, covering delayed initial loading and existing initial/refresh retry journeys.
+- Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 repository-dialog loading semantics
 
 - Change: the repository connection dialog loading region now exposes `aria-busy="true"` while GitHub repository discovery is pending, preserving its existing retry, disconnected-app, focus-trap and Escape-recovery behavior.

@@ -2,6 +2,23 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
+test('announces compatibility-map loading as a busy state', async ({ page }) => {
+  await signIn(page);
+  let releaseMap: (() => void) | undefined;
+  const mapLoading = new Promise<void>((resolve) => { releaseMap = resolve; });
+  await page.route('**/api/compatibility-map', async (route) => {
+    await mapLoading;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });
+  });
+  await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+  const loading = page.getByRole('status').filter({ hasText: 'Loading compatibility data…' });
+  await expect(loading).toBeVisible();
+  await expect(loading).toHaveAttribute('aria-busy', 'true');
+  releaseMap?.();
+  await expect(page.getByRole('status').filter({ hasText: 'Connect a GitHub repository to build your compatibility map.' })).toBeVisible({ timeout: 30_000 });
+  await page.unroute('**/api/compatibility-map');
+});
+
 test('recovers compatibility-map initial and refresh failures', async ({ page }) => {
   await signIn(page);
   let attempts = 0;
