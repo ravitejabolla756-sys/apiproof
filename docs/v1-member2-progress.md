@@ -1435,3 +1435,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; full route accessibility matrix passed 5/5 in 30.2 seconds across desktop, 390px mobile and 768px tablet checks.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 contact form touch target
+
+- Change: the truthful beta contact form's Review inquiry state button now has an explicit 44px minimum touch target; submission remains a local review state and does not send a message.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check` and repository typecheck passed; rebuilt web production build passed with 83 generated pages; mobile contact-form journey passed 1/1 with a 390px bounding-box assertion.
+- Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual assistive-technology review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

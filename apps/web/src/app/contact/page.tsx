@@ -103,7 +103,7 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="px-8 py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold transition-all shadow-xs"
+                  className="min-h-11 px-8 py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold transition-all shadow-xs"
                 >
                   Review inquiry state
                 </button>

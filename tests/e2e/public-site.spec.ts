@@ -129,14 +129,13 @@ test.describe('public beta surfaces', () => {
       expect(response.status(), href).toBeLessThan(400);
     }
   });
-
   test('exercises the contact form without sending a message', async ({ page }) => {
-    await page.goto('/contact');
-    await page.getByLabel('Full Name').fill('Local QA User');
+    await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/contact'); await page.getByLabel('Full Name').fill('Local QA User');
     await page.getByLabel('Work Email').fill('qa@example.test');
     await page.getByLabel('Inquiry Type').selectOption('support');
     await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
-    await page.getByRole('button', { name: 'Review inquiry state' }).click();
+    const submit = page.getByRole('button', { name: 'Review inquiry state' }); expect((await submit.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    await submit.click();
     const contactStatus = page.getByRole('status'); await expect(contactStatus).toBeVisible(); await expect(contactStatus).toContainText('No message was sent'); await expect(contactStatus).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible(); });
 
