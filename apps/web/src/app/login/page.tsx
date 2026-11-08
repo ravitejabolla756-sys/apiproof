@@ -114,6 +114,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={loading}
+            aria-pressed={mode === 'login'}
             onClick={() => { setMode('login'); setError(''); }}
             className={`flex min-h-11 flex-1 items-center justify-center rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
               mode === 'login'
@@ -126,6 +127,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={loading}
+            aria-pressed={mode === 'signup'}
             onClick={() => { setMode('signup'); setError(''); }}
             className={`flex min-h-11 flex-1 items-center justify-center rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
               mode === 'signup'

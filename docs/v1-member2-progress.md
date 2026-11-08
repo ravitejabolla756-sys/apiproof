@@ -1498,3 +1498,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `docs/v1-member2-release-gates.md`.
 - Evidence: documentation-only update grounded in commits `0696160` and `aed29c8`; no gate was marked PASS without corresponding local evidence, and production remains NO-GO.
 - Scope: release-gate truthfulness/documentation only; no backend, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 login mode semantics
+
+- Change: login Sign In/Create Account mode controls now expose their selected state with `aria-pressed`; the mobile accessibility journey verifies initial and switched states while retaining 44px touch targets and axe coverage.
+- Files: `apps/web/src/app/login/page.tsx`, `tests/e2e/login-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused login journey passed 1/1 in 4.9 seconds; repository typecheck passed; web production build passed with 83 generated pages. The first test invocation exposed only an ambiguous locator and was corrected before the passing run.
+- Scope: this advances local UI-12/UI-13 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
