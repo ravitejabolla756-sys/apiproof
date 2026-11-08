@@ -120,3 +120,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 unknown-role action mapping: PASS, `phase2-multi-tenant-workspaces` 17/17. Unknown persisted roles on the migration-planning and proposal APIs receive generic 404 responses and create no migration or pull-request records. Targeted ESLint and full workspace typecheck pass; effective PostgreSQL/RLS and Member 2 contract approval remain outstanding.
 
 - ORG-05 Slack disconnect race: PASS, `slack-phase1` 22/22; a membership denial at the final authorization check returns generic 403 and leaves the Slack connection active without writing a disconnect event. Targeted ESLint and full workspace typecheck pass. PostgreSQL concurrency and Member 2 role contract remain unverified.
+
+- Current-HEAD verification after ORG-05 authorization error mapping: seeded serial full suite PASS on `7d07f00814475cf4605dca7f4d9f63e066ef851a`; 168 files passed / 1 skipped, 1,412 tests passed / 4 skipped, 266.84 seconds. `pnpm build` also passed (64 static pages). The four skipped Docker-backed tests remain unverified; build-generated Next config edits were restored. No deployment occurred.

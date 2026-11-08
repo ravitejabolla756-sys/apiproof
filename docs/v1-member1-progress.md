@@ -413,3 +413,9 @@ Phase 0 read-only checks:
 
 - `DELETE /api/slack/connection` rechecks workspace membership after resolving the user's default workspace so concurrent revocation cannot disconnect an organization connection. A denial from that second check previously escaped as an unhandled error; the route now maps recognized authorization errors to the existing generic 403 response before mutating connection state.
 - Added a regression that simulates membership denial after workspace resolution and verifies the connection remains active and no `slack_disconnected` activity event is written. `slack-phase1` passes 22/22; targeted ESLint and full workspace `pnpm typecheck` pass. Local SQLite evidence only; PostgreSQL concurrency and Member 2 capability approval remain outstanding.
+
+## 2026-11-08 full-suite and build after authorization hardening
+
+- Code HEAD: `7d07f00814475cf4605dca7f4d9f63e066ef851a`.
+- Seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passed: 168 files passed / 1 skipped (169 total); 1,412 tests passed / 4 skipped (1,416 total); 266.84 seconds. `DATABASE_URL` and `APIPROOF_DATABASE_URL` were removed; a generated process-only local seed was used. The four skips are Docker-backed live-verification tests.
+- `pnpm build` passed and generated 64 static pages. Build rewrote `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; both were inspected and restored. No production deployment or external service was used.
