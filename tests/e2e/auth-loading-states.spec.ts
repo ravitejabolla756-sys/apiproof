@@ -109,4 +109,17 @@ test.describe('authentication loading announcements', () => {
     await page.goto('/forgot-password'); await page.getByLabel('Email').fill('member@example.test'); await page.getByRole('button', { name: 'Send reset link' }).click();
     const recoveryAlert = page.getByRole('alert').filter({ hasText: 'Password recovery is temporarily unavailable.' }); await expect(recoveryAlert).toBeVisible(); await expect(recoveryAlert).toHaveAttribute('aria-atomic', 'true'); await page.unroute('**/api/auth');
   });
+
+  test('marks email verification progress as busy', async ({ page }) => {
+    let releaseVerification: (() => void) | undefined;
+    const verificationPending = new Promise<void>((resolve) => { releaseVerification = resolve; });
+    await page.route('**/api/auth', async (route) => { await verificationPending; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Email address verified successfully.' }) }); });
+    await page.goto('/verify-email#token=test-token');
+    const verificationStatus = page.getByRole('status').filter({ hasText: 'Checking your verification link…' });
+    await expect(verificationStatus).toBeVisible();
+    await expect(verificationStatus).toHaveAttribute('aria-busy', 'true');
+    releaseVerification?.();
+    await expect(page.getByRole('status').filter({ hasText: 'Email address verified successfully.' })).toBeVisible({ timeout: 30_000 });
+    await page.unroute('**/api/auth');
+  });
 });

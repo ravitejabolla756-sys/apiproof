@@ -1791,6 +1791,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `pnpm --filter @apiproof/web build` passed with 83 generated pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true pnpm exec playwright test --workers=1` passed 130/130 in 4.6 minutes, covering authenticated/public routes, organization flows, billing boundaries, notification/settings states, provider review, repository recovery, finding/migration workflows and accessibility assertions.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval, legal/owner review and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/NOT-02 verification loading semantics
+
+- Change: the email-verification status region now exposes `aria-busy="true"` while the verification token request is pending, preserving token handling, error messaging and sign-in recovery behavior. The invitation page was intentionally left unchanged after its dense JSX resisted a safe narrow patch.
+- Files: `apps/web/src/app/verify-email/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the authentication loading suite passed 5/5 in 5.4 seconds, including delayed verification, session validation, login, reset-request and password-reset progress.
+- Scope: this advances local UI-12/UI-13 and NOT-02 evidence only; hosted CI, integrated staging, manual screen-reader review, Member 1 auth integration, provider delivery and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 compatibility-map component loading semantics
 
 - Change: the shared dashboard compatibility-map loading status now exposes `aria-busy="true"`, preserving its initial/refresh error recovery, repository selection and review-only provenance behavior.
