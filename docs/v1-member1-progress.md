@@ -353,3 +353,7 @@ Phase 0 read-only checks:
 ### 2026-11-08 latest serial full-suite verification
 
 - On code HEAD `ad47f0d5e6aaa0a1d6dcae536b5e04e8daaadb16`, the full serial Vitest suite passes: 167 files passed / 1 skipped (168 total), 1,405 tests passed / 4 skipped (1,409 total), runtime 232.68 seconds. Skips are the four Docker-backed live verification cases in `tests/docker-verification-live.test.ts`, which are conditional on a real Docker runtime. The suite used process-only random seed material for its local SQLite fixtures; no remote database URL or service was configured.
+
+### 2026-11-08 full-suite verification after SEC-04 hardening
+
+- On code HEAD `27b83de2fe260b908d924edf33a8740dd0f7e683`, the full serial Vitest suite passes: 168 files passed / 1 skipped (169 total), 1,410 tests passed / 4 skipped (1,414 total), runtime 296.05 seconds. The four skips remain the conditional Docker-backed tests in `tests/docker-verification-live.test.ts`. The suite used a process-only random seed for local SQLite fixtures; no remote database URL or service was configured.
