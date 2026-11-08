@@ -278,7 +278,7 @@ test.describe('authenticated product surfaces', () => {
     await signIn(page);
     await page.goto('/dashboard/settings/workspace');
     const inviteEmail = `browser-invite-${Date.now()}@example.test`;
-    await page.getByLabel('Invite email').fill(inviteEmail);
+    await page.getByLabel('Invite email').fill(inviteEmail); await expect(page.getByLabel('Invite email')).toHaveAttribute('autocomplete', 'email');
     await page.getByRole('button', { name: 'Create invite link' }).click();
     await expect(page.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(inviteEmail)).toBeVisible();

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-03/UI-12 invitation-form autofill metadata
+
+- Change: Added `autocomplete="email"` to the owner-only manual invitation field and asserted it in the existing invitation create/cancel journey; transactional email remains disabled as intended.
+- Evidence: Targeted ESLint and `git diff --check` passed; the invitation browser journey passed 1/1; `pnpm --filter @apiproof/web build` generated 83 static pages. The Impeccable detector reported five pre-existing AI-color-palette advisories in the unchanged workspace settings styling; none is caused by this metadata change. Artifacts: `/tmp/myowl-v1-member2-invitation-autofill-artifacts-mBk2Dd`.
+- Scope: local ORG-03/UI-12 form-accessibility evidence only; provider delivery, PostgreSQL/RBAC, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — AUTH-08/UI-12 account-form autofill metadata
 
 - Change: Added standard `autocomplete="name"` and `autocomplete="email"` tokens to the authenticated account settings profile fields; password autofill behavior remains unchanged.

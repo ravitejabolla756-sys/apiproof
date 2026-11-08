@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-03/UI-12 invitation-form autofill metadata
+
+- PASS: Owner invitation email input exposes standard browser autofill metadata while preserving manual-copy and no-email-delivery boundaries.
+- PASS: Targeted ESLint and `git diff --check`; invitation create/cancel journey passed 1/1; web production build generated 83 static pages.
+- ADVISORY: Impeccable detector reported five pre-existing palette warnings in the workspace settings page; no new finding was introduced by this change.
+- NOT_RUN: Approved transactional email, PostgreSQL/RBAC, hosted CI, integrated staging, manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-member2-invitation-autofill-artifacts-mBk2Dd`.
+
 ## 2026-11-08 — AUTH-08/UI-12 account-form autofill metadata
 
 - PASS: Account settings display-name and email fields expose standard browser autofill tokens; password fields retain current/new-password tokens.
