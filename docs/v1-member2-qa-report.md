@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — Current full repository regression
+
+- PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 files, with 4 skipped tests and 1 skipped file, in 123.07 seconds.
+- Scope: local regression evidence only. PostgreSQL, hosted CI, integrated staging, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — WEB-13 status communications contract
 
 - PASS: Added a review-only status-source contract with freshness, bounded state, incident redaction, accessibility and no-monitor fallback requirements.

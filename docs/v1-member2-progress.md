@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — current full repository regression
+
+- Change: Re-ran the complete Vitest repository suite after the latest public status, legal metadata and link-integrity additions.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 files, with 4 skipped tests and 1 skipped file, in 123.07 seconds.
+- Scope: local regression evidence only; PostgreSQL, hosted CI, integrated staging, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — WEB-13 status communications contract proposal
 
 - Change: Added a review-only status communications contract defining approved source identity, freshness, bounded health states, incident publication and the no-monitor fallback.
