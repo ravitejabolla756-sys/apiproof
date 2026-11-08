@@ -105,3 +105,5 @@ Latest invitation evidence: invitation acceptance and its Suspense fallback expo
 Latest repository-refresh evidence: the repository dialog preserves its loaded form during refresh and exposes `aria-busy` on the Refresh repositories control; the rebuilt-bundle focused loading journey passes 1/1 in 11.0 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
 
 Latest compatibility-map evidence: topology refresh and retry controls expose `aria-busy` during pending requests; the rebuilt-bundle recovery spec passes 2/2 in 15.9 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
+
+Latest dashboard-refresh evidence: the overview refresh control exposes `aria-busy` while its request is pending; rebuilt-bundle focused coverage passes 1/1 in 10.3 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
