@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-13/UI-12 semantic no-monitor status
+
+- PASS: The no-monitor status message is now exposed as a polite atomic status region while preserving the truthful unavailable-monitor wording.
+- PASS: Impeccable detector returned no findings; targeted ESLint, 83-page production build, `git diff --check` and status browser coverage passed 2/2.
+- ADVISORY: The first Playwright command selected a project name absent from this repository configuration; the configured default run passed without product changes. Artifacts: `/tmp/myowl-v1-status-artifacts-171832`.
+- NOT_RUN: Approved monitor source, incident rehearsal, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — BILL-07/BILL-08 billing workspace-context error boundary
 
 - PASS: Billing checkout and portal return the shared typed `INVALID_WORKSPACE_ID` client error for malformed explicit workspace contexts instead of an unhandled route failure.

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-13/UI-12 semantic no-monitor status
+
+- Change: The truthful no-monitor status message now exposes a polite, atomic `role="status"` region, so assistive technology receives the current unavailable-monitor state without inventing uptime or incident claims.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `pnpm --filter @apiproof/web build` (83 pages), `git diff --check`, and the rebuilt `tests/e2e/status-communications.spec.ts` passed 2/2. Artifacts: `/tmp/myowl-v1-status-artifacts-171832`.
+- Scope: local WEB-13/UI-12 semantic/accessibility hardening only; approved monitor source, incident rehearsal, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — BILL-07/BILL-08 billing workspace-context error boundary
 
 - Change: Billing checkout and portal routes now translate malformed or unavailable workspace contexts through the shared organization error response instead of surfacing unhandled route failures.
