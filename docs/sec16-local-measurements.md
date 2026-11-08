@@ -98,3 +98,16 @@ The same run measured 24 operations at concurrency 4 per local scenario:
 | Worker queue metrics | 0.209 | 0.336 | 0.633 | 10,509 |
 
 Host load and local SQLite affect these timings. These are reproducible local harness observations, not capacity, SLO, staging, or provider evidence.
+
+## 2026-11-08 current-code seeded full-suite harness sample
+
+During the seeded serial full-suite run at code HEAD `1a0409438c1eff4c5578144d948b3d6837d9ce1f`, the SEC-16 test emitted the following four-scenario sample (24 in-process operations per scenario, concurrency 4):
+
+| Scenario | Duration ms | p50 ms | p95 ms | p99 ms | Throughput ops/s | Max in flight |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| API health handler | 16.045 | 0.986 | 9.492 | 10.074 | 1,495.80 | 4 |
+| GitHub webhook signature/claim/record | 152.680 | 16.764 | 32.259 | 35.173 | 157.19 | 4 |
+| SQLite `SELECT 1` | 0.368 | 0.025 | 0.051 | 0.142 | 65,270.60 | 4 |
+| Scan-worker queue metrics | 1.790 | 0.167 | 0.278 | 0.445 | 13,409.32 | 4 |
+
+The run used a process-only throwaway test seed and removed all application/staging database URL variables. These are single-run, host-specific local observations; no external network service was called, and these values are not capacity, SLO, staging, PostgreSQL, or provider evidence. Differences from earlier samples underline host/runtime variance.
