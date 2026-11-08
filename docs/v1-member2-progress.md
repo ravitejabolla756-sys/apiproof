@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — NOT-03/UI-12 Slack disconnect keyboard semantics
+
+- Change: Extended the Slack disconnect progress journey to focus the Disconnect control, verify focus visibility, and activate it with Enter while preserving the pending DELETE response and polite live-status assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused Slack disconnect journey passed 1/1 in 11.9 seconds. Artifacts: `/tmp/myowl-v1-slack-disconnect-keyboard-artifacts`.
+- Scope: local NOT-03/UI-12 keyboard/progress evidence only; no Slack connection, provider delivery, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 dashboard-specific retry keyboard coverage
 
 - Change: Extended Slack status recovery and Workspace Settings data-retry journeys to focus their retry controls, verify focus visibility, and activate recovery with Enter while preserving existing alert/status and axe assertions.

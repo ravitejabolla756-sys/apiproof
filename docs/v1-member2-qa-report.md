@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Slack disconnect keyboard semantics
+
+- PASS: Focused Slack disconnect journey passed 1/1 in 11.9 seconds; Disconnect now verifies keyboard focus and Enter activation while retaining the polite “Disconnecting Slack…” state and DELETE response coverage.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local NOT-03/UI-12 evidence only. Slack/provider delivery, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Dashboard-specific retry keyboard coverage
 
 - PASS: Complete dashboard data-state suite passed 16/16 in 1.8 minutes; Slack status and Workspace Settings retries now verify keyboard focus and Enter activation, with existing alert/status and axe assertions retained.
