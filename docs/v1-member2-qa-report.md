@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-15 public same-origin link crawl
+
+- PASS: Targeted ESLint and `git diff --check` passed; the dedicated public link-crawl browser test passed 1/1 in 33.1 seconds across all audited public routes. Artifacts: `/tmp/myowl-v1-public-link-crawl-report`, `/tmp/myowl-v1-public-link-crawl-artifacts`.
+- Scope: local WEB-15/UI-13 link-integrity evidence only. Manual assistive-technology review, hosted CI, integrated staging and production verification remain open.
+
 ## 2026-11-08 — BILL-09 invoice contract proposal
 
 - PASS: Added a review-only invoice-history contract proposal with workspace/billing-owner authorization, provider normalization, URL safety, retention/redaction and UI failure-state requirements.

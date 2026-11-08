@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-15 public same-origin link crawl
+
+- Change: Added a dedicated browser QA journey that visits every audited public route, collects same-origin links from each page, and verifies every unique target returns an HTTP status below 400.
+- Evidence: Targeted ESLint and `git diff --check` passed; `tests/e2e/public-link-crawl.spec.ts` passed 1/1 in 33.1 seconds. Artifacts: `/tmp/myowl-v1-public-link-crawl-report`, `/tmp/myowl-v1-public-link-crawl-artifacts`.
+- Scope: local WEB-15/UI-13 link-integrity evidence only; manual assistive-technology review, hosted CI, integrated staging and production verification remain open.
+
 ## 2026-11-08 checkpoint — BILL-09 invoice history contract proposal
 
 - Change: Added a provider-neutral invoice-history contract proposal covering billing-owner authorization, workspace binding, normalized monetary fields, provider-link safety, retention/redaction and loading/empty/failure UI states.
