@@ -35,3 +35,5 @@ Latest repository-dialog evidence: selected repository labels are measured at 44
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.
+
+Latest footer evidence: all 18 shared footer brand/navigation links are measured at 44px or larger at mobile width with axe-clean footer content. Hosted CI, manual review, staging and production remain open.

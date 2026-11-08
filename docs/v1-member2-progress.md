@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/WEB-15 footer brand touch target
+
+- Change: the shared landing-footer brand link now exposes an explicit 44px minimum touch target, and the public mobile accessibility suite covers all 18 footer links with axe-clean content.
+- Files: `apps/web/src/components/landing/footer.tsx`, `tests/e2e/public-info-cta-accessibility.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; focused informational-route/footer journey passed 2/2 in 14.2 seconds at 390px, measuring every footer brand/navigation link at 44px or larger; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/WEB-15 evidence only; hosted CI, manual screen-reader review, legal review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — WEB-12/UI-12 refund-review link touch targets
 
 - Change: refund-draft contact and pricing-review links now expose explicit 44px minimum touch targets while preserving draft metadata, truthful beta/payment boundaries, legal-review status, and destinations.

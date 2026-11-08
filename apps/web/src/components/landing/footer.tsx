@@ -10,7 +10,7 @@ export function LandingFooter() {
         {/* TOP ROW: Brand and Description */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2 max-w-sm">
-            <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/" className="inline-flex min-h-11 items-center gap-2.5 group">
               <MyOwlLogo className="h-6 w-auto transition-transform group-hover:scale-105" variant="light" />
               <span className="text-base font-semibold text-white tracking-wider uppercase">
                 MY OWL

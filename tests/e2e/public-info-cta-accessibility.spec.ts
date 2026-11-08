@@ -12,3 +12,17 @@ test('keeps informational-route conversion links touch-sized on mobile', async (
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, route).toEqual([]);
   }
 });
+
+test('keeps the shared footer brand and navigation links touch-sized on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/blog');
+
+  const footer = page.getByRole('contentinfo');
+  const links = footer.getByRole('link');
+  await expect(links).toHaveCount(18);
+  for (let index = 0; index < await links.count(); index += 1) {
+    const link = links.nth(index);
+    expect((await link.boundingBox())?.height, await link.innerText()).toBeGreaterThanOrEqual(44);
+  }
+  expect((await new AxeBuilder({ page }).include('footer').analyze()).violations).toEqual([]);
+});
