@@ -511,3 +511,8 @@ Phase 0 read-only checks:
 
 - Added a service-level race test where two workspace owners concurrently attempt to remove each other. Exactly one revocation may complete; the remaining membership must still be an owner, and only one durable audit event may exist.
 - `member-revocation-service` passes 5/5; targeted ESLint and full workspace `pnpm typecheck` pass. This is SQLite-local serialization evidence only. PostgreSQL `FOR UPDATE` behavior, migration/RLS semantics, invitation invalidation and Member 2 API integration remain unverified or contract-gated.
+
+### 2026-11-08 SEC-01 access-matrix drift guard
+
+- Added `tests/database-access-matrix.test.ts`; it compares all unique database schema/migration `CREATE TABLE` names with the access matrix and catches omitted, stale, or duplicate documentation rows.
+- `database-access-matrix` passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. Live PostgreSQL role/RLS/ACL verification remains blocked on approved non-production database access.
