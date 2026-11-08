@@ -317,7 +317,7 @@ export default function FindingDetailPage({
             <div className={`p-3.5 rounded-xl border transition-all ${
               currentStep >= 1
                 ? 'bg-white border-[#D1EBE0] shadow-2xs'
-                : 'bg-white/60 border-[#E8E8E5] opacity-60'
+                : 'bg-[#F9F9F8] border-[#E8E8E5]'
             }`}>
               <div className="flex items-center justify-between pb-1">
                 <span className="font-semibold text-emerald-950 flex items-center gap-1.5">
@@ -339,7 +339,7 @@ export default function FindingDetailPage({
                 ? 'bg-white border-[#D1EBE0] shadow-2xs'
                 : currentStep === 1
                 ? 'bg-white border-purple-300 shadow-2xs'
-                : 'bg-white/60 border-[#E8E8E5] opacity-60'
+                : 'bg-[#F9F9F8] border-[#E8E8E5]'
             }`}>
               <div className="flex items-center justify-between pb-1">
                 <span className={`font-semibold flex items-center gap-1.5 ${currentStep >= 2 ? 'text-emerald-950' : 'text-purple-950'}`}>
@@ -371,7 +371,7 @@ export default function FindingDetailPage({
                 ? 'bg-white border-[#D1EBE0] shadow-2xs'
                 : currentStep === 2
                 ? 'bg-white border-purple-300 shadow-2xs'
-                : 'bg-white/60 border-[#E8E8E5] opacity-60'
+                : 'bg-[#F9F9F8] border-[#E8E8E5]'
             }`}>
               <div className="flex items-center justify-between pb-1">
                 <span className={`font-semibold flex items-center gap-1.5 ${currentStep >= 3 ? 'text-emerald-950' : 'text-zinc-700'}`}>
@@ -491,10 +491,10 @@ export default function FindingDetailPage({
         <div className="lg:col-span-4 space-y-6">
           {/* ACTION PANEL */}
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+            <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
             <Sparkles aria-hidden="true" className="w-4 h-4 text-purple-700" />
               Review Actions
-            </h3>
+            </h2>
             {actionLoading === 'plan' && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Creating migration plan…</p>}
             {actionLoading === 'propose' && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Starting secure verification…</p>}
             {isVerificationJobActive(migration?.verification_job_status) && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">Verification is in progress. No repository change will be created until verification passes.</p>}
@@ -585,10 +585,10 @@ export default function FindingDetailPage({
           {finding.capability?.remediation && (
             <div className="rounded-[24px] border border-amber-200 bg-amber-50/70 p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-base font-semibold text-amber-950 flex items-center gap-2">
+                <h2 className="text-base font-semibold text-amber-950 flex items-center gap-2">
                   <AlertTriangle aria-hidden="true" className="w-4 h-4 text-amber-700" />
                   {finding.capability.remediation.mode === 'manual-guidance' ? 'Migration playbook' : 'Review-only migration proposal'}
-                </h3>
+                </h2>
                 <span className="rounded-full border border-amber-200 bg-white px-2 py-1 font-mono text-[10px] text-amber-900">
                   {finding.capability.remediation.templateId}
                 </span>
@@ -614,10 +614,10 @@ export default function FindingDetailPage({
 
           {/* VERIFICATION CONTRACT CARD */}
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+            <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
               <ShieldCheck aria-hidden="true" className="w-4 h-4 text-emerald-600" />
               Safety & Verification Invariants
-            </h3>
+            </h2>
 
             <div className="space-y-2 text-xs">
               <div className="p-3 rounded-xl bg-[#EEF7F2] border border-[#D1EBE0] space-y-0.5">

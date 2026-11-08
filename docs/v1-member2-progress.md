@@ -5,10 +5,10 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
-## 2026-11-08 checkpoint — UI-12 dynamic detail error-state accessibility
+## 2026-11-08 checkpoint — UI-12 dynamic detail route-state accessibility
 
-- Change: Added a focused browser regression for repository-detail and finding-detail 503/retry states at 390px, asserting assertive live-region semantics, 44px recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow. The repository-detail recovery back link now uses `text-zinc-600` instead of `text-zinc-500` to clear its 4.46:1 contrast failure against the application canvas.
-- Evidence: Impeccable detector returned no findings for `apps/web/src/app/dashboard/repositories/[id]/page.tsx`; rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed **12/12 in 1.1 minutes**. Artifacts: `/tmp/myowl-v1-ui12-detail-a11y-zGc6C3`.
+- Change: Added focused browser regression for repository-detail and finding-detail error/retry and populated states at 390px, asserting assertive live-region semantics, 44px recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow. Fixed the repository-detail recovery-link contrast failure (`text-zinc-500` → `text-zinc-600`), removed opacity-based contrast loss from inactive finding workflow cards, and promoted finding workflow section headings from `h3` to `h2` to restore heading order.
+- Evidence: Impeccable detector returned no findings for the changed repository and finding detail pages; rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed **12/12 in 57.4 seconds**. Artifacts: `/tmp/myowl-v1-ui12-detail-a11y-populated-CQdBwz`.
 - Scope: strengthens local UI-12 dynamic error/retry coverage only; manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain open.
 
 ## 2026-11-08 checkpoint — current public production-bundle performance probe

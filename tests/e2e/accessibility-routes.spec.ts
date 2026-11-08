@@ -79,6 +79,27 @@ test.describe('route accessibility audit', () => {
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'repository detail error').toEqual([]);
     await page.unroute('**/api/repositories/a11y-detail-error');
 
+    await page.route('**/api/repositories/a11y-detail-populated', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          repository: {
+            id: 'a11y-detail-populated', owner: 'acme', name: 'owl', full_name: 'acme/owl',
+            github_repository_id: 'gh-a11y', default_branch: 'main', status: 'healthy',
+            last_scan_at: null, created_at: '2026-11-08T00:00:00.000Z',
+          },
+          scans: [],
+          findings: [],
+        }),
+      });
+    });
+    await page.goto('/dashboard/repositories/a11y-detail-populated', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await expect(page.getByRole('heading', { name: 'owl', exact: true })).toBeVisible({ timeout: 30_000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'repository detail populated').toEqual([]);
+    await page.unroute('**/api/repositories/a11y-detail-populated');
+
     await page.route('**/api/findings/a11y-detail-error', async (route) => {
       await route.fulfill({
         status: 503,
@@ -95,6 +116,29 @@ test.describe('route accessibility audit', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'finding detail error').toEqual([]);
     await page.unroute('**/api/findings/a11y-detail-error');
+
+    await page.route('**/api/findings/a11y-detail-populated', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          finding: {
+            id: 'a11y-detail-populated', provider: 'Fixture', change_id: 'change-a11y',
+            title: 'Accessible finding fixture', description: 'A populated accessibility fixture.',
+            severity: 'P1', confidence: 'high', file_path: 'src/example.ts', line_number: 12,
+            symbol: 'example', reason: 'Fixture reason', source_snippet: 'example()', status: 'open',
+            created_at: '2026-11-08T00:00:00.000Z', repo_name: 'owl', repo_full_name: 'acme/owl',
+            repo_owner: 'acme', default_branch: 'main', evidence: [], reasonCodes: [], capability: null,
+          },
+          migration: null,
+        }),
+      });
+    });
+    await page.goto('/dashboard/findings/a11y-detail-populated', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await expect(page.getByRole('heading', { name: 'Accessible finding fixture', exact: true })).toBeVisible({ timeout: 30_000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'finding detail populated').toEqual([]);
+    await page.unroute('**/api/findings/a11y-detail-populated');
   });
 
   test('passes axe on every public route', async ({ page }) => {

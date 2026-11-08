@@ -1,10 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
-## 2026-11-08 — UI-12 dynamic detail error-state accessibility
+## 2026-11-08 — UI-12 dynamic detail route-state accessibility
 
-- PASS: Added repository-detail and finding-detail 503/retry coverage at 390px. Both states expose assertive atomic alerts, 44px-or-larger recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow.
-- FIXED: The repository-detail recovery back link failed axe contrast at 4.46:1 (`text-zinc-500` on the application canvas); changing it to `text-zinc-600` resolves the defect. The Impeccable detector reports no findings on the changed page.
-- PASS: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed 12/12 in 1.1 minutes. Artifacts: `/tmp/myowl-v1-ui12-detail-a11y-zGc6C3`.
+- PASS: Added repository-detail and finding-detail 503/retry plus populated-state coverage at 390px. Both screens expose assertive atomic alerts where applicable, 44px-or-larger recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow.
+- FIXED: The repository-detail recovery link failed axe contrast at 4.46:1 (`text-zinc-500` on the application canvas); changing it to `text-zinc-600` resolves the defect. Populated finding detail also exposed opacity-induced contrast failures in inactive workflow cards and an `h1`→`h3` heading jump; removing the opacity layer and promoting section headings to `h2` resolves them. Impeccable reports no findings on either changed page.
+- PASS: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed 12/12 in 57.4 seconds. Artifacts: `/tmp/myowl-v1-ui12-detail-a11y-populated-CQdBwz`.
 - NOT_RUN: Manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain open.
 
 ## 2026-11-08 — current public production-bundle performance probe
