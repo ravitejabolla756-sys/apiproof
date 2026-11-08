@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — AUTH-08/UI-12 account-form autofill metadata
+
+- PASS: Account settings display-name and email fields expose standard browser autofill tokens; password fields retain current/new-password tokens.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; authenticated settings journey passed 1/1; web production build generated 83 static pages.
+- NOT_RUN: Live/deployed AUTH-08 verification, manual assistive-technology review, hosted CI, integrated staging and production remain open. Artifacts: `/tmp/myowl-v1-member2-account-autofill-artifacts-qP26ui`.
+
 ## 2026-11-08 — WEB-15/UI-12 contact-form autofill metadata
 
 - PASS: Public contact name and work-email fields now expose standard browser autofill tokens while preserving the explicit no-delivery beta state.

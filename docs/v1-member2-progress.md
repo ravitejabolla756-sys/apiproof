@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — AUTH-08/UI-12 account-form autofill metadata
+
+- Change: Added standard `autocomplete="name"` and `autocomplete="email"` tokens to the authenticated account settings profile fields; password autofill behavior remains unchanged.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; the authenticated settings browser journey passed 1/1; `pnpm --filter @apiproof/web build` generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-account-autofill-artifacts-qP26ui`.
+- Scope: local AUTH-08/UI-12 form-accessibility hardening only; live/deployed verification, manual assistive-technology review, hosted CI and production remain open.
+
 ## 2026-11-08 checkpoint — WEB-15/UI-12 contact-form autofill metadata
 
 - Change: Added standard `autocomplete="name"` and `autocomplete="email"` tokens to the truthful, non-sending public contact form and asserted them in the existing browser journey.

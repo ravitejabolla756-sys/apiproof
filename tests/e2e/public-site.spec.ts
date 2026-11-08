@@ -41,15 +41,12 @@ test.describe('public beta surfaces', () => {
     await expect(page.getByText('Beta · Read-only safety boundary')).toBeVisible();
     await expect(page.getByText('All systems operational')).toHaveCount(0);
   });
-
   test('supports skip-link focus and mobile menu disclosure', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/pricing');
+    await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/pricing');
     await page.locator('.skip-link').focus();
     await expect(page.locator('.skip-link')).toBeFocused();
     await expect(page.locator('#main-content')).toHaveAttribute('tabindex', '-1');
     await expect(page.locator('nav[aria-label="Primary site navigation"] a[href="/pricing"]')).toHaveAttribute('aria-current', 'page');
-
     const toggle = page.locator('button[aria-controls="mobile-site-navigation"]');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -65,7 +62,6 @@ test.describe('public beta surfaces', () => {
     await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).toBeFocused(); await toggle.click(); await expect(mobileMenuLinks.first()).toBeFocused();
     await page.getByTestId('mobile-menu-backdrop').click({ position: { x: 10, y: 10 } }); await expect(toggle).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).toBeFocused();
   });
-
   test('passes automated accessibility scans on representative public pages', async ({ page }) => {
     for (const route of ['/pricing', '/faq', '/status']) {
       await page.goto(route);
@@ -114,7 +110,6 @@ test.describe('public beta surfaces', () => {
       '/cookies',
       '/invite/accept',
     ]);
-
     await page.goto('/');
     const internalLinks = await page.locator('a[href^="/"]').evaluateAll((anchors) => [...new Set(
       anchors
@@ -123,7 +118,6 @@ test.describe('public beta surfaces', () => {
         .map((href) => href.split('#', 1)[0] ?? '')
         .filter((href) => href.length > 0),
     )]);
-
     for (const href of internalLinks) {
       const response = await request.get(href);
       expect(response.status(), href).toBeLessThan(400);
@@ -140,14 +134,13 @@ test.describe('public beta surfaces', () => {
     const contactStatus = page.getByRole('status'); await expect(contactStatus).toBeVisible(); await expect(contactStatus).toContainText('No message was sent'); await expect(contactStatus).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible(); });
   test('keeps the contact form on required-field validation', async ({ page }) => { await page.goto('/contact'); await page.getByRole('button', { name: 'Review inquiry state' }).click(); const name = page.getByLabel('Full Name'); await expect(name).toBeFocused(); await expect(page.getByRole('status')).toHaveCount(0); expect(await name.evaluate((input: HTMLInputElement) => input.validationMessage)).toBe('Please fill out this field.'); }); });
-
 test.describe('authenticated product surfaces', () => {
   test('signs in with the local seed and loads account, workspace, and notification settings', async ({ page }) => {
     await signIn(page);
-
     await page.goto('/dashboard/settings/account');
     await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer', { timeout: 30_000 });
+    await expect(page.getByLabel('Display name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email');
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
@@ -157,7 +150,6 @@ test.describe('authenticated product surfaces', () => {
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
-
   test('saves an optional notification preference through the UI contract', async ({ page }) => {
     await signIn(page); let postedUpdates: unknown; let failSave = false;
     let releaseSave: (() => void) | undefined;
@@ -197,20 +189,17 @@ test.describe('authenticated product surfaces', () => {
     failSave = true; await findingsSlack.check(); await savePreferences.focus(); await expect(savePreferences).toBeFocused(); await page.keyboard.press('Enter'); await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 }); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification save error').toEqual([]);
     await page.unroute('**/api/account/notifications');
   });
-
   test('changes a real local account password and invalidates another session', async ({ page, browser }) => {
     const email = `browser-password-${Date.now()}@example.test`;
     const oldPassword = 'OldPassword123!';
     const newPassword = 'NewPassword456!';
     await createLocalAccount(page, email, oldPassword);
-
     await page.goto('/dashboard/settings/account');
     await page.getByLabel('Current password', { exact: true }).fill(oldPassword);
     await page.getByLabel('New password', { exact: true }).fill(newPassword);
     await page.getByLabel('Confirm new password', { exact: true }).fill(newPassword);
     await page.getByRole('button', { name: 'Update password' }).click();
     await expect(page.getByRole('status')).toContainText('Password updated.', { timeout: 30_000 });
-
     const otherPage = await browser.newPage();
     try {
       await otherPage.goto('/login');
@@ -218,7 +207,6 @@ test.describe('authenticated product surfaces', () => {
       await otherPage.getByLabel('Password').fill(oldPassword);
       await otherPage.getByRole('button', { name: 'Sign In', exact: true }).last().click();
       await expect(otherPage.getByText('Invalid email or password.', { exact: true })).toBeVisible({ timeout: 30_000 });
-
       await otherPage.getByLabel('Password').fill(newPassword);
       await otherPage.getByRole('button', { name: 'Sign In', exact: true }).last().click();
       await otherPage.waitForURL('**/dashboard');
@@ -237,22 +225,18 @@ test.describe('authenticated product surfaces', () => {
     const results = await new AxeBuilder({ page }).include('aside').analyze();
     expect(results.violations, 'workspace context selector').toEqual([]); await page.unroute('**/api/workspaces');
   });
-
   test('keeps collapsed workspace navigation links accessible', async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/dashboard');
-
     const sidebar = page.getByRole('complementary', { name: 'Workspace navigation' });
     expect((await sidebar.getByRole('link', { name: 'Overview' }).boundingBox())?.height).toBeGreaterThanOrEqual(44); await sidebar.getByRole('button', { name: 'Collapse workspace navigation' }).click();
-
     const overview = sidebar.getByRole('link', { name: 'Overview' });
     const repositories = sidebar.getByRole('link', { name: 'Repositories' });
     await expect(overview).toHaveAttribute('aria-current', 'page');
     await expect(repositories).toHaveAttribute('aria-label', 'Repositories');
     await expect(repositories).not.toHaveAttribute('aria-current');
   });
-
   test('switches between authorized workspace contexts through the picker', async ({ page }) => {
     await signIn(page);
     let activeWorkspaceId = 'ws_primary';
@@ -279,7 +263,6 @@ test.describe('authenticated product surfaces', () => {
         body: JSON.stringify({ workspace: { id: activeWorkspaceId, name: 'Secondary Workspace', role: 'member' } }),
       });
     });
-
     await page.goto('/dashboard');
     const selector = page.getByLabel('Active workspace');
     await expect(selector).toHaveValue('ws_primary', { timeout: 30_000 });
@@ -360,7 +343,6 @@ test.describe('authenticated product surfaces', () => {
     expect((await page.getByRole('link', { name: 'Back to Findings', exact: true }).boundingBox())?.height).toBeGreaterThanOrEqual(44); await expect(page.getByRole('alert').filter({ hasText: 'Finding not found or access denied.' })).toBeVisible({ timeout: 30_000 }); await expect(page.getByRole('alert').filter({ hasText: 'Finding not found or access denied.' })).toHaveAttribute('aria-live', 'assertive'); await expect(page.getByRole('alert').filter({ hasText: 'Finding not found or access denied.' })).toHaveAttribute('aria-atomic', 'true');
     const findingResults = await new AxeBuilder({ page }).analyze();
     expect(findingResults.violations, '/dashboard/findings/[id] access-denied').toEqual([]);
-
     const reviewResponse = await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     expect(reviewResponse?.status()).toBe(200);
     await expect(page.getByRole('heading', { name: 'Rule review' })).toBeVisible({ timeout: 30_000 });
@@ -378,7 +360,6 @@ test.describe('authenticated product surfaces', () => {
       '/dashboard/migrations',
     ]);
   });
-
   test('scans core authenticated workflow and settings routes', async ({ page }) => {
     await signIn(page);
     await scanAuthenticatedRoutes(page, [
@@ -390,7 +371,6 @@ test.describe('authenticated product surfaces', () => {
       '/dashboard/settings/notifications',
     ]);
   });
-
   test('verifies keyboard skip-link and dialog behavior', async ({ page }) => {
     await signIn(page);
     await page.goto('/dashboard');
@@ -398,7 +378,6 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.locator('.skip-link')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.locator('#main-content')).toBeFocused();
-
     const searchTrigger = page.getByRole('button', { name: /Search repos, findings, SDKs/ });
     expect((await searchTrigger.boundingBox())?.height).toBeGreaterThanOrEqual(44); await searchTrigger.focus();
     await page.keyboard.press('Enter');
@@ -415,7 +394,6 @@ test.describe('authenticated product surfaces', () => {
     await page.keyboard.press('Escape');
     await expect(commandPalette).toHaveCount(0);
     await expect(searchTrigger).toBeFocused();
-
     await page.route('**/api/github/repositories', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
     });
@@ -434,7 +412,6 @@ test.describe('authenticated product surfaces', () => {
     await page.keyboard.press('Escape'); await expect(repositoryDialog).toHaveCount(0);
     await expect(connectTrigger).toBeFocused();
     await page.unroute('**/api/github/repositories');
-
     await page.route('**/api/github/repositories', async (route) => {
       await route.fulfill({
         status: 200,
@@ -452,7 +429,6 @@ test.describe('authenticated product surfaces', () => {
     await expect(connectTrigger).toBeFocused();
     await page.unroute('**/api/github/repositories');
   });
-
   test('shows safe invalid-login and permission-denied states without leaking data', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel('Email').fill('unknown@example.test');
@@ -461,7 +437,6 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByText('Invalid email or password.')).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'invalid login state').toEqual([]);
     await expect(page.getByText('developer@apiproof.dev')).toHaveCount(0);
-
     await signIn(page);
     await page.route('**/api/workspace/settings', async (route) => {
       await route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace access denied.' }) });
@@ -471,7 +446,6 @@ test.describe('authenticated product surfaces', () => {
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace permission-denied state').toEqual([]);
     await page.unroute('**/api/workspace/settings');
   });
-
   test('renders a deterministic empty repository state and account error state', async ({ page }) => {
     await signIn(page);
     let releaseRepositories: (() => void) | undefined;
@@ -485,7 +459,6 @@ test.describe('authenticated product surfaces', () => {
     releaseRepositories?.();
     await expect(page.getByText('No repositories connected yet.')).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/repositories');
-
     let releaseAccount: (() => void) | undefined; const accountLoading = new Promise<void>((resolve) => { releaseAccount = resolve; }); let accountRequests = 0;
     await page.route('**/api/account', async (route) => { accountRequests += 1; if (accountRequests === 1) { await accountLoading; await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Unable to load account settings.' }) }); return; } await route.continue(); });
     await page.goto('/dashboard/settings/account'); const accountStatus = page.getByRole('status').filter({ hasText: 'Loading account settings…' }); await expect(accountStatus).toContainText('Loading account settings…'); await expect(accountStatus).toHaveAttribute('aria-atomic', 'true'); await expect(accountStatus).toHaveAttribute('aria-busy', 'true'); const accountSurface = page.getByRole('heading', { name: 'Account settings' }).locator('..').locator('..').locator('..'); await expect(accountSurface).toHaveAttribute('aria-busy', 'true'); releaseAccount?.();
@@ -515,7 +488,6 @@ test.describe('authenticated product surfaces', () => {
         body: JSON.stringify({ preferences: [{ category: 'findings', channel: 'slack', enabled: true, required: false, deliveryAvailable: true }] }),
       });
     });
-
     await page.goto('/dashboard/settings/notifications');
     const notificationLoading = page.getByRole('status').filter({ hasText: 'Loading preferences…' }); await expect(notificationLoading).toBeVisible({ timeout: 30_000 }); await expect(notificationLoading).toHaveAttribute('aria-busy', 'true'); const notificationSurface = page.getByRole('heading', { name: 'Notification preferences' }).locator('..').locator('..'); await expect(notificationSurface).toHaveAttribute('aria-busy', 'true');
     initialPreferenceRequestsClosed = true; releasePreferences?.();
