@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 GitHub installation context boundary
+
+- PASS: GitHub installation-start requests validate workspace context before generating provider URLs and return typed malformed-context errors.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded combined GitHub route coverage passed 6/6.
+- NOT_RUN: GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 provider-rules context error boundary
 
 - PASS: Provider-rules GET returns a typed organization error for malformed explicit workspace contexts without changing owner authorization behavior.

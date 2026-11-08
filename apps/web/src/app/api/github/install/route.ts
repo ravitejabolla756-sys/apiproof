@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getGitHubAppInstallUrl } from '@/lib/server/github';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
-import {
-  requireWorkspaceMember,
-} from '@/lib/server/workspace-service';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { getGitHubAppInstallUrl } from '@/lib/server/github.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -12,19 +9,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  const urlObj = new URL(req.url);
-  const requestedWorkspaceId = urlObj.searchParams.get('workspaceId');
-
   let workspaceId: string;
-  if (requestedWorkspaceId) {
-    try {
-      const ws = await requireWorkspaceMember(user.id, requestedWorkspaceId);
-      workspaceId = ws.id;
-    } catch {
-      return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'FORBIDDEN' }, { status: 403 });
-    }
-  } else {
+  try {
     workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
+  } catch (error) {
+    return organizationErrorResponse(error);
   }
 
   try {

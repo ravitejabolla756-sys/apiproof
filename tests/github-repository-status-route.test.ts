@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { GET } from '../apps/web/src/app/api/github/repositories/status/route.js';
 import { GET as repositoriesGet } from '../apps/web/src/app/api/github/repositories/route.js';
+import { GET as installGet } from '../apps/web/src/app/api/github/install/route.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
@@ -74,6 +75,15 @@ describe('GET /api/github/repositories/status', () => {
   it('repository picker returns a typed error for malformed explicit workspace contexts', async () => {
     const account = await createUserWithSession('picker-list-context@example.com', 'Strong-password-1!', 'Picker List Context');
     const response = await repositoriesGet(new Request('http://localhost/api/github/repositories?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
+  it('GitHub installation start returns a typed error for malformed explicit workspace contexts', async () => {
+    const account = await createUserWithSession('install-context@example.com', 'Strong-password-1!', 'Install Context');
+    const response = await installGet(new Request('http://localhost/api/github/install?workspaceId=not%20safe', {
       headers: { cookie: `apiproof_session=${account.session.id}` },
     }));
     expect(response.status).toBe(400);

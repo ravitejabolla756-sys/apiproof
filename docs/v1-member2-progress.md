@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 GitHub installation context boundary
+
+- Change: GitHub installation-start requests now use the shared workspace resolver, returning typed context errors before generating a provider installation URL.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded combined GitHub route coverage passed 6/6.
+- Scope: local ORG-02/GitHub installation boundary hardening only; GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 provider-rules context error boundary
 
 - Change: Provider-rules GET now translates malformed explicit workspace contexts to the shared typed organization error while preserving its owner-denial and generic provider-review failure behavior.

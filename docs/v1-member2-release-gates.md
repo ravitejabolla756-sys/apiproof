@@ -20,6 +20,8 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest GitHub installation evidence: installation-start requests validate workspace context before generating provider URLs; combined GitHub route coverage passes 6/6 and repository typecheck passes. GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 Latest provider-rules evidence: malformed explicit workspace contexts return typed organization errors while owner authorization remains intact; seeded provider-review coverage passes 3/3 and repository typecheck passes. Provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
 
 Latest Slack OAuth evidence: connect requests normalize malformed workspace contexts while unrelated provider failures retain the 503 boundary; seeded Slack Phase 1 coverage passes 23/23 and repository typecheck passes. Provider approval/delivery, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
