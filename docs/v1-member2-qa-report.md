@@ -1,5 +1,13 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 checkpoint — UI-12 findings trend screen-reader semantics
+
+- PASS: The dashboard findings trend now announces total, critical, high and warning counts in its accessible chart name without changing the visual chart.
+- PASS: Rebuilt web bundle generated 83 pages; the new trend regression plus existing dashboard overview error-state regression passed 2/2 in 3.1 seconds on isolated port 3103.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- ADVISORY: Impeccable reported three pre-existing palette warnings on unchanged dashboard lines; none was introduced by this change.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, provider approval and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 workspace quota screen-reader semantics
 
 - PASS: Workspace Settings finite quota bars now expose explicit progressbar roles, accessible names, bounded values and spoken value text without changing the beta billing boundary.

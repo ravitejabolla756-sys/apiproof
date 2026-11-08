@@ -5,6 +5,13 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 findings trend screen-reader semantics
+
+- Change: Expanded the dashboard “Findings this week” accessible chart label to announce total findings plus critical, high and warning segment counts; visual rendering is unchanged. Added a dedicated browser regression for the spoken breakdown.
+- Evidence: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `dashboard-trend-accessibility.spec.ts` plus the existing dashboard overview error-state regression passed **2/2 in 3.1 seconds** on isolated port 3103. Targeted ESLint and `git diff --check` passed.
+- Advisory: The Impeccable detector reported only three pre-existing dashboard palette warnings on unchanged lines; no new finding was introduced by this change.
+- Scope: advances local UI-12 dashboard chart semantics only; manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 workspace quota screen-reader semantics
 
 - Change: Added explicit `progressbar` roles, accessible names, bounded values and spoken value text to the three finite subscription-usage bars on Workspace Settings; visual behavior and beta billing boundaries are unchanged.

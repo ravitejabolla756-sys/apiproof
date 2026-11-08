@@ -269,7 +269,11 @@ export default function DashboardOverviewPage() {
               return data.findingsThisWeek.map((item) => (
                 <div key={item.day} className="flex items-center gap-3 text-xs">
                   <span className="w-20 shrink-0 text-[#686868]">{new Date(`${item.day}T00:00:00`).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
-                  <div role="img" className="h-2 flex-1 overflow-hidden rounded-full bg-[#F0F0ED]" aria-label={`${item.total} findings on ${item.day}`}>
+                  <div
+                    role="img"
+                    className="h-2 flex-1 overflow-hidden rounded-full bg-[#F0F0ED]"
+                    aria-label={`${item.total} findings on ${item.day}: ${item.critical} critical, ${item.high} high, ${item.warning} warning`}
+                  >
                     <div className="flex h-full min-w-1 overflow-hidden rounded-full" style={{ width: `${Math.max((item.total / max) * 100, 2)}%` }}>
                       <span className="bg-rose-500" style={{ width: `${(item.critical / item.total) * 100}%` }} />
                       <span className="bg-amber-500" style={{ width: `${(item.high / item.total) * 100}%` }} />
