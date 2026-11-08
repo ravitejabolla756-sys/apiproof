@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 activity-context error boundary
+
+- PASS: Activity requests with malformed explicit workspace contexts return typed organization errors without changing the existing tenant-isolated activity query.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded activity coverage passed 19/19.
+- ADVISORY: The first invocation omitted `APIPROOF_LOCAL_SEED_PASSWORD` and failed during fixture setup; the documented seeded rerun passed.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 workspace-list context error boundary
 
 - PASS: The workspace-list endpoint returns typed organization errors for malformed explicit workspace contexts instead of an unhandled failure.

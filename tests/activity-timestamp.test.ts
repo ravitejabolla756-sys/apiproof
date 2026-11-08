@@ -147,6 +147,16 @@ describe('Activity API Route Authorization & Tenant Isolation (GET /api/activity
     expect(res.status).toBe(401);
   });
 
+  it('returns a typed error for malformed explicit workspace contexts', async () => {
+    const { session } = await createUserWithSession('activity-context@example.com', 'Pass12345!', 'Activity Context');
+    const req = new Request('http://localhost/api/activity?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    });
+    const res = await activityGet(req);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
   it('1. A user can see their own workspace activity events with both created_at and timestamp', async () => {
     const { user, session } = await createUserWithSession('user_a@example.com', 'Pass12345!', 'User A');
     const wsA = await getDefaultWorkspaceForUser(user.id);

@@ -20,6 +20,8 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest activity API evidence: malformed explicit workspace contexts return typed organization errors while the existing activity tenant-isolation suite passes 19/19 with the required local seed fixture. PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 Latest organization-context evidence: the workspace-list endpoint returns typed errors for malformed explicit workspace contexts, with organization-management coverage passing 15/15 and repository typecheck passing. PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
 
 Latest billing API evidence: checkout, portal and subscription routes normalize malformed explicit workspace contexts to typed `INVALID_WORKSPACE_ID` responses; billing-boundary coverage passes 4/4 and repository typecheck passes. Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 activity-context error boundary
+
+- Change: The activity read endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response, preserving its existing tenant-scoped query.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/activity-timestamp.test.ts --no-file-parallelism` passed 19/19. An initial invocation without the required seed variable failed during fixture initialization only and was rerun successfully.
+- Scope: local ORG-02 activity API hardening only; PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 workspace-list context error boundary
 
 - Change: The workspace-list endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response instead of returning an unhandled route failure.
