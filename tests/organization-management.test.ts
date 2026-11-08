@@ -12,8 +12,9 @@ import { GET as findingsRoute } from '../apps/web/src/app/api/findings/route.js'
 import { GET as pullRequestsRoute } from '../apps/web/src/app/api/pull-requests/route.js';
 import { GET as migrationsRoute } from '../apps/web/src/app/api/migrations/route.js';
 import { GET as auditRoute } from '../apps/web/src/app/api/workspace/audit/route.js';
-import { PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
-import { DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
+import { GET as membersGet, PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
+import { GET as invitationsGet, DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
+import { GET as settingsGet } from '../apps/web/src/app/api/workspace/settings/route.js';
 import {
   acceptWorkspaceInvitation,
   createWorkspaceInvitation,
@@ -102,6 +103,20 @@ describe('workspace administration', () => {
     }));
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+  });
+
+  it('keeps workspace administration reads private and non-cacheable', async () => {
+    const owner = await createUserWithSession('admin-cache@example.test', 'OwnerPassword123!', 'Admin Cache');
+    const request = () => new Request('https://apiproof.test/api/workspace/settings', { headers: { cookie: `apiproof_session=${owner.session.id}` } });
+    const [settings, members, invitations] = await Promise.all([
+      settingsGet(request()),
+      membersGet(new Request('https://apiproof.test/api/workspace/members', { headers: { cookie: `apiproof_session=${owner.session.id}` } })),
+      invitationsGet(new Request('https://apiproof.test/api/workspace/invitations', { headers: { cookie: `apiproof_session=${owner.session.id}` } })),
+    ]);
+    for (const response of [settings, members, invitations]) {
+      expect(response.status).toBe(200);
+      expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+    }
   });
 
   it('creates a single-use expiring invitation and accepts it only for the invited email', async () => {

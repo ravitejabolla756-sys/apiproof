@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — organization administration cache boundaries
+
+- PASS: Workspace settings, member, invitation and audit responses are private and non-cacheable at the HTTP boundary; shared organization errors carry the same policy.
+- PASS: Organization-management coverage passed 22/22; targeted ESLint, repository typecheck and diff checks passed.
+- NOT_RUN: PostgreSQL/RBAC, retention review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-11 audit-response cache boundary
 
 - PASS: Audit success and unauthorized responses are private/non-cacheable, and shared organization errors carry the same cache policy.

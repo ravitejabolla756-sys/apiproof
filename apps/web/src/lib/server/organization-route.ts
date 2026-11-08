@@ -4,7 +4,7 @@ import { OrganizationServiceError } from './organization-service.js';
 import { validateSafeId } from './validation.js';
 
 export const WORKSPACE_CONTEXT_COOKIE = 'apiproof_workspace_id';
-const PRIVATE_NO_STORE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0' };
+export const PRIVATE_NO_STORE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0' };
 
 function readCookieValue(req: Request, name: string): string | null {
   const cookieHeader = req.headers.get('cookie');

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — organization administration cache boundaries
+
+- Change: Workspace settings, member, invitation and audit success/unauthorized responses now share `Cache-Control: private, no-store, max-age=0`; shared organization errors retain the same private policy.
+- Evidence: Added route-level cache assertions; `tests/organization-management.test.ts` passed 22/22, targeted ESLint, repository `pnpm typecheck`, and `git diff --check` passed.
+- Scope: local ORG-02/ORG-03/ORG-04/ORG-11 data-protection hardening only; PostgreSQL/RBAC, retention review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-11 audit-response cache boundary
 
 - Change: Workspace audit reads now return `Cache-Control: private, no-store, max-age=0` for success and unauthorized responses; shared organization errors use the same private no-store policy so malformed, denied and server-failure responses cannot be reused from a cache.
