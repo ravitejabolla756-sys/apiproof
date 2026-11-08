@@ -1540,3 +1540,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/landing/navbar.tsx`, `tests/e2e/navbar-accessibility.spec.ts`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; existing mobile-menu journey passed 1/1 in 4.4 seconds and dedicated navbar journey passed 1/1 in 4.8 seconds at 390px with six measured menu links and axe-clean menu content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local WEB-15/UI-12/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 authenticated dialog close targets
+
+- Change: command-palette and GitHub repository-dialog close controls now expose explicit 44px square touch targets while preserving autofocus, focus trapping, Escape dismissal, and invoking-control restoration.
+- Files: `apps/web/src/components/dashboard/command-palette.tsx`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/dialog-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; dedicated mobile dialog journey passed 1/1 in 14.5 seconds with axe-clean dialogs, measured close controls, intentional search-field autofocus, and Escape focus recovery; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
