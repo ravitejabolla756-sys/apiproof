@@ -377,3 +377,7 @@ Shared workbench retry alerts now preserve focus across repository/detail/activi
 ## Latest UI-12 workspace-administration focus evidence — 2026-11-08
 
 Workspace Administration top-level feedback now preserves focus across settings load/save outcomes. Local build and browser coverage pass; the detector’s five palette warnings are incumbent and unrelated to this state change. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 integration and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12/NOT-03 Slack focus evidence — 2026-11-08
+
+Slack connection failures now preserve focus on their retryable alert. Local build and browser coverage pass; provider approval/delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.

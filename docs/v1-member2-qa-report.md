@@ -1251,6 +1251,10 @@ The shared `DashboardDataError` now focuses retryable alerts across workbench ro
 
 Workspace Administration top-level settings feedback now receives focus after terminal responses. The rebuilt production bundle passed with 83 generated pages; organization/member/invitation/audit coverage passed 13/13; targeted ESLint and `git diff --check` passed. The detector reported five incumbent purple-palette warnings on untouched headings. Manual screen-reader, hosted CI, staging, PostgreSQL/RBAC, Member 1 integration and production checks remain NOT_RUN.
 
+## Latest Slack error-focus evidence — 2026-11-08
+
+Slack connection action failures now focus the retryable alert while preserving action-specific recovery. The rebuilt production bundle passed with 83 generated pages; Slack recovery/state coverage passed 2/2; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider approval/delivery, manual screen-reader, hosted CI, staging, PostgreSQL/RBAC and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.

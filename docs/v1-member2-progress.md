@@ -2749,3 +2749,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; organization/member/invitation/audit coverage passed 13/13; targeted ESLint and `git diff --check` passed. Impeccable reported only five incumbent purple-palette warnings on untouched headings, with no new state finding.
 - Scope: local UI-12/UI-13 and ORG-02/ORG-03/ORG-11 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation contract and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/NOT-03 Slack error focus
+
+- Change: Slack connection, connect and disconnect failures now focus the retryable alert while preserving the existing action-specific retry and busy semantics.
+- Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/e2e/slack-action-recovery.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; Slack recovery/state coverage passed 2/2; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/NOT-03 notification-boundary evidence only; provider approval/delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

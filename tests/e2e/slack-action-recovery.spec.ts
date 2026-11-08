@@ -24,6 +24,7 @@ test('labels Slack connection recovery for the failed action', async ({ page }) 
   await page.getByRole('button', { name: 'Connect Slack' }).click();
   const alert = page.getByRole('alert').filter({ hasText: 'Slack connection could not be started.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   await expect(alert.getByRole('button', { name: 'Retry Slack connection' })).toBeVisible();
   await expect(alert.getByRole('button', { name: 'Retry Slack status' })).toHaveCount(0);
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'Slack connection action error').toEqual([]);

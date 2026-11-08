@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Loader2, MessageSquare, Unplug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -12,6 +12,11 @@ export function SlackConnectionCard() {
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorAction, setErrorAction] = useState<'status' | 'connect' | 'disconnect' | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const loadStatus = useCallback(async (preserveError = false) => {
     setLoadingStatus(true);
@@ -85,7 +90,7 @@ export function SlackConnectionCard() {
         </span>}
       </div>
       <p className="text-xs text-[#686868]">Receive new breaking-finding alerts by direct message. The invite-only beta keeps repository changes disabled and requires human review.</p>
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 text-xs text-rose-700"><span>{error}</span><Button type="button" variant="outline" size="sm" disabled={errorAction === 'status' ? loadingStatus : busy} aria-busy={(errorAction === 'status' ? loadingStatus : busy) ? 'true' : undefined} onClick={() => void (errorAction === 'connect' ? connect(true) : errorAction === 'disconnect' ? disconnect(true) : loadStatus(true))} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? (busy ? 'Retrying Slack connection…' : 'Retry Slack connection') : errorAction === 'disconnect' ? (busy ? 'Retrying Slack disconnect…' : 'Retry Slack disconnect') : (loadingStatus ? 'Retrying Slack status…' : 'Retry Slack status')}</Button></div>}
+      {error && <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-2 text-xs text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{error}</span><Button type="button" variant="outline" size="sm" disabled={errorAction === 'status' ? loadingStatus : busy} aria-busy={(errorAction === 'status' ? loadingStatus : busy) ? 'true' : undefined} onClick={() => void (errorAction === 'connect' ? connect(true) : errorAction === 'disconnect' ? disconnect(true) : loadStatus(true))} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? (busy ? 'Retrying Slack connection…' : 'Retry Slack connection') : errorAction === 'disconnect' ? (busy ? 'Retrying Slack disconnect…' : 'Retry Slack disconnect') : (loadingStatus ? 'Retrying Slack status…' : 'Retry Slack status')}</Button></div>}
       {busy && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{status?.connected ? 'Disconnecting Slack…' : 'Connecting Slack…'}</p>}
       {status === null ? error ? <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">Slack connection status is unavailable.</div> : <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />Checking Slack connection…</div> : status.connected ? (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] p-4">
