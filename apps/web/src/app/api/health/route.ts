@@ -18,6 +18,8 @@ import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { validateEnvConfig } from '@/lib/server/env-config.js';
 
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+
 export async function GET(): Promise<NextResponse> {
   const envValidation = validateEnvConfig();
   let dbStatus: 'connected' | 'disconnected';
@@ -49,6 +51,6 @@ export async function GET(): Promise<NextResponse> {
       database: dbStatus,
       timestamp: new Date().toISOString(),
     },
-    { status: httpStatus }
+    { status: httpStatus, headers: NO_STORE_HEADERS }
   );
 }

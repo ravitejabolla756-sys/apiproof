@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — operational and webhook response cache boundaries
+
+- Change: Public health, internal cron/status, and billing/GitHub webhook responses now explicitly use `Cache-Control: no-store` across authorization, replay, success and failure paths, preventing stale operational or delivery outcomes.
+- Evidence: Seeded cron/live-scan/production-operations coverage passed 17/17; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local SEC-18/NOT-04/NOT-05 operational response hardening only; monitoring ownership, provider delivery, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — shared validation and rate-limit response cache policy
 
 - Change: Shared `badRequestResponse`, `forbiddenCsrfResponse` and `rateLimitResponse` helpers now emit `Cache-Control: private, no-store, max-age=0`, covering generic malformed-payload, CSRF and throttling outcomes across authenticated APIs.

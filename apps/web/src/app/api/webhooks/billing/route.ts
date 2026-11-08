@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getBillingProvider } from '@/lib/server/billing/provider';
 import { processBillingWebhookEvent } from '@/lib/server/billing/service';
 
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
@@ -19,12 +21,12 @@ export async function POST(req: Request) {
       received: true,
       duplicate: result.duplicate,
       eventId: event.id,
-    });
+    }, { headers: NO_STORE_HEADERS });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('INVALID_BILLING_SIGNATURE')) {
-      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401, headers: NO_STORE_HEADERS });
     }
-    return NextResponse.json({ error: 'Webhook processing failed', details: message }, { status: 400 });
+    return NextResponse.json({ error: 'Webhook processing failed', details: message }, { status: 400, headers: NO_STORE_HEADERS });
   }
 }

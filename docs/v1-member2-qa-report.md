@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — operational and webhook response cache boundaries
+
+- PASS: Health, internal cron/status, billing webhook and GitHub webhook responses are explicitly non-cacheable across authorization, replay, success and failure paths.
+- PASS: Seeded cron/live-scan/production-operations coverage passed 17/17; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: Monitoring ownership, provider delivery, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — shared validation and rate-limit response cache policy
 
 - PASS: Generic malformed-payload, CSRF and throttling responses now use the private non-cacheable policy through shared helpers.

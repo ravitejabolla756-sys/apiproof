@@ -6,18 +6,20 @@ import {
   processGitHubWebhook,
 } from '@/lib/server/github-webhooks';
 
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+
 export async function POST(req: Request) {
   // 1. Read raw body as string BEFORE parsing JSON
   let rawBody: string;
   try {
     rawBody = await req.text();
   } catch {
-    return NextResponse.json({ error: 'Unable to read request payload' }, { status: 400 });
+    return NextResponse.json({ error: 'Unable to read request payload' }, { status: 400, headers: NO_STORE_HEADERS });
   }
 
   // 2. Maximum payload size protection (10MB)
   if (rawBody.length > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+    return NextResponse.json({ error: 'Payload too large' }, { status: 413, headers: NO_STORE_HEADERS });
   }
 
   // 3. Read GitHub webhook headers
@@ -25,7 +27,7 @@ export async function POST(req: Request) {
   const event = req.headers.get('x-github-event') || 'unknown';
   const deliveryId = req.headers.get('x-github-delivery');
   if (!deliveryId) {
-    return NextResponse.json({ error: 'Missing GitHub delivery ID' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing GitHub delivery ID' }, { status: 400, headers: NO_STORE_HEADERS });
   }
 
   // 4. Verify HMAC-SHA256 signature against raw body
@@ -34,14 +36,14 @@ export async function POST(req: Request) {
     // Fail closed: Do not accept unsigned webhooks if secret is missing
     return NextResponse.json({
       error: 'GitHub webhook secret is not configured on the server',
-    }, { status: 401 });
+    }, { status: 401, headers: NO_STORE_HEADERS });
   }
 
   const isValidSignature = verifyWebhookSignature(rawBody, signatureHeader, webhookSecret);
   if (!isValidSignature) {
     return NextResponse.json({
       error: 'Invalid or missing X-Hub-Signature-256',
-    }, { status: 401 });
+    }, { status: 401, headers: NO_STORE_HEADERS });
   }
 
   // 5. Replay Protection: Check if delivery was already processed
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
         received: true,
         replayed: true,
         deliveryId,
-      }, { status: 200 });
+      }, { status: 200, headers: NO_STORE_HEADERS });
     }
 
     // 6. Process the webhook event
@@ -62,7 +64,7 @@ export async function POST(req: Request) {
       rawBody,
     });
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(result, { status: 200, headers: NO_STORE_HEADERS });
   } catch {
     // Safe error handling without logging sensitive payload or secrets
     try {
@@ -73,6 +75,6 @@ export async function POST(req: Request) {
     return NextResponse.json({
       error: 'WEBHOOK_PROCESSING_FAILED',
       message: 'Webhook processing failed; delivery will be reconciled from its durable record.',
-    }, { status: 500 });
+    }, { status: 500, headers: NO_STORE_HEADERS });
   }
 }

@@ -9,6 +9,7 @@ import { getScanWorkerMetrics } from '../../../../../lib/server/scan-worker.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET?.trim();
@@ -27,7 +28,7 @@ async function countWhere(table: string, where: string): Promise<number> {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS });
   try {
     const [sourceHealth, worker, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
       getProviderSourceHealth(),
@@ -53,9 +54,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         worker,
       },
       generatedAt: new Date().toISOString(),
-    });
+    }, { headers: NO_STORE_HEADERS });
   } catch {
-    return NextResponse.json({ ok: false, error: 'PROVIDER_INTELLIGENCE_STATUS_FAILED' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'PROVIDER_INTELLIGENCE_STATUS_FAILED' }, { status: 500, headers: NO_STORE_HEADERS });
   }
 }
 
@@ -64,5 +65,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(): Promise<NextResponse> {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'GET, POST' } });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { ...NO_STORE_HEADERS, Allow: 'GET, POST' } });
 }

@@ -6,6 +6,7 @@ import { processRepositoryRescans } from '../../../../lib/server/repository-resc
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET?.trim();
@@ -15,7 +16,7 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 async function run(request: NextRequest): Promise<NextResponse> {
-  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS });
   let providerId: string | undefined;
   try {
     const body = (await request.json()) as { providerId?: unknown };
@@ -23,7 +24,7 @@ async function run(request: NextRequest): Promise<NextResponse> {
   } catch {
     // GET and empty POST requests refresh the full catalog.
   }
-  if (providerId && !getProviderChangeSource(providerId)) return NextResponse.json({ error: 'UNKNOWN_PROVIDER_SOURCE' }, { status: 400 });
+  if (providerId && !getProviderChangeSource(providerId)) return NextResponse.json({ error: 'UNKNOWN_PROVIDER_SOURCE' }, { status: 400, headers: NO_STORE_HEADERS });
   try {
     const results = providerId ? [await refreshProviderChangelog(providerId)] : await refreshAllProviderChangelogs();
     const failed = results.filter((result) => result.status === 'failed');
@@ -36,9 +37,9 @@ async function run(request: NextRequest): Promise<NextResponse> {
       changed: results.filter((result) => result.status === 'changed').length,
       failed: failed.length,
       rescanProcessing,
-    }, { status: failed.length > 0 ? 207 : 200 });
+    }, { status: failed.length > 0 ? 207 : 200, headers: NO_STORE_HEADERS });
   } catch {
-    return NextResponse.json({ ok: false, error: 'PROVIDER_CHANGE_REFRESH_FAILED' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'PROVIDER_CHANGE_REFRESH_FAILED' }, { status: 500, headers: NO_STORE_HEADERS });
   }
 }
 
@@ -51,5 +52,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(): Promise<NextResponse> {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'GET, POST' } });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { ...NO_STORE_HEADERS, Allow: 'GET, POST' } });
 }
