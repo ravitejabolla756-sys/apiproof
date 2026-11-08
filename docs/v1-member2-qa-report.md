@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12/WEB-15 not-found route contrast and overflow coverage
+
+- PASS: The mobile not-found route regression now runs the complete `#main-content` axe ruleset, including color contrast, and asserts no document-level horizontal overflow while retaining skip-link focus recovery and 44px navigation targets.
+- PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts -g "keeps the not-found page accessible" --workers=1` passed 1/1 in 2.2 seconds.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — UI-12 pipeline contrast hardening and full browser regression
 
 - FIXED: The landing pipeline’s active-stage axe audit found low-contrast slate, emerald and amber text; darker accessible tokens now meet the contrast requirement without changing the visual hierarchy.

@@ -54,7 +54,8 @@ test.describe('route accessibility audit', () => {
     for (const label of ['Return Home', 'Explore Features']) {
       expect((await page.getByRole('link', { name: label }).boundingBox())?.height, label).toBeGreaterThanOrEqual(44);
     }
-    const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    const results = await new AxeBuilder({ page }).include('#main-content').analyze();
     expect(results.violations).toEqual([]);
   });
 

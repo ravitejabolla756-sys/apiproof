@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/WEB-15 not-found route contrast and overflow coverage
+
+- Change: Strengthened the mobile not-found browser regression to run the complete `#main-content` axe ruleset, including color contrast, and to reject document-level horizontal overflow while retaining keyboard skip-link recovery and 44px navigation-target checks.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts -g "keeps the not-found page accessible" --workers=1` passed **1/1 in 2.2 seconds**.
+- Scope: strengthens local UI-12/WEB-15 404 route-state evidence only; manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 pipeline contrast hardening and full browser regression
 
 - Change: Corrected the landing pipeline’s active-stage low-contrast slate, emerald and amber text tokens after the full axe matrix found failures on the pipeline screen. Impeccable detector and targeted ESLint report no findings.
