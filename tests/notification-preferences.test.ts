@@ -4,6 +4,7 @@ import path from 'node:path';
 import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getNotificationPreferences, updateNotificationPreferences } from '../apps/web/src/lib/server/notification-preferences-service.js';
+import { GET as notificationsGet, PATCH as notificationsPatch } from '../apps/web/src/app/api/account/notifications/route.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-notification-preferences-${process.pid}.db`);
 
@@ -49,5 +50,25 @@ describe('notification preferences', () => {
     await expect(updateNotificationPreferences(account.user.id, [{ category: 'security', channel: 'slack', enabled: true }]))
       .rejects.toThrow('Invalid notification preference');
     expect(await getNotificationPreferences(account.user.id)).toHaveLength(12);
+  });
+
+  it('marks preference reads and writes as private non-cacheable responses', async () => {
+    const account = await createUserWithSession('notification-route@example.test', 'NotifyPassword123!', 'Notify Route');
+    const headers = {
+      'content-type': 'application/json',
+      origin: 'https://apiproof.test',
+      host: 'apiproof.test',
+      cookie: `apiproof_session=${account.session.id}`,
+    };
+    const read = await notificationsGet(new Request('https://apiproof.test/api/account/notifications', { headers }));
+    expect(read.status).toBe(200);
+    expect(read.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+    const write = await notificationsPatch(new Request('https://apiproof.test/api/account/notifications', {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ updates: [{ category: 'findings', channel: 'email', enabled: true }] }),
+    }));
+    expect(write.status).toBe(200);
+    expect(write.headers.get('cache-control')).toBe('private, no-store, max-age=0');
   });
 });

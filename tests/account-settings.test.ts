@@ -45,6 +45,7 @@ describe('account settings', () => {
 
     const getResponse = await accountGet(request('https://apiproof.test/api/account', first.session.id));
     expect(getResponse.status).toBe(200);
+    expect(getResponse.headers.get('cache-control')).toBe('private, no-store, max-age=0');
     expect((await getResponse.json() as { account: { email: string; name: string } }).account).toMatchObject({ email: 'first@example.test', name: 'First User' });
 
     const updateResponse = await accountPatch(request('https://apiproof.test/api/account', first.session.id, {
@@ -52,6 +53,7 @@ describe('account settings', () => {
       body: { name: 'Updated First' },
     }));
     expect(updateResponse.status).toBe(200);
+    expect(updateResponse.headers.get('cache-control')).toBe('private, no-store, max-age=0');
     expect((await updateResponse.json() as { account: { name: string } }).account.name).toBe('Updated First');
     expect(await getDatabase().queryOne('SELECT name FROM users WHERE id = ?', [second.user.id])).toMatchObject({ name: 'Second User' });
   });
@@ -64,6 +66,7 @@ describe('account settings', () => {
       body: { currentPassword: 'OriginalPassword123!', newPassword: 'NewSecurePassword123!' },
     }));
     expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
     expect(await getDatabase().queryOne('SELECT id FROM sessions WHERE id = ?', [account.session.id])).toBeTruthy();
     expect(await getDatabase().queryOne('SELECT id FROM sessions WHERE id = ?', [secondSession.id])).toBeUndefined();
     const row = await getDatabase().queryOne<{ password_hash: string }>('SELECT password_hash FROM users WHERE id = ?', [account.user.id]);

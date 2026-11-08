@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — authenticated account/dashboard cache boundaries
+
+- PASS: Account profile/password, notification preferences, activity, overview and findings responses are private and non-cacheable for successful and unauthorized paths; account/password service failures retain the same boundary.
+- PASS: Account, notification and organization regression coverage passed 31/31; targeted ESLint and web typecheck passed.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — organization administration cache boundaries
 
 - PASS: Workspace settings, member, invitation and audit responses are private and non-cacheable at the HTTP boundary; shared organization errors carry the same policy.

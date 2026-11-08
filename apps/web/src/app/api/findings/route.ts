@@ -3,12 +3,12 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db.js';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
 import { resolveFindingCapability } from '@/lib/server/finding-capability.js';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
@@ -80,7 +80,7 @@ export async function GET(req: Request) {
       return { ...publicFinding, capability };
     });
 
-    return NextResponse.json({ findings: response });
+    return NextResponse.json({ findings: response }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     return organizationErrorResponse(error);
   }

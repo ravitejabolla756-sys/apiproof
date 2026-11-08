@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — authenticated account/dashboard cache boundaries
+
+- Change: Account profile, password, notification-preference, activity, overview and findings responses now use the shared `Cache-Control: private, no-store, max-age=0` policy for successful and unauthorized responses; account/password service failures are covered as well.
+- Evidence: `tests/account-settings.test.ts`, `tests/notification-preferences.test.ts` and `tests/organization-management.test.ts` passed 31/31; targeted ESLint and `pnpm --filter @apiproof/web typecheck` passed.
+- Scope: local AUTH-08/NOT-06/UI-12 authenticated-data privacy hardening only; no account deletion was introduced, and hosted CI, staging, PostgreSQL/RBAC, provider delivery and production remain open.
+
 ## 2026-11-08 checkpoint — organization administration cache boundaries
 
 - Change: Workspace settings, member, invitation and audit success/unauthorized responses now share `Cache-Control: private, no-store, max-age=0`; shared organization errors retain the same private policy.
