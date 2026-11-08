@@ -10,6 +10,7 @@ import { GET as listWorkspacesRoute } from '../apps/web/src/app/api/workspaces/r
 import { GET as overviewRoute } from '../apps/web/src/app/api/overview/route.js';
 import { GET as findingsRoute } from '../apps/web/src/app/api/findings/route.js';
 import { GET as pullRequestsRoute } from '../apps/web/src/app/api/pull-requests/route.js';
+import { GET as migrationsRoute } from '../apps/web/src/app/api/migrations/route.js';
 import { PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
 import { DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
 import {
@@ -254,6 +255,15 @@ describe('workspace administration', () => {
   it('returns a typed error for malformed workspace context in the pull-request route', async () => {
     const owner = await createUserWithSession('owner-pull-requests@example.test', 'OwnerPassword123!', 'Owner Pull Requests');
     const response = await pullRequestsRoute(new Request('https://apiproof.test/api/pull-requests?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
+  it('returns a typed error for malformed workspace context in the migrations route', async () => {
+    const owner = await createUserWithSession('owner-migrations@example.test', 'OwnerPassword123!', 'Owner Migrations');
+    const response = await migrationsRoute(new Request('https://apiproof.test/api/migrations?workspaceId=not%20safe', {
       headers: { cookie: `apiproof_session=${owner.session.id}` },
     }));
     expect(response.status).toBe(400);
