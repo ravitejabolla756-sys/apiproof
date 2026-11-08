@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 latest full regression after accessibility coverage
+
+- Change: Rebuilt the web bundle and ran the complete committed browser matrix after the latest auth-entry, control-semantics, Slack, dashboard, repository and findings keyboard coverage.
+- Evidence: Production build generated 83 static pages; CI-mode Playwright suite passed 92/92 in 2.7 minutes on isolated SQLite `/tmp/myowl-v1-full-current-5.db`. Artifacts: `/tmp/myowl-v1-full-current-5-artifacts`, `/tmp/myowl-v1-full-current-5-report`.
+- Scope: local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, full manual screen-reader review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 invitation acceptance keyboard semantics
 
 - Change: Extended the expired-invitation auth-entry journey to focus the “Accept invitation” control, verify focus visibility, and activate it with Enter while preserving the assertive failure, sign-in recovery link and axe assertions.

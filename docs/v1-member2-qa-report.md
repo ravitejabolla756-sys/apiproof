@@ -2,6 +2,11 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Latest full browser regression
+
+- PASS: Production build generated 83 static pages; complete CI-mode Playwright matrix passed 92/92 in 2.7 minutes after the latest accessibility/recovery coverage additions.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, integrated staging, full manual screen-reader review, backend contracts and production remain open.
+
 ## 2026-11-08 — Invitation acceptance keyboard semantics
 
 - PASS: Auth-entry suite passed 2/2 in 8.6 seconds; expired invitation acceptance now verifies keyboard focus and Enter activation while retaining assertive failure, sign-in recovery and axe assertions.
