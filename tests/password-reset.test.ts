@@ -144,6 +144,7 @@ describe('password recovery', () => {
         const result = await checkRateLimit(`fallback-key-${index}`, 3, 60_000);
         expect(result.allowed).toBe(true);
       }
+      expect(warn.mock.calls[0]).toEqual(['Rate limiter database unavailable; using bounded in-memory fallback.']);
 
       await expect(checkRateLimit('fallback-capacity-overflow', 3, 60_000))
         .rejects.toThrow('RATE_LIMIT_FALLBACK_CAPACITY_EXCEEDED');

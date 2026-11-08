@@ -590,6 +590,11 @@ Phase 0 read-only checks:
 
 - Added route-level coverage proving an unknown persisted workspace role cannot delete a repository; the route returns a generic 404 and the repository remains. `repositories-list-route` passes 9/9; targeted ESLint and full `pnpm typecheck` pass. Capability assignments remain unchanged.
 
+### 2026-11-08 SEC-11 direct console exception safety
+
+- GitHub provider initialization/repository lookup and rate-limit database fallback no longer pass raw exceptions to direct console logging; they emit fixed operational messages. Regression tests assert GitHub error objects are not logged and rate-limit fallback emits only a static message.
+- Focused verification: `github-error-log-safety` and `password-reset` pass 15/15; targeted ESLint and full `pnpm typecheck` pass. A source audit of API/server `console` calls found no remaining raw error-object logging; external log sinks and retention remain unverified.
+
 ### 2026-11-08 current-HEAD serial suite
 
 - After AUTH-05 token-race serialization and AUTH-10 malformed OAuth-state expiry rejection, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,440 tests passed / 4 skipped; 239.64 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This is local SQLite/test evidence, not production or PostgreSQL proof.

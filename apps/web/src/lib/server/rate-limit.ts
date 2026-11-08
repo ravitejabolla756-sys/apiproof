@@ -74,7 +74,7 @@ export async function checkRateLimit(
       throw new Error('RATE_LIMIT_STORE_UNAVAILABLE', { cause: err });
     }
     // In-memory fallback if database table is unavailable or busy
-    console.warn('Rate limiter database lookup failed, using memory fallback:', err);
+    console.warn('Rate limiter database unavailable; using bounded in-memory fallback.');
     const cached = inMemoryFallback.get(key);
     if (cached && cached.resetAt > now) {
       // Maintain least-recently-used order so the bounded expiry sweep can

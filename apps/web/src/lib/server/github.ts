@@ -261,8 +261,8 @@ export function getGitHubProvider(): GitHubAppSourceControlProvider | null {
     const tokenProvider = new NodeGitHubAppTokenProvider(config);
     const transport = new FetchGitHubReadTransport();
     return new GitHubAppSourceControlProvider(config, tokenProvider, transport);
-  } catch (error) {
-    console.error('Failed to initialize GitHubAppSourceControlProvider:', error);
+  } catch {
+    console.error('Failed to initialize GitHubAppSourceControlProvider.');
     return null;
   }
 }
@@ -352,8 +352,8 @@ export async function getAccessibleRepositoryInfo(): Promise<GitHubRepoSummary |
       defaultBranch: head.name,
       sha: head.sha,
     };
-  } catch (error) {
-    console.error('Error fetching accessible repository info from GitHub App:', error);
+  } catch {
+    console.error('Unable to fetch accessible repository info from GitHub App.');
     return null;
   }
 }
