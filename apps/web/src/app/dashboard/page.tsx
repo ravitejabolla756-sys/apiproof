@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,11 @@ export default function DashboardOverviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const loadOverview = useCallback(async () => {
     setRefreshing(true);
@@ -149,7 +154,7 @@ export default function DashboardOverviewPage() {
   if (error && !data) {
     return (
       <div className="flex min-h-64 items-center justify-center">
-        <div role="alert" aria-live="assertive" aria-atomic="true" className="flex max-w-lg flex-col items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-center text-xs text-rose-900">
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex max-w-lg flex-col items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-center text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
           <span>{error}</span>
           <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} aria-busy={refreshing ? 'true' : undefined} className="border-rose-300 bg-white text-rose-900">
             {refreshing ? "Retrying..." : "Retry"}
@@ -168,7 +173,7 @@ export default function DashboardOverviewPage() {
       />
 
       {error && (
-        <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between">
           <span>{error}</span>
           <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} aria-busy={refreshing ? 'true' : undefined} className="border-rose-300 bg-white text-rose-900">
             {refreshing ? "Retrying..." : "Retry"}

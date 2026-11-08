@@ -353,3 +353,7 @@ Login failures now focus the assertive retry/error surface. Local build and brow
 ## Latest UI-12 password-recovery focus evidence — 2026-11-08
 
 Password-recovery success and error feedback now preserves focus after terminal responses. Local build and browser coverage pass; provider integration, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 dashboard recovery focus evidence — 2026-11-08
+
+Dashboard overview failure alerts now preserve focus and expose the retry action in context. Local build and browser coverage pass; the detector’s three palette warnings are incumbent and unrelated to this state change. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.

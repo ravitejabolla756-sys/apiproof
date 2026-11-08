@@ -22,6 +22,7 @@ test('does not render zero-valued dashboard metrics after an initial overview fa
   await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
   const errorState = page.getByRole('alert').filter({ hasText: 'The dashboard could not refresh. Try again in a moment.' });
   await expect(errorState).toBeVisible({ timeout: 30_000 });
+  await expect(errorState).toBeFocused();
   await expect(page.getByRole('heading', { name: 'Welcome back.' })).toHaveCount(0);
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'initial dashboard error state').toEqual([]);
 

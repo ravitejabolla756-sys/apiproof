@@ -1227,6 +1227,10 @@ Login authentication failures now focus the assertive error alert while keeping 
 
 Forgot-password and reset-password feedback now receives focus after terminal responses. The rebuilt production bundle passed with 83 generated pages; focused recovery coverage passed 6/6; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider integration, manual screen-reader, hosted CI, staging, Member 1 integration and production checks remain NOT_RUN.
 
+## Latest dashboard overview focus evidence — 2026-11-08
+
+Dashboard overview initial-load and refresh failures now focus the retryable alert. The rebuilt production bundle passed with 83 generated pages; overview error and refresh-loading coverage passed 2/2; targeted ESLint and `git diff --check` passed. The detector reported only three incumbent purple-palette warnings in untouched dashboard styling. Manual screen-reader, hosted CI, staging, PostgreSQL/RBAC and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.

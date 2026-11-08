@@ -2707,3 +2707,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; focused password-recovery coverage passed 6/6; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 password-recovery evidence only; provider integration, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 dashboard overview error focus
+
+- Change: the dashboard overview’s initial-load and refresh-failure alerts now receive focus when the error state appears, preserving the retry action and preventing focus loss on a failed route transition.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-overview-error-state.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; overview error and refresh-loading coverage passed 2/2; targeted ESLint and `git diff --check` passed. Impeccable reported only three incumbent purple-palette warnings on untouched dashboard headings/gradient styling, with no new state finding.
+- Scope: local UI-12/UI-13 dashboard recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
