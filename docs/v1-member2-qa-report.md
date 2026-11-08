@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Organization retry keyboard coverage
+
+- PASS: Complete organization-audit suite passed 6/6 in 39.4 seconds; member, invitation, workspace-settings and audit retry controls verify keyboard focus and Enter activation, with existing axe, tenant-state, clipboard and cursor assertions retained.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local ORG-02/ORG-03/ORG-11/UI-12 evidence only. PostgreSQL/RBAC, transactional email, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Full browser matrix restored green
 
 - PASS: Rebuilt-bundle CI-mode Playwright matrix passed 92/92 in 2.2 minutes on isolated SQLite after the GitHub recovery navigation timeout hardening; keyboard/action, accessibility, auth, organization, billing-boundary, findings, workflow, degraded-state and recovery journeys remain covered.

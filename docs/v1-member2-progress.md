@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02/ORG-03/ORG-11/UI-12 organization retry keyboard coverage
+
+- Change: Stabilized organization member, invitation, workspace-settings and audit fixtures so unavailable states persist until explicit recovery; extended each recovery control to verify focus visibility and Enter activation. Existing tenant-scoped, cursor, clipboard and axe assertions remain intact.
+- Evidence: Targeted ESLint and `git diff --check` passed; complete organization-audit suite passed 6/6 in 39.4 seconds. Artifacts: `/tmp/myowl-v1-organization-keyboard-artifacts`.
+- Scope: local ORG-02/ORG-03/ORG-11/UI-12 evidence only; PostgreSQL/RBAC, transactional email, Member 1 contracts, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-13 full browser matrix restored green
 
 - Change: The GitHub installation recovery journey now allows the standard 30-second navigation budget for the post-retry callback URL, preserving keyboard focus/Enter activation and all action-specific assertions under serial CI load.
