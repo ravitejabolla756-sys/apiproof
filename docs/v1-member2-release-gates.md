@@ -37,3 +37,5 @@ Latest auth-entry evidence: missing verification-token sign-in recovery and expi
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.
 
 Latest footer evidence: all 18 shared footer brand/navigation links are measured at 44px or larger at mobile width with axe-clean footer content. Hosted CI, manual review, staging and production remain open.
+
+Latest navigation evidence: FAQ support, pipeline stage, dashboard brand, and standalone auth home controls are measured at 44px or larger in focused local journeys. The pipeline route retains two unrelated incumbent axe findings; hosted CI, manual review, staging and production remain open.

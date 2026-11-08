@@ -5,6 +5,9 @@ test('keeps password recovery actions touch-sized and accessible on mobile', asy
   await page.setViewportSize({ width: 390, height: 844 });
 
   await page.goto('/forgot-password');
+  const forgotHome = page.locator('main a[href="/"]');
+  await expect(forgotHome).toBeVisible();
+  expect((await forgotHome.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await page.getByLabel('Email').boundingBox())?.height).toBeGreaterThanOrEqual(44);
   const requestReset = page.getByRole('button', { name: 'Send reset link' });
   const forgotBack = page.getByRole('link', { name: 'Back to sign in' });
@@ -13,6 +16,9 @@ test('keeps password recovery actions touch-sized and accessible on mobile', asy
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 
   await page.goto('/reset-password#token=test-token');
+  const resetHome = page.locator('main a[href="/"]');
+  await expect(resetHome).toBeVisible();
+  expect((await resetHome.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await page.getByLabel('New password').boundingBox())?.height).toBeGreaterThanOrEqual(44);
   const resetPassword = page.getByRole('button', { name: 'Reset password' });
   const resetBack = page.getByRole('link', { name: 'Back to sign in' });

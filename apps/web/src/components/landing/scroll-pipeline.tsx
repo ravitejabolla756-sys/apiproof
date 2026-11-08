@@ -383,7 +383,7 @@ export function ScrollPipeline() {
                     key={s.number}
                     type="button"
                     onClick={() => scrollToStep(idx)}
-                    className="flex items-center gap-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2 z-10"
+                    className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2 z-10"
                     aria-label={`Jump to stage ${s.number}: ${s.tag}`}
                     aria-pressed={activeStep === idx}
                   >
@@ -440,7 +440,7 @@ export function ScrollPipeline() {
                     key={s.number}
                     type="button"
                     onClick={() => scrollToStep(idx)}
-                    className="group relative flex items-center justify-center w-4 h-4 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2 z-10"
+                    className="group relative flex min-h-11 min-w-11 items-center justify-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2 z-10"
                     aria-label={`Jump to stage ${s.number}: ${s.tag}`}
                     aria-pressed={activeStep === idx}
                   >

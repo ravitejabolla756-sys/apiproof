@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
 
   return (
     <><a href="#main-content" className="skip-link">Skip to main content</a><main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans outline-none">
-      <Link href="/" className="mb-10 flex items-center gap-3">
+      <Link href="/" className="mb-10 inline-flex min-h-11 items-center gap-3">
         <ApiProofLogo className="h-8 w-auto shrink-0" variant="dark" />
         <span className="text-2xl font-bold tracking-tight text-[#0F172A]">MY OWL</span>
       </Link>

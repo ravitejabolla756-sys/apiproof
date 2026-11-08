@@ -13,5 +13,8 @@ test('keeps FAQ disclosure controls touch-sized and keyboard-usable on mobile', 
   await page.keyboard.press('Enter');
   await expect(firstQuestion.locator('xpath=..')).toHaveAttribute('open', '');
   await expect(firstQuestion.locator('xpath=..').locator('p')).toBeVisible();
+  const supportLink = page.getByRole('link', { name: 'Contact support' });
+  await expect(supportLink).toBeVisible();
+  expect((await supportLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });

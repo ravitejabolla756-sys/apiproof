@@ -99,7 +99,7 @@ export default function LoginPage() {
   return (
     <><a href="#main-content" className="skip-link">Skip to main content</a><main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans outline-none">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-3 mb-10 group">
+      <Link href="/" className="inline-flex min-h-11 items-center gap-3 mb-10 group">
         <ApiProofLogo className="h-8 w-auto shrink-0 transition-transform group-hover:scale-105" variant="dark" />
         <span className="text-2xl font-bold tracking-tight text-[#0F172A]">
           MY OWL

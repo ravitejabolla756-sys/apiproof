@@ -14,4 +14,9 @@ test('exposes accessible pipeline stage navigation', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(stageButtons.nth(1)).toHaveAttribute('aria-pressed', 'true', { timeout: 30_000 });
   await expect(stageButtons.first()).toHaveAttribute('aria-pressed', 'false');
+  for (let index = 0; index < await stageButtons.count(); index += 1) {
+    const box = await stageButtons.nth(index).boundingBox();
+    expect(box?.height, `stage ${index + 1} height`).toBeGreaterThanOrEqual(44);
+    expect(box?.width, `stage ${index + 1} width`).toBeGreaterThanOrEqual(44);
+  }
 });

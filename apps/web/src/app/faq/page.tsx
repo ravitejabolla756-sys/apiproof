@@ -75,7 +75,7 @@ export default function FAQPage() {
             <h2 className="font-serif text-2xl font-normal">Need a verified answer for your stack?</h2>
             <p className="mt-1 text-sm text-slate-300">Bring your provider, repository and review requirements to the team.</p>
           </div>
-          <Link href="/contact" className="btn-lime shrink-0 text-sm">
+          <Link href="/contact" className="btn-lime inline-flex min-h-11 shrink-0 items-center text-sm">
             Contact support <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>

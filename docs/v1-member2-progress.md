@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 auth, FAQ and pipeline navigation touch targets
+
+- Change: FAQ support CTA, landing pipeline stage navigation, dashboard sidebar brand navigation, and standalone login/recovery/verification home links now expose explicit 44px minimum touch targets while preserving destinations, keyboard behavior, and existing state semantics.
+- Files: `apps/web/src/app/faq/page.tsx`, `apps/web/src/components/landing/scroll-pipeline.tsx`, `apps/web/src/components/dashboard/sidebar.tsx`, `apps/web/src/app/login/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `apps/web/src/app/verify-email/page.tsx`, and focused E2E accessibility specs.
+- Evidence: targeted ESLint and `git diff --check` passed; focused FAQ/pipeline/login/recovery/sidebar journey passed 5/5 in 19.9 seconds with measured 44px controls; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning. The pipeline test also exposed two incumbent axe findings in unrelated hidden/contrast content; those were not attributed to this touch-target slice.
+- Scope: this advances local UI-12/UI-13 and WEB-15 evidence only; hosted CI, manual screen-reader review, legal/content review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12/WEB-15 footer brand touch target
 
 - Change: the shared landing-footer brand link now exposes an explicit 44px minimum touch target, and the public mobile accessibility suite covers all 18 footer links with axe-clean content.

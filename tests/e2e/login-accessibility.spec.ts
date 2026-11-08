@@ -9,6 +9,9 @@ test('keeps login mode tabs touch-sized and accessible on mobile', async ({ page
   const createAccountMode = page.locator('button[aria-pressed]').filter({ hasText: 'Create Account' });
   await expect(signInMode).toHaveAttribute('aria-pressed', 'true');
   await expect(createAccountMode).toHaveAttribute('aria-pressed', 'false');
+  const homeLink = page.locator('main a[href="/"]');
+  await expect(homeLink).toBeVisible();
+  expect((await homeLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 
   for (const control of [page.getByRole('button', { name: 'Continue with Google' }), page.getByRole('button', { name: 'Continue with GitHub' }), page.getByLabel('Email'), page.getByLabel('Password'), page.getByRole('button', { name: 'Sign In', exact: true }).last(), page.getByRole('link', { name: 'Forgot password?' })]) expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 
