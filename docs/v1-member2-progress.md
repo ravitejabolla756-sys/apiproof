@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 findings filter touch targets
+
+- Change: findings search, severity filters, and provider filters now expose explicit 44px minimum touch targets while preserving filtering, selection state, keyboard behavior, and empty-state recovery.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/findings-filter-responsive.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; responsive findings/filter recovery journey passed 2/2 in 17.7 seconds with measured search, severity, provider, Refresh, and Clear filters controls plus axe-clean content; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 shared dashboard navigation touch targets
 
 - Change: dashboard header search/GitHub actions, sidebar navigation links, command-palette result actions, and unauthenticated session retry now expose explicit 44px minimum touch targets while preserving focus, navigation, dialog, and session behavior.

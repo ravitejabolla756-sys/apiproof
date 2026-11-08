@@ -125,7 +125,7 @@ export default function FindingsListPage() {
             placeholder="Search symbol, file, or rule..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
+            className="min-h-11 w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
           />
         </div>
 
@@ -138,7 +138,7 @@ export default function FindingsListPage() {
                 type="button"
                 onClick={() => setSeverityFilter(sev)}
                 aria-pressed={severityFilter === sev}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
+                className={`inline-flex min-h-11 items-center whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   severityFilter === sev
                     ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
                     : "bg-transparent text-[#686868] border-transparent hover:text-[#111111]"
@@ -157,7 +157,7 @@ export default function FindingsListPage() {
                 type="button"
                 onClick={() => setProviderFilter(prov)}
                 aria-pressed={providerFilter === prov}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
+                className={`inline-flex min-h-11 items-center whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   providerFilter === prov
                     ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
                     : "bg-transparent text-[#686868] border-transparent hover:text-[#111111]"

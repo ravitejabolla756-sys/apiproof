@@ -38,7 +38,10 @@ test('wraps findings filters for multi-provider mobile results', async ({ page }
   await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'API Compatibility Findings' })).toBeVisible({ timeout: 30_000 });
   expect((await page.getByRole('button', { name: 'Refresh' }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect((await page.getByRole('textbox', { name: 'Search findings' }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await expect(page.getByRole('group', { name: 'Filter by provider' }).getByRole('button')).toHaveCount(5);
+  for (const button of await page.getByRole('group', { name: 'Filter by severity' }).getByRole('button').all()) expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  for (const button of await page.getByRole('group', { name: 'Filter by provider' }).getByRole('button').all()) expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 
