@@ -121,6 +121,8 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - SEC-04 GitHub install CSRF: PASS, seeded serial `github-repository-status-route` 8/8; cross-site GET and POST requests are rejected before state creation or rate-limit consumption. Targeted ESLint and workspace typecheck pass. Real browser and trusted-proxy behavior remain unverified in staging.
 
+- SEC-04 GitHub callback POST CSRF: PASS, seeded serial `github-installation-reassociation` 12/12; cross-site POST is rejected before GitHub provider verification and leaves one-time installation state unconsumed. Targeted ESLint and workspace typecheck pass. The actual cross-site GET redirect flow still requires live GitHub App/staging verification.
+
 - 2026-11-08 lint integration: PASS, root `pnpm lint` reports no Next plugin detection or Pages-directory warnings after registering the Next.js flat config with monorepo root settings. `pnpm typecheck` and `pnpm build` pass; logo uses `next/image`. Generated Next config edits were restored. No deployment was initiated, and this does not change production verification status.
 
 - 2026-11-08 current-HEAD full-suite rerun: PASS on `93b79f88c424c12d423b1bfdbd4291749053a5f4`; 168 files passed / 1 skipped, 1,410 tests passed / 4 skipped, 260.75 seconds. Four Docker-backed live-verification tests remain skipped; suite used a process-only test seed and no database URL. Fresh SEC-16 local measurements were recorded separately; staging and production remain unverified.

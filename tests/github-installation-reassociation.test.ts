@@ -11,7 +11,7 @@ import {
 } from '../apps/web/src/lib/server/workspace-service.js';
 import { createGitHubInstallationState } from '../apps/web/src/lib/server/github.js';
 import * as githubModule from '../apps/web/src/lib/server/github.js';
-import { GET as callbackGet } from '../apps/web/src/app/api/github/callback/route.js';
+import { GET as callbackGet, POST as callbackPost } from '../apps/web/src/app/api/github/callback/route.js';
 
 interface CallbackSuccessData {
   success?: boolean;
@@ -135,6 +135,31 @@ describe('GitHub Installation Reassociation Hardening', () => {
       'SELECT id FROM github_installations WHERE installation_id = ?', [TEST_INSTALLATION_ID],
     )).toBeUndefined();
     expect(await getDatabase().queryOne<{ consumed_at: string | null }>(
+      'SELECT consumed_at FROM github_installation_states WHERE state = ?', [state],
+    )).toMatchObject({ consumed_at: null });
+  });
+
+  it('rejects cross-site POST callbacks before provider access or consuming installation state', async () => {
+    const { user, session } = await createUserWithSession('callback-csrf@example.com', 'Pass12345!', 'Callback CSRF');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, workspace.id);
+    const response = await callbackPost(new Request(
+      `http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&state=${state}`,
+      {
+        method: 'POST',
+        headers: {
+          cookie: `apiproof_session=${session.id}`,
+          origin: 'https://attacker.example',
+          host: 'localhost',
+          'sec-fetch-site': 'cross-site',
+        },
+      },
+    ));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'CSRF_REJECTED' });
+    expect(githubModule.verifyGitHubAppInstallation).not.toHaveBeenCalled();
+    expect(await getDatabase().queryOne<{ consumed_at: number | null }>(
       'SELECT consumed_at FROM github_installation_states WHERE state = ?', [state],
     )).toMatchObject({ consumed_at: null });
   });

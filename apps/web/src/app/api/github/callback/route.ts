@@ -9,6 +9,7 @@ import {
   verifyGitHubAppInstallation,
 } from '@/lib/server/github.js';
 import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 export async function GET(req: Request) {
   // 1. Authenticate APIProof session
@@ -176,5 +177,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   return GET(req);
 }
