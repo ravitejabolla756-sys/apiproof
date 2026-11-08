@@ -1805,3 +1805,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Impeccable detector reported three incumbent dashboard purple-palette warnings on untouched visual content and no state-related finding; targeted ESLint, `git diff --check`, and repository typecheck passed; the dashboard overview loading journey passed 1/1 in 11.6 seconds with the busy-state assertion.
 - Scope: this advances local UI-12/UI-13 and dashboard regression evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 pull-request queue busy semantics
+
+- Change: the pull-request queue now exposes `aria-busy="true"` while its initial or refresh request is pending, preserving review-only copy, refresh/retry behavior, and the no-fake-merge boundary.
+- Files: `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the focused pull-request loading journey passed 1/1 in 9.4 seconds with the busy-state assertion and existing status announcement.
+- Scope: this advances local UI-12/UI-13 and NOT-05 workbench evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

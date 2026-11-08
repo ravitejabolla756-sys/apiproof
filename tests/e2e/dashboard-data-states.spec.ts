@@ -62,7 +62,7 @@ test.describe('authenticated dashboard data states', () => {
     await page.route('**/api/pull-requests', async (route) => { await pullRequestsLoading; await route.continue(); });
 
     await page.goto('/dashboard/pull-requests', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('status')).toContainText('Loading pull requests...');
+    await expect(page.getByRole('status')).toContainText('Loading pull requests...'); const pullRequestsSurface = page.getByRole('heading', { name: 'Pull Request Queue' }).locator('..').locator('..').locator('..'); await expect(pullRequestsSurface).toHaveAttribute('aria-busy', 'true');
     await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
     releasePullRequests?.();
     await expect(page.getByRole('heading', { name: 'Pull Request Queue' })).toBeVisible({ timeout: 30_000 });

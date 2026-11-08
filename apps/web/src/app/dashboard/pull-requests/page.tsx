@@ -50,7 +50,7 @@ export default function PullRequestsPage() {
   }, []);
 
   return (
-    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={loading ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* HEADER */}
       <div className="border-b border-[#E8E8E5] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
