@@ -1215,6 +1215,10 @@ The contact form now moves focus to its non-sending outcome after submission. Th
 
 Invitation acceptance now moves focus to the held loading status and then to the terminal expiry/error alert. The rebuilt production bundle passed with 83 generated pages; invitation and public route coverage passed 5/5; targeted ESLint, `git diff --check` and the Impeccable detector passed. Email delivery, manual screen-reader, hosted CI, staging, PostgreSQL and production checks remain NOT_RUN.
 
+## Latest verification outcome focus evidence — 2026-11-08
+
+Email verification now moves focus to its terminal success or error status after the token request resolves. The rebuilt production bundle passed with 83 generated pages; focused auth loading/entry coverage passed 4/4; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider delivery, manual screen-reader, hosted CI, staging, Member 1 integration and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.

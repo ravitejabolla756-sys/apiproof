@@ -119,7 +119,9 @@ test.describe('authentication loading announcements', () => {
     await expect(verificationStatus).toBeVisible();
     await expect(verificationStatus).toHaveAttribute('aria-busy', 'true');
     releaseVerification?.();
-    await expect(page.getByRole('status').filter({ hasText: 'Email address verified successfully.' })).toBeVisible({ timeout: 30_000 });
+    const verifiedStatus = page.getByRole('status').filter({ hasText: 'Email address verified successfully.' });
+    await expect(verifiedStatus).toBeVisible({ timeout: 30_000 });
+    await expect(verifiedStatus).toBeFocused();
     await page.unroute('**/api/auth');
   });
 });

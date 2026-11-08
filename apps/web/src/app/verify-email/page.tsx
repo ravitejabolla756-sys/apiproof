@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ApiProofLogo } from '@/components/ui/logo';
 
@@ -9,6 +9,11 @@ type ViewState = 'loading' | 'success' | 'error';
 export default function VerifyEmailPage() {
   const [state, setState] = useState<ViewState>('loading');
   const [message, setMessage] = useState('Checking your verification link…');
+  const statusRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (state !== 'loading') statusRef.current?.focus();
+  }, [state]);
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.hash.slice(1)).get('token');
@@ -52,7 +57,7 @@ export default function VerifyEmailPage() {
       <section className="w-full max-w-md rounded-2xl border border-[#E8E8E5] bg-white p-8 text-center shadow-sm" aria-labelledby="verification-heading">
         <p className="font-mono text-xs font-medium uppercase tracking-wider text-slate-500">Account security</p>
         <h1 id="verification-heading" className="mt-3 text-xl font-semibold text-[#0F172A]">{heading}</h1>
-        <p role={state === 'error' ? 'alert' : 'status'} aria-live={state === 'error' ? 'assertive' : 'polite'} aria-atomic="true" aria-busy={state === 'loading' ? 'true' : undefined} className={`mt-3 text-sm ${state === 'error' ? 'text-red-700' : 'text-slate-600'}`}>
+        <p ref={statusRef} role={state === 'error' ? 'alert' : 'status'} aria-live={state === 'error' ? 'assertive' : 'polite'} aria-atomic="true" aria-busy={state === 'loading' ? 'true' : undefined} tabIndex={state === 'loading' ? undefined : -1} className={`mt-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2 ${state === 'error' ? 'text-red-700' : 'text-slate-600'}`}>
           {message}
         </p>
         <Link href="/login" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[#0F172A] px-5 py-3 font-mono text-xs font-medium uppercase tracking-wider text-white hover:bg-[#1E293B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8] focus-visible:ring-offset-2">

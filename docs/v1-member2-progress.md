@@ -2686,3 +2686,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; invitation/public route coverage passed 5/5; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 invitation-state evidence only; approved email delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 verification outcome focus recovery
+
+- Change: email verification now moves focus to the terminal success/error status after the token request resolves, while retaining its existing live-region semantics and safe fragment-token handling.
+- Files: `apps/web/src/app/verify-email/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; focused auth loading/entry coverage passed 4/4; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 verification-state evidence only; provider delivery, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

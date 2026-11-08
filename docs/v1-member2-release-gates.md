@@ -341,3 +341,7 @@ The contact form’s truthful non-sending result receives focus after submission
 ## Latest UI-12 invitation focus evidence — 2026-11-08
 
 Invitation loading and terminal failure states now preserve focus when the accept control is replaced. Local build and browser coverage pass; approved email delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 verification focus evidence — 2026-11-08
+
+Email verification terminal status now receives focus after the token request resolves. Local build and browser coverage pass; provider delivery, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain NOT_RUN. Release recommendation stays NO-GO.
