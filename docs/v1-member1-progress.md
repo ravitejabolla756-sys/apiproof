@@ -781,3 +781,8 @@ Phase 0 read-only checks:
 
 - On code HEAD `1a0409438c1eff4c5578144d948b3d6837d9ce1f`, `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 175 files passed / 1 skipped (176 total); 1,469 tests passed / 4 skipped (1,473 total) in 649.94 seconds. A process-only throwaway seed was configured and `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL` were removed. The four skips are Docker-dependent. This is local suite evidence only.
 - Compared with the recorded 484.41-second serial run on `7b2fbbf`, runtime is higher by 165.53 seconds. The run passed but does not explain the timing variance; PostgreSQL, staging, provider and production behavior remain unverified.
+
+### 2026-11-08 SEC-13 test-environment isolation
+
+- The worker-heartbeat test fixture now snapshots and restores `NODE_ENV`, `APIPROOF_DB_PATH`, and `APIPROOF_SKIP_DEFAULT_SEED` around every case. This avoids leaking local SQLite/test configuration into later serial suites.
+- `tests/sec13-worker-observability.test.ts` passes 9/9; targeted ESLint, workspace test TypeScript check, and `git diff --check` pass. This does not verify production scheduling, PostgreSQL, alert routing, or staging worker failure recovery.

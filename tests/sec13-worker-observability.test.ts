@@ -5,11 +5,12 @@ import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/se
 import { finishWorkerRun, getWorkerHeartbeats, pruneWorkerHeartbeatHistory, startWorkerRun, tryFinishWorkerRun, tryStartWorkerRun } from '../apps/web/src/lib/server/worker-observability.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-sec13-worker-observability.db');
-const ORIGINAL_DB_PATH = process.env.APIPROOF_DB_PATH;
-const ORIGINAL_SKIP_SEED = process.env.APIPROOF_SKIP_DEFAULT_SEED;
+const ENVIRONMENT_KEYS = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED'] as const;
+let originalEnvironment: Partial<Record<(typeof ENVIRONMENT_KEYS)[number], string>>;
 
 describe('SEC-13 worker heartbeat and scheduler health', () => {
   beforeEach(() => {
+    originalEnvironment = Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, process.env[key]]));
     process.env.NODE_ENV = 'test';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
@@ -20,10 +21,11 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
   afterEach(() => {
     closeDatabase();
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
-    if (ORIGINAL_SKIP_SEED === undefined) delete process.env.APIPROOF_SKIP_DEFAULT_SEED;
-    else process.env.APIPROOF_SKIP_DEFAULT_SEED = ORIGINAL_SKIP_SEED;
-    if (ORIGINAL_DB_PATH === undefined) delete process.env.APIPROOF_DB_PATH;
-    else process.env.APIPROOF_DB_PATH = ORIGINAL_DB_PATH;
+    for (const key of ENVIRONMENT_KEYS) {
+      const value = originalEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
 
   it('records separate concurrent run outcomes and sanitizes failure details', async () => {
