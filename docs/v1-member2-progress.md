@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-04/UI-12 last-owner refusal state
+
+- Change: Added a hermetic member-management journey that exercises the backend `LAST_OWNER_REQUIRED` refusal, verifies the owner remains visible, surfaces the refusal alert, and retains axe-clean workspace administration markup.
+- Evidence: Targeted ESLint and `git diff --check` passed; the complete organization-audit suite passed 8/8 in 39.6 seconds. Artifacts: `/tmp/myowl-v1-organization-audit-org04-artifacts`.
+- Scope: local ORG-04/UI-12 action-state evidence only; final revocation contract, PostgreSQL/RBAC, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 complete route-accessibility regression
 
 - Change: Re-ran the full route-accessibility matrix after the public skip-link/main-focus fixes and 404 keyboard coverage.
