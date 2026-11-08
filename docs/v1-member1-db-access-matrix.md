@@ -84,7 +84,9 @@ These are intended boundaries, not claims about the live database. The source cu
 
 Run the following as an approved read-only catalog role against an isolated staging-equivalent database. Capture role names and ACL results, never passwords, connection strings, or customer rows.
 
-The query pack now includes direct role-membership edges plus `pg_has_role` checks for direct/indirect membership and inherited privileges, effective schema `USAGE`/`CREATE`, and effective database `CONNECT`/`TEMP` alongside the stored ACL arrays. These are complementary views: membership and effective privilege inquiry functions account for inherited authority, while ACL columns show explicit catalog ACL state. The role-membership fields used here are compatible with older PostgreSQL releases; newer releases expose additional membership options that should be added after the hosted PostgreSQL version is confirmed. See the official [role-membership catalog](https://www.postgresql.org/docs/current/catalog-pg-auth-members.html), [privilege inquiry functions](https://www.postgresql.org/docs/current/functions-info.html), and [database catalog](https://www.postgresql.org/docs/current/catalog-pg-database.html).
+The query pack includes direct role-membership edges plus `pg_has_role` checks for direct/indirect membership and inherited privileges, effective schema `USAGE`/`CREATE`, and effective database `CONNECT`/`TEMP` alongside stored ACL arrays. It also checks effective relation, column, sequence, and function privileges for the intended role names, records explicit column ACLs, and exposes per-function configuration for `SECURITY DEFINER` review. These are complementary views: effective privilege inquiry functions account for inherited/PUBLIC authority, while ACL columns show explicit catalog ACL state. The role-membership fields used here are compatible with older PostgreSQL releases; newer releases expose additional membership options that should be added after the hosted PostgreSQL version is confirmed. See the official [role-membership catalog](https://www.postgresql.org/docs/current/catalog-pg-auth-members.html), [privilege inquiry functions](https://www.postgresql.org/docs/current/functions-info.html), and [database catalog](https://www.postgresql.org/docs/current/catalog-pg-database.html).
+
+The role names below are the intended matrix labels. Confirm the actual role identity from the approved connection first and substitute owner-approved names if they differ. An absent intended role is a missing role contract, not evidence of zero privileges. Effective-object queries are limited to these named roles to keep catalog work bounded.
 
 ```sql
 -- Effective roles and dangerous attributes
@@ -114,6 +116,29 @@ CROSS JOIN pg_roles granted
 WHERE member.oid <> granted.oid
   AND pg_has_role(member.oid, granted.oid, 'MEMBER')
 ORDER BY 1, 2;
+
+-- Confirm connection identity for each approved runtime/migration/ops connection
+SELECT session_user,
+       current_user,
+       current_setting('role', true) AS active_role_setting,
+       current_database();
+
+-- Report whether each intended role exists and its high-risk role attributes
+WITH expected_roles(rolname) AS (
+  VALUES ('app_runtime'), ('migration_admin'), ('ops_readonly')
+)
+SELECT expected.rolname,
+       actual.oid IS NOT NULL AS role_exists,
+       actual.rolcanlogin,
+       actual.rolinherit,
+       actual.rolsuper,
+       actual.rolcreaterole,
+       actual.rolcreatedb,
+       actual.rolreplication,
+       actual.rolbypassrls
+FROM expected_roles expected
+LEFT JOIN pg_roles actual ON actual.rolname = expected.rolname
+ORDER BY expected.rolname;
 
 -- Effective schema USAGE/CREATE, including inherited role grants and PUBLIC grants
 SELECT gr.rolname,
@@ -157,21 +182,71 @@ FROM information_schema.table_privileges
 WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
 ORDER BY 1, 2, 3, 4;
 
+-- Effective relation privileges for the intended runtime, migration, and ops roles
+WITH audited_roles AS (
+  SELECT oid, rolname
+  FROM pg_roles
+  WHERE rolname IN ('app_runtime', 'migration_admin', 'ops_readonly')
+)
+SELECT ar.rolname,
+       ns.nspname,
+       rel.relname,
+       rel.relkind,
+       has_table_privilege(ar.oid, rel.oid, 'SELECT') AS can_select,
+       has_table_privilege(ar.oid, rel.oid, 'INSERT') AS can_insert,
+       has_table_privilege(ar.oid, rel.oid, 'UPDATE') AS can_update,
+       has_table_privilege(ar.oid, rel.oid, 'DELETE') AS can_delete,
+       has_table_privilege(ar.oid, rel.oid, 'TRUNCATE') AS can_truncate,
+       has_table_privilege(ar.oid, rel.oid, 'REFERENCES') AS can_reference,
+       has_table_privilege(ar.oid, rel.oid, 'TRIGGER') AS can_trigger,
+       has_any_column_privilege(ar.oid, rel.oid, 'SELECT') AS can_select_any_column
+FROM audited_roles ar
+CROSS JOIN pg_class rel
+JOIN pg_namespace ns ON ns.oid = rel.relnamespace
+WHERE ns.nspname NOT IN ('pg_catalog', 'information_schema')
+  AND rel.relkind IN ('r', 'p', 'v', 'm', 'f')
+ORDER BY 1, 2, 3;
+
+-- Explicit column-level ACLs; table-level ACLs are shown separately above
+SELECT ns.nspname,
+       rel.relname,
+       attr.attname,
+       attr.attacl
+FROM pg_attribute attr
+JOIN pg_class rel ON rel.oid = attr.attrelid
+JOIN pg_namespace ns ON ns.oid = rel.relnamespace
+WHERE attr.attnum > 0
+  AND NOT attr.attisdropped
+  AND attr.attacl IS NOT NULL
+  AND ns.nspname NOT IN ('pg_catalog', 'information_schema')
+ORDER BY 1, 2, 3;
+
 -- Policies and their expressions
 SELECT schemaname, tablename, policyname, permissive, roles,
        cmd, qual, with_check
 FROM pg_policies
 ORDER BY 1, 2, 3;
 
--- Functions, execution ACLs, and SECURITY DEFINER bypass candidates
-SELECT n.nspname AS schema_name, p.proname,
+-- Function ACLs, effective execution by intended roles, and SECURITY DEFINER review fields
+WITH audited_roles AS (
+  SELECT oid, rolname
+  FROM pg_roles
+  WHERE rolname IN ('app_runtime', 'migration_admin', 'ops_readonly')
+)
+SELECT ar.rolname,
+       n.nspname AS schema_name,
+       p.proname,
        pg_get_function_identity_arguments(p.oid) AS arguments,
        p.prosecdef AS security_definer,
-       p.proleakproof, p.proacl
+       p.proleakproof,
+       p.proconfig,
+       p.proacl,
+       has_function_privilege(ar.oid, p.oid, 'EXECUTE') AS can_execute
 FROM pg_proc p
 JOIN pg_namespace n ON n.oid = p.pronamespace
+CROSS JOIN audited_roles ar
 WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
-ORDER BY 1, 2, 3;
+ORDER BY 1, 2, 3, 4;
 
 -- Default privileges and sequence access
 SELECT defaclrole::regrole AS owner_role, defaclnamespace::regnamespace AS schema_name,
@@ -183,6 +258,25 @@ SELECT sequence_schema, sequence_name, grantee, privilege_type, is_grantable
 FROM information_schema.role_usage_grants
 WHERE object_type = 'SEQUENCE'
 ORDER BY 1, 2, 3, 4;
+
+-- Effective sequence privileges for the intended runtime, migration, and ops roles
+WITH audited_roles AS (
+  SELECT oid, rolname
+  FROM pg_roles
+  WHERE rolname IN ('app_runtime', 'migration_admin', 'ops_readonly')
+)
+SELECT ar.rolname,
+       ns.nspname,
+       seq.relname,
+       has_sequence_privilege(ar.oid, seq.oid, 'USAGE') AS can_use,
+       has_sequence_privilege(ar.oid, seq.oid, 'SELECT') AS can_select,
+       has_sequence_privilege(ar.oid, seq.oid, 'UPDATE') AS can_update
+FROM audited_roles ar
+CROSS JOIN pg_class seq
+JOIN pg_namespace ns ON ns.oid = seq.relnamespace
+WHERE seq.relkind = 'S'
+  AND ns.nspname NOT IN ('pg_catalog', 'information_schema')
+ORDER BY 1, 2, 3;
 ```
 
 ## Isolation test contract
@@ -198,7 +292,7 @@ The staging test must create two non-owner users and two workspaces, then exerci
 7. A migration role can apply and roll back the reviewed migration but cannot be used by request handlers.
 8. `SET ROLE` attempts, `row_security = off`, owner bypass, `SECURITY DEFINER`, function execution, sequence access, and default-privilege drift are tested explicitly.
 
-The test is BLOCKED until an owner provides an isolated PostgreSQL database, non-production credentials for the named roles, and approval for temporary test records. SQLite and route-only tests are evidence for backend predicates, not acceptance evidence for this task.
+The test is BLOCKED until an owner provides an isolated PostgreSQL database, non-production credentials for the named roles, and approval for temporary test records. Catalog ACL checks do not exercise row policies or demonstrate that `FORCE ROW LEVEL SECURITY` defeats owner/bypass behavior; those require the isolated role-based database tests in this contract. SQLite and route-only tests are evidence for backend predicates, not acceptance evidence for this task.
 
 ## Reviewed migration shape and rollback requirement
 
@@ -220,6 +314,7 @@ The next implementation proposal, after role approval, is a separately reviewed 
 - 2026-11-08 local inventory reconciliation: compared unique `CREATE TABLE` names across `apps/web/src/lib/server/db/*.ts` against the matrix; the source contains 46 tables and the prior matrix listed 40. Added the six omitted tables above, including migrations 024–027 and SEC-13 heartbeats. This reconciles source documentation only; it does not establish that staging or production catalogs match.
 - The local `database-access-matrix` test now also pins the ten tables whose matrix rows claim PostgreSQL RLS plus `PUBLIC`, `anon`, and `authenticated` revocations, and verifies those statements remain present in migration source. This is source-contract drift protection only; it does not prove the migration ran or effective grants/RLS behavior in PostgreSQL.
 - The read-only catalog query pack now reports direct role memberships and effective inherited role/schema/database privileges; `database-access-matrix` tests pin those coverage points. No live database was queried, and the actual PostgreSQL version and effective grants remain unknown.
+- Effective relation/column/sequence/function checks now target the three intended role labels, with explicit role-existence and connection-identity output; function configuration and explicit column ACLs are included for security review. These catalog queries are still unexecuted and do not prove row-level isolation, owner/bypass behavior, or actual hosted role names.
 - SEC-01: `PARTIAL` — complete local source inventory and isolation contract; live role/RLS/policy read-back and PostgreSQL tests blocked.
 - SEC-02: `PARTIAL` — role/grant/default-privilege audit query pack and intended matrix documented; effective grants and role separation blocked.
 - No production or staging database was contacted or changed.

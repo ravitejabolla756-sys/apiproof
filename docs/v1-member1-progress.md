@@ -722,3 +722,8 @@ Phase 0 read-only checks:
 
 - Expanded the read-only PostgreSQL catalog pack to show direct membership/admin-option edges, enumerate effective direct or indirect role membership and inherited authority with `pg_has_role`, and report effective schema `USAGE`/`CREATE` and database `CONNECT`/`TEMP` alongside explicit ACL arrays.
 - `database-access-matrix` now pins these query-pack coverage points; focused tests pass 3/3, targeted ESLint passes, and `pnpm typecheck` passes. The SQL was checked against official PostgreSQL system-catalog and privilege-function documentation, but was not executed against a live PostgreSQL instance. SEC-02 remains partial pending approved staging role read-back and role-isolation verification.
+
+### 2026-11-08 SEC-02 effective object privilege audit coverage
+
+- The read-only catalog pack now captures the approved connection identity, whether the intended role labels exist, effective per-role relation privileges (including any-column SELECT), explicit column ACLs, effective sequence privileges, and effective function execution. Function results include `proconfig` and ACL state for `SECURITY DEFINER` review. The query pack notes that intended role labels must be replaced with owner-verified names when they differ.
+- `database-access-matrix` passes 4/4; targeted ESLint and workspace `pnpm typecheck` pass. These checks pin documentation coverage and do not execute PostgreSQL SQL. Live grants, row-policy behavior, owner/bypass resistance, and isolated worker/runtime role tests remain blocked on approved staging access and credentials.

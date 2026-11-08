@@ -110,4 +110,17 @@ describe('database access matrix source inventory', () => {
     expect(matrix).toContain('has_database_privilege(gr.oid, db.oid,');
     expect(matrix).toContain('db.datacl');
   });
+
+  it('keeps effective table, column, sequence, and function privilege checks in the catalog pack', () => {
+    const matrix = fs.readFileSync(accessMatrixPath, 'utf8');
+
+    expect(matrix).toContain('SELECT session_user');
+    expect(matrix).toContain('actual.oid IS NOT NULL AS role_exists');
+    expect(matrix).toContain("has_table_privilege(ar.oid, rel.oid, 'SELECT')");
+    expect(matrix).toContain("has_any_column_privilege(ar.oid, rel.oid, 'SELECT')");
+    expect(matrix).toContain('attr.attacl');
+    expect(matrix).toContain("has_sequence_privilege(ar.oid, seq.oid, 'USAGE')");
+    expect(matrix).toContain("has_function_privilege(ar.oid, p.oid, 'EXECUTE')");
+    expect(matrix).toContain('p.proconfig');
+  });
 });
