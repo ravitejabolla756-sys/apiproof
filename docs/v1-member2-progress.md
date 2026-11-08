@@ -2665,3 +2665,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/command-palette.tsx`, `tests/e2e/command-palette-recovery.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; command-palette recovery plus dialog/control accessibility coverage passed 7/7 in 45.4 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13 search-surface recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 redundant logo semantics
+
+- Change: shared home/dashboard branding links now mark their adjacent logo image decorative (`alt=""`), leaving the visible MY OWL text or link label as the single accessible name.
+- Files: `apps/web/src/app/login/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/verify-email/page.tsx`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/login-accessibility.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; login and auth-recovery accessibility journeys passed 2/2; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12 screen-reader semantics only; manual assistive-technology review, hosted CI, staging and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

@@ -168,7 +168,7 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-[#E8E8E5] font-sans">
         <Link href="/dashboard" aria-label="MY OWLv0.7 dashboard" className="inline-flex min-h-11 items-center gap-2.5 overflow-hidden">
-          <ApiProofLogo className="h-6 w-auto shrink-0 transition-transform hover:scale-105" variant="dark" />
+          <ApiProofLogo alt="" className="h-6 w-auto shrink-0 transition-transform hover:scale-105" variant="dark" />
           <div className={`flex items-center gap-2 ${collapsed ? "md:hidden" : ""}`}>
               <span className="text-sm font-semibold text-[#111111] tracking-tight">
                 MY OWL

@@ -329,3 +329,7 @@ Latest workspace-context evidence: malformed explicit workspace IDs use typed `I
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.
+
+## Latest UI-12 logo semantics evidence — 2026-11-08
+
+Accessible names for login, auth-recovery and dashboard branding links are no longer duplicated by the logo image. Local production build and focused browser coverage pass; manual assistive-technology review, hosted CI, staging and production remain NOT_RUN. Release recommendation stays NO-GO.

@@ -1203,6 +1203,10 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## Latest redundant-logo semantics evidence — 2026-11-08
+
+Home/dashboard branding links now expose one accessible name instead of announcing both the logo alt text and adjacent MY OWL label. The rebuilt production bundle passed with 83 generated pages; login and auth-recovery accessibility journeys passed 2/2; targeted ESLint, `git diff --check` and the Impeccable detector passed. Manual screen-reader, hosted CI, staging and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.
