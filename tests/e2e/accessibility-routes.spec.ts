@@ -45,6 +45,11 @@ test.describe('route accessibility audit', () => {
     const response = await page.goto('/route-that-does-not-exist', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     expect(response?.status()).toBe(404);
     await expect(page.locator('main#main-content h1')).toHaveText('Page not found');
+    const skipLink = page.locator('.skip-link').first();
+    await skipLink.focus();
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#main-content')).toBeFocused();
     const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
     expect(results.violations).toEqual([]);
   });
