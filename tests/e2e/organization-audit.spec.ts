@@ -120,21 +120,31 @@ test.describe('workspace audit trail', () => {
 
   test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
     await signIn(page);
-    let memberRequests = 0; let allowCollectionRecovery = false;
+    let memberRequests = 0; let allowCollectionRecovery = false; let memberRecoveryPending = true; let releaseMemberRecovery: (() => void) | undefined;
+    const memberRecovery = new Promise<void>((resolve) => { releaseMemberRecovery = resolve; });
     await page.route('**/api/workspace/members', async (route) => {
       memberRequests += 1;
       if (!allowCollectionRecovery) {
         await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Member history is temporarily unavailable.' }) });
         return;
       }
+      if (memberRecoveryPending) {
+        memberRecoveryPending = false;
+        await memberRecovery;
+      }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ members: [{ id: 'member-recovered', userId: 'user-recovered', name: 'Recovered Member', email: 'recovered@example.test', role: 'member', createdAt: '2026-11-08T00:00:00.000Z' }] }) });
     });
-    let invitationRequests = 0;
+    let invitationRequests = 0; let invitationRecoveryPending = true; let releaseInvitationRecovery: (() => void) | undefined;
+    const invitationRecovery = new Promise<void>((resolve) => { releaseInvitationRecovery = resolve; });
     await page.route('**/api/workspace/invitations', async (route) => {
       invitationRequests += 1;
       if (!allowCollectionRecovery) {
         await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Invitation history is temporarily unavailable.' }) });
         return;
+      }
+      if (invitationRecoveryPending) {
+        invitationRecoveryPending = false;
+        await invitationRecovery;
       }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitations: [{ id: 'invitation-recovered', email: 'recovered-invite@example.test', role: 'member', expiresAt: '2026-11-15T00:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: '2026-11-08T00:00:00.000Z' }] }) });
     });
@@ -147,8 +157,12 @@ test.describe('workspace audit trail', () => {
     allowCollectionRecovery = true;
     const retryMembers = page.getByRole('button', { name: 'Retry members' });
     await retryMembers.focus(); await expect(retryMembers).toBeFocused(); await page.keyboard.press('Enter');
+    await expect(retryMembers).toBeDisabled(); await expect(retryMembers).toHaveAttribute('aria-busy', 'true');
+    releaseMemberRecovery?.();
     const retryInvitations = page.getByRole('button', { name: 'Retry invitations' });
     await retryInvitations.focus(); await expect(retryInvitations).toBeFocused(); await page.keyboard.press('Enter');
+    await expect(retryInvitations).toBeDisabled(); await expect(retryInvitations).toHaveAttribute('aria-busy', 'true');
+    releaseInvitationRecovery?.();
     await expect(page.getByText('Member history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('Invitation history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('Recovered Member')).toBeVisible();
@@ -215,7 +229,8 @@ test.describe('workspace audit trail', () => {
     const settingsLoading = new Promise<void>((resolve) => { releaseSettings = resolve; });
     await page.route('**/api/workspace/settings', async (route) => { await settingsLoading; await route.continue(); });
 
-    let allowAuditRecovery = false;
+    let allowAuditRecovery = false; let releaseAuditRecovery: (() => void) | undefined;
+    const auditRecovery = new Promise<void>((resolve) => { releaseAuditRecovery = resolve; });
     await page.route('**/api/workspace/audit**', async (route) => {
       if (!allowAuditRecovery) {
         await route.fulfill({
@@ -225,6 +240,7 @@ test.describe('workspace audit trail', () => {
         });
         return;
       }
+      await auditRecovery;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -242,6 +258,8 @@ test.describe('workspace audit trail', () => {
     allowAuditRecovery = true;
     const retryAudit = page.getByRole('button', { name: 'Retry audit' });
     await retryAudit.focus(); await expect(retryAudit).toBeFocused(); await page.keyboard.press('Enter');
+    await expect(retryAudit).toBeDisabled(); await expect(retryAudit).toHaveAttribute('aria-busy', 'true');
+    releaseAuditRecovery?.();
     await expect(page.getByText('Audit history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('audit.recovered')).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit recovered state').toEqual([]);

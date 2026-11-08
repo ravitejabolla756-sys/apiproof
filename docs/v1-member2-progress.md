@@ -2074,3 +2074,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-action-loading.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; the new submit-loading journey plus existing repository-dialog recovery/accessibility coverage passed 4/4; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/ORG-02 evidence only; GitHub/provider approval, PostgreSQL/RBAC, hosted CI, integrated staging and manual screen-reader review remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/ORG-11 workspace recovery busy semantics
+
+- Change: workspace member, invitation and audit recovery controls now remain visible during their retry request, expose disabled plus `aria-busy="true"`, and preserve the error context until recovery succeeds.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; Impeccable reported five incumbent purple-palette warnings on untouched workspace headings and no new state/accessibility finding; the complete organization-audit suite passed 11/11 in 1.2 minutes; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-11 recovery evidence only; PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, integrated staging and manual screen-reader review remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

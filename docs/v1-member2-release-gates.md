@@ -137,3 +137,7 @@ Latest static-quality evidence: repository lint passes with ESLint `--max-warnin
 ## Latest repository-connect evidence — 2026-11-08
 
 The final repository-connect submit control remains visible while its request is pending and exposes disabled plus `aria-busy` semantics; focused repository-dialog coverage passes 4/4 and the production build passes with 83 generated pages. This is local evidence only. Hosted CI, integrated staging, GitHub/provider approval, PostgreSQL/RBAC and manual assistive-technology review remain open; release recommendation stays NO-GO.
+
+## Latest workspace recovery evidence — 2026-11-08
+
+Workspace member, invitation and audit retry controls remain visible and expose disabled plus `aria-busy` semantics while recovery requests are pending; the organization-audit suite passes 11/11 and the production build passes with 83 generated pages. This is local evidence only. PostgreSQL/RBAC, hosted CI, integrated staging, Member 1 revocation integration and manual assistive-technology review remain open; release recommendation stays NO-GO.
