@@ -187,19 +187,44 @@ export async function getUserWorkspaces(userId: string): Promise<WorkspaceWithRo
  * If user has no workspace (e.g. fresh DB before migration), creates one automatically.
  */
 export async function getDefaultWorkspaceForUser(userId: string): Promise<WorkspaceWithRole> {
-  const workspaces = await getUserWorkspaces(userId);
-  if (workspaces.length > 0) {
-    return workspaces[0]!;
-  }
-
-  // Fetch user name for workspace naming
   const db = getDatabase();
-  const user = await db.queryOne<{ name: string; email: string }>('SELECT name, email FROM users WHERE id = ?', [userId]);
-  const wsName = user?.name ? `${user.name}'s Workspace` : 'Default Workspace';
-  const emailPrefix = user?.email ? user.email.split('@')[0] : 'team';
-  const customSlug = `${emailPrefix}-${crypto.randomBytes(3).toString('hex')}`;
+  return db.transaction(async (tx) => {
+    // Serialize the legacy/no-membership recovery path per user in PostgreSQL.
+    // SQLite's single local connection already serializes its transaction writes.
+    const userLock = tx.engine === 'postgres' ? ' FOR UPDATE' : '';
+    const user = await tx.queryOne<{ name: string; email: string }>(`SELECT name, email FROM users WHERE id = ?${userLock}`, [userId]);
+    const existing = await tx.queryOne<{
+      id: string;
+      name: string;
+      slug: string;
+      created_at: string;
+      updated_at: string;
+      role: WorkspaceRole;
+    }>(`
+      SELECT w.id, w.name, w.slug, w.created_at, w.updated_at, wm.role
+      FROM workspaces w
+      JOIN workspace_members wm ON wm.workspace_id = w.id
+      WHERE wm.user_id = ?
+      ORDER BY CASE wm.role WHEN 'owner' THEN 1 ELSE 2 END, w.created_at ASC
+      LIMIT 1
+    `, [userId]);
+    if (existing) {
+      return {
+        id: existing.id,
+        name: existing.name,
+        slug: existing.slug,
+        role: existing.role,
+        createdAt: existing.created_at,
+        updatedAt: existing.updated_at,
+      };
+    }
 
-  return await createWorkspaceForUser(userId, wsName, customSlug);
+    // Fetch user name for workspace naming while still holding the recovery transaction.
+    const wsName = user?.name ? `${user.name}'s Workspace` : 'Default Workspace';
+    const emailPrefix = user?.email ? user.email.split('@')[0] : 'team';
+    const customSlug = `${emailPrefix}-${crypto.randomBytes(3).toString('hex')}`;
+    return createWorkspaceForUser(userId, wsName, customSlug, tx);
+  });
 }
 
 /**

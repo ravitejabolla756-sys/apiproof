@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 atomic default-workspace recovery
+
+- Change: Made no-membership default-workspace recovery transaction-scoped and added a PostgreSQL user-row lock where supported, preventing concurrent stale-context recovery from creating duplicate default workspaces while preserving multi-workspace users.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/organization-management.test.ts tests/repositories-list-route.test.ts --no-file-parallelism` passed 17/17. An initial run without the required local seed variable failed during fixture setup only and was rerun successfully.
+- Scope: local ORG-02 tenancy/recovery hardening only; PostgreSQL hosted verification, Member 1 RBAC contract, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-03 transactional invitation membership guard
 
 - Change: Moved existing-membership validation into the invitation-acceptance transaction and normalized a concurrent membership uniqueness race to stable `ALREADY_A_MEMBER` behavior, preserving the invitation as unaccepted.

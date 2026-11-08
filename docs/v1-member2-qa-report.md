@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 atomic default-workspace recovery
+
+- PASS: Default-workspace recovery now checks and creates the workspace inside one transaction, with a PostgreSQL user-row lock for the no-membership path.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and organization/repository regression coverage passed 17/17 with the required local seed fixture configured.
+- ADVISORY: The first mixed test invocation omitted `APIPROOF_LOCAL_SEED_PASSWORD` and failed before tests during fixture initialization; the documented seeded rerun passed.
+- NOT_RUN: PostgreSQL hosted verification, Member 1 RBAC contract, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-03 transactional invitation membership guard
 
 - PASS: Invitation acceptance checks membership inside the transaction and returns stable `ALREADY_A_MEMBER` behavior without consuming the invitation when membership already exists.
