@@ -96,7 +96,7 @@ Latest organization-context evidence: the workspace-list endpoint returns typed 
 
 Latest billing API evidence: checkout, portal and subscription routes normalize malformed explicit workspace contexts to typed `INVALID_WORKSPACE_ID` responses; billing-boundary coverage passes 4/4 and repository typecheck passes. Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
 
-Latest status evidence: the no-monitor message is a polite atomic `role="status"` region; the focused status browser suite passes 2/2 after the 83-page production build, with no fabricated uptime or incident claims. Approved monitor source, incident rehearsal, hosted CI, staging, manual assistive-technology review and production remain open.
+Latest status evidence: the no-monitor message is a polite atomic `role="status"` region; the focused status browser suite passes 2/2 with mobile axe, no-overflow and keyboard-focus assertions, with no fabricated uptime or incident claims. Approved monitor source, incident rehearsal, hosted CI, staging, manual assistive-technology review and production remain open.
 
 Latest billing-context evidence: checkout and portal return typed `INVALID_WORKSPACE_ID` errors for malformed explicit workspace contexts, while owner-only checks and beta-unavailable responses remain covered; billing-boundary coverage passes 4/4. Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
 

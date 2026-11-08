@@ -14,7 +14,14 @@ test('keeps the status support action touch-sized on mobile', async ({ page }) =
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/status');
 
+  const statusMessage = page.getByRole('status');
+  await expect(statusMessage).toHaveAttribute('aria-live', 'polite');
+  await expect(statusMessage).toHaveAttribute('aria-atomic', 'true');
   const supportLink = page.getByRole('link', { name: 'Contact support' });
   await expect(supportLink).toBeVisible();
   expect((await supportLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await supportLink.focus();
+  await expect(supportLink).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });

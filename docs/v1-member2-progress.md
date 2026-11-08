@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-13/UI-12 no-monitor status mobile semantics
+
+- Change: Strengthened the no-monitor status journey at 390px to assert polite atomic live-region attributes, keyboard focus on the support link, no document-level horizontal overflow, and axe-clean `#main-content`, while preserving the truthful unavailable-monitor copy.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/status-communications.spec.ts --workers=1` passed **2/2 in 2.8 seconds**; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-web13-status-mobile-PFtSWi`.
+- Scope: strengthens local WEB-13/UI-12 evidence only; approved monitoring source, incident rehearsal, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — current public performance probe
 
 - Evidence: After the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes over loopback. Median load times were 10–39 ms, response times 2–5 ms, and encoded HTML sizes 6.1–17.0 KiB.

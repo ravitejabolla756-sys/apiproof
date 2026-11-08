@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-13/UI-12 no-monitor status mobile semantics
+
+- PASS: The no-monitor status journey now verifies polite atomic live-region semantics, keyboard focus on the support link, no mobile document overflow and axe-clean main content while preserving truthful unavailable-monitor wording.
+- PASS: `status-communications.spec.ts` passed 2/2 in 2.8 seconds; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-web13-status-mobile-PFtSWi`.
+- NOT_RUN: Approved monitoring source, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — current public performance probe
 
 - PASS: The current production bundle served all 9 representative public routes over loopback for three samples; median load was 10–39 ms, response 2–5 ms, and encoded HTML 6.1–17.0 KiB.
