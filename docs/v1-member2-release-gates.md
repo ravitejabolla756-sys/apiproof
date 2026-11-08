@@ -20,6 +20,8 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest findings API evidence: malformed explicit workspace contexts are typed organization errors before the tenant-scoped findings query, with organization-management coverage passing 17/17 and repository typecheck passing. PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 Latest overview API evidence: malformed explicit workspace contexts are typed organization errors before dashboard aggregation, with organization-management coverage passing 16/16 and repository typecheck passing. PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
 
 Latest activity API evidence: malformed explicit workspace contexts return typed organization errors while the existing activity tenant-isolation suite passes 19/19 with the required local seed fixture. PostgreSQL/RBAC verification, hosted CI, staging and production remain open.

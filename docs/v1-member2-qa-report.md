@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 findings-context error boundary
+
+- PASS: The findings endpoint returns typed organization errors for malformed explicit workspace contexts before querying tenant-scoped findings.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 17/17.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 overview-context error boundary
 
 - PASS: The dashboard overview endpoint returns typed organization errors for malformed explicit workspace contexts before querying dashboard data.
