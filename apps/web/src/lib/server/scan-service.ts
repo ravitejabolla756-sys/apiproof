@@ -16,7 +16,7 @@ import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { assertFounderScanAuthorization } from './founder-scan-authorization.js';
 import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
-import { boundedProductizationProjection } from './productization-persistence.js';
+import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { createSyntheticTestFixtureFiles } from './test-fixture-source.js';
 
@@ -384,12 +384,12 @@ export async function runRepositoryScan(
       })),
     };
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown scan error';
+    const errorCode = safeFailureCode(error, 'SCAN_FAILED');
     await db.execute(`
       UPDATE scans
       SET status = 'failed', error_message = ?, completed_at = ?
       WHERE id = ?
-    `, [errorMsg, new Date().toISOString(), scanId]);
+    `, [errorCode, new Date().toISOString(), scanId]);
 
     throw error;
   }

@@ -89,6 +89,21 @@ describe('enabled provider-intelligence worker path', () => {
     expect(persisted.productization?.discoveries?.map((item) => item.providerId)).toContain('openai');
   });
 
+  it('stores only a safe failure code when direct scan service execution fails', async () => {
+    const current = await fixture('manual-scan-error-privacy@example.com', 'manual-error-privacy');
+    const secret = FINAL_SECRETS[2]!;
+    fetchFiles.mockRejectedValueOnce(new Error(`Provider response included ${secret}`));
+
+    await expect(runRepositoryScan(current.repositoryId, current.userId)).rejects.toThrow(secret);
+
+    const scan = await getDatabase().queryOne<{ status: string; error_message: string | null }>(
+      'SELECT status, error_message FROM scans WHERE repository_id = ?',
+      [current.repositoryId],
+    );
+    expect(scan).toEqual({ status: 'failed', error_message: 'SCAN_FAILED' });
+    expect(JSON.stringify(scan)).not.toContain(secret);
+  });
+
   it('retains established Stripe findings during productization rollout', async () => {
     const manual = await fixture('manual-stripe-bridge@example.com', 'stripe-bridge');
     const sha = 'e'.repeat(40);
