@@ -59,9 +59,9 @@ export default function ResetPasswordPage() {
           {!token && <p role="alert" aria-live="assertive" aria-atomic="true" className="text-sm text-red-700">This reset link is missing or invalid. Request a new one.</p>}
           {message && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800">{message}</p>}
           {error && <p role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
-          {token && <button type="submit" disabled={loading} className="w-full rounded-xl bg-[#0F172A] py-3.5 font-mono text-xs font-medium uppercase tracking-wider text-white disabled:opacity-60"><span role={loading ? 'status' : undefined} aria-live={loading ? 'polite' : undefined} aria-atomic={loading ? 'true' : undefined}>{loading ? 'Updating…' : 'Reset password'}</span></button>}
+          {token && <button type="submit" disabled={loading} className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#0F172A] py-3.5 font-mono text-xs font-medium uppercase tracking-wider text-white disabled:opacity-60"><span role={loading ? 'status' : undefined} aria-live={loading ? 'polite' : undefined} aria-atomic={loading ? 'true' : undefined}>{loading ? 'Updating…' : 'Reset password'}</span></button>}
         </form>
-        <p className="mt-5 text-center text-sm"><Link href="/login" className="text-slate-600 underline-offset-4 hover:underline">Back to sign in</Link></p>
+        <p className="mt-5 text-center text-sm"><Link href="/login" className="inline-flex min-h-11 items-center justify-center text-slate-600 underline-offset-4 hover:underline">Back to sign in</Link></p>
       </section>
     </main></>
   );
