@@ -701,6 +701,14 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, Member 1 PR event integration and production checks remain NOT_RUN.
 
+## 2026-11-08 — inventory/compatibility recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the inventory and compatibility route changes.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/capability-recovery-loading.spec.ts tests/e2e/inventory-filter-states.spec.ts tests/e2e/compatibility-state.spec.ts --reporter=line`: PASS, 7/7; inventory and compatibility Try again controls remain visible and expose disabled/`aria-busy` during held recovery, while existing state/filter coverage remains green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

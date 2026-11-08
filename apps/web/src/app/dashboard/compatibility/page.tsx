@@ -41,12 +41,12 @@ export default function CompatibilityPage() {
 
   async function loadCompatibility() {
     setLoading(true);
-    setError(null);
     try {
       const response = await fetch("/api/compatibility-proof", { cache: "no-store" });
       const payload = await response.json() as CompatibilityProofResponse & { error?: string };
       if (!response.ok) throw new Error(payload.error || "Unable to load compatibility records.");
       setData(payload);
+      setError(null);
     } catch (caught) {
       setData(null);
       setError(caught instanceof Error ? caught.message : "Unable to load compatibility records.");
@@ -74,7 +74,7 @@ export default function CompatibilityPage() {
         </Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadCompatibility()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadCompatibility()} busy={loading} />}
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]">

@@ -33,12 +33,12 @@ export default function ApiInventoryPage() {
 
   async function loadInventory() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/inventory");
       const json = await res.json() as { providers?: ProviderInventoryItem[]; error?: string };
       if (!res.ok) throw new Error(json.error || "Unable to load API inventory.");
       setProviders(json.providers || []);
+      setError(null);
     } catch (err) {
       console.error("Failed to load API inventory:", err);
       setError(err instanceof Error ? err.message : "Unable to load API inventory.");
@@ -86,7 +86,7 @@ export default function ApiInventoryPage() {
         </Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadInventory()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadInventory()} busy={loading} />}
 
       {/* SEARCH */}
       <div className="relative w-full sm:w-80">
