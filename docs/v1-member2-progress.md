@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — ORG-11 provider-review action touch targets
+
+- Change: provider-rule candidate Source, Test sample, edit, approval, rejection, and edit-mode Save/Cancel controls now expose explicit 44px minimum touch targets while preserving review-only behavior, approval boundaries, and existing provider contracts.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-filter-states.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; provider-rule mobile priority/recovery journey passed 1/1 in 13.1 seconds with measured candidate actions/source link and axe-clean filtered-empty content; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local ORG-11/UI-12/UI-13 evidence only; PostgreSQL/RBAC, hosted CI, manual screen-reader review, staging and production verification remain open. No provider activation, backend/shared contract, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 shared button touch-target baseline
 
 - Change: the reusable `Button` primitive now defaults to a 44px minimum height, closing the remaining route-level gap for controls that did not carry an explicit override while preserving variants, labels, keyboard behavior, and backend contracts.

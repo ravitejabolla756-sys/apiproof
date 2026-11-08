@@ -31,6 +31,10 @@ test('recovers from an empty provider-rule priority filter', async ({ page }) =>
 
   await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Rule review' })).toBeVisible();
+  for (const name of ['Refresh', 'Populate official queue', 'Test sample', 'Edit rule', 'Approve and rescan', 'Reject']) {
+    expect((await page.getByRole('button', { name, exact: true }).first().boundingBox())?.height, name).toBeGreaterThanOrEqual(44);
+  }
+  expect((await page.getByRole('link', { name: 'Source', exact: true }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
   const filter = page.getByRole('group', { name: 'Review priority filter' });
   const p0 = filter.getByRole('button', { name: 'P0 (0)' });
   expect((await p0.boundingBox())?.height).toBeGreaterThanOrEqual(44);
