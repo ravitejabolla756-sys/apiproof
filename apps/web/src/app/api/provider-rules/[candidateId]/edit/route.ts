@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
 import { editProviderRuleCandidate } from '@/lib/server/provider-rule-service.js';
+import { mapProviderRuleEditError } from '@/lib/server/provider-rule-api-errors.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
 
@@ -27,8 +28,7 @@ export async function PATCH(request: Request, context: RouteContext): Promise<Ne
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     if (isWorkspaceAuthorizationError(error)) return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403 });
-    const code = error instanceof Error && /^[A-Z0-9_:-]+$/.test(error.message) ? error.message : 'INVALID_RULE_EDIT';
-    const status = code.includes('NOT_FOUND') ? 404 : code.includes('NOT_REVIEWABLE') || code.includes('CONFLICT') ? 409 : 400;
-    return NextResponse.json({ error: 'Provider rule edit failed.', code }, { status });
+    const mapped = mapProviderRuleEditError(error);
+    return NextResponse.json({ error: 'Provider rule edit failed.', code: mapped.code }, { status: mapped.status });
   }
 }

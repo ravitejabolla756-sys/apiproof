@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from '../apps/web/src/app/api/provider-rules/seed/route.js';
 import { GET as getProviderRules } from '../apps/web/src/app/api/provider-rules/route.js';
 import { PATCH as editProviderRule } from '../apps/web/src/app/api/provider-rules/[candidateId]/edit/route.js';
@@ -9,6 +9,8 @@ import { POST as testProviderRule } from '../apps/web/src/app/api/provider-rules
 import { AUTH_COOKIE_NAME, createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import * as providerRuleService from '../apps/web/src/lib/server/provider-rule-service.js';
+import { mapProviderRuleEditError, mapProviderRuleReviewError } from '../apps/web/src/lib/server/provider-rule-api-errors.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-provider-review-queue-route.db');
 
@@ -114,5 +116,39 @@ describe('provider review queue bootstrap route', () => {
     }
     const candidates = await getDatabase().queryOne<{ count: number }>('SELECT COUNT(*) AS count FROM provider_rule_candidates');
     expect(Number(candidates?.count)).toBe(0);
+  });
+
+  it('does not expose arbitrary exception text from provider-rule edit or review routes', async () => {
+    const { session } = await createUserWithSession('queue-error-owner@example.com', 'Pass1234!', 'Queue Error Owner');
+    const headers = { cookie: `${AUTH_COOKIE_NAME}=${session.id}`, 'content-type': 'application/json' };
+    const candidateContext = { params: Promise.resolve({ candidateId: 'candidate-error' }) };
+    const editSpy = vi.spyOn(providerRuleService, 'editProviderRuleCandidate')
+      .mockRejectedValueOnce(new Error('AWS_SECRET_ACCESS_KEY:ABCD1234MUSTNOTLEAK'));
+    const reviewSpy = vi.spyOn(providerRuleService, 'approveProviderRuleCandidate')
+      .mockRejectedValueOnce(new Error('AWS_SECRET_ACCESS_KEY:ABCD1234MUSTNOTLEAK'));
+
+    try {
+      const editResponse = await editProviderRule(new Request('https://myowl.example/api/provider-rules/candidate-error/edit', {
+        method: 'PATCH', headers, body: JSON.stringify({ title: 'Safe title' }),
+      }), candidateContext);
+      const reviewResponse = await reviewProviderRule(new Request('https://myowl.example/api/provider-rules/candidate-error/review', {
+        method: 'POST', headers, body: JSON.stringify({ decision: 'approve', notes: 'Reviewed against source.' }),
+      }), candidateContext);
+
+      expect(editResponse.status).toBe(500);
+      expect(await editResponse.json()).toEqual({ error: 'Provider rule edit failed.', code: 'INTERNAL_ERROR' });
+      expect(reviewResponse.status).toBe(500);
+      expect(await reviewResponse.json()).toEqual({ error: 'Provider rule review failed.', code: 'INTERNAL_ERROR' });
+    } finally {
+      editSpy.mockRestore();
+      reviewSpy.mockRestore();
+    }
+
+    const mapped = mapProviderRuleReviewError(new Error('APPLICABILITY_SCOPE_TARGET_REQUIRED:AWS_SECRET_ACCESS_KEY'));
+    expect(mapped).toEqual({ code: 'APPLICABILITY_SCOPE_TARGET_REQUIRED', status: 409 });
+    expect(JSON.stringify(mapped)).not.toContain('AWS_SECRET_ACCESS_KEY');
+    expect(mapProviderRuleEditError(new Error('RULE_CANDIDATE_NOT_FOUND'))).toEqual({ code: 'RULE_CANDIDATE_NOT_FOUND', status: 404 });
+    expect(mapProviderRuleEditError(new Error('RULE_CANDIDATE_EDIT_CONFLICT'))).toEqual({ code: 'RULE_CANDIDATE_EDIT_CONFLICT', status: 409 });
+    expect(mapProviderRuleReviewError(new Error('RULE_REVIEW_EVIDENCE_INVALID'))).toEqual({ code: 'RULE_REVIEW_EVIDENCE_INVALID', status: 409 });
   });
 });

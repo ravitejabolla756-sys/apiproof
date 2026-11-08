@@ -108,6 +108,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 
 - Backend emits stable, scrubbed domain event categories and identifiers, not secrets, raw webhook payloads, repository content or tokens.
 - The structured server logger redacts common Stripe, Slack, AWS, Google and Supabase token formats and sensitive credential-bearing context fields. Diagnostic identifiers such as `envName` and `secretName` remain visible; this protects local log output but does not replace owner-approved monitoring, retention or alert routing.
+- Provider-rule edit/review APIs expose only allowlisted error codes. Dynamic applicability errors are reduced to static prefixes; unknown exception messages are never returned to clients.
 - Member 2 may render/deliver notifications, but delivery failure must not change authorization or billing truth.
 - The protected provider-intelligence status response exposes tenant-neutral scan queue telemetry under `queues.worker`: depth counters, `oldestPendingAt`, bounded `oldestPendingAgeMs`, `retryingJobs`, `stalledProcessingJobs` and `retryExhaustedJobs`. It exposes no workspace, repository, source body or credential data.
 - `stalledProcessingJobs` is derived only from an expired persisted lease; `retryExhaustedJobs` is derived from the queue's bounded attempt count. These are indicators for an owner-approved monitor, not automatic authorization, deletion or retry decisions.

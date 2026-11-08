@@ -4,6 +4,7 @@ import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorks
 import { assertCsrfProtection } from '@/lib/server/validation';
 import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service.js';
 import { processRepositoryRescans } from '@/lib/server/repository-rescan-worker.js';
+import { mapProviderRuleReviewError } from '@/lib/server/provider-rule-api-errors.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
 
@@ -44,9 +45,8 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     if (isWorkspaceAuthorizationError(error)) {
       return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403 });
     }
-    const code = error instanceof Error && /^[A-Z0-9_:-]+$/.test(error.message) ? error.message : 'INTERNAL_ERROR';
-    const status = code.includes('NOT_FOUND') ? 404 : code.includes('REVIEWABLE') || code.includes('STRUCTURED') || code.includes('EVIDENCE') ? 409 : 500;
-    return NextResponse.json({ error: 'Provider rule review failed.', code }, { status });
+    const mapped = mapProviderRuleReviewError(error);
+    return NextResponse.json({ error: 'Provider rule review failed.', code: mapped.code }, { status: mapped.status });
   }
 }
 
