@@ -64,6 +64,24 @@ describe('authentication hardening', () => {
     expect(crossSite).toEqual({ valid: false, error: 'Forbidden: Cross-site request rejected.' });
   });
 
+  it('rejects Origin values containing URL components that are not part of an origin', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const malformedOrigins = [
+      'https://myowl.dev/dashboard',
+      'https://user@myowl.dev',
+      'https://myowl.dev?next=/dashboard',
+      'https://myowl.dev#fragment',
+      'https://myowl.dev/',
+    ];
+
+    for (const origin of malformedOrigins) {
+      expect(assertCsrfProtection(new Request('https://myowl.dev/api/repositories', {
+        method: 'POST',
+        headers: { host: 'myowl.dev', origin },
+      }))).toEqual({ valid: false, error: 'Forbidden: Invalid Origin header.' });
+    }
+  });
+
   it('compares the complete Origin tuple and honors trusted forwarded proxy origin headers', () => {
     vi.stubEnv('NODE_ENV', 'production');
     const wrongScheme = assertCsrfProtection(new Request('https://myowl.dev/api/repositories', {

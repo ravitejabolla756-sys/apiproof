@@ -205,6 +205,19 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
     }
     try {
       const originUrl = new URL(origin);
+      // Origin is serialized as an origin only, never as a URL with path,
+      // credentials, query, or fragment. Do not normalize malformed values
+      // into an accepted same-origin value.
+      if (
+        originUrl.username
+        || originUrl.password
+        || originUrl.pathname !== '/'
+        || originUrl.search
+        || originUrl.hash
+        || originUrl.origin !== origin
+      ) {
+        return { valid: false, error: 'Forbidden: Invalid Origin header.' };
+      }
       const expectedOrigin = getExpectedRequestOrigin(req, host);
       if (!expectedOrigin) {
         return { valid: false, error: 'Forbidden: Request origin is unavailable.' };
