@@ -5,6 +5,7 @@ import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/se
 import { createSession, createUser, validateSession } from '../apps/web/src/lib/server/auth.js';
 import { assertCurrentWorkspaceMembership, getDefaultWorkspaceForUser, requireWorkspaceMember } from '../apps/web/src/lib/server/workspace-service.js';
 import { revokeWorkspaceMember } from '../apps/web/src/lib/server/member-revocation.js';
+import { GET as getRepository } from '../apps/web/src/app/api/repositories/[id]/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-member-revocation-service.db');
 
@@ -65,6 +66,40 @@ describe('ORG-10 durable member revocation', () => {
       actor_user_id: owner.id,
     });
     expect(JSON.parse(event!.payload_json)).toMatchObject({ eventId: result.eventId, workspaceId: ownerWorkspace.id });
+  });
+
+  it('denies a still-authenticated removed member through a workspace-scoped API route', async () => {
+    const owner = createUser('route-revoke-owner@example.com', 'Pass12345!', 'Route Owner');
+    const member = createUser('route-revoke-member@example.com', 'Pass12345!', 'Route Member');
+    const workspace = await getDefaultWorkspaceForUser(owner.id);
+    await addMember(workspace.id, member.id);
+    const session = createSession(member.id);
+    const now = new Date().toISOString();
+    await getDatabase().execute(`
+      INSERT INTO repositories (
+        id, workspace_id, user_id, owner, name, full_name, github_repository_id,
+        default_branch, status, origin, lifecycle, created_at
+      ) VALUES (?, ?, ?, 'route-org', 'private-repo', 'route-org/private-repo', 'route-gh-1', 'main', 'connected', 'connected', 'active', ?)
+    `, ['org10_route_repo', workspace.id, owner.id, now]);
+    const request = () => new Request('http://localhost/api/repositories/org10_route_repo', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    });
+    const params = { params: Promise.resolve({ id: 'org10_route_repo' }) };
+
+    const before = await getRepository(request(), params);
+    expect(before.status).toBe(200);
+    expect((await before.json() as { repository: { id: string } }).repository.id).toBe('org10_route_repo');
+
+    await revokeWorkspaceMember(owner.id, {
+      workspaceId: workspace.id,
+      userId: member.id,
+      idempotencyKey: 'org-10-route-revocation',
+    });
+
+    expect(validateSession(session.id)?.user.id).toBe(member.id);
+    const after = await getRepository(request(), params);
+    expect(after.status).toBe(404);
+    expect(JSON.stringify(await after.json())).not.toContain('route-org/private-repo');
   });
 
   it('is idempotent and rejects a reused key for a different subject', async () => {
