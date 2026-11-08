@@ -15,7 +15,10 @@ test('announces Slack disconnect progress', async ({ page }) => {
   });
   await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
   const deleteResponse = page.waitForResponse((response) => response.url().includes('/api/slack/connection') && response.request().method() === 'DELETE');
-  await page.getByRole('button', { name: 'Disconnect' }).click();
+  const disconnect = page.getByRole('button', { name: 'Disconnect' });
+  await disconnect.focus();
+  await expect(disconnect).toBeFocused();
+  await page.keyboard.press('Enter');
   const progress = page.getByRole('status').filter({ hasText: 'Disconnecting Slack…' });
   await expect(progress).toBeVisible();
   await expect(progress).toHaveAttribute('aria-live', 'polite');
