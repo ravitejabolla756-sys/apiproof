@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 provider-coverage unavailable state semantics
+
+- PASS: The provider-coverage fallback unavailable state now announces as a polite atomic status region while preserving the existing error alert and retry path.
+- PASS: Impeccable detector returned no findings; targeted ESLint, repository typecheck and diff checks passed; provider/repository recovery browser coverage passed 2/2.
+- NOT_RUN: Hosted CI, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-08 — full seeded local regression after SQLite/provider-route fixes
 
 - PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds.

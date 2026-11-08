@@ -20,6 +20,8 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes a polite atomic status region; Impeccable detector, targeted lint, repository typecheck and provider/repository recovery browser coverage pass 2/2. Hosted CI, manual assistive-technology review, staging and production remain open.
+
 Latest full local regression evidence: the seeded Vitest repository run passes 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds after the SQLite transaction-serialization and provider-rule mutation context-boundary fixes. PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
 
 Latest provider-rule mutation evidence: edit, review, test and seed routes normalize malformed workspace IDs while preserving owner denial; seeded provider-review coverage passes 4/4 and repository typecheck passes. Provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.

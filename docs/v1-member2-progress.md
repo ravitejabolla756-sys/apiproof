@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 provider-coverage unavailable state semantics
+
+- Change: The provider-coverage page’s fallback unavailable state now exposes a polite, atomic `role="status"` region, completing the route’s loading/error/empty/unavailable announcement semantics without changing its truthful copy or retry behavior.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `tests/e2e/provider-repository-recovery-loading.spec.ts` passed 2/2.
+- Scope: local UI-12 provider-coverage state hardening only; hosted CI, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-08 checkpoint — full seeded local regression after SQLite/provider-route fixes
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds.
