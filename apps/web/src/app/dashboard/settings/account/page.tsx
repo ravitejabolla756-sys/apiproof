@@ -97,7 +97,7 @@ export default function AccountSettingsPage() {
     <div className="max-w-4xl space-y-6 outline-none">
       <div className="flex flex-col gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <Link href="/dashboard/settings" className="mb-3 inline-flex min-h-10 items-center gap-2 text-xs font-medium text-[#686868] hover:text-[#111111]">
+          <Link href="/dashboard/settings" className="mb-3 inline-flex min-h-11 items-center gap-2 text-xs font-medium text-[#686868] hover:text-[#111111]">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Workspace settings
           </Link>
@@ -126,16 +126,16 @@ export default function AccountSettingsPage() {
             <form onSubmit={saveName} aria-busy={savingName} className="space-y-4">
               <div>
                 <label htmlFor="account-name" className="mb-1.5 block text-xs font-medium text-[#333333]">Display name</label>
-                <input id="account-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={100} required className="min-h-10 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm text-[#111111] outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" />
+                <input id="account-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={100} required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm text-[#111111] outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" />
               </div>
               <div>
                 <label htmlFor="account-email" className="mb-1.5 block text-xs font-medium text-[#333333]">Email</label>
-                <div className="flex min-h-10 items-center gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] px-3 text-sm text-[#686868]">
+                <div className="flex min-h-11 items-center gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] px-3 text-sm text-[#686868]">
                   <Mail className="h-4 w-4" aria-hidden="true" /><input id="account-email" value={account.email} readOnly className="min-w-0 flex-1 bg-transparent outline-none" />
                 </div>
                 <p className="mt-1.5 text-[11px] text-[#686868]">Email changes require a verified account-recovery flow and are not available here.</p>
               </div>
-              <Button type="submit" disabled={savingName || name.trim() === account.name} className="min-h-10"><span role={savingName ? 'status' : undefined} aria-live={savingName ? 'polite' : undefined} aria-atomic={savingName ? 'true' : undefined}>{savingName ? 'Saving…' : 'Save profile'}</span></Button>
+              <Button type="submit" disabled={savingName || name.trim() === account.name} className="min-h-11"><span role={savingName ? 'status' : undefined} aria-live={savingName ? 'polite' : undefined} aria-atomic={savingName ? 'true' : undefined}>{savingName ? 'Saving…' : 'Save profile'}</span></Button>
             </form>
           </section>
 
@@ -146,10 +146,10 @@ export default function AccountSettingsPage() {
             </div>
             {account.hasLocalPassword ? (
               <form onSubmit={changePassword} aria-busy={savingPassword} className="space-y-4">
-                <div><label htmlFor="current-password" className="mb-1.5 block text-xs font-medium text-[#333333]">Current password</label><input id="current-password" type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} autoComplete="current-password" required className="min-h-10 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /></div>
-                <div><label htmlFor="new-password" className="mb-1.5 block text-xs font-medium text-[#333333]">New password</label><input id="new-password" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} autoComplete="new-password" minLength={8} maxLength={128} required className="min-h-10 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /></div>
-                <div><label htmlFor="confirm-password" className="mb-1.5 block text-xs font-medium text-[#333333]">Confirm new password</label><input id="confirm-password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={8} maxLength={128} required className="min-h-10 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /></div>
-                <Button type="submit" disabled={savingPassword} className="min-h-10"><span role={savingPassword ? 'status' : undefined} aria-live={savingPassword ? 'polite' : undefined} aria-atomic={savingPassword ? 'true' : undefined}>{savingPassword ? 'Updating…' : 'Update password'}</span></Button>
+                <div><label htmlFor="current-password" className="mb-1.5 block text-xs font-medium text-[#333333]">Current password</label><input id="current-password" type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} autoComplete="current-password" required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /></div>
+                <div><label htmlFor="new-password" className="mb-1.5 block text-xs font-medium text-[#333333]">New password</label><input id="new-password" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} autoComplete="new-password" minLength={8} maxLength={128} required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /></div>
+                <div><label htmlFor="confirm-password" className="mb-1.5 block text-xs font-medium text-[#333333]">Confirm new password</label><input id="confirm-password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={8} maxLength={128} required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]" /></div>
+                <Button type="submit" disabled={savingPassword} className="min-h-11"><span role={savingPassword ? 'status' : undefined} aria-live={savingPassword ? 'polite' : undefined} aria-atomic={savingPassword ? 'true' : undefined}>{savingPassword ? 'Updating…' : 'Update password'}</span></Button>
               </form>
             ) : (
               <div className="rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 text-xs text-[#686868]">
