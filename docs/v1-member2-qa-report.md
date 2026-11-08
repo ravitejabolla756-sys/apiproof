@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 provider-rules context error boundary
+
+- PASS: Provider-rules GET returns a typed organization error for malformed explicit workspace contexts without changing owner authorization behavior.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded provider-review coverage passed 3/3.
+- NOT_RUN: Provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02/NOT-03 Slack OAuth context boundary
 
 - PASS: Slack OAuth connect returns typed organization errors for malformed workspace contexts and preserves 503 handling for unrelated provider failures.

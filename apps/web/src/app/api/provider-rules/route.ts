@@ -6,11 +6,11 @@ import {
   MIGRATION_TEMPLATE_COVERAGE,
   OFFICIAL_CHANGE_CANDIDATE_REGISTRY,
 } from '@apiproof/providers';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
-import { PROVIDER_CHANGE_SOURCES } from '@/lib/server/provider-change-monitor';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
-import { requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { getDatabase } from '@/lib/server/db/index.js';
+import { PROVIDER_CHANGE_SOURCES } from '@/lib/server/provider-change-monitor.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -100,6 +100,12 @@ export async function GET(request: Request): Promise<NextResponse> {
       }),
     }, { headers: privateNoStore });
   } catch (error) {
+    const errorCode = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
+    if (errorCode === 'INVALID_WORKSPACE_ID') {
+      const response = organizationErrorResponse(error);
+      response.headers.set('Cache-Control', privateNoStore['Cache-Control']);
+      return response as NextResponse;
+    }
     if (error instanceof Error && error.message.includes('access denied')) {
       return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403, headers: privateNoStore });
     }

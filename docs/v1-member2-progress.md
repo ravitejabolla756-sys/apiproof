@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 provider-rules context error boundary
+
+- Change: Provider-rules GET now translates malformed explicit workspace contexts to the shared typed organization error while preserving its owner-denial and generic provider-review failure behavior.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded `tests/provider-review-queue-route.test.ts` passed 3/3.
+- Scope: local ORG-02/provider-review boundary hardening only; provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02/NOT-03 Slack OAuth context boundary
 
 - Change: Slack OAuth connect now translates workspace-resolution failures through the shared organization error response while retaining the existing 503 behavior for unrelated Slack/provider failures.

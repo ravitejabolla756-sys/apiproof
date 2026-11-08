@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { POST } from '../apps/web/src/app/api/provider-rules/seed/route.js';
+import { GET } from '../apps/web/src/app/api/provider-rules/route.js';
 import { AUTH_COOKIE_NAME, createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 
@@ -47,5 +48,14 @@ describe('provider review queue bootstrap route', () => {
     const second = await request();
     expect(second.status).toBe(200);
     expect(await second.json()).toMatchObject({ ok: true, candidates: 0, skippedExisting: 50 });
+  });
+
+  it('returns a typed error for malformed explicit workspace contexts', async () => {
+    const { session } = await createUserWithSession('queue-context@example.com', 'Pass1234!', 'Queue Context');
+    const response = await GET(new Request('https://myowl.example/api/provider-rules?workspaceId=not%20safe', {
+      headers: { cookie: `${AUTH_COOKIE_NAME}=${session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 });
