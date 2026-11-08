@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-11 enterprise intake contract
+
+- PASS: Added a review-only enterprise inquiry contract covering destination approval, server-side validation, anti-spam, idempotency, privacy and bounded delivery states.
+- NOT_RUN: No contact destination, CRM, webhook, provider, delivery path or SLA was activated; the public form remains non-sending.
+
 ## 2026-11-08 — Repository static checks after public QA additions
 
 - PASS: `pnpm lint` and `pnpm typecheck` passed after tightening the public link-crawl type guard; the focused rebuilt link-crawl test passed 1/1 in 33.0 seconds. Artifacts: `/tmp/myowl-v1-public-link-crawl-typecheck-artifacts`.

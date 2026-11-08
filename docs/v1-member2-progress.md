@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-11 enterprise inquiry intake contract proposal
+
+- Change: Added a review-only enterprise intake contract defining destination selection, server-owned submission, anti-spam, idempotency, privacy, redaction and uncertain-handoff states while preserving the current non-sending beta boundary.
+- Evidence: Proposal is explicitly non-operational: no mailbox, CRM, webhook, provider, delivery path or SLA was selected or activated. `git diff --check` passed.
+- Scope: local BILL-11 contract preparation only; owner destination, privacy/legal and operations approval remain required.
+
 ## 2026-11-08 checkpoint — repository static checks after public QA additions
 
 - Change: Revalidated repository-wide lint and type safety after the public link-crawl and status/legal QA additions; tightened the link-crawl `href` type guard found by typecheck.
