@@ -366,6 +366,7 @@ describe('Production Authentication & Session Persistence', () => {
 
       const res = await authPost(badReq);
       expect(res.status).toBe(400);
+      expect(res.headers.get('cache-control')).toBe('private, no-store, max-age=0');
       const data = (await res.json()) as { code: string };
       expect(data.code).toBe('INVALID_REQUEST_PAYLOAD');
     });

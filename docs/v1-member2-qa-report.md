@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — shared validation and rate-limit response cache policy
+
+- PASS: Generic malformed-payload, CSRF and throttling responses now use the private non-cacheable policy through shared helpers.
+- PASS: Seeded auth/billing/organization coverage passed 39/39; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — cumulative seeded regression after authenticated-route privacy sweep
 
 - PASS: Seeded repository regression passed **1,365 tests** across 161 passing files, with 1 skipped file and 4 skipped tests, in 129.67 seconds.

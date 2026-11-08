@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — shared validation and rate-limit response cache policy
+
+- Change: Shared `badRequestResponse`, `forbiddenCsrfResponse` and `rateLimitResponse` helpers now emit `Cache-Control: private, no-store, max-age=0`, covering generic malformed-payload, CSRF and throttling outcomes across authenticated APIs.
+- Evidence: Seeded auth, billing and organization coverage passed 39/39; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local cross-route data-protection hardening only; no authorization behavior or rate-limit thresholds changed.
+
 ## 2026-11-08 checkpoint — cumulative seeded regression after authenticated-route privacy sweep
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,365 tests** across 161 passing files, with 1 skipped file and 4 skipped tests, in 129.67 seconds after the route response hardening series.

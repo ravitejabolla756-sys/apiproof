@@ -4,6 +4,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const GITHUB_NAME_REGEX = /^[a-zA-Z0-9_.-]{1,100}$/;
 const GIT_BRANCH_REGEX = /^[a-zA-Z0-9/_.-]{1,100}$/;
 const SAFE_ID_REGEX = /^[a-zA-Z0-9_.-]{1,150}$/;
+const PRIVATE_NO_STORE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0' };
 
 export interface ValidationResult<T> {
   valid: boolean;
@@ -232,9 +233,9 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
 }
 
 export function badRequestResponse(error: string): Response {
-  return Response.json({ error, code: 'INVALID_REQUEST_PAYLOAD' }, { status: 400 });
+  return Response.json({ error, code: 'INVALID_REQUEST_PAYLOAD' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
 }
 
 export function forbiddenCsrfResponse(error = 'Forbidden: Cross-site request rejected.'): Response {
-  return Response.json({ error, code: 'CSRF_REJECTED' }, { status: 403 });
+  return Response.json({ error, code: 'CSRF_REJECTED' }, { status: 403, headers: PRIVATE_NO_STORE_HEADERS });
 }

@@ -115,6 +115,7 @@ export function rateLimitResponse(resetInMs: number): Response {
     {
       status: 429,
       headers: {
+        'Cache-Control': 'private, no-store, max-age=0',
         'Retry-After': String(retryAfterSeconds),
       },
     }
