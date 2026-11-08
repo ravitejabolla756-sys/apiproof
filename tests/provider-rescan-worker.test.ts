@@ -83,6 +83,26 @@ describe('provider rescan worker orchestration', () => {
     expect(await db.queryOne<{ status: string; commit_sha: string }>('SELECT status, commit_sha FROM github_scan_requests WHERE repository_id = ?', [repoId])).toEqual({ status: 'completed', commit_sha: 'd'.repeat(40) });
   });
 
+  it('persists only a generic message when a repository rescan has no completed baseline', async () => {
+    const db = getDatabase();
+    const { user } = await createUserWithSession('rescan-safe-error@example.com', 'Pass1234!', 'Rescan Safe Error');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const repoId = randomId('repo');
+    const jobId = randomId('rescan-job');
+    const now = new Date().toISOString();
+    await db.execute(`INSERT INTO github_installations (id, workspace_id, installation_id, account_login, account_type, status, created_at, updated_at)
+      VALUES (?, ?, '12345670', 'test-org', 'Organization', 'active', ?, ?)`, [randomId('installation'), workspace.id, now, now]);
+    await db.execute(`INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, lifecycle, created_at)
+      VALUES (?, ?, ?, 'test-org', 'safe-error-repo', 'test-org/safe-error-repo', '7654331', 'main', 'connected', 'active', ?)` , [repoId, workspace.id, user.id, now]);
+    await db.execute(`INSERT INTO repository_rescan_jobs (id, workspace_id, repository_id, reason, created_at, updated_at)
+      VALUES (?, ?, ?, 'provider_source_changed', ?, ?)`, [jobId, workspace.id, repoId, now, now]);
+
+    await expect(processRepositoryRescans({ batchSize: 1 })).resolves.toMatchObject({ jobsFailed: 1, jobsQueued: 0 });
+    await expect(db.queryOne<{ last_error_code: string; last_error_message: string }>(
+      'SELECT last_error_code, last_error_message FROM repository_rescan_jobs WHERE id = ?', [jobId],
+    )).resolves.toEqual({ last_error_code: 'NO_COMPLETED_SCAN_BASELINE', last_error_message: 'Rescan queue processing failed.' });
+  });
+
   it('processes provider-change rescans immediately without consuming nightly jobs', async () => {
     const db = getDatabase();
     const { user } = await createUserWithSession('provider-route-scope@example.com', 'Pass1234!', 'Provider Route Scope');

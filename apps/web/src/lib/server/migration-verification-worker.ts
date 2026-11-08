@@ -93,8 +93,7 @@ async function runClaimedJob(job: VerificationJob, workerId: string): Promise<vo
     [JSON.stringify(result), now, job.id, workerId]);
   } catch (error) {
     const category = failureCategory(error);
-    const rawMessage = error instanceof Error ? error.message : String(error);
-    const message = rawMessage.replace(/[\r\n\t]+/g, ' ').slice(0, 500);
+    const message = 'Verification worker operation failed.';
     const isUnavailable = category === 'EXECUTION_UNAVAILABLE';
     const canRetry = RETRYABLE.has(category) && job.attempt_count < 3;
     if (isUnavailable) {

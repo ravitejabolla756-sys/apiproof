@@ -595,6 +595,11 @@ Phase 0 read-only checks:
 - GitHub provider initialization/repository lookup and rate-limit database fallback no longer pass raw exceptions to direct console logging; they emit fixed operational messages. Regression tests assert GitHub error objects are not logged and rate-limit fallback emits only a static message.
 - Focused verification: `github-error-log-safety` and `password-reset` pass 15/15; targeted ESLint and full `pnpm typecheck` pass. A source audit of API/server `console` calls found no remaining raw error-object logging; external log sinks and retention remain unverified.
 
+### 2026-11-08 SEC-11 durable worker error privacy
+
+- Provider-rescan and proposal-verification workers now persist fixed generic error messages while retaining operational error categories/status. This prevents raw provider/runtime exception text from accumulating in worker status records.
+- Focused verification: `provider-rescan-worker` plus `proposal-recovery` pass 32/32; targeted ESLint and full `pnpm typecheck` pass. External log sinks, database access controls and retention remain unverified.
+
 ### 2026-11-08 SEC-11 current-HEAD full verification
 
 - After fixed-message logging changes, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 174 files passed / 1 skipped; 1,445 tests passed / 4 skipped; 251.63 seconds. Four Docker-backed tests remain skipped. No remote database URL was configured; a process-only throwaway seed was used. This remains local test evidence only.

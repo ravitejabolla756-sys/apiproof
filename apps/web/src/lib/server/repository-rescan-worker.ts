@@ -305,7 +305,7 @@ async function processApprovedRuleRescans(limit: number): Promise<{ queued: numb
         SET status = CASE WHEN attempt_count >= 5 THEN 'failed' ELSE 'pending' END,
             last_error_code = ?, last_error_message = ?, updated_at = ?
         WHERE id = ?
-      `, [errorCode, error instanceof Error ? error.message.slice(0, 500) : 'Rescan queue failed.', now, job.id]);
+      `, [errorCode, 'Rescan queue processing failed.', now, job.id]);
       failed += 1;
     }
   }
@@ -377,7 +377,7 @@ export async function processRepositoryRescans(options: { batchSize?: number; ti
         SET status = CASE WHEN attempt_count >= 5 THEN 'failed' ELSE 'pending' END,
             claimed_at = NULL, lease_expires_at = NULL, last_error_code = ?, last_error_message = ?, updated_at = ?
         WHERE id = ?
-      `, [errorCode, error instanceof Error ? error.message.slice(0, 500) : 'Rescan queue failed.', now, job.id]);
+      `, [errorCode, 'Rescan queue processing failed.', now, job.id]);
       jobsFailed += 1;
     }
   }

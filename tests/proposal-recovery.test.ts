@@ -362,6 +362,22 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       }
     });
 
+    it('does not persist raw exception text in failed verification jobs', async () => {
+      const { user, migration } = await setupFixture();
+      await markWorkerReady();
+      await enqueueMigrationProposal(migration.id, user.id);
+      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockRejectedValue(new Error('Authorization: Bearer ghp_private_example_secret'));
+      try {
+        await expect(processOneMigrationVerificationJob('test-docker-worker')).resolves.toBe(true);
+        const job = db.prepare('SELECT status, error_category, error_message FROM migration_verification_jobs WHERE migration_id = ?')
+          .get(migration.id) as { status: string; error_category: string; error_message: string };
+        expect(job).toMatchObject({ status: 'failed', error_category: 'VERIFICATION_JOB_FAILED', error_message: 'Verification worker operation failed.' });
+        expect(job.error_message).not.toContain('ghp_private_example_secret');
+      } finally {
+        run.mockRestore();
+      }
+    });
+
     it('clears stale verification artifacts while preserving the immutable plan for a fresh retry', async () => {
       const { user, migration } = await setupFixture();
       const originalPlan = db.prepare('SELECT plan_json FROM migrations WHERE id = ?').get(migration.id) as { plan_json: string };
