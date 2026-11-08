@@ -2109,3 +2109,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `tests/e2e/capability-recovery-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the two held-retry journeys plus existing inventory/compatibility state suites passed 7/7; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-11 capability recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 provider and repository recovery busy semantics
+
+- Change: provider-coverage and repository-list workbenches now preserve recoverable error surfaces while retrying and expose disabled plus `aria-busy="true"` on their shared Try again controls until recovery resolves; the repository recovery fixture now deterministically holds failure until explicit retry.
+- Files: `apps/web/src/app/dashboard/providers/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/provider-repository-recovery-loading.spec.ts`, `tests/e2e/repository-recovery.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; Impeccable detector returned no findings; provider/repository focused and existing recovery coverage passed 6/6; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13, ORG-02 and ORG-11 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

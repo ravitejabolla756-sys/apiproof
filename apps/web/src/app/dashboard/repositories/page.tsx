@@ -46,7 +46,6 @@ export default function RepositoriesTablePage() {
 
   async function loadRepositories() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/repositories");
       const json = await res.json() as { repositories?: RepositoryRecord[]; error?: string };
@@ -56,6 +55,7 @@ export default function RepositoriesTablePage() {
       if (nextRepositories.length > 0 && !expandedRepo) {
         setExpandedRepo(nextRepositories[0]!.id);
       }
+      setError(null);
     } catch (err) {
       console.error("Failed to load repositories:", err);
       setError(err instanceof Error ? err.message : "Unable to load repositories.");
@@ -148,7 +148,7 @@ export default function RepositoriesTablePage() {
         </div>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadRepositories()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadRepositories()} busy={loading} />}
 
       {/* Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

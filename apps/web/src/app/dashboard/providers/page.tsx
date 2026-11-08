@@ -91,12 +91,12 @@ export default function ProvidersPage() {
 
   async function loadCoverage() {
     setLoading(true);
-    setError(null);
     try {
       const response = await fetch('/api/provider-coverage', { cache: 'no-store' });
       const payload = await response.json() as CoverageResponse & { error?: string };
       if (!response.ok) throw new Error(payload.error || 'Unable to load provider coverage.');
       setData(payload);
+      setError(null);
     } catch (caught) {
       setData(null);
       setError(caught instanceof Error ? caught.message : 'Unable to load provider coverage.');
@@ -120,7 +120,7 @@ export default function ProvidersPage() {
         <Button onClick={() => void loadCoverage()} variant="outline" size="sm" disabled={loading} aria-busy={loading ? 'true' : undefined} className="min-h-11" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>Refresh</Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} busy={loading} />}
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]"><Loader2 aria-hidden="true" className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>

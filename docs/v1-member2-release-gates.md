@@ -157,3 +157,7 @@ Migration-history and pull-request degraded-state retries remain visible and exp
 ## Latest inventory/compatibility recovery evidence — 2026-11-08
 
 Inventory and compatibility degraded-state retries remain visible and expose disabled plus `aria-busy` semantics while their requests are pending; focused and existing state coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.
+
+## Latest provider/repository recovery evidence — 2026-11-08
+
+Provider-coverage and repository-list degraded-state retries remain visible and expose disabled plus `aria-busy` semantics while their requests are pending; focused and existing provider/repository coverage passes 6/6 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open. Release recommendation stays NO-GO.

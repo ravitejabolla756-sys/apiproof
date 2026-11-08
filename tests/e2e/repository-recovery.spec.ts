@@ -23,9 +23,10 @@ test.describe('repository recovery journeys', () => {
     await signIn(page);
 
     let listAttempts = 0;
+    let allowListRecovery = false;
     await page.route('**/api/repositories', async (route) => {
       listAttempts += 1;
-      if (listAttempts === 1) {
+      if (!allowListRecovery) {
         await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Repository list temporarily unavailable.' }) });
         return;
       }
@@ -42,6 +43,7 @@ test.describe('repository recovery journeys', () => {
     expect((await listRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await listRetry.focus();
     await expect(listRetry).toBeFocused();
+    allowListRecovery = true;
     await page.keyboard.press('Enter');
     await expect(page.getByRole('link', { name: 'owl', exact: true })).toBeVisible();
 
