@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 pull-request-context error boundary
+
+- Change: The pull-request queue read endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response before querying tenant-scoped pull requests.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `tests/organization-management.test.ts` passed 18/18, including the malformed pull-request request.
+- Scope: local ORG-02 pull-request API hardening only; PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 findings-context error boundary
 
 - Change: The findings read endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response before querying tenant-scoped findings.

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
+import { getDatabase } from '@/lib/server/db.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -9,20 +9,24 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
-  const db = getDatabase();
-  const pullRequests = await db.query(`
-    SELECT pr.id, pr.number, pr.title, pr.branch_name, pr.base_branch, pr.url, pr.state, pr.created_at,
-           m.patch_digest, m.plan_id,
-           r.name as repo_name, r.full_name as repo_full_name,
-           f.symbol, f.file_path, f.change_id
-    FROM pull_requests pr
-    JOIN repositories r ON r.id = pr.repository_id
-    JOIN migrations m ON m.id = pr.migration_id
-    JOIN findings f ON f.id = m.finding_id
-    WHERE r.workspace_id = ? AND r.lifecycle = 'active'
-    ORDER BY pr.created_at DESC
-  `, [workspace.id]);
+  try {
+    const workspace = await resolveWorkspaceForRequest(req, user.id);
+    const db = getDatabase();
+    const pullRequests = await db.query(`
+      SELECT pr.id, pr.number, pr.title, pr.branch_name, pr.base_branch, pr.url, pr.state, pr.created_at,
+             m.patch_digest, m.plan_id,
+             r.name as repo_name, r.full_name as repo_full_name,
+             f.symbol, f.file_path, f.change_id
+      FROM pull_requests pr
+      JOIN repositories r ON r.id = pr.repository_id
+      JOIN migrations m ON m.id = pr.migration_id
+      JOIN findings f ON f.id = m.finding_id
+      WHERE r.workspace_id = ? AND r.lifecycle = 'active'
+      ORDER BY pr.created_at DESC
+    `, [workspace.id]);
 
-  return NextResponse.json({ pullRequests });
+    return NextResponse.json({ pullRequests });
+  } catch (error) {
+    return organizationErrorResponse(error);
+  }
 }
