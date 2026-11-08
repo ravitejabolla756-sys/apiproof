@@ -27,3 +27,5 @@ Latest auth-entry evidence: login OAuth, credential, recovery and signup control
 Latest password-recovery evidence: forgot-password and reset-password inputs, submit actions and return links are measured at 44px or larger with token-safety and axe-clean mobile coverage. Member 1 auth integration, hosted CI, manual review, staging and production remain open.
 
 Latest provider-review evidence: edit-mode Rule title input is measured at 44px or larger with axe-clean filtered-empty and edit states. Provider approval, PostgreSQL/RBAC, hosted CI, manual review, staging and production remain open.
+
+Latest dashboard-navigation evidence: brand and Overview breadcrumb links are measured at 44px or larger, with collapsed-sidebar naming retained. Hosted CI, manual review, PostgreSQL/RBAC, staging and production remain open.

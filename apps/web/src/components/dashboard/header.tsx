@@ -36,7 +36,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
     <header className="h-16 min-w-0 max-w-full overflow-hidden bg-white/90 backdrop-blur-md border-b border-[#E8E8E5] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="min-w-0 flex-1 overflow-hidden flex items-center gap-2 text-xs whitespace-nowrap">
-        <Link href="/dashboard" className="text-[#686868] hover:text-[#111111] transition-colors font-medium">
+        <Link href="/dashboard" className="inline-flex min-h-11 items-center text-[#686868] hover:text-[#111111] transition-colors font-medium">
           MY OWL
         </Link>
         {breadcrumbs.map((crumb, i) => (
@@ -44,7 +44,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
             <span className="text-zinc-300">/</span>
             <Link
               href={crumb.href}
-              className={`transition-colors ${
+              className={`inline-flex min-h-11 items-center transition-colors ${
                 i === breadcrumbs.length - 1 ? 'text-[#111111] font-semibold' : 'text-[#686868] hover:text-[#111111]'
               }`}
             >
