@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 dynamic detail error-state accessibility
+
+- PASS: Added repository-detail and finding-detail 503/retry coverage at 390px. Both states expose assertive atomic alerts, 44px-or-larger recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow.
+- FIXED: The repository-detail recovery back link failed axe contrast at 4.46:1 (`text-zinc-500` on the application canvas); changing it to `text-zinc-600` resolves the defect. The Impeccable detector reports no findings on the changed page.
+- PASS: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed 12/12 in 1.1 minutes. Artifacts: `/tmp/myowl-v1-ui12-detail-a11y-zGc6C3`.
+- NOT_RUN: Manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — current public production-bundle performance probe
 
 - PASS: All 9 representative public routes returned HTTP 200 over three loopback samples against the rebuilt production bundle; median load was 10–30 ms, response 2–10 ms, and encoded HTML 6.1–17.0 KiB.

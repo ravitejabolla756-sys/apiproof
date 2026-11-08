@@ -58,6 +58,45 @@ test.describe('route accessibility audit', () => {
     expect(results.violations).toEqual([]);
   });
 
+  test('keeps dynamic detail error states accessible at mobile width', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await signIn(page);
+
+    await page.route('**/api/repositories/a11y-detail-error', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Repository details are temporarily unavailable.' }),
+      });
+    });
+    await page.goto('/dashboard/repositories/a11y-detail-error', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    const repositoryAlert = page.getByRole('alert').filter({ hasText: 'Repository details are temporarily unavailable.' });
+    await expect(repositoryAlert).toBeVisible({ timeout: 30_000 });
+    await expect(repositoryAlert).toHaveAttribute('aria-live', 'assertive');
+    const repositoryRetry = repositoryAlert.getByRole('button', { name: 'Try again' });
+    expect((await repositoryRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'repository detail error').toEqual([]);
+    await page.unroute('**/api/repositories/a11y-detail-error');
+
+    await page.route('**/api/findings/a11y-detail-error', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Finding details are temporarily unavailable.' }),
+      });
+    });
+    await page.goto('/dashboard/findings/a11y-detail-error', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    const findingAlert = page.getByRole('alert').filter({ hasText: 'Finding details are temporarily unavailable.' });
+    await expect(findingAlert).toBeVisible({ timeout: 30_000 });
+    await expect(findingAlert).toHaveAttribute('aria-live', 'assertive');
+    const findingRetry = findingAlert.getByRole('button', { name: 'Retry finding load' });
+    expect((await findingRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'finding detail error').toEqual([]);
+    await page.unroute('**/api/findings/a11y-detail-error');
+  });
+
   test('passes axe on every public route', async ({ page }) => {
     for (const route of publicRoutes) {
       const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });

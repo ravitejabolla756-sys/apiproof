@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 dynamic detail error-state accessibility
+
+- Change: Added a focused browser regression for repository-detail and finding-detail 503/retry states at 390px, asserting assertive live-region semantics, 44px recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow. The repository-detail recovery back link now uses `text-zinc-600` instead of `text-zinc-500` to clear its 4.46:1 contrast failure against the application canvas.
+- Evidence: Impeccable detector returned no findings for `apps/web/src/app/dashboard/repositories/[id]/page.tsx`; rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed **12/12 in 1.1 minutes**. Artifacts: `/tmp/myowl-v1-ui12-detail-a11y-zGc6C3`.
+- Scope: strengthens local UI-12 dynamic error/retry coverage only; manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — current public production-bundle performance probe
 
 - Evidence: `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes against the rebuilt production bundle. Median load times were 10–30 ms, response times 2–10 ms, and encoded HTML sizes 6.1–17.0 KiB over loopback.
