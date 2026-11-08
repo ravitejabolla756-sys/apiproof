@@ -72,6 +72,8 @@ Latest visible-loading evidence: findings and pull-request live status announcem
 
 Latest settings-loading evidence: GitHub-installation and billing-summary loading announcements now expose direct busy semantics; rebuilt-bundle workspace-settings coverage passes 1/1. Hosted CI, integrated staging, PostgreSQL/RBAC, provider approval, manual review and production remain open.
 
+Latest quality-regression evidence: lint passed; the repository suite passed 1,341 tests with 4 skipped tests across 161 files, with 1 skipped file, in 123.57 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.
+
 Latest verification evidence: the email-verification pending state exposes `aria-busy`, and the authentication loading suite passes 5/5 with existing session/login/reset progress coverage. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
 
 Latest auth-submission evidence: login, reset-request, password-reset and verification progress nodes expose busy semantics, with authentication loading coverage passing 5/5. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
