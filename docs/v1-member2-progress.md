@@ -1812,3 +1812,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the focused pull-request loading journey passed 1/1 in 9.4 seconds with the busy-state assertion and existing status announcement.
 - Scope: this advances local UI-12/UI-13 and NOT-05 workbench evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 repository-list busy semantics
+
+- Change: the repository list route and its loading table status now expose `aria-busy="true"` while repository data is loading or refreshing, preserving tenant-scoped data, retry behavior, scan actions, and the GitHub connection boundary.
+- Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the deterministic repository empty/account-recovery journey passed 1/1 in 10.5 seconds with the loading busy-state assertion and existing axe-clean recovery checks.
+- Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

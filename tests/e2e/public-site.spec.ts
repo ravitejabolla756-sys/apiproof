@@ -482,7 +482,7 @@ test.describe('authenticated product surfaces', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });
     });
     await page.goto('/dashboard/repositories');
-    await expect(page.getByText('Loading repositories from database...')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Loading repositories from database...')).toBeVisible({ timeout: 30_000 }); await expect(page.getByRole('status')).toHaveAttribute('aria-busy', 'true');
     releaseRepositories?.();
     await expect(page.getByText('No repositories connected yet.')).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/repositories');

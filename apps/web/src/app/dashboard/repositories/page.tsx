@@ -107,7 +107,7 @@ export default function RepositoriesTablePage() {
   const hasActiveFilters = filter !== "all" || searchQuery.trim().length > 0;
 
   return (
-    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={loading ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
       <ConnectRepoModal
         isOpen={isConnectOpen}
         onClose={() => setIsConnectOpen(false)}
@@ -206,7 +206,7 @@ export default function RepositoriesTablePage() {
             <tbody className="divide-y divide-[#E8E8E5] text-xs">
               {error ? null : loading ? (
                 <tr>
-                  <td colSpan={8} role="status" aria-live="polite" aria-atomic="true" className="py-12 text-center text-[#686868]">
+                  <td colSpan={8} role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-12 text-center text-[#686868]">
                     <Loader2 aria-hidden="true" className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
                     <span>Loading repositories from database...</span>
                   </td>
