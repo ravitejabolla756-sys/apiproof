@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 finding-detail keyboard recovery semantics
+
+- PASS: Dynamic finding-detail error and populated states now assert keyboard focus on the retry control and `Back to Findings` navigation link, with 44px-or-larger controls, axe-clean content and no mobile overflow.
+- PASS: Focused `accessibility-routes.spec.ts` passed 12/12 in 1.1 minutes against the isolated production bundle. Artifacts: `/tmp/myowl-v1-ui12-finding-keyboard-MsThTH`.
+- NOT_RUN: Manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — UI-12 dynamic detail route-state accessibility
 
 - PASS: Added repository-detail and finding-detail 503/retry plus populated-state coverage at 390px. Both screens expose assertive atomic alerts where applicable, 44px-or-larger recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow.

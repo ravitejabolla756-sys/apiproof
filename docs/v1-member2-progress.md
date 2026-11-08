@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 finding-detail keyboard recovery semantics
+
+- Evidence: Extended the dynamic finding-detail accessibility regression to verify keyboard focus on the 503 retry control and populated-state `Back to Findings` link, alongside the existing 44px touch-target, axe and mobile overflow assertions. `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed **12/12 in 1.1 minutes**. Artifacts: `/tmp/myowl-v1-ui12-finding-keyboard-MsThTH`.
+- Scope: strengthens local UI-12 keyboard/focus evidence only; manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 dynamic detail route-state accessibility
 
 - Change: Added focused browser regression for repository-detail and finding-detail error/retry and populated states at 390px, asserting assertive live-region semantics, 44px recovery controls, axe-clean `#main-content`, and no document-level horizontal overflow. Fixed the repository-detail recovery-link contrast failure (`text-zinc-500` → `text-zinc-600`), removed opacity-based contrast loss from inactive finding workflow cards, and promoted finding workflow section headings from `h3` to `h2` to restore heading order.

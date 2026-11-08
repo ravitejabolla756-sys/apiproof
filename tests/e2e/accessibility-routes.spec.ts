@@ -113,6 +113,8 @@ test.describe('route accessibility audit', () => {
     await expect(findingAlert).toHaveAttribute('aria-live', 'assertive');
     const findingRetry = findingAlert.getByRole('button', { name: 'Retry finding load' });
     expect((await findingRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    await findingRetry.focus();
+    await expect(findingRetry).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'finding detail error').toEqual([]);
     await page.unroute('**/api/findings/a11y-detail-error');
@@ -136,6 +138,10 @@ test.describe('route accessibility audit', () => {
     });
     await page.goto('/dashboard/findings/a11y-detail-populated', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await expect(page.getByRole('heading', { name: 'Accessible finding fixture', exact: true })).toBeVisible({ timeout: 30_000 });
+    const findingBackLink = page.getByRole('link', { name: 'Back to Findings', exact: true });
+    expect((await findingBackLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    await findingBackLink.focus();
+    await expect(findingBackLink).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'finding detail populated').toEqual([]);
     await page.unroute('**/api/findings/a11y-detail-populated');
