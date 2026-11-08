@@ -2805,3 +2805,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; repository-dialog recovery and focus coverage passed 4/4; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 repository-dialog recovery evidence only; manual assistive-technology review, hosted CI, staging, GitHub/provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 organization-section error focus
+
+- Change: workspace administration member, invitation and audit section failures now focus a deterministic retryable alert, prioritizing members, then invitations, then audit when multiple collections fail together.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; organization collection recovery coverage passed 1/1; targeted ESLint and `git diff --check` passed. Impeccable reported five incumbent purple-palette warnings on untouched headings and no new state finding.
+- Scope: local UI-12 and ORG-02/ORG-03/ORG-11 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 contract review and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

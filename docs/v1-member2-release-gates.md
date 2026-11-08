@@ -409,3 +409,7 @@ Logout failures now preserve focus on session-preserving feedback while keeping 
 ## Latest UI-12 repository-dialog focus evidence — 2026-11-08
 
 Connect-repository load failures now preserve focus on the actionable modal alert while retaining dialog keyboard recovery. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, GitHub/provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 organization-section focus evidence — 2026-11-08
+
+Workspace administration collection failures now preserve focus on a deterministic retryable alert. Local build and browser coverage pass; incumbent palette warnings remain documented, while manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 contract review and production remain NOT_RUN. Release recommendation stays NO-GO.

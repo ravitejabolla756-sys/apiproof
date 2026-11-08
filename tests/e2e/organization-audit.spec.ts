@@ -149,7 +149,9 @@ test.describe('workspace audit trail', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitations: [{ id: 'invitation-recovered', email: 'recovered-invite@example.test', role: 'member', expiresAt: '2026-11-15T00:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: '2026-11-08T00:00:00.000Z' }] }) });
     });
     await page.goto('/dashboard/settings/workspace');
-    await expect(page.getByRole('alert').filter({ hasText: 'Member history is temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
+    const memberAlert = page.getByRole('alert').filter({ hasText: 'Member history is temporarily unavailable.' });
+    await expect(memberAlert).toBeVisible({ timeout: 30_000 });
+    await expect(memberAlert).toBeFocused();
     await expect(page.getByRole('alert').filter({ hasText: 'Invitation history is temporarily unavailable.' })).toBeVisible();
     await expect(page.getByText('No workspace members found.')).toHaveCount(0);
     await expect(page.getByText('No recent invitations.')).toHaveCount(0);
