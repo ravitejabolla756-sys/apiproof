@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 authenticated route skip-link coverage
+
+- Change: Added route-by-route keyboard evidence for the skip link across every audited authenticated product route; each route now verifies skip-link focus, Enter activation, and focus transfer to `#main-content`.
+- Evidence: Targeted ESLint and `git diff --check` passed; the authenticated route skip-link journey passed 1/1 in 1.1 minutes. Artifacts: `/tmp/myowl-v1-authenticated-skip-link-artifacts`.
+- Scope: local UI-12 keyboard/accessibility evidence only; hosted CI, full manual screen-reader review, backend/provider contracts, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 repository dialog focus lifecycle
 
 - Change: Added a hermetic repository-connection modal journey covering initial focus, Shift+Tab and Tab focus wrapping, Escape dismissal, focus restoration to the invoking control, and post-dismissal axe cleanliness.

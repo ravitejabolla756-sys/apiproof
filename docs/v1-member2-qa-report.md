@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Authenticated route skip-link coverage
+
+- PASS: Authenticated route skip-link journey passed 1/1 in 1.1 minutes across every audited authenticated route; each route transferred keyboard focus to `#main-content` after Enter activation.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Full manual screen-reader review, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Repository dialog focus lifecycle
 
 - PASS: Focused repository-dialog journey passed 1/1 in 15.4 seconds; initial focus, Shift+Tab/Tab wrapping, Escape dismissal, invoking-control focus restoration and post-dismissal axe checks all passed. The complete repository-recovery spec passed 2/2 in 19.2 seconds.
