@@ -2158,3 +2158,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-recovery.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; provider-rule recovery plus action-loading coverage passed 4/4 in 20.5 seconds, including the deterministic held-retry journey; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13 and provider-review degraded-state evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 Slack recovery busy semantics
+
+- Change: Slack connection, disconnect and status retries now preserve their error context during recovery, expose disabled plus `aria-busy="true"`, and clear the alert only after successful recovery; status loading now has an explicit state.
+- Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/e2e/slack-action-recovery.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; Slack action-recovery and disconnect-progress coverage passed 2/2 in 18.0 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Scope: this advances local UI-12/UI-13 and NOT-03 notification-boundary recovery evidence only; hosted CI, integrated staging, manual screen-reader review, Slack/provider approval, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

@@ -768,6 +768,14 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — Slack recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the Slack connection card and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/slack-action-recovery.spec.ts tests/e2e/slack-connection-states.spec.ts --reporter=line`: PASS, 2/2 in 18.0 seconds; Slack action retry keeps its alert visible and exposes disabled/`aria-busy` while the held connect request recovers, while disconnect progress remains green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, Slack/provider approval, PostgreSQL/RBAC and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.
