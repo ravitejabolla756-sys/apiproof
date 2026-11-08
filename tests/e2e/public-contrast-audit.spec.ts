@@ -11,3 +11,10 @@ test('keeps the audited public routes free of color-contrast violations', async 
     expect(violations.map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) })), route).toEqual([]);
   }
 });
+
+test('keeps the public not-found response free of color-contrast violations', async ({ page }) => {
+  const response = await page.goto('/route-that-does-not-exist', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+  expect(response?.status()).toBe(404);
+  const violations = (await new AxeBuilder({ page }).include('#main-content').withRules(['color-contrast']).analyze()).violations;
+  expect(violations.map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))).toEqual([]);
+});

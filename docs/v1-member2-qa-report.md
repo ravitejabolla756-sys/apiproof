@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-15 dedicated public axe and contrast coverage for 404
+
+- PASS: The retained public axe and color-contrast suites now explicitly request a nonexistent route, require HTTP 404 and audit the rendered not-found response rather than treating only 200-status routes as public QA coverage.
+- PASS: The focused public axe/contrast command passed 2/2 in 2.3 seconds; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-web15-404-audit-artifacts-68Q4GB`.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — UI-12/WEB-15 not-found route contrast and overflow coverage
 
 - PASS: The mobile not-found route regression now runs the complete `#main-content` axe ruleset, including color contrast, and asserts no document-level horizontal overflow while retaining skip-link focus recovery and 44px navigation targets.

@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-15 dedicated public axe and contrast coverage for 404
+
+- Change: Added explicit HTTP-404 not-found assertions to the retained public axe and public color-contrast suites, so the error route is audited alongside the 200-status public surfaces.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/public-axe-audit.spec.ts tests/e2e/public-contrast-audit.spec.ts --workers=1 --grep "not-found"` passed **2/2 in 2.3 seconds**; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-web15-404-audit-artifacts-68Q4GB`.
+- Scope: strengthens local WEB-15/UI-12 public error-route evidence only; manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12/WEB-15 not-found route contrast and overflow coverage
 
 - Change: Strengthened the mobile not-found browser regression to run the complete `#main-content` axe ruleset, including color contrast, and to reject document-level horizontal overflow while retaining keyboard skip-link recovery and 44px navigation-target checks.
