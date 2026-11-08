@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — full seeded local regression after SQLite/provider-route fixes
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds.
+- Scope: local regression evidence for the SQLite transaction serialization and provider-rule mutation context-boundary fixes; PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 provider-rule mutation context boundaries
 
 - Change: Provider-rule edit, review, test and seed mutations now translate the exact malformed workspace-ID error to the shared typed organization response while preserving owner-denial and provider-operation failure semantics.

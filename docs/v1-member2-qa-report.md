@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — full seeded local regression after SQLite/provider-route fixes
+
+- PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — ORG-02 provider-rule mutation context boundaries
 
 - PASS: Provider-rule edit, review, test and seed routes return typed organization errors for malformed workspace IDs without changing owner-denial behavior.
