@@ -567,3 +567,7 @@ Phase 0 read-only checks:
 
 - GitHub and Google OAuth login state consumption now rejects persisted expiry values that do not parse as finite timestamps, in addition to rejecting expired state. Regression tests confirm malformed values are denied without consuming the state.
 - Focused verification: GitHub OAuth and Google OAuth suites pass 19/19; targeted ESLint and full `pnpm typecheck` pass. Live provider behavior and PostgreSQL-specific concurrency remain unverified.
+
+### 2026-11-08 current-HEAD serial suite
+
+- After AUTH-05 token-race serialization and AUTH-10 malformed OAuth-state expiry rejection, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,440 tests passed / 4 skipped; 239.64 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This is local SQLite/test evidence, not production or PostgreSQL proof.
