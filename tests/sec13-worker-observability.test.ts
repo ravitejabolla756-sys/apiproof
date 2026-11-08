@@ -51,6 +51,17 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     expect(health.find((item) => item.component === 'scan-worker')?.freshness).toBe('unknown');
   });
 
+  it('fails closed to unknown freshness when persisted heartbeat time is malformed', async () => {
+    const runId = await startWorkerRun('provider-changelog-scheduler');
+    await getDatabase().execute(
+      "UPDATE worker_run_heartbeats SET started_at = 'not-a-timestamp' WHERE run_id = ?",
+      [runId],
+    );
+
+    const heartbeat = (await getWorkerHeartbeats()).find((item) => item.component === 'provider-changelog-scheduler');
+    expect(heartbeat).toMatchObject({ runId, status: 'running', freshness: 'unknown' });
+  });
+
   it('surfaces failed and degraded outcomes with sanitized, bounded error codes', async () => {
     const startedAt = new Date('2026-11-07T10:00:00.000Z');
     const failedRun = await startWorkerRun('provider-changelog-scheduler', startedAt);

@@ -317,3 +317,8 @@ Phase 0 read-only checks:
 
 - Expanded local checks so each existing non-granting status (`incomplete`, unknown, `past_due`, `unpaid`, `canceled`) denies repositories, scans, and draft PRs; `active` and `trialing` are checked across all three metrics. This preserves current fail-closed behavior without selecting a grace/suspension policy.
 - Billing foundation and webhook boundary suites pass 24/24; targeted ESLint passes. Grace-period semantics, customer notification timing and any restoration policy still require owner/product approval; PostgreSQL and provider lifecycle evidence remain outstanding.
+
+### 2026-11-08 SEC-13 malformed heartbeat timestamp handling
+
+- Worker health now reports `freshness: unknown` when a persisted scheduled-worker heartbeat has a malformed start timestamp; invalid telemetry can no longer appear fresh merely because its parsed age fell back to zero.
+- `sec13-worker-observability` passes 7/7, targeted ESLint passes, and full workspace `pnpm typecheck` passes. A combined run with `phase5-production-operations` failed during that file's setup because `APIPROOF_LOCAL_SEED_PASSWORD` is not configured in this environment; no credential was supplied or exposed. SEC-13 remains PARTIAL pending approved alerting/SLO decisions, PostgreSQL query-plan evidence, and staged worker-failure rehearsal.

@@ -116,7 +116,9 @@ export async function getWorkerHeartbeats(now = new Date()): Promise<WorkerHeart
       status: row.status,
       errorCode: row.error_code,
       ageMs,
-      freshness: window === undefined ? 'unknown' : ageMs <= window ? 'current' : 'stale',
+      freshness: window === undefined || !Number.isFinite(started)
+        ? 'unknown'
+        : ageMs <= window ? 'current' : 'stale',
     });
   }
   return WORKER_COMPONENTS.map((component) => byComponent.get(component) ?? {
