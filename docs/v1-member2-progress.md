@@ -964,6 +964,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint passed with `--max-warnings 0`; repository typecheck passed; web production build passed with 83 generated static pages; focused keyboard/dialog journey passed 1/1 in 3.2 seconds.
 - Scope: this advances local UI-12 evidence only; full screen-reader/manual review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 status support touch target
+
+- Change: the public status page's Contact support action now has an explicit 44px minimum touch target at all widths; existing truthful copy, route and focus behavior are unchanged.
+- Files: `apps/web/src/app/status/page.tsx`, `tests/e2e/status-communications.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; status browser suite passed 2/2, including axe-clean status content and a 390px mobile bounding-box assertion; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12 and WEB-13 evidence only; full screen-reader/manual review, hosted CI, staging, monitoring approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-13 axe-compatible collapsed brand label
 
 - Change: the collapsed-sidebar brand link now includes the rendered `MY OWLv0.7` text in its accessible name, satisfying axe label-content-name-mismatch while retaining the dashboard purpose; the dedicated regression assertion was updated accordingly.

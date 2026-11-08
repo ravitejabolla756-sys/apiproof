@@ -9,3 +9,12 @@ test('keeps the public status page truthful while no monitor is configured', asy
   await expect(page.getByRole('link', { name: 'Contact support' })).toHaveAttribute('href', '/contact');
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });
+
+test('keeps the status support action touch-sized on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/status');
+
+  const supportLink = page.getByRole('link', { name: 'Contact support' });
+  await expect(supportLink).toBeVisible();
+  expect((await supportLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+});

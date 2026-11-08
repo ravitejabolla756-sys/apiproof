@@ -574,3 +574,5 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - PASS: Rebuilt-bundle CI-mode Playwright suite passed 85/85, including the new compatibility-map initial-load and refresh-failure recovery journey; focused journey passed 1/1 with an axe-clean assertive refresh alert.
 - PASS: Targeted ESLint, `git diff --check`, web typecheck, and production build passed; build generated 83 static pages.
 - Scope: local UI-12 evidence only. Hosted CI, staging, PostgreSQL/RBAC, provider integrations, transactional email and production remain unverified or blocked by the master goal.
+
+- Fresh status-page check: Impeccable detector — PASS with no findings; targeted ESLint and `git diff --check` — PASS; `pnpm exec playwright test tests/e2e/status-communications.spec.ts --workers=1 --timeout=300000 --reporter=list` — PASS, 2/2 in 8.4 seconds, including axe-clean truthfulness coverage and a 390px mobile 44px touch-target assertion; `pnpm typecheck` — PASS; `pnpm --filter @apiproof/web build` — PASS with 83 generated pages. Hosted CI, staging, screen-reader/manual, approved monitoring and production verification remain NOT_RUN.
