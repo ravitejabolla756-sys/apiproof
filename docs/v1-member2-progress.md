@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 GitHub repository-picker context boundary
+
+- Change: GitHub repository-picker requests now use the shared workspace resolver, normalizing malformed explicit contexts before any provider call while preserving private no-store responses.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded `tests/github-repository-status-route.test.ts` passed 5/5, covering both status and picker endpoints.
+- Scope: local ORG-02/GitHub picker boundary hardening only; GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 GitHub status context error boundary
 
 - Change: GitHub repository-status requests now use the shared workspace resolver, normalizing malformed contexts to `INVALID_WORKSPACE_ID` and cross-workspace access to the established safe 404 response while preserving private no-store headers.

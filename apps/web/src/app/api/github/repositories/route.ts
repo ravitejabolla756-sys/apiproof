@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { GitHubRepoItem } from '@apiproof/core';
-import { getCurrentUser } from '@/lib/server/auth';
-import { fetchWorkspaceRepositories } from '@/lib/server/github';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route';
-import {
-  requireWorkspaceMember,
-} from '@/lib/server/workspace-service';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { fetchWorkspaceRepositories } from '@/lib/server/github.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const noStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -14,19 +11,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: noStoreHeaders });
   }
 
-  const urlObj = new URL(req.url);
-  const requestedWorkspaceId = urlObj.searchParams.get('workspaceId');
-
   let workspaceId: string;
-  if (requestedWorkspaceId) {
-    try {
-      const ws = await requireWorkspaceMember(user.id, requestedWorkspaceId);
-      workspaceId = ws.id;
-    } catch {
-      return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403, headers: noStoreHeaders });
-    }
-  } else {
+  try {
     workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
+  } catch (error) {
+    const response = organizationErrorResponse(error);
+    response.headers.set('Cache-Control', noStoreHeaders['Cache-Control']);
+    return response;
   }
 
   try {

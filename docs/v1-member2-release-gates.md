@@ -20,6 +20,8 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest GitHub picker evidence: repository-picker requests normalize malformed workspace contexts before provider access and preserve private no-store responses; combined status/picker coverage passes 5/5 and repository typecheck passes. GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 Latest GitHub status evidence: repository-status requests normalize malformed workspace contexts and preserve private no-store responses; seeded coverage passes 4/4 and repository typecheck passes. GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
 
 Latest repository API evidence: repository list and connect routes validate explicit workspace contexts through the shared resolver; seeded repository-route coverage passes 5/5 and repository typecheck passes. GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
