@@ -111,3 +111,5 @@ Latest dashboard-refresh evidence: the overview refresh control exposes `aria-bu
 Latest provider-rule evidence: review-only provider actions expose `aria-busy` while pending; the rebuilt-bundle action/recovery coverage passes 3/3 in 20.3 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
 
 Latest repository-scan evidence: repository scan controls expose `aria-busy` while a scan request is pending; rebuilt-bundle focused coverage passes 1/1 in 12.5 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
+
+Latest invitation evidence: workspace invitation creation exposes `aria-busy` while the POST is pending and preserves the manual-share beta boundary; rebuilt-bundle focused coverage passes 1/1 in 12.6 seconds. Approved transactional email, hosted CI, integrated staging, PostgreSQL/RBAC, Member 1 review and production remain open.
