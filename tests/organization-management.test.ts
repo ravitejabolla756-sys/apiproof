@@ -234,6 +234,13 @@ describe('workspace administration', () => {
     expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 
+  it('serializes concurrent default-workspace recovery on the SQLite adapter', async () => {
+    const owner = await createUserWithSession('owner-concurrent@example.test', 'OwnerPassword123!', 'Concurrent Owner');
+    const workspaces = await Promise.all(Array.from({ length: 5 }, () => getDefaultWorkspaceForUser(owner.user.id)));
+    expect(new Set(workspaces.map((workspace) => workspace.id)).size).toBe(1);
+    expect(await getDatabase().queryOne<{ count: number }>('SELECT COUNT(*) as count FROM workspace_members WHERE user_id = ?', [owner.user.id])).toEqual({ count: 1 });
+  });
+
   it('returns a typed error for malformed workspace context in the overview route', async () => {
     const owner = await createUserWithSession('owner-overview@example.test', 'OwnerPassword123!', 'Owner Overview');
     const response = await overviewRoute(new Request('https://apiproof.test/api/overview?workspaceId=not%20safe', {

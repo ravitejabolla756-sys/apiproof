@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 SQLite concurrent recovery and UI-12 browser recovery
+
+- PASS: Concurrent SQLite transaction scopes are serialized; default-workspace recovery no longer fails with overlapping `BEGIN TRANSACTION` errors.
+- PASS: Organization-management tests passed 20/20; repository typecheck, targeted ESLint and diff checks passed; rebuilt accessibility-route browser coverage passed 11/11.
+- ADVISORY: The broader Playwright matrix was interrupted after exposing this defect; the focused 11-test accessibility matrix passed after the fix. Artifacts: `/tmp/myowl-v1-accessibility-after-sqlite-transaction-1747`.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — full seeded local regression after workspace-boundary sweep
 
 - PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,360 tests across 161 files, with 1 skipped file and 4 skipped tests, in 129.56 seconds.

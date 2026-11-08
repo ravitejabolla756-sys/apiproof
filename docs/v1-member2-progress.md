@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 SQLite concurrent recovery and UI-12 browser recovery
+
+- Change: Serialized transaction scopes on the single SQLite adapter connection, preventing concurrent first-run/default-workspace recovery from overlapping `BEGIN TRANSACTION` calls and surfacing `SQLITE_ERROR`.
+- Evidence: Added concurrent recovery coverage; `tests/organization-management.test.ts` passed 20/20, repository `pnpm typecheck`, targeted ESLint and `git diff --check` passed, and the rebuilt `tests/e2e/accessibility-routes.spec.ts` passed 11/11. Artifacts: `/tmp/myowl-v1-accessibility-after-sqlite-transaction-1747`.
+- Scope: local ORG-02/UI-12 concurrency and browser regression only; PostgreSQL/RBAC verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — full seeded local regression after workspace-boundary sweep
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,360 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 129.56 seconds.

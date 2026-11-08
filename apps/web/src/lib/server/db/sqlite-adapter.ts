@@ -6,6 +6,7 @@ type SqliteParam = null | number | bigint | string | Uint8Array;
 export class SqliteDatabaseAdapter implements DatabaseAdapter {
   readonly engine = 'sqlite' as const;
   private db: DatabaseSync;
+  private transactionTail: Promise<void> = Promise.resolve();
 
   constructor(db: DatabaseSync) {
     this.db = db;
@@ -43,6 +44,14 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
   }
 
   async transaction<T>(fn: (tx: DatabaseAdapter) => Promise<T>): Promise<T> {
+    // DatabaseSync is a single connection. Serialize transaction scopes so
+    // concurrent HTTP requests cannot overlap BEGIN/COMMIT and turn a
+    // recoverable first-run workspace race into SQLITE_ERROR.
+    const previous = this.transactionTail;
+    let release!: () => void;
+    this.transactionTail = new Promise<void>((resolve) => { release = resolve; });
+    await previous;
+
     this.db.exec('BEGIN TRANSACTION;');
     try {
       const result = await fn(this);
@@ -55,6 +64,8 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         // ignore rollback errors if transaction already rolled back
       }
       throw error;
+    } finally {
+      release();
     }
   }
 
