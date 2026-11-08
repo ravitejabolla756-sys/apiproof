@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-07/BILL-08 billing workspace-context error boundary
+
+- Change: Billing checkout and portal routes now translate malformed or unavailable workspace contexts through the shared organization error response instead of surfacing unhandled route failures.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `tests/member2-billing-boundaries.test.ts` passed 4/4, including typed `INVALID_WORKSPACE_ID` responses from both billing routes.
+- Scope: local BILL-07/BILL-08 API-boundary hardening only; provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 explicit workspace-ID error boundary
 
 - Change: Malformed explicit `workspaceId` query values now raise typed `INVALID_WORKSPACE_ID` errors and follow the 400 organization error response, while stale cookie contexts continue to fall back to an authorized default workspace.

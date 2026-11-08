@@ -61,4 +61,24 @@ describe('beta billing boundaries', () => {
     expect(portal.status).toBe(403);
     expect(await portal.json()).toMatchObject({ error: expect.stringContaining('BILLING_OWNER_REQUIRED') });
   });
+
+  it('returns a typed client error for malformed explicit workspace contexts', async () => {
+    const account = await createUserWithSession('billing-context@example.test', 'BillingPassword123!', 'Billing Context');
+    const headers = { cookie: `apiproof_session=${account.session.id}` };
+
+    const checkout = await checkoutPost(new Request('https://apiproof.test/api/billing/checkout?workspaceId=not%20safe', {
+      method: 'POST',
+      headers: { ...headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ planId: 'pro' }),
+    }));
+    expect(checkout.status).toBe(400);
+    expect(await checkout.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+
+    const portal = await portalPost(new Request('https://apiproof.test/api/billing/portal?workspaceId=not%20safe', {
+      method: 'POST',
+      headers,
+    }));
+    expect(portal.status).toBe(400);
+    expect(await portal.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
 });

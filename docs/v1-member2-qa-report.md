@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-07/BILL-08 billing workspace-context error boundary
+
+- PASS: Billing checkout and portal return the shared typed `INVALID_WORKSPACE_ID` client error for malformed explicit workspace contexts instead of an unhandled route failure.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and billing-boundary coverage passed 4/4.
+- NOT_RUN: Provider selection/sandbox, paid lifecycle, hosted CI, staging, legal approval and production remain open.
+
 ## 2026-11-08 — ORG-02 explicit workspace-ID error boundary
 
 - PASS: Malformed explicit workspace IDs now use a typed client-error path instead of surfacing as generic server failures; stale cookie recovery remains intact.
