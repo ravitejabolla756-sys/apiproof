@@ -8,7 +8,7 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 ## 2026-11-08 checkpoint — UI-12 public decorative-icon semantics
 
 - Change: Marked decorative Lucide icons as `aria-hidden="true"` across cookies, 404, About and Security public routes, including CTA and card icons.
-- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; public axe/accessibility matrix passed 10/12, including the full public-route axe audit. Two existing authenticated tablet/mobile route checks timed out loading dashboard routes. Production build generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-public-icon-a11y-artifacts-qSWpVH`.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; public axe/accessibility matrix passed 10/12, including the full public-route axe audit. The two dev-server authenticated responsive timeouts were reproduced cleanly under the production-build CI harness: the four mobile/tablet journeys passed 4/4 in 40.4 seconds. Production build generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-public-icon-a11y-artifacts-qSWpVH`.
 - Scope: local UI-12 public screen-reader semantics only; authenticated responsive harness timeouts, hosted CI, staging, manual assistive-technology review and production remain open.
 
 ## 2026-11-08 checkpoint — UI-12 account-email help association
