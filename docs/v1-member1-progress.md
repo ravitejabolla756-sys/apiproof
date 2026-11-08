@@ -771,3 +771,8 @@ Phase 0 read-only checks:
 
 - The provider-agnostic model-output validator now rejects duplicate step IDs before those IDs can enter a migration plan. This preserves unambiguous identity for downstream review and persistence; production planning remains deterministic-only pending provider, security, cost, timeout and owner approvals.
 - `tests/planning.test.ts` passes 9/9; targeted ESLint and `tsc -p tsconfig.test.json --noEmit` pass. No full suite or production/provider check was run for this focused change.
+
+### 2026-11-08 SEC-16 test-environment isolation
+
+- The SEC-16 test fixture now snapshots and restores every environment variable it changes, including `NODE_ENV`, local DB path/seed settings, app secrets, webhook secret, app URL and all remote DB URL variables. This prevents local harness configuration from leaking into later tests in serial runs.
+- `tests/sec16-load-resilience.test.ts` passes 12/12; targeted ESLint, workspace test TypeScript check and `git diff --check` pass. No full suite was run for this fixture-only reliability change.

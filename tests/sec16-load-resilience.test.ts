@@ -10,9 +10,12 @@ import { runBoundedRetryScenario, runLocalLoadScenario, type LoadReport } from '
 
 const TEST_DB_PATH = path.resolve('.tmp/test-sec16-load-resilience.db');
 const WEBHOOK_SECRET = 'sec16-local-webhook-secret';
-const ORIGINAL_DATABASE_URL = process.env.DATABASE_URL;
-const ORIGINAL_APIPROOF_DATABASE_URL = process.env.APIPROOF_DATABASE_URL;
-const ORIGINAL_APIPROOF_STAGING_DATABASE_URL = process.env.APIPROOF_STAGING_DATABASE_URL;
+const ENVIRONMENT_KEYS = [
+  'NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED', 'DATABASE_URL',
+  'APIPROOF_DATABASE_URL', 'APIPROOF_STAGING_DATABASE_URL', 'APIPROOF_SECRET',
+  'GITHUB_WEBHOOK_SECRET', 'NEXT_PUBLIC_APP_URL',
+] as const;
+let originalEnvironment: Partial<Record<(typeof ENVIRONMENT_KEYS)[number], string>>;
 
 function signedBody(rawBody: string): string {
   return `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(rawBody, 'utf8').digest('hex')}`;
@@ -33,6 +36,7 @@ function expectHealthyReport(report: LoadReport, expectedIterations: number, con
 
 describe('SEC-16 — deterministic local load and resilience harness', () => {
   beforeEach(() => {
+    originalEnvironment = Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, process.env[key]]));
     process.env.NODE_ENV = 'test';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
@@ -49,14 +53,11 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
   afterEach(() => {
     try { closeDatabase(); } catch { /* test cleanup */ }
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
-    delete process.env.APIPROOF_SKIP_DEFAULT_SEED;
-    delete process.env.GITHUB_WEBHOOK_SECRET;
-    if (ORIGINAL_DATABASE_URL === undefined) delete process.env.DATABASE_URL;
-    else process.env.DATABASE_URL = ORIGINAL_DATABASE_URL;
-    if (ORIGINAL_APIPROOF_DATABASE_URL === undefined) delete process.env.APIPROOF_DATABASE_URL;
-    else process.env.APIPROOF_DATABASE_URL = ORIGINAL_APIPROOF_DATABASE_URL;
-    if (ORIGINAL_APIPROOF_STAGING_DATABASE_URL === undefined) delete process.env.APIPROOF_STAGING_DATABASE_URL;
-    else process.env.APIPROOF_STAGING_DATABASE_URL = ORIGINAL_APIPROOF_STAGING_DATABASE_URL;
+    for (const key of ENVIRONMENT_KEYS) {
+      const value = originalEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
 
   it('measures bounded in-process API, webhook, database, and worker operations', async () => {
