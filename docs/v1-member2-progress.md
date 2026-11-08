@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 GitHub status context error boundary
+
+- Change: GitHub repository-status requests now use the shared workspace resolver, normalizing malformed contexts to `INVALID_WORKSPACE_ID` and cross-workspace access to the established safe 404 response while preserving private no-store headers.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded `tests/github-repository-status-route.test.ts` passed 4/4.
+- Scope: local ORG-02/GitHub status boundary hardening only; GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 repositories-context validation
 
 - Change: Repository list reads and repository-connect POST requests now use the shared workspace resolver for explicit contexts, returning typed organization errors for malformed IDs while preserving membership checks and existing repository/GitHub behavior.

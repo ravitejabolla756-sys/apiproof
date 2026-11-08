@@ -58,6 +58,15 @@ describe('GET /api/github/repositories/status', () => {
       `http://localhost/api/github/repositories/status?workspaceId=${secondWorkspace.id}`,
       { headers: { cookie: `apiproof_session=${first.session.id}` } },
     ));
-    expect(foreignResponse.status).toBe(403);
+    expect(foreignResponse.status).toBe(404);
+  });
+
+  it('returns a typed error for malformed explicit workspace contexts', async () => {
+    const account = await createUserWithSession('picker-context@example.com', 'Strong-password-1!', 'Picker Context');
+    const response = await GET(new Request('http://localhost/api/github/repositories/status?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 });
