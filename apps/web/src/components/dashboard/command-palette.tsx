@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, FolderGit2, Boxes, AlertTriangle, FileCheck2, GitPullRequest, Settings, ShieldCheck, X, ChevronRight } from 'lucide-react';
 
@@ -28,10 +28,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [repositories, setRepositories] = useState<RepositoryItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const dialogRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const searchControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -44,31 +47,37 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     searchInputRef.current?.focus();
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    async function loadSearchData() {
-      try {
-        const [repoRes, invRes] = await Promise.all([
-          fetch('/api/repositories'),
-          fetch('/api/inventory'),
-        ]);
-
-        if (repoRes.ok) {
-          const json = await repoRes.json();
-          setRepositories(json.repositories || []);
-        }
-        if (invRes.ok) {
-          const json = await invRes.json();
-          setInventory(json.providers || []);
-        }
-      } catch {
-        // Suppress search data load failures
+  const loadSearchData = useCallback(async (preserveError = false) => {
+    searchControllerRef.current?.abort();
+    const controller = new AbortController();
+    searchControllerRef.current = controller;
+    setLoading(true);
+    if (!preserveError) setError(null);
+    try {
+      const [repoRes, invRes] = await Promise.all([
+        fetch('/api/repositories', { signal: controller.signal }),
+        fetch('/api/inventory', { signal: controller.signal }),
+      ]);
+      if (!repoRes.ok || !invRes.ok) throw new Error('Search data is temporarily unavailable.');
+      const [repoJson, invJson] = await Promise.all([repoRes.json(), invRes.json()]);
+      setRepositories(repoJson.repositories || []);
+      setInventory(invJson.providers || []);
+      setError(null);
+    } catch (cause) {
+      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Search data is temporarily unavailable.');
+    } finally {
+      if (searchControllerRef.current === controller) {
+        setLoading(false);
+        searchControllerRef.current = null;
       }
     }
+  }, []);
 
-    loadSearchData();
-  }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) return;
+    void loadSearchData();
+    return () => searchControllerRef.current?.abort();
+  }, [isOpen, loadSearchData]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -158,6 +167,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
         {/* Results List */}
         <div className="max-h-96 overflow-y-auto p-3 space-y-4 text-xs">
+          {loading && <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="rounded-lg bg-[#F6F6F4] px-3 py-2 text-[#686868]">Loading search data…</div>}
+          {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-800"><span>{error}</span><button type="button" disabled={loading} aria-busy={loading ? 'true' : undefined} onClick={() => void loadSearchData(true)} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{loading ? 'Retrying search data…' : 'Retry search data'}</button></div>}
           {/* Navigation Links */}
           <div>
             <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">

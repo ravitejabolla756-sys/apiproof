@@ -791,6 +791,14 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - The matrix covered public/authenticated axe and viewport audits, auth-entry flows, billing boundaries, workspace context and organization administration, account/notification settings, Slack, repository/connect/detail/scan journeys, findings/migration/PR workbenches, provider review, and all committed loading/recovery busy-state journeys.
 - This is local evidence only. Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — command-palette search recovery checkpoint
+
+- Impeccable detector: PASS with no findings for the command-palette component and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/command-palette-recovery.spec.ts tests/e2e/dialog-accessibility.spec.ts tests/e2e/control-semantics.spec.ts --reporter=line`: PASS, 7/7 in 45.4 seconds; search-data loading is announced, the failure alert remains visible during retry, and Retry search data exposes disabled/`aria-busy` while both requests are held.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

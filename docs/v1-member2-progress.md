@@ -2177,3 +2177,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: after rebuilding the production bundle immediately before startup, `CI=true pnpm exec playwright test --workers=1 --reporter=line` passed 158/158 in 4.5 minutes. Coverage includes public and authenticated route accessibility, mobile/tablet viewport checks, auth, billing boundaries, workspace switching, invitations/member management, settings/account/notifications, Slack, repository and finding recovery, provider review, and degraded/loading states.
 - Scope: this is hermetic local production-build evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approvals, legal/content approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 command-palette search recovery
+
+- Change: the command palette now announces repository/inventory search-data loading, surfaces a retryable error alert instead of silently suppressing failures, preserves that alert while retrying, and exposes disabled plus `aria-busy="true"` on Retry search data.
+- Files: `apps/web/src/components/dashboard/command-palette.tsx`, `tests/e2e/command-palette-recovery.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; command-palette recovery plus dialog/control accessibility coverage passed 7/7 in 45.4 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Scope: this advances local UI-12/UI-13 search-surface recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
