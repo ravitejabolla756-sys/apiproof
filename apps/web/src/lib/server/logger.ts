@@ -129,9 +129,14 @@ function redactSensitiveValue(val: unknown, ancestors: WeakSet<object>): unknown
   if (typeof val === 'object') {
     if (ancestors.has(val)) return '[CIRCULAR]';
     ancestors.add(val);
+    if (Array.isArray(val)) {
+      try {
+        return val.map((item) => redactSensitiveValue(item, ancestors));
+      } finally {
+        ancestors.delete(val);
+      }
+    }
     try {
-      if (Array.isArray(val)) return val.map((item) => redactSensitiveValue(item, ancestors));
-
       const obj = val as Record<string, unknown>;
       const clean: Record<string, unknown> = {};
 

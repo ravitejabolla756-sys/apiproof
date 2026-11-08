@@ -221,6 +221,24 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     }
   });
 
+  it('preserves repeated shared objects in arrays while still marking actual array cycles', () => {
+    const shared = { password: 'shared-password-must-not-escape', label: 'same diagnostic' };
+    const cyclic: unknown[] = [];
+    cyclic.push(cyclic);
+
+    const sanitized = redactSensitiveData({ records: [shared, shared], cycle: cyclic }) as {
+      records: Array<{ password: string; label: string }>;
+      cycle: unknown[];
+    };
+
+    expect(sanitized.records).toEqual([
+      { password: '[REDACTED]', label: 'same diagnostic' },
+      { password: '[REDACTED]', label: 'same diagnostic' },
+    ]);
+    expect(sanitized.cycle).toEqual(['[CIRCULAR]']);
+    expect(JSON.stringify(sanitized)).not.toContain('shared-password-must-not-escape');
+  });
+
   it('redacts secret assignments embedded in diagnostic strings and JSON-like text', () => {
     const rawSecret = 'this-is-a-credential-value';
     const text = `AWS_SECRET_ACCESS_KEY=${rawSecret}; "service_role_key": "${rawSecret}"; databaseUrl = 'postgres://user:${rawSecret}@db.example.test/app'`;

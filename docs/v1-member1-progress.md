@@ -737,3 +737,8 @@ Phase 0 read-only checks:
 
 - `getAuthCookieOptions()` now derives cookie `Max-Age` from the remaining persisted session lifetime, capped at the configured maximum TTL. Expired and malformed timestamps produce an immediately expired cookie; the database-backed session check remains authoritative. Regression coverage includes login/signup cookie headers, near-expiry, past-expiry and malformed timestamp cases.
 - Seeded serial `auth-session` and `auth-hardening` pass 2 files / 25 tests; targeted ESLint and full workspace `pnpm typecheck` pass. The first focused run lacked `APIPROOF_LOCAL_SEED_PASSWORD` and failed auth-session setup (15 tests); rerun used a process-only throwaway password, removed app/staging database URL variables and passed. Full repository suite was not rerun for this change; PostgreSQL/session concurrency and production browser behavior remain unverified.
+
+### 2026-11-08 SEC-11 array-safe structured redaction
+
+- Fixed the logger's cycle-tracking cleanup for arrays. Repeated references to the same diagnostic object within array entries are now independently sanitized instead of being mislabeled as circular, while true array cycles still become `[CIRCULAR]`. Added coverage confirming each shared object's password field is redacted and actual cyclic arrays remain serializable.
+- `phase5-production-operations` passes 14/14; targeted ESLint and workspace `pnpm typecheck` pass. This is local formatter/redaction evidence only; external monitoring, log-sink access/retention, PostgreSQL ACLs and staging remain unverified.
