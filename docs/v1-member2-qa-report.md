@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — cumulative seeded regression after authenticated-route privacy sweep
+
+- PASS: Seeded repository regression passed **1,365 tests** across 161 passing files, with 1 skipped file and 4 skipped tests, in 129.67 seconds.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, provider delivery, legal approval and production remain open.
+
 ## 2026-11-08 — provider-rule and invitation mutation cache boundaries
 
 - PASS: Provider-rule edit/review/test and invitation acceptance responses are private/non-cacheable across authorization, owner denial, success and direct failure paths.

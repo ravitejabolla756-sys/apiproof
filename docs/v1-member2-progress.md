@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — cumulative seeded regression after authenticated-route privacy sweep
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,365 tests** across 161 passing files, with 1 skipped file and 4 skipped tests, in 129.67 seconds after the route response hardening series.
+- Scope: local regression evidence only; PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, provider delivery, legal approval and production remain open.
+
 ## 2026-11-08 checkpoint — provider-rule and invitation mutation cache boundaries
 
 - Change: Provider-rule edit/review/test and workspace-invitation acceptance responses now use the shared private `no-store` policy for authorization, tenant-owner denial, success and direct failure outcomes; typed organization failures retain their policy.
