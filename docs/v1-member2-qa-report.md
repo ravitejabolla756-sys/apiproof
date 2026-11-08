@@ -692,3 +692,11 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm exec playwright test tests/e2e/activity-recovery-loading.spec.ts tests/e2e/secondary-route-refresh-accessibility.spec.ts --reporter=line`: new held-retry journey PASS 1/1; existing secondary-route coverage PASS 3/3. The retry control remains in the alert and exposes disabled/`aria-busy` while activity recovery is pending.
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC and production checks remain NOT_RUN.
+
+## 2026-11-08 — findings recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the findings route and new test.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/findings-recovery-loading.spec.ts tests/e2e/findings-filter-responsive.spec.ts --reporter=line`: PASS, 3/3; the held Try again action remains visible and exposes disabled/`aria-busy` during recovery, while existing responsive/filter behavior remains green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC and production checks remain NOT_RUN.

@@ -50,12 +50,12 @@ export default function FindingsListPage() {
 
   async function loadFindings() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/findings");
       const json = await res.json() as { findings?: FindingRecord[]; error?: string };
       if (!res.ok) throw new Error(json.error || "Unable to load compatibility findings.");
       setFindings(json.findings || []);
+      setError(null);
     } catch (err) {
       console.error("Failed to load findings:", err);
       setError(err instanceof Error ? err.message : "Unable to load compatibility findings.");
@@ -114,7 +114,7 @@ export default function FindingsListPage() {
         </Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadFindings()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadFindings()} busy={loading} />}
 
       {/* FILTER & SEARCH */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

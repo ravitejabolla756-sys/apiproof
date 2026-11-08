@@ -145,3 +145,7 @@ Workspace member, invitation and audit retry controls remain visible and expose 
 ## Latest activity recovery evidence — 2026-11-08
 
 The activity degraded-state retry remains visible and exposes disabled plus `aria-busy` semantics while its request is pending; the new focused journey passes 1/1, existing secondary-route coverage passes 3/3, and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC and production remain open. Release recommendation stays NO-GO.
+
+## Latest findings recovery evidence — 2026-11-08
+
+The findings degraded-state retry remains visible and exposes disabled plus `aria-busy` semantics while its request is pending; focused recovery plus responsive/filter coverage passes 3/3 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC and production remain open. Release recommendation stays NO-GO.

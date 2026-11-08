@@ -2088,3 +2088,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/data-state.tsx`, `apps/web/src/app/dashboard/activity/page.tsx`, `tests/e2e/activity-recovery-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the new held-retry journey passed 1/1 and existing secondary-route coverage passed 3/3; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-11 activity recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 findings recovery busy semantics
+
+- Change: the findings workbench now preserves its recoverable error surface while retrying and exposes disabled plus `aria-busy="true"` on the shared Try again control until the request resolves.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/findings-recovery-loading.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the held-retry journey plus existing responsive/filter coverage passed 3/3; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-11 findings recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
