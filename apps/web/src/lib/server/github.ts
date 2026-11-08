@@ -112,7 +112,9 @@ export async function verifyAndConsumeGitHubInstallationState(
     return { valid: false, error: 'Callback state has already been used.', errorCode: 'REUSED_STATE' };
   }
 
-  if (Number(row.expires_at) < Date.now()) {
+  const now = Date.now();
+  const expiresAt = Number(row.expires_at);
+  if (!Number.isFinite(expiresAt) || expiresAt <= now) {
     return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
   }
 
@@ -120,12 +122,23 @@ export async function verifyAndConsumeGitHubInstallationState(
     return { valid: false, error: 'Callback state does not belong to the authenticated user.', errorCode: 'STATE_USER_MISMATCH' };
   }
 
-  // Atomically mark as consumed
-  await db.execute(`
+  // The conditional update is the single-use boundary. A prior read alone
+  // cannot prevent two concurrent callback requests from both consuming state.
+  const consumed = await db.execute(`
     UPDATE github_installation_states
     SET consumed_at = ?
-    WHERE state = ?
-  `, [Date.now(), state]);
+    WHERE state = ? AND user_id = ? AND consumed_at IS NULL AND expires_at > ?
+  `, [now, state, userId, now]);
+  if (consumed.changes !== 1) {
+    const current = await db.queryOne<{ expires_at: number; consumed_at: number | null }>(
+      'SELECT expires_at, consumed_at FROM github_installation_states WHERE state = ? AND user_id = ?',
+      [state, userId],
+    );
+    if (!current || !Number.isFinite(Number(current.expires_at)) || Number(current.expires_at) <= Date.now()) {
+      return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
+    }
+    return { valid: false, error: 'Callback state has already been used.', errorCode: 'REUSED_STATE' };
+  }
 
   return { valid: true, workspaceId: row.workspace_id };
 }
@@ -155,7 +168,8 @@ export async function inspectGitHubInstallationState(
     'SELECT workspace_id, user_id, expires_at, consumed_at FROM github_installation_states WHERE state = ?', [state]);
   if (!row) return { valid: false, error: 'Callback state not recognized or expired.', errorCode: 'INVALID_STATE' };
   if (row.consumed_at !== null && row.consumed_at !== undefined) return { valid: false, error: 'Callback state has already been used.', errorCode: 'REUSED_STATE' };
-  if (Number(row.expires_at) < Date.now()) return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
+  const expiresAt = Number(row.expires_at);
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return { valid: false, error: 'Callback state has expired.', errorCode: 'EXPIRED_STATE' };
   if (row.user_id !== userId) return { valid: false, error: 'Callback state does not belong to the authenticated user.', errorCode: 'STATE_USER_MISMATCH' };
   return { valid: true, workspaceId: row.workspace_id };
 }

@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser, getWorkspaceGitHubInstallation, requireRepositoryAccess } from '../apps/web/src/lib/server/workspace-service.js';
-import { createGitHubInstallationState, verifyAndConsumeGitHubInstallationState, getGitHubAppInstallUrl, verifyGitHubAppInstallation, fetchWorkspaceRepositories, fetchWorkspaceRepository } from '../apps/web/src/lib/server/github.js';
+import { createGitHubInstallationState, inspectGitHubInstallationState, verifyAndConsumeGitHubInstallationState, getGitHubAppInstallUrl, verifyGitHubAppInstallation, fetchWorkspaceRepositories, fetchWorkspaceRepository } from '../apps/web/src/lib/server/github.js';
 import { NodeGitHubAppTokenProvider, FetchGitHubControlledWriteTransport, fetchAllInstallationRepositories, createVerificationEvidence, computeCanonicalPatchDigest, validateControlledWriteRequest, type GitHubAppConfig } from '@apiproof/core';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
@@ -109,6 +109,37 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
     const result = await verifyAndConsumeGitHubInstallationState(expiredState, user.id);
     expect(result.valid).toBe(false);
     expect(result.errorCode).toBe('EXPIRED_STATE');
+  });
+
+  it('rejects installation state exactly at expiry in both inspect and consume paths', async () => {
+    const { user } = await createUserWithSession('boundary-state@example.com', 'Pass12345!', 'Boundary State');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, workspace.id);
+    const expiry = Date.now();
+    await getDatabase().execute('UPDATE github_installation_states SET expires_at = ? WHERE state = ?', [expiry, state]);
+
+    const consumed = await verifyAndConsumeGitHubInstallationState(state, user.id);
+    expect(consumed).toMatchObject({ valid: false, errorCode: 'EXPIRED_STATE' });
+    const inspected = await inspectGitHubInstallationState(state, user.id);
+    expect(inspected).toMatchObject({ valid: false, errorCode: 'EXPIRED_STATE' });
+  });
+
+  it('allows exactly one concurrent installation callback to consume the state', async () => {
+    const { user } = await createUserWithSession('concurrent-state@example.com', 'Pass12345!', 'Concurrent State');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, workspace.id);
+
+    const outcomes = await Promise.all([
+      verifyAndConsumeGitHubInstallationState(state, user.id),
+      verifyAndConsumeGitHubInstallationState(state, user.id),
+    ]);
+
+    expect(outcomes.filter((outcome) => outcome.valid)).toHaveLength(1);
+    expect(outcomes.filter((outcome) => outcome.errorCode === 'REUSED_STATE')).toHaveLength(1);
+    const row = await getDatabase().queryOne<{ consumed_at: number | null }>(
+      'SELECT consumed_at FROM github_installation_states WHERE state = ?', [state],
+    );
+    expect(row?.consumed_at).toEqual(expect.any(Number));
   });
 
   // TEST E: Reused callback state rejected

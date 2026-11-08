@@ -117,6 +117,8 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - ORG-05 repository creation unknown-role denial: PASS, seeded serial `repositories-list-route` 7/7; the unknown role is denied before provider work and creates no repository. An initial unseeded run stopped during SQLite fixture setup and hit Windows file-lock cleanup; the serial seeded rerun passed. Targeted ESLint and workspace typecheck pass. PostgreSQL/RLS and Member 2 role contract remain unverified.
 
+- AUTH-10 GitHub installation state: PASS, seeded serial `phase3-github-onboarding` 22/22; exact-expiry state is rejected in both inspect and consume paths, and concurrent callbacks yield one consume and one replay denial. Targeted ESLint and workspace typecheck pass. Live GitHub App and PostgreSQL concurrency remain unverified.
+
 - 2026-11-08 lint integration: PASS, root `pnpm lint` reports no Next plugin detection or Pages-directory warnings after registering the Next.js flat config with monorepo root settings. `pnpm typecheck` and `pnpm build` pass; logo uses `next/image`. Generated Next config edits were restored. No deployment was initiated, and this does not change production verification status.
 
 - 2026-11-08 current-HEAD full-suite rerun: PASS on `93b79f88c424c12d423b1bfdbd4291749053a5f4`; 168 files passed / 1 skipped, 1,410 tests passed / 4 skipped, 260.75 seconds. Four Docker-backed live-verification tests remain skipped; suite used a process-only test seed and no database URL. Fresh SEC-16 local measurements were recorded separately; staging and production remain unverified.
