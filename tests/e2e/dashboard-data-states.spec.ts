@@ -11,7 +11,7 @@ test.describe('authenticated dashboard data states', () => {
 
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('status')).toContainText('Loading workspace overview...');
-    await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
+    await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true'); await expect(page.getByRole('status')).toHaveAttribute('aria-busy', 'true');
     releaseOverview?.();
     await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 30_000 });
     const updatedStatus = page.getByRole('status').filter({ hasText: 'Updated' }); await expect(updatedStatus).toBeVisible(); await expect(updatedStatus).toHaveAttribute('aria-atomic', 'true');

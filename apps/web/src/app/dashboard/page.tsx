@@ -138,7 +138,7 @@ export default function DashboardOverviewPage() {
 
   if (loading) {
     return (
-      <div role="status" aria-live="polite" aria-atomic="true" className="py-24 text-center text-xs text-[#686868] font-sans">
+      <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-24 text-center text-xs text-[#686868] font-sans">
         <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>
@@ -160,7 +160,7 @@ export default function DashboardOverviewPage() {
   }
 
   return (
-    <div className="space-y-8 font-sans">
+    <div aria-busy={refreshing ? 'true' : undefined} className="space-y-8 font-sans">
       <ConnectRepoModal
         isOpen={isConnectOpen}
         onClose={() => setIsConnectOpen(false)}

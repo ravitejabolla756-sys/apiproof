@@ -40,6 +40,8 @@ Latest account-settings evidence: the account surface exposes `aria-busy` during
 
 Latest findings-workbench evidence: the findings surface exposes `aria-busy` during initial and refresh requests; the focused loading journey passes 1/1 with existing filter/search accessibility coverage. Hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production remain open.
 
+Latest dashboard-overview evidence: the overview exposes `aria-busy` during initial loading and background refresh; the focused loading journey passes 1/1. Hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

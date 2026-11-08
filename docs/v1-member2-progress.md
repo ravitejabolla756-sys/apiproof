@@ -1798,3 +1798,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; repository typecheck passed before the locator-only test correction; the focused findings-loading journey passed 1/1 in 8.9 seconds with the busy-state assertion and existing keyboard/filter recovery assertions.
 - Scope: this advances local UI-12/UI-13 and ORG-11 workbench evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 dashboard-overview busy semantics
+
+- Change: the dashboard overview now exposes `aria-busy="true"` in its initial loading status and while an already-loaded overview refreshes, preserving its existing refresh, retry, empty-state and modal behavior.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector reported three incumbent dashboard purple-palette warnings on untouched visual content and no state-related finding; targeted ESLint, `git diff --check`, and repository typecheck passed; the dashboard overview loading journey passed 1/1 in 11.6 seconds with the busy-state assertion.
+- Scope: this advances local UI-12/UI-13 and dashboard regression evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
