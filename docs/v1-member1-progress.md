@@ -13,7 +13,7 @@ Reviewed baseline: `d1cd9f4d90f574b8ab647c9852ec38261e83b6f8`; current refreshed
 - Historical read-only `git ls-remote` on 2026-11-08 recorded `origin/main` at `2d63d80d8a5c64f7f4547f70f7e0e0598d60f194` and `origin/codex/v1-backend-security` at `882b0200eac913bd0eb08f5e7921250b90d0e73e`. That is a dated snapshot, not a current remote comparison; this continuation did not fetch or query GitHub.
 - Package manager: pnpm 10.30.3; repository requires Node >=22.14.0 and pnpm >=10 <11.
 - Architecture: Next.js web app with direct PostgreSQL/SQLite adapters, workspace-scoped services, CLI/core/analyzer/provider packages, GitHub and Slack integrations, and durable worker tables.
-- Current verified Member 1 checkout on 2026-11-08: `codex/v1-backend-security` at `10cd8ce4959cdea85bb2c0cc7985ed0efca872cd`; tracked worktree clean. `.codebase-memory/` and `docs/v1-member1-org10-integration.md` are the two preserved untracked paths and have not been included in commits.
+- Latest source/test verification checkout on 2026-11-08: `codex/v1-backend-security` at `44455cb2161b7bda0dc1bfb48931ef4fa899a62c`; subsequent commits in this continuation are documentation-only. The tracked worktree is clean after the latest commit. `.codebase-memory/` and `docs/v1-member1-org10-integration.md` remain the two preserved untracked paths and have not been included in commits.
 - Production and staging credentials were not used. No production DB, GitHub settings, payment provider, email service, deployment, secret, or live data was changed.
 
 ## Task inventory
