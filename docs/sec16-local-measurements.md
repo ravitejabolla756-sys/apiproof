@@ -111,3 +111,16 @@ During the seeded serial full-suite run at code HEAD `1a0409438c1eff4c5578144d94
 | Scan-worker queue metrics | 1.790 | 0.167 | 0.278 | 0.445 | 13,409.32 | 4 |
 
 The run used a process-only throwaway test seed and removed all application/staging database URL variables. These are single-run, host-specific local observations; no external network service was called, and these values are not capacity, SLO, staging, PostgreSQL, or provider evidence. Differences from earlier samples underline host/runtime variance.
+
+## 2026-11-08 follow-up local run
+
+Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-parallelism --maxWorkers=1 --reporter=verbose` on Member 1 code HEAD `b1a503da24f5ad34d8d80f5795c719de1c09c67b`. All 12 tests passed. The process used a disposable `APIPROOF_LOCAL_SEED_PASSWORD`; application and staging database URL variables were unset. The four scenarios each ran 24 operations at maximum concurrency 4:
+
+| Scenario | Duration ms | p50 ms | p95 ms | p99 ms | Throughput ops/s |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| API health | 6.838 | 0.445 | 3.753 | 4.091 | 3,509.85 |
+| GitHub webhook ping | 32.662 | 4.228 | 5.720 | 6.369 | 734.80 |
+| SQLite query | 0.522 | 0.037 | 0.074 | 0.185 | 45,977.01 |
+| Worker queue metrics | 2.600 | 0.240 | 0.406 | 0.647 | 9,231.83 |
+
+These are single-run, host-specific local measurements. No external network traffic was generated. Variance from prior samples means they are harness output only, not an SLO, capacity estimate, or staging/PostgreSQL/provider evidence.

@@ -827,3 +827,8 @@ Phase 0 read-only checks:
 - Added a structured-logger regression proving `googleOAuthClientSecret` is recognized after key normalization and its value is absent from serialized output. This confirms the existing generic credential-key redactor handles the configured Google OAuth naming shape; no undocumented bare Google secret prefix was added.
 - `phase5-production-operations.test.ts` passes 14/14 with a process-only SQLite seed and remote DB URL variables unset; targeted ESLint and full workspace `pnpm typecheck` pass. The initial invocation without the required local seed password failed in fixture setup before reaching assertions and was rerun correctly.
 - Google’s published OAuth documentation identifies client secrets as credentials but does not specify a stable standalone secret prefix. This test establishes local key-based redaction only; it does not establish Google token-format coverage or external log-sink behavior.
+
+### 2026-11-08 SEC-16 fresh local harness sample
+
+- On code HEAD `b1a503da24f5ad34d8d80f5795c719de1c09c67b`, `tests/sec16-load-resilience.test.ts` passes 12/12 with process-only local seed and all application/staging DB URLs unset. The four 24-operation scenarios ran at concurrency 4; latest p50/p95/p99 ms: API health 0.445/3.753/4.091, GitHub webhook ping 4.228/5.720/6.369, SQLite query 0.037/0.074/0.185, worker metrics 0.240/0.406/0.647. Full sample and throughput are recorded in `docs/sec16-local-measurements.md`.
+- These timings are single-run local observations and differ from prior samples; no network traffic was generated and no capacity/SLO or external infrastructure claim is made.
