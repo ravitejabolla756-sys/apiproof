@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 explicit workspace-ID error boundary
+
+- Change: Malformed explicit `workspaceId` query values now raise typed `INVALID_WORKSPACE_ID` errors and follow the 400 organization error response, while stale cookie contexts continue to fall back to an authorized default workspace.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 14/14.
+- Scope: local ORG-02 workspace-context validation only; PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-03 invitation identifier validation
 
 - Change: Added bounded safe-ID validation to invitation cancellation requests, preventing malformed invitation identifiers from reaching the service while preserving stable bad-request behavior.

@@ -45,6 +45,7 @@ export class OrganizationServiceError extends Error {
     public readonly code:
       | 'INVALID_WORKSPACE_NAME'
       | 'INVALID_WORKSPACE_SLUG'
+      | 'INVALID_WORKSPACE_ID'
       | 'MEMBER_NOT_FOUND'
       | 'INVITATION_NOT_FOUND'
       | 'INVITATION_EXPIRED'

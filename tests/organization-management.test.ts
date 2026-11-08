@@ -244,6 +244,8 @@ describe('workspace administration', () => {
     expect(stale.id).toBe(defaultWorkspace.id);
     await expect(resolveWorkspaceForRequest(new Request(`https://apiproof.test/api/overview?workspaceId=${otherWorkspace.id}`), owner.user.id))
       .rejects.toThrow(/access denied/i);
+    await expect(resolveWorkspaceForRequest(new Request('https://apiproof.test/api/overview?workspaceId=not%20safe'), owner.user.id))
+      .rejects.toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 
   it('changes workspace context only after membership authorization and emits an httpOnly cookie', async () => {

@@ -240,6 +240,8 @@ Latest organization-authorization evidence: workspace settings, member mutations
 
 Latest invitation-input evidence: invitation cancellation rejects malformed IDs at the API boundary before service mutation; organization-management coverage passes 14/14 and repository typecheck passes. Transactional email, final RBAC/PostgreSQL contract, hosted CI, staging and production remain open; release recommendation stays NO-GO.
 
+Latest workspace-context evidence: malformed explicit workspace IDs use typed `INVALID_WORKSPACE_ID` client errors while stale cookie contexts recover to authorized defaults; organization-management coverage passes 14/14 and repository typecheck passes. PostgreSQL/RBAC verification, hosted CI, staging and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

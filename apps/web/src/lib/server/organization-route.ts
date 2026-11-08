@@ -16,7 +16,7 @@ export async function resolveWorkspaceForRequest(req: Request, userId: string, r
   const explicitId = requestedWorkspaceId ?? new URL(req.url).searchParams.get('workspaceId');
   if (explicitId) {
     const validation = validateSafeId(explicitId, 'workspaceId');
-    if (!validation.valid || !validation.data) throw new Error(validation.error || 'Invalid workspaceId.');
+    if (!validation.valid || !validation.data) throw new OrganizationServiceError(validation.error || 'Invalid workspaceId.', 'INVALID_WORKSPACE_ID');
     return requireWorkspaceMember(userId, validation.data);
   }
 

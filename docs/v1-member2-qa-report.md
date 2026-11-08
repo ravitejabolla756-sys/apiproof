@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 explicit workspace-ID error boundary
+
+- PASS: Malformed explicit workspace IDs now use a typed client-error path instead of surfacing as generic server failures; stale cookie recovery remains intact.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 14/14.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-03 invitation identifier validation
 
 - PASS: Invitation cancellation validates `invitationId` with the shared safe-ID contract and rejects malformed input with HTTP 400 before service mutation.
