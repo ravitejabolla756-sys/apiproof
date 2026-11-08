@@ -146,7 +146,7 @@ export default function UpdatesPage() {
           <div className="pt-2">
             <Link
               href="/login"
-              className="btn-lime text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
+              className="btn-lime min-h-11 text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
             >
               <span>Connect GitHub Free</span>
               <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />

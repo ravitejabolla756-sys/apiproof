@@ -1582,3 +1582,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/page.tsx`, `tests/e2e/homepage-cta-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused mobile homepage journey passed 1/1 in 7.0 seconds, measuring all eight actionable homepage links at 44px or larger with axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/WEB-15/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — WEB-15 informational-route conversion touch targets
+
+- Change: the shared pre-footer `/login` conversion links on Cookies, Privacy, Terms, Updates, and Contact now expose explicit 44px minimum touch targets; copy, legal-draft status, destinations, and contact behavior are unchanged.
+- Files: `apps/web/src/app/cookies/page.tsx`, `apps/web/src/app/privacy/page.tsx`, `apps/web/src/app/terms/page.tsx`, `apps/web/src/app/updates/page.tsx`, `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-info-cta-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused mobile journey passed 1/1 in 14.0 seconds across all five routes with measured 44px links and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/WEB-15/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
