@@ -127,3 +127,5 @@ Latest findings/repository evidence: findings-list and repository-list refresh c
 Latest compatibility-map evidence: the initial retry control remains visible and exposes `aria-busy` while recovery is pending; loading/recovery coverage passes 2/2 and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
 
 Latest full-browser evidence: after correcting disabled-button contrast discovered on `/dashboard/inventory`, the complete current local CI-mode matrix passes 142/142 in 3.6 minutes and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
+
+Latest unit-regression evidence: the seeded local Vitest regression passes 1,341 tests with 4 skipped across 161 passing test files and 1 skipped file in 122.22 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
