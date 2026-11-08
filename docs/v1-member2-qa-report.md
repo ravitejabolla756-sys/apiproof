@@ -1219,6 +1219,10 @@ Invitation acceptance now moves focus to the held loading status and then to the
 
 Email verification now moves focus to its terminal success or error status after the token request resolves. The rebuilt production bundle passed with 83 generated pages; focused auth loading/entry coverage passed 4/4; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider delivery, manual screen-reader, hosted CI, staging, Member 1 integration and production checks remain NOT_RUN.
 
+## Latest login error focus evidence — 2026-11-08
+
+Login authentication failures now focus the assertive error alert while keeping the form available for retry. The rebuilt production bundle passed with 83 generated pages; focused auth/login coverage passed 6/6; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider integration, manual screen-reader, hosted CI, staging, Member 1 integration and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.

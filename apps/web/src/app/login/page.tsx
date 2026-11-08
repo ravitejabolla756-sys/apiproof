@@ -15,6 +15,11 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const isSubmitting = useRef(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   // If already authenticated, redirect to /dashboard
   useEffect(() => {
@@ -225,7 +230,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div role="alert" aria-live="assertive" aria-atomic="true" className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+            <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">
               {error}
             </div>
           )}

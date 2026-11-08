@@ -60,6 +60,7 @@ test.describe('authentication loading announcements', () => {
     const signInStatus = page.getByText('Signing in...', { exact: true }); await expect(signInStatus).toBeVisible(); await expect(signInStatus).toHaveAttribute('aria-atomic', 'true'); await expect(signInStatus).toHaveAttribute('aria-busy', 'true');
     releaseLogin?.();
     const loginAlert = page.getByRole('alert').filter({ hasText: 'Invalid email or password.' }); await expect(loginAlert).toBeVisible(); await expect(loginAlert).toHaveAttribute('aria-live', 'assertive'); await expect(loginAlert).toHaveAttribute('aria-atomic', 'true');
+    await expect(loginAlert).toBeFocused();
     await page.unroute('**/api/auth');
 
     let releaseRequest: (() => void) | undefined;

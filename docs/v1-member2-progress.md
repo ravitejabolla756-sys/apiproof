@@ -2693,3 +2693,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/verify-email/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; focused auth loading/entry coverage passed 4/4; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 verification-state evidence only; provider delivery, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 login error focus recovery
+
+- Change: login authentication failures now move focus to the assertive error alert, preserving the existing retryable form and preventing keyboard users from losing the failure context.
+- Files: `apps/web/src/app/login/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; focused auth/login coverage passed 6/6; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 login-state evidence only; provider integration, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
