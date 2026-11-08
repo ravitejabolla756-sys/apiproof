@@ -23,6 +23,7 @@ test('announces Slack disconnect progress', async ({ page }) => {
   await expect(progress).toBeVisible();
   await expect(progress).toHaveAttribute('aria-live', 'polite');
   await expect(progress).toHaveAttribute('aria-atomic', 'true');
+  await expect(disconnect).toHaveAttribute('aria-busy', 'true');
   releaseDelete?.();
   await deleteResponse;
   await page.unroute('**/api/slack/connection');

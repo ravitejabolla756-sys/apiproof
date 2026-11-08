@@ -76,6 +76,8 @@ Latest quality-regression evidence: lint passed; the repository suite passed 1,3
 
 Latest account-action evidence: profile-save and password-update progress statuses expose direct busy semantics; disposable-account rebuilt-bundle coverage passes 1/1. Hosted CI, integrated staging, Member 1 auth integration, manual review and production remain open.
 
+Latest Slack-action evidence: the visible connect/disconnect control exposes busy semantics during provider requests; rebuilt-bundle disconnect coverage passes 1/1. Approved Slack delivery, hosted CI, integrated staging, manual review and production remain open.
+
 Latest verification evidence: the email-verification pending state exposes `aria-busy`, and the authentication loading suite passes 5/5 with existing session/login/reset progress coverage. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
 
 Latest auth-submission evidence: login, reset-request, password-reset and verification progress nodes expose busy semantics, with authentication loading coverage passing 5/5. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.

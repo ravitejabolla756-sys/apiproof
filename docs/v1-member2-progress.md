@@ -1790,6 +1790,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; rebuilt-bundle focused Playwright coverage passed 1/1 in 3.7 seconds.
 - Scope: this advances local AUTH-08/UI-12/UI-13 evidence only; hosted CI, integrated staging, manual assistive-technology review, Member 1 auth integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 Slack action busy semantics
+
+- Change: Slack connect and disconnect buttons now expose `aria-busy="true"` during provider requests, complementing the existing live progress announcement.
+- Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/e2e/slack-connection-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; rebuilt-bundle Slack disconnect journey passed 1/1 in 2.9 seconds.
+- Scope: this advances local UI-12/UI-13 and NOT-03 evidence only; approved Slack provider delivery, hosted CI, integrated staging, manual assistive-technology review and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — invitation acceptance busy semantics
 
 - Change: invitation acceptance and its Suspense fallback now expose `aria-busy="true"` while loading; the existing expired-invitation recovery test holds the request and verifies the busy announcement before releasing it.
