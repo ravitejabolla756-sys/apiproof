@@ -77,8 +77,8 @@ test('announces activity and migration loading as busy states', async ({ page })
     const pending = new Promise<void>((resolve) => { release = resolve; });
     await page.route(state.api, async (route) => { await pending; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(state.path.endsWith('activity') ? { activities: [] } : { migrations: [] }) }); });
     await page.goto(state.path, { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('status')).toContainText(state.loading);
-    await expect(page.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+    const loadingStatus = page.getByRole('status').filter({ hasText: state.loading }); await expect(loadingStatus).toContainText(state.loading);
+    await expect(loadingStatus).toHaveAttribute('aria-busy', 'true');
     await expect(page.getByRole('heading', { name: state.heading })).toBeVisible();
     await expect(page.getByRole('heading', { name: state.heading }).locator('..').locator('..').locator('..')).toHaveAttribute('aria-busy', 'true');
     release?.();

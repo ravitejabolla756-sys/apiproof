@@ -10,8 +10,8 @@ test.describe('authenticated dashboard data states', () => {
     await page.route('**/api/overview', async (route) => { await overviewLoading; await route.continue(); });
 
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('status')).toContainText('Loading workspace overview...');
-    await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true'); await expect(page.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+    const overviewStatus = page.getByRole('status').filter({ hasText: 'Loading workspace overview...' }); await expect(overviewStatus).toContainText('Loading workspace overview...');
+    await expect(overviewStatus).toHaveAttribute('aria-atomic', 'true'); await expect(overviewStatus).toHaveAttribute('aria-busy', 'true');
     releaseOverview?.();
     await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible({ timeout: 30_000 });
     const updatedStatus = page.getByRole('status').filter({ hasText: 'Updated' }); await expect(updatedStatus).toBeVisible(); await expect(updatedStatus).toHaveAttribute('aria-atomic', 'true');
@@ -62,8 +62,8 @@ test.describe('authenticated dashboard data states', () => {
     await page.route('**/api/pull-requests', async (route) => { await pullRequestsLoading; await route.continue(); });
 
     await page.goto('/dashboard/pull-requests', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('status')).toContainText('Loading pull requests...'); const pullRequestsSurface = page.getByRole('heading', { name: 'Pull Request Queue' }).locator('..').locator('..').locator('..'); await expect(pullRequestsSurface).toHaveAttribute('aria-busy', 'true');
-    await expect(page.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
+    const pullRequestsStatus = page.getByRole('status').filter({ hasText: 'Loading pull requests...' }); await expect(pullRequestsStatus).toContainText('Loading pull requests...'); const pullRequestsSurface = page.getByRole('heading', { name: 'Pull Request Queue' }).locator('..').locator('..').locator('..'); await expect(pullRequestsSurface).toHaveAttribute('aria-busy', 'true');
+    await expect(pullRequestsStatus).toHaveAttribute('aria-atomic', 'true');
     releasePullRequests?.();
     await expect(page.getByRole('heading', { name: 'Pull Request Queue' })).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/pull-requests');
@@ -76,7 +76,7 @@ test.describe('authenticated dashboard data states', () => {
     await page.route('**/api/findings', async (route) => { await findingsLoading; await route.continue(); });
 
     await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('status')).toContainText('Querying database findings...'); const findingsSurface = page.getByRole('heading', { name: 'API Compatibility Findings' }).locator('..').locator('..').locator('..'); await expect(findingsSurface).toHaveAttribute('aria-busy', 'true');
+    const findingsStatus = page.getByRole('status').filter({ hasText: 'Querying database findings...' }); await expect(findingsStatus).toContainText('Querying database findings...'); const findingsSurface = page.getByRole('heading', { name: 'API Compatibility Findings' }).locator('..').locator('..').locator('..'); await expect(findingsSurface).toHaveAttribute('aria-busy', 'true');
     releaseFindings?.();
     await expect(page.getByRole('heading', { name: 'API Compatibility Findings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Search findings')).toBeVisible();

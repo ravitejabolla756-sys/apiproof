@@ -1921,3 +1921,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/activity/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`, `tests/e2e/repository-recovery.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the hermetic focused Playwright run passed 5/5 in 50.2 seconds, covering activity, migration and repository-detail pending states plus existing refresh, recovery and axe/accessibility coverage.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-13 status-locator regression hardening
+
+- Change: dashboard, secondary-route and account loading tests now scope status assertions to their intended live-region text, preserving the workspace-picker loading announcement without strict-mode collisions.
+- Files: `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; affected regression cases passed 4/4, then the complete current production-build Playwright matrix passed 132/132 in 5.9 minutes on one worker.
+- Scope: this advances local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
