@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, codex/v1-backend-security ]
   pull_request:
     branches: [ main ]
 
