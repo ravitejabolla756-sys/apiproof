@@ -265,10 +265,22 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
     const inserted = await tx.execute(`
       INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT (provider, payload_hash) DO NOTHING
+      ON CONFLICT DO NOTHING
     `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
 
-    if (inserted.changes !== 1) return { success: true, duplicate: true };
+    if (inserted.changes !== 1) {
+      const existing = await tx.queryOne<{ provider: string; event_type: string; payload_hash: string }>(`
+        SELECT provider, event_type, payload_hash
+        FROM billing_webhook_events
+        WHERE id = ?
+      `, [event.id]);
+      if (existing && (existing.provider !== event.provider
+        || existing.event_type !== event.eventType
+        || existing.payload_hash !== payloadHash)) {
+        throw new BillingWebhookIdentityConflictError();
+      }
+      return { success: true, duplicate: true };
+    }
 
     if (event.customerId) {
       const sub = await tx.queryOne<{ workspace_id: string }>(`
@@ -301,4 +313,11 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
 
     return { success: true, duplicate: false };
   });
+}
+
+export class BillingWebhookIdentityConflictError extends Error {
+  constructor() {
+    super('BILLING_WEBHOOK_EVENT_ID_CONFLICT');
+    this.name = 'BillingWebhookIdentityConflictError';
+  }
 }

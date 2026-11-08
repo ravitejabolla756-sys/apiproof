@@ -32,6 +32,7 @@ import { PLANS } from '../apps/web/src/lib/server/billing/plans.js';
 import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout/route.js';
 import { POST as createBillingPortal } from '../apps/web/src/app/api/billing/portal/route.js';
 import { GET as getBillingSubscription } from '../apps/web/src/app/api/billing/subscription/route.js';
+import { POST as receiveBillingWebhook } from '../apps/web/src/app/api/webhooks/billing/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase7-billing.db');
 
@@ -443,5 +444,41 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
       SELECT COUNT(*) as count FROM billing_webhook_events WHERE provider = ? AND payload_hash = ?
     `, [event.provider, crypto.createHash('sha256').update(event.rawPayload).digest('hex')]);
     expect(Number(recordedEvents?.count)).toBe(1);
+  });
+
+  it('rejects a reused event ID with a different signed payload without changing subscription state', async () => {
+    const user = await createUserAsync('billing-reused-event@apiproof.test', 'Pass123!#$', 'Reused Event');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_reused_event', status = 'active'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    const provider = new MockBillingProvider();
+    const firstPayload = JSON.stringify({
+      id: 'evt_reused_01', type: 'customer.subscription.updated',
+      customer_id: 'cus_reused_event', status: 'active',
+    });
+    const conflictingPayload = JSON.stringify({
+      id: 'evt_reused_01', type: 'customer.subscription.updated',
+      customer_id: 'cus_reused_event', status: 'canceled',
+    });
+    const sign = (payload: string) => crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(payload).digest('hex');
+    await processBillingWebhookEvent(await provider.verifyAndParseWebhook(firstPayload, sign(firstPayload)));
+
+    const response = await receiveBillingWebhook(new Request('http://localhost/api/webhooks/billing', {
+      method: 'POST',
+      headers: { 'x-billing-signature': sign(conflictingPayload) },
+      body: conflictingPayload,
+    }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: 'Billing webhook event identity conflict' });
+    expect((await getWorkspaceSubscription(workspace.id)).status).toBe('active');
+    const recorded = await db.queryOne<{ count: number }>(`
+      SELECT COUNT(*) AS count FROM billing_webhook_events WHERE id = 'evt_reused_01'
+    `);
+    expect(Number(recorded?.count)).toBe(1);
   });
 });

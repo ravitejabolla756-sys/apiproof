@@ -6,7 +6,7 @@ import {
   BillingWebhookSignatureError,
   MAX_BILLING_WEBHOOK_BYTES,
 } from '../../../../lib/server/billing/provider.js';
-import { processBillingWebhookEvent } from '../../../../lib/server/billing/service.js';
+import { BillingWebhookIdentityConflictError, processBillingWebhookEvent } from '../../../../lib/server/billing/service.js';
 
 async function readBoundedRawBody(req: Request): Promise<string> {
   const contentLength = req.headers.get('content-length');
@@ -74,6 +74,9 @@ export async function POST(req: Request) {
     }
     if (err instanceof BillingWebhookInputError) {
       return NextResponse.json({ error: 'Invalid billing webhook' }, { status: 400 });
+    }
+    if (err instanceof BillingWebhookIdentityConflictError) {
+      return NextResponse.json({ error: 'Billing webhook event identity conflict' }, { status: 409 });
     }
     if (err instanceof BillingProviderUnavailableError) {
       return NextResponse.json({ error: 'Billing webhook processing is unavailable' }, { status: 503 });
