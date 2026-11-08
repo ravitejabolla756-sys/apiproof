@@ -11,6 +11,12 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 - Evidence: Proposal is explicitly non-operational: no monitor, uptime claim, incident, source integration or production communication was added. `git diff --check` passed.
 - Scope: local WEB-13 contract preparation only; owner/Member 1/operations approval, monitor selection and incident drill remain required.
 
+## 2026-11-08 checkpoint — WEB-13 no-monitor status truthfulness test
+
+- Change: Added a focused browser contract test for the current no-monitor status surface, including explicit unavailable copy, absence of unsupported operational claims, support routing and axe cleanliness.
+- Evidence: Targeted ESLint and `git diff --check` passed; `tests/e2e/status-communications.spec.ts` passed 1/1 in 4.6 seconds. Artifacts: `/tmp/myowl-v1-status-communications-artifacts`. No monitor or production status source was connected.
+- Scope: local WEB-13 truthfulness/accessibility evidence only; source approval, incident drill and production verification remain open.
+
 ## 2026-11-08 checkpoint — WEB-11/WEB-12 draft policy version metadata
 
 - Change: Added explicit non-effective draft version and pending effective-date metadata to the privacy, terms and refund pages; added a focused browser assertion so these pages cannot silently appear current without approval.

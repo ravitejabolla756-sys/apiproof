@@ -5,6 +5,11 @@
 - PASS: Added a review-only status-source contract with freshness, bounded state, incident redaction, accessibility and no-monitor fallback requirements.
 - NOT_RUN: No monitor, uptime claim, incident, source integration or production communication was performed; owner/operations approval and an incident drill remain required.
 
+## 2026-11-08 — WEB-13 no-monitor status truthfulness
+
+- PASS: Added a focused browser assertion for the current no-monitor status page, including truthful unavailable copy, no unsupported operational claim, support routing and axe cleanliness; the test passed 1/1 in 4.6 seconds. Artifacts: `/tmp/myowl-v1-status-communications-artifacts`.
+- NOT_RUN: No live monitor, incident source or production status verification was performed.
+
 ## 2026-11-08 — WEB-11/WEB-12 draft policy metadata
 
 - PASS: Privacy, terms and refund pages now expose explicit draft version/effective-date-pending metadata; the focused browser assertion covers all three routes.
