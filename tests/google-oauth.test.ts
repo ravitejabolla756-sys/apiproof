@@ -28,6 +28,8 @@ const dbPath = path.join(os.tmpdir(), `apiproof-google-oauth-${process.pid}.db`)
 const clientId = 'google-client-id.apps.googleusercontent.com';
 const clientSecret = 'server-only-google-client-secret';
 const testVerifier = 'v'.repeat(43);
+const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED', 'GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REDIRECT_URI'];
+const savedEnvironment = new Map<string, string | undefined>();
 const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const publicJwk = publicKey.export({ format: 'jwk' }) as { kty: string; n: string; e: string };
 
@@ -72,6 +74,7 @@ async function seedState(returnTo = '/dashboard'): Promise<ReturnType<typeof cre
 }
 
 beforeEach(() => {
+  for (const key of environmentKeys) savedEnvironment.set(key, process.env[key]);
   process.env.NODE_ENV = 'test';
   process.env.APIPROOF_DB_PATH = dbPath;
   process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
@@ -88,11 +91,12 @@ afterEach(async () => {
   resetGoogleJwksCacheForTest();
   await closeDatabase();
   if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-  delete process.env.APIPROOF_DB_PATH;
-  delete process.env.APIPROOF_SKIP_DEFAULT_SEED;
-  delete process.env.GOOGLE_OAUTH_CLIENT_ID;
-  delete process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-  delete process.env.GOOGLE_OAUTH_REDIRECT_URI;
+  for (const key of environmentKeys) {
+    const saved = savedEnvironment.get(key);
+    if (saved === undefined) delete process.env[key];
+    else process.env[key] = saved;
+    savedEnvironment.delete(key);
+  }
 });
 
 describe('Google OAuth 2.0 sign-in', () => {

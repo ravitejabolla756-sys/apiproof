@@ -26,6 +26,8 @@ const dbPath = path.join(os.tmpdir(), `apiproof-github-oauth-${process.pid}.db`)
 const clientId = 'github-login-client-id';
 const clientSecret = 'server-only-github-login-client-secret';
 const testVerifier = 'v'.repeat(43);
+const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED', 'GITHUB_LOGIN_CLIENT_ID', 'GITHUB_LOGIN_CLIENT_SECRET', 'GITHUB_LOGIN_REDIRECT_URI'];
+const savedEnvironment = new Map<string, string | undefined>();
 
 function mockGitHubFetch(options: { tokenError?: boolean; unverifiedEmail?: boolean } = {}): void {
   vi.stubGlobal('fetch', vi.fn(async (input: string | URL, init?: RequestInit) => {
@@ -52,6 +54,7 @@ async function seedState(returnTo = '/dashboard'): Promise<ReturnType<typeof cre
 }
 
 beforeEach(() => {
+  for (const key of environmentKeys) savedEnvironment.set(key, process.env[key]);
   process.env.NODE_ENV = 'test';
   process.env.APIPROOF_DB_PATH = dbPath;
   process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
@@ -66,11 +69,12 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   await closeDatabase();
   if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-  delete process.env.APIPROOF_DB_PATH;
-  delete process.env.APIPROOF_SKIP_DEFAULT_SEED;
-  delete process.env.GITHUB_LOGIN_CLIENT_ID;
-  delete process.env.GITHUB_LOGIN_CLIENT_SECRET;
-  delete process.env.GITHUB_LOGIN_REDIRECT_URI;
+  for (const key of environmentKeys) {
+    const saved = savedEnvironment.get(key);
+    if (saved === undefined) delete process.env[key];
+    else process.env[key] = saved;
+    savedEnvironment.delete(key);
+  }
 });
 
 describe('GitHub Login OAuth', () => {
