@@ -141,7 +141,7 @@ export default function DocsPage() {
         {/* HEADER */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
-            <BookOpen className="w-3.5 h-3.5 text-slate-700" />
+            <BookOpen className="w-3.5 h-3.5 text-slate-700" aria-hidden="true" />
             <span>TECHNICAL DOCUMENTATION</span>
           </div>
 
@@ -156,7 +156,7 @@ export default function DocsPage() {
         {/* QUICK SEARCH / INTRO BAR */}
         <div className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
           <div className="flex items-center gap-3 text-slate-700">
-            <Terminal className="w-4 h-4 text-[#004EE8]" />
+            <Terminal className="w-4 h-4 text-[#004EE8]" aria-hidden="true" />
             <span>Core Model: Ingest → AST Trace → Deterministic Plan → 4 Gates → Draft PR</span>
           </div>
           <Link
@@ -164,7 +164,7 @@ export default function DocsPage() {
             className="inline-flex min-h-11 items-center gap-1 text-[#004EE8] font-semibold hover:underline"
           >
             <span>View 9-Stage Pipeline Specification</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
           </Link>
         </div>
 
@@ -204,7 +204,7 @@ export default function DocsPage() {
 
                     <div className="pt-2 text-[11px] font-mono text-slate-600 flex items-center justify-between">
                       <span>docs/{category.id}</span>
-                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#004EE8] transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#004EE8] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                     </div>
                   </div>
                 ))}

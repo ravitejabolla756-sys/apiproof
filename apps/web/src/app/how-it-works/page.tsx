@@ -204,15 +204,15 @@ export default function HowItWorksPage() {
         {/* INVARIANTS CALLOUT BAR */}
         <div className="rounded-2xl bg-[#000E29] text-white p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono border border-white/10">
           <div className="flex items-center gap-2.5">
-            <Lock className="w-4 h-4 text-cyan-400 shrink-0" />
+            <Lock className="w-4 h-4 text-cyan-400 shrink-0" aria-hidden="true" />
             <span>Read-Only Default Branch</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
             <span>Zero Auto-Merge Policy</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-lime-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-lime-400 shrink-0" aria-hidden="true" />
             <span>4-Gate Compiler Verification</span>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function HowItWorksPage() {
             className="btn-lime min-h-11 inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
           >
             <span>Connect GitHub Free</span>
-            <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+            <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" aria-hidden="true" />
           </Link>
           <div className="text-xs font-mono text-slate-500">
             Read-only observation · Isolated branches · Human review boundary

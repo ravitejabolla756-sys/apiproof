@@ -58,7 +58,7 @@ export default function BlogPage() {
         {/* HEADER */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
-            <Terminal className="w-3.5 h-3.5 text-slate-700" />
+            <Terminal className="w-3.5 h-3.5 text-slate-700" aria-hidden="true" />
             <span>ENGINEERING &amp; ARCHITECTURE NOTES</span>
           </div>
 

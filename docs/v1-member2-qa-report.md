@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12/WEB-15 public decorative-icon semantics (docs, features, pipeline, legal, blog)
+
+- PASS: Presentation-only icons on the Docs, Features, How It Works, Privacy, Terms and Blog routes are hidden from assistive technology while visible labels and link names remain exposed.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; the production-build full public axe audit passed 1/1 across all audited routes.
+- NOT_RUN: Hosted CI, staging, manual assistive-technology review, legal approval and production remain open. Artifacts: `/tmp/myowl-v1-public-icons-artifacts-uawiaf`.
+
 ## 2026-11-08 — WEB-15/UI-12 contact decorative-icon semantics
 
 - PASS: Decorative contact-page icons are hidden from assistive technology while all support and CTA text remains exposed.

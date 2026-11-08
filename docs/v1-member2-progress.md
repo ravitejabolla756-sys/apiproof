@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/WEB-15 public decorative-icon semantics (docs, features, pipeline, legal, blog)
+
+- Change: Marked presentation-only Lucide icons as `aria-hidden="true"` across the public Docs, Features, How It Works, Privacy, Terms and Blog routes; visible labels and link names remain authoritative.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; the production-build public axe audit passed 1/1 across the full audited public route set. Artifacts: `/tmp/myowl-v1-public-icons-artifacts-uawiaf`.
+- Scope: local UI-12/WEB-15 screen-reader semantics only; hosted CI, staging, manual assistive-technology review, legal approval and production remain open.
+
 ## 2026-11-08 checkpoint — WEB-15/UI-12 contact decorative-icon semantics
 
 - Change: Marked decorative success, support-card and CTA icons on the public contact page as `aria-hidden="true"`, preserving visible labels and truthful no-delivery behavior.

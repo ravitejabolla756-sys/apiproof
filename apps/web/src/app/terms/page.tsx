@@ -57,7 +57,7 @@ export default function TermsPage() {
         {/* HEADER */}
         <div className="space-y-4 border-b border-black/[0.08] pb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
-            <FileText className="w-3.5 h-3.5 text-slate-700" />
+            <FileText className="w-3.5 h-3.5 text-slate-700" aria-hidden="true" />
             <span>LEGAL AGREEMENT</span>
           </div>
 
@@ -106,7 +106,7 @@ export default function TermsPage() {
               className="btn-lime min-h-11 text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
             >
               <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" aria-hidden="true" />
             </Link>
           </div>
         </div>
