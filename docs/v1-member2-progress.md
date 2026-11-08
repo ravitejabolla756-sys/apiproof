@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-11 bounded and redacted audit metadata
+
+- Change: Added bounded recursive audit-metadata sanitization at write and read boundaries, redacting sensitive key names and truncating oversized/deep values without exposing raw secrets through the audit API.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 12/12, including sensitive metadata and length-bound assertions.
+- Scope: local ORG-11 data-hygiene hardening only; final role permissions, retention policy, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-04 atomic last-owner protection
 
 - Change: Moved owner-role demotion and member-removal checks into the mutation transaction and write predicates, so concurrent requests cannot bypass the at-least-one-owner invariant between a preflight count and the write.

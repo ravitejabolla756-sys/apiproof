@@ -60,6 +60,30 @@ export class OrganizationServiceError extends Error {
 }
 
 const AUDIT_PAGE_SIZE = 50;
+const MAX_AUDIT_METADATA_DEPTH = 3;
+const MAX_AUDIT_METADATA_KEYS = 32;
+const MAX_AUDIT_METADATA_ITEMS = 32;
+const MAX_AUDIT_METADATA_STRING_LENGTH = 512;
+const REDACTED_AUDIT_VALUE = '[REDACTED]';
+const TRUNCATED_AUDIT_VALUE = '[TRUNCATED]';
+const SENSITIVE_AUDIT_KEY = /(password|token|secret|cookie|authorization|api[_-]?key|private[_-]?key)/i;
+
+function sanitizeAuditMetadata(value: unknown, depth = 0): unknown {
+  if (depth >= MAX_AUDIT_METADATA_DEPTH) return TRUNCATED_AUDIT_VALUE;
+  if (value === null || typeof value === 'boolean') return value;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : TRUNCATED_AUDIT_VALUE;
+  if (typeof value === 'string') return value.length > MAX_AUDIT_METADATA_STRING_LENGTH
+    ? `${value.slice(0, MAX_AUDIT_METADATA_STRING_LENGTH)}${TRUNCATED_AUDIT_VALUE}`
+    : value;
+  if (Array.isArray(value)) return value.slice(0, MAX_AUDIT_METADATA_ITEMS).map((item) => sanitizeAuditMetadata(item, depth + 1));
+  if (typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).slice(0, MAX_AUDIT_METADATA_KEYS).map(([key, item]) => [
+      key,
+      SENSITIVE_AUDIT_KEY.test(key) ? REDACTED_AUDIT_VALUE : sanitizeAuditMetadata(item, depth + 1),
+    ]));
+  }
+  return TRUNCATED_AUDIT_VALUE;
+}
 
 function encodeAuditCursor(createdAt: string, id: string): string {
   return Buffer.from(JSON.stringify({ createdAt, id }), 'utf8').toString('base64url');
@@ -107,7 +131,7 @@ async function recordAudit(
   await tx.execute(
     `INSERT INTO workspace_audit_events (id, workspace_id, actor_user_id, action, target_type, target_id, metadata_json, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id('wae'), workspaceId, actorUserId, action, targetType, targetId, JSON.stringify(metadata), new Date().toISOString()],
+    [id('wae'), workspaceId, actorUserId, action, targetType, targetId, JSON.stringify(sanitizeAuditMetadata(metadata)), new Date().toISOString()],
   );
 }
 
@@ -265,7 +289,7 @@ export async function listWorkspaceAuditPage(userId: string, workspaceId: string
   );
   const hasMore = rows.length > pageSize;
   const pageRows = hasMore ? rows.slice(0, pageSize) : rows;
-  const events = pageRows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: JSON.parse(row.metadata_json) as Record<string, unknown>, actorEmail: row.actor_email, createdAt: row.created_at }));
+  const events = pageRows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: sanitizeAuditMetadata(JSON.parse(row.metadata_json)) as Record<string, unknown>, actorEmail: row.actor_email, createdAt: row.created_at }));
   const last = pageRows.at(-1);
   return { events, nextCursor: hasMore && last ? encodeAuditCursor(last.created_at, last.id) : null };
 }

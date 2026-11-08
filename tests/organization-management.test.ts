@@ -67,6 +67,19 @@ describe('workspace administration', () => {
     await expect(listWorkspaceAuditPage(owner.user.id, otherWorkspace.id)).rejects.toThrow(/access denied/i);
   });
 
+  it('redacts sensitive audit metadata and bounds oversized values', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    await getDatabase().execute(
+      `INSERT INTO workspace_audit_events (id, workspace_id, actor_user_id, action, target_type, target_id, metadata_json, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['audit-sensitive', workspace.id, owner.user.id, 'test.sensitive', 'test', 'target-sensitive', JSON.stringify({ token: 'do-not-return', note: 'x'.repeat(600), nested: { password: 'also-do-not-return' } }), '2026-01-01T00:00:00.000Z'],
+    );
+
+    const event = (await listWorkspaceAuditPage(owner.user.id, workspace.id)).events[0]!;
+    expect(event.metadata).toEqual({ token: '[REDACTED]', note: `${'x'.repeat(512)}[TRUNCATED]`, nested: { password: '[REDACTED]' } });
+  });
+
   it('creates a single-use expiring invitation and accepts it only for the invited email', async () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const invited = await createUserWithSession('member@example.test', 'MemberPassword123!', 'Member');

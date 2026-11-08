@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-11 bounded and redacted audit metadata
+
+- PASS: Audit metadata is bounded and sensitive key names are redacted both when written and when read, protecting existing rows as well as new events.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 12/12.
+- NOT_RUN: Final audit role permissions and retention policy, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-04 atomic last-owner protection
 
 - PASS: Owner demotion and removal now enforce the last-owner invariant inside the transactional write predicate, preserving the sole owner under protected mutation attempts.
