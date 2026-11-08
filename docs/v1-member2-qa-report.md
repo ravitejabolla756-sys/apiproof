@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 workspace administration audit
+
+- PASS: Rebuilt current-worktree bundle generated 83 pages; focused organization administration browser/axe journey passed 11/11 in 19.2 seconds, covering owner/member boundaries, invitation/audit recovery and keyboard/focus behavior.
+- NOTE: Impeccable detector reported only five incumbent purple-palette warnings on decorative icons; no functional accessibility defect was changed.
+- NOT_RUN: Manual screen-reader review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — operational and webhook response cache boundaries
 
 - PASS: Health, internal cron/status, billing webhook and GitHub webhook responses are explicitly non-cacheable across authorization, replay, success and failure paths.
