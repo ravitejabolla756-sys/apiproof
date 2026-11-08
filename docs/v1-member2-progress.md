@@ -1783,6 +1783,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `pnpm lint` passed; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed with 1,341 tests passed, 4 skipped tests, 162 test files passed and 1 skipped file in 121.86 seconds.
 - Scope: this is hermetic local regression evidence; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/NOT-03 GitHub authorization action busy semantics
+
+- Change: GitHub authorization controls in workspace settings and the repository connection dialog now expose `aria-busy="true"` while installation URL requests are pending; existing failure/retry and popup behavior remains unchanged.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/github-action-loading.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; held authorization plus existing recovery coverage passed 2/2 in 13.9 seconds.
+- Scope: this advances local UI-12/UI-13 and NOT-03 boundary evidence only; GitHub/provider approval, hosted CI, integrated staging, manual assistive-technology review and production verification remain open. No GitHub activation, backend/shared contract, provider delivery, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12/ORG-02/ORG-03 invitation action busy semantics
 
 - Change: workspace profile save and invitation-link creation controls now expose `aria-busy="true"` while their mutations are pending; existing manual-share beta boundary and form-level announcements remain unchanged.

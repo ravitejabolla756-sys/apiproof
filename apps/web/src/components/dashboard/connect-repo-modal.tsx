@@ -328,6 +328,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 size="sm"
                 onClick={handleConnectGitHub}
                 disabled={connectingGitHub}
+                aria-busy={connectingGitHub ? 'true' : undefined}
                 className="gap-1.5"
               >
                 {connectingGitHub ? <Loader2 aria-hidden="true" className="w-4 h-4 animate-spin" /> : <Github aria-hidden="true" className="w-4 h-4" />}
@@ -350,6 +351,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                 size="sm"
                 onClick={handleConnectGitHub}
                 disabled={connectingGitHub}
+                aria-busy={connectingGitHub ? 'true' : undefined}
                 className="gap-1.5"
               >
                 <ExternalLink aria-hidden="true" className="w-4 h-4" />

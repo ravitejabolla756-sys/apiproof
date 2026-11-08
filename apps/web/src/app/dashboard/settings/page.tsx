@@ -287,6 +287,7 @@ export default function SettingsPage() {
                   size="sm"
                   onClick={handleConnectGitHub}
                   disabled={connecting}
+                  aria-busy={connecting ? 'true' : undefined}
                   className="font-medium text-xs gap-1.5"
                 >
                   {connecting ? <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />}
@@ -310,6 +311,7 @@ export default function SettingsPage() {
                   size="sm"
                   onClick={handleConnectGitHub}
                   disabled={connecting}
+                  aria-busy={connecting ? 'true' : undefined}
                   className="font-medium text-xs gap-1.5 shrink-0"
                 >
                   {connecting ? <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" /> : <Github aria-hidden="true" className="w-3.5 h-3.5" />}

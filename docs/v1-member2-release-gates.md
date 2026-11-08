@@ -113,3 +113,5 @@ Latest provider-rule evidence: review-only provider actions expose `aria-busy` w
 Latest repository-scan evidence: repository scan controls expose `aria-busy` while a scan request is pending; rebuilt-bundle focused coverage passes 1/1 in 12.5 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
 
 Latest invitation evidence: workspace invitation creation exposes `aria-busy` while the POST is pending and preserves the manual-share beta boundary; rebuilt-bundle focused coverage passes 1/1 in 12.6 seconds. Approved transactional email, hosted CI, integrated staging, PostgreSQL/RBAC, Member 1 review and production remain open.
+
+Latest GitHub authorization evidence: settings and repository-dialog authorization controls expose `aria-busy` while installation requests are pending; rebuilt-bundle loading/recovery coverage passes 2/2 in 13.9 seconds. GitHub/provider approval, hosted CI, integrated staging, manual assistive-technology review and production remain open.
