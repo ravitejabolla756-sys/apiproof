@@ -98,4 +98,16 @@ describe('database access matrix source inventory', () => {
       expect(revoked.has(table), `${table} must revoke PUBLIC, anon, and authenticated`).toBe(true);
     }
   });
+
+  it('keeps the read-only catalog pack coverage for role inheritance and schema/database access', () => {
+    const matrix = fs.readFileSync(accessMatrixPath, 'utf8');
+
+    expect(matrix).toContain('FROM pg_auth_members membership');
+    expect(matrix).toContain("pg_has_role(member.oid, granted.oid, 'MEMBER')");
+    expect(matrix).toContain("pg_has_role(member.oid, granted.oid, 'USAGE')");
+    expect(matrix).toContain("has_schema_privilege(gr.oid, ns.oid, 'USAGE')");
+    expect(matrix).toContain("has_schema_privilege(gr.oid, ns.oid, 'CREATE')");
+    expect(matrix).toContain('has_database_privilege(gr.oid, db.oid,');
+    expect(matrix).toContain('db.datacl');
+  });
 });

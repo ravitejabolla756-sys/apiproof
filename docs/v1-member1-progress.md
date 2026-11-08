@@ -717,3 +717,8 @@ Phase 0 read-only checks:
 
 - Extended `tests/database-access-matrix.test.ts` beyond the existing 46-table name reconciliation. It now pins the ten database tables documented as having PostgreSQL RLS enabled and direct-client revokes, then checks those RLS and `PUBLIC`/`anon`/`authenticated` revoke statements remain present in the migration source. A documentation change that drops or adds one of these claims now requires an explicit test-contract update.
 - Focused `database-access-matrix` tests pass 2/2; targeted ESLint and workspace `pnpm typecheck` pass. This is a local source/migration contract check, not evidence that a PostgreSQL migration was applied or that effective grants, role separation, or tenant isolation work. SEC-01/SEC-02 remain partial pending approved catalog read-back and isolated PostgreSQL role/isolation tests.
+
+### 2026-11-08 SEC-02 effective privilege query-pack coverage
+
+- Expanded the read-only PostgreSQL catalog pack to show direct membership/admin-option edges, enumerate effective direct or indirect role membership and inherited authority with `pg_has_role`, and report effective schema `USAGE`/`CREATE` and database `CONNECT`/`TEMP` alongside explicit ACL arrays.
+- `database-access-matrix` now pins these query-pack coverage points; focused tests pass 3/3, targeted ESLint passes, and `pnpm typecheck` passes. The SQL was checked against official PostgreSQL system-catalog and privilege-function documentation, but was not executed against a live PostgreSQL instance. SEC-02 remains partial pending approved staging role read-back and role-isolation verification.

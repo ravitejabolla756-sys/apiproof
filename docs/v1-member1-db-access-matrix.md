@@ -84,12 +84,60 @@ These are intended boundaries, not claims about the live database. The source cu
 
 Run the following as an approved read-only catalog role against an isolated staging-equivalent database. Capture role names and ACL results, never passwords, connection strings, or customer rows.
 
+The query pack now includes direct role-membership edges plus `pg_has_role` checks for direct/indirect membership and inherited privileges, effective schema `USAGE`/`CREATE`, and effective database `CONNECT`/`TEMP` alongside the stored ACL arrays. These are complementary views: membership and effective privilege inquiry functions account for inherited authority, while ACL columns show explicit catalog ACL state. The role-membership fields used here are compatible with older PostgreSQL releases; newer releases expose additional membership options that should be added after the hosted PostgreSQL version is confirmed. See the official [role-membership catalog](https://www.postgresql.org/docs/current/catalog-pg-auth-members.html), [privilege inquiry functions](https://www.postgresql.org/docs/current/functions-info.html), and [database catalog](https://www.postgresql.org/docs/current/catalog-pg-database.html).
+
 ```sql
 -- Effective roles and dangerous attributes
 SELECT rolname, rolsuper, rolinherit, rolcreaterole, rolcreatedb,
        rolcanlogin, rolreplication, rolbypassrls
 FROM pg_roles
 ORDER BY rolname;
+
+-- Direct role memberships and admin options
+SELECT granted.rolname AS granted_role,
+       member.rolname AS member_role,
+       grantor.rolname AS grantor_role,
+       membership.admin_option
+FROM pg_auth_members membership
+JOIN pg_roles granted ON granted.oid = membership.roleid
+JOIN pg_roles member ON member.oid = membership.member
+JOIN pg_roles grantor ON grantor.oid = membership.grantor
+ORDER BY 1, 2, 3;
+
+-- Effective direct or indirect membership and privileges available without SET ROLE
+SELECT member.rolname AS member_role,
+       granted.rolname AS granted_role,
+       pg_has_role(member.oid, granted.oid, 'MEMBER') AS effective_member,
+       pg_has_role(member.oid, granted.oid, 'USAGE') AS privileges_inherited_without_set_role
+FROM pg_roles member
+CROSS JOIN pg_roles granted
+WHERE member.oid <> granted.oid
+  AND pg_has_role(member.oid, granted.oid, 'MEMBER')
+ORDER BY 1, 2;
+
+-- Effective schema USAGE/CREATE, including inherited role grants and PUBLIC grants
+SELECT gr.rolname,
+       ns.nspname,
+       pg_get_userbyid(ns.nspowner) AS owner_name,
+       ns.nspacl,
+       has_schema_privilege(gr.oid, ns.oid, 'USAGE') AS effective_usage,
+       has_schema_privilege(gr.oid, ns.oid, 'CREATE') AS effective_create
+FROM pg_roles gr
+CROSS JOIN pg_namespace ns
+WHERE ns.nspname NOT IN ('pg_catalog', 'information_schema')
+ORDER BY 1, 2;
+
+-- Effective database CONNECT/TEMP and database owner/ACL state
+SELECT gr.rolname,
+       db.datname,
+       pg_get_userbyid(db.datdba) AS owner_name,
+       db.datacl,
+       has_database_privilege(gr.oid, db.oid, 'CONNECT') AS effective_connect,
+       has_database_privilege(gr.oid, db.oid, 'TEMP') AS effective_temp
+FROM pg_roles gr
+CROSS JOIN pg_database db
+WHERE db.datallowconn
+ORDER BY 1, 2;
 
 -- Tables, owners, RLS state, and explicit ACLs
 SELECT n.nspname AS schema_name, c.relname AS object_name,
@@ -171,6 +219,7 @@ The next implementation proposal, after role approval, is a separately reviewed 
 
 - 2026-11-08 local inventory reconciliation: compared unique `CREATE TABLE` names across `apps/web/src/lib/server/db/*.ts` against the matrix; the source contains 46 tables and the prior matrix listed 40. Added the six omitted tables above, including migrations 024–027 and SEC-13 heartbeats. This reconciles source documentation only; it does not establish that staging or production catalogs match.
 - The local `database-access-matrix` test now also pins the ten tables whose matrix rows claim PostgreSQL RLS plus `PUBLIC`, `anon`, and `authenticated` revocations, and verifies those statements remain present in migration source. This is source-contract drift protection only; it does not prove the migration ran or effective grants/RLS behavior in PostgreSQL.
+- The read-only catalog query pack now reports direct role memberships and effective inherited role/schema/database privileges; `database-access-matrix` tests pin those coverage points. No live database was queried, and the actual PostgreSQL version and effective grants remain unknown.
 - SEC-01: `PARTIAL` — complete local source inventory and isolation contract; live role/RLS/policy read-back and PostgreSQL tests blocked.
 - SEC-02: `PARTIAL` — role/grant/default-privilege audit query pack and intended matrix documented; effective grants and role separation blocked.
 - No production or staging database was contacted or changed.
