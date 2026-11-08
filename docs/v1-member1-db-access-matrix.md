@@ -21,6 +21,9 @@ The application currently uses a single `DATABASE_URL`/`APIPROOF_DATABASE_URL` c
 | `_apiproof_migrations` | none | high | Migration/admin only | Created by the migration runner; no RLS/grant contract |
 | `activity_events` | `user_id`, optional `repository_id` → workspace | high | RLS target; backend predicate | User/repository rows are persisted; no RLS in base schema |
 | `billing_webhook_events` | provider event, no tenant key | high | Migration/admin only; backend webhook path | Idempotency table; no RLS/grant contract |
+| `email_verification_tokens` | `user_id` → user | critical | RLS target; migration/admin only for direct clients | Migration 024 enables RLS and revokes `PUBLIC`, `anon`, `authenticated`; token hashes and lifecycle metadata; no policy is defined |
+| `finding_lifecycle_events` | `workspace_id`, `repository_id`, `finding_id` | high | RLS target; backend predicate | Migration 025 enables RLS and revokes `PUBLIC`, `anon`, `authenticated`; immutable lifecycle evidence; no policy is defined |
+| `finding_resolution_verifications` | `workspace_id`, `repository_id`, `finding_id`, `migration_id`, `pull_request_id`, `scan_id` | high | RLS target; backend predicate | Migration 026 enables RLS and revokes `PUBLIC`, `anon`, `authenticated`; exact-commit resolution evidence; no policy is defined |
 | `findings` | `repository_id` → workspace | high | RLS target; backend predicate | Repository foreign key and route predicates; no RLS |
 | `github_installation_states` | `user_id`, `workspace_id` | high | RLS target; migration/admin only for direct clients | OAuth state; no RLS in migration 005 |
 | `github_installations` | `workspace_id` | high | RLS target; backend predicate | Workspace foreign key; no RLS |
@@ -54,7 +57,10 @@ The application currently uses a single `DATABASE_URL`/`APIPROOF_DATABASE_URL` c
 | `slack_oauth_states` | `workspace_id`, `user_id` | critical | RLS target; migration/admin only for direct clients | OAuth state; no RLS |
 | `slack_provider_change_deliveries` | `workspace_id` | high | RLS target; worker/backend predicate | Provider notification delivery; no RLS |
 | `users` | user identity | high | RLS target; backend predicate | Account identity/password hash; no RLS |
+| `worker_run_heartbeats` | global component/run identity; no tenant key | high | Migration/admin and approved worker/ops path | SEC-13 heartbeat/freshness and `error_code`; migration enables RLS and revokes `PUBLIC`, `anon`, `authenticated`; no policy is defined |
+| `workspace_member_revocation_requests` | `workspace_id`, subject/actor user IDs, membership ID | critical | RLS target; backend predicate; migration/admin for direct clients | Migration 027 enables RLS and revokes `PUBLIC`, `anon`, `authenticated`; idempotency/status/reason and retained membership identity; no policy is defined |
 | `workspace_members` | `workspace_id`, `user_id` | critical | RLS target; backend predicate | Membership is the tenant authority; no RLS |
+| `workspace_security_audit_events` | `workspace_id`, subject/actor user IDs, membership ID | critical | RLS target; backend predicate; migration/admin for direct clients | Migration 027 enables RLS and revokes `PUBLIC`, `anon`, `authenticated`; durable security event payload; no policy is defined |
 | `workspace_subscriptions` | `workspace_id` | critical | RLS target; backend billing path | Entitlement state; no RLS |
 | `workspace_usage` | `workspace_id` | high | RLS target; backend billing path | Usage counters; no RLS |
 | `workspaces` | workspace identity | critical | RLS target; backend predicate | Tenant root; no RLS |
@@ -163,6 +169,7 @@ The next implementation proposal, after role approval, is a separately reviewed 
 
 ## Status
 
+- 2026-11-08 local inventory reconciliation: compared unique `CREATE TABLE` names across `apps/web/src/lib/server/db/*.ts` against the matrix; the source contains 46 tables and the prior matrix listed 40. Added the six omitted tables above, including migrations 024–027 and SEC-13 heartbeats. This reconciles source documentation only; it does not establish that staging or production catalogs match.
 - SEC-01: `PARTIAL` — complete local source inventory and isolation contract; live role/RLS/policy read-back and PostgreSQL tests blocked.
 - SEC-02: `PARTIAL` — role/grant/default-privilege audit query pack and intended matrix documented; effective grants and role separation blocked.
 - No production or staging database was contacted or changed.
