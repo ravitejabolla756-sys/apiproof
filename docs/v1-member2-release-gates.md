@@ -405,3 +405,7 @@ Failed workspace context switches now preserve focus on the retryable contextual
 ## Latest UI-12 logout focus evidence — 2026-11-08
 
 Logout failures now preserve focus on session-preserving feedback while keeping the user on the dashboard. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 repository-dialog focus evidence — 2026-11-08
+
+Connect-repository load failures now preserve focus on the actionable modal alert while retaining dialog keyboard recovery. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, GitHub/provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.

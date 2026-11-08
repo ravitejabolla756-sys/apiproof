@@ -45,6 +45,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
   const connectedRef = useRef<boolean | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -57,6 +58,10 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     previousActiveElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeButtonRef.current?.focus();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   function handleDialogKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Escape') {
@@ -282,7 +287,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         {/* Content */}
         <div className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
           {error && (
-            <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+            <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
               <AlertCircle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>
@@ -303,7 +308,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
           )}
 
           {error && !initialRepositoryLoadComplete.current ? (
-            <div role="alert" aria-live="assertive" aria-atomic="true" className="py-8 text-center space-y-4">
+            <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="py-8 text-center space-y-4 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
               <p className="text-xs text-rose-800">GitHub repositories are temporarily unavailable.</p>
               <Button type="button" variant="outline" size="sm" disabled={loadingRepos} aria-busy={loadingRepos ? 'true' : undefined} onClick={() => void loadRepositories(true, true)}>Retry repositories</Button>
             </div>

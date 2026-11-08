@@ -1385,6 +1385,14 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — repository-dialog recovery focus checkpoint
+
+- Impeccable detector: PASS with no findings for the connect-repository modal and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `CI=true PLAYWRIGHT_PORT=3130 pnpm exec playwright test tests/e2e/connect-repo-recovery.spec.ts --workers=1 --reporter=line`: PASS, 4/4; initial repository failures focus the actionable alert while loading, retry busy state, keyboard trap, and invoking-control restoration remain green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, GitHub/provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

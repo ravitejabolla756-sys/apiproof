@@ -2798,3 +2798,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/logout-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; logout recovery coverage passed 1/1; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12 authentication-session recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 repository-dialog error focus
+
+- Change: connect-repository modal load and refresh failures now focus the actionable alert while preserving the existing GitHub/OAuth and dialog focus-trap behavior.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; repository-dialog recovery and focus coverage passed 4/4; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 repository-dialog recovery evidence only; manual assistive-technology review, hosted CI, staging, GitHub/provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
