@@ -1561,3 +1561,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-filter-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused provider-rule filter recovery journey passed 1/1 in 15.7 seconds with measured 44px filter/recovery controls and axe-clean filtered-empty content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local ORG-11/UI-12/UI-13 evidence only; PostgreSQL/RBAC, hosted CI, manual screen-reader review, staging and production verification remain open. No provider activation, backend/shared contract, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — WEB-15 not-found recovery touch targets
+
+- Change: custom 404 Return Home and Explore Features recovery links now expose explicit 44px minimum touch targets while retaining the existing copy, destinations, skip-link behavior, and error semantics.
+- Files: `apps/web/src/app/404/page.tsx`, `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; mobile not-found journey passed 1/1 in 6.7 seconds with measured 44px recovery links, skip-link focus, 404 response, and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local WEB-15/UI-12/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

@@ -23,14 +23,14 @@ export default function NotFoundPage() {
           <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/"
-              className="btn-lime text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)] inline-flex items-center gap-2"
+              className="btn-lime inline-flex min-h-11 items-center gap-2 text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)]"
             >
               <Home className="w-3.5 h-3.5 text-black" />
               <span>Return Home</span>
             </Link>
             <Link
               href="/features"
-              className="px-5 py-3 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 transition-colors inline-flex items-center gap-2"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 border border-slate-200"
             >
               <span>Explore Features</span>
             </Link>

@@ -42,6 +42,7 @@ test.describe('route accessibility audit', () => {
   });
 
   test('keeps the not-found page accessible', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     const response = await page.goto('/route-that-does-not-exist', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     expect(response?.status()).toBe(404);
     await expect(page.locator('main#main-content h1')).toHaveText('Page not found');
@@ -50,6 +51,9 @@ test.describe('route accessibility audit', () => {
     await expect(skipLink).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.locator('#main-content')).toBeFocused();
+    for (const label of ['Return Home', 'Explore Features']) {
+      expect((await page.getByRole('link', { name: label }).boundingBox())?.height, label).toBeGreaterThanOrEqual(44);
+    }
     const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
     expect(results.violations).toEqual([]);
   });
