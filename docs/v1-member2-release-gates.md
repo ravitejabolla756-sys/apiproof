@@ -337,3 +337,7 @@ Accessible names for login, auth-recovery and dashboard branding links are no lo
 ## Latest UI-12 contact focus evidence — 2026-11-08
 
 The contact form’s truthful non-sending result receives focus after submission, preserving keyboard recovery. Local build and focused browser coverage pass; approved intake routing, manual assistive-technology review, hosted CI, staging and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 invitation focus evidence — 2026-11-08
+
+Invitation loading and terminal failure states now preserve focus when the accept control is replaced. Local build and browser coverage pass; approved email delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL and production remain NOT_RUN. Release recommendation stays NO-GO.

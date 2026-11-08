@@ -1211,6 +1211,10 @@ Home/dashboard branding links now expose one accessible name instead of announci
 
 The contact form now moves focus to its non-sending outcome after submission. The rebuilt production bundle passed with 83 generated pages; enterprise-intake and public contact/required-field journeys passed 3/3; targeted ESLint, `git diff --check` and the Impeccable detector passed. Approved intake routing, manual screen-reader, hosted CI, staging and production checks remain NOT_RUN.
 
+## Latest invitation focus recovery evidence — 2026-11-08
+
+Invitation acceptance now moves focus to the held loading status and then to the terminal expiry/error alert. The rebuilt production bundle passed with 83 generated pages; invitation and public route coverage passed 5/5; targeted ESLint, `git diff --check` and the Impeccable detector passed. Email delivery, manual screen-reader, hosted CI, staging, PostgreSQL and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.
