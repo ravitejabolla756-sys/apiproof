@@ -445,6 +445,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                   variant="primary"
                   size="sm"
                   disabled={!selectedRepoId || submitting || success}
+                  aria-busy={submitting ? 'true' : undefined}
                   className="gap-1.5"
                 >
                   {submitting && <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />}

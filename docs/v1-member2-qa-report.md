@@ -668,3 +668,11 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - Fresh seeded unit regression: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` — PASS, 1,341 tests passed, 4 skipped across 161 passing test files and 1 skipped file in 122.22 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN.
 - Fresh public performance probe: after the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` — PASS across all 9 representative public routes; median load 10–32ms, response 2–4ms and encoded HTML 6.0–17.0KiB over loopback. This is local probe evidence, not Lighthouse/Core Web Vitals or deployment evidence. Hosted CI, staging, manual assistive-technology review and production remain NOT_RUN.
 - Fresh repository lint baseline: `pnpm lint` — PASS with ESLint `--max-warnings 0`. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider delivery and production remain NOT_RUN.
+
+## 2026-11-08 — repository-connect submit loading checkpoint
+
+- Impeccable detector: PASS with no findings for the changed modal and loading journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/connect-repo-action-loading.spec.ts tests/e2e/connect-repo-recovery.spec.ts --reporter=line`: PASS, 4/4 in 23.0 seconds; covers pending final submit `disabled`/`aria-busy`, initial repository failure recovery, loading/refresh busy semantics, focus trap and Escape restoration.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Manual screen-reader, hosted CI, integrated staging, GitHub/provider approval and PostgreSQL/RBAC checks remain NOT_RUN.

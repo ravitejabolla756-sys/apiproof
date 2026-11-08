@@ -2067,3 +2067,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `pnpm lint` passed; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed with 1,341 tests passed, 4 skipped tests, 161 test files passed and 1 skipped file in 123.57 seconds.
 - Scope: this is hermetic local regression evidence; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/ORG-02 repository-connect submit busy semantics
+
+- Change: the repository connection form now exposes `aria-busy="true"` while the final Connect Repository request is pending, preserving the modal’s existing scan status, success close, cancellation and GitHub read-only connection boundaries.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-action-loading.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; the new submit-loading journey plus existing repository-dialog recovery/accessibility coverage passed 4/4; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/ORG-02 evidence only; GitHub/provider approval, PostgreSQL/RBAC, hosted CI, integrated staging and manual screen-reader review remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

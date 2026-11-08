@@ -133,3 +133,7 @@ Latest unit-regression evidence: the seeded local Vitest regression passes 1,341
 Latest public performance evidence: the local production bundle passes the 9-route performance probe over three loopback samples, with median load 10–32ms and encoded HTML 6.0–17.0KiB. Lighthouse/Core Web Vitals, representative deployment, hosted CI, manual assistive-technology review and production remain open.
 
 Latest static-quality evidence: repository lint passes with ESLint `--max-warnings 0`; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval, legal review and production remain open.
+
+## Latest repository-connect evidence — 2026-11-08
+
+The final repository-connect submit control remains visible while its request is pending and exposes disabled plus `aria-busy` semantics; focused repository-dialog coverage passes 4/4 and the production build passes with 83 generated pages. This is local evidence only. Hosted CI, integrated staging, GitHub/provider approval, PostgreSQL/RBAC and manual assistive-technology review remain open; release recommendation stays NO-GO.
