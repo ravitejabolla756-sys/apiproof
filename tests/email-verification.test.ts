@@ -160,6 +160,32 @@ describe('email verification', () => {
     expect((await response.json() as { code: string }).code).toBe('EMAIL_VERIFICATION_UNAVAILABLE');
   });
 
+  it('limits authenticated verification resend attempts per user before delivery work', async () => {
+    const account = await createUserWithSession('verify-resend-limit@example.test', 'OriginalPassword123!', 'Verify Resend Limit');
+    const sendResend = () => authPost(new Request('https://apiproof.test/api/auth', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${account.session.id}`,
+        origin: 'https://apiproof.test',
+        host: 'apiproof.test',
+      },
+      body: JSON.stringify({ action: 'resend_email_verification' }),
+    }));
+
+    const firstThree = await Promise.all([sendResend(), sendResend(), sendResend()]);
+    expect(firstThree.map((response) => response.status)).toEqual([503, 503, 503]);
+    const fourth = await sendResend();
+    expect(fourth.status).toBe(429);
+    expect(await fourth.json()).toMatchObject({ code: 'RATE_LIMIT_EXCEEDED' });
+
+    const rateLimit = await getDatabase().queryOne<{ points: number }>(
+      'SELECT points FROM rate_limits WHERE key = ?',
+      [`auth:email-verification:resend:user:${account.user.id}`],
+    );
+    expect(Number(rateLimit?.points)).toBe(4);
+  });
+
   it('uses the one-hour default when no TTL override is configured', () => {
     configureMail();
     const message = buildEmailVerificationMessage({ email: 'owner@example.test', name: 'Owner', token: 'a'.repeat(43) });

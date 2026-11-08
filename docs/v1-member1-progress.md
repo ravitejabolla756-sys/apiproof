@@ -22,7 +22,7 @@ Statuses are initial current-state classifications, not completion claims. `PART
 
 | Task | Status | Evidence | Blocker / next action |
 |---|---|---|---|
-| AUTH-05 | PARTIAL | Migration 024, `email-verification.ts`, `POST /api/auth` `verify_email`/authenticated `resend_email_verification`, `/verify-email` page; `tests/email-verification.test.ts`: 8/8 pass; Google/GitHub provider-verified accounts persist `email_verified_at` | Approve Member 2 template/provider contract and define/enforce the full unverified-account action policy; live delivery remains gated |
+| AUTH-05 | PARTIAL | Migration 024, `email-verification.ts`, `POST /api/auth` `verify_email`/authenticated `resend_email_verification`, `/verify-email` page; `tests/email-verification.test.ts`: 11/11 pass including 3-per-user resend throttling; Google/GitHub provider-verified accounts persist `email_verified_at` | Approve Member 2 template/provider contract and define/enforce the full unverified-account action policy; live delivery remains gated |
 | AUTH-10 | PARTIAL | Existing auth/OAuth/recovery coverage plus single-use token regressions; malformed or expired session timestamps now fail closed in synchronous and asynchronous validation paths and are purged; seeded auth/session/password-reset/email-verification/GitHub OAuth/Google OAuth focused run passes 6 files / 62 tests | Add central verified-user enforcement only after policy approval and concurrent PostgreSQL verification evidence |
 | SCAN-12 | DONE_VERIFIED | `evaluation/scanner-accuracy-{fixtures,benchmark,cli}.ts`, `tests/scanner-accuracy-benchmark.test.ts`; `pnpm scanner:accuracy` and 2 benchmark tests pass: 24 fixtures, TP 18/TN 6/FP 0/FN 0, precision/recall/version accuracy 1.0 | Curated corpus limitations are documented; add representative samples only as scope expands |
 | PROV-05 | DONE_VERIFIED_LOCAL | `packages/analyzers/src/typescript/compatibility.ts` now keeps missing resource/API-version evidence at `NEEDS_REVIEW`; changelog parsing rejects contradictory support/removal claims and semantic-change prose with source excerpt/locator evidence; focused compatibility/changelog tests pass 27/27 and provider-review regressions pass 30/30 | Production/source freshness and live provider behavior remain unverified; no automatic promotion is allowed |
@@ -431,6 +431,11 @@ Phase 0 read-only checks:
 
 - Billing event insertion now treats all uniqueness conflicts as non-inserting, then checks an existing event with the same ID. Reuse of that ID with a different provider, event type, or payload hash raises a sanitized identity-conflict error; the route returns 409 and the enclosing transaction applies no subscription mutation. Exact duplicate deliveries retain their idempotent response.
 - `phase7-billing-foundation` and `billing-provider-boundary` pass 25/25; targeted ESLint and workspace `pnpm typecheck` pass. This is local SQLite evidence; provider-specific identity semantics and PostgreSQL conflict behavior remain unverified.
+
+### 2026-11-08 AUTH-05 resend throttling regression
+
+- Added an authenticated route test proving the configured three-per-user hourly resend ceiling is enforced before delivery work: the first three requests receive the generic unavailable response when SMTP is absent, and the fourth is rate-limited. It verifies the persisted counter stops at the denied fourth attempt.
+- `email-verification` passes 11/11; targeted ESLint and full workspace `pnpm typecheck` pass. Approved email delivery, Member 2 template contract, and unverified-account enforcement policy remain external gates.
 
 ## 2026-11-08 focused worker and resilience verification
 
