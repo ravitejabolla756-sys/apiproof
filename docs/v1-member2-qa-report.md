@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-13 status communications contract
+
+- PASS: Added a review-only status-source contract with freshness, bounded state, incident redaction, accessibility and no-monitor fallback requirements.
+- NOT_RUN: No monitor, uptime claim, incident, source integration or production communication was performed; owner/operations approval and an incident drill remain required.
+
 ## 2026-11-08 — WEB-11/WEB-12 draft policy metadata
 
 - PASS: Privacy, terms and refund pages now expose explicit draft version/effective-date-pending metadata; the focused browser assertion covers all three routes.

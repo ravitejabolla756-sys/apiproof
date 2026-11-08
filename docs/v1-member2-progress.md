@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-13 status communications contract proposal
+
+- Change: Added a review-only status communications contract defining approved source identity, freshness, bounded health states, incident publication and the no-monitor fallback.
+- Evidence: Proposal is explicitly non-operational: no monitor, uptime claim, incident, source integration or production communication was added. `git diff --check` passed.
+- Scope: local WEB-13 contract preparation only; owner/Member 1/operations approval, monitor selection and incident drill remain required.
+
 ## 2026-11-08 checkpoint — WEB-11/WEB-12 draft policy version metadata
 
 - Change: Added explicit non-effective draft version and pending effective-date metadata to the privacy, terms and refund pages; added a focused browser assertion so these pages cannot silently appear current without approval.
