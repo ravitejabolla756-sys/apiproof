@@ -1785,6 +1785,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; focused hermetic Playwright coverage passed 2/2 in 7.1 seconds for delayed finding loading and existing migration-plan action feedback.
 - Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 repository-dialog loading semantics
+
+- Change: the repository connection dialog loading region now exposes `aria-busy="true"` while GitHub repository discovery is pending, preserving its existing retry, disconnected-app, focus-trap and Escape-recovery behavior.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the complete repository-dialog recovery suite passed 3/3 in 8.8 seconds, including delayed loading, initial failure/retry, axe-clean dialog content, focus trapping and invoking-control restoration.
+- Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 notification-settings busy semantics
 
 - Change: the notification-preferences surface now exposes `aria-busy="true"` during initial loading and preference saves, while retaining its existing live announcements, required-message protections, and beta delivery boundary.

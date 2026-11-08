@@ -56,6 +56,8 @@ Latest activity/migration/repository-detail evidence: delayed-response journeys 
 
 Latest finding-detail evidence: delayed finding loading and existing migration-plan action feedback pass 2/2 with `aria-busy` on the initial loading status and action controls. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
 
+Latest repository-dialog evidence: the complete recovery suite passes 3/3 with busy loading semantics, initial failure/retry, disconnected-app distinction, focus trapping, Escape restoration and axe-clean dialog content. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

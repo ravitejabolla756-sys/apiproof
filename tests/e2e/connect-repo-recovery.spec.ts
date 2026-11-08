@@ -32,6 +32,26 @@ test('keeps initial GitHub repository failures distinct from a disconnected app'
   await page.unroute('**/api/github/repositories');
 });
 
+test('announces repository dialog loading as a busy state', async ({ page }) => {
+  await signIn(page);
+  let releaseRepositories: (() => void) | undefined;
+  const repositoriesLoading = new Promise<void>((resolve) => { releaseRepositories = resolve; });
+  await page.route('**/api/github/repositories', async (route) => {
+    await repositoriesLoading;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
+  });
+  await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Connect repository', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
+  const loading = dialog.getByRole('status').filter({ hasText: 'Loading available repositories...' });
+  await expect(loading).toBeVisible();
+  await expect(loading).toHaveAttribute('aria-busy', 'true');
+  releaseRepositories?.();
+  await expect(dialog.getByRole('status').filter({ hasText: 'GitHub App Not Connected' })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
+  await page.unroute('**/api/github/repositories');
+});
+
 test('traps repository dialog focus and restores the invoking control on Escape', async ({ page }) => {
   await signIn(page);
   await page.route('**/api/github/repositories', async (route) => {
