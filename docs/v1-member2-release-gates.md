@@ -24,6 +24,8 @@ Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes 
 
 Latest UI-13 evidence: the rebuilt current-worktree production bundle generated 83 pages and the complete isolated Playwright matrix passed 159/159 in 3.8 minutes on port 3101 with a fresh SQLite database. Hosted CI, integrated staging, full manual assistive-technology review and production remain open.
 
+Latest browser-harness evidence: Playwright now refuses existing-server reuse by default, supports `PLAYWRIGHT_PORT`, and the focused provider/repository recovery suite passes 2/2 against a newly spawned port-3101 server. Hosted CI, integrated staging and production remain open.
+
 Latest full local regression evidence: the seeded Vitest repository run passes 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds after the SQLite transaction-serialization and provider-rule mutation context-boundary fixes. PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
 
 Latest provider-rule mutation evidence: edit, review, test and seed routes normalize malformed workspace IDs while preserving owner denial; seeded provider-review coverage passes 4/4 and repository typecheck passes. Provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.

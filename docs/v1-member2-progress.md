@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-13 Playwright cross-worktree isolation
+
+- Change: Playwright now derives its base URL/server port from `PLAYWRIGHT_PORT` and refuses to reuse an existing server by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in for a verified same-worktree listener.
+- Evidence: Targeted config ESLint and `git diff --check` passed; `PLAYWRIGHT_PORT=3101 ... pnpm exec playwright test tests/e2e/provider-repository-recovery-loading.spec.ts --workers=1` passed 2/2 against a newly spawned server.
+- Scope: local UI-13 harness safety only; hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-13 isolated full browser matrix
 
 - Evidence: Rebuilt `pnpm --filter @apiproof/web build` passed with 83 generated pages. A temporary isolated Playwright configuration served this current worktree’s production bundle through `apps/web/scripts/playwright-server.ts` on port 3101 with a fresh SQLite database; the complete `tests/e2e` matrix passed **159/159 in 3.8 minutes**. Failed tests from an earlier port-3100 attempt were invalid because that port was occupied by an unrelated `/Users/sandstone/Documents/apiproof` dev server; the six affected tests passed 31/31 in the isolated rerun. Temporary config was removed after verification; artifacts: `/tmp/myowl-v1-ui13-local-matrix-artifacts`.

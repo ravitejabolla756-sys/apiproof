@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-13 Playwright cross-worktree isolation
+
+- PASS: Playwright port/base URL configuration is now environment-overridable and existing-server reuse is opt-in, preventing silent reuse of an unrelated checkout’s dev server.
+- PASS: Targeted config ESLint and diff checks passed; the provider/repository recovery browser suite passed 2/2 on a newly spawned port-3101 server.
+- NOT_RUN: Hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — UI-13 isolated full browser matrix
 
 - PASS: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages. The complete current-worktree production-bundle Playwright matrix passed **159/159 in 3.8 minutes** on an isolated port 3101 and fresh SQLite database; the temporary test configuration was removed after the run.
