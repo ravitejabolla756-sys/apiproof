@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Invitation acceptance keyboard semantics
+
+- PASS: Auth-entry suite passed 2/2 in 8.6 seconds; expired invitation acceptance now verifies keyboard focus and Enter activation while retaining assertive failure, sign-in recovery and axe assertions.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Invitation delivery, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Control and pipeline keyboard semantics
 
 - PASS: Combined control/pipeline suite passed 6/6 in 44.3 seconds; repository expansion and public pipeline-stage navigation verify keyboard focus and Enter activation, with existing semantic and accessibility assertions retained.

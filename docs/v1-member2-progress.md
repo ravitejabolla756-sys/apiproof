@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 invitation acceptance keyboard semantics
+
+- Change: Extended the expired-invitation auth-entry journey to focus the “Accept invitation” control, verify focus visibility, and activate it with Enter while preserving the assertive failure, sign-in recovery link and axe assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; auth-entry suite passed 2/2 in 8.6 seconds. Artifacts: `/tmp/myowl-v1-auth-entry-keyboard-artifacts`.
+- Scope: local UI-12 auth-entry evidence only; no invitation delivery, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 control and pipeline keyboard semantics
 
 - Change: Extended repository-row expansion and public pipeline-stage navigation journeys to verify focus visibility and Enter activation while preserving `aria-expanded`, `aria-pressed`, button-type, graphics and nested-interactive assertions.
