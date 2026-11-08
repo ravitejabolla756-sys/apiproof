@@ -228,7 +228,7 @@ test.describe('authenticated dashboard data states', () => {
     await expect(slackAlert).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'Slack connection error state').toEqual([]);
     await expect(slackAlert.getByRole('button', { name: 'Retry Slack status' })).toBeVisible(); await expect(page.getByRole('status').filter({ hasText: 'Slack connection status is unavailable.' })).toBeVisible();
-    allowSlackSuccess = true; await slackAlert.getByRole('button', { name: 'Retry Slack status' }).click(); await expect(slackAlert).toHaveCount(0); await expect(page.getByRole('button', { name: 'Connect Slack' })).toBeVisible({ timeout: 30_000 }); expect(slackRequests).toBeGreaterThanOrEqual(2); expect(slackRequests).toBeLessThanOrEqual(3);
+    allowSlackSuccess = true; const retrySlackStatus = slackAlert.getByRole('button', { name: 'Retry Slack status' }); await retrySlackStatus.focus(); await expect(retrySlackStatus).toBeFocused(); await page.keyboard.press('Enter'); await expect(slackAlert).toHaveCount(0); await expect(page.getByRole('button', { name: 'Connect Slack' })).toBeVisible({ timeout: 30_000 }); expect(slackRequests).toBeGreaterThanOrEqual(2); expect(slackRequests).toBeLessThanOrEqual(3);
     await page.unroute('**/api/slack/connection');
   }); test('announces workspace settings data failures and exposes retry', async ({ page }) => {
     await signIn(page);
@@ -249,7 +249,7 @@ test.describe('authenticated dashboard data states', () => {
     await expect(settingsAlert.getByRole('button', { name: 'Retry' })).toBeVisible();
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings error state').toEqual([]);
     await expect(page.getByText('Not connected to GitHub', { exact: true })).toHaveCount(0); await expect(page.getByRole('status').filter({ hasText: 'GitHub connection status is unavailable' })).toBeVisible(); await expect(page.getByRole('status').filter({ hasText: 'Billing summary is unavailable' })).toBeVisible();
-    await settingsAlert.getByRole('button', { name: 'Retry' }).click();
+    const retrySettings = settingsAlert.getByRole('button', { name: 'Retry' }); await retrySettings.focus(); await expect(retrySettings).toBeFocused(); await page.keyboard.press('Enter');
     await expect(settingsAlert).toBeVisible({ timeout: 30_000 });
     await page.unroute('**/api/github/repositories');
     await page.unroute('**/api/billing/subscription');
