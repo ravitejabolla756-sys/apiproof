@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-11 enterprise intake non-sending boundary
+
+- PASS: The enterprise inquiry option remains explicitly non-sending, with truthful unavailable copy, no accepted/delivered affordance, 44px controls, no mobile overflow and axe-clean content.
+- PASS: `enterprise-intake-boundary.spec.ts` passed 1/1 in 2.2 seconds; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-bill11-enterprise-boundary-uwclrP`.
+- NOT_RUN: Approved intake destination, privacy/retention review, delivery provider, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — NOT-10 digest channel browser boundary
 
 - PASS: The authenticated notification-settings journey verifies both Weekly digest email and Weekly digest Slack controls remain disabled while digest implementation and delivery are unavailable.

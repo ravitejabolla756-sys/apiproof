@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-11 enterprise intake non-sending boundary
+
+- Change: Added a focused enterprise-inquiry browser journey that fills the enterprise option, verifies the form remains explicitly non-sending, checks 44px controls, mobile overflow and axe-clean content, and rejects any accepted/delivered affordance.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/enterprise-intake-boundary.spec.ts --workers=1` passed **1/1 in 2.2 seconds**; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-bill11-enterprise-boundary-uwclrP`.
+- Scope: strengthens local BILL-11/WEB-15 truthfulness and accessibility evidence only; no mailbox, CRM, webhook, delivery worker or external destination was connected.
+
 ## 2026-11-08 checkpoint — NOT-10 digest channel browser boundary
 
 - Change: Extended the authenticated settings browser journey to verify both Weekly digest email and Weekly digest Slack controls remain disabled while the digest contract, scheduler and provider path are unapproved.

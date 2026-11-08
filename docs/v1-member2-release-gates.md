@@ -314,6 +314,8 @@ Latest invitation-audit evidence: invitation cancellation and its `invitation.re
 
 Latest audit-resilience evidence: malformed persisted audit metadata falls back to bounded empty metadata instead of failing audit pagination; organization-management coverage passes 14/14 and repository typecheck passes. Final role/retention policy, PostgreSQL, hosted CI, staging and production remain open; release recommendation stays NO-GO.
 
+Latest BILL-11 evidence: the enterprise inquiry journey remains explicitly non-sending with truthful unavailable copy, no accepted/delivered affordance, 44px controls, no mobile overflow and axe-clean content; focused coverage passes 1/1. Approved intake destination, privacy/retention review and delivery integration remain open.
+
 Latest digest-boundary evidence: weekly digest email and Slack controls remain unavailable until NOT-10 approval and implementation; the focused authenticated settings journey passes 1/1 with both digest controls disabled. No digest scheduler, worker, provider delivery or cadence was activated; release recommendation stays NO-GO.
 
 Latest organization-authorization evidence: workspace settings, member mutations, invitation creation and invitation cancellation recheck owner capability inside their transaction; organization-management coverage passes 14/14 and repository typecheck passes. Final RBAC/PostgreSQL contract, hosted CI, staging and production remain open; release recommendation stays NO-GO.
