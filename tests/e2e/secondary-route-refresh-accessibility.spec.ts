@@ -48,3 +48,21 @@ test('keeps activity and provider coverage refresh actions touch-friendly', asyn
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'provider coverage empty state').toEqual([]);
   await page.unroute('**/api/provider-coverage');
 });
+
+test('announces provider coverage loading as a busy state', async ({ page }) => {
+  await signIn(page);
+  let releaseCoverage: (() => void) | undefined;
+  const coverageLoading = new Promise<void>((resolve) => { releaseCoverage = resolve; });
+  await page.route('**/api/provider-coverage', async (route) => {
+    await coverageLoading;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ summary: { configuredSources: 0, discoveryProviders: 0, providersWithReviewedRules: 0, reviewedRules: 0, providersWithMigrationTemplates: 0, migrationTemplates: 0, providersWithVerifiedMigrationTemplates: 0, verifiedMigrationTemplates: 0, providersWithReviewOnlyTemplateProposals: 0, reviewOnlyTemplateProposals: 0, autoFixPolicy: 'guarded-human-review', reviewQueue: { P0: 0, P1: 0, P2: 0 }, migrationTemplatePromotionQueue: [] }, providers: [] }) });
+  });
+
+  await page.goto('/dashboard/providers', { waitUntil: 'domcontentloaded' });
+  const loading = page.getByRole('status').filter({ hasText: 'Loading provider coverage…' });
+  await expect(loading).toBeVisible();
+  await expect(loading).toHaveAttribute('aria-busy', 'true');
+  releaseCoverage?.();
+  await expect(page.getByText('No provider coverage records are available yet')).toBeVisible({ timeout: 30_000 });
+  await page.unroute('**/api/provider-coverage');
+});

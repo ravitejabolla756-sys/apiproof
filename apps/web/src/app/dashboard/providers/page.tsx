@@ -108,7 +108,7 @@ export default function ProvidersPage() {
   useEffect(() => { void loadCoverage(); }, []);
 
   return (
-    <div className="max-w-[1440px] space-y-6 font-sans text-xs">
+    <div aria-busy={loading ? 'true' : undefined} className="max-w-[1440px] space-y-6 font-sans text-xs">
       <div className="flex flex-col justify-between gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-center">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-medium tracking-tight text-[#111111]">
@@ -123,7 +123,7 @@ export default function ProvidersPage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
 
       {error ? null : loading ? (
-        <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]"><Loader2 aria-hidden="true" className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
+        <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]"><Loader2 aria-hidden="true" className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
       ) : !data ? (
         <div className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">Provider coverage is temporarily unavailable.</div>
       ) : data.providers.length === 0 ? (

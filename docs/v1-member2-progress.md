@@ -1833,3 +1833,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/compatibility/page.tsx`, `tests/e2e/compatibility-state.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the compatibility-state suite passed 2/2 in 12.8 seconds, covering pending loading busy semantics and the existing reviewed-empty state with axe-clean content.
 - Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 provider-coverage busy semantics
+
+- Change: the provider-coverage route and loading status now expose `aria-busy="true"` during initial and refresh requests, preserving the truthful source-health boundary and review-only migration-template policy.
+- Files: `apps/web/src/app/dashboard/providers/page.tsx`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the secondary-route suite passed 2/2 in 14.9 seconds, covering provider loading busy semantics, refresh touch targets, empty-state behavior, and axe-clean content.
+- Scope: this advances local UI-12/UI-13, ORG-11 and NOT-03 evidence only; hosted CI, integrated staging, manual screen-reader review, provider approval, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
