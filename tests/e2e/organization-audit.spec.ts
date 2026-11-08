@@ -18,10 +18,10 @@ test.describe('workspace audit trail', () => {
 
   test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
     await signIn(page);
-    let memberRequests = 0;
+    let memberRequests = 0; let allowCollectionRecovery = false;
     await page.route('**/api/workspace/members', async (route) => {
       memberRequests += 1;
-      if (memberRequests === 1) {
+      if (!allowCollectionRecovery) {
         await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Member history is temporarily unavailable.' }) });
         return;
       }
@@ -30,7 +30,7 @@ test.describe('workspace audit trail', () => {
     let invitationRequests = 0;
     await page.route('**/api/workspace/invitations', async (route) => {
       invitationRequests += 1;
-      if (invitationRequests === 1) {
+      if (!allowCollectionRecovery) {
         await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Invitation history is temporarily unavailable.' }) });
         return;
       }
@@ -42,8 +42,11 @@ test.describe('workspace audit trail', () => {
     await expect(page.getByText('No workspace members found.')).toHaveCount(0);
     await expect(page.getByText('No recent invitations.')).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'organization fetch failure states').toEqual([]);
-    await page.getByRole('button', { name: 'Retry members' }).click();
-    await page.getByRole('button', { name: 'Retry invitations' }).click();
+    allowCollectionRecovery = true;
+    const retryMembers = page.getByRole('button', { name: 'Retry members' });
+    await retryMembers.focus(); await expect(retryMembers).toBeFocused(); await page.keyboard.press('Enter');
+    const retryInvitations = page.getByRole('button', { name: 'Retry invitations' });
+    await retryInvitations.focus(); await expect(retryInvitations).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByText('Member history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('Invitation history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('Recovered Member')).toBeVisible();
@@ -57,10 +60,10 @@ test.describe('workspace audit trail', () => {
 
   test('recovers from an initial workspace-settings failure', async ({ page }) => {
     await signIn(page);
-    let settingsRequests = 0;
+    let settingsRequests = 0; let allowSettingsRecovery = false;
     await page.route('**/api/workspace/settings', async (route) => {
       settingsRequests += 1;
-      if (settingsRequests === 1) {
+      if (!allowSettingsRecovery) {
         await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace settings are temporarily unavailable.' }) });
         return;
       }
@@ -72,7 +75,9 @@ test.describe('workspace audit trail', () => {
     await expect(alert).toBeVisible({ timeout: 30_000 });
     await expect(alert.getByRole('button', { name: 'Retry' })).toBeVisible();
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings initial failure').toEqual([]);
-    await alert.getByRole('button', { name: 'Retry' }).click();
+    allowSettingsRecovery = true;
+    const retrySettings = alert.getByRole('button', { name: 'Retry' });
+    await retrySettings.focus(); await expect(retrySettings).toBeFocused(); await page.keyboard.press('Enter');
     await expect(alert).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'workspace settings recovered state').toEqual([]);
@@ -108,10 +113,9 @@ test.describe('workspace audit trail', () => {
     const settingsLoading = new Promise<void>((resolve) => { releaseSettings = resolve; });
     await page.route('**/api/workspace/settings', async (route) => { await settingsLoading; await route.continue(); });
 
-    let auditRequests = 0;
+    let allowAuditRecovery = false;
     await page.route('**/api/workspace/audit**', async (route) => {
-      auditRequests += 1;
-      if (auditRequests === 1) {
+      if (!allowAuditRecovery) {
         await route.fulfill({
           status: 503,
           contentType: 'application/json',
@@ -133,7 +137,9 @@ test.describe('workspace audit trail', () => {
     await expect(page.getByText('No administrative events recorded yet.')).toHaveCount(0);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit failure state').toEqual([]);
 
-    await page.getByRole('button', { name: 'Retry audit' }).click();
+    allowAuditRecovery = true;
+    const retryAudit = page.getByRole('button', { name: 'Retry audit' });
+    await retryAudit.focus(); await expect(retryAudit).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByText('Audit history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('audit.recovered')).toBeVisible({ timeout: 30_000 });
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'audit recovered state').toEqual([]);
