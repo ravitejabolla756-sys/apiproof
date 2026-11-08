@@ -157,6 +157,34 @@ describe('GET /api/repositories', () => {
     expect(Number(repositoryCount?.count)).toBe(0);
   });
 
+  it('denies repository connection for an unknown persisted role before provider work or mutation', async () => {
+    const user = await createUserWithSession('repo-unknown-role@example.test', 'Strong-password-1!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(user.user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.user.id],
+    );
+    const before = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ?', [workspace.id],
+    );
+
+    const response = await POST(new Request('http://localhost/api/repositories', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${user.session.id}`,
+      },
+      body: JSON.stringify({ githubRepositoryId: '987654321', workspaceId: workspace.id }),
+    }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    const after = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ?', [workspace.id],
+    );
+    expect(Number(after?.count)).toBe(Number(before?.count ?? 0));
+  });
+
   it('does not promote an unscoped legacy repository into production workspace access', async () => {
     const owner = await createUserWithSession('legacy-access@example.test', 'Strong-password-1!', 'Legacy Access');
     await getDatabase().execute(`
