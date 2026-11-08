@@ -14,7 +14,10 @@ test.describe('public auth-entry state announcements', () => {
   });
 
   test('announces invitation acceptance failures and preserves sign-in recovery', async ({ page }) => {
+    let releaseResponse!: () => void;
+    const responseReleased = new Promise<void>((resolve) => { releaseResponse = resolve; });
     await page.route('**/api/workspace/invitations/accept', async (route) => {
+      await responseReleased;
       await route.fulfill({ status: 410, contentType: 'application/json', body: JSON.stringify({ error: 'This invitation has expired.' }) });
     });
     await page.goto('/invite/accept?token=expired-token');
@@ -23,6 +26,10 @@ test.describe('public auth-entry state announcements', () => {
     await acceptInvitation.focus();
     await expect(acceptInvitation).toBeFocused();
     await page.keyboard.press('Enter');
+    const progress = page.getByRole('status').filter({ hasText: 'Accepting invitation…' });
+    await expect(progress).toBeVisible();
+    await expect(progress).toHaveAttribute('aria-busy', 'true');
+    releaseResponse();
     const alert = page.getByRole('alert').filter({ hasText: 'This invitation has expired.' });
     await expect(alert).toBeVisible();
     await expect(alert).toHaveAttribute('aria-live', 'assertive');

@@ -87,3 +87,5 @@ Latest navbar evidence: the landing brand link, mobile menu toggle, and mobile n
 Latest regression evidence: full lint passed and the hermetic repository suite passed 1,341 tests across 162 files with 1 skipped file and 4 skipped tests. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.
 
 Latest quality-regression evidence: lint passed; the no-file-parallelism repository suite passed 1,341 tests with 4 skipped tests across 162 files, with 1 skipped file, in 121.86 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.
+
+Latest invitation evidence: invitation acceptance and its Suspense fallback expose busy semantics; the focused auth-entry journey passes 2/2 with delayed acceptance recovery and axe-clean content. Transactional email, Member 1 auth integration, hosted CI, staging, manual review and production remain open.

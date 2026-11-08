@@ -1783,6 +1783,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `pnpm lint` passed; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed with 1,341 tests passed, 4 skipped tests, 162 test files passed and 1 skipped file in 121.86 seconds.
 - Scope: this is hermetic local regression evidence; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — invitation acceptance busy semantics
+
+- Change: invitation acceptance and its Suspense fallback now expose `aria-busy="true"` while loading; the existing expired-invitation recovery test holds the request and verifies the busy announcement before releasing it.
+- Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; repository typecheck passed; web production build passed with 83 generated pages; focused auth-entry Playwright passed 2/2 in 4.1 seconds with axe-clean recovery coverage.
+- Scope: this advances local AUTH-09/UI-12 evidence only; transactional email, Member 1 auth integration, hosted CI, staging, manual assistive-technology review and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 finding-detail loading semantics
 
 - Change: the finding-detail workbench loading status now exposes `aria-busy="true"`, complementing existing busy semantics for migration planning and secure verification actions without changing the review-only workflow.
