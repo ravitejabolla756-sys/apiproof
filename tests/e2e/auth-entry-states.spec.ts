@@ -23,7 +23,9 @@ test.describe('public auth-entry state announcements', () => {
     const alert = page.getByRole('alert').filter({ hasText: 'This invitation has expired.' });
     await expect(alert).toBeVisible();
     await expect(alert).toHaveAttribute('aria-live', 'assertive');
-    await expect(page.getByRole('link', { name: 'Sign in with the invited account' })).toBeVisible();
+    const recoveryLink = page.getByRole('link', { name: 'Sign in with the invited account' });
+    await expect(recoveryLink).toBeVisible();
+    expect((await recoveryLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
     await page.unroute('**/api/workspace/invitations/accept');
   });

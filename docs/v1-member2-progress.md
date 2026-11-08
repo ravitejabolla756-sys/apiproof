@@ -1547,3 +1547,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/command-palette.tsx`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/dialog-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; dedicated mobile dialog journey passed 1/1 in 14.5 seconds with axe-clean dialogs, measured close controls, intentional search-field autofocus, and Escape focus recovery; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — ORG-03 invitation recovery touch targets
+
+- Change: invitation acceptance and post-failure recovery/administration links now expose explicit 44px minimum touch targets; invitation state messaging and provider-independent behavior remain unchanged.
+- Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; auth-entry suite passed 2/2 in 8.7 seconds, including axe-clean verification and a measured 44px expired-invitation sign-in recovery link; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local ORG-03/UI-12/UI-13 and NOT-02 evidence only; approved transactional email, hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
