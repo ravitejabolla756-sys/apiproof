@@ -657,4 +657,4 @@ Phase 0 read-only checks:
 ### 2026-11-08 AUTH-10 bounded OAuth state cleanup
 
 - Capped synchronous expired Google/GitHub login-state cleanup to 1,000 deterministic candidates per new login attempt, ordered by expiry and hash. Subsequent attempts continue pruning; active and consumed-but-unexpired replay evidence remain untouched.
-- Added a 1,001-expired-row GitHub regression proving a single login attempt prunes exactly one batch and preserves its newly issued active state. Focused GitHub and Google OAuth suites pass 2 files / 22 tests; targeted ESLint, full workspace `pnpm typecheck`, and `git diff --check` pass. PostgreSQL execution, live providers, and full-suite rerun remain unverified for this change.
+- Added 1,001-expired-row regressions for both provider tables, proving a single login attempt prunes exactly one batch and preserves its newly issued active state despite the provider schemas differing. Focused GitHub and Google OAuth suites pass 2 files / 23 tests; targeted ESLint, full workspace `pnpm typecheck`, and `git diff --check` pass. PostgreSQL execution, live providers, and full-suite rerun remain unverified for this change.

@@ -171,6 +171,35 @@ describe('Google OAuth 2.0 sign-in', () => {
     await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
   });
 
+  it('limits expired-state pruning to one bounded batch per login attempt', async () => {
+    const expiredCount = 1_001;
+    const expiredAt = new Date(Date.now() - 60_000).toISOString();
+    const createdAt = new Date(Date.now() - 120_000).toISOString();
+    const values = Array.from({ length: expiredCount }, (_, index) => [
+      `expired-test-state-${String(index).padStart(4, '0')}`,
+      testVerifier,
+      'expected-nonce',
+      '/dashboard',
+      expiredAt,
+      null,
+      createdAt,
+    ]);
+    const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?)').join(', ');
+    await getDatabase().execute(
+      `INSERT INTO google_oauth_states (state_hash, code_verifier, nonce, return_to, expires_at, consumed_at, created_at) VALUES ${placeholders}`,
+      values.flat(),
+    );
+
+    const active = await seedState();
+    const activeHash = crypto.createHash('sha256').update(active.state).digest('hex');
+
+    await expect(getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM google_oauth_states WHERE expires_at <= ?',
+      [new Date().toISOString()],
+    )).resolves.toMatchObject({ count: 1 });
+    await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
+  });
+
   it('rejects invalid claims and signatures before account creation', async () => {
     const config = getGoogleOAuthConfig({ NODE_ENV: 'test', GOOGLE_OAUTH_CLIENT_ID: clientId, GOOGLE_OAUTH_CLIENT_SECRET: clientSecret });
     expect(config).not.toBeNull();
