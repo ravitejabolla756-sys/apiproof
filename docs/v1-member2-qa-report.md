@@ -733,6 +733,15 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, Member 1 integration and production checks remain NOT_RUN.
 
+## 2026-11-08 — workspace-settings recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the workspace-settings page and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/settings-recovery-loading.spec.ts --reporter=line`: PASS, 1/1 in 14.0 seconds; the retry alert remains visible and the Retry settings load control exposes disabled/`aria-busy` while both settings requests are held.
+- `pnpm exec playwright test tests/e2e/dashboard-data-states.spec.ts -g "workspace settings" --reporter=line`: PASS, 2/2 in 18.2 seconds.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, GitHub/provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

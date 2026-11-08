@@ -169,3 +169,7 @@ Notification-preference initial-load recovery remains visible and exposes disabl
 ## Latest repository-detail recovery evidence — 2026-11-08
 
 Repository-detail degraded-state retry remains visible and exposes disabled plus `aria-busy` semantics while its request is pending; focused and existing list/detail recovery coverage passes 3/3 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production remain open. Release recommendation stays NO-GO.
+
+## Latest workspace-settings recovery evidence — 2026-11-08
+
+Workspace Settings preserves its degraded-state alert during retry and exposes disabled plus `aria-busy` semantics on Retry settings load while repository and billing requests are pending; focused plus existing workspace-settings coverage passes 3/3 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open. Release recommendation stays NO-GO.

@@ -45,10 +45,12 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [errorAction, setErrorAction] = useState<'load' | 'connect' | null>(null);
 
-  async function loadStatus() {
+  async function loadStatus(preserveError = false) {
     setLoading(true);
-    setError(null);
-    setErrorAction(null);
+    if (!preserveError) {
+      setError(null);
+      setErrorAction(null);
+    }
     try {
       const [repoRes, billingRes] = await Promise.all([
         fetch('/api/github/repositories'),
@@ -70,6 +72,8 @@ export default function SettingsPage() {
         const billingData = await billingRes.json();
         setBilling(billingData);
       }
+      setError(null);
+      setErrorAction(null);
     } catch (err: unknown) {
       console.error("Failed to load settings data:", err);
       setError(err instanceof Error ? err.message : 'Workspace settings data is temporarily unavailable.');
@@ -118,7 +122,7 @@ export default function SettingsPage() {
         <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" aria-hidden="true" />
           <span>{error}</span>
-          <Button type="button" variant="outline" size="sm" onClick={() => void (errorAction === 'connect' ? handleConnectGitHub() : loadStatus())} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? 'Retry GitHub connection' : 'Retry settings load'}</Button>
+          <Button type="button" variant="outline" size="sm" disabled={errorAction === 'connect' ? connecting : loading} aria-busy={(errorAction === 'connect' ? connecting : loading) ? 'true' : undefined} onClick={() => void (errorAction === 'connect' ? handleConnectGitHub() : loadStatus(true))} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? 'Retry GitHub connection' : 'Retry settings load'}</Button>
         </div>
       )}
 

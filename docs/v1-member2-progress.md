@@ -2130,3 +2130,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/e2e/repository-detail-recovery-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the new held-retry journey plus existing list/detail recovery coverage passed 3/3; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 detail recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/ORG-02/BILL-07 workspace-settings recovery busy semantics
+
+- Change: Workspace Settings now preserves its recoverable error alert while the settings retry is pending, and the Retry settings load control exposes disabled plus `aria-busy="true"` until both repository and billing requests recover; successful recovery clears the alert.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/settings-recovery-loading.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the new held-retry journey passed 1/1 in 14.0 seconds; existing workspace-settings data-state coverage passed 2/2 in 18.2 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Scope: this advances local UI-12/UI-13, ORG-02 and BILL-07 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
