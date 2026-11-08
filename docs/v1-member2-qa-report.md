@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 public/auth-entry contrast audit
+
+- PASS: The retained color-contrast audit now covers all 21 public/auth-entry routes, plus the explicit 404 response, instead of only the 16 informational public routes.
+- PASS: The focused public contrast suite passed 2/2 in 11.2 seconds; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-ui12-auth-entry-contrast-6b3JWs`.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — current-tree quality and seeded regression reconciliation
 
 - PASS: `pnpm lint` and `pnpm typecheck` passed; the web production build generated 83 pages; the seeded Vitest regression passed 1,365 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 177.60 seconds.
