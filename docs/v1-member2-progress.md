@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 repository filtered-empty keyboard recovery
+
+- Change: Extended the repository filtered-empty journey to focus the “Clear filters” recovery action, verify focus visibility, and activate it with Enter before restoring the repository list; health-filter keyboard assertions remain intact.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused repository-filter journey passed 1/1 in 14.0 seconds with an axe-clean filtered-empty state. Artifacts: `/tmp/myowl-v1-repository-filter-empty-keyboard-artifacts`.
+- Scope: local UI-12 filtered-empty/recovery evidence only; no GitHub, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 compatibility-map recovery keyboard coverage
 
 - Change: Replaced compatibility-map request-count timing with an explicit initial/recovery/refresh phase fixture; the initial Retry, Refresh compatibility map, and Retry compatibility map refresh controls now verify focus visibility and Enter activation.

@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Repository filtered-empty keyboard recovery
+
+- PASS: Focused repository-filter journey passed 1/1 in 14.0 seconds; filtered-empty “Clear filters” now verifies keyboard focus and Enter activation before restoring the repository list, with the axe-clean state and health-filter semantics retained.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. GitHub integration, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Compatibility-map recovery keyboard coverage
 
 - PASS: Compatibility-map recovery passed 1/1 in dev mode and 1/1 in CI-mode production-build conditions; initial retry, refresh, and refresh-retry controls verify keyboard focus and Enter activation with the existing axe-clean refresh error assertion.
