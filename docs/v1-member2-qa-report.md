@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — NOT-10 digest contract proposal
+
+- PASS: Added a review-only digest contract proposal with explicit tenant, recipient, deduplication, authorization, retry, redaction and retention boundaries.
+- NOT_RUN: No digest schema, scheduler, worker, provider delivery or browser behavior was implemented; owner/Member 1 approval remains required.
+
 ## 2026-11-08 — SEC-18 incident runbook evidence contract
 
 - PASS: Documentation diff check passed after adding bounded closure-evidence and SEV-0/SEV-1 handoff templates to the incident-response draft.

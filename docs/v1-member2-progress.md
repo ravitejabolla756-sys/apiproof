@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — NOT-10 digest notification contract proposal
+
+- Change: Added a review-only digest notification contract proposal covering tenant-scoped event identity, send-time authorization, idempotency, retry/dead-letter states, redaction, retention and the decisions required before implementation.
+- Evidence: Proposal is explicitly non-operational: no schema, scheduler, worker, provider, email delivery or customer-facing cadence was added. `git diff --check` passed.
+- Scope: local NOT-10 contract preparation only; owner/Member 1 cadence, event, retention and provider approval remain required before implementation.
+
 ## 2026-11-08 checkpoint — SEC-18 incident closure and escalation evidence contract
 
 - Change: Strengthened the incident-response draft with a bounded closure-evidence checklist and an explicit SEV-0/SEV-1 handoff record, including truthful `NOT_AVAILABLE` handling when monitoring, staging, provider or production evidence is not approved.
