@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — NOT-10 digest channel browser boundary
+
+- Change: Extended the authenticated settings browser journey to verify both Weekly digest email and Weekly digest Slack controls remain disabled while the digest contract, scheduler and provider path are unapproved.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 -g "loads account, workspace, and notification settings"` passed **1/1 in 2.7 seconds**; targeted ESLint and `git diff --check` passed. Artifacts: `/tmp/myowl-v1-not10-digest-ui-XV9mAM`.
+- Scope: strengthens local NOT-10/UI-12 truthfulness evidence only; no digest schema, scheduler, worker, provider delivery or customer cadence was added.
+
 ## 2026-11-08 checkpoint — WEB-13/UI-12 no-monitor status mobile semantics
 
 - Change: Strengthened the no-monitor status journey at 390px to assert polite atomic live-region attributes, keyboard focus on the support link, no document-level horizontal overflow, and axe-clean `#main-content`, while preserving the truthful unavailable-monitor copy.
