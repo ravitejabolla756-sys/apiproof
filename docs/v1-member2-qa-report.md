@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — provider-rule and invitation mutation cache boundaries
+
+- PASS: Provider-rule edit/review/test and invitation acceptance responses are private/non-cacheable across authorization, owner denial, success and direct failure paths.
+- PASS: Seeded organization/provider-review coverage passed 26/26; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: Provider approval, transactional delivery, PostgreSQL/RBAC, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — repository detail and scan response cache boundaries
 
 - PASS: Repository detail/delete and scan responses are private/non-cacheable across direct authorization, access denial, plan-limit, provider, success and failure paths.

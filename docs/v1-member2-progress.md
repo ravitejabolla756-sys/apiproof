@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — provider-rule and invitation mutation cache boundaries
+
+- Change: Provider-rule edit/review/test and workspace-invitation acceptance responses now use the shared private `no-store` policy for authorization, tenant-owner denial, success and direct failure outcomes; typed organization failures retain their policy.
+- Evidence: Seeded `tests/organization-management.test.ts` and `tests/provider-review-queue-route.test.ts` passed 26/26; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local ORG-02/ORG-11 provider-review and invitation data-protection hardening only; provider approval, transactional delivery, PostgreSQL/RBAC, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — repository detail and scan response cache boundaries
 
 - Change: Repository detail/delete and live-scan responses now use the shared private `no-store` policy for authorization, access denial, plan limits, provider failures, scan success and scan failure outcomes.
