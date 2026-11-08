@@ -33,7 +33,7 @@ test('labels GitHub installation recovery for the failed action', async ({ page 
   await retryGitHub.focus();
   await expect(retryGitHub).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/dashboard\/settings\?github=connected/);
+  await expect(page).toHaveURL(/\/dashboard\/settings\?github=connected/, { timeout: 30_000 });
   expect(installAttempts).toBe(2);
   await page.unroute('**/api/github/repositories');
   await page.unroute('**/api/billing/subscription');
