@@ -1792,6 +1792,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the complete repository-dialog recovery suite passed 3/3 in 8.8 seconds, including delayed loading, initial failure/retry, axe-clean dialog content, focus trapping and invoking-control restoration.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 settings loading semantics
+
+- Change: account, notification-preference, and workspace-settings initial loading status regions now expose `aria-busy="true"`, preserving existing loaded-surface busy semantics and settings recovery/action behavior.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/public-site.spec.ts`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: Impeccable detector reported only six incumbent purple heading-accent warnings and no change-related finding; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; focused hermetic Playwright coverage passed 12/12 in 25.0 seconds across account, notification, workspace-settings and organization-audit pending/recovery journeys.
+- Scope: this advances local UI-12/UI-13, AUTH-08, NOT-06 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 notification-settings busy semantics
 
 - Change: the notification-preferences surface now exposes `aria-busy="true"` during initial loading and preference saves, while retaining its existing live announcements, required-message protections, and beta delivery boundary.

@@ -113,7 +113,7 @@ export default function AccountSettingsPage() {
       {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><span>{error}</span>{!account && <Button type="button" variant="outline" size="sm" onClick={() => void loadAccount()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry account load</Button>}</div>}
 
       {loading ? (
-        <div role="status" aria-live="polite" aria-atomic="true" className="flex items-center gap-2 rounded-2xl border border-[#E8E8E5] bg-white p-6 text-xs text-[#686868]">
+        <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="flex items-center gap-2 rounded-2xl border border-[#E8E8E5] bg-white p-6 text-xs text-[#686868]">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading account settings…
         </div>
       ) : account ? (
