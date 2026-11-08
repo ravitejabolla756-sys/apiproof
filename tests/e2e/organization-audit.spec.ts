@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { signIn } from './helpers.js';
+import { signIn, withAcceptedInvitation } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
   test('recovers an unauthorized stale workspace cookie without leaking context', async ({ page }) => {
@@ -65,6 +65,27 @@ test.describe('workspace audit trail', () => {
     await expect(role).toHaveValue('owner');
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'last-owner role refusal').toEqual([]);
     await page.unroute('**/api/workspace/members');
+  });
+
+  test('hides owner-only workspace controls from an accepted member', async ({ page, browser }) => {
+    await signIn(page);
+    const inviteEmail = `browser-member-boundary-${Date.now()}@example.test`;
+    await withAcceptedInvitation(page, browser, inviteEmail, async (invitedPage) => {
+      await invitedPage.goto('/dashboard');
+      const workspaceResponse = await invitedPage.request.get('/api/workspaces');
+      const workspaceData = await workspaceResponse.json() as { workspaces?: Array<{ id: string; role: string }> };
+      const memberWorkspace = workspaceData.workspaces?.find((workspace) => workspace.role === 'member');
+      expect(memberWorkspace).toBeTruthy();
+      const workspaceSelector = invitedPage.getByLabel('Active workspace');
+      await workspaceSelector.selectOption(memberWorkspace!.id);
+      await expect(workspaceSelector).toHaveValue(memberWorkspace!.id);
+      await invitedPage.goto('/dashboard/settings/workspace');
+      await expect(invitedPage.getByText('Member access')).toBeVisible({ timeout: 30_000 });
+      await expect(invitedPage.getByRole('heading', { name: 'Invite a member' })).toHaveCount(0);
+      await expect(invitedPage.getByLabel('Invite email')).toHaveCount(0);
+      await expect(invitedPage.getByRole('button', { name: 'Save workspace' })).toHaveCount(0);
+      await expect(invitedPage.getByRole('button', { name: 'Remove', exact: true })).toHaveCount(0);
+    });
   });
 
   test('announces an empty workspace list instead of a loading state', async ({ page }) => {
