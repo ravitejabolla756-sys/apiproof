@@ -43,3 +43,5 @@ Latest navigation evidence: FAQ support, pipeline stage, dashboard brand, and st
 Latest public accessibility evidence: the pipeline’s inactive-panel focus issue and AST badge contrast issue are remediated; focused pipeline axe, full public axe, and public contrast audits pass locally. Hosted CI, manual review, staging and production remain open.
 
 Latest navbar evidence: the landing brand link, mobile menu toggle, and mobile navigation links are measured at 44px or larger with axe-clean menu content. Hosted CI, manual review, staging and production remain open.
+
+Latest regression evidence: full lint passed and the hermetic repository suite passed 1,341 tests across 162 files with 1 skipped file and 4 skipped tests. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.

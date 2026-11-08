@@ -1597,6 +1597,12 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — repository-wide local regression evidence
+
+- Change: revalidated the cumulative Member 2 candidate on the audited branch after the navbar and pipeline accessibility slices; no source or dependency files were changed in this checkpoint.
+- Evidence: `pnpm lint` passed with `--max-warnings 0`; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,341 tests across 162 files, with 1 skipped file and 4 skipped tests, in 113.16 seconds.
+- Scope: this strengthens local UI-12/UI-13 and cross-package regression evidence only; hosted CI, PostgreSQL/RBAC, provider delivery, legal/owner review, manual assistive-technology review, staging and production verification remain open.
+
 ## 2026-11-08 checkpoint — UI-12 landing navbar brand touch target
 
 - Change: the shared landing-navbar brand link now exposes an explicit 44px minimum touch target while preserving its home destination, accessible name, responsive layout and mobile-menu behavior.
