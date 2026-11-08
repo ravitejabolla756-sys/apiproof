@@ -42,6 +42,8 @@ Latest UI-12 workspace evidence: rebuilt current-worktree bundle generated 83 pa
 
 Latest UI-13 evidence: rebuilt current-worktree production bundle generated 83 pages and the complete isolated browser matrix passed 161/161 in 4.0 minutes on port 3101, with artifacts retained at `/tmp/myowl-v1-ui13-pipeline-contrast-aUJs1a`. Hosted CI, integrated staging, PostgreSQL/RBAC, full manual screen-reader review and production remain open.
 
+Latest SEC-18 evidence: the incident-response draft now records the highest-applicable-severity decision sequence and explicit readiness prerequisites for named owners, alert routing, status source, provider response, PostgreSQL/restore evidence and tabletop sign-off. All unavailable or unperformed operational evidence remains labeled `NOT_AVAILABLE` or `NOT_RUN`; owner/Member 1 review and the tabletop remain open.
+
 Latest public performance evidence: rebuilt production bundle passed the 9-route loopback probe over three samples with median load 10–30 ms, response 2–10 ms and encoded HTML 6.1–17.0 KiB. This is not Lighthouse/Core Web Vitals or deployment evidence; hosted CI, staging and production remain open.
 
 Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes a polite atomic status region; Impeccable detector, targeted lint, repository typecheck and provider/repository recovery browser coverage pass 2/2. Hosted CI, manual assistive-technology review, staging and production remain open.

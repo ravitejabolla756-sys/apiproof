@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — SEC-18 severity decision and readiness prerequisites
+
+- Change: Added an explicit highest-applicable-severity decision sequence and an operational-readiness prerequisite table to the incident-response draft. The table records missing owners, alert routing, status source, provider access, PostgreSQL/restore evidence and tabletop status as `NOT_AVAILABLE`/`NOT_RUN` rather than implying readiness.
+- Evidence: `git diff --check` passed; no live monitoring, staffing, provider, staging, production or owner approval was fabricated.
+- Scope: improves local SEC-18 reviewability only; owner/Member 1 review and the timestamped tabletop exercise remain required.
+
 ## 2026-11-08 checkpoint — WEB-15 dedicated public axe and contrast coverage for 404
 
 - Change: Added explicit HTTP-404 not-found assertions to the retained public axe and public color-contrast suites, so the error route is audited alongside the 200-status public surfaces.

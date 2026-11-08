@@ -19,6 +19,30 @@ The current repository does not prove a staffed on-call rotation, approved statu
 
 Assign one incident commander, one technical lead, and one communications owner. If those people are not available, the service owner must explicitly accept the risk before continuing a production operation.
 
+### Severity decision sequence
+
+Classify from the highest applicable condition and record the evidence for the decision:
+
+1. **SEV-0** if there is confirmed cross-workspace exposure, credential compromise, or an unsafe repository write. Pause the affected capability and escalate immediately to the security owner and service owner.
+2. **SEV-1** if the issue is an authentication outage, tenant-authorization regression, billing-integrity issue, broad scan corruption, or a required account/security notification failure without confirmed SEV-0 impact.
+3. **SEV-2** if the impact is limited to one workspace integration, notification queue, or public route and no higher-severity condition applies.
+4. **SEV-3** for a cosmetic, documentation, or isolated non-sensitive defect.
+
+When scope or data impact is unknown, use the higher plausible severity until the investigation establishes a lower one. A later downgrade must record the evidence and decision-maker; a green deploy, queue depth, or client-side state is not sufficient evidence.
+
+### Operational readiness prerequisites
+
+Before enabling a live integration or treating this runbook as an operational control, the service owner and security owner must record the following. `NOT_AVAILABLE` is an honest state, not a substitute for approval.
+
+| Prerequisite | Required evidence | Current repository state |
+|---|---|---|
+| Incident commander, technical lead and communications owner | Named owners and escalation channel | `NOT_AVAILABLE — owner review required` |
+| Detection and alert routing | Approved monitor, alert rule, notification path and test timestamp | `NOT_AVAILABLE — monitoring approval required` |
+| Status communication source | Approved status provider or owner-controlled publishing procedure | `NOT_AVAILABLE — status-source approval required` |
+| Provider and credential response | Approved rotation/suspension procedure without secrets in the record | `NOT_AVAILABLE — provider access required` |
+| Database and tenant-isolation response | Reviewed PostgreSQL roles/RLS evidence and restore/rollback procedure | `NOT_AVAILABLE — staging/Member 1 evidence required` |
+| Tabletop exercise | Timestamped redacted exercise record with gaps, owners and sign-off | `NOT_RUN — tabletop required` |
+
 ## First 15 minutes
 
 1. Open an incident record with UTC timestamps, reporter, affected surface, suspected severity, and a no-secrets evidence location.

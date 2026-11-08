@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — SEC-18 severity decision and readiness prerequisites
+
+- PASS: The incident-response draft now defines highest-applicable-severity classification and records the required incident owners, alert routing, status source, provider response, PostgreSQL/restore evidence and tabletop exercise as explicit prerequisites.
+- PASS: `git diff --check` passed; all unavailable or unperformed operational evidence remains labeled `NOT_AVAILABLE` or `NOT_RUN`.
+- NOT_RUN: Owner/Member 1 review, live monitoring, on-call staffing, provider access, staging validation, production exercise and tabletop sign-off remain open.
+
 ## 2026-11-08 — WEB-15 dedicated public axe and contrast coverage for 404
 
 - PASS: The retained public axe and color-contrast suites now explicitly request a nonexistent route, require HTTP 404 and audit the rendered not-found response rather than treating only 200-status routes as public QA coverage.
