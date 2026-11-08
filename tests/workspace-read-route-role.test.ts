@@ -117,5 +117,42 @@ describe('workspace read route role validation', () => {
       const payload = await response.json() as Record<string, unknown[]>;
       expect(payload[route.key], `${route.url} cross-tenant outsider`).toHaveLength(0);
     }
+
+    await db.execute('UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?', ['member', workspace.id, user.id]);
+    const foreignOwner = await createUserWithSession('foreign-read-owner@example.com', 'Pass12345!', 'Foreign Read Owner');
+    const foreignWorkspace = await getDefaultWorkspaceForUser(foreignOwner.user.id);
+    await db.execute(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, created_at)
+      VALUES ('foreign_repo', ?, ?, 'foreign-owner', 'foreign-repo', 'foreign-owner/foreign-repo', 'foreign-repo-1', 'main', ?)
+    `, [foreignWorkspace.id, foreignOwner.user.id, now]);
+    await db.execute(`
+      INSERT INTO scans (id, repository_id, sha, status, provider, started_at, completed_at)
+      VALUES ('foreign_scan', 'foreign_repo', '1123456789012345678901234567890123456789', 'completed', 'fixture', ?, ?)
+    `, [now, now]);
+    await db.execute(`
+      INSERT INTO findings (
+        id, scan_id, repository_id, usage_id, change_id, provider, title, description,
+        severity, confidence, file_path, line_number, symbol, status, reason,
+        reason_codes, evidence, created_at
+      ) VALUES (
+        'foreign_finding', 'foreign_scan', 'foreign_repo', 'foreign_usage', 'foreign_change', 'fixture',
+        'Foreign fixture finding', 'Synthetic cross-tenant test record', 'high', 0.99, 'src/secret.ts', 1,
+        'foreignFixture()', 'open', 'test', '[]', '{}', ?
+      )
+    `, [now]);
+
+    const ownFindingResponse = await findingsGet(new Request('http://localhost/api/findings?repositoryId=role_repo', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }));
+    expect(ownFindingResponse.status).toBe(200);
+    expect((await ownFindingResponse.json() as { findings: Array<{ id: string }> }).findings.map(({ id }) => id)).toEqual(['role_finding']);
+
+    const foreignFindingResponse = await findingsGet(new Request('http://localhost/api/findings?repositoryId=foreign_repo', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }));
+    expect(foreignFindingResponse.status).toBe(200);
+    const foreignPayload = await foreignFindingResponse.json() as { findings: Array<{ id: string; title: string }> };
+    expect(foreignPayload.findings).toEqual([]);
+    expect(JSON.stringify(foreignPayload)).not.toContain('Foreign fixture finding');
   });
 });
