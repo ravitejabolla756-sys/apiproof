@@ -5,7 +5,7 @@
 - PASS: Decorative icons on cookies, 404, About and Security routes are hidden from assistive technology while visible text remains authoritative.
 - PASS: Targeted ESLint, `git diff --check` and Impeccable detector; combined public axe/accessibility run passed 10/12, including the full public-route axe audit; web production build generated 83 static pages.
 - PASS: The same four responsive mobile/tablet journeys passed 4/4 in 40.4 seconds against the production-build CI harness; the two earlier failures were dev-server stress timeouts, not product or axe failures.
-- NOT_RUN: Hosted CI, staging, manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-member2-public-icon-a11y-artifacts-qSWpVH`.
+- NOT_RUN: Hosted CI, staging, manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-member2-public-icon-a11y-artifacts-qSWpVH`, `/tmp/myowl-v1-member2-responsive-ci-artifacts-eRQAd7`.
 
 ## 2026-11-08 — UI-12 account-email help association
 
