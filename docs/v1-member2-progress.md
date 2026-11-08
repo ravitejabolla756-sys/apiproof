@@ -1798,6 +1798,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the authentication loading suite passed 5/5 in 5.4 seconds, including delayed verification, session validation, login, reset-request and password-reset progress.
 - Scope: this advances local UI-12/UI-13 and NOT-02 evidence only; hosted CI, integrated staging, manual screen-reader review, Member 1 auth integration, provider delivery and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 auth submission busy semantics
+
+- Change: login, password-reset request, and password-reset submission progress nodes now expose `aria-busy="true"` alongside their existing busy forms and live announcements.
+- Files: `apps/web/src/app/login/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; authentication loading coverage passed 5/5 in 4.9 seconds with busy assertions for login, reset request, password reset and verification.
+- Scope: this advances local UI-12/UI-13 and NOT-02 evidence only; hosted CI, integrated staging, manual screen-reader review, Member 1 auth integration, provider delivery and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 compatibility-map component loading semantics
 
 - Change: the shared dashboard compatibility-map loading status now exposes `aria-busy="true"`, preserving its initial/refresh error recovery, repository selection and review-only provenance behavior.

@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
           {message && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800">{message}</p>}
           {error && <p role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           <button type="submit" disabled={loading} className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#0F172A] py-3.5 font-mono text-xs font-medium uppercase tracking-wider text-white disabled:opacity-60">
-            <span role={loading ? 'status' : undefined} aria-live={loading ? 'polite' : undefined} aria-atomic={loading ? 'true' : undefined}>{loading ? 'Sending…' : 'Send reset link'}</span>
+            <span role={loading ? 'status' : undefined} aria-live={loading ? 'polite' : undefined} aria-atomic={loading ? 'true' : undefined} aria-busy={loading ? 'true' : undefined}>{loading ? 'Sending…' : 'Send reset link'}</span>
           </button>
         </form>
         <p className="mt-5 text-center text-sm"><Link href="/login" className="inline-flex min-h-11 items-center justify-center text-slate-600 underline-offset-4 hover:underline">Back to sign in</Link></p>

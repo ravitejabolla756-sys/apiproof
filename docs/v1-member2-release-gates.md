@@ -68,6 +68,8 @@ Latest browser-E2E evidence: the current production build generated 83 pages and
 
 Latest verification evidence: the email-verification pending state exposes `aria-busy`, and the authentication loading suite passes 5/5 with existing session/login/reset progress coverage. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
 
+Latest auth-submission evidence: login, reset-request, password-reset and verification progress nodes expose busy semantics, with authentication loading coverage passing 5/5. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

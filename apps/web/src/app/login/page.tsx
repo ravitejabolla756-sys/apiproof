@@ -235,7 +235,7 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                <span role="status" aria-live="polite" aria-atomic="true">{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
+                <span role="status" aria-live="polite" aria-atomic="true" aria-busy="true">{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
               </>
             ) : mode === 'login' ? (
               'Sign In'
