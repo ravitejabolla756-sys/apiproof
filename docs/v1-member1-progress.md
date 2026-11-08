@@ -618,6 +618,10 @@ Phase 0 read-only checks:
 
 - Added a table-driven regression that checks every capability for each existing owner, admin, and member role without changing the policy implementation or permission assignments. `workspace-policy.test.ts`, `workspace-policy-integration.test.ts`, and `repositories-list-route.test.ts` pass 3 files / 16 tests; targeted ESLint, full workspace typecheck, and `git diff --check` pass. Member 2 contract approval and effective PostgreSQL/RLS verification remain open.
 
+### 2026-11-08 SEC-01 database inventory wording reconciliation
+
+- Corrected the access-matrix scope paragraph from 40 to 46 distinct tables to match the current schema inventory and its reconciliation record. This is documentation consistency only; the source inventory test and actual PostgreSQL role, ACL, and RLS evidence remain separate.
+
 ### 2026-11-08 SEC-11 durable error current-HEAD suite
 
 - After worker error-message persistence hardening, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 174 files passed / 1 skipped; 1,447 tests passed / 4 skipped; 243.72 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This does not establish PostgreSQL or production evidence.

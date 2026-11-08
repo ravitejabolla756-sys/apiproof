@@ -8,7 +8,7 @@ Branch: `codex/v1-backend-security`
 
 ## Scope and evidence boundary
 
-This inventory covers every `CREATE TABLE IF NOT EXISTS` declaration under `apps/web/src/lib/server/db/` in the isolated worktree. The source contains 40 distinct tables. The PostgreSQL adapter, migration runner, and migration modules were read directly because the codebase-memory index reported metadata changes after the security edits.
+This inventory covers every `CREATE TABLE IF NOT EXISTS` declaration under `apps/web/src/lib/server/db/` in the isolated worktree. The source contains 46 distinct tables, reconciled against the matrix by `tests/database-access-matrix.test.ts`. The PostgreSQL adapter, migration runner, and migration modules were read directly because the codebase-memory index reported metadata changes after the security edits.
 
 The application currently uses a single `DATABASE_URL`/`APIPROOF_DATABASE_URL` connection pool for both normal queries and migrations. The source does not define database roles, `GRANT`, `CREATE POLICY`, `CREATE ROLE`, `ALTER DEFAULT PRIVILEGES`, `SET ROLE`, or a tenant session variable. Therefore local SQLite/application authorization tests cannot prove PostgreSQL role isolation or RLS behavior.
 
