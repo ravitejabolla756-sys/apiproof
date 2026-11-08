@@ -35,19 +35,38 @@ test('keeps initial GitHub repository failures distinct from a disconnected app'
 test('announces repository dialog loading as a busy state', async ({ page }) => {
   await signIn(page);
   let releaseRepositories: (() => void) | undefined;
+  let releaseRefresh: (() => void) | undefined;
   const repositoriesLoading = new Promise<void>((resolve) => { releaseRepositories = resolve; });
+  const repositoriesRefresh = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+  let modalOpen = false;
+  let refreshStarted = false;
+  const repositoriesResponse = JSON.stringify({
+    connected: true,
+    repositories: [{ id: 'repo-1', name: 'owl-app', fullName: 'myowl/owl-app', owner: 'myowl', private: false, defaultBranch: 'main' }],
+  });
   await page.route('**/api/github/repositories', async (route) => {
-    await repositoriesLoading;
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
+    if (!modalOpen) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: repositoriesResponse });
+      return;
+    }
+    await (refreshStarted ? repositoriesRefresh : repositoriesLoading);
+    await route.fulfill({ status: 200, contentType: 'application/json', body: repositoriesResponse });
   });
   await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
+  modalOpen = true;
   await page.getByRole('button', { name: 'Connect repository', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
   const loading = dialog.getByRole('status').filter({ hasText: 'Loading available repositories...' });
   await expect(loading).toBeVisible();
   await expect(loading).toHaveAttribute('aria-busy', 'true');
   releaseRepositories?.();
-  await expect(dialog.getByRole('status').filter({ hasText: 'GitHub App Not Connected' })).toBeVisible({ timeout: 30_000 });
+  const refreshRepositories = dialog.getByRole('button', { name: 'Refresh repositories' });
+  await expect(refreshRepositories).toBeVisible({ timeout: 30_000 });
+  refreshStarted = true;
+  await refreshRepositories.click();
+  await expect(refreshRepositories).toHaveAttribute('aria-busy', 'true');
+  releaseRefresh?.();
+  await expect(refreshRepositories).not.toHaveAttribute('aria-busy');
   await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
   await page.unroute('**/api/github/repositories');
 });

@@ -101,3 +101,5 @@ Latest regression evidence: full lint passed and the hermetic repository suite p
 Latest quality-regression evidence: lint passed; the no-file-parallelism repository suite passed 1,341 tests with 4 skipped tests across 162 files, with 1 skipped file, in 121.86 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.
 
 Latest invitation evidence: invitation acceptance and its Suspense fallback expose busy semantics; the focused auth-entry journey passes 2/2 with delayed acceptance recovery and axe-clean content. Transactional email, Member 1 auth integration, hosted CI, staging, manual review and production remain open.
+
+Latest repository-refresh evidence: the repository dialog preserves its loaded form during refresh and exposes `aria-busy` on the Refresh repositories control; the rebuilt-bundle focused loading journey passes 1/1 in 11.0 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open.

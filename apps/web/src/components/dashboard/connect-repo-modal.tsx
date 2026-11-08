@@ -302,7 +302,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             </div>
           )}
 
-          {loadingRepos ? (
+          {loadingRepos && !initialRepositoryLoadComplete.current ? (
             <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
               <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin text-purple-700" />
               <span className="text-xs">Loading available repositories...</span>
@@ -370,7 +370,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                     className="min-h-11 w-full pl-9 pr-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
                   />
                 </div>
-                <Button type="button" variant="outline" size="sm" aria-label="Refresh repositories" disabled={loadingRepos} onClick={() => void loadRepositories(true)}>
+                <Button type="button" variant="outline" size="sm" aria-label="Refresh repositories" disabled={loadingRepos} aria-busy={loadingRepos ? 'true' : undefined} onClick={() => void loadRepositories(true)}>
                   <RefreshCw aria-hidden="true" className={`w-3.5 h-3.5 ${loadingRepos ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
