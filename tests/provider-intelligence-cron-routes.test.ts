@@ -134,7 +134,7 @@ describe('provider intelligence cron route contracts', () => {
   it('exposes protected rollout, source, and queue readiness without source contents', async () => {
     process.env.PROVIDER_INTELLIGENCE_V1_ENABLED = 'true';
     const response = await providerIntelligenceStatusGet(new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
-      headers: { authorization: `Bearer ${CRON_SECRET}` },
+      headers: { authorization: `bearer ${CRON_SECRET}` },
     }));
 
     expect(response.status).toBe(200);
