@@ -29,3 +29,5 @@ Latest password-recovery evidence: forgot-password and reset-password inputs, su
 Latest provider-review evidence: edit-mode Rule title input is measured at 44px or larger with axe-clean filtered-empty and edit states. Provider approval, PostgreSQL/RBAC, hosted CI, manual review, staging and production remain open.
 
 Latest dashboard-navigation evidence: brand and Overview breadcrumb links are measured at 44px or larger, with collapsed-sidebar naming retained. Hosted CI, manual review, PostgreSQL/RBAC, staging and production remain open.
+
+Latest repository-dialog evidence: selected repository labels are measured at 44px or larger with named-radio keyboard selection, focus recovery and axe-clean dialog coverage. GitHub configuration, hosted CI, PostgreSQL/RBAC, manual review, staging and production remain open.

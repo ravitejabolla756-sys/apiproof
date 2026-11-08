@@ -386,7 +386,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                   return (
                     <label
                       key={repo.id}
-                      className={`p-3 rounded-xl border cursor-pointer transition-colors flex items-center justify-between ${
+                      className={`min-h-11 p-3 rounded-xl border cursor-pointer transition-colors flex items-center justify-between ${
                         isSelected
                           ? 'border-purple-600 bg-purple-50/50'
                           : 'border-[#E8E8E5] bg-white hover:bg-zinc-50'

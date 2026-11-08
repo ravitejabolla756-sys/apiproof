@@ -445,7 +445,7 @@ test.describe('authenticated product surfaces', () => {
     });
     await connectTrigger.click();
     const repositoryRadio = page.getByRole('radio', { name: 'Select acme/owl' });
-    await expect(repositoryRadio).toBeVisible();
+    await expect(repositoryRadio).toBeVisible(); expect((await repositoryRadio.locator('xpath=..').boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await repositoryRadio.focus();
     await page.keyboard.press('Space');
     await expect(repositoryRadio).toBeChecked();
