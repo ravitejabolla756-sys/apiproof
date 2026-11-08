@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
@@ -88,6 +88,11 @@ export default function FindingDetailPage({
   const [actionLoading, setActionLoading] = useState<'plan' | 'propose' | null>(null);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   async function loadFinding(preserveError = false) {
     setLoading(true);
@@ -211,7 +216,7 @@ export default function FindingDetailPage({
         <Link href="/dashboard/findings" className="inline-flex min-h-11 items-center gap-1 text-[#686868] hover:text-[#111111]">
           <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" /> Back to Findings
         </Link>
-        <div role="alert" aria-live="assertive" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={error ? -1 : undefined} className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px] outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
           <h1 className="text-xl font-semibold text-[#111111]">Finding unavailable</h1>
           <p className="mt-2 text-[#686868]">{error || 'Finding not found or access denied.'}</p>
           {error && (

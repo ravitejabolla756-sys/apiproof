@@ -1239,6 +1239,10 @@ Workspace Settings load/connection failures now focus the retryable alert. The r
 
 Account Settings load, profile-save and password-change feedback now receives focus after terminal responses. The rebuilt production bundle passed with 83 generated pages; account/settings coverage passed 7/7; targeted ESLint, `git diff --check` and the Impeccable detector passed. Manual screen-reader, hosted CI, staging, PostgreSQL/RBAC, Member 1 contracts and production checks remain NOT_RUN.
 
+## Latest finding-detail focus evidence — 2026-11-08
+
+Finding-detail network failures now focus the retryable alert without changing not-found/access-denied behavior. The rebuilt production bundle passed with 83 generated pages; finding-detail and degraded-state coverage passed 5/5; targeted ESLint, `git diff --check` and the Impeccable detector passed. Manual screen-reader, hosted CI, staging, PostgreSQL/RBAC, Member 1 integration and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.

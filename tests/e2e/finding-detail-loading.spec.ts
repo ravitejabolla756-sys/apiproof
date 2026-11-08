@@ -47,6 +47,7 @@ test('keeps finding detail recovery visible and busy while retrying', async ({ p
   await page.goto('/dashboard/findings/finding_recovery', { waitUntil: 'domcontentloaded' });
   const alert = page.getByRole('alert').filter({ hasText: 'Finding details are temporarily unavailable.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   const retry = alert.getByRole('button');
   allowRecovery = true;
   await retry.click();

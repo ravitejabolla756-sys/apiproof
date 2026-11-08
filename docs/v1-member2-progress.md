@@ -2728,3 +2728,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/account-action-loading.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; account/settings coverage passed 7/7; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 account-state evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 deletion/revocation contracts and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 finding-detail recovery focus
+
+- Change: finding-detail network failures now focus the retryable alert while leaving not-found/access-denied states unchanged.
+- Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/finding-detail-loading.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; finding-detail and degraded-state coverage passed 5/5; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 finding-workbench recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 event integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
