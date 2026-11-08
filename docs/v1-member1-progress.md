@@ -420,3 +420,8 @@ Phase 0 read-only checks:
 - Code HEAD: `7d07f00814475cf4605dca7f4d9f63e066ef851a`.
 - Seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passed: 168 files passed / 1 skipped (169 total); 1,412 tests passed / 4 skipped (1,416 total); 266.84 seconds. `DATABASE_URL` and `APIPROOF_DATABASE_URL` were removed; a generated process-only local seed was used. The four skips are Docker-backed live-verification tests.
 - `pnpm build` passed and generated 64 static pages. Build rewrote `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; both were inspected and restored. No production deployment or external service was used.
+
+## 2026-11-08 focused worker and resilience verification
+
+- Verified at checkout HEAD `14a1dfeb32e42dc1b5ae1e15e8d94d84bbca2161` (documentation-only commit since code HEAD `7d07f00814475cf4605dca7f4d9f63e066ef851a`). `pnpm exec vitest run tests/sec13-worker-observability.test.ts tests/sec16-load-resilience.test.ts --no-file-parallelism --maxWorkers=1 --reporter=dot` passed: 2 files, 18 tests.
+- This targeted rerun confirms deterministic SEC-13 failure/degraded/stale/malformed/missing-store cases and SEC-16 bounded workload/failure/retry/timeout containment on the current checkout. It does not close alert-destination, approved thresholds, staging failure-recovery, or infrastructure gates.
