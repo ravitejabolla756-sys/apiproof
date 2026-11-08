@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — beta billing response cache boundaries
+
+- PASS: Billing checkout, portal and subscription responses are private/non-cacheable across authorization, beta refusal, validation and successful response paths.
+- PASS: Billing-boundary coverage passed 4/4; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: Provider lifecycle, real portal, hosted CI, staging and production remain unavailable or unverified.
+
 ## 2026-11-08 — authentication response cache boundary
 
 - PASS: `/api/auth` responses use private non-cacheable headers across session reads, auth mutations, reset outcomes, validation failures and logout while retaining session-cookie behavior.

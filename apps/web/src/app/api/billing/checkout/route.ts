@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
 import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
 import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
@@ -8,30 +8,30 @@ import { PLANS } from '../../../../lib/server/billing/plans.js';
 export async function POST(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
     if (workspace.role !== 'owner') {
-      return NextResponse.json({ error: 'BILLING_OWNER_REQUIRED: Only workspace owners can manage billing.' }, { status: 403 });
+      return NextResponse.json({ error: 'BILLING_OWNER_REQUIRED: Only workspace owners can manage billing.' }, { status: 403, headers: PRIVATE_NO_STORE_HEADERS });
     }
     const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
     const planId = body.planId;
 
     if (!planId || typeof planId !== 'string') {
-      return NextResponse.json({ error: 'INVALID_PLAN: Plan ID is required.' }, { status: 400 });
+      return NextResponse.json({ error: 'INVALID_PLAN: Plan ID is required.' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
     }
 
     if (!Object.hasOwn(PLANS, planId) || planId === 'free' || planId === 'enterprise') {
-      return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400 });
+      return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
     }
 
     // Paid plans are intentionally display-only during the public beta.
     if (planId === 'pro' || planId === 'team') {
       return NextResponse.json(
         { error: 'BILLING_NOT_AVAILABLE: Paid plans are rolling out and cannot be purchased yet.' },
-        { status: 403 },
+        { status: 403, headers: PRIVATE_NO_STORE_HEADERS },
       );
     }
 
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       checkoutUrl: checkout.checkoutUrl,
       planId,
-    });
+    }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     return organizationErrorResponse(error);
   }

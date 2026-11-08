@@ -34,6 +34,7 @@ describe('beta billing boundaries', () => {
       body: JSON.stringify({ planId: 'pro' }),
     }));
     expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
     expect((await response.json() as { error: string }).error).toContain('cannot be purchased');
   });
 
@@ -44,6 +45,7 @@ describe('beta billing boundaries', () => {
       headers: { cookie: `apiproof_session=${account.session.id}` },
     }));
     expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
     expect((await response.json() as { error: string }).error).toContain('not enabled');
   });
 

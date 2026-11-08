@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — beta billing response cache boundaries
+
+- Change: Billing checkout, portal and subscription responses now use the shared private `no-store` policy for authorization, beta refusal, validation and successful subscription/checkout payloads; organization failures retain their existing private boundary.
+- Evidence: `tests/member2-billing-boundaries.test.ts` passed 4/4 with cache assertions; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local BILL-07/BILL-08 billing-boundary privacy hardening only; paid provider lifecycle and portal remain intentionally unavailable pending approval.
+
 ## 2026-11-08 checkpoint — authentication response cache boundary
 
 - Change: All `/api/auth` GET/POST outcomes now use a shared private `no-store` JSON response helper, including session/user payloads, reset responses, validation failures and logout responses while preserving cookie operations.
