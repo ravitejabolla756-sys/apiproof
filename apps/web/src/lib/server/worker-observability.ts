@@ -22,6 +22,17 @@ const FRESHNESS_WINDOWS_MS: Partial<Record<WorkerComponent, number>> = {
   'nightly-rescan-scheduler': 30 * 60 * 60 * 1_000,
 };
 
+const SAFE_WORKER_ERROR_CODES = new Set([
+  'PROVIDER_CHANGE_REFRESH_FAILED',
+  'SCAN_WORKER_FAILED',
+  'SCHEDULED_RESCAN_FAILED',
+  'SCHEDULED_WORK_DEGRADED',
+]);
+
+function sanitizeWorkerErrorCode(errorCode: string | null): string | null {
+  return errorCode === null ? null : SAFE_WORKER_ERROR_CODES.has(errorCode) ? errorCode : 'WORKER_FAILED';
+}
+
 export async function startWorkerRun(component: WorkerComponent, now = new Date()): Promise<string> {
   const runId = randomUUID();
   await getDatabase().execute(
@@ -52,7 +63,7 @@ export async function finishWorkerRun(
   const result = await getDatabase().execute(
     `UPDATE worker_run_heartbeats SET finished_at = ?, status = ?, error_code = ?
      WHERE component = ? AND run_id = ? AND status = 'running'`,
-    [now.toISOString(), status, errorCode === null ? null : /^[A-Z0-9_:-]{1,80}$/.test(errorCode) ? errorCode : 'WORKER_FAILED', component, runId],
+    [now.toISOString(), status, sanitizeWorkerErrorCode(errorCode), component, runId],
   );
   if (result.changes !== 1) throw new Error('WORKER_HEARTBEAT_RUN_NOT_ACTIVE');
 }
@@ -114,7 +125,7 @@ export async function getWorkerHeartbeats(now = new Date()): Promise<WorkerHeart
       startedAt: row.started_at,
       finishedAt: row.finished_at,
       status: row.status,
-      errorCode: row.error_code,
+      errorCode: sanitizeWorkerErrorCode(row.error_code),
       ageMs,
       freshness: window === undefined || !Number.isFinite(started)
         ? 'unknown'

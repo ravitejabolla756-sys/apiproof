@@ -79,6 +79,24 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     expect(JSON.stringify(health)).not.toContain('private-secret');
   });
 
+  it('allowlists operational error codes on write and sanitizes legacy persisted values on read', async () => {
+    const startedAt = new Date('2026-11-07T10:00:00.000Z');
+    const runId = await startWorkerRun('provider-changelog-scheduler', startedAt);
+    await finishWorkerRun('provider-changelog-scheduler', runId, 'failed', 'TOKEN:PRIVATESECRET', new Date(startedAt.getTime() + 1));
+
+    const persisted = await getDatabase().queryOne<{ error_code: string | null }>(
+      'SELECT error_code FROM worker_run_heartbeats WHERE run_id = ?', [runId],
+    );
+    expect(persisted?.error_code).toBe('WORKER_FAILED');
+
+    await getDatabase().execute(
+      'UPDATE worker_run_heartbeats SET error_code = ? WHERE run_id = ?', ['TOKEN:LEGACYSECRET', runId],
+    );
+    const heartbeat = (await getWorkerHeartbeats()).find((item) => item.runId === runId);
+    expect(heartbeat?.errorCode).toBe('WORKER_FAILED');
+    expect(JSON.stringify(heartbeat)).not.toContain('LEGACYSECRET');
+  });
+
   it('rejects duplicate or cross-component completion without overwriting the run outcome', async () => {
     const runId = await startWorkerRun('provider-changelog-scheduler');
 
