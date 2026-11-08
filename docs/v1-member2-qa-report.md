@@ -2,6 +2,11 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Complete route-accessibility regression
+
+- PASS: Full route-accessibility spec passed 11/11 in 5.7 minutes after the public skip-link/main-focus and 404 coverage work; axe, table semantics, keyboard focus, mobile/tablet and overflow checks all passed.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, full manual screen-reader review, PostgreSQL/RBAC, backend contracts, integrated staging and production remain open.
+
 ## 2026-11-08 — Not-found keyboard focus coverage
 
 - PASS: Custom 404 accessibility journey passed 1/1 in 4.4 seconds; the existing landing-shell skip link now has explicit focus-transfer and axe coverage alongside the 404 response/content assertions.

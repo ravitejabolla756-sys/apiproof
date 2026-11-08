@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 complete route-accessibility regression
+
+- Change: Re-ran the full route-accessibility matrix after the public skip-link/main-focus fixes and 404 keyboard coverage.
+- Evidence: All 11 accessibility-route tests passed in 5.7 minutes, covering public/authenticated axe scans, tables, 404, skip-link focus, mobile/tablet widths and horizontal-overflow checks. Artifacts: `/tmp/myowl-v1-accessibility-routes-current-artifacts`.
+- Scope: local UI-12/UI-13 regression evidence only; hosted CI, full manual screen-reader review, PostgreSQL/RBAC, backend/provider contracts, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 not-found keyboard focus coverage
 
 - Change: Extended the custom 404 accessibility journey to verify the existing landing-shell skip link focuses `#main-content` after Enter while retaining the 404 status and axe assertions.
