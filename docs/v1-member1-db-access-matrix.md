@@ -170,6 +170,7 @@ The next implementation proposal, after role approval, is a separately reviewed 
 ## Status
 
 - 2026-11-08 local inventory reconciliation: compared unique `CREATE TABLE` names across `apps/web/src/lib/server/db/*.ts` against the matrix; the source contains 46 tables and the prior matrix listed 40. Added the six omitted tables above, including migrations 024–027 and SEC-13 heartbeats. This reconciles source documentation only; it does not establish that staging or production catalogs match.
+- The local `database-access-matrix` test now also pins the ten tables whose matrix rows claim PostgreSQL RLS plus `PUBLIC`, `anon`, and `authenticated` revocations, and verifies those statements remain present in migration source. This is source-contract drift protection only; it does not prove the migration ran or effective grants/RLS behavior in PostgreSQL.
 - SEC-01: `PARTIAL` — complete local source inventory and isolation contract; live role/RLS/policy read-back and PostgreSQL tests blocked.
 - SEC-02: `PARTIAL` — role/grant/default-privilege audit query pack and intended matrix documented; effective grants and role separation blocked.
 - No production or staging database was contacted or changed.
