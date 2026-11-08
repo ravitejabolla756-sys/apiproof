@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-13 full browser regression after enterprise intake coverage
+
+- Evidence: The complete current-worktree Playwright matrix ran **164 tests and passed 164/164 in 4.5 minutes** with `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test --workers=1`. This includes the enterprise-intake non-sending journey. Artifacts: `/tmp/myowl-v1-ui13-enterprise-matrix-KLl2Ar`.
+- Scope: strengthens local UI-12/UI-13/BILL-11/WEB-15 regression evidence only; the expected owner-privilege refusal log is a negative-case fixture, while hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — BILL-11 enterprise intake non-sending boundary
 
 - Change: Added a focused enterprise-inquiry browser journey that fills the enterprise option, verifies the form remains explicitly non-sending, checks 44px controls, mobile overflow and axe-clean content, and rejects any accepted/delivered affordance.
@@ -955,7 +960,7 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
 Statuses are current baseline findings, not completion claims.
 
-Latest local evidence supersedes the historical counts embedded in the inventory rows: the current isolated production-bundle browser matrix is now 163/163, with public/authenticated accessibility, organization, billing, notification/settings, provider-review, repository-recovery, populated/error finding-detail, public 404 and pipeline workflows included in the checkpoints above; the dedicated color-contrast audit now covers all 21 public/auth-entry routes plus 404.
+Latest local evidence supersedes the historical counts embedded in the inventory rows: the current isolated production-bundle browser matrix is now 164/164, with public/authenticated accessibility, organization, billing, notification/settings, provider-review, repository-recovery, populated/error finding-detail, enterprise intake, public 404 and pipeline workflows included in the checkpoints above; the dedicated color-contrast audit now covers all 21 public/auth-entry routes plus 404.
 
 | ID | Status | Code evidence | Test evidence | Member 1 dependency | External blocker | Next action |
 |---|---|---|---|---|---|---|
@@ -986,7 +991,7 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 | WEB-15 | PARTIAL | Public navigation, contact copy, invitation and verification errors, mobile menu, truthful contact form and crawl surfaces | Composite browser evidence covers 23 journeys including metadata/link/form/axe checks, generated invitation acceptance, member management, notification settings and account security; full manual/perf incomplete | None | Live contact/production proof absent | Complete public matrix and performance |
 | SEC-18 | PARTIAL | Draft runbook covers severity, roles, containment, evidence, recovery and tabletop | Document review only; no owner tabletop | Monitoring/alert contracts partial | Approved channels and reviewed exercise | Owner + Member 1 review and record |
 
-### Current evidence reconciliation — 2026-11-07
+### Current evidence reconciliation — 2026-11-08
 
 - `UI-12`: the later committed evidence supersedes the older inventory counts: the dedicated route accessibility audit is 9/9, the route/media matrix is 9/9, the combined route/data-state matrix is 25/25, the focused organization administration journey is 11/11, and the isolated current browser regression is 163/163. Workspace Settings guards dependent-request failures against false disconnected/empty states; workspace administration has initial-load, member, invitation, and audit-trail retry recovery; Slack status and account settings have explicit unavailable/retry recovery; repository and finding detail populated/error states have mobile axe/overflow coverage; the landing pipeline and public/auth-entry contrast audits now pass locally. These remain automated/local checks; manual screen-reader and hosted verification are open.
 - `UI-13`: the latest rebuilt-bundle isolated browser regression is 163/163 in 4.4 minutes; the Playwright harness retains failure traces, screenshots and video, while the workflow uploads HTML and test-results artifacts for 14 days. Hosted CI and integrated staging remain unverified.

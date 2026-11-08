@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-13 full browser regression after enterprise intake coverage
+
+- PASS: The complete current-worktree Playwright matrix ran 164 tests and passed 164/164 in 4.5 minutes on one worker, including the enterprise-intake non-sending journey. Artifacts: `/tmp/myowl-v1-ui13-enterprise-matrix-KLl2Ar`.
+- NOTE: The expected owner-privilege refusal log came from a negative-case fixture; it did not fail a test.
+- NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — BILL-11 enterprise intake non-sending boundary
 
 - PASS: The enterprise inquiry option remains explicitly non-sending, with truthful unavailable copy, no accepted/delivered affordance, 44px controls, no mobile overflow and axe-clean content.
