@@ -70,3 +70,16 @@ Command: `pnpm test -- --no-file-parallelism --maxWorkers=1 tests/sec16-load-res
 | Scan-worker queue metrics | 1.845 | 0.171 | 0.273 | 0.485 | 13,010.95 | 4 |
 
 Single-run host-specific observations only; they are not SLOs, capacity claims or evidence about remote databases/providers. No network traffic was generated.
+
+## 2026-11-08 bounded harness rerun
+
+Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-parallelism --maxWorkers=1 --reporter=verbose`. The suite passed 11/11 and emitted a fresh 24-operation, concurrency-4 local measurement set:
+
+| Scenario | Duration ms | p50 ms | p95 ms | p99 ms | Throughput ops/s | Max in flight |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| API health handler | 4.741 | 0.343 | 2.564 | 2.784 | 5,062.44 | 4 |
+| GitHub webhook signature/claim/record | 22.902 | 2.829 | 4.085 | 4.385 | 1,047.94 | 4 |
+| SQLite `SELECT 1` | 0.311 | 0.020 | 0.044 | 0.113 | 77,120.82 | 4 |
+| Scan-worker queue metrics | 1.711 | 0.152 | 0.259 | 0.465 | 14,027.70 | 4 |
+
+The process used a newly generated, process-only local seed and had `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL` removed. No network traffic was generated. This is one host-specific local observation, not an SLO, capacity claim, or remote database/provider evidence.
