@@ -1935,3 +1935,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; rebuilt-bundle focused Playwright coverage passed 2/2 in 4.2 seconds.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 workspace-settings visible loading busy semantics
+
+- Change: Workspace Settings’ GitHub-installation and billing-summary loading announcements now expose `aria-busy="true"` directly while the shared settings request is pending.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; rebuilt-bundle workspace-settings loading coverage passed 1/1 in 3.2 seconds.
+- Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
