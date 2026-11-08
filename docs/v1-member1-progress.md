@@ -816,3 +816,8 @@ Phase 0 read-only checks:
 
 - Google and GitHub login OAuth fixtures now restore every environment variable they override or clear, including `NODE_ENV`, local DB/seed settings, test client credentials, and redirect URI overrides.
 - `github-oauth.test.ts` and `google-oauth.test.ts` pass 2 files / 23 tests; targeted ESLint, workspace test TypeScript check, and `git diff --check` pass. The tests use mocked provider responses and do not establish live provider or PostgreSQL behavior.
+
+### 2026-11-08 current-code seeded serial full suite after AUTH fixture isolation
+
+- At code HEAD `a6738865fd602cfb0991a1bd5af8d95a504380a3`, `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 175 files passed / 1 skipped; 1,469 tests passed / 4 skipped in 733.81 seconds. A throwaway seed was process-scoped and `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL` were removed. Four tests remain skipped because they require Docker. The SEC-13/SEC-16, auth-session, email-verification, activity, provider-review and OAuth fixture-restoration changes all passed in this run.
+- Vitest reported transform 11.73s, import 308.91s, test execution 322.48s, and environment 0.045s; these reported components do not account for the full 733.81s duration. This run is 75.53s slower than the preceding 658.28s serial run. No assertion failed, but runtime variability and unallocated orchestration time remain unresolved. Local-only evidence; PostgreSQL, staging, providers and production remain unverified.
