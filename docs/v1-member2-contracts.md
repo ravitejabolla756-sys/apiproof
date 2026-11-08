@@ -16,6 +16,7 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 - Billing UI may display canonical plan/entitlement projections and “coming soon” states, but must not grant access from redirects or client state. Provider-backed checkout, portal, invoice and plan-change acceptance stays blocked until the approved backend provider exists.
 - Notification preferences are optional-message controls only. Security, account recovery and legally required messages cannot be silently suppressed.
 - Draft legal, refund, status and incident content must show review/source status and must not claim approval, uptime or current incidents without authoritative evidence.
+- Response privacy: authenticated workspace/account/billing/repository/provider-rule/integration responses and shared validation, CSRF, rate-limit, operational and webhook outcomes must be explicitly non-cacheable. Product API responses use `Cache-Control: private, no-store, max-age=0`; public health, internal cron/status and webhook responses use `Cache-Control: no-store`. This is an HTTP privacy invariant, not a substitute for authorization, tenancy checks or provider signature validation.
 
 ## Implemented local interfaces
 
@@ -54,3 +55,4 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 - 2026-11-07: Audited Member 1's PR-08 scan-worker boundary; it currently persists exact-commit resolution evidence but emits no notification event. Resolution alerts remain intentionally unimplemented pending a reviewed transaction-safe outbox contract.
 - 2026-11-07: Hardened the browser CI path with a production-build test server, explicit fail-closed E2E runtime classification, environment-overridable fixture database path, and distinct test-client IPs; local CI-mode browser evidence is 22/22 without disabling production authorization or rate limiting.
 - 2026-11-08: Added the settings-page invoice-history beta boundary and focused browser assertion; provider-backed invoice data remains intentionally unimplemented pending the shared billing contract.
+- 2026-11-08: Established and verified the response privacy invariant across authenticated product APIs, shared validation/rate-limit helpers, operational routes and billing/GitHub webhooks; local route suites and the full seeded/browser regressions pass, while hosted/staging/production verification remains open.
