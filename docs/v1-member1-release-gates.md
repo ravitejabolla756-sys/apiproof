@@ -110,3 +110,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 cross-tenant read-route regression: PASS, `workspace-read-route-role` 1/1; an authenticated user outside the fixture workspace receives no activity, finding, migration, or pull-request records. Targeted ESLint and full workspace typecheck pass. SQLite evidence only; effective PostgreSQL/RLS and Member 2 role-contract gates remain open.
 
 - ORG-05 route authorization additions: PASS, `workspace-read-route-role` 1/1 and `repositories-list-route` 6/6. Authenticated nonmembers receive no cross-tenant read records; repository detail GET and DELETE return 404 for a foreign workspace, with the foreign row preserved. Targeted ESLint and full workspace typecheck pass. PostgreSQL/RLS and Member 2 capability approval remain open.
+
+- ORG-05 migration-planning route: PASS, `phase2-multi-tenant-workspaces` 17/17; a nonmember's API request for another workspace's finding returns 404 and creates no migration. Targeted ESLint and full workspace typecheck pass. PostgreSQL/RLS and approved role-contract evidence remain open.

@@ -21,6 +21,7 @@ import {
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
 import { runMigrations } from '../apps/web/src/lib/server/db/migrator.js';
+import { POST as planMigrationRoute } from '../apps/web/src/app/api/migrations/plan/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase2-workspaces.db');
 
@@ -143,7 +144,8 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
     });
 
     it('TEST F: User A cannot create a migration for Workspace B', async () => {
-      const userA = createUser('user_a@example.com', 'Pass12345!', 'User A');
+      const actorA = await createUserWithSession('user_a@example.com', 'Pass12345!', 'User A');
+      const userA = actorA.user;
       const userB = createUser('user_b@example.com', 'Pass12345!', 'User B');
       const wsB = await getDefaultWorkspaceForUser(userB.id);
 
@@ -175,6 +177,17 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
       await expect(generateMigrationForFinding(findingIdB, userA.id)).rejects.toThrow(
         /Repository not found or access denied/
       );
+
+      const routeResponse = await planMigrationRoute(new Request('http://localhost/api/migrations/plan', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `apiproof_session=${actorA.session.id}`,
+        },
+        body: JSON.stringify({ findingId: findingIdB }),
+      }));
+      expect(routeResponse.status).toBe(404);
+      expect(db.prepare('SELECT COUNT(*) AS count FROM migrations WHERE finding_id = ?').get(findingIdB)).toEqual({ count: 0 });
     });
 
     it('TEST G: User A cannot propose a PR for Workspace B', async () => {

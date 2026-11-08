@@ -386,3 +386,9 @@ Phase 0 read-only checks:
 
 - Added authenticated-outsider coverage for the activity, findings, migrations, and pull-request read routes; no fixture-tenant records are returned. Extended repository-route coverage so a foreign-workspace `GET` and `DELETE` both return 404 and the foreign repository row remains persisted.
 - `workspace-read-route-role` passes 1/1 and `repositories-list-route` passes 6/6; targeted ESLint and full workspace `pnpm typecheck` pass. These tests provide local SQLite application-boundary evidence only. ORG-05 remains PARTIAL pending Member 2's approved capability contract and effective PostgreSQL/RLS verification.
+
+### 2026-11-08 ORG-05 migration-planning API denial
+
+- Extended the multi-tenant workspace regression so a session belonging to another workspace cannot invoke `POST /api/migrations/plan` for a foreign finding. The route returns 404 and persists no migration row; the existing service-level authorization assertion remains.
+- Importing the route into the strict test project exposed an extensionless `planning-service` alias import and an untyped request body. The route now uses the repository's `.js` source-import convention and types the parsed body as `{ findingId?: unknown }`, leaving validation to `validateSafeId`.
+- `phase2-multi-tenant-workspaces` passes 17/17, targeted ESLint passes, and full workspace `pnpm typecheck` passes. This is local SQLite application-boundary evidence only; PostgreSQL/RLS remains unverified.

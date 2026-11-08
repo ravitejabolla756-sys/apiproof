@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { generateMigrationForFinding } from '@/lib/server/planning-service';
+import { generateMigrationForFinding } from '@/lib/server/planning-service.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import {
   assertCsrfProtection,
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const body = await req.json() as { findingId?: unknown };
     const idValidation = validateSafeId(body?.findingId, 'findingId');
     if (!idValidation.valid || !idValidation.data) {
       return badRequestResponse(idValidation.error || 'findingId is required.');
