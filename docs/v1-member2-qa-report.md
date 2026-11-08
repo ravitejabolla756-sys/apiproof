@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — isolated full browser matrix after response hardening
+
+- PASS: Rebuilt current-worktree bundle generated 83 pages; all 159 committed browser tests passed in 4.4 minutes on isolated port 3101 with a fresh test server, including public/authenticated accessibility, organization, billing, notifications/settings, provider-review, repository-recovery and finding/migration workflows.
+- NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, full manual screen-reader review and production remain open. Artifacts: `/tmp/myowl-v1-ui13-full-matrix-iBpfXo`.
+
 ## 2026-11-08 — UI-12 workspace administration audit
 
 - PASS: Rebuilt current-worktree bundle generated 83 pages; focused organization administration browser/axe journey passed 11/11 in 19.2 seconds, covering owner/member boundaries, invitation/audit recovery and keyboard/focus behavior.

@@ -40,6 +40,8 @@ Latest operational-response evidence: health, internal cron/status and billing/G
 
 Latest UI-12 workspace evidence: rebuilt current-worktree bundle generated 83 pages and the focused organization administration journey passes 11/11 with axe, keyboard/focus, owner/member, invitation and audit recovery coverage. Impeccable reports only five incumbent purple-palette warnings on decorative icons; no functional UI change was justified. Manual screen-reader review, hosted CI, staging and production remain open.
 
+Latest UI-13 evidence: rebuilt current-worktree production bundle generated 83 pages and the complete isolated browser matrix passed 159/159 in 4.4 minutes on port 3101, with artifacts retained at `/tmp/myowl-v1-ui13-full-matrix-iBpfXo`. Hosted CI, integrated staging, PostgreSQL/RBAC, full manual screen-reader review and production remain open.
+
 Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes a polite atomic status region; Impeccable detector, targeted lint, repository typecheck and provider/repository recovery browser coverage pass 2/2. Hosted CI, manual assistive-technology review, staging and production remain open.
 
 Latest UI-13 evidence: the rebuilt current-worktree production bundle generated 83 pages and the complete isolated Playwright matrix passed 159/159 in 3.8 minutes on port 3101 with a fresh SQLite database. Hosted CI, integrated staging, full manual assistive-technology review and production remain open.
