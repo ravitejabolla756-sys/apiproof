@@ -132,6 +132,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 - Credentialed CORS is emitted only for an allowlisted origin, and preflight requests from other origins receive a 403 response.
 - The CSP intentionally retains `unsafe-inline` for current Next App Router hydration and inline UI styles; development alone adds `unsafe-eval`. A future nonce migration can tighten these exceptions after browser coverage is available.
 - CSRF origin validation accepts a single normalized `X-Forwarded-Proto` value from the trusted proxy path; comma-separated values are ambiguous and fail closed. Proxy provenance and normalization must be confirmed in staging before production reliance.
+- The browser-session `/api/github/install` endpoint creates durable one-time installation state and therefore validates Origin/Referer and Fetch Metadata on both GET and POST before authentication, rate-limit consumption, or state creation; cross-site calls receive `CSRF_REJECTED`.
 
 ## Change log
 

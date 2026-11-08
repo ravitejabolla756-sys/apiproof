@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getGitHubAppInstallUrl } from '@/lib/server/github';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 import {
   getDefaultWorkspaceForUser,
   isWorkspaceAuthorizationError,
@@ -11,6 +12,9 @@ import {
 const PRIVATE_NO_STORE = { 'Cache-Control': 'private, no-store, max-age=0' };
 
 export async function GET(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE });

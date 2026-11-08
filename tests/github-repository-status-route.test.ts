@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { GET } from '../apps/web/src/app/api/github/repositories/status/route.js';
-import { GET as getGitHubInstallUrl } from '../apps/web/src/app/api/github/install/route.js';
+import { GET as getGitHubInstallUrl, POST as postGitHubInstallUrl } from '../apps/web/src/app/api/github/install/route.js';
 import { GET as getGitHubRepositories } from '../apps/web/src/app/api/github/repositories/route.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
@@ -125,6 +125,37 @@ describe('GET /api/github/repositories/status', () => {
     expect(Number(states?.count)).toBe(10);
   });
 
+  it('rejects cross-site GitHub installation URL requests before creating state or consuming quota', async () => {
+    const { user, session } = await createUserWithSession('github-install-csrf@example.com', 'Strong-password-1!', 'Install CSRF');
+    const crossSiteHeaders = {
+      cookie: `apiproof_session=${session.id}`,
+      origin: 'https://attacker.example',
+      host: 'localhost',
+      'sec-fetch-site': 'cross-site',
+    };
+
+    const getResponse = await getGitHubInstallUrl(new Request('http://localhost/api/github/install', {
+      headers: crossSiteHeaders,
+    }));
+    const postResponse = await postGitHubInstallUrl(new Request('http://localhost/api/github/install', {
+      method: 'POST',
+      headers: crossSiteHeaders,
+    }));
+
+    for (const response of [getResponse, postResponse]) {
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ code: 'CSRF_REJECTED' });
+    }
+    const states = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM github_installation_states WHERE user_id = ?', [user.id],
+    );
+    const quota = await getDatabase().queryOne<{ points: number }>(
+      'SELECT points FROM rate_limits WHERE key = ?', [`github:install-url:user:${user.id}`],
+    );
+    expect(Number(states?.count)).toBe(0);
+    expect(quota).toBeUndefined();
+  });
+
   it('returns a generic non-cacheable error and creates no state when install signing configuration is invalid', async () => {
     const { user, session } = await createUserWithSession('github-install-config@example.com', 'Strong-password-1!', 'Install Config');
     const originalSecret = process.env.APIPROOF_SECRET;
@@ -135,7 +166,12 @@ describe('GET /api/github/repositories/status', () => {
     process.env.NODE_ENV = 'production';
     try {
       const response = await getGitHubInstallUrl(new Request('http://localhost/api/github/install', {
-        headers: { cookie: `apiproof_session=${session.id}` },
+        headers: {
+          cookie: `apiproof_session=${session.id}`,
+          origin: 'http://localhost',
+          host: 'localhost',
+          'sec-fetch-site': 'same-origin',
+        },
       }));
 
       expect(response.status).toBe(500);
