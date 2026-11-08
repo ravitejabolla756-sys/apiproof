@@ -7,6 +7,7 @@ import { getDefaultWorkspaceForUser, createWorkspaceForUser } from '../apps/web/
 import { resolveWorkspaceForRequest } from '../apps/web/src/lib/server/organization-route.js';
 import { POST as setWorkspaceContext } from '../apps/web/src/app/api/workspace/context/route.js';
 import { PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
+import { DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
 import {
   acceptWorkspaceInvitation,
   createWorkspaceInvitation,
@@ -141,6 +142,13 @@ describe('workspace administration', () => {
     await revokeWorkspaceInvitation(owner.user.id, workspace.id, created.invitation.id);
     expect(await getDatabase().queryOne<{ revoked_at: string | null }>('SELECT revoked_at FROM workspace_invitations WHERE id = ?', [created.invitation.id])).toMatchObject({ revoked_at: expect.any(String) });
     expect(await getDatabase().queryOne<{ action: string; target_id: string }>("SELECT action, target_id FROM workspace_audit_events WHERE action = 'invitation.revoked' AND target_id = ?", [created.invitation.id])).toEqual({ action: 'invitation.revoked', target_id: created.invitation.id });
+
+    const malformed = await revokeInvitationRoute(new Request('https://apiproof.test/api/workspace/invitations', {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json', cookie: `apiproof_session=${owner.session.id}`, origin: 'https://apiproof.test', host: 'apiproof.test' },
+      body: JSON.stringify({ invitationId: 'not valid' }),
+    }));
+    expect(malformed.status).toBe(400);
   });
 
   it('rejects an expired invitation without creating membership', async () => {

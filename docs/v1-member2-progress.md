@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-03 invitation identifier validation
+
+- Change: Added bounded safe-ID validation to invitation cancellation requests, preventing malformed invitation identifiers from reaching the service while preserving stable bad-request behavior.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 14/14, including the malformed cancellation request.
+- Scope: local ORG-03 API-boundary hardening only; transactional email, final RBAC/PostgreSQL contract, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — organization mutation owner recheck
 
 - Change: Added an owner-capability recheck inside the transaction for workspace settings, member role/removal, invitation creation and invitation cancellation, closing the stale-owner authorization window between request preflight and mutation.

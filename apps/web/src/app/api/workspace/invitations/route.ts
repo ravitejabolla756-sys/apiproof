@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { resolveWorkspaceForRequest, organizationErrorResponse } from '@/lib/server/organization-route.js';
 import { createWorkspaceInvitation, listWorkspaceInvitations, revokeWorkspaceInvitation } from '@/lib/server/organization-service.js';
-import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse, validateSafeId } from '@/lib/server/validation.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -41,8 +41,9 @@ export async function DELETE(req: Request) {
   try {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
     const body = await req.json() as { invitationId?: unknown };
-    if (typeof body.invitationId !== 'string') return badRequestResponse('invitationId is required.');
-    await revokeWorkspaceInvitation(user.id, workspace.id, body.invitationId);
+    const invitationValidation = validateSafeId(body.invitationId, 'invitationId');
+    if (!invitationValidation.valid || !invitationValidation.data) return badRequestResponse(invitationValidation.error || 'A valid invitationId is required.');
+    await revokeWorkspaceInvitation(user.id, workspace.id, invitationValidation.data);
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof SyntaxError) return badRequestResponse('Request body must be valid JSON.');
