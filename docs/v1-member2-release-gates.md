@@ -149,3 +149,7 @@ The activity degraded-state retry remains visible and exposes disabled plus `ari
 ## Latest findings recovery evidence — 2026-11-08
 
 The findings degraded-state retry remains visible and exposes disabled plus `aria-busy` semantics while its request is pending; focused recovery plus responsive/filter coverage passes 3/3 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC and production remain open. Release recommendation stays NO-GO.
+
+## Latest migration/PR recovery evidence — 2026-11-08
+
+Migration-history and pull-request degraded-state retries remain visible and expose disabled plus `aria-busy` semantics while their requests are pending; focused and existing workbench coverage passes 5/5 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 PR event integration and production remain open. Release recommendation stays NO-GO.

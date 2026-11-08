@@ -31,12 +31,12 @@ export default function PullRequestsPage() {
 
   async function loadPRs() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/pull-requests");
       const json = await res.json() as { pullRequests?: PullRequestItem[]; error?: string };
       if (!res.ok) throw new Error(json.error || "Unable to load pull requests.");
       setPullRequests(json.pullRequests || []);
+      setError(null);
     } catch (err) {
       console.error("Failed to load pull requests:", err);
       setError(err instanceof Error ? err.message : "Unable to load pull requests.");
@@ -76,7 +76,7 @@ export default function PullRequestsPage() {
         </Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadPRs()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadPRs()} busy={loading} />}
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]">

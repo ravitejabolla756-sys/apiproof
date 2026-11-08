@@ -2095,3 +2095,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/findings-recovery-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the held-retry journey plus existing responsive/filter coverage passed 3/3; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-11 findings recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 migration and PR recovery busy semantics
+
+- Change: migration-history and pull-request workbenches now preserve their recoverable error surfaces while retrying and expose disabled plus `aria-busy="true"` on the shared Try again control until recovery resolves.
+- Files: `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/workbench-recovery-loading.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the two held-retry journeys plus existing secondary-route coverage passed 5/5; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and NOT-05 degraded-state evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 PR event integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

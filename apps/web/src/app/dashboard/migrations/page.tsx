@@ -39,12 +39,12 @@ export default function MigrationsWorkbenchPage() {
 
   async function loadMigrations() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/migrations");
       const json = await res.json() as { migrations?: MigrationItem[]; error?: string };
       if (!res.ok) throw new Error(json.error || "Unable to load migration records.");
       setMigrations(json.migrations || []);
+      setError(null);
     } catch (err) {
       console.error("Failed to load migrations:", err);
       setError(err instanceof Error ? err.message : "Unable to load migration records.");
@@ -84,7 +84,7 @@ export default function MigrationsWorkbenchPage() {
         </Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadMigrations()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadMigrations()} busy={loading} />}
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]">
