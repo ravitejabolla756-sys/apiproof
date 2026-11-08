@@ -61,6 +61,7 @@ test('recovers from a repository search with no matches', async ({ page }) => {
   await page.getByRole('button', { name: 'Connect repository', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
   const search = dialog.getByRole('textbox', { name: 'Filter available repositories' });
+  expect((await search.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await search.fill('missing-repository');
   const filteredEmpty = dialog.getByRole('status').filter({ hasText: 'No repositories match your filter.' });
   await expect(filteredEmpty).toBeVisible();
