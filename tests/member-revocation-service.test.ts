@@ -132,4 +132,33 @@ describe('ORG-10 durable member revocation', () => {
       workspaceId: workspace.id, userId: owner.id, idempotencyKey: 'org-10-final-owner',
     })).rejects.toThrow('SELF_REVOCATION_REQUIRES_SEPARATE_FLOW');
   });
+
+  it('preserves an owner when two owners concurrently attempt to remove each other', async () => {
+    const ownerA = createUser('mutual-owner-a@example.com', 'Pass12345!', 'Owner A');
+    const ownerB = createUser('mutual-owner-b@example.com', 'Pass12345!', 'Owner B');
+    const workspace = await getDefaultWorkspaceForUser(ownerA.id);
+    await addMember(workspace.id, ownerB.id, 'owner');
+
+    const attempts = await Promise.allSettled([
+      revokeWorkspaceMember(ownerA.id, {
+        workspaceId: workspace.id,
+        userId: ownerB.id,
+        idempotencyKey: 'org-10-mutual-owner-a',
+      }),
+      revokeWorkspaceMember(ownerB.id, {
+        workspaceId: workspace.id,
+        userId: ownerA.id,
+        idempotencyKey: 'org-10-mutual-owner-b',
+      }),
+    ]);
+
+    expect(attempts.filter((attempt) => attempt.status === 'fulfilled')).toHaveLength(1);
+    expect(attempts.filter((attempt) => attempt.status === 'rejected')).toHaveLength(1);
+    expect(await getDatabase().query<{ user_id: string; role: string }>(
+      'SELECT user_id, role FROM workspace_members WHERE workspace_id = ?', [workspace.id],
+    )).toEqual([expect.objectContaining({ role: 'owner' })]);
+    expect(await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM workspace_security_audit_events WHERE workspace_id = ?', [workspace.id],
+    )).toMatchObject({ count: 1 });
+  });
 });
