@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — full seeded local regression after workspace-boundary sweep
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,360 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 129.56 seconds.
+- Scope: local regression evidence for the accumulated ORG-02, billing, GitHub, Slack and provider-route changes; PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 GitHub installation context boundary
 
 - Change: GitHub installation-start requests now use the shared workspace resolver, returning typed context errors before generating a provider installation URL.

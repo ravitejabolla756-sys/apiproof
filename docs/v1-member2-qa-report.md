@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — full seeded local regression after workspace-boundary sweep
+
+- PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,360 tests across 161 files, with 1 skipped file and 4 skipped tests, in 129.56 seconds.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — ORG-02 GitHub installation context boundary
 
 - PASS: GitHub installation-start requests validate workspace context before generating provider URLs and return typed malformed-context errors.
