@@ -4,8 +4,8 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 | Gate | Status | Evidence / required next action |
 |---|---|---|
-| Clean isolated workstream baseline | PASS | `C:\YC-my-owl-v1-member1`, branch `codex/v1-backend-security`, reviewed from `d1cd9f4d`; current local implementation checkpoint `fa7d511` plus uncommitted generated `.codebase-memory/` only |
-| Original dirty work preserved | PASS | Original `C:\YC-my-owl-v1` remains separate with 238 status entries |
+| Isolated Member 1 checkout | PASS (local) | Verified 2026-11-08 at HEAD `10cd8ce4959cdea85bb2c0cc7985ed0efca872cd`, branch `codex/v1-backend-security`; tracked tree clean; `.codebase-memory/` and `docs/v1-member1-org10-integration.md` preserved untracked |
+| Original dirty work preserved | PASS at baseline | Original `C:\YC-my-owl-v1` was recorded with 238 pre-existing status entries; this continuation ran commands only in the isolated Member 1 worktree and did not re-read current original/Member 2 status |
 | Dependency vulnerabilities | PASS (high/critical) | `pnpm audit --prod --audit-level=high` exits 0 after patched dependency updates; four moderate advisories remain (three Nodemailer, one minimatch) and require risk disposition |
 | Security headers and exact-origin CORS | PASS (local) | Middleware tests cover protected API responses, approved/denied preflight, CSP, HSTS-on-HTTPS and OAuth-compatible popup policy; staging/browser smoke remains not tested |
 | Scanner accuracy benchmark | PASS (curated) | `pnpm scanner:accuracy`: 24 fixtures, six supported adapters, TP 18/TN 6/FP 0/FN 0, precision/recall/version accuracy 1.0; limitations are explicit |
