@@ -62,9 +62,11 @@ export async function GET(req: Request) {
   try {
     const installUrl = await getGitHubAppInstallUrl(user.id, workspaceId);
     return NextResponse.json({ url: installUrl, workspaceId }, { headers: PRIVATE_NO_STORE });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to generate GitHub installation URL.';
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500, headers: PRIVATE_NO_STORE });
+  } catch {
+    return NextResponse.json(
+      { error: 'GitHub installation could not be started.', code: 'INTERNAL_ERROR' },
+      { status: 500, headers: PRIVATE_NO_STORE },
+    );
   }
 }
 

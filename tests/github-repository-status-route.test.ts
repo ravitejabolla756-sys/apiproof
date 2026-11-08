@@ -124,4 +124,38 @@ describe('GET /api/github/repositories/status', () => {
     );
     expect(Number(states?.count)).toBe(10);
   });
+
+  it('returns a generic non-cacheable error and creates no state when install signing configuration is invalid', async () => {
+    const { user, session } = await createUserWithSession('github-install-config@example.com', 'Strong-password-1!', 'Install Config');
+    const originalSecret = process.env.APIPROOF_SECRET;
+    const originalAuthSecret = process.env.AUTH_SECRET;
+    const originalNodeEnv = process.env.NODE_ENV;
+    delete process.env.APIPROOF_SECRET;
+    delete process.env.AUTH_SECRET;
+    process.env.NODE_ENV = 'production';
+    try {
+      const response = await getGitHubInstallUrl(new Request('http://localhost/api/github/install', {
+        headers: { cookie: `apiproof_session=${session.id}` },
+      }));
+
+      expect(response.status).toBe(500);
+      expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+      expect(await response.json()).toEqual({
+        error: 'GitHub installation could not be started.',
+        code: 'INTERNAL_ERROR',
+      });
+      const states = await getDatabase().queryOne<{ count: number }>(
+        'SELECT COUNT(*) AS count FROM github_installation_states WHERE user_id = ?',
+        [user.id],
+      );
+      expect(Number(states?.count)).toBe(0);
+    } finally {
+      if (originalSecret === undefined) delete process.env.APIPROOF_SECRET;
+      else process.env.APIPROOF_SECRET = originalSecret;
+      if (originalAuthSecret === undefined) delete process.env.AUTH_SECRET;
+      else process.env.AUTH_SECRET = originalAuthSecret;
+      if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
 });
