@@ -364,3 +364,10 @@ Phase 0 read-only checks:
 - Registered the matching `@next/eslint-plugin-next` flat config for `apps/web` and configured the monorepo root lookup so lint invoked from the repository root or web app resolves the Next.js project. `pnpm lint` passes without the prior plugin-detection or Pages-directory warnings.
 - Updated the shared logo component to use `next/image` with the source asset dimensions. Added the Next.js 15.5.29-matched ESLint plugin as a root development dependency with lockfile update.
 - `pnpm typecheck`, `pnpm lint`, and `pnpm build` pass. Build-generated `apps/web/next-env.d.ts` and `apps/web/tsconfig.json` were restored and are absent from the source diff. No production task or deployment was run. This maintenance change does not independently complete a Member 1 backlog task.
+
+## 2026-11-08 full-suite rerun on current HEAD
+
+- Code HEAD: `93b79f88c424c12d423b1bfdbd4291749053a5f4`.
+- Command: `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot`, with `DATABASE_URL` and `APIPROOF_DATABASE_URL` removed and a generated process-only `APIPROOF_LOCAL_SEED_PASSWORD`.
+- Result: PASS, 168 test files passed / 1 skipped (169 total); 1,410 tests passed / 4 skipped (1,414 total); 260.75 seconds. The four skipped tests are the Docker-backed live verification cases; no failures were reported.
+- The harness emitted a fresh 24-iteration local baseline for API health, GitHub webhook signature/claim/record, SQLite `SELECT 1`, and worker queue metrics at concurrency 4. Values are recorded in `docs/sec16-local-measurements.md`; they are host-specific regression observations, not SLO or staging-capacity evidence.

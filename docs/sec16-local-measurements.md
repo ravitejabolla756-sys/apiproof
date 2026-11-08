@@ -36,3 +36,16 @@ These are environment-specific single-run observations and do not establish SLOs
 
 - When a timeout stopped the harness from starting remaining iterations, `throughputPerSecond` still divided requested iterations by elapsed duration. The metric now uses actual started operations, and the timeout regression verifies the numerator reflects `started` rather than `iterations`.
 - A repeat of `pnpm exec vitest run tests/sec16-load-resilience.test.ts --reporter=dot` passes 9/9. The emitted run measured 24 operations per scenario at concurrency 4: API health p50/p95 0.59/4.83 ms; GitHub webhook p50/p95 5.08/6.69 ms; SQLite SELECT p50/p95 0.052/0.085 ms; queue metrics p50/p95 0.32/0.74 ms. These are local single-run observations; they vary by host load and are not SLOs. ESLint and full workspace typecheck pass. Staging infrastructure and failure-recovery rehearsal remain unverified.
+
+## 2026-11-08 full-suite SEC-16 baseline
+
+Captured during the seeded serial full repository run on code HEAD `93b79f88c424c12d423b1bfdbd4291749053a5f4`. Each scenario used 24 in-process operations at concurrency 4 with a disposable local SQLite fixture.
+
+| Scenario | Duration ms | p50 ms | p95 ms | p99 ms | Throughput ops/s | Max in flight |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| API health handler | 4.519 | 0.319 | 2.433 | 2.638 | 5,311.38 | 4 |
+| GitHub webhook signature/claim/record | 23.463 | 3.010 | 4.000 | 4.364 | 1,022.88 | 4 |
+| SQLite `SELECT 1` | 0.324 | 0.021 | 0.037 | 0.129 | 74,142.72 | 4 |
+| Scan-worker queue metrics | 1.901 | 0.173 | 0.296 | 0.512 | 12,624.93 | 4 |
+
+These are one-run local observations, not SLOs, staging capacity claims, or evidence about real provider/PostgreSQL behavior.
