@@ -401,3 +401,7 @@ Workspace-list failures now preserve focus on the retryable sidebar alert. Local
 ## Latest UI-12/ORG-02 workspace-switch focus evidence — 2026-11-08
 
 Failed workspace context switches now preserve focus on the retryable contextual alert. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 contract review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 logout focus evidence — 2026-11-08
+
+Logout failures now preserve focus on session-preserving feedback while keeping the user on the dashboard. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.

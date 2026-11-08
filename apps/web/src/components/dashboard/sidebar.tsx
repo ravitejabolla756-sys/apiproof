@@ -43,6 +43,7 @@ export function Sidebar() {
   const logoutPending = useRef(false);
   const workspaceErrorRef = useRef<HTMLParagraphElement>(null);
   const workspaceContextErrorRef = useRef<HTMLParagraphElement>(null);
+  const logoutErrorRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     async function loadStats() {
@@ -98,6 +99,10 @@ export function Sidebar() {
   useEffect(() => {
     if (workspaceContextError) workspaceContextErrorRef.current?.focus();
   }, [workspaceContextError]);
+
+  useEffect(() => {
+    if (logoutError) logoutErrorRef.current?.focus();
+  }, [logoutError]);
 
   async function switchWorkspace(workspaceId: string) {
     if (!workspaceId || workspaceId === activeWorkspaceId || workspaceSwitching) return;
@@ -305,7 +310,7 @@ export function Sidebar() {
               <span className={collapsed ? "md:hidden" : ""}>{isSigningOut ? 'Signing out…' : 'Sign Out'}</span>
             </button>
         </div>
-        {logoutError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-2 text-[11px] text-rose-700">{logoutError}</p>}
+        {logoutError && <p ref={logoutErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-2 text-[11px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{logoutError}</p>}
       </div>
     </aside>
   );

@@ -1377,6 +1377,14 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — logout recovery focus checkpoint
+
+- Impeccable detector: PASS with no findings for the sidebar logout failure journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `CI=true PLAYWRIGHT_PORT=3129 pnpm exec playwright test tests/e2e/logout-recovery.spec.ts --workers=1 --reporter=line`: PASS, 1/1; a failed logout keeps the dashboard active and focuses the session-preserving alert.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

@@ -2791,3 +2791,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; workspace-switch recovery coverage passed 1/1; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12 and ORG-02 workspace-switch recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation/context review and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 logout error focus
+
+- Change: logout failures now focus the session-preserving error alert while leaving the existing logout request and retry-by-user behavior unchanged.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/logout-recovery.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; logout recovery coverage passed 1/1; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12 authentication-session recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
