@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — cross-member contract review matrix
+
+- PASS: Added a review-only matrix covering invoice, digest, enterprise-intake, status, notification delivery, deletion and member-revocation decisions, with explicit activation prerequisites and no implied approval.
+- PASS: `git diff --check` passed.
+- NOT_RUN: Member 1/owner sign-off, provider delivery, PostgreSQL/RBAC, legal retention review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — UI-13 full browser regression after enterprise intake coverage
 
 - PASS: The complete current-worktree Playwright matrix ran 164 tests and passed 164/164 in 4.5 minutes on one worker, including the enterprise-intake non-sending journey. Artifacts: `/tmp/myowl-v1-ui13-enterprise-matrix-KLl2Ar`.

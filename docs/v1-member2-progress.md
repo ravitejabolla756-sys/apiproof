@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — cross-member contract review matrix
+
+- Change: Added a concrete review matrix to `docs/v1-member2-contracts.md` for invoice history, digest notifications, enterprise intake, status communications, notification delivery, deletion and member revocation. Each row identifies the Member 1/owner decision, current safe local boundary, and activation gate.
+- Evidence: Documentation diff checked with `git diff --check`; no shared backend contract, provider, production resource or remote Git operation was changed.
+- Scope: improves Member 1 handoff readiness; all listed cross-member/provider/legal/PostgreSQL gates remain pending until explicitly reviewed and recorded.
+
 ## 2026-11-08 checkpoint — UI-13 full browser regression after enterprise intake coverage
 
 - Evidence: The complete current-worktree Playwright matrix ran **164 tests and passed 164/164 in 4.5 minutes** with `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test --workers=1`. This includes the enterprise-intake non-sending journey. Artifacts: `/tmp/myowl-v1-ui13-enterprise-matrix-KLl2Ar`.

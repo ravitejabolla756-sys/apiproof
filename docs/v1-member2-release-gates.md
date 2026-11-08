@@ -44,6 +44,8 @@ Latest UI-13 evidence: the complete current-worktree production-bundle browser m
 
 Latest BILL-09 evidence: the billing settings invoice-history boundary is axe-clean, its unavailable status region is at least 44px high, and no invoice link or button is exposed; the focused billing-boundary journey passes 1/1. Provider-backed invoice schema/API, sandbox data and legal retention approval remain open.
 
+Latest contract-handoff evidence: `docs/v1-member2-contracts.md` now contains a review matrix for BILL-09, NOT-10, BILL-11, WEB-13, notification delivery, AUTH-09 and ORG-04. It records the current local boundary and the exact provider, legal, PostgreSQL or Member 1 approval required before activation; no approval is implied.
+
 Latest SEC-18 evidence: the incident-response draft now records the highest-applicable-severity decision sequence and explicit readiness prerequisites for named owners, alert routing, status source, provider response, PostgreSQL/restore evidence and tabletop sign-off. All unavailable or unperformed operational evidence remains labeled `NOT_AVAILABLE` or `NOT_RUN`; owner/Member 1 review and the tabletop remain open.
 
 Latest public performance evidence: the current production bundle passed the 9-route loopback probe over three samples with median load 10–39 ms, response 2–5 ms and encoded HTML 6.1–17.0 KiB. This is not Lighthouse/Core Web Vitals or deployment evidence; hosted CI, staging and production remain open.
