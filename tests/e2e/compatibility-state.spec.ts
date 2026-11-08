@@ -37,3 +37,30 @@ test('announces compatibility loading as a busy state', async ({ page }) => {
   await expect(page.getByText('No reviewed compatibility claims are available')).toBeVisible({ timeout: 30_000 });
   await page.unroute('**/api/compatibility-proof');
 });
+
+test('marks compatibility refresh busy while the request is pending', async ({ page }) => {
+  await page.route('**/api/compatibility-proof', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ claimsAvailable: false, reason: 'fixture', changes: [] }) });
+  });
+  await signIn(page);
+  await page.goto('/dashboard/compatibility', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('No reviewed compatibility claims are available')).toBeVisible({ timeout: 30_000 });
+
+  let releaseRefresh: (() => void) | undefined;
+  const refreshPending = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+  await page.unroute('**/api/compatibility-proof');
+  await page.route('**/api/compatibility-proof', async (route) => {
+    await refreshPending;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ claimsAvailable: false, reason: 'fixture', changes: [] }) });
+  });
+
+  const refresh = page.getByRole('button', { name: 'Refresh' });
+  await refresh.click();
+  await expect(refresh).toBeDisabled();
+  await expect(refresh).toHaveAttribute('aria-busy', 'true');
+  releaseRefresh?.();
+  await expect(page.getByText('No reviewed compatibility claims are available')).toBeVisible({ timeout: 30_000 });
+  await expect(refresh).not.toBeDisabled();
+  await expect(refresh).not.toHaveAttribute('aria-busy');
+  await page.unroute('**/api/compatibility-proof');
+});

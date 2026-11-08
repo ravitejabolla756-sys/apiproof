@@ -1790,6 +1790,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported five incumbent purple-palette warnings on untouched workspace headings; targeted ESLint and `git diff --check` passed; focused Playwright coverage passed 1/1 in 10.1 seconds; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-04 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 compatibility-intelligence refresh action semantics
+
+- Change: the compatibility-intelligence refresh control now exposes `aria-busy="true"` and remains disabled while reviewed compatibility data is pending, preserving the reviewed-source-only claim boundary.
+- Files: `apps/web/src/app/dashboard/compatibility/page.tsx`, `tests/e2e/compatibility-state.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; the complete compatibility-state suite passed 3/3 in 21.3 seconds; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 secondary workbench refresh action semantics
 
 - Change: activity, inventory, migration, provider-coverage and pull-request refresh controls now expose `aria-busy="true"` and remain disabled while their data request is pending, including initial loading.

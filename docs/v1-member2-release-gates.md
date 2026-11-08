@@ -119,3 +119,5 @@ Latest GitHub authorization evidence: settings and repository-dialog authorizati
 Latest member-role evidence: the owner-only workspace role selector exposes `aria-busy` while a role mutation is pending; focused coverage passes 1/1 in 10.1 seconds and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production remain open.
 
 Latest secondary-workbench evidence: activity, inventory, migrations, provider coverage and pull requests expose busy refresh controls; the five-route pending-action journey passes 1/1, existing secondary-route accessibility coverage passes 4/4, and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
+
+Latest compatibility-intelligence evidence: the reviewed compatibility refresh control exposes `aria-busy` while pending; its focused state suite passes 3/3 and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.

@@ -69,7 +69,7 @@ export default function CompatibilityPage() {
             Reviewed upstream changes and repository-bound compatibility proofs.
           </p>
         </div>
-        <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" className="min-h-11" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>
+        <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" disabled={loading} aria-busy={loading ? 'true' : undefined} className="min-h-11" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>
           Refresh
         </Button>
       </div>
