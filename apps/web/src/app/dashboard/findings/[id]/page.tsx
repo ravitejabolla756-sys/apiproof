@@ -204,7 +204,7 @@ export default function FindingDetailPage({
   if (!finding) {
     return (
       <div className="space-y-4 font-sans text-xs">
-        <Link href="/dashboard/findings" className="text-[#686868] hover:text-[#111111] flex items-center gap-1">
+        <Link href="/dashboard/findings" className="inline-flex min-h-11 items-center gap-1 text-[#686868] hover:text-[#111111]">
           <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" /> Back to Findings
         </Link>
         <div role="alert" aria-live="assertive" aria-atomic="true" className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">

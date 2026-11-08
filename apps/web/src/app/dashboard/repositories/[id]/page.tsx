@@ -129,7 +129,7 @@ export default function RepositoryDetailPage({
   if (!repo) {
     return (
       <div className="space-y-4 font-sans text-xs">
-        <Link href="/dashboard/repositories" className="text-zinc-500 hover:text-black flex items-center gap-1">
+        <Link href="/dashboard/repositories" className="inline-flex min-h-11 items-center gap-1 text-zinc-500 hover:text-black">
           <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" /> Back to Repositories
         </Link>
         <DashboardDataError message={error || "Repository not found or access denied."} onRetry={() => void loadData()} />

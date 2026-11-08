@@ -88,6 +88,7 @@ export async function assertDashboardRoutes(page: Page, routes: string[]) {
     expect(response?.status(), route).toBe(200);
     await expect(page.locator('main#main-content')).toBeVisible({ timeout: 30_000 });
     if (route.includes('/repositories/')) {
+      expect((await page.getByRole('link', { name: 'Back to Repositories', exact: true }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
       await expect(page.getByText('Repository not found or access denied.')).toBeVisible({ timeout: 30_000 });
       continue;
     }

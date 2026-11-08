@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 detail-route fallback touch targets
+
+- Change: repository and finding detail not-found/access-denied fallback links now expose explicit 44px minimum touch targets while preserving truthful error copy, destinations, and access-control behavior.
+- Files: `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/helpers.ts`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; protected finding-detail journey passed 1/1 in 17.4 seconds with a measured 44px fallback link and axe-clean state; authenticated route axe audit passed 1/1 in 1.3 minutes; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-13 repository-dialog filter touch target
 
 - Change: the connected GitHub repository picker’s filter input now exposes an explicit 44px minimum touch target while preserving no-match recovery, focus trapping, repository selection, and GitHub integration boundaries.
