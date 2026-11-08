@@ -1526,3 +1526,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`, `tests/e2e/sidebar-brand-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused workspace recovery and collapsed-sidebar journeys passed 2/2 in 18.0 seconds with measured touch targets; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — WEB-15 footer navigation touch targets
+
+- Change: public footer navigation links now expose consistent 44px mobile touch targets, including the beta-status boundary link, without changing destinations or copy.
+- Files: `apps/web/src/components/landing/footer.tsx`, `tests/e2e/footer-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; retained mobile footer journey passed 1/1 in 7.2 seconds, measuring all 16 footer links and confirming axe-clean footer content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local WEB-15 and UI-12 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

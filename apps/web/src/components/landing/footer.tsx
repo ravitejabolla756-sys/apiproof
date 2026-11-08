@@ -21,7 +21,7 @@ export function LandingFooter() {
             </p>
           </div>
 
-          <Link href="/status" className="inline-flex min-h-10 items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300 transition-colors hover:border-white/20 hover:text-white">
+          <Link href="/status" className="inline-flex min-h-11 items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300 transition-colors hover:border-white/20 hover:text-white">
             <span className="w-2 h-2 rounded-full bg-slate-400" aria-hidden="true" />
             <span>Beta · Read-only safety boundary</span>
           </Link>
@@ -40,22 +40,22 @@ export function LandingFooter() {
             </h2>
             <ul className="space-y-2.5 text-slate-300">
               <li>
-                <Link href="/features" className="hover:text-white transition-colors">
+                <Link href="/features" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Product Overview
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="hover:text-white transition-colors">
+                <Link href="/how-it-works" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   How it works
                 </Link>
               </li>
               <li>
-                <Link href="/security" className="hover:text-white transition-colors">
+                <Link href="/security" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Security Invariants
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-white transition-colors">
+                <Link href="/pricing" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Pricing
                 </Link>
               </li>
@@ -69,27 +69,27 @@ export function LandingFooter() {
             </h2>
             <ul className="space-y-2.5 text-slate-300">
               <li>
-                <Link href="/docs" className="hover:text-white transition-colors">
+                <Link href="/docs" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Docs
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-white transition-colors">
+                <Link href="/blog" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/updates" className="hover:text-white transition-colors">
+                <Link href="/updates" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Updates
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="hover:text-white transition-colors">
+                <Link href="/faq" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white transition-colors">
+                <Link href="/contact" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Contact
                 </Link>
               </li>
@@ -103,37 +103,37 @@ export function LandingFooter() {
             </h2>
             <ul className="space-y-2.5 text-slate-300">
               <li>
-                <Link href="/about" className="hover:text-white transition-colors">
+                <Link href="/about" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-white transition-colors">
+                <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-white transition-colors">
+                <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Terms &amp; Conditions
                 </Link>
               </li>
               <li>
-                <Link href="/security" className="hover:text-white transition-colors">
+                <Link href="/security" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Security
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="hover:text-white transition-colors">
+                <Link href="/cookies" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Cookies
                 </Link>
               </li>
               <li>
-                <Link href="/refunds" className="hover:text-white transition-colors">
+                <Link href="/refunds" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Billing &amp; refunds
                 </Link>
               </li>
               <li>
-                <Link href="/status" className="hover:text-white transition-colors">
+                <Link href="/status" className="inline-flex min-h-11 items-center hover:text-white transition-colors">
                   Status
                 </Link>
               </li>
