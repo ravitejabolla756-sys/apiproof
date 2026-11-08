@@ -54,7 +54,7 @@ export default function AboutPage() {
         {/* 3 CORE PILLARS */}
         <div className="space-y-8">
           <div className="max-w-2xl space-y-2">
-            <p className="text-xs font-mono font-semibold tracking-wider text-slate-500 uppercase">
+            <p className="text-xs font-mono font-semibold tracking-wider text-slate-600 uppercase">
               ARCHITECTURAL PRINCIPLES
             </p>
             <h2 className="font-serif text-3xl sm:text-4xl text-[#000E29] font-normal">
@@ -76,7 +76,7 @@ export default function AboutPage() {
                   We parse source code into formal Abstract Syntax Trees. We never guess with regex or simple string searches. If an API signature changes, we trace exact call expressions.
                 </p>
               </div>
-              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-600">
                 AST symbol tracing
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function AboutPage() {
                   Every proposed migration is verified against syntactic validity, TypeScript compiler diagnostics, call-site scope boundaries, and isolated dry-run test execution.
                 </p>
               </div>
-              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-600">
                 Compiler + test checks
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function AboutPage() {
                   We never commit to your default branch. We never auto-merge. Automated changes are delivered as isolated GitHub Draft Pull Requests for engineers to inspect and approve.
                 </p>
               </div>
-              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-600">
                 Draft PR boundary
               </div>
             </div>

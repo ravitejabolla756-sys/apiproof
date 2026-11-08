@@ -1463,3 +1463,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/docs/page.tsx`, `tests/e2e/docs-accessibility.spec.ts`.
 - Evidence: initial focused axe run reproduced the page-local contrast failure; after the fix, Impeccable detector returned no findings, targeted ESLint and `git diff --check` passed, docs mobile CTA/axe journey passed 1/1, repository typecheck passed, and the web production build passed with 83 generated pages.
 - Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 full public contrast audit
+
+- Change: added a retained axe color-contrast audit over 16 public routes and corrected confirmed AA failures in About evidence metadata and Contact topic metadata.
+- Files: `apps/web/src/app/about/page.tsx`, `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-contrast-audit.spec.ts`.
+- Evidence: the audit first reproduced `/about` and `/contact` failures; after correction, the full public contrast journey passed 1/1 across all 16 routes in 26.0 seconds; detector, targeted ESLint and `git diff --check` passed; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this materially strengthens local UI-12 and WEB-15 evidence; hosted CI, manual assistive-technology review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

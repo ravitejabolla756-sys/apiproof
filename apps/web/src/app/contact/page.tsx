@@ -124,7 +124,7 @@ export default function ContactPage() {
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h2>
               <p className="text-xs text-slate-600">Questions about private runners, GitHub Enterprise Server, or future deployment options.</p>
             </div>
-              <span className="text-[11px] font-semibold text-slate-500 font-mono">Owner-provided contact only</span>
+              <span className="text-[11px] font-semibold text-slate-600 font-mono">Owner-provided contact only</span>
           </div>
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
@@ -135,7 +135,7 @@ export default function ContactPage() {
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h2>
               <p className="text-xs text-slate-600">Read-only inspection and evidence boundaries documented for beta review.</p>
             </div>
-              <span className="text-[11px] font-semibold text-slate-500 font-mono">See the security page</span>
+              <span className="text-[11px] font-semibold text-slate-600 font-mono">See the security page</span>
           </div>
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
@@ -146,7 +146,7 @@ export default function ContactPage() {
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h2>
               <p className="text-xs text-slate-600">Discuss future rule coverage for private internal services and SDKs.</p>
             </div>
-              <span className="text-[11px] font-semibold text-slate-500 font-mono">Planned evaluation</span>
+              <span className="text-[11px] font-semibold text-slate-600 font-mono">Planned evaluation</span>
           </div>
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
@@ -157,7 +157,7 @@ export default function ContactPage() {
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Technical Support</h2>
               <p className="text-xs text-slate-600">Review the beta documentation for GitHub permissions and scan boundaries.</p>
             </div>
-              <span className="text-[11px] font-semibold text-slate-500 font-mono">No staffed inbox is connected</span>
+              <span className="text-[11px] font-semibold text-slate-600 font-mono">No staffed inbox is connected</span>
           </div>
 
         </div>
