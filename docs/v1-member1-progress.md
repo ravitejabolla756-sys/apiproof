@@ -397,3 +397,8 @@ Phase 0 read-only checks:
 
 - Extended the multi-tenant test so an authenticated user from another workspace cannot invoke `POST /api/migrations/propose` for a foreign migration. The API returns the generic 404 `NOT_FOUND` response and no pull-request row is created; the existing service-level denial assertion remains.
 - `phase2-multi-tenant-workspaces` passes 17/17, targeted ESLint passes, and full workspace `pnpm typecheck` passes. The test exercises the local route/service/SQLite boundary and does not contact GitHub; provider-backed proposal behavior and PostgreSQL/RLS remain unverified.
+
+### 2026-11-08 SEC-16 multi-worker timeout containment
+
+- Added a concurrency-2 failure-injection regression. When both active operations time out and do not settle after abort, the harness reports exactly two started/failed operations, four not started, a maximum of two in flight, and no retries/extra scheduling.
+- `sec16-load-resilience` passes 11/11; targeted ESLint and full workspace `pnpm typecheck` pass. The test confirms local scheduler containment only; cooperative cancellation, staging SLOs, and infrastructure failure recovery remain separate requirements.

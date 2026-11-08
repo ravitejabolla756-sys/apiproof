@@ -301,4 +301,29 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     });
     expect(report.throughputPerSecond).toBeCloseTo((report.started / report.durationMs) * 1_000, 8);
   });
+
+  it('stops scheduling across all active workers after a timeout', async () => {
+    let started = 0;
+    const report = await runLocalLoadScenario({
+      name: 'parallel-timeout-stops-schedule',
+      iterations: 6,
+      concurrency: 2,
+      timeoutMs: 10,
+      operation: () => {
+        started += 1;
+        return new Promise<void>(() => undefined);
+      },
+    });
+
+    expect(started).toBe(2);
+    expect(report).toMatchObject({
+      iterations: 6,
+      started: 2,
+      notStarted: 4,
+      succeeded: 0,
+      failed: 2,
+      maxInFlight: 2,
+      errors: { OPERATION_TIMEOUT: 2 },
+    });
+  });
 });
