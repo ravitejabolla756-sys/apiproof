@@ -1484,3 +1484,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/authenticated-axe-audit.spec.ts`.
 - Evidence: the initial run exposed a harness timing gap before axe could analyze the first route; after adding route readiness, all 15 authenticated routes passed axe in 1.1 minutes; targeted ESLint and `git diff --check` passed. Existing backend fixtures and route behavior were unchanged.
 - Scope: this strengthens local UI-12/UI-13 evidence only; hosted CI, manual assistive-technology review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 About CTA touch target
+
+- Change: the primary About-page Connect GitHub CTA now has an explicit 44px minimum touch target; destination and copy are unchanged.
+- Files: `apps/web/src/app/about/page.tsx`, `tests/e2e/about-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; mobile About CTA/axe journey passed 1/1 in 7.1 seconds at 390px; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

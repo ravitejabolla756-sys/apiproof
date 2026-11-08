@@ -40,7 +40,7 @@ export default function AboutPage() {
               <div className="pt-2">
                 <Link
                   href="/login"
-                  className="btn-lime text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)] inline-flex items-center gap-2"
+                  className="btn-lime min-h-11 text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)] inline-flex items-center gap-2"
                 >
                   <span>Connect GitHub</span>
                   <ArrowRight className="w-3.5 h-3.5 text-black stroke-[2.5]" />
