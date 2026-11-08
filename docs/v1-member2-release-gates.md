@@ -107,3 +107,5 @@ Latest repository-refresh evidence: the repository dialog preserves its loaded f
 Latest compatibility-map evidence: topology refresh and retry controls expose `aria-busy` during pending requests; the rebuilt-bundle recovery spec passes 2/2 in 15.9 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
 
 Latest dashboard-refresh evidence: the overview refresh control exposes `aria-busy` while its request is pending; rebuilt-bundle focused coverage passes 1/1 in 10.3 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
+
+Latest provider-rule evidence: review-only provider actions expose `aria-busy` while pending; the rebuilt-bundle action/recovery coverage passes 3/3 in 20.3 seconds. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open.
