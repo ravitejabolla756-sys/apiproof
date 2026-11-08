@@ -208,7 +208,7 @@ export default function FeaturesPage() {
           <div className="pt-2">
             <Link
               href="/login"
-              className="btn-lime inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
+              className="btn-lime min-h-11 inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
             >
               <span>Connect GitHub Free</span>
               <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
