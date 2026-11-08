@@ -605,6 +605,10 @@ Phase 0 read-only checks:
 - `safeFailureCode` now extracts only explicitly recognized scan/GitHub error categories, including safe prefixes with descriptive suffixes. Unknown uppercase strings and secret-shaped values use the fixed fallback rather than reaching logs or worker records.
 - Focused verification: `failure-code-safety`, `phase4-async-scan-worker`, `p0-live-scan-security`, `provider-intelligence-worker-e2e`, and `sec16-load-resilience` pass 46/46; targeted ESLint and full `pnpm typecheck` pass. External telemetry and database controls remain unverified.
 
+### 2026-11-08 SEC-11 allowlist current-HEAD suite
+
+- After restricting worker failure codes to the application allowlist, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 175 files passed / 1 skipped; 1,449 tests passed / 4 skipped; 255.04 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. No PostgreSQL or production proof is implied.
+
 ### 2026-11-08 SEC-11 durable error current-HEAD suite
 
 - After worker error-message persistence hardening, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 174 files passed / 1 skipped; 1,447 tests passed / 4 skipped; 243.72 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This does not establish PostgreSQL or production evidence.
