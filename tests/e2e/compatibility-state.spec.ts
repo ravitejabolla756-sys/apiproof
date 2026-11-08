@@ -15,6 +15,7 @@ test('announces a reviewed compatibility source with no records yet', async ({ p
   const emptyState = page.getByRole('status').filter({ hasText: 'No reviewed compatibility records are available yet' });
   await expect(emptyState).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText('Reviewed records available')).toBeVisible();
+  expect((await page.getByRole('button', { name: 'Refresh' }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'compatibility empty state').toEqual([]);
   await page.unroute('**/api/compatibility-proof');
 });

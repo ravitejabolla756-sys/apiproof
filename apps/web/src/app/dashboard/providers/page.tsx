@@ -117,7 +117,7 @@ export default function ProvidersPage() {
           </h1>
           <p className="mt-1 text-xs text-[#686868]">The honest boundary between monitored sources, reviewed rules, scanner coverage, and guarded fixes.</p>
         </div>
-        <Button onClick={() => void loadCoverage()} variant="outline" size="sm" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>Refresh</Button>
+        <Button onClick={() => void loadCoverage()} variant="outline" size="sm" className="min-h-11" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>Refresh</Button>
       </div>
 
       {error && <DashboardDataError message={error} onRetry={() => void loadCoverage()} />}
@@ -158,7 +158,7 @@ export default function ProvidersPage() {
           </section>
 
           <section className="rounded-2xl border border-purple-200 bg-purple-50/50 p-5" aria-label="Review queue priority summary">
-            <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-purple-800">Review queue priority</p><Link href="/dashboard/rules/pending" className="rounded-lg border border-purple-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-purple-800 hover:bg-purple-100">Open review queue</Link></div>
+            <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-purple-800">Review queue priority</p><Link href="/dashboard/rules/pending" className="inline-flex min-h-11 items-center rounded-lg border border-purple-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-purple-800 hover:bg-purple-100">Open review queue</Link></div>
             <div className="mt-3 flex flex-wrap gap-3 text-[11px]">
               <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-800">P0 · {data.summary.reviewQueue.P0} ready for fixture review</span>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 font-semibold text-amber-800">P1 · {data.summary.reviewQueue.P1} review-only</span>
@@ -182,7 +182,7 @@ export default function ProvidersPage() {
                 {data.providers.map((provider) => (
                   <tr key={provider.providerId} className="border-b border-[#F0F0ED] last:border-0">
                     <td className="px-5 py-4"><div className="font-semibold text-[#111111]">{provider.providerName}</div><div className="font-mono text-[10px] text-[#686868]">{provider.providerId}</div></td>
-                    <td className="px-5 py-4"><div className="flex items-center gap-2"><CoverageBadge tone="slate">Configured</CoverageBadge><SourceHealthBadge status={provider.sourceHealth.status} /><a href={provider.sourceUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.providerName} official source`}><ExternalLink aria-hidden="true" className="h-3.5 w-3.5 text-purple-700" /></a></div><div className="mt-1 text-[10px] text-[#686868]">{provider.sourceType}</div></td>
+                    <td className="px-5 py-4"><div className="flex items-center gap-2"><CoverageBadge tone="slate">Configured</CoverageBadge><SourceHealthBadge status={provider.sourceHealth.status} /><a href={provider.sourceUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.providerName} official source`} className="inline-flex min-h-11 min-w-11 items-center justify-center"><ExternalLink aria-hidden="true" className="h-3.5 w-3.5 text-purple-700" /></a></div><div className="mt-1 text-[10px] text-[#686868]">{provider.sourceType}</div></td>
                     <td className="px-5 py-4"><ParserBadge status={provider.sourceHealth.parserStatus} /></td>
                     <td className="px-5 py-4"><div className="font-semibold text-[#111111]">{provider.reviewedRuleCount}</div><div className="text-[10px] text-[#686868]">{provider.candidateCount} candidates</div></td>
                     <td className="px-5 py-4">{provider.scannerCoverage === 'reviewed-rules' ? <CoverageBadge tone="green">Reviewed rules</CoverageBadge> : <CoverageBadge tone="amber">Review needed</CoverageBadge>}</td>

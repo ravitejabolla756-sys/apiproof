@@ -78,7 +78,7 @@ export default function ApiInventoryPage() {
           variant="outline"
           size="sm"
           icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
-          className="font-medium text-xs"
+          className="min-h-11 font-medium text-xs"
         >
           Refresh
         </Button>
@@ -95,7 +95,7 @@ export default function ApiInventoryPage() {
           placeholder="Filter provider integrations..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
+          className="min-h-11 w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
         />
       </div>
 
@@ -110,7 +110,7 @@ export default function ApiInventoryPage() {
           <p className="font-semibold text-base text-[#111111]">{providers.length === 0 ? "No API inventory records are available yet" : "No provider rules match this filter"}</p>
           <p className="mt-2 text-xs">{providers.length === 0 ? "Provider rules will appear here when the reviewed registry is available." : "Try a different provider or rule search."}</p>
           {hasActiveFilter && (
-            <Button type="button" variant="outline" size="sm" onClick={() => setSearch("")} className="mt-4">
+            <Button type="button" variant="outline" size="sm" onClick={() => setSearch("")} className="mt-4 min-h-11">
               Clear filter
             </Button>
           )}

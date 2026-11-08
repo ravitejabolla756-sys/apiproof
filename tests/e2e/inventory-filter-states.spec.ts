@@ -26,6 +26,7 @@ test('clears an inventory search that has no matches', async ({ page }) => {
   await expect(page.getByText('Example SDK')).toBeVisible();
 
   const search = page.getByRole('textbox', { name: 'Filter provider integrations' });
+  expect((await search.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await search.fill('missing-provider');
   const filteredEmpty = page.getByRole('status').filter({ hasText: 'No provider rules match this filter' });
   await expect(filteredEmpty).toBeVisible();
@@ -33,6 +34,7 @@ test('clears an inventory search that has no matches', async ({ page }) => {
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'inventory filtered empty state').toEqual([]);
 
   const clearFilter = filteredEmpty.getByRole('button', { name: 'Clear filter' });
+  expect((await clearFilter.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await clearFilter.focus();
   await expect(clearFilter).toBeFocused();
   await page.keyboard.press('Enter');

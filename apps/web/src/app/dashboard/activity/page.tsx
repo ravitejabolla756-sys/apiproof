@@ -50,7 +50,7 @@ export default function ActivityPage() {
           variant="outline"
           size="sm"
           icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
-          className="font-medium text-xs"
+          className="min-h-11 font-medium text-xs"
         >
           Refresh
         </Button>

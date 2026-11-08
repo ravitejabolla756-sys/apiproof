@@ -69,7 +69,7 @@ export default function CompatibilityPage() {
             Reviewed upstream changes and repository-bound compatibility proofs.
           </p>
         </div>
-        <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>
+        <Button onClick={() => void loadCompatibility()} variant="outline" size="sm" className="min-h-11" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>
           Refresh
         </Button>
       </div>
@@ -125,7 +125,7 @@ export default function CompatibilityPage() {
                 {change.replacement?.parameter && <p className="mt-1">Replacement parameter: <span className="font-mono">{change.replacement.parameter}</span></p>}
                 <p className="mt-1 text-[10px]">Reviewed by {change.reviewer} on {change.reviewedAt}</p>
               </div>
-              <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-medium text-purple-700 hover:underline">
+              <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-medium text-purple-700 hover:underline">
                 Official source <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
               </a>
             </article>

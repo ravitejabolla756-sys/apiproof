@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 secondary-route touch targets
+
+- Change: authenticated inventory, compatibility, provider-coverage, and activity routes now expose explicit 44px refresh, filter, clear-filter, review-queue, official-source, and provider-source touch targets without changing route behavior or backend contracts.
+- Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `apps/web/src/app/dashboard/providers/page.tsx`, `apps/web/src/app/dashboard/activity/page.tsx`, `tests/e2e/inventory-filter-states.spec.ts`, `tests/e2e/compatibility-state.spec.ts`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused secondary-route journey passed 3/3 in 29.2 seconds at mobile viewport with measured touch targets and axe-clean activity/provider/compatibility/inventory states; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13, NOT-01/NOT-02 and ORG-11 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging, providers, legal review and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 workbench action touch targets
 
 - Change: authenticated dashboard overview, compatibility-map, findings, migration, pull-request, and finding-detail action/recovery links now expose explicit 44px minimum touch targets without changing destinations, data contracts, or review-only behavior.
