@@ -189,3 +189,7 @@ Provider Rule Review preserves its degraded-state alert during retry and exposes
 ## Latest Slack recovery evidence — 2026-11-08
 
 Slack action retries preserve their degraded-state alert and expose disabled plus `aria-busy` while the connection request is pending; action-recovery and disconnect-progress coverage passes 2/2 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, Slack/provider approval, PostgreSQL/RBAC and production remain open. Release recommendation stays NO-GO.
+
+## Latest account-load recovery evidence — 2026-11-08
+
+Account Settings preserves its initial-load degraded state and exposes disabled plus `aria-busy` on Retry account load while recovery is pending; focused account action/recovery coverage passes 2/2 and the production build passes with 83 generated pages. A broader public-site regression remains blocked by an incumbent ambiguous status-region locator before reaching the account assertion. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 deletion contract and production remain open. Release recommendation stays NO-GO.

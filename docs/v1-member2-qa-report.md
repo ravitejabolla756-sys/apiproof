@@ -776,6 +776,15 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, Slack/provider approval, PostgreSQL/RBAC and production checks remain NOT_RUN.
 
+## 2026-11-08 — account-load recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for Account Settings and its recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/account-action-loading.spec.ts --reporter=line`: PASS, 2/2 in 15.9 seconds; Retry account load remains visible and exposes disabled/`aria-busy` while the held account request recovers, while profile-save busy semantics remain green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- `pnpm exec playwright test tests/e2e/public-site.spec.ts -g "account error state" --reporter=line`: FAIL before the account assertion because the incumbent repository-loading assertion calls `getByRole('status')` in strict mode while workspace-list and repository-table status regions coexist. This is a test-locator failure outside the account change; no account assertion ran.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, Member 1 deletion contract and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

@@ -2165,3 +2165,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/e2e/slack-action-recovery.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; Slack action-recovery and disconnect-progress coverage passed 2/2 in 18.0 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13 and NOT-03 notification-boundary recovery evidence only; hosted CI, integrated staging, manual screen-reader review, Slack/provider approval, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 account-load recovery busy semantics
+
+- Change: Account Settings now preserves its initial-load error alert during retry, exposes disabled plus `aria-busy="true"` on Retry account load, and clears the alert only after a successful profile response.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/account-action-loading.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; account action/recovery coverage passed 2/2 in 15.9 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking. A separate existing `public-site.spec.ts` regression currently fails before the account assertion because its repository loading check uses ambiguous `getByRole('status')` while two status regions are present; no account assertion was reached and that unrelated test was not changed.
+- Scope: this advances local UI-12/UI-13 and AUTH-08 account-surface recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 deletion contract and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
