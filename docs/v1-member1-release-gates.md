@@ -119,4 +119,3 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - ORG-05 unknown-role action mapping: PASS, `phase2-multi-tenant-workspaces` 17/17. Unknown persisted roles on the migration-planning and proposal APIs receive generic 404 responses and create no migration or pull-request records. Targeted ESLint and full workspace typecheck pass; effective PostgreSQL/RLS and Member 2 contract approval remain outstanding.
 
-- ORG-05 unknown-role action mapping: PASS, `phase2-multi-tenant-workspaces` 17/17. Unknown persisted roles on the migration-planning and proposal APIs receive generic 404 responses and create no migration or pull-request records. Targeted ESLint and full workspace typecheck pass; effective PostgreSQL/RLS and Member 2 contract approval remain outstanding.
