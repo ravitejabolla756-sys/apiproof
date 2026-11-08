@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — Rebuilt-bundle matrix after organization boundary coverage
+
+- PASS: Production build generated 83 static pages; the complete CI-mode Playwright matrix passed 99/99 in 2.9 minutes against isolated SQLite `/tmp/myowl-v1-full-current-20261108-member2.db` with one worker.
+- Scope: local UI-12/UI-13 regression evidence only. Hosted CI, integrated staging, full manual screen-reader review, backend/provider contracts and production remain open.
+
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
 ## 2026-11-08 — ORG-04/ORG-11 member permission boundary

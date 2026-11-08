@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 rebuilt-bundle matrix after organization boundaries
+
+- Change: Rebuilt the web production bundle and ran the complete committed browser matrix after the member-workspace permission boundary, last-owner refusal states, stale-workspace recovery, and full route-accessibility coverage additions.
+- Evidence: Production build generated 83 static pages; CI-mode Playwright suite passed 99/99 in 2.9 minutes against isolated SQLite `/tmp/myowl-v1-full-current-20261108-member2.db` with one worker.
+- Scope: local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, full manual screen-reader review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-04/ORG-11 member permission boundary
 
 - Change: Added a real invitation-acceptance browser journey that switches into the member workspace and verifies owner-only save, invite, and remove controls are absent while member access remains visible.
