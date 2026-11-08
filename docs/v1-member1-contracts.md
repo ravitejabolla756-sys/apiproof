@@ -13,6 +13,10 @@ This document records backend contracts that require coordination with Member 2.
 - Persistent auth throttles use atomic fixed-window increments shared by SQLite/PostgreSQL adapters. Denied requests remain denied, while the stored counter is capped at one above the configured limit; provider/proxy-specific client-IP trust still needs staging validation.
 - Real delivery remains gated until an approved email provider and environment are available.
 
+## Session lifetime (AUTH-10)
+
+- The browser authentication cookie's `Expires` and `Max-Age` must both reflect the persisted session expiry; `Max-Age` is capped at the remaining session lifetime and the configured maximum session TTL. Past or malformed expiry values immediately expire the cookie. Server-side session validation remains authoritative, so cookie expiry does not replace database validation.
+
 ## Organization access (ORG-05 / ORG-10)
 
 - Backend owns workspace-scoped authorization, role capabilities, membership revocation, worker revalidation and audit events. Current user sessions remain user-scoped; this contract does not authorize global session deletion.

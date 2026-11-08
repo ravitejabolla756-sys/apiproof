@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { assertCsrfProtection } from '../apps/web/src/lib/server/validation.js';
-import { getAuthCookieOptions } from '../apps/web/src/lib/server/auth.js';
+import { getAuthCookieOptions, SESSION_TTL_SECONDS } from '../apps/web/src/lib/server/auth.js';
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -127,5 +127,20 @@ describe('authentication hardening', () => {
     expect(getAuthCookieOptions().secure).toBe(true);
     expect(getAuthCookieOptions().httpOnly).toBe(true);
     expect(getAuthCookieOptions().sameSite).toBe('lax');
+  });
+
+  it('bounds cookie Max-Age to the remaining session lifetime and expires invalid timestamps immediately', () => {
+    const soon = new Date(Date.now() + 5_000);
+    const nearExpiry = getAuthCookieOptions(soon);
+    expect(nearExpiry.expires.getTime()).toBe(soon.getTime());
+    expect(nearExpiry.maxAge).toBeGreaterThan(0);
+    expect(nearExpiry.maxAge).toBeLessThanOrEqual(5);
+    expect(nearExpiry.maxAge).toBeLessThan(SESSION_TTL_SECONDS);
+
+    const expired = getAuthCookieOptions(new Date(Date.now() - 1_000));
+    const malformed = getAuthCookieOptions('not-a-timestamp');
+    expect(expired.maxAge).toBe(0);
+    expect(malformed.maxAge).toBe(0);
+    expect(Number.isFinite(malformed.expires.getTime())).toBe(true);
   });
 });

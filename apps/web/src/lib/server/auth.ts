@@ -35,13 +35,20 @@ export interface AuthCookieOptions {
 
 export function getAuthCookieOptions(expiresAt?: string | Date): AuthCookieOptions {
   const isProduction = process.env.NODE_ENV === 'production';
-  const expiresDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + SESSION_TTL_MS);
+  const now = Date.now();
+  const requestedExpiry = expiresAt === undefined
+    ? now + SESSION_TTL_MS
+    : expiresAt instanceof Date ? expiresAt.getTime() : Date.parse(expiresAt);
+  const expiryTime = Number.isFinite(requestedExpiry)
+    ? Math.min(requestedExpiry, now + SESSION_TTL_MS)
+    : 0;
+  const expiresDate = new Date(expiryTime);
   return {
     httpOnly: true,
     secure: isProduction,
     sameSite: 'lax',
     path: '/',
-    maxAge: SESSION_TTL_SECONDS,
+    maxAge: Math.max(0, Math.floor((expiryTime - now) / 1000)),
     expires: expiresDate,
   };
 }
