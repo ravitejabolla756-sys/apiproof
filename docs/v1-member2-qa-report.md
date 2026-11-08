@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-13 full browser regression after 404 and invoice boundary coverage
+
+- PASS: The complete current-worktree Playwright matrix ran 163 tests and passed 163/163 in 4.4 minutes on one worker, including the new public HTTP-404 axe/contrast checks and strengthened invoice-history beta boundary. Artifacts: `/tmp/myowl-v1-ui13-full-matrix-ftPTBv`.
+- NOTE: The expected owner-privilege refusal log came from a negative-case fixture; it did not fail a test.
+- NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — BILL-09 invoice-unavailable boundary accessibility
 
 - PASS: The billing settings invoice-history boundary now verifies its truthful unavailable copy, axe-clean content, 44px status region, and absence of invoice links or buttons.
