@@ -13,7 +13,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 | Database source access inventory | PASS (local only) | `docs/v1-member1-db-access-matrix.md` inventories 40 tables and records RLS decisions, intended roles, catalog queries and blocked PostgreSQL isolation tests |
 | PostgreSQL tenant isolation / RLS | BLOCKED | No approved production/staging role access; local SQLite tests are insufficient |
 | PostgreSQL least-privilege grants | BLOCKED | No approved role/grant read-back environment |
-| Auth/OAuth/session security | PARTIAL | Existing 8-file auth/security matrix passed 70/70; latest password-reset/email-verification/OAuth/CSRF run passes 39/39, including concurrent single-use token consumption; central unverified-account enforcement and PostgreSQL concurrency evidence remain incomplete |
+| Auth/OAuth/session security | PARTIAL | Existing 8-file auth/security matrix passed 70/70; latest seeded auth/session/password-reset/email-verification/Google OAuth/GitHub OAuth run passes 6 files / 62 tests, including concurrent single-use token consumption; central unverified-account enforcement and PostgreSQL concurrency evidence remain incomplete |
 | Email verification backend flow | PASS (local only) | Migration 024, hashed single-use token service, verification/resend actions, verification page, and 8 focused tests pass; provider delivery and enforcement policy remain gated |
 | Email verification delivery | BLOCKED | Approved email provider and Member 2 template contract not configured |
 | GitHub App/webhook/private repository live verification | NOT_TESTED | No live credentials or authorized staging run in this workstream |
@@ -98,6 +98,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05/ORG-10 Slack OAuth revocation regression: PASS, `slack-phase1` 21/21; revoked membership prevents callback token exchange and persistence. Targeted ESLint and full `pnpm typecheck` pass. This is SQLite-local only; PostgreSQL/RLS verification and Member 2 role-contract approval remain open.
 
 - SEC-04 rate-limit concurrency: PASS locally, password-reset suite 11/11 and production-integrity suite 17/17. Of 40 concurrent SQLite requests, exactly 7 pass a quota of 7, all others are denied, and the persisted counter caps at 8; expired fixed-window reset passes. Targeted ESLint, full workspace typecheck, and `pnpm build` pass. PostgreSQL concurrency and trusted proxy header behavior remain unverified in staging.
+- SEC-04 forwarded-protocol ambiguity: PASS locally, `auth-hardening` 8/8; comma-separated `X-Forwarded-Proto` values fail closed while the existing single-value proxy case passes. Targeted ESLint and full workspace typecheck pass. Deployed proxy provenance/normalization still requires staging verification.
 
 - BILL-10 subscription-state regression matrix: PASS, 2 billing suites / 24 tests; every non-granting state is checked against all billable metrics, and active/trialing are checked across all metrics. Targeted ESLint passes. The suite preserves current behavior; grace and suspension policy still requires owner/product approval.
 

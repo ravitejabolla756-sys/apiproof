@@ -126,6 +126,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 - `APIPROOF_CORS_ORIGINS` is an optional comma-separated allowlist of exact HTTP(S) origins. Empty means same-origin only; wildcard origins are rejected.
 - Credentialed CORS is emitted only for an allowlisted origin, and preflight requests from other origins receive a 403 response.
 - The CSP intentionally retains `unsafe-inline` for current Next App Router hydration and inline UI styles; development alone adds `unsafe-eval`. A future nonce migration can tighten these exceptions after browser coverage is available.
+- CSRF origin validation accepts a single normalized `X-Forwarded-Proto` value from the trusted proxy path; comma-separated values are ambiguous and fail closed. Proxy provenance and normalization must be confirmed in staging before production reliance.
 
 ## Change log
 
@@ -144,3 +145,4 @@ The following tests are implementation-ready but remain contract-gated; they int
 - 2026-11-08: Made billing event receipt and projection updates atomic, and aligned limit enforcement with the subscription activity projection so incomplete/unrecognized states cannot grant usage. Added concurrent delivery and subscription-state regression tests; PostgreSQL and provider-sandbox proof remain open.
 - 2026-11-08: Added route-level Slack OAuth membership revalidation, bounded streaming billing webhook reads, atomic workspace usage and fixed-window rate-limit counters, and local regressions. These do not replace Member 2 capability approval, PostgreSQL validation, approved billing-provider tests, proxy trust review or staging evidence.
 - 2026-11-08: Tightened the rate-limit UPSERT to keep quota-filling requests allowed, reject all following requests, and cap the persisted counter at limit+1. Regressions, typecheck and build pass; full serial suite has not been rerun after this narrow correction.
+- 2026-11-08: CSRF origin derivation now rejects comma-separated forwarded protocol values while retaining single-value proxy support; local regression, lint and typecheck pass. Deployed proxy normalization remains an external verification gate.

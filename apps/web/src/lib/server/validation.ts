@@ -171,7 +171,11 @@ export function validateSafeId(id: unknown, fieldName = 'ID'): ValidationResult<
  * Validates Origin and Sec-Fetch-Site to protect mutating API routes from cross-site requests.
  */
 function getExpectedRequestOrigin(req: Request, host: string): string | undefined {
-  const forwardedProtocol = req.headers.get('x-forwarded-proto')?.split(',')[0]?.trim().toLowerCase();
+  const forwardedProtocolHeader = req.headers.get('x-forwarded-proto');
+  // Origin validation must use one unambiguous proxy value. Trusting the first
+  // item in a forwarded chain can let an untrusted hop influence the scheme.
+  if (forwardedProtocolHeader?.includes(',')) return undefined;
+  const forwardedProtocol = forwardedProtocolHeader?.trim().toLowerCase();
   const protocol = forwardedProtocol || new URL(req.url).protocol.slice(0, -1).toLowerCase();
   if (protocol !== 'http' && protocol !== 'https') return undefined;
 

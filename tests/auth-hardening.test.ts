@@ -89,6 +89,21 @@ describe('authentication hardening', () => {
     expect(wrongRefererScheme).toEqual({ valid: false, error: 'Forbidden: Referer header does not match request origin.' });
   });
 
+  it('rejects ambiguous comma-separated forwarded protocol values', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const result = assertCsrfProtection(new Request('http://internal.local/api/repositories', {
+      method: 'POST',
+      headers: {
+        host: 'internal.local',
+        'x-forwarded-host': 'myowl.dev',
+        'x-forwarded-proto': 'https, http',
+        origin: 'https://myowl.dev',
+      },
+    }));
+
+    expect(result).toEqual({ valid: false, error: 'Forbidden: Request origin is unavailable.' });
+  });
+
   it('marks the session cookie secure in production', () => {
     vi.stubEnv('NODE_ENV', 'production');
     expect(getAuthCookieOptions().secure).toBe(true);
