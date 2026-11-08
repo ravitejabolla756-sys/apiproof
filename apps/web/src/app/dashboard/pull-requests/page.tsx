@@ -77,7 +77,7 @@ export default function PullRequestsPage() {
       {error && <DashboardDataError message={error} onRetry={() => void loadPRs()} />}
 
       {error ? null : loading ? (
-        <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-[#686868]">
+        <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]">
           <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading pull requests...</span>
         </div>

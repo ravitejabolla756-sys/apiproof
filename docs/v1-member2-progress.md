@@ -1928,3 +1928,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/dashboard-data-states.spec.ts`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`, `tests/e2e/public-site.spec.ts`.
 - Evidence: targeted ESLint and `git diff --check` passed; affected regression cases passed 4/4, then the complete current production-build Playwright matrix passed 132/132 in 5.9 minutes on one worker.
 - Scope: this advances local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 visible loading-status busy semantics
+
+- Change: findings and pull-request loading live regions now expose `aria-busy="true"` directly, in addition to their route-level busy containers; existing delayed-loading tests assert both surfaces.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; rebuilt-bundle focused Playwright coverage passed 2/2 in 4.2 seconds.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

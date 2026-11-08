@@ -68,6 +68,8 @@ Latest browser-E2E evidence: the current production build generated 83 pages and
 
 Latest browser-regression evidence: status assertions are scoped to their intended live regions after the workspace-picker announcement was added; the current 83-page production build passes the full 132-test Playwright matrix on one worker. Hosted CI, integrated staging, PostgreSQL/RBAC, providers, manual review and production remain open.
 
+Latest visible-loading evidence: findings and pull-request live status announcements expose busy semantics directly, with rebuilt-bundle focused coverage passing 2/2. Hosted CI, integrated staging, PostgreSQL/RBAC, provider approval, manual review and production remain open.
+
 Latest verification evidence: the email-verification pending state exposes `aria-busy`, and the authentication loading suite passes 5/5 with existing session/login/reset progress coverage. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
 
 Latest auth-submission evidence: login, reset-request, password-reset and verification progress nodes expose busy semantics, with authentication loading coverage passing 5/5. Hosted CI, integrated staging, Member 1 auth integration, provider delivery, manual screen-reader review and production remain open.
