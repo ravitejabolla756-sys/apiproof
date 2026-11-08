@@ -1477,3 +1477,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/login/page.tsx`, `tests/e2e/public-axe-audit.spec.ts`, `tests/e2e/login-accessibility.spec.ts`.
 - Evidence: the initial full audit reproduced three `/login` color-contrast failures; after correction, all 21 routes passed axe in 39.1 seconds; login mobile tab/axe journey passed 1/1 in 7.5 seconds; detector, targeted ESLint, `git diff --check`, repository typecheck and web production build passed with 83 generated pages.
 - Scope: this materially strengthens local UI-12/UI-13 and WEB-15 evidence; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 authenticated axe audit
+
+- Change: added a retained all-rule axe audit over 15 authenticated routes, with explicit `#main-content` readiness synchronization before analysis.
+- Files: `tests/e2e/authenticated-axe-audit.spec.ts`.
+- Evidence: the initial run exposed a harness timing gap before axe could analyze the first route; after adding route readiness, all 15 authenticated routes passed axe in 1.1 minutes; targeted ESLint and `git diff --check` passed. Existing backend fixtures and route behavior were unchanged.
+- Scope: this strengthens local UI-12/UI-13 evidence only; hosted CI, manual assistive-technology review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
