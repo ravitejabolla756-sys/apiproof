@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 workspace quota screen-reader semantics
+
+- Change: Added explicit `progressbar` roles, accessible names, bounded values and spoken value text to the three finite subscription-usage bars on Workspace Settings; visual behavior and beta billing boundaries are unchanged.
+- Evidence: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `tests/e2e/settings-github-state.spec.ts` passed **1/1 in 2.7 seconds** after the rebuild, and the adjacent settings accessibility/touch-target suite passed **2/2 in 4.5 seconds** on isolated port 3102. Targeted ESLint, Impeccable detector and `git diff --check` passed.
+- Scope: advances local UI-12 screen-reader semantics only; provider-backed billing, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — current evidence/status reconciliation
 
 - Change: Reconciled the authoritative UI-12/UI-13 inventory and current-checkpoint fields with the latest 164/164 browser matrix and 1,365-test seeded regression; older entries remain explicitly historical.

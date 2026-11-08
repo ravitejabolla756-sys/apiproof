@@ -173,7 +173,15 @@ export default function SettingsPage() {
                         {billing.metrics.repositories.current} / {billing.metrics.repositories.limit ?? 'Unlimited'}
                       </span>
                     </div>
-                    {billing.metrics.repositories.limit !== null && <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
+                    {billing.metrics.repositories.limit !== null && <div
+                      role="progressbar"
+                      aria-label="Monitored repositories usage"
+                      aria-valuemin={0}
+                      aria-valuemax={billing.metrics.repositories.limit}
+                      aria-valuenow={Math.min(billing.metrics.repositories.current, billing.metrics.repositories.limit)}
+                      aria-valuetext={`${billing.metrics.repositories.current} of ${billing.metrics.repositories.limit} monitored repositories`}
+                      className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden"
+                    >
                       <div
                         className="h-full bg-purple-700 rounded-full transition-all"
                         style={{
@@ -191,7 +199,15 @@ export default function SettingsPage() {
                         {billing.metrics.scans.current} / {billing.metrics.scans.limit ?? 'Unlimited'}
                       </span>
                     </div>
-                    {billing.metrics.scans.limit !== null && <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
+                    {billing.metrics.scans.limit !== null && <div
+                      role="progressbar"
+                      aria-label="Monthly scans usage"
+                      aria-valuemin={0}
+                      aria-valuemax={billing.metrics.scans.limit}
+                      aria-valuenow={Math.min(billing.metrics.scans.current, billing.metrics.scans.limit)}
+                      aria-valuetext={`${billing.metrics.scans.current} of ${billing.metrics.scans.limit} monthly scans`}
+                      className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden"
+                    >
                       <div
                         className="h-full bg-emerald-600 rounded-full transition-all"
                         style={{
@@ -209,7 +225,15 @@ export default function SettingsPage() {
                         Verified Draft PRs only
                       </span>
                     </div>
-                    {billing.metrics.draftPrs.limit !== null && <div className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden">
+                    {billing.metrics.draftPrs.limit !== null && <div
+                      role="progressbar"
+                      aria-label="Verified draft PR usage"
+                      aria-valuemin={0}
+                      aria-valuemax={billing.metrics.draftPrs.limit}
+                      aria-valuenow={Math.min(billing.metrics.draftPrs.current, billing.metrics.draftPrs.limit)}
+                      aria-valuetext={`${billing.metrics.draftPrs.current} of ${billing.metrics.draftPrs.limit} verified draft PRs`}
+                      className="w-full h-2 rounded-full bg-zinc-200 overflow-hidden"
+                    >
                       <div
                         className="h-full bg-indigo-600 rounded-full transition-all"
                         style={{

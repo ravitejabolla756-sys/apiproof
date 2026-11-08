@@ -27,6 +27,12 @@ test('announces the disconnected GitHub integration state', async ({ page }) => 
   await expect(githubState).toBeVisible();
   await expect(githubState).toHaveAttribute('aria-live', 'polite');
   await expect(githubState.getByRole('button', { name: 'Connect GitHub' })).toBeVisible();
+  for (const [name, max] of [['Monitored repositories usage', '1'], ['Monthly scans usage', '10'], ['Verified draft PR usage', '0']] as const) {
+    const progress = page.getByRole('progressbar', { name });
+    await expect(progress).toHaveAttribute('aria-valuemin', '0');
+    await expect(progress).toHaveAttribute('aria-valuemax', max);
+    await expect(progress).toHaveAttribute('aria-valuenow', '0');
+  }
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'GitHub disconnected settings state').toEqual([]);
   await page.unroute('**/api/github/repositories');
   await page.unroute('**/api/billing/subscription');

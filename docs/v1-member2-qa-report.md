@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 checkpoint — UI-12 workspace quota screen-reader semantics
+
+- PASS: Workspace Settings finite quota bars now expose explicit progressbar roles, accessible names, bounded values and spoken value text without changing the beta billing boundary.
+- PASS: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages; `tests/e2e/settings-github-state.spec.ts` passed 1/1 in 2.7 seconds; adjacent `settings-github-state.spec.ts` plus `settings-touch-targets.spec.ts` passed 2/2 in 4.5 seconds on isolated port 3102.
+- PASS: Targeted ESLint, Impeccable detector and `git diff --check` passed.
+- Scope: local UI-12 evidence only; manual assistive-technology review, hosted CI, integrated staging, provider approval and production remain NOT_RUN.
+
 ## 2026-11-08 — cross-member contract review matrix
 
 - PASS: Added a review-only matrix covering invoice, digest, enterprise-intake, status, notification delivery, deletion and member-revocation decisions, with explicit activation prerequisites and no implied approval.
