@@ -505,3 +505,4 @@ Phase 0 read-only checks:
 
 - Added coverage proving a session whose expiry timestamp equals the current instant is rejected and purged by both synchronous SQLite and asynchronous validation paths.
 - Focused `auth-session` boundary test passes 1/1 (14 other tests excluded by name filter); targeted ESLint and workspace `pnpm typecheck` pass. Central account-verification policy and PostgreSQL concurrency remain approval/verification gates.
+- Follow-up complete-file verification: `auth-session` passes 15/15 on code HEAD `31f1874b24b3adf1157de606fc63b61292377dbe`.
