@@ -23,3 +23,5 @@ Latest local UI-12 evidence: command-palette search textbox and dialog close con
 Latest public-form evidence: contact name, email, inquiry-type, message and submit controls are measured at 44px or larger; required-field validation and truthful no-delivery recovery pass. Legal approval, hosted CI, manual review, staging and production remain open.
 
 Latest auth-entry evidence: login OAuth, credential, recovery and signup controls are measured at 44px or larger with axe-clean mobile coverage. Member 1 auth integration, hosted CI, manual review, staging and production remain open.
+
+Latest password-recovery evidence: forgot-password and reset-password inputs, submit actions and return links are measured at 44px or larger with token-safety and axe-clean mobile coverage. Member 1 auth integration, hosted CI, manual review, staging and production remain open.

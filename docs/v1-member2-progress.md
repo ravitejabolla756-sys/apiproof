@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/NOT-02 password-recovery touch targets
+
+- Change: forgot-password email and reset-password inputs now expose explicit 44px minimum touch targets while preserving token validation, disabled unsafe reset behavior, anti-enumeration copy, and recovery navigation.
+- Files: `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/auth-recovery-accessibility.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; mobile password-recovery journey passed 1/1 in 8.2 seconds with both recovery inputs, submit actions, and return links measured at 44px or larger and axe-clean states; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13 and NOT-02 evidence only; hosted CI, manual screen-reader review, Member 1 auth integration, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 login-surface touch targets
 
 - Change: login OAuth actions, email/password fields, submit action, recovery link, and signup-mode name/email/password controls now expose explicit 44px minimum touch targets while preserving auth mode state, validation, provider boundaries, and recovery navigation.

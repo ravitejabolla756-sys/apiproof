@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
         <form onSubmit={submit} aria-busy={loading} className="mt-6 space-y-5">
           <div>
             <label htmlFor="new-password" className="mb-2 block font-mono text-xs font-medium uppercase tracking-wider text-slate-600">New password</label>
-            <input id="new-password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" disabled={!token || loading} value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 disabled:opacity-60" />
+            <input id="new-password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" disabled={!token || loading} value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 disabled:opacity-60" />
           </div>
           {!token && <p role="alert" aria-live="assertive" aria-atomic="true" className="text-sm text-red-700">This reset link is missing or invalid. Request a new one.</p>}
           {message && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800">{message}</p>}
