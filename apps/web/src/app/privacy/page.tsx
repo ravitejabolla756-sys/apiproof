@@ -59,6 +59,9 @@ export default function PrivacyPage() {
           <p className="text-xs font-mono text-slate-500">
             Draft for owner and legal review · Not an effective policy
           </p>
+          <p className="text-xs font-mono text-slate-500" data-testid="legal-draft-metadata">
+            Draft version 0.1 · Effective date: pending owner/legal approval
+          </p>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed pt-2">
             This Privacy Policy explains how MY OWL collects, uses, and safeguards information when you connect your repositories to our breaking change intelligence service.
           </p>

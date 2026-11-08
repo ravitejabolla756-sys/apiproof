@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-11/WEB-12 draft policy version metadata
+
+- Change: Added explicit non-effective draft version and pending effective-date metadata to the privacy, terms and refund pages; added a focused browser assertion so these pages cannot silently appear current without approval.
+- Evidence: Targeted ESLint and `git diff --check` passed; `tests/e2e/legal-draft-metadata.spec.ts` verifies all three routes locally. Legal approval, final policy content and provider alignment remain open.
+- Scope: local WEB-11/WEB-12 truthfulness and QA evidence only; no legal approval or commercial entitlement was represented.
+
 ## 2026-11-08 checkpoint — WEB-15 public same-origin link crawl
 
 - Change: Added a dedicated browser QA journey that visits every audited public route, collects same-origin links from each page, and verifies every unique target returns an HTTP status below 400.

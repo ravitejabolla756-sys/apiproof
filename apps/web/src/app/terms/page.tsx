@@ -67,6 +67,9 @@ export default function TermsPage() {
           <p className="text-xs font-mono text-slate-500">
             Draft for owner and legal review · Not an effective agreement
           </p>
+          <p className="text-xs font-mono text-slate-500" data-testid="legal-draft-metadata">
+            Draft version 0.1 · Effective date: pending owner/legal approval
+          </p>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed pt-2">
             Please read these Terms &amp; Conditions carefully before installing the MY OWL GitHub App or accessing our breaking change detection platform.
           </p>

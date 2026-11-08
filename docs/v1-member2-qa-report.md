@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-11/WEB-12 draft policy metadata
+
+- PASS: Privacy, terms and refund pages now expose explicit draft version/effective-date-pending metadata; the focused browser assertion covers all three routes.
+- NOT_RUN: Legal approval, final policy publication and provider alignment remain unverified.
+
 ## 2026-11-08 — WEB-15 public same-origin link crawl
 
 - PASS: Targeted ESLint and `git diff --check` passed; the dedicated public link-crawl browser test passed 1/1 in 33.1 seconds across all audited public routes. Artifacts: `/tmp/myowl-v1-public-link-crawl-report`, `/tmp/myowl-v1-public-link-crawl-artifacts`.

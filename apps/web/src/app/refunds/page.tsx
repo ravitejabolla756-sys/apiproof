@@ -15,6 +15,7 @@ export default function RefundsPage() {
           </div>
           <h1 className="font-serif text-4xl font-normal leading-tight tracking-tight sm:text-5xl">Billing and refunds</h1>
           <p className="text-xs font-mono text-slate-500">Draft for owner and legal review. Not an effective commercial policy.</p>
+          <p className="text-xs font-mono text-slate-500" data-testid="legal-draft-metadata">Draft version 0.1 · Effective date: pending owner/legal approval</p>
         </header>
 
         <div className="space-y-8 text-sm leading-relaxed text-slate-700">
