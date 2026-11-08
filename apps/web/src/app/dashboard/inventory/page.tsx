@@ -77,6 +77,8 @@ export default function ApiInventoryPage() {
           onClick={loadInventory}
           variant="outline"
           size="sm"
+          disabled={loading}
+          aria-busy={loading ? 'true' : undefined}
           icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
           className="min-h-11 font-medium text-xs"
         >

@@ -1790,6 +1790,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported five incumbent purple-palette warnings on untouched workspace headings; targeted ESLint and `git diff --check` passed; focused Playwright coverage passed 1/1 in 10.1 seconds; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-04 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 secondary workbench refresh action semantics
+
+- Change: activity, inventory, migration, provider-coverage and pull-request refresh controls now expose `aria-busy="true"` and remain disabled while their data request is pending, including initial loading.
+- Files: `apps/web/src/app/dashboard/activity/page.tsx`, `apps/web/src/app/dashboard/inventory/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/providers/page.tsx`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/secondary-refresh-action-loading.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; the new five-route journey passed 1/1 in 18.9 seconds; existing secondary-route accessibility coverage passed 4/4 in 30.2 seconds; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-11/NOT-05 workbench evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12/NOT-03 GitHub authorization action busy semantics
 
 - Change: GitHub authorization controls in workspace settings and the repository connection dialog now expose `aria-busy="true"` while installation URL requests are pending; existing failure/retry and popup behavior remains unchanged.
