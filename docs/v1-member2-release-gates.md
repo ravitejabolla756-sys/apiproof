@@ -357,3 +357,7 @@ Password-recovery success and error feedback now preserves focus after terminal 
 ## Latest UI-12 dashboard recovery focus evidence — 2026-11-08
 
 Dashboard overview failure alerts now preserve focus and expose the retry action in context. Local build and browser coverage pass; the detector’s three palette warnings are incumbent and unrelated to this state change. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 workspace-settings focus evidence — 2026-11-08
+
+Workspace Settings failure alerts now preserve focus while exposing the retry action. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.

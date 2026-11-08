@@ -2714,3 +2714,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-overview-error-state.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; overview error and refresh-loading coverage passed 2/2; targeted ESLint and `git diff --check` passed. Impeccable reported only three incumbent purple-palette warnings on untouched dashboard headings/gradient styling, with no new state finding.
 - Scope: local UI-12/UI-13 dashboard recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 workspace-settings error focus
+
+- Change: Workspace Settings’ retryable load/connection alert now receives focus when the failure appears, preserving the existing busy-aware retry control and recovery path.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/settings-recovery-loading.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; settings recovery and workspace-settings state coverage passed 3/3; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 settings recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

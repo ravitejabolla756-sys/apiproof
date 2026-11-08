@@ -1231,6 +1231,10 @@ Forgot-password and reset-password feedback now receives focus after terminal re
 
 Dashboard overview initial-load and refresh failures now focus the retryable alert. The rebuilt production bundle passed with 83 generated pages; overview error and refresh-loading coverage passed 2/2; targeted ESLint and `git diff --check` passed. The detector reported only three incumbent purple-palette warnings in untouched dashboard styling. Manual screen-reader, hosted CI, staging, PostgreSQL/RBAC and production checks remain NOT_RUN.
 
+## Latest workspace-settings focus evidence — 2026-11-08
+
+Workspace Settings load/connection failures now focus the retryable alert. The rebuilt production bundle passed with 83 generated pages; settings recovery and workspace-settings state coverage passed 3/3; targeted ESLint, `git diff --check` and the Impeccable detector passed. Manual screen-reader, hosted CI, staging, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.

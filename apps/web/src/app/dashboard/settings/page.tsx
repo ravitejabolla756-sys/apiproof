@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Receipt, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
@@ -44,6 +44,11 @@ export default function SettingsPage() {
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorAction, setErrorAction] = useState<'load' | 'connect' | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   async function loadStatus(preserveError = false) {
     setLoading(true);
@@ -119,7 +124,7 @@ export default function SettingsPage() {
       </div>
 
       {error && (
-        <div role="alert" aria-live="assertive" aria-atomic="true" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2">
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" aria-hidden="true" />
           <span>{error}</span>
           <Button type="button" variant="outline" size="sm" disabled={errorAction === 'connect' ? connecting : loading} aria-busy={(errorAction === 'connect' ? connecting : loading) ? 'true' : undefined} onClick={() => void (errorAction === 'connect' ? handleConnectGitHub() : loadStatus(true))} className="border-rose-300 text-rose-900 hover:bg-rose-100">{errorAction === 'connect' ? 'Retry GitHub connection' : 'Retry settings load'}</Button>

@@ -20,6 +20,7 @@ test('keeps workspace-settings recovery visible and busy while retrying', async 
   await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
   const alert = page.getByRole('alert').filter({ hasText: 'Workspace settings data is temporarily unavailable.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   const retry = alert.getByRole('button', { name: 'Retry settings load' });
   allowRecovery = true;
   await retry.click();
