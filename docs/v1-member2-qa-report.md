@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Full browser matrix restored green
+
+- PASS: Rebuilt-bundle CI-mode Playwright matrix passed 92/92 in 2.2 minutes on isolated SQLite after the GitHub recovery navigation timeout hardening; keyboard/action, accessibility, auth, organization, billing-boundary, findings, workflow, degraded-state and recovery journeys remain covered.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12/UI-13 evidence only. Hosted CI, integrated staging, full manual screen-reader review, backend contracts and production remain open.
+
 ## 2026-11-08 — Public authenticated regression
 
 - PASS: Production build generated 83 static pages; complete CI-mode public-site/authenticated suite passed 26/26 in 40.6 seconds, including account and notification keyboard recovery, public accessibility, auth, workspace and invitation journeys.

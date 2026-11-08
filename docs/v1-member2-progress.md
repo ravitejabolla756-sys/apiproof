@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-13 full browser matrix restored green
+
+- Change: The GitHub installation recovery journey now allows the standard 30-second navigation budget for the post-retry callback URL, preserving keyboard focus/Enter activation and all action-specific assertions under serial CI load.
+- Evidence: Targeted ESLint and `git diff --check` passed; the rebuilt-bundle CI-mode Playwright matrix passed 92/92 in 2.2 minutes on isolated SQLite `/tmp/myowl-v1-full-current-4.db`. Artifacts: `/tmp/myowl-v1-full-current-4-artifacts`, `/tmp/myowl-v1-full-current-4-report`.
+- Scope: local UI-12/UI-13 regression evidence only; hosted CI, integrated staging, full manual screen-reader review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 public authenticated regression
 
 - Change: Rebuilt the web production bundle and ran the complete public-site/authenticated product suite after adding keyboard recovery checks for account settings and notification preferences.
