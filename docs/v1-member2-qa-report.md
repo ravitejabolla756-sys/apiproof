@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Not-found keyboard focus coverage
+
+- PASS: Custom 404 accessibility journey passed 1/1 in 4.4 seconds; the existing landing-shell skip link now has explicit focus-transfer and axe coverage alongside the 404 response/content assertions.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Full manual screen-reader review, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — ORG-02 stale workspace context recovery
 
 - PASS: Complete organization-audit suite passed 7/7 in 42.6 seconds; an unauthorized stale workspace cookie falls back to the authorized workspace without leaking the stale ID, with workspace-navigation axe validation.

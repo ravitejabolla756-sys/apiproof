@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 not-found keyboard focus coverage
+
+- Change: Extended the custom 404 accessibility journey to verify the existing landing-shell skip link focuses `#main-content` after Enter while retaining the 404 status and axe assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; not-found accessibility journey passed 1/1 in 4.4 seconds. Artifacts: `/tmp/myowl-v1-not-found-accessibility-artifacts`.
+- Scope: local UI-12 route-state evidence only; hosted CI, full manual screen-reader review, backend/provider contracts, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 stale workspace context recovery
 
 - Change: Added a hermetic organization journey that injects an unauthorized `apiproof_workspace_id` cookie, verifies the backend-authoritative `/api/workspaces` fallback to the authorized default, asserts no stale context leakage, and runs an axe check on the workspace navigation.
