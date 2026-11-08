@@ -1395,8 +1395,6 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 ## 2026-11-08 — organization-section recovery focus checkpoint
 
-## 2026-11-08 — organization-section recovery focus checkpoint
-
 - Targeted ESLint and `git diff --check`: PASS.
 - `CI=true PLAYWRIGHT_PORT=3131 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --grep "distinguishes unavailable members" --reporter=line`: PASS, 1/1; simultaneous member/invitation failures focus the prioritized member alert while each retry remains available and recovery stays distinct from empty states.
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
