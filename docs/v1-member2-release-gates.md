@@ -389,3 +389,7 @@ Command-palette search-data failures now preserve focus on the retryable dialog 
 ## Latest UI-12 compatibility-map focus evidence — 2026-11-08
 
 Compatibility-map initial and refresh failures now preserve focus on their retryable alerts. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 provider-rule focus evidence — 2026-11-08
+
+Provider-rule load failures now preserve focus on the retryable alert. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.

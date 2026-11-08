@@ -35,6 +35,7 @@ test('keeps provider-rule load failures distinct from an empty queue', async ({ 
   await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
   const alert = page.getByRole('alert').filter({ hasText: 'Provider rules are temporarily unavailable.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   await expect(page.getByRole('status').filter({ hasText: 'No provider rule candidates are waiting for review.' })).toHaveCount(0);
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'provider-rule load error').toEqual([]);
   const retryProviderRules = alert.getByRole('button', { name: 'Retry provider rules' });
@@ -64,6 +65,7 @@ test('keeps provider-rule recovery visible and busy while retrying', async ({ pa
   await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
   const alert = page.getByRole('alert').filter({ hasText: 'Provider rules are temporarily unavailable.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   const retry = alert.getByRole('button', { name: 'Retry provider rules' });
   allowRecovery = true;
   await retry.click();

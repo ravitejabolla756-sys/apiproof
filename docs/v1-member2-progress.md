@@ -2770,3 +2770,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/compatibility-map-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; compatibility-map recovery coverage passed 2/2; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 compatibility recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 provider-rule error focus
+
+- Change: provider-rule load failures now focus the retryable alert while preserving the existing queue distinction and retry busy semantics.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-recovery.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; provider-rule recovery coverage passed 3/3; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 provider-review recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
