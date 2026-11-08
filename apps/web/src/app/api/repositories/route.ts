@@ -218,6 +218,6 @@ export async function POST(req: Request) {
     if (message.includes('idx_repositories_active_github_identity') || message.includes('unique constraint') || message.includes('duplicate key')) {
       return NextResponse.json({ error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED' }, { status: 409 });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to connect repository.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

@@ -481,3 +481,8 @@ Phase 0 read-only checks:
 
 - `/api/slack/connect` now returns a fixed user-facing availability message for setup failures instead of exposing caught exception text to the dashboard.
 - The focused `slack-phase1` regression passes 1/1 (22 unrelated tests skipped by name filter); targeted ESLint and full workspace `pnpm typecheck` pass. External monitoring and staging gates remain unresolved.
+
+### 2026-11-08 SEC-11 repository connection error safety
+
+- `/api/repositories` preserves workspace-denial and duplicate-identity mappings, while unexpected persistence failures now return a fixed `INTERNAL_ERROR` response.
+- `repository-connect-error-safety` passes 1/1 with an injected persistence failure; targeted ESLint and full workspace `pnpm typecheck` pass. PostgreSQL behavior, external monitoring and staging evidence remain unresolved.
