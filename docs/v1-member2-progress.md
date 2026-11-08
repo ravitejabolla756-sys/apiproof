@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — ORG-11 provider-rule editor title touch target
+
+- Change: the provider-rule editor’s Rule title input now exposes an explicit 44px minimum touch target while preserving review-only edit behavior, save/cancel boundaries, and provider evidence contracts.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-filter-states.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; fixture-backed provider-rule journey passed 1/1 in 14.8 seconds with the edit-mode title input measured at 44px or larger and axe-clean filtered-empty and edit states; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local ORG-11/UI-12/UI-13 evidence only; PostgreSQL/RBAC, hosted CI, manual screen-reader review, provider approval, staging and production verification remain open. No provider activation, backend/shared contract, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12/NOT-02 password-recovery touch targets
 
 - Change: forgot-password email and reset-password inputs now expose explicit 44px minimum touch targets while preserving token validation, disabled unsafe reset behavior, anti-enumeration copy, and recovery navigation.
