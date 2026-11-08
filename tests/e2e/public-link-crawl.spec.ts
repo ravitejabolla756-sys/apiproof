@@ -16,7 +16,7 @@ test('checks same-origin links across every audited public route', async ({ page
     const routeLinks = await page.locator('a[href^="/"]').evaluateAll((anchors) => [...new Set(
       anchors
         .map((anchor) => anchor.getAttribute('href'))
-        .filter((href): href is string => Boolean(href) && !href.startsWith('//'))
+        .filter((href): href is string => typeof href === 'string' && href.startsWith('/') && !href.startsWith('//'))
         .map((href) => href.split('#', 1)[0] ?? '')
         .filter((href) => href.length > 0),
     )]);

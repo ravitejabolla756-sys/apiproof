@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — Repository static checks after public QA additions
+
+- PASS: `pnpm lint` and `pnpm typecheck` passed after tightening the public link-crawl type guard; the focused rebuilt link-crawl test passed 1/1 in 33.0 seconds. Artifacts: `/tmp/myowl-v1-public-link-crawl-typecheck-artifacts`.
+- Scope: local UI-13/WEB-15 evidence only. Hosted CI, staging, backend/provider contracts and production remain open.
+
 ## 2026-11-08 — Current full repository regression
 
 - PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,340 tests across 161 files, with 4 skipped tests and 1 skipped file, in 123.07 seconds.

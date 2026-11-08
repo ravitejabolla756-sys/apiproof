@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — repository static checks after public QA additions
+
+- Change: Revalidated repository-wide lint and type safety after the public link-crawl and status/legal QA additions; tightened the link-crawl `href` type guard found by typecheck.
+- Evidence: `pnpm lint` passed; `pnpm typecheck` passed; the rebuilt public link-crawl journey passed 1/1 in 33.0 seconds. Artifacts: `/tmp/myowl-v1-public-link-crawl-typecheck-artifacts`.
+- Scope: local UI-13/WEB-15 static and browser evidence only; hosted CI, staging, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — current full repository regression
 
 - Change: Re-ran the complete Vitest repository suite after the latest public status, legal metadata and link-integrity additions.
