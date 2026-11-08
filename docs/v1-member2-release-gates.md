@@ -193,3 +193,7 @@ Slack action retries preserve their degraded-state alert and expose disabled plu
 ## Latest account-load recovery evidence — 2026-11-08
 
 Account Settings preserves its initial-load degraded state and exposes disabled plus `aria-busy` on Retry account load while recovery is pending; focused account action/recovery coverage passes 2/2, the corrected public-site account/error regression passes 1/1, and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 deletion contract and production remain open. Release recommendation stays NO-GO.
+
+## Latest full browser evidence — 2026-11-08
+
+The rebuilt production bundle passes the complete local CI-mode Playwright matrix, 158/158 in 4.5 minutes, across public/authenticated accessibility, responsive, auth, billing-boundary, organization, settings, Slack, repository, findings, migration/PR, provider-review and degraded-state journeys. This remains local evidence; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider/legal approvals and production remain open. Release recommendation stays NO-GO.

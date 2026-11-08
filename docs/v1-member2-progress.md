@@ -2172,3 +2172,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/account-action-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; account action/recovery coverage passed 2/2 in 15.9 seconds; the corrected public-site account/error regression passed 1/1 in 14.7 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13 and AUTH-08 account-surface recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 deletion contract and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-13 full local CI-mode browser regression
+
+- Evidence: after rebuilding the production bundle immediately before startup, `CI=true pnpm exec playwright test --workers=1 --reporter=line` passed 158/158 in 4.5 minutes. Coverage includes public and authenticated route accessibility, mobile/tablet viewport checks, auth, billing boundaries, workspace switching, invitations/member management, settings/account/notifications, Slack, repository and finding recovery, provider review, and degraded/loading states.
+- Scope: this is hermetic local production-build evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approvals, legal/content approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

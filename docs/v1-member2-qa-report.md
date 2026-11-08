@@ -785,6 +785,12 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm exec playwright test tests/e2e/public-site.spec.ts -g "account error state" --reporter=line`: PASS, 1/1 in 14.7 seconds after scoping the incumbent repository loading assertion to its named status region; the account error/retry assertions now execute successfully.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, Member 1 deletion contract and production checks remain NOT_RUN.
 
+## 2026-11-08 — full local CI-mode browser regression
+
+- Production bundle rebuilt immediately before the run; `CI=true pnpm exec playwright test --workers=1 --reporter=line`: PASS, 158/158 in 4.5 minutes.
+- The matrix covered public/authenticated axe and viewport audits, auth-entry flows, billing boundaries, workspace context and organization administration, account/notification settings, Slack, repository/connect/detail/scan journeys, findings/migration/PR workbenches, provider review, and all committed loading/recovery busy-state journeys.
+- This is local evidence only. Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.
