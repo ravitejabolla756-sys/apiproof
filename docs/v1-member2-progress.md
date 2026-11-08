@@ -1826,3 +1826,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `tests/e2e/inventory-filter-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the inventory suite passed 2/2 in 13.0 seconds, covering pending loading busy semantics and the existing mobile filtered-empty/clear-filter journey with axe-clean content.
 - Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 compatibility-intelligence busy semantics
+
+- Change: the compatibility-intelligence route and loading status now expose `aria-busy="true"` during initial and refresh requests, preserving reviewed-source provenance, empty-state semantics, and refresh recovery.
+- Files: `apps/web/src/app/dashboard/compatibility/page.tsx`, `tests/e2e/compatibility-state.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the compatibility-state suite passed 2/2 in 12.8 seconds, covering pending loading busy semantics and the existing reviewed-empty state with axe-clean content.
+- Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

@@ -19,3 +19,21 @@ test('announces a reviewed compatibility source with no records yet', async ({ p
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'compatibility empty state').toEqual([]);
   await page.unroute('**/api/compatibility-proof');
 });
+
+test('announces compatibility loading as a busy state', async ({ page }) => {
+  await signIn(page);
+  let releaseCompatibility: (() => void) | undefined;
+  const compatibilityLoading = new Promise<void>((resolve) => { releaseCompatibility = resolve; });
+  await page.route('**/api/compatibility-proof', async (route) => {
+    await compatibilityLoading;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ claimsAvailable: false, reason: 'fixture', changes: [] }) });
+  });
+
+  await page.goto('/dashboard/compatibility', { waitUntil: 'domcontentloaded' });
+  const loading = page.getByRole('status').filter({ hasText: 'Loading reviewed compatibility records...' });
+  await expect(loading).toBeVisible();
+  await expect(loading).toHaveAttribute('aria-busy', 'true');
+  releaseCompatibility?.();
+  await expect(page.getByText('No reviewed compatibility claims are available')).toBeVisible({ timeout: 30_000 });
+  await page.unroute('**/api/compatibility-proof');
+});
