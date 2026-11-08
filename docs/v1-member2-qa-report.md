@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — NOT-10 digest-unavailable preference boundary
+
+- PASS: Weekly digest email and Slack preferences now remain disabled/unavailable while the digest contract is unapproved and no scheduler or delivery worker exists.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, notification preference unit coverage 3/3, fresh 83-page production build, and rebuilt production-browser settings coverage 1/1.
+- ADVISORY: The first browser run used a stale production bundle and failed the new assertion; after rebuilding, the same journey passed. Artifacts: `/tmp/myowl-v1-digest-boundary-artifacts-ar5HV9`; diagnostic artifacts: `/tmp/myowl-v1-digest-boundary-failed-soGq2f`.
+- NOT_RUN: Digest approval, schema/scheduler/worker implementation, provider delivery, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-11 malformed audit metadata fallback
 
 - PASS: Corrupt persisted audit metadata no longer breaks audit pagination; the affected event exposes empty bounded metadata.

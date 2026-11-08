@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — NOT-10 digest-unavailable preference boundary
+
+- Change: Marked weekly digest delivery unavailable for both email and Slack until the unapproved digest scheduler, event/retention contract and provider path exist; users can no longer enable a non-existent Slack digest.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, notification preference unit coverage passed 3/3, the fresh 83-page production build passed, and the rebuilt production-browser settings journey passed 1/1 with the Weekly digest Slack control disabled. Artifacts: `/tmp/myowl-v1-digest-boundary-artifacts-ar5HV9`; stale-bundle diagnostic artifacts: `/tmp/myowl-v1-digest-boundary-failed-soGq2f`.
+- Scope: local NOT-10/UI-12 truthfulness and accessibility only; no digest schema, scheduler, worker, provider delivery or customer cadence was added.
+
 ## 2026-11-08 checkpoint — ORG-11 malformed audit metadata fallback
 
 - Change: Added safe parsing for persisted audit metadata; malformed or non-object JSON now yields bounded empty metadata instead of failing the entire audit page.

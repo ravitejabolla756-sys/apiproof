@@ -23,7 +23,8 @@ const DEFAULTS: Array<{ category: NotificationCategory; channel: NotificationCha
   { category: 'provider_change', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
   { category: 'provider_change', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
   { category: 'weekly_digest', channel: 'email', enabled: false, required: false, deliveryAvailable: false },
-  { category: 'weekly_digest', channel: 'slack', enabled: false, required: false, deliveryAvailable: true },
+  // Digest cadence, scheduler and provider delivery remain unapproved; keep this unavailable until NOT-10 is integrated.
+  { category: 'weekly_digest', channel: 'slack', enabled: false, required: false, deliveryAvailable: false },
 ];
 
 const VALID_CATEGORIES = new Set<NotificationCategory>(DEFAULTS.map((item) => item.category));

@@ -35,10 +35,9 @@ describe('notification preferences', () => {
     const account = await createUserWithSession('notifications@example.test', 'NotifyPassword123!', 'Notify User');
     const updated = await updateNotificationPreferences(account.user.id, [
       { category: 'findings', channel: 'slack', enabled: false },
-      { category: 'weekly_digest', channel: 'slack', enabled: true },
     ]);
     expect(updated.find((item) => item.category === 'findings' && item.channel === 'slack')?.enabled).toBe(false);
-    expect(updated.find((item) => item.category === 'weekly_digest' && item.channel === 'slack')?.enabled).toBe(true);
+    expect(updated.find((item) => item.category === 'weekly_digest' && item.channel === 'slack')).toMatchObject({ enabled: false, deliveryAvailable: false });
     await expect(updateNotificationPreferences(account.user.id, [{ category: 'security', channel: 'email', enabled: false }]))
       .rejects.toThrow('cannot be disabled');
   });
