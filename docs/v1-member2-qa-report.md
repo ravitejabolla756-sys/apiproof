@@ -1341,7 +1341,7 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - Impeccable detector: PASS with no findings for the command-palette component and recovery journey.
 - Targeted ESLint and `git diff --check`: PASS.
-- `pnpm exec playwright test tests/e2e/command-palette-recovery.spec.ts tests/e2e/dialog-accessibility.spec.ts tests/e2e/control-semantics.spec.ts --reporter=line`: PASS, 7/7 in 45.4 seconds; search-data loading is announced, the failure alert remains visible during retry, and Retry search data exposes disabled/`aria-busy` while both requests are held.
+- `CI=true PLAYWRIGHT_PORT=3124 pnpm exec playwright test tests/e2e/command-palette-recovery.spec.ts tests/e2e/dialog-accessibility.spec.ts tests/e2e/control-semantics.spec.ts --workers=1 --grep "palette|dialog|command"`: PASS, 2/2; the command-palette failure alert receives focus and Retry search data preserves its busy semantics.
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 

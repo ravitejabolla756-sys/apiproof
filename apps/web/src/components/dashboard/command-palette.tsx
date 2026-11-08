@@ -33,6 +33,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const searchControllerRef = useRef<AbortController | null>(null);
 
@@ -46,6 +47,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     previousActiveElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     searchInputRef.current?.focus();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const loadSearchData = useCallback(async (preserveError = false) => {
     searchControllerRef.current?.abort();
@@ -168,7 +173,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         {/* Results List */}
         <div className="max-h-96 overflow-y-auto p-3 space-y-4 text-xs">
           {loading && <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="rounded-lg bg-[#F6F6F4] px-3 py-2 text-[#686868]">Loading search data…</div>}
-          {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-800"><span>{error}</span><button type="button" disabled={loading} aria-busy={loading ? 'true' : undefined} onClick={() => void loadSearchData(true)} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{loading ? 'Retrying search data…' : 'Retry search data'}</button></div>}
+          {error && <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{error}</span><button type="button" disabled={loading} aria-busy={loading ? 'true' : undefined} onClick={() => void loadSearchData(true)} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{loading ? 'Retrying search data…' : 'Retry search data'}</button></div>}
           {/* Navigation Links */}
           <div>
             <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">

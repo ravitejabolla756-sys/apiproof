@@ -381,3 +381,7 @@ Workspace Administration top-level feedback now preserves focus across settings 
 ## Latest UI-12/NOT-03 Slack focus evidence — 2026-11-08
 
 Slack connection failures now preserve focus on their retryable alert. Local build and browser coverage pass; provider approval/delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 command-palette focus evidence — 2026-11-08
+
+Command-palette search-data failures now preserve focus on the retryable dialog alert. Local build and focused browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.

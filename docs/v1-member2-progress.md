@@ -2756,3 +2756,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/e2e/slack-action-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; Slack recovery/state coverage passed 2/2; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/NOT-03 notification-boundary evidence only; provider approval/delivery, manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 command-palette error focus
+
+- Change: command-palette search-data failures now focus the retryable dialog alert while preserving the existing retry and focus-trap behavior.
+- Files: `apps/web/src/components/dashboard/command-palette.tsx`, `tests/e2e/command-palette-recovery.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; selected command-palette/dialog recovery coverage passed 2/2; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 search-recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

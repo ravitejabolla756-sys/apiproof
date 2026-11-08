@@ -21,6 +21,7 @@ test('keeps command-palette search recovery visible and busy while retrying', as
   const dialog = page.getByRole('dialog', { name: 'Search MY OWL' });
   const alert = dialog.getByRole('alert').filter({ hasText: 'Search data is temporarily unavailable.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   const retry = alert.getByRole('button');
   allowRecovery = true;
   await retry.click();
