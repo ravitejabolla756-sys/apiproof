@@ -46,6 +46,7 @@ test('keeps account-load recovery visible and busy while retrying', async ({ pag
   await page.goto('/dashboard/settings/account');
   const alert = page.getByRole('alert').filter({ hasText: 'Unable to load account settings.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   const retry = alert.getByRole('button', { name: /Retry(?:ing)? account load/ });
   allowRecovery = true;
   await retry.click();

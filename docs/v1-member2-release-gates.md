@@ -361,3 +361,7 @@ Dashboard overview failure alerts now preserve focus and expose the retry action
 ## Latest UI-12 workspace-settings focus evidence — 2026-11-08
 
 Workspace Settings failure alerts now preserve focus while exposing the retry action. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 account-settings focus evidence — 2026-11-08
+
+Account Settings feedback now preserves focus across load, profile-save and password-change outcomes. Local build and browser coverage pass; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 contracts and production remain NOT_RUN. Release recommendation stays NO-GO.

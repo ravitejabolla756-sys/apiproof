@@ -2721,3 +2721,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/settings-recovery-loading.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; settings recovery and workspace-settings state coverage passed 3/3; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 settings recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 account-settings feedback focus
+
+- Change: Account Settings load, profile-save and password-change feedback now receives focus after terminal responses, preserving the existing retry and form controls.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/account-action-loading.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; account/settings coverage passed 7/7; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 account-state evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 deletion/revocation contracts and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
