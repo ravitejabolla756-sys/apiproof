@@ -3,7 +3,7 @@
 ## 2026-11-08 — ORG-04 atomic last-owner protection
 
 - PASS: Owner demotion and removal now enforce the last-owner invariant inside the transactional write predicate, preserving the sole owner under protected mutation attempts.
-- PASS: Targeted ESLint, `git diff --check` and `tests/organization-management.test.ts` passed 11/11.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 11/11.
 - NOT_RUN: Final Member 1 revocation contract, PostgreSQL/hosted CI, staging and production remain open.
 
 ## 2026-11-08 — UI-12/WEB-15 public decorative-icon semantics (docs, features, pipeline, legal, blog)
