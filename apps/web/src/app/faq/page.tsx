@@ -62,7 +62,7 @@ export default function FAQPage() {
           <h2 id="faq-heading" className="sr-only">Frequently asked questions</h2>
           {faqs.map((faq) => (
             <details key={faq.question} className="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-xs open:border-slate-300 sm:px-6">
-              <summary className="cursor-pointer list-none rounded pr-8 text-sm font-semibold text-[#000E29] marker:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center rounded pr-8 text-sm font-semibold text-[#000E29] marker:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
                 <span className="relative block after:absolute after:right-0 after:top-0 after:text-lg after:font-normal after:text-slate-400 after:content-['+'] group-open:after:content-['−']">{faq.question}</span>
               </summary>
               <p className="max-w-3xl pt-3 text-sm leading-relaxed text-slate-600">{faq.answer}</p>

@@ -1442,3 +1442,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check` and repository typecheck passed; rebuilt web production build passed with 83 generated pages; mobile contact-form journey passed 1/1 with a 390px bounding-box assertion.
 - Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual assistive-technology review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 FAQ disclosure touch target
+
+- Change: FAQ native disclosure summaries now expose an explicit 44px minimum touch target while retaining browser-native keyboard and open/close behavior.
+- Files: `apps/web/src/app/faq/page.tsx`, `tests/e2e/faq-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; mobile FAQ keyboard/disclosure journey passed 1/1 with axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
