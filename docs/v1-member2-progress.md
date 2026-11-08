@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 repository dialog decorative icon semantics
+
+- Change: Marked the repository-connection dialog’s close-button `X` icon as decorative so its accessible name is provided only by the button label; added a regression assertion for the hidden SVG.
+- Evidence: Impeccable detector returned `[]`; targeted ESLint and `git diff --check` passed; rebuilt web bundle generated 83 pages; `tests/e2e/dialog-accessibility.spec.ts` passed **1/1 in 3.5 seconds** on isolated port 3104.
+- Scope: advances local UI-12 modal screen-reader semantics only; hosted CI, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 findings trend screen-reader semantics
 
 - Change: Expanded the dashboard “Findings this week” accessible chart label to announce total findings plus critical, high and warning segment counts; visual rendering is unchanged. Added a dedicated browser regression for the spoken breakdown.

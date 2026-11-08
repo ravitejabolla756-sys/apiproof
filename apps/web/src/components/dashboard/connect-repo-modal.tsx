@@ -275,7 +275,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             <h3 id="connect-repository-title" className="text-sm font-semibold text-[#111111]">Connect GitHub Repository</h3>
           </div>
           <button type="button" ref={closeButtonRef} aria-label="Close repository connection dialog" onClick={onClose} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg p-1 text-zinc-400 hover:text-[#111111]">
-            <X className="h-4 w-4" />
+            <X aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
 

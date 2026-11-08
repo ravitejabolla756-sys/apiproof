@@ -30,6 +30,7 @@ test('keeps authenticated dialog close controls touch-sized and recoverable on m
   const repositoryDialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
   const closeRepositoryDialog = repositoryDialog.getByRole('button', { name: 'Close repository connection dialog' });
   await expect(closeRepositoryDialog).toBeFocused();
+  await expect(closeRepositoryDialog.locator('svg')).toHaveAttribute('aria-hidden', 'true');
   expect((await closeRepositoryDialog.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await closeRepositoryDialog.boundingBox())?.width).toBeGreaterThanOrEqual(44);
   expect((await new AxeBuilder({ page }).include('[role="dialog"]').analyze()).violations).toEqual([]);

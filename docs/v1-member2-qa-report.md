@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 checkpoint — UI-12 repository dialog decorative icon semantics
+
+- PASS: The repository dialog close control now hides its decorative `X` SVG from the accessibility tree while retaining the explicit button name.
+- PASS: Impeccable detector returned `[]`; targeted ESLint and `git diff --check` passed; the rebuilt 83-page bundle passed `dialog-accessibility.spec.ts` 1/1 in 3.5 seconds.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 findings trend screen-reader semantics
 
 - PASS: The dashboard findings trend now announces total, critical, high and warning counts in its accessible chart name without changing the visual chart.
