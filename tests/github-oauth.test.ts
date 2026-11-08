@@ -126,6 +126,15 @@ describe('GitHub Login OAuth', () => {
     process.env.NODE_ENV = 'test';
   });
 
+  it('fails closed when the persisted OAuth state expiry is malformed', async () => {
+    const state = await seedState();
+    const stateHash = crypto.createHash('sha256').update(state.state).digest('hex');
+    await getDatabase().execute('UPDATE github_login_oauth_states SET expires_at = ? WHERE state_hash = ?', ['not-a-timestamp', stateHash]);
+
+    await expect(consumeGitHubLoginOAuthState(state.state, state.state)).resolves.toMatchObject({ valid: false, code: 'OAUTH_STATE_EXPIRED' });
+    expect(await getDatabase().queryOne<{ consumed_at: string | null }>('SELECT consumed_at FROM github_login_oauth_states WHERE state_hash = ?', [stateHash])).toMatchObject({ consumed_at: null });
+  });
+
   it('rejects existing email accounts instead of automatically linking them', async () => {
     createUser('octo@example.com', 'ExistingPassword123!', 'Existing User');
     mockGitHubFetch();

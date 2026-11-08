@@ -128,7 +128,8 @@ export async function consumeGoogleOAuthState(
     `, [stateHash]);
     if (!row) return { valid: false, code: 'OAUTH_STATE_UNKNOWN' };
     if (row.consumed_at) return { valid: false, code: 'OAUTH_STATE_REPLAYED' };
-    if (new Date(row.expires_at).getTime() <= Date.now()) return { valid: false, code: 'OAUTH_STATE_EXPIRED' };
+    const expiresAt = Date.parse(row.expires_at);
+    if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return { valid: false, code: 'OAUTH_STATE_EXPIRED' };
 
     const consumedAt = new Date().toISOString();
     const result = await tx.execute(`

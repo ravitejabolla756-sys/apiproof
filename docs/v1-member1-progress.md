@@ -563,3 +563,7 @@ Phase 0 read-only checks:
 - Seeded serial `github-repository-status-route` passes 8/8; targeted ESLint and workspace typecheck pass. Browser/proxy behavior remains subject to staging verification.
 
 - The GitHub callback's POST compatibility alias now enforces the shared CSRF check before callback processing; its regression verifies cross-site requests cannot call the provider or consume installation state. Seeded serial `github-installation-reassociation` passes 12/12; targeted ESLint and workspace typecheck pass. Cross-site GET remains available for the real GitHub redirect and is protected by single-use session-bound state.
+### 2026-11-08 AUTH-10 OAuth state expiry parsing
+
+- GitHub and Google OAuth login state consumption now rejects persisted expiry values that do not parse as finite timestamps, in addition to rejecting expired state. Regression tests confirm malformed values are denied without consuming the state.
+- Focused verification: GitHub OAuth and Google OAuth suites pass 19/19; targeted ESLint and full `pnpm typecheck` pass. Live provider behavior and PostgreSQL-specific concurrency remain unverified.
