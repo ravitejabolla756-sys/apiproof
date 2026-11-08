@@ -118,6 +118,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 - Direct GitHub-provider and rate-limit fallback console paths emit fixed operational messages only; raw exception objects are not passed to `console`. API/server console call sites were re-audited on 2026-11-08; this does not verify external log sinks or retention.
 - Durable provider-rescan and proposal-verification worker rows retain safe error categories but store fixed generic error messages; raw provider/runtime exception text is not persisted in these status fields.
 - Scan-worker error codes are extracted only from an explicit application allowlist; unknown uppercase or secret-shaped exception strings use the fixed caller fallback.
+- Scan-worker partial execution persists a degraded heartbeat with the stable `SCAN_WORKER_DEGRADED` code; exception text remains outside the heartbeat contract.
 - Provider-rule edit/review APIs expose only allowlisted error codes. Dynamic applicability errors are reduced to static prefixes; unknown exception messages are never returned to clients.
 - Member 2 may render/deliver notifications, but delivery failure must not change authorization or billing truth.
 - The protected provider-intelligence status response exposes tenant-neutral scan queue telemetry under `queues.worker`: depth counters, `oldestPendingAt`, bounded `oldestPendingAgeMs`, `retryingJobs`, `stalledProcessingJobs` and `retryExhaustedJobs`. It exposes no workspace, repository, source body or credential data.

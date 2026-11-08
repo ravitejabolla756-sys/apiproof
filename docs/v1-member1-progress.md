@@ -727,3 +727,8 @@ Phase 0 read-only checks:
 
 - The read-only catalog pack now captures the approved connection identity, whether the intended role labels exist, effective per-role relation privileges (including any-column SELECT), explicit column ACLs, effective sequence privileges, and effective function execution. Function results include `proconfig` and ACL state for `SECURITY DEFINER` review. The query pack notes that intended role labels must be replaced with owner-verified names when they differ.
 - `database-access-matrix` passes 4/4; targeted ESLint and workspace `pnpm typecheck` pass. These checks pin documentation coverage and do not execute PostgreSQL SQL. Live grants, row-policy behavior, owner/bypass resistance, and isolated worker/runtime role tests remain blocked on approved staging access and credentials.
+
+### 2026-11-08 SEC-13 degraded scan-worker heartbeat code
+
+- Fixed an allowlist mismatch: the scan-worker route already records partial batch failures/timeouts as `SCAN_WORKER_DEGRADED`, but heartbeat sanitization replaced that code with generic `WORKER_FAILED`. The stable non-sensitive degradation code is now allowlisted, preserving operational distinction without retaining exception text.
+- Seeded serial `sec13-worker-observability` and `provider-intelligence-cron-routes` pass 2 files / 17 tests; targeted ESLint and workspace `pnpm typecheck` pass. An initial unseeded run failed cron-suite setup because `APIPROOF_LOCAL_SEED_PASSWORD` was absent and SQLite cleanup then reported a busy file; the rerun used a process-only throwaway seed, removed application/staging DB URLs, and passed serially. Alert thresholds/destination, PostgreSQL, and staged worker-failure rehearsal remain open.

@@ -76,6 +76,8 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     await finishWorkerRun('provider-changelog-scheduler', failedRun, 'failed', 'TOKEN=private-secret', new Date(startedAt.getTime() + 5));
     const degradedRun = await startWorkerRun('nightly-rescan-scheduler', startedAt);
     await finishWorkerRun('nightly-rescan-scheduler', degradedRun, 'degraded', 'SCHEDULED_WORK_DEGRADED', new Date(startedAt.getTime() + 8));
+    const scanRun = await startWorkerRun('scan-worker', startedAt);
+    await finishWorkerRun('scan-worker', scanRun, 'degraded', 'SCAN_WORKER_DEGRADED', new Date(startedAt.getTime() + 9));
 
     const health = await getWorkerHeartbeats(new Date(startedAt.getTime() + 10));
     expect(health.find((item) => item.component === 'provider-changelog-scheduler')).toMatchObject({
@@ -83,6 +85,9 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     });
     expect(health.find((item) => item.component === 'nightly-rescan-scheduler')).toMatchObject({
       runId: degradedRun, status: 'degraded', errorCode: 'SCHEDULED_WORK_DEGRADED', freshness: 'current',
+    });
+    expect(health.find((item) => item.component === 'scan-worker')).toMatchObject({
+      runId: scanRun, status: 'degraded', errorCode: 'SCAN_WORKER_DEGRADED', freshness: 'unknown',
     });
     expect(JSON.stringify(health)).not.toContain('private-secret');
   });
