@@ -210,6 +210,8 @@ Latest invitation-form evidence: owner-only workspace invitation email input exp
 
 Latest auth-entry evidence: login/signup name, email and password controls expose mode-aware autofill metadata; the mobile login accessibility journey passes 1/1 and the production build generates 83 static pages. Hosted CI, staging, manual assistive-technology review, Member 1 auth integration and production remain open; release recommendation stays NO-GO.
 
+Latest account-help evidence: the read-only account email field is programmatically associated with its recovery-flow explanation; the authenticated settings journey passes 1/1 and the production build generates 83 static pages. Manual assistive-technology review, hosted CI, staging, account deletion and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 account-email help association
+
+- PASS: The read-only account email control now exposes its recovery-flow explanation through `aria-describedby`.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; authenticated settings journey passed 1/1; web production build generated 83 static pages.
+- NOT_RUN: Manual assistive-technology review, hosted CI, staging, account-deletion contract and production remain open. Artifacts: `/tmp/myowl-v1-member2-account-help-artifacts-xWWIfn`.
+
 ## 2026-11-08 — UI-12 auth-entry autofill semantics
 
 - PASS: Login/signup fields now expose mode-aware name, email and password autofill tokens without changing authentication behavior.

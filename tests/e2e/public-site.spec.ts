@@ -140,7 +140,7 @@ test.describe('authenticated product surfaces', () => {
     await page.goto('/dashboard/settings/account');
     await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer', { timeout: 30_000 });
-    await expect(page.getByLabel('Display name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email');
+    await expect(page.getByLabel('Display name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email'); await expect(page.getByLabel('Email')).toHaveAttribute('aria-describedby', 'account-email-help');
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();

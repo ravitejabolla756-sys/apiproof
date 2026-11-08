@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 account-email help association
+
+- Change: Associated the read-only account email input with its explanatory recovery-flow text using `aria-describedby`, preserving the existing account/email boundary.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; authenticated settings journey passed 1/1; `pnpm --filter @apiproof/web build` generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-account-help-artifacts-xWWIfn`.
+- Scope: local UI-12 screen-reader semantics only; account deletion, live AUTH-08 verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 auth-entry autofill semantics
 
 - Change: Added mode-aware autofill metadata to the login/signup form: name, email, current password for sign-in and new password for account creation.

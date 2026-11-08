@@ -132,9 +132,9 @@ export default function AccountSettingsPage() {
               <div>
                 <label htmlFor="account-email" className="mb-1.5 block text-xs font-medium text-[#333333]">Email</label>
                 <div className="flex min-h-11 items-center gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] px-3 text-sm text-[#686868]">
-                  <Mail className="h-4 w-4" aria-hidden="true" /><input id="account-email" value={account.email} readOnly autoComplete="email" className="min-w-0 flex-1 bg-transparent outline-none" />
+                  <Mail className="h-4 w-4" aria-hidden="true" /><input id="account-email" value={account.email} readOnly autoComplete="email" aria-describedby="account-email-help" className="min-w-0 flex-1 bg-transparent outline-none" />
                 </div>
-                <p className="mt-1.5 text-[11px] text-[#686868]">Email changes require a verified account-recovery flow and are not available here.</p>
+                <p id="account-email-help" className="mt-1.5 text-[11px] text-[#686868]">Email changes require a verified account-recovery flow and are not available here.</p>
               </div>
               <Button type="submit" disabled={savingName || name.trim() === account.name} className="min-h-11"><span role={savingName ? 'status' : undefined} aria-live={savingName ? 'polite' : undefined} aria-atomic={savingName ? 'true' : undefined} aria-busy={savingName ? 'true' : undefined}>{savingName ? 'Saving…' : 'Save profile'}</span></Button>
             </form>
