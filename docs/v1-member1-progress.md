@@ -371,3 +371,9 @@ Phase 0 read-only checks:
 - Command: `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot`, with `DATABASE_URL` and `APIPROOF_DATABASE_URL` removed and a generated process-only `APIPROOF_LOCAL_SEED_PASSWORD`.
 - Result: PASS, 168 test files passed / 1 skipped (169 total); 1,410 tests passed / 4 skipped (1,414 total); 260.75 seconds. The four skipped tests are the Docker-backed live verification cases; no failures were reported.
 - The harness emitted a fresh 24-iteration local baseline for API health, GitHub webhook signature/claim/record, SQLite `SELECT 1`, and worker queue metrics at concurrency 4. Values are recorded in `docs/sec16-local-measurements.md`; they are host-specific regression observations, not SLO or staging-capacity evidence.
+
+### 2026-11-08 SEC-17 staging rollback preparation
+
+- Added `docs/sec17-staging-rollback-rehearsal.md` with verified repository facts, hosting-owner approvals, preflight, smoke/monitoring criteria, abort conditions, and evidence requirements. The only source fact established locally is `apps/web/vercel.json` declaring the Next.js framework; active hosting project, preview triggers, staging alias, and rollback behavior remain unverified.
+- No hosting account, Vercel settings, deployment, staging resource, or production system was accessed or changed. SEC-17 remains `PARTIAL`; its staging rehearsal gate is blocked pending hosting-owner approval, and documentation does not count as completion.
+
