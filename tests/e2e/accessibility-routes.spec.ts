@@ -72,6 +72,20 @@ test.describe('route accessibility audit', () => {
     }
   });
 
+  test('moves keyboard focus to main content from every authenticated route', async ({ page }) => {
+    test.setTimeout(300_000);
+    await signIn(page);
+    for (const route of authenticatedRoutes) {
+      await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      const skipLink = page.locator('.skip-link');
+      await expect(skipLink, route).toBeVisible({ timeout: 30_000 });
+      await skipLink.focus();
+      await expect(skipLink, route).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#main-content'), route).toBeFocused();
+    }
+  });
+
   test('keeps all audited public and authenticated routes accessible at mobile width', async ({ page }) => {
     test.setTimeout(300_000);
     await page.setViewportSize({ width: 390, height: 844 });
