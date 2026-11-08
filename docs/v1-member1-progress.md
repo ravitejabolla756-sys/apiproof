@@ -321,9 +321,14 @@ Phase 0 read-only checks:
 ### 2026-11-08 SEC-13 malformed heartbeat timestamp handling
 
 - Worker health now reports `freshness: unknown` when a persisted scheduled-worker heartbeat has a malformed start timestamp; invalid telemetry can no longer appear fresh merely because its parsed age fell back to zero.
-- `sec13-worker-observability` passes 7/7, targeted ESLint passes, and full workspace `pnpm typecheck` passes. A combined run with `phase5-production-operations` failed during that file's setup because `APIPROOF_LOCAL_SEED_PASSWORD` is not configured in this environment; no credential was supplied or exposed. SEC-13 remains PARTIAL pending approved alerting/SLO decisions, PostgreSQL query-plan evidence, and staged worker-failure rehearsal.
+- `sec13-worker-observability` passes 7/7; combined with `phase5-production-operations`, both files pass 18/18 after supplying a random process-only seed value for the disposable SQLite fixture. Targeted ESLint and full workspace `pnpm typecheck` pass. SEC-13 remains PARTIAL pending approved alerting/SLO decisions, PostgreSQL query-plan evidence, and staged worker-failure rehearsal.
 
 ### 2026-11-08 SEC-16 bounded retry timeout
 
 - Bounded retry attempts now have a validated per-attempt timeout and cooperative abort signal. A timeout stops the retry loop because the in-process callback may still be running and its side-effect state is unknown.
 - `sec16-load-resilience` passes 10/10, targeted ESLint passes, and full workspace `pnpm typecheck` passes. The retry-timeout regression verifies one attempt starts, its signal is aborted, and no overlapping retry begins. Staging infrastructure, SLOs, and real worker-failure recovery remain unverified.
+
+### 2026-11-08 ORG-05 route authorization regression checkpoint
+
+- Reviewed authenticated workspace read paths and the existing centralized role boundary. The inspected endpoints constrain records to current memberships and approved persisted role values; sensitive provider-rule and billing mutations remain owner-gated, and unknown-role paths have explicit denial coverage.
+- The combined authorization regression set passes 9 files / 75 tests using process-only random seed material for disposable SQLite fixtures: workspace read routes, repository listing, GitHub repository status/installation callback, compatibility map, overview, provider review queue, Slack and billing foundation. This verifies local SQLite behavior only; role-capability adoption awaits Member 2's approved contract and PostgreSQL/RLS verification.
