@@ -33,11 +33,18 @@ export function sanitizePersistedVerificationReport(raw: string | null | undefin
     const failureReasons = Array.isArray(value.failureReasons)
       ? value.failureReasons.map(() => 'VERIFICATION_FAILED')
       : [];
-    return JSON.stringify({
-      ...value,
+    const safeWrapper: Record<string, unknown> = {
+      schemaVersion: '1.0',
       report: parsedReport.success ? sanitizeVerificationReport(parsedReport.data) : null,
       failureReasons,
-    });
+    };
+    for (const key of [
+      'migrationId', 'repositoryId', 'baselineSha', 'patchDigest', 'targetFiles',
+      'sourceDigests', 'resultingDigests', 'evidence', 'failedAt',
+    ]) {
+      if (Object.hasOwn(value, key)) safeWrapper[key] = value[key];
+    }
+    return JSON.stringify(safeWrapper);
   } catch {
     return null;
   }

@@ -22,6 +22,7 @@ function persistedVerificationReport(): string {
     migrationId: 'role_migration',
     repositoryId: 'role-repo-1',
     failureReasons: [`Verification failed: ${REPORT_LEAK_MARKER}`],
+    diagnosticDetails: `unexpected legacy wrapper field ${REPORT_LEAK_MARKER}`,
     report: {
       verificationId: 'verification-role-test', patchId: 'patch-role-test', fixtureId: 'fixture-role-test',
       status: 'VERIFICATION_TEST_FAILED', workspace: `C:\\temp\\${REPORT_LEAK_MARKER}`,
