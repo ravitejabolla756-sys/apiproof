@@ -85,3 +85,5 @@ Latest public accessibility evidence: the pipeline’s inactive-panel focus issu
 Latest navbar evidence: the landing brand link, mobile menu toggle, and mobile navigation links are measured at 44px or larger with axe-clean menu content. Hosted CI, manual review, staging and production remain open.
 
 Latest regression evidence: full lint passed and the hermetic repository suite passed 1,341 tests across 162 files with 1 skipped file and 4 skipped tests. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.
+
+Latest quality-regression evidence: lint passed; the no-file-parallelism repository suite passed 1,341 tests with 4 skipped tests across 162 files, with 1 skipped file, in 121.86 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual review, staging and production remain open.

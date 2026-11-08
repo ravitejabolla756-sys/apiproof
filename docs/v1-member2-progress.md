@@ -1778,6 +1778,11 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the focused settings-loading journey passed 1/1, and the complete dashboard data-state suite passed 16/16 in 1.1 minutes, including loading, empty, error, retry and action-feedback coverage.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — repository-wide quality regression
+
+- Evidence: `pnpm lint` passed; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed with 1,341 tests passed, 4 skipped tests, 162 test files passed and 1 skipped file in 121.86 seconds.
+- Scope: this is hermetic local regression evidence; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 finding-detail loading semantics
 
 - Change: the finding-detail workbench loading status now exposes `aria-busy="true"`, complementing existing busy semantics for migration planning and secure verification actions without changing the review-only workflow.
