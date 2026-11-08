@@ -13,7 +13,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 | Database source access inventory | PASS (local only) | `docs/v1-member1-db-access-matrix.md` inventories 40 tables and records RLS decisions, intended roles, catalog queries and blocked PostgreSQL isolation tests |
 | PostgreSQL tenant isolation / RLS | BLOCKED | No approved production/staging role access; local SQLite tests are insufficient |
 | PostgreSQL least-privilege grants | BLOCKED | No approved role/grant read-back environment |
-| Auth/OAuth/session security | PARTIAL | Existing 8-file auth/security matrix passed 70/70; latest seeded auth/session/password-reset/email-verification/Google OAuth/GitHub OAuth run passes 6 files / 62 tests, including concurrent single-use token consumption; central unverified-account enforcement and PostgreSQL concurrency evidence remain incomplete |
+| Auth/OAuth/session security | PARTIAL | Existing 8-file auth/security matrix passed 70/70; latest seeded serial auth/session/password-reset/email-verification/Google OAuth/GitHub OAuth run passes 6 files / 80 tests, including concurrent resend/verification and GitHub installation state consumption; central unverified-account enforcement and PostgreSQL concurrency evidence remain incomplete |
 | Email verification backend flow | PASS (local only) | Migration 024, hashed single-use token service, verification/resend actions, verification page, and 13 focused tests pass, including the three-per-user resend limit and concurrent resend/verification serialization; provider delivery, PostgreSQL concurrency and enforcement policy remain gated |
 | Email verification delivery | BLOCKED | Approved email provider and Member 2 template contract not configured |
 | GitHub App/webhook/private repository live verification | NOT_TESTED | No live credentials or authorized staging run in this workstream |
@@ -124,6 +124,8 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - SEC-04 GitHub callback POST CSRF: PASS, seeded serial `github-installation-reassociation` 12/12; cross-site POST is rejected before GitHub provider verification and leaves one-time installation state unconsumed. Targeted ESLint and workspace typecheck pass. The actual cross-site GET redirect flow still requires live GitHub App/staging verification.
 
 - AUTH-05 concurrent resend/verification: PASS locally, seeded serial `email-verification` 13/13; simultaneous resends leave one outstanding token, and a resend racing verification either observes a verified account or invalidates the old token before it can verify. Targeted ESLint and workspace typecheck pass. This verifies SQLite serialization and exercises the code path; PostgreSQL row-lock behavior still requires a supported staging database.
+
+- AUTH-05/10 auth regression matrix: PASS, seeded serial 6-file run / 80 tests; session, password-reset, verification, GitHub OAuth, Google OAuth and GitHub App installation tests pass together on the current code. PostgreSQL concurrency, delivery provider and live OAuth behavior remain unverified.
 
 - SEC-04 POST route audit: all API route files exporting POST were compared with shared CSRF-helper imports. Browser-session POST routes are covered; remaining exceptions are signed GitHub/billing webhooks, Slack signature-authenticated interactions, and bearer-authenticated internal routes. This source scan does not prove deployed proxy behavior.
 
