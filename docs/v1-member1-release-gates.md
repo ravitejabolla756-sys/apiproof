@@ -222,3 +222,4 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - Docker availability check on 2026-11-09: FAIL to connect to the local Docker Desktop Linux engine; the four container-backed tests remain skipped. This is an environment limitation, not a test bypass.
 - Current-HEAD lint: PASS, `pnpm lint` completed with zero warnings. External database, provider, staging, legal, and production gates remain unchanged.
 - Current-HEAD production dependency audit: PASS at the high-severity threshold; four moderate advisories remain documented, with no high or critical suppression.
+- Current-HEAD build: PASS, `pnpm build` completed all workspace package builds and the Next.js application generated 64 static pages. Build-generated changes to `apps/web/next-env.d.ts` and `apps/web/tsconfig.json` were restored; no deployment occurred.
