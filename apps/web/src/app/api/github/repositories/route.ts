@@ -70,13 +70,13 @@ export async function GET(req: Request) {
       totalCount: sanitizedRepositories.length,
     }, { headers: noStoreHeaders });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch repositories from GitHub.';
+    const message = error instanceof Error ? error.message : '';
     if (message.includes('GITHUB_AUTHENTICATION_FAILED')) {
       return NextResponse.json({
         error: 'GitHub authentication failed. Installation access may have been revoked.',
         code: 'GITHUB_AUTH_FAILED',
       }, { status: 502, headers: noStoreHeaders });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500, headers: noStoreHeaders });
+    return NextResponse.json({ error: 'Failed to fetch repositories from GitHub.', code: 'INTERNAL_ERROR' }, { status: 500, headers: noStoreHeaders });
   }
 }

@@ -154,3 +154,4 @@ The following tests are implementation-ready but remain contract-gated; they int
 
 - 2026-11-08 SEC-11: Migration planning/proposal API errors must expose only reviewed generic messages and stable codes; exception text must not be returned to clients or emitted in route logs. Local regression coverage is in `tests/migration-api-error-safety.test.ts`. This local response hardening does not define external monitoring or alert-routing policy.
 - 2026-11-08 SEC-11: `/api/inventory` registry-loading failures return a fixed generic response; regression coverage is in `tests/inventory-error-safety.test.ts`. Exception content may contain provider or credential details and must not be returned to clients.
+- 2026-11-08 SEC-11: GitHub repository-list responses preserve the reviewed `GITHUB_AUTH_FAILED` mapping; all unexpected service errors use a fixed generic `INTERNAL_ERROR` response and do not expose exception text.
