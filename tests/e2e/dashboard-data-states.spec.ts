@@ -262,7 +262,7 @@ test.describe('authenticated dashboard data states', () => {
     await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
     const githubLoading = page.getByRole('status').filter({ hasText: 'Checking GitHub installation status...' });
     await expect(githubLoading).toBeVisible();
-    await expect(githubLoading).toHaveAttribute('aria-live', 'polite'); await expect(githubLoading).toHaveAttribute('aria-atomic', 'true');
+    await expect(githubLoading).toHaveAttribute('aria-live', 'polite'); await expect(githubLoading).toHaveAttribute('aria-atomic', 'true'); const settingsSurface = page.getByRole('heading', { name: 'Workspace Settings & Billing' }).locator('..').locator('..'); await expect(settingsSurface).toHaveAttribute('aria-busy', 'true');
     releaseRequests?.();
     await page.unroute('**/api/github/repositories');
     await page.unroute('**/api/billing/subscription');

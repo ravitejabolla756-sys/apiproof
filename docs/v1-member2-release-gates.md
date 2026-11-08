@@ -32,6 +32,8 @@ Latest dashboard-navigation evidence: brand and Overview breadcrumb links are me
 
 Latest repository-dialog evidence: repository recovery and disconnected-app journeys pass 2/2 locally with axe-clean dialog content, visible-control focus trapping and invoking-control restoration on Escape; selected repository labels remain measured at 44px or larger with named-radio keyboard selection. GitHub configuration, hosted CI, PostgreSQL/RBAC, manual review, staging and production remain open.
 
+Latest workspace-settings evidence: the settings surface exposes `aria-busy` while GitHub and billing requests are pending; the complete dashboard data-state suite passes 16/16 with loading, empty, error, retry and action-feedback coverage. Hosted CI, manual screen-reader review, staging and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

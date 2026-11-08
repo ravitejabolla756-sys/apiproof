@@ -1770,3 +1770,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`, `tests/e2e/public-site.spec.ts`.
 - Evidence: `pnpm exec playwright test tests/e2e/connect-repo-recovery.spec.ts --workers=1` passed 2/2 in 12.4 seconds after the hardening; a prior repeat probe passed 9/10 before the change, and the earlier full local matrix passed 120/121 with one intermittent focus assertion plus the pre-fix workspace fixture failure. The workspace recovery journey now passes in the focused public-site run. Targeted ESLint and `git diff --check` are recorded for this slice below.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 workspace-settings busy semantics
+
+- Change: the authenticated workspace settings surface now exposes `aria-busy="true"` while its GitHub and billing summary requests are pending, complementing the existing loading live regions without changing billing or GitHub action behavior.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the focused settings-loading journey passed 1/1, and the complete dashboard data-state suite passed 16/16 in 1.1 minutes, including loading, empty, error, retry and action-feedback coverage.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

@@ -102,7 +102,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={loading ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* HEADER */}
       <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
         <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
