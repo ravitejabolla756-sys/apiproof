@@ -491,3 +491,7 @@ Phase 0 read-only checks:
 
 - The first seeded serial full-suite run on code HEAD `4a67e685b73ebf3fe307f8471bd56dc8b8597d2c` exposed one stale assertion in `phase2-multi-tenant-workspaces.test.ts`: it expected the older repository-specific 404 text. Updated only that expected response to the route's established generic non-enumerating message; status, authorization, and no-side-effect assertions remain intact.
 - The affected Phase 2 suite passes 17/17. A second seeded serial full-suite run passes 172 files / 1 skipped (173 total), 1,424 tests / 4 skipped (1,428 total), in 259.45 seconds. The four skipped tests require Docker. `DATABASE_URL` and `APIPROOF_DATABASE_URL` were unset; a process-only local seed was used. No external provider, production system, or deployment was used.
+
+### 2026-11-08 full-suite and production-build checkpoint
+
+- On HEAD `b8c992b313e6cf0efadcbf35f6a2fe663d8c9940`, the seeded serial full suite passes 172 files / 1 skipped; 1,424 tests / 4 skipped (the four skips require Docker), 259.45 seconds. Build also passes and generates 64 static pages. Build-generated Next.js TypeScript config changes were inspected and restored. No production or staging resources were used.
