@@ -791,3 +791,8 @@ Phase 0 read-only checks:
 
 - Auth-session tests now restore their local DB path and test secret; activity route tests restore their DB path and test secret; provider-review route tests restore `NODE_ENV` and the DB path. This prevents these integration fixtures from contaminating subsequent serial suites.
 - Seeded serial `auth-session.test.ts`, `activity-timestamp.test.ts`, and `provider-review-queue-route.test.ts` pass 3 files / 39 tests. Targeted ESLint, workspace test TypeScript check, and `git diff --check` pass. PostgreSQL and live callback/browser evidence remain external gates.
+
+### 2026-11-08 current-code seeded serial full-suite after fixture isolation
+
+- At code HEAD `1ace5b7bec8035ce510481f06daa1bcaca125c10`, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 175 files passed / 1 skipped; 1,469 tests passed / 4 skipped in 658.28 seconds. The process used a throwaway seed and removed `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL`. Four tests remain skipped because they require Docker. The newly isolated SEC-13, SEC-16, auth-session, activity, and provider-review fixtures passed within this full run.
+- Runtime is 8.34 seconds above the 649.94-second run immediately before these test-fixture changes. Both complete runs passed; this small difference does not establish the cause of earlier large timing swings. Local-only evidence; external PostgreSQL, staging, provider and production behavior remain unverified.
