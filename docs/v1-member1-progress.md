@@ -700,3 +700,8 @@ Phase 0 read-only checks:
 
 - Bounded both load and retry scenarios by a 60-second estimated worst-case operation-time budget: `ceil(iterations / concurrency) * timeout` for loads and `maxAttempts * timeout` for retries. Oversized scenarios fail before executing callbacks. `sec16-load-resilience` passes 12/12, targeted ESLint and workspace typecheck pass. This bounds configured operation-time budgets, not hard preemption of synchronous or abort-ignoring callbacks.
 - A fresh 24-operation/concurrency-4 local measurement set is recorded in `docs/sec16-local-measurements.md`; it is host-specific and does not establish staging capacity or SLOs. Approved staging traffic, SLOs and real worker-failure recovery remain gated.
+
+### 2026-11-08 SEC-16 aggregate bound current-HEAD full suite
+
+- Seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes on code HEAD `ea603f0998758d39aa09513f4401b6227e094182`: 175 files passed / 1 skipped (176 total), 1,461 tests passed / 4 skipped (1,465 total), 714.60 seconds. Remote database URLs were removed; the only seed was process-local. Four opt-in Docker tests remain skipped because the Docker Desktop Linux daemon is unavailable.
+- Runtime was 714.60 seconds, versus a prior same-command full run of 263.71 seconds on 2026-11-08. The dot reporter did not provide per-file duration breakdown; variability is observed, but no specific slow test or cause is asserted. PostgreSQL, staging, provider and production evidence remain unverified.
