@@ -201,7 +201,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">Selected repository</div>
           <div className="space-y-1">
-            <Link href={`/dashboard/repositories/${currentRepo.id}`} className="flex items-center gap-1.5 font-mono text-sm font-semibold text-[#111111] hover:text-purple-700">
+            <Link href={`/dashboard/repositories/${currentRepo.id}`} className="inline-flex min-h-11 items-center gap-1.5 font-mono text-sm font-semibold text-[#111111] hover:text-purple-700">
               {currentRepo.name}<ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 text-zinc-400" />
             </Link>
             <div className="font-mono text-[11px] text-[#686868]">{currentRepo.fullName}</div>
@@ -269,7 +269,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
           <div className="flex items-center gap-2 font-semibold text-[#111111]"><AlertTriangle aria-hidden="true" className="h-3.5 w-3.5 text-amber-600" />Findings and linked migration state</div>
           {currentRepo.findings.map((finding) => (
             <div key={finding.id} className="flex flex-col justify-between gap-2 border-t border-[#E8E8E5] pt-2 sm:flex-row sm:items-center">
-              <Link href={`/dashboard/findings/${finding.id}`} className="min-w-0 text-[#111111] hover:text-purple-700">
+              <Link href={`/dashboard/findings/${finding.id}`} className="inline-flex min-h-11 min-w-0 items-center text-[#111111] hover:text-purple-700">
                 <span className="font-medium">{finding.title}</span><span className="ml-2 font-mono text-[10px] text-[#686868]">{finding.filePath} · {finding.symbol}</span>
               </Link>
               <div className="flex shrink-0 flex-wrap items-center gap-2 text-[10px] text-[#686868]">

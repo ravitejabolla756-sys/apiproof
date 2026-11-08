@@ -206,7 +206,7 @@ export default function DashboardOverviewPage() {
               {lastUpdatedAt ? `Updated ${lastUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Not refreshed"}
             </span>
             {data?.criticalFinding ? (
-              <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#111111] px-4.5 py-2.5 text-sm font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+              <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#111111] px-4.5 py-2.5 text-sm font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                 <AlertTriangle aria-hidden="true" className="w-3.5 h-3.5 text-amber-300" />
                 <span>Review Critical Finding</span>
               </Link>
@@ -231,7 +231,7 @@ export default function DashboardOverviewPage() {
             <h2 className="mt-2 text-base font-semibold text-[#111111]">Recent provider changes</h2>
             <p className="mt-1 text-xs text-[#686868]">Official source updates are evidence only until you approve a rule.</p>
           </div>
-          <Link href="/dashboard/rules/pending" className="text-xs font-medium text-purple-700 hover:underline">Review candidates →</Link>
+          <Link href="/dashboard/rules/pending" className="inline-flex min-h-11 items-center text-xs font-medium text-purple-700 hover:underline">Review candidates →</Link>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data?.recentProviderChanges?.length ? data.recentProviderChanges.map((change) => (
@@ -242,7 +242,7 @@ export default function DashboardOverviewPage() {
               </div>
               <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-[#111111]">{change.title}</h3>
               <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-[#686868]">{change.description}</p>
-              <a href={change.source_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 hover:underline">
+              <a href={change.source_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center gap-1 text-[11px] font-medium text-purple-700 hover:underline">
                 View official source <ExternalLink aria-hidden="true" className="h-3 w-3" />
               </a>
             </article>
@@ -260,7 +260,7 @@ export default function DashboardOverviewPage() {
               <h2 className="mt-2 text-base font-semibold text-[#111111]">Findings this week</h2>
               <p className="mt-1 text-xs text-[#686868]">New findings across active repositories during the last seven days.</p>
             </div>
-            <Link href="/dashboard/findings" className="text-xs font-medium text-purple-700 hover:underline">View findings →</Link>
+            <Link href="/dashboard/findings" className="inline-flex min-h-11 items-center text-xs font-medium text-purple-700 hover:underline">View findings →</Link>
           </div>
           <div className="mt-5 space-y-3">
             {data?.findingsThisWeek?.length ? (() => {
@@ -296,7 +296,7 @@ export default function DashboardOverviewPage() {
               <h2 className="mt-2 text-base font-semibold text-[#111111]">Recent fixes</h2>
               <p className="mt-1 text-xs text-[#686868]">Migration plans and draft pull requests awaiting review.</p>
             </div>
-            <Link href="/dashboard/migrations" className="text-xs font-medium text-purple-700 hover:underline">View migrations →</Link>
+            <Link href="/dashboard/migrations" className="inline-flex min-h-11 items-center text-xs font-medium text-purple-700 hover:underline">View migrations →</Link>
           </div>
           <div className="mt-4 space-y-3">
             {data?.recentFixes?.length ? data.recentFixes.map((fix) => (
@@ -306,7 +306,7 @@ export default function DashboardOverviewPage() {
                   <p className="mt-1 truncate text-[10px] text-[#686868]">{fix.repo_name} · {new Date(fix.created_at).toLocaleDateString()}</p>
                 </div>
                 {fix.pr_url ? (
-                  <a href={fix.pr_url} target="_blank" rel="noreferrer" className="shrink-0 text-[10px] font-medium text-purple-700 hover:underline">Draft PR</a>
+                  <a href={fix.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 shrink-0 items-center text-[10px] font-medium text-purple-700 hover:underline">Draft PR</a>
                 ) : (
                   <span className="shrink-0 text-[10px] font-medium text-[#686868]">{fix.status.replaceAll("_", " ")}</span>
                 )}
@@ -324,7 +324,7 @@ export default function DashboardOverviewPage() {
             <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-purple-700">Provider intelligence</p><h2 className="mt-2 text-base font-semibold text-[#111111]">Review queue</h2><p className="mt-1 text-xs text-[#686868]">Official source changes wait for your approval before they affect scans.</p></div>
             <ShieldCheck aria-hidden="true" className="h-5 w-5 text-purple-700" />
           </div>
-          <div className="mt-4 flex items-end justify-between"><div><span className="text-2xl font-semibold text-[#111111]">{stats.providerRulesPending}</span><span className="ml-2 text-xs text-[#686868]">pending rules</span></div><Link href="/dashboard/rules/pending" className="text-xs font-medium text-purple-700 hover:underline">Open review →</Link></div>
+          <div className="mt-4 flex items-end justify-between"><div><span className="text-2xl font-semibold text-[#111111]">{stats.providerRulesPending}</span><span className="ml-2 text-xs text-[#686868]">pending rules</span></div><Link href="/dashboard/rules/pending" className="inline-flex min-h-11 items-center text-xs font-medium text-purple-700 hover:underline">Open review →</Link></div>
           <p className="mt-2 text-[11px] text-[#686868]">{stats.providerRulesApproved} approved rules currently available to the scanner.</p>
         </div>
         <div className="rounded-[24px] border border-[#E8E8E5] bg-white p-5 shadow-xs">
@@ -476,7 +476,7 @@ export default function DashboardOverviewPage() {
                   <CheckCircle2 aria-hidden="true" className="w-4 h-4" />
                   <span>Deterministic AST Detection</span>
                 </div>
-                <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
+                <Link href={`/dashboard/findings/${data.criticalFinding.id}`} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
                   <span>Inspect Finding &amp; Plan</span>
                   <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5" />
                 </Link>
@@ -501,7 +501,7 @@ export default function DashboardOverviewPage() {
                 <GitBranch aria-hidden="true" className="w-4 h-4 text-purple-700" />
                 Monitored Repositories
               </h3>
-              <Link href="/dashboard/repositories" className="text-xs text-[#686868] hover:text-[#111111] font-medium flex items-center gap-1">
+              <Link href="/dashboard/repositories" className="inline-flex min-h-11 items-center gap-1 text-xs text-[#686868] hover:text-[#111111] font-medium">
                 View all <ArrowRight aria-hidden="true" className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -512,7 +512,7 @@ export default function DashboardOverviewPage() {
                   <div key={repo.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <Link href={`/dashboard/repositories/${repo.id}`} className="text-sm font-semibold text-[#111111] hover:underline font-mono">
+                        <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 items-center text-sm font-semibold text-[#111111] hover:underline font-mono">
                           {repo.name}
                         </Link>
                         <StatusPill
@@ -530,7 +530,7 @@ export default function DashboardOverviewPage() {
                         <div className="text-[#111111] font-medium">{repo.findings_count} findings</div>
                         <div className="text-[#686868] text-[11px]">{repo.last_scan_at ? new Date(repo.last_scan_at).toLocaleDateString() : 'Not scanned'}</div>
                       </div>
-                      <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
+                      <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
                         Inspect
                       </Link>
                     </div>
@@ -554,7 +554,7 @@ export default function DashboardOverviewPage() {
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-[#111111]">Recent Activity</h3>
-              <Link href="/dashboard/activity" className="text-xs text-[#686868] hover:text-[#111111] font-medium">
+              <Link href="/dashboard/activity" className="inline-flex min-h-11 items-center text-xs text-[#686868] hover:text-[#111111] font-medium">
                 History
               </Link>
             </div>

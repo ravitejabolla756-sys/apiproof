@@ -130,7 +130,7 @@ export default function PullRequestsPage() {
 
               <div className="pt-2 flex items-center justify-between">
                 <span className="text-xs text-[#686868]">Created: {new Date(pr.created_at).toLocaleString()}</span>
-                <a href={pr.url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                <a href={pr.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                   <span>Inspect on GitHub</span>
                   <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />
                 </a>

@@ -223,7 +223,7 @@ export default function FindingDetailPage({
       <div>
         <Link
           href="/dashboard/findings"
-          className="inline-flex items-center gap-1.5 text-xs text-[#686868] hover:text-[#111111] font-medium transition-colors"
+          className="inline-flex min-h-11 items-center gap-1.5 text-xs text-[#686868] hover:text-[#111111] font-medium transition-colors"
         >
           <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" />
           Back to Findings
@@ -564,7 +564,7 @@ export default function FindingDetailPage({
                   Target Branch: <code className="font-mono bg-white px-1 rounded border border-[#C6E1FA]">{migration.branch_name || migration.target_branch}</code>
                 </p>
                 <div className="pt-2">
-                  <a href={migration.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-4 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20">
+                  <a href={migration.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-4 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20">
                     <span>View on GitHub</span>
                     <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />
                   </a>
