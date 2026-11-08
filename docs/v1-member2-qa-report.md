@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — WEB-15/UI-12 contact decorative-icon semantics
+
+- PASS: Decorative contact-page icons are hidden from assistive technology while all support and CTA text remains exposed.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; contact journeys and full public axe audit passed 3/3; web production build generated 83 static pages.
+- NOT_RUN: Contact routing, hosted CI, staging, manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-member2-contact-icon-artifacts-XwIDWL`.
+
 ## 2026-11-08 — UI-12 public decorative-icon semantics
 
 - PASS: Decorative icons on cookies, 404, About and Security routes are hidden from assistive technology while visible text remains authoritative.

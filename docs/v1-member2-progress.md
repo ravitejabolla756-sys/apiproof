@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — WEB-15/UI-12 contact decorative-icon semantics
+
+- Change: Marked decorative success, support-card and CTA icons on the public contact page as `aria-hidden="true"`, preserving visible labels and truthful no-delivery behavior.
+- Evidence: Targeted ESLint, `git diff --check` and the Impeccable detector passed; contact journeys plus the full public axe audit passed 3/3; `pnpm --filter @apiproof/web build` generated 83 static pages. Artifacts: `/tmp/myowl-v1-member2-contact-icon-artifacts-XwIDWL`.
+- Scope: local WEB-15/UI-12 public screen-reader semantics only; contact routing, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative-icon semantics
 
 - Change: Marked decorative Lucide icons as `aria-hidden="true"` across cookies, 404, About and Security public routes, including CTA and card icons.

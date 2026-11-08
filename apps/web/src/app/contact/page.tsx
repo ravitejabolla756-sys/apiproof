@@ -41,7 +41,7 @@ export default function ContactPage() {
             {submitted ? (
               <div role="status" aria-live="polite" aria-atomic="true" className="py-16 text-center space-y-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
-                  <CheckCircle2 className="w-7 h-7" />
+                  <CheckCircle2 aria-hidden="true" className="w-7 h-7" />
                 </div>
                 <h2 className="font-serif text-2xl text-[#000E29]">No message was sent</h2>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
@@ -121,7 +121,7 @@ export default function ContactPage() {
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
-                <Server className="w-4 h-4" />
+                <Server aria-hidden="true" className="w-4 h-4" />
               </div>
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h2>
               <p className="text-xs text-slate-600">Questions about private runners, GitHub Enterprise Server, or future deployment options.</p>
@@ -132,7 +132,7 @@ export default function ContactPage() {
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck aria-hidden="true" className="w-4 h-4" />
               </div>
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h2>
               <p className="text-xs text-slate-600">Read-only inspection and evidence boundaries documented for beta review.</p>
@@ -143,7 +143,7 @@ export default function ContactPage() {
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
-                <FileCode className="w-4 h-4" />
+                <FileCode aria-hidden="true" className="w-4 h-4" />
               </div>
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h2>
               <p className="text-xs text-slate-600">Discuss future rule coverage for private internal services and SDKs.</p>
@@ -154,7 +154,7 @@ export default function ContactPage() {
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle aria-hidden="true" className="w-4 h-4" />
               </div>
               <h2 className="font-serif text-lg text-[#000E29] font-medium">Technical Support</h2>
               <p className="text-xs text-slate-600">Review the beta documentation for GitHub permissions and scan boundaries.</p>
@@ -182,7 +182,7 @@ export default function ContactPage() {
               className="btn-lime min-h-11 text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
             >
               <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+              <ArrowRight aria-hidden="true" className="w-4 h-4 text-black stroke-[2.5]" />
             </Link>
           </div>
         </div>
