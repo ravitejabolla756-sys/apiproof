@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef } from "react";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,12 +11,20 @@ interface DashboardDataErrorProps {
 }
 
 export function DashboardDataError({ message, onRetry, busy = false }: DashboardDataErrorProps) {
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    errorRef.current?.focus();
+  }, [message]);
+
   return (
     <div
+      ref={errorRef}
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
-      className="flex flex-col gap-3 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-rose-900 sm:flex-row sm:items-center sm:justify-between"
+      tabIndex={-1}
+      className="flex flex-col gap-3 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-start gap-3">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" aria-hidden="true" />

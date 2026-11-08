@@ -2735,3 +2735,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/finding-detail-loading.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; finding-detail and degraded-state coverage passed 5/5; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 finding-workbench recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 event integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 shared workbench error focus
+
+- Change: the shared `DashboardDataError` now focuses its assertive retry alert when a workbench error appears. This covers repository, finding, inventory, migration, pull-request, provider, activity and compatibility routes without changing their retry contracts.
+- Files: `apps/web/src/components/dashboard/data-state.tsx`, `tests/e2e/repository-recovery.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; repository, repository-detail and activity recovery coverage passed 4/4; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 shared recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

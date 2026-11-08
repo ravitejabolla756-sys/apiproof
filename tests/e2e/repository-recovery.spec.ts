@@ -38,7 +38,9 @@ test.describe('repository recovery journeys', () => {
     });
 
     await page.goto('/dashboard/repositories');
-    await expect(page.getByRole('alert').filter({ hasText: 'Repository list temporarily unavailable.' })).toBeVisible();
+    const listAlert = page.getByRole('alert').filter({ hasText: 'Repository list temporarily unavailable.' });
+    await expect(listAlert).toBeVisible();
+    await expect(listAlert).toBeFocused();
     const listRetry = page.getByRole('button', { name: 'Try again' });
     expect((await listRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await listRetry.focus();
