@@ -34,10 +34,10 @@ export function sanitizePersistedVerificationReport(raw: string | null | undefin
       ? value.failureReasons.map(() => 'VERIFICATION_FAILED')
       : [];
     const safeWrapper: Record<string, unknown> = {
-      schemaVersion: '1.0',
       report: parsedReport.success ? sanitizeVerificationReport(parsedReport.data) : null,
       failureReasons,
     };
+    if (value.schemaVersion === '1.0') safeWrapper.schemaVersion = '1.0';
     for (const key of [
       'migrationId', 'repositoryId', 'baselineSha', 'patchDigest', 'targetFiles',
       'sourceDigests', 'resultingDigests', 'evidence', 'failedAt',
