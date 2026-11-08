@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 control and pipeline keyboard semantics
+
+- Change: Extended repository-row expansion and public pipeline-stage navigation journeys to verify focus visibility and Enter activation while preserving `aria-expanded`, `aria-pressed`, button-type, graphics and nested-interactive assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; combined control/pipeline suite passed 6/6 in 44.3 seconds. Artifacts: `/tmp/myowl-v1-control-pipeline-keyboard-artifacts`.
+- Scope: local UI-12 control/accessibility evidence only; no backend, provider, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — NOT-03/UI-12 Slack disconnect keyboard semantics
 
 - Change: Extended the Slack disconnect progress journey to focus the Disconnect control, verify focus visibility, and activate it with Enter while preserving the pending DELETE response and polite live-status assertions.
