@@ -79,6 +79,37 @@ describe('provider intelligence cron route contracts', () => {
     expect(heartbeat?.status).toBe('succeeded');
   });
 
+  it('rejects unauthenticated operational status requests without exposing health data', async () => {
+    const previousSecret = process.env.CRON_SECRET;
+    try {
+      const requests = [
+        new NextRequest('http://localhost/api/internal/provider-intelligence/status'),
+        new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
+          headers: { authorization: `Basic ${CRON_SECRET}` },
+        }),
+        new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
+          headers: { authorization: 'Bearer wrong-secret' },
+        }),
+      ];
+
+      for (const request of requests) {
+        const response = await providerIntelligenceStatusGet(request);
+        expect(response.status).toBe(401);
+        expect(await response.json()).toEqual({ error: 'Unauthorized' });
+      }
+
+      delete process.env.CRON_SECRET;
+      const response = await providerIntelligenceStatusGet(new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
+        headers: { authorization: `Bearer ${CRON_SECRET}` },
+      }));
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
+    } finally {
+      if (previousSecret === undefined) delete process.env.CRON_SECRET;
+      else process.env.CRON_SECRET = previousSecret;
+    }
+  });
+
   it('exposes protected rollout, source, and queue readiness without source contents', async () => {
     process.env.PROVIDER_INTELLIGENCE_V1_ENABLED = 'true';
     const response = await providerIntelligenceStatusGet(new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
