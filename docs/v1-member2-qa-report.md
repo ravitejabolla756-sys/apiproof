@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-11 malformed audit metadata fallback
+
+- PASS: Corrupt persisted audit metadata no longer breaks audit pagination; the affected event exposes empty bounded metadata.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 14/14.
+- NOT_RUN: Final role/retention policy, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-03/ORG-11 atomic invitation cancellation audit
 
 - PASS: Invitation cancellation and its administrative audit event now commit atomically.

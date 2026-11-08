@@ -232,6 +232,8 @@ Latest billing-boundary evidence: checkout and billing-portal requests now requi
 
 Latest invitation-audit evidence: invitation cancellation and its `invitation.revoked` event commit atomically; organization-management coverage passes 14/14 and repository typecheck passes. Transactional email, final retention/RBAC contract, PostgreSQL, hosted CI, staging and production remain open; release recommendation stays NO-GO.
 
+Latest audit-resilience evidence: malformed persisted audit metadata falls back to bounded empty metadata instead of failing audit pagination; organization-management coverage passes 14/14 and repository typecheck passes. Final role/retention policy, PostgreSQL, hosted CI, staging and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

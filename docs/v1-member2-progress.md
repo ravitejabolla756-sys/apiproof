@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-11 malformed audit metadata fallback
+
+- Change: Added safe parsing for persisted audit metadata; malformed or non-object JSON now yields bounded empty metadata instead of failing the entire audit page.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 14/14, covering sensitive, oversized and malformed metadata.
+- Scope: local ORG-11 audit resilience and data hygiene only; final role/retention policy, PostgreSQL/hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-03/ORG-11 atomic invitation cancellation audit
 
 - Change: Wrapped invitation cancellation and its `invitation.revoked` audit event in one transaction, preventing a revoked invitation from lacking its corresponding administrative event if audit persistence fails.

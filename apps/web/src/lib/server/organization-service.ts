@@ -85,6 +85,15 @@ function sanitizeAuditMetadata(value: unknown, depth = 0): unknown {
   return TRUNCATED_AUDIT_VALUE;
 }
 
+function parseAuditMetadata(raw: string): Record<string, unknown> {
+  try {
+    const parsed = sanitizeAuditMetadata(JSON.parse(raw));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+  } catch {
+    return {};
+  }
+}
+
 function encodeAuditCursor(createdAt: string, id: string): string {
   return Buffer.from(JSON.stringify({ createdAt, id }), 'utf8').toString('base64url');
 }
@@ -297,7 +306,7 @@ export async function listWorkspaceAuditPage(userId: string, workspaceId: string
   );
   const hasMore = rows.length > pageSize;
   const pageRows = hasMore ? rows.slice(0, pageSize) : rows;
-  const events = pageRows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: sanitizeAuditMetadata(JSON.parse(row.metadata_json)) as Record<string, unknown>, actorEmail: row.actor_email, createdAt: row.created_at }));
+  const events = pageRows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: parseAuditMetadata(row.metadata_json), actorEmail: row.actor_email, createdAt: row.created_at }));
   const last = pageRows.at(-1);
   return { events, nextCursor: hasMore && last ? encodeAuditCursor(last.created_at, last.id) : null };
 }
