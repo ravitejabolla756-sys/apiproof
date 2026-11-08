@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import { getDatabase } from './db/index.js';
 
 export interface RateLimitResult {
@@ -8,6 +9,8 @@ export interface RateLimitResult {
 
 // In-memory fallback map for resilience across transient database delays
 const inMemoryFallback = new Map<string, { points: number; resetAt: number }>();
+export const RATE_LIMIT_FALLBACK_MAX_KEYS = 10_000;
+const RATE_LIMIT_FALLBACK_SWEEP_LIMIT = 64;
 
 export function resetRateLimits(): void {
   inMemoryFallback.clear();
@@ -16,11 +19,11 @@ export function resetRateLimits(): void {
 export function getClientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded) {
-    const first = forwarded.split(',')[0];
-    if (first) return first.trim();
+    const first = forwarded.split(',', 1)[0]?.trim();
+    if (first && isIP(first)) return first;
   }
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) return realIp.trim();
+  const realIp = req.headers.get('x-real-ip')?.trim();
+  if (realIp && isIP(realIp)) return realIp;
   return '127.0.0.1';
 }
 
@@ -38,6 +41,9 @@ export async function checkRateLimit(
   windowMs: number,
   options: { failClosed?: boolean } = {},
 ): Promise<RateLimitResult> {
+  if (!key || key.length > 512) throw new Error('RATE_LIMIT_INVALID_KEY');
+  if (!Number.isSafeInteger(limit) || limit < 0) throw new Error('RATE_LIMIT_INVALID_LIMIT');
+  if (!Number.isSafeInteger(windowMs) || windowMs < 1) throw new Error('RATE_LIMIT_INVALID_WINDOW');
   const now = Date.now();
 
   try {
@@ -70,18 +76,34 @@ export async function checkRateLimit(
     // In-memory fallback if database table is unavailable or busy
     console.warn('Rate limiter database lookup failed, using memory fallback:', err);
     const cached = inMemoryFallback.get(key);
-    if (!cached || cached.resetAt <= now) {
-      const resetAt = now + windowMs;
-      inMemoryFallback.set(key, { points: 1, resetAt });
-      return { allowed: true, remaining: limit - 1, resetInMs: windowMs };
+    if (cached && cached.resetAt > now) {
+      // Maintain least-recently-used order so the bounded expiry sweep can
+      // reclaim the coldest buckets first during a database outage.
+      inMemoryFallback.delete(key);
+      if (cached.points < limit) cached.points += 1;
+      inMemoryFallback.set(key, cached);
+      return {
+        allowed: cached.points <= limit,
+        remaining: Math.max(0, limit - cached.points),
+        resetInMs: Math.max(0, cached.resetAt - now),
+      };
     }
 
-    if (cached.points >= limit) {
-      return { allowed: false, remaining: 0, resetInMs: Math.max(0, cached.resetAt - now) };
+    if (cached) inMemoryFallback.delete(key);
+    let inspected = 0;
+    for (const [candidateKey, candidate] of inMemoryFallback) {
+      if (candidate.resetAt <= now) inMemoryFallback.delete(candidateKey);
+      inspected += 1;
+      if (inspected >= RATE_LIMIT_FALLBACK_SWEEP_LIMIT) break;
+    }
+    if (inMemoryFallback.size >= RATE_LIMIT_FALLBACK_MAX_KEYS) {
+      throw new Error('RATE_LIMIT_FALLBACK_CAPACITY_EXCEEDED', { cause: err });
     }
 
-    cached.points += 1;
-    return { allowed: true, remaining: limit - cached.points, resetInMs: Math.max(0, cached.resetAt - now) };
+    const resetAt = now + windowMs;
+    const points = 1;
+    inMemoryFallback.set(key, { points, resetAt });
+    return { allowed: points <= limit, remaining: Math.max(0, limit - points), resetInMs: windowMs };
   }
 }
 

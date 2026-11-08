@@ -7,8 +7,7 @@ import { createUserWithSession, authenticateUser } from '../apps/web/src/lib/ser
 import { completePasswordReset, isValidResetToken, PASSWORD_RESET_TTL_MS, requestPasswordReset } from '../apps/web/src/lib/server/password-reset.js';
 import { buildPasswordResetMessage, isPasswordResetEmailConfigured } from '../apps/web/src/lib/server/password-reset-email.js';
 import { POST as authPost } from '../apps/web/src/app/api/auth/route.js';
-import { resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
-import { checkRateLimit } from '../apps/web/src/lib/server/rate-limit.js';
+import { checkRateLimit, RATE_LIMIT_FALLBACK_MAX_KEYS, resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-password-reset-${process.pid}.db`);
 const savedEnvironment = new Map<string, string | undefined>();
@@ -135,6 +134,41 @@ describe('password recovery', () => {
     await getDatabase().execute('DROP TABLE rate_limits');
     await expect(checkRateLimit('auth:password-reset:test', 3, 60_000, { failClosed: true }))
       .rejects.toThrow('RATE_LIMIT_STORE_UNAVAILABLE');
+  });
+
+  it('bounds in-memory fallback cardinality and continues enforcing existing buckets', async () => {
+    await getDatabase().execute('DROP TABLE rate_limits');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      for (let index = 0; index < RATE_LIMIT_FALLBACK_MAX_KEYS; index += 1) {
+        const result = await checkRateLimit(`fallback-key-${index}`, 3, 60_000);
+        expect(result.allowed).toBe(true);
+      }
+
+      await expect(checkRateLimit('fallback-capacity-overflow', 3, 60_000))
+        .rejects.toThrow('RATE_LIMIT_FALLBACK_CAPACITY_EXCEEDED');
+      await expect(checkRateLimit('fallback-key-0', 3, 60_000))
+        .resolves.toMatchObject({ allowed: true, remaining: 1 });
+    } finally {
+      warn.mockRestore();
+    }
+  }, 60_000);
+
+  it('validates quota parameters and denies a zero-capacity fallback quota', async () => {
+    await expect(checkRateLimit('', 1, 1)).rejects.toThrow('RATE_LIMIT_INVALID_KEY');
+    await expect(checkRateLimit('invalid-limit', -1, 1)).rejects.toThrow('RATE_LIMIT_INVALID_LIMIT');
+    await expect(checkRateLimit('invalid-window', 1, 0)).rejects.toThrow('RATE_LIMIT_INVALID_WINDOW');
+
+    await getDatabase().execute('DROP TABLE rate_limits');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      await expect(checkRateLimit('zero-limit', 0, 60_000)).resolves.toMatchObject({
+        allowed: false,
+        remaining: 0,
+      });
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('enforces the persistent quota atomically under concurrent requests', async () => {
