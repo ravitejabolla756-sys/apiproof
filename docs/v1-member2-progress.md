@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-04/ORG-11 member permission boundary
+
+- Change: Added a real invitation-acceptance browser journey that switches into the member workspace and verifies owner-only save, invite, and remove controls are absent while member access remains visible.
+- Evidence: Targeted ESLint and `git diff --check` passed; the complete organization-audit suite passed 10/10 in 53.9 seconds. Artifacts: `/tmp/myowl-v1-organization-audit-org11-boundary-artifacts`.
+- Scope: local ORG-04/ORG-11/UI-12 permission-boundary evidence only; final RBAC contract, PostgreSQL, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-04/UI-12 last-owner refusal states
 
 - Change: Added hermetic member-management journeys for both last-owner removal and role-demotion refusals, verifying the owner remains visible/owner, surfaces the refusal alert, and retains axe-clean workspace administration markup.

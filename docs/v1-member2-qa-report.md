@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — ORG-04/ORG-11 member permission boundary
+
+- PASS: Complete organization-audit suite passed 10/10 in 53.9 seconds; an accepted member switching into the shared workspace sees member access while owner-only save, invitation, and removal controls remain hidden.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local ORG-04/ORG-11/UI-12 evidence only. Final RBAC contract, PostgreSQL, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 — ORG-04/UI-12 last-owner refusal states
 
 - PASS: Complete organization-audit suite passed 9/9 in 43.9 seconds; member removal and role-demotion refusals with `LAST_OWNER_REQUIRED` leave the owner visible/owner, announce the error, and remain axe-clean.
