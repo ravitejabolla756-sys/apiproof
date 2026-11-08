@@ -76,7 +76,7 @@ test.describe('authenticated dashboard data states', () => {
     await page.route('**/api/findings', async (route) => { await findingsLoading; await route.continue(); });
 
     await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('status')).toContainText('Querying database findings...');
+    await expect(page.getByRole('status')).toContainText('Querying database findings...'); const findingsSurface = page.getByRole('heading', { name: 'API Compatibility Findings' }).locator('..').locator('..').locator('..'); await expect(findingsSurface).toHaveAttribute('aria-busy', 'true');
     releaseFindings?.();
     await expect(page.getByRole('heading', { name: 'API Compatibility Findings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Search findings')).toBeVisible();

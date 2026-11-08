@@ -1791,3 +1791,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; repository typecheck passed before the locator-only test correction; the account empty/recovery journey passed 1/1 in 10.3 seconds with the loading `aria-busy` assertion and retry recovery.
 - Scope: this advances local UI-12/UI-13 and AUTH-08 regression evidence only; hosted CI, integrated staging, manual screen-reader review, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 findings-workbench busy semantics
+
+- Change: the findings workbench now exposes `aria-busy="true"` while its initial or refresh request is pending, complementing the existing loading status, filters, retry state, and empty-state semantics.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; repository typecheck passed before the locator-only test correction; the focused findings-loading journey passed 1/1 in 8.9 seconds with the busy-state assertion and existing keyboard/filter recovery assertions.
+- Scope: this advances local UI-12/UI-13 and ORG-11 workbench evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
