@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — BILL-09 invoice contract proposal
+
+- PASS: Added a review-only invoice-history contract proposal with workspace/billing-owner authorization, provider normalization, URL safety, retention/redaction and UI failure-state requirements.
+- NOT_RUN: No invoice schema, API, provider call, payment state or browser behavior was implemented; provider/legal/Member 1 approval remains required.
+
 ## 2026-11-08 — NOT-10 digest contract proposal
 
 - PASS: Added a review-only digest contract proposal with explicit tenant, recipient, deduplication, authorization, retry, redaction and retention boundaries.

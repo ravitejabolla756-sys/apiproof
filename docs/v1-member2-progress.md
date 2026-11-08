@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — BILL-09 invoice history contract proposal
+
+- Change: Added a provider-neutral invoice-history contract proposal covering billing-owner authorization, workspace binding, normalized monetary fields, provider-link safety, retention/redaction and loading/empty/failure UI states.
+- Evidence: Proposal is explicitly non-operational: no invoice schema, API, provider call, payment state or UI was added. `git diff --check` passed.
+- Scope: local BILL-09 contract preparation only; provider selection, legal invoice policy, Member 1 billing contract and sandbox approval remain required before implementation.
+
 ## 2026-11-08 checkpoint — NOT-10 digest notification contract proposal
 
 - Change: Added a review-only digest notification contract proposal covering tenant-scoped event identity, send-time authorization, idempotency, retry/dead-letter states, redaction, retention and the decisions required before implementation.
