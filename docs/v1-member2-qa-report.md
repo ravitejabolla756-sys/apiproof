@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Compatibility-map recovery keyboard coverage
+
+- PASS: Compatibility-map recovery passed 1/1 in dev mode and 1/1 in CI-mode production-build conditions; initial retry, refresh, and refresh-retry controls verify keyboard focus and Enter activation with the existing axe-clean refresh error assertion.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Backend/provider contracts, hosted CI, integrated staging, screen-reader review and production remain open.
+
 ## 2026-11-08 — Organization retry keyboard coverage
 
 - PASS: Complete organization-audit suite passed 6/6 in 39.4 seconds; member, invitation, workspace-settings and audit retry controls verify keyboard focus and Enter activation, with existing axe, tenant-state, clipboard and cursor assertions retained.

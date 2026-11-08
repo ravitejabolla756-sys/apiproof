@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 compatibility-map recovery keyboard coverage
+
+- Change: Replaced compatibility-map request-count timing with an explicit initial/recovery/refresh phase fixture; the initial Retry, Refresh compatibility map, and Retry compatibility map refresh controls now verify focus visibility and Enter activation.
+- Evidence: Targeted ESLint and `git diff --check` passed; the focused journey passed 1/1 in 13.1 seconds in dev mode and 1/1 in 2.8 seconds under the CI-mode production-build server on isolated SQLite. Artifacts: `/tmp/myowl-v1-compatibility-keyboard-artifacts`, `/tmp/myowl-v1-compatibility-keyboard-ci-artifacts`.
+- Scope: local UI-12 recovery/accessibility evidence only; no backend/shared contract, provider, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — ORG-02/ORG-03/ORG-11/UI-12 organization retry keyboard coverage
 
 - Change: Stabilized organization member, invitation, workspace-settings and audit fixtures so unavailable states persist until explicit recovery; extended each recovery control to verify focus visibility and Enter activation. Existing tenant-scoped, cursor, clipboard and axe assertions remain intact.
