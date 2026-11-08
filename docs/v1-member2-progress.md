@@ -1784,3 +1784,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Impeccable detector reported only the incumbent purple heading accent and no change-related finding; targeted ESLint, `git diff --check`, and repository typecheck passed; the notification loading/error/retry/recovery journey passed 1/1 in 9.1 seconds with an `aria-busy` assertion and axe-clean recovered state.
 - Scope: this advances local UI-12/UI-13 and preserves NOT-06 behavior; hosted CI, integrated staging, manual screen-reader review, provider delivery, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 account-settings busy semantics
+
+- Change: the account-settings surface now exposes `aria-busy="true"` during initial account loading and either profile/password mutation, while preserving password/session invalidation behavior and existing recovery states.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; repository typecheck passed before the locator-only test correction; the account empty/recovery journey passed 1/1 in 10.3 seconds with the loading `aria-busy` assertion and retry recovery.
+- Scope: this advances local UI-12/UI-13 and AUTH-08 regression evidence only; hosted CI, integrated staging, manual screen-reader review, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
