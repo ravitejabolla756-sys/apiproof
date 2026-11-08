@@ -539,6 +539,17 @@ Phase 0 read-only checks:
 - Consumption is a conditional database update requiring current owner, unconsumed state and unexpired time. Competing callbacks now produce exactly one success and one replay denial.
 - Seeded serial `phase3-github-onboarding` passes 22/22; targeted ESLint and workspace typecheck pass. Live GitHub App behavior and PostgreSQL concurrency remain unverified.
 
+### 2026-11-08 SEC-04 browser mutation route audit
+
+- Compared all API route files exporting `POST` with files using the shared CSRF helper. Every browser-session mutation route is covered, including billing checkout/portal, GitHub install state creation, GitHub callback POST alias, repositories, scans, migration and provider-rule routes.
+- Remaining POST handlers without the browser-session CSRF helper are GitHub/billing signed webhooks, Slack signature-verified interactions, and bearer-authenticated internal scheduler/status routes.
+- Seeded serial `github-repository-status-route` passes 8/8 and `github-installation-reassociation` passes 12/12; targeted ESLint/typecheck pass. This source audit does not replace browser/proxy staging verification.
+
+### 2026-11-08 security-change full verification
+
+- At code HEAD `4e027d210c4db8edeba7e21f1757ff8d384bcb9b`, the full serial suite passes: 173 files passed / 1 skipped; 1,436 tests passed / 4 skipped; 267.07 seconds. Four Docker-backed tests remain skipped.
+- `pnpm build` passes and generates 64 static pages. Next.js rewrote only `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; reviewed generated changes were restored. No deployment occurred.
+
 ### 2026-11-08 SEC-04 GitHub installation CSRF boundary
 
 - The stateful `/api/github/install` GET and POST handlers now use the shared CSRF check before authentication, rate limiting, or persisted state creation. Cross-site requests to either method return 403 and create neither an installation state nor a quota row.
