@@ -576,6 +576,11 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: after the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load was 10–32ms, median response was 2–4ms, and median encoded HTML was 6.0–17.0KiB over loopback.
 - Scope: this strengthens local WEB-15 performance evidence only; the expected deferred production-database warning was emitted by the local server, and no Lighthouse/Core Web Vitals, hosted deployment, manual assistive-technology or production claim is made. No production resource or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — current repository lint baseline
+
+- Evidence: `pnpm lint` passed with ESLint `--max-warnings 0` on the current branch.
+- Scope: this refreshes local static-quality evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval, legal review and production verification remain open.
 - Next safe action: complete the remaining local UI-12 screen-reader/state audit; then request Member 1 review of the workspace-context and notification event-template-retention contracts before defining the PR-08 transaction-safe resolution outbox. Keep production recommendation NO-GO.
 
 ## 2026-11-07 checkpoint — UI-12 loading/error/empty state accessibility

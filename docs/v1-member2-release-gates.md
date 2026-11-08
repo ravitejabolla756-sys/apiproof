@@ -131,3 +131,5 @@ Latest full-browser evidence: after correcting disabled-button contrast discover
 Latest unit-regression evidence: the seeded local Vitest regression passes 1,341 tests with 4 skipped across 161 passing test files and 1 skipped file in 122.22 seconds. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
 
 Latest public performance evidence: the local production bundle passes the 9-route performance probe over three loopback samples, with median load 10–32ms and encoded HTML 6.0–17.0KiB. Lighthouse/Core Web Vitals, representative deployment, hosted CI, manual assistive-technology review and production remain open.
+
+Latest static-quality evidence: repository lint passes with ESLint `--max-warnings 0`; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval, legal review and production remain open.
