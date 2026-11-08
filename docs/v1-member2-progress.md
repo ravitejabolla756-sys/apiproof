@@ -1819,3 +1819,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the deterministic repository empty/account-recovery journey passed 1/1 in 10.5 seconds with the loading busy-state assertion and existing axe-clean recovery checks.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 inventory busy semantics
+
+- Change: the API inventory route and loading status now expose `aria-busy="true"` during initial and refresh requests, preserving provider-rule filtering, empty-state recovery, and review-only registry behavior.
+- Files: `apps/web/src/app/dashboard/inventory/page.tsx`, `tests/e2e/inventory-filter-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the inventory suite passed 2/2 in 13.0 seconds, covering pending loading busy semantics and the existing mobile filtered-empty/clear-filter journey with axe-clean content.
+- Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

@@ -46,6 +46,8 @@ Latest pull-request queue evidence: the queue exposes `aria-busy` during initial
 
 Latest repository-list evidence: the repository surface and loading table status expose `aria-busy` during initial and refresh requests; the deterministic recovery journey passes 1/1 with axe-clean empty/error states. Hosted CI, GitHub configuration, PostgreSQL/RBAC, manual screen-reader review, staging and production remain open.
 
+Latest inventory evidence: the inventory surface and loading status expose `aria-busy` during initial and refresh requests; the focused inventory suite passes 2/2 with mobile filter recovery and axe-clean content. Hosted CI, PostgreSQL/RBAC, manual screen-reader review, staging and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

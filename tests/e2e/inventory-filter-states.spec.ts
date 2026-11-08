@@ -42,3 +42,21 @@ test('clears an inventory search that has no matches', async ({ page }) => {
   await expect(page.getByText('Example SDK')).toBeVisible();
   await page.unroute('**/api/inventory');
 });
+
+test('announces inventory loading as a busy state', async ({ page }) => {
+  await signIn(page);
+  let releaseInventory: (() => void) | undefined;
+  const inventoryLoading = new Promise<void>((resolve) => { releaseInventory = resolve; });
+  await page.route('**/api/inventory', async (route) => {
+    await inventoryLoading;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ providers: [] }) });
+  });
+
+  await page.goto('/dashboard/inventory', { waitUntil: 'domcontentloaded' });
+  const loading = page.getByRole('status').filter({ hasText: 'Loading API provider registry...' });
+  await expect(loading).toBeVisible();
+  await expect(loading).toHaveAttribute('aria-busy', 'true');
+  releaseInventory?.();
+  await expect(page.getByText('No API inventory records are available yet')).toBeVisible({ timeout: 30_000 });
+  await page.unroute('**/api/inventory');
+});
