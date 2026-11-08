@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 repository-detail scan feedback semantics
+
+- PASS: Keyboard-triggered repository-detail scan failure announces an assertive alert without false success; a second keyboard-triggered attempt announces polite success and leaves the action enabled.
+- PASS: `repository-scan-action-loading.spec.ts` passed 2/2 in 2.5 seconds against the isolated production bundle. Artifacts: `/tmp/myowl-v1-ui12-scan-feedback-Pfa7pj`.
+- NOT_RUN: Provider delivery, hosted CI, integrated staging, manual screen-reader review and production remain open.
+
 ## 2026-11-08 — UI-12 finding-detail keyboard recovery semantics
 
 - PASS: Dynamic finding-detail error and populated states now assert keyboard focus on the retry control and `Back to Findings` navigation link, with 44px-or-larger controls, axe-clean content and no mobile overflow.

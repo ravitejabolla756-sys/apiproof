@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 repository-detail scan feedback semantics
+
+- Evidence: Added a keyboard-driven repository-detail scan regression covering a transient 503 and a subsequent successful retry. The failure is an assertive alert with no false success message; the retry restores a polite success status and the action remains enabled. `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/repository-scan-action-loading.spec.ts --workers=1` passed **2/2 in 2.5 seconds**. Artifacts: `/tmp/myowl-v1-ui12-scan-feedback-Pfa7pj`.
+- Scope: strengthens local UI-12 scan-action keyboard/live-region evidence only; provider delivery, hosted CI, integrated staging, manual screen-reader review and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 finding-detail keyboard recovery semantics
 
 - Evidence: Extended the dynamic finding-detail accessibility regression to verify keyboard focus on the 503 retry control and populated-state `Back to Findings` link, alongside the existing 44px touch-target, axe and mobile overflow assertions. `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1` passed **12/12 in 1.1 minutes**. Artifacts: `/tmp/myowl-v1-ui12-finding-keyboard-MsThTH`.
