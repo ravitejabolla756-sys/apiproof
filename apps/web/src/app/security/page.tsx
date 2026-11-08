@@ -127,7 +127,7 @@ export default function SecurityPage() {
         {/* HEADER */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
-            <Lock className="w-3.5 h-3.5 text-slate-700" />
+            <Lock aria-hidden="true" className="w-3.5 h-3.5 text-slate-700" />
             <span>SECURITY ARCHITECTURE &amp; INVARIANTS</span>
           </div>
 
@@ -151,7 +151,7 @@ export default function SecurityPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[#001033] border border-slate-200">
-                      <Icon className="w-5 h-5 stroke-[2]" />
+                      <Icon aria-hidden="true" className="w-5 h-5 stroke-[2]" />
                     </div>
                     <span className="text-[10px] font-mono font-bold tracking-wider text-slate-600 uppercase bg-slate-100 px-2.5 py-1 rounded-full">
                       {pillar.tag}

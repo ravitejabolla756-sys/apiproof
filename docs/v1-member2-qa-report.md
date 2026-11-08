@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 public decorative-icon semantics
+
+- PASS: Decorative icons on cookies, 404, About and Security routes are hidden from assistive technology while visible text remains authoritative.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector; combined public axe/accessibility run passed 10/12, including the full public-route axe audit; web production build generated 83 static pages.
+- NOT_RUN/FAILURE: Two authenticated responsive checks timed out while loading `/dashboard` and `/dashboard/settings/notifications`; no icon or axe assertion failed. Hosted CI, staging, manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-member2-public-icon-a11y-artifacts-qSWpVH`.
+
 ## 2026-11-08 — UI-12 account-email help association
 
 - PASS: The read-only account email control now exposes its recovery-flow explanation through `aria-describedby`.

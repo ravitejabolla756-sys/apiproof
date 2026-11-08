@@ -212,6 +212,8 @@ Latest auth-entry evidence: login/signup name, email and password controls expos
 
 Latest account-help evidence: the read-only account email field is programmatically associated with its recovery-flow explanation; the authenticated settings journey passes 1/1 and the production build generates 83 static pages. Manual assistive-technology review, hosted CI, staging, account deletion and production remain open; release recommendation stays NO-GO.
 
+Latest public-icon evidence: decorative icons on cookies, 404, About and Security routes are hidden from assistive technology; the public axe audit passes, while two authenticated responsive harness checks timed out loading dashboard routes. Hosted CI, staging, manual assistive-technology review and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

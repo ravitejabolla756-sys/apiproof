@@ -25,7 +25,7 @@ export default function NotFoundPage() {
               href="/"
               className="btn-lime inline-flex min-h-11 items-center gap-2 text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)]"
             >
-              <Home className="w-3.5 h-3.5 text-black" />
+              <Home aria-hidden="true" className="w-3.5 h-3.5 text-black" />
               <span>Return Home</span>
             </Link>
             <Link

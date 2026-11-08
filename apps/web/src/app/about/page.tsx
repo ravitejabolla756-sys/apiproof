@@ -43,7 +43,7 @@ export default function AboutPage() {
                   className="btn-lime min-h-11 text-xs font-semibold px-6 py-3 shadow-[0_0_24px_rgba(208,241,0,0.35)] inline-flex items-center gap-2"
                 >
                   <span>Connect GitHub</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  <ArrowRight aria-hidden="true" className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                 </Link>
               </div>
             </div>
@@ -67,7 +67,7 @@ export default function AboutPage() {
             <div className="rounded-[32px] bg-[#EFF1F5] p-8 border border-black/[0.04] space-y-4 shadow-xs flex flex-col justify-between">
               <div className="space-y-3">
                 <div className="w-10 h-10 rounded-2xl bg-white border border-black/[0.08] flex items-center justify-center text-slate-900 shadow-xs">
-                  <Code2 className="w-5 h-5" />
+                  <Code2 aria-hidden="true" className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl text-[#000E29] font-medium">
                   Deterministic AST Matching
@@ -84,7 +84,7 @@ export default function AboutPage() {
             <div className="rounded-[32px] bg-[#EFF1F5] p-8 border border-black/[0.04] space-y-4 shadow-xs flex flex-col justify-between">
               <div className="space-y-3">
                 <div className="w-10 h-10 rounded-2xl bg-white border border-black/[0.08] flex items-center justify-center text-slate-900 shadow-xs">
-                  <ShieldCheck className="w-5 h-5" />
+                  <ShieldCheck aria-hidden="true" className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl text-[#000E29] font-medium">
                   4-Gate Verification
@@ -101,7 +101,7 @@ export default function AboutPage() {
             <div className="rounded-[32px] bg-[#EFF1F5] p-8 border border-black/[0.04] space-y-4 shadow-xs flex flex-col justify-between">
               <div className="space-y-3">
                 <div className="w-10 h-10 rounded-2xl bg-white border border-black/[0.08] flex items-center justify-center text-slate-900 shadow-xs">
-                  <Lock className="w-5 h-5" />
+                  <Lock aria-hidden="true" className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl text-[#000E29] font-medium">
                   Human Sovereign Review
@@ -136,7 +136,7 @@ export default function AboutPage() {
                   className="btn-lime min-h-11 text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
             >
               <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+              <ArrowRight aria-hidden="true" className="w-4 h-4 text-black stroke-[2.5]" />
             </Link>
           </div>
         </div>
