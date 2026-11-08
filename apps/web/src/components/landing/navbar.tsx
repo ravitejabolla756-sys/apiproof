@@ -137,7 +137,7 @@ export function LandingNavbar() {
                   key={link.href}
                   href={link.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`px-3.5 py-1.5 rounded-full transition-colors ${
+                    className={`inline-flex min-h-11 items-center px-3.5 py-1.5 rounded-full transition-colors ${
                     active
                       ? "text-white bg-white/10 font-medium"
                       : "text-slate-300 hover:text-white hover:bg-white/[0.06]"
@@ -155,7 +155,7 @@ export function LandingNavbar() {
               <Link
                 href="/dashboard"
                 prefetch={true}
-                className="px-3.5 py-1.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-medium rounded-full transition-colors flex items-center gap-1.5 shadow-xs"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/15 shadow-xs"
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 <span>Dashboard</span>
@@ -164,7 +164,7 @@ export function LandingNavbar() {
               <Link
                 href="/login"
                 prefetch={true}
-                className="px-4 py-1.5 bg-[#D0F100] hover:bg-[#bce000] text-black text-xs font-semibold rounded-full transition-all shadow-xs hover:shadow-[0_0_16px_rgba(208,241,0,0.35)] active:scale-95"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#D0F100] px-4 py-1.5 text-xs font-semibold text-black transition-all shadow-xs hover:bg-[#bce000] hover:shadow-[0_0_16px_rgba(208,241,0,0.35)] active:scale-95"
               >
                 Get Started
               </Link>
@@ -177,7 +177,7 @@ export function LandingNavbar() {
               type="button"
               ref={mobileMenuToggleRef}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white flex items-center justify-center transition-colors focus:outline-hidden"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-hidden"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-site-navigation"
@@ -220,7 +220,7 @@ export function LandingNavbar() {
                       ref={link === MOBILE_NAV_LINKS[0] ? mobileMenuFirstLinkRef : undefined}
                       aria-current={active ? 'page' : undefined}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`inline-flex min-h-11 items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         active
                           ? "text-white bg-white/10"
                           : "text-slate-300 hover:text-white hover:bg-white/5"
@@ -238,7 +238,7 @@ export function LandingNavbar() {
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/10 border border-white/15 text-white text-sm font-medium hover:bg-white/15 transition-colors"
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/15"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   <span>Dashboard</span>
@@ -248,7 +248,7 @@ export function LandingNavbar() {
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2.5 px-4 rounded-xl bg-[#D0F100] hover:bg-[#bce000] text-black text-sm font-semibold transition-colors shadow-xs"
+                    className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#D0F100] px-4 py-2.5 text-center text-sm font-semibold text-black transition-colors shadow-xs hover:bg-[#bce000]"
                   >
                     Get Started
                   </Link>

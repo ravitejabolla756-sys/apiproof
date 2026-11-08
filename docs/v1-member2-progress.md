@@ -1533,3 +1533,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/landing/footer.tsx`, `tests/e2e/footer-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; retained mobile footer journey passed 1/1 in 7.2 seconds, measuring all 16 footer links and confirming axe-clean footer content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local WEB-15 and UI-12 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — WEB-15 public navbar touch targets
+
+- Change: public desktop and mobile navbar links, menu toggle, and primary actions now expose explicit 44px touch targets while preserving mobile focus trapping, Escape dismissal, route state, and destinations.
+- Files: `apps/web/src/components/landing/navbar.tsx`, `tests/e2e/navbar-accessibility.spec.ts`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; existing mobile-menu journey passed 1/1 in 4.4 seconds and dedicated navbar journey passed 1/1 in 4.8 seconds at 390px with six measured menu links and axe-clean menu content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local WEB-15/UI-12/UI-13 evidence only; hosted CI, manual assistive-technology review, staging, legal approval and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
