@@ -131,7 +131,7 @@ export default function RepositoriesTablePage() {
             variant="outline"
             size="sm"
             icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
-            className="font-medium"
+            className="min-h-11 font-medium"
           >
             Refresh
           </Button>
@@ -139,7 +139,7 @@ export default function RepositoriesTablePage() {
             onClick={() => setIsConnectOpen(true)}
             size="sm"
             icon={<Plus aria-hidden="true" className="w-4 h-4" />}
-            className="font-medium"
+            className="min-h-11 font-medium"
           >
             Connect repository
           </Button>
@@ -158,7 +158,7 @@ export default function RepositoriesTablePage() {
             placeholder="Search repositories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
+            className="min-h-11 w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E8E8E5] text-[#111111] text-xs placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#111111]/10 shadow-2xs"
           />
         </div>
 
@@ -170,7 +170,7 @@ export default function RepositoriesTablePage() {
               type="button"
               aria-pressed={filter === f}
               onClick={() => setFilter(f)}
-              className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
+              className={`min-h-11 whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                 filter === f
                   ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
                   : "bg-transparent text-[#686868] border-transparent hover:text-[#111111]"
@@ -217,7 +217,7 @@ export default function RepositoriesTablePage() {
                     {hasActiveFilters ? (
                       <div className="flex flex-col items-center gap-3">
                         <span>No repositories found matching your filter.</span>
-                        <Button
+                          <Button
                           type="button"
                           variant="outline"
                           size="sm"
@@ -225,6 +225,7 @@ export default function RepositoriesTablePage() {
                             setFilter("all");
                             setSearchQuery("");
                           }}
+                            className="min-h-11"
                         >
                           Clear filters
                         </Button>
@@ -250,7 +251,7 @@ export default function RepositoriesTablePage() {
                               onClick={() => setExpandedRepo(isExpanded ? null : repo.id)}
                               aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${repo.name}`}
                               aria-expanded={isExpanded}
-                              className="p-1 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
+                              className="min-h-11 min-w-11 rounded-lg p-1 text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
                             >
                               {isExpanded ? (
                                 <ChevronDown aria-hidden="true" className="w-4 h-4 text-purple-700" />
@@ -262,7 +263,7 @@ export default function RepositoriesTablePage() {
 
                           <div className="flex-1 font-medium text-[#111111] flex items-center gap-2">
                             <GitBranch aria-hidden="true" className="w-4 h-4 text-zinc-400" />
-                            <Link href={`/dashboard/repositories/${repo.id}`} className="font-mono text-xs hover:underline">
+                            <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 items-center font-mono text-xs hover:underline">
                               {repo.name}
                             </Link>
                             <span className="text-[11px] text-[#686868] font-mono hidden md:inline">({repo.full_name})</span>
@@ -301,7 +302,7 @@ export default function RepositoriesTablePage() {
                               variant="outline"
                               disabled={isScanning}
                               onClick={() => handleTriggerScan(repo.id)}
-                              className="text-xs gap-1 font-medium"
+                              className="min-h-11 text-xs gap-1 font-medium"
                             >
                               {isScanning ? (
                                 <Loader2 aria-hidden="true" className="w-3 h-3 animate-spin text-purple-700" />
@@ -313,7 +314,7 @@ export default function RepositoriesTablePage() {
 
                             <Link
                               href={`/dashboard/repositories/${repo.id}`}
-                              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1"
+                              className="inline-flex min-h-11 items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1"
                             >
                               Inspect <ExternalLink aria-hidden="true" className="w-3 h-3" />
                             </Link>

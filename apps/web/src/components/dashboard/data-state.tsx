@@ -18,7 +18,7 @@ export function DashboardDataError({ message, onRetry }: DashboardDataErrorProps
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" aria-hidden="true" />
         <p className="text-xs leading-relaxed">{message}</p>
       </div>
-      <Button type="button" variant="outline" size="sm" onClick={onRetry} className="shrink-0 border-rose-300 text-rose-900 hover:bg-rose-100">
+      <Button type="button" variant="outline" size="sm" onClick={onRetry} className="min-h-11 shrink-0 border-rose-300 text-rose-900 hover:bg-rose-100">
         Try again
       </Button>
     </div>

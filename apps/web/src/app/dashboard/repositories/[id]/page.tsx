@@ -146,7 +146,7 @@ export default function RepositoryDetailPage({
       <div>
         <Link
           href="/dashboard/repositories"
-          className="inline-flex items-center gap-1.5 text-xs text-[#686868] hover:text-[#111111] font-medium transition-colors"
+          className="inline-flex min-h-11 items-center gap-1.5 text-xs text-[#686868] hover:text-[#111111] font-medium transition-colors"
         >
           <ArrowLeft aria-hidden="true" className="w-3.5 h-3.5" />
           Back to Repositories
@@ -183,7 +183,7 @@ export default function RepositoryDetailPage({
               variant="outline"
               onClick={loadData}
               icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
-              className="text-xs font-medium"
+              className="min-h-11 text-xs font-medium"
             >
               Refresh
             </Button>
@@ -192,7 +192,7 @@ export default function RepositoryDetailPage({
               variant="primary"
               disabled={scanning}
               onClick={handleTriggerScan}
-              className="gap-1.5 text-xs font-medium"
+              className="min-h-11 gap-1.5 text-xs font-medium"
             >
               {scanning ? (
                 <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />
@@ -258,7 +258,7 @@ export default function RepositoryDetailPage({
               variant={scans[0]?.status === "failed" || scans.length === 0 ? "primary" : "outline"}
               disabled={scanning}
               onClick={handleTriggerScan}
-              className="gap-1.5 text-xs font-medium"
+              className="min-h-11 gap-1.5 text-xs font-medium"
             >
               {scanning ? (
                 <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />
@@ -378,7 +378,7 @@ export default function RepositoryDetailPage({
                   <span className="text-xs text-[#686868]">
                     Rule: <code className="font-mono text-[11px] text-[#111111]">{finding.change_id}</code>
                   </span>
-                  <Link href={`/dashboard/findings/${finding.id}`} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                  <Link href={`/dashboard/findings/${finding.id}`} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                     <span>Inspect Evidence</span>
                     <ExternalLink aria-hidden="true" className="w-3 h-3" />
                   </Link>

@@ -22,6 +22,7 @@ test.describe('repository recovery journeys', () => {
     await page.goto('/dashboard/repositories');
     await expect(page.getByRole('alert').filter({ hasText: 'Repository list temporarily unavailable.' })).toBeVisible();
     const listRetry = page.getByRole('button', { name: 'Try again' });
+    expect((await listRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await listRetry.focus();
     await expect(listRetry).toBeFocused();
     await page.keyboard.press('Enter');
@@ -51,6 +52,7 @@ test.describe('repository recovery journeys', () => {
     await expect(page.getByRole('alert').filter({ hasText: 'Repository details temporarily unavailable.' })).toBeVisible();
     detailRetryStarted = true;
     const detailRetry = page.getByRole('button', { name: 'Try again' });
+    expect((await detailRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await detailRetry.focus();
     await expect(detailRetry).toBeFocused();
     await page.keyboard.press('Enter');
@@ -62,6 +64,10 @@ test.describe('repository recovery journeys', () => {
     await expect(scanStatus).toContainText('Not Scanned');
     await expect(page.getByRole('status').filter({ hasText: 'No scan completed yet' })).toBeVisible();
     await expect(page.getByRole('status').filter({ hasText: 'No scans recorded yet.' })).toBeVisible();
+    for (const label of ['Back to Repositories', 'Refresh', 'Run AST Scan']) {
+      const control = page.getByRole('link', { name: label, exact: true }).or(page.getByRole('button', { name: label, exact: true })).first();
+      expect((await control.boundingBox())?.height, label).toBeGreaterThanOrEqual(44);
+    }
     expect(listAttempts).toBeGreaterThanOrEqual(2);
     expect(listAttempts).toBeLessThanOrEqual(3);
     expect(detailAttempts).toBeGreaterThanOrEqual(2);
