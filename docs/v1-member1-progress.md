@@ -625,6 +625,7 @@ Phase 0 read-only checks:
 ### 2026-11-08 SEC-04 strict Origin serialization
 
 - CSRF validation now rejects parsed Origin values containing credentials, path, query, fragment, or noncanonical serialization instead of normalizing them to an accepted same-origin value. `auth-hardening` passes 9/9 and `phase1-production-integrity` passes 17/17; targeted ESLint and full workspace typecheck pass. Trusted proxy provenance and PostgreSQL rate-limiter verification remain staging gates.
+- Current code-HEAD seeded serial full-suite result: 175 files passed / 1 skipped; 1,452 tests passed / 4 skipped in 264.53 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and only a process-local seed was used; this does not prove PostgreSQL or production behavior.
 
 ### 2026-11-08 SEC-11 durable error current-HEAD suite
 
