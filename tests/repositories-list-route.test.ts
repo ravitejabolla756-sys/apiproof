@@ -94,7 +94,7 @@ describe('GET /api/repositories', () => {
     expect(JSON.stringify(body)).not.toContain('20002');
     expect(body).not.toHaveProperty('githubAppConnection');
 
-    const { GET: getRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+    const { GET: getRepository, DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
     const foreignRepositoryResponse = await getRepository(
       new Request('http://localhost/api/repositories/repo_b', {
         headers: { cookie: `apiproof_session=${ownerA.session.id}` },
@@ -102,6 +102,20 @@ describe('GET /api/repositories', () => {
       { params: Promise.resolve({ id: 'repo_b' }) },
     );
     expect(foreignRepositoryResponse.status).toBe(404);
+
+    const foreignRepositoryDelete = await deleteRepository(
+      new Request('http://localhost/api/repositories/repo_b', {
+        method: 'DELETE',
+        headers: { cookie: `apiproof_session=${ownerA.session.id}` },
+      }),
+      { params: Promise.resolve({ id: 'repo_b' }) },
+    );
+    expect(foreignRepositoryDelete.status).toBe(404);
+    const foreignRepository = await db.queryOne<{ id: string }>(
+      'SELECT id FROM repositories WHERE id = ? AND workspace_id = ?',
+      ['repo_b', workspaceB.id],
+    );
+    expect(foreignRepository?.id).toBe('repo_b');
   });
 
   it('rejects the legacy owner/name connection payload without creating a synthetic repository', async () => {

@@ -381,3 +381,8 @@ Phase 0 read-only checks:
 
 - Extended `tests/workspace-read-route-role.test.ts` so an authenticated user outside the fixture workspace receives no records from `/api/activity`, `/api/findings`, `/api/migrations`, or `/api/pull-requests`. The test uses an isolated SQLite fixture and does not change role grants.
 - The targeted route suite passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. This is local application-predicate coverage only; PostgreSQL/RLS isolation and Member 2 capability-contract approval remain open. ORG-05 stays PARTIAL.
+
+### 2026-11-08 ORG-05 cross-tenant route regressions
+
+- Added authenticated-outsider coverage for the activity, findings, migrations, and pull-request read routes; no fixture-tenant records are returned. Extended repository-route coverage so a foreign-workspace `GET` and `DELETE` both return 404 and the foreign repository row remains persisted.
+- `workspace-read-route-role` passes 1/1 and `repositories-list-route` passes 6/6; targeted ESLint and full workspace `pnpm typecheck` pass. These tests provide local SQLite application-boundary evidence only. ORG-05 remains PARTIAL pending Member 2's approved capability contract and effective PostgreSQL/RLS verification.
