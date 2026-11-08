@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 public route skip-link contract
+
+- Change: Added the skip-link/main-focus contract to FAQ, refunds, invitation, verification, login, password-request and password-reset surfaces, then added route-by-route keyboard coverage across every audited public route.
+- Evidence: Targeted ESLint and `git diff --check` passed; public-route axe and skip-link journeys passed 2/2 in 41.1 seconds. Artifacts: `/tmp/myowl-v1-public-route-accessibility-artifacts`.
+- Scope: local UI-12/WEB-15 accessibility evidence only; hosted CI, full manual screen-reader review, backend/provider contracts, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 authenticated route skip-link coverage
 
 - Change: Added route-by-route keyboard evidence for the skip link across every audited authenticated product route; each route now verifies skip-link focus, Enter activation, and focus transfer to `#main-content`.

@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Public route skip-link contract
+
+- PASS: Added `tabIndex={-1}` and skip links to the previously uncovered FAQ, refunds and standalone auth/invitation routes; public-route axe and skip-link journeys passed 2/2 in 41.1 seconds across every audited public route.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12/WEB-15 evidence only. Full manual screen-reader review, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Authenticated route skip-link coverage
 
 - PASS: Authenticated route skip-link journey passed 1/1 in 1.1 minutes across every audited authenticated route; each route transferred keyboard focus to `#main-content` after Enter activation.
