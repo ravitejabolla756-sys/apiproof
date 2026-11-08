@@ -131,7 +131,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="space-y-3">
           <p role={authState === 'checking' ? 'status' : 'alert'} aria-live={authState === 'checking' ? 'polite' : 'assertive'} aria-atomic="true">{authState === 'checking' ? 'Checking your session…' : 'We could not validate your session.'}</p>
           {authState === 'unavailable' && (
-            <button type="button" className="underline text-[#111111]" onClick={() => window.location.reload()}>
+            <button type="button" className="inline-flex min-h-11 items-center underline text-[#111111]" onClick={() => window.location.reload()}>
               Try again
             </button>
           )}

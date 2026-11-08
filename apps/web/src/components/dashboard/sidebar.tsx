@@ -203,7 +203,7 @@ export function Sidebar() {
                 href={item.href}
                 aria-label={collapsed ? item.name : undefined}
                 aria-current={isActive ? 'page' : undefined}
-                className={`flex shrink-0 items-center justify-between px-2.5 py-2 md:px-3 rounded-xl transition-all ${
+                className={`flex min-h-11 shrink-0 items-center justify-between px-2.5 py-2 md:px-3 rounded-xl transition-all ${
                   isActive
                     ? "bg-[#F4F0FA] text-[#111111] font-semibold border border-[#E4D9F5]"
                     : "text-[#686868] hover:text-[#111111] hover:bg-[#F6F6F4]"
@@ -235,7 +235,7 @@ export function Sidebar() {
                 href={item.href}
                 aria-label={collapsed ? item.name : undefined}
                 aria-current={isActive ? 'page' : undefined}
-                className={`flex shrink-0 items-center gap-3 px-2.5 py-2 md:px-3 rounded-xl transition-all ${
+                className={`flex min-h-11 shrink-0 items-center gap-3 px-2.5 py-2 md:px-3 rounded-xl transition-all ${
                   isActive
                     ? "bg-[#F4F0FA] text-[#111111] font-semibold border border-[#E4D9F5]"
                     : "text-[#686868] hover:text-[#111111] hover:bg-[#F6F6F4]"

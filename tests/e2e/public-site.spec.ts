@@ -245,7 +245,7 @@ test.describe('authenticated product surfaces', () => {
     await page.goto('/dashboard');
 
     const sidebar = page.getByRole('complementary', { name: 'Workspace navigation' });
-    await sidebar.getByRole('button', { name: 'Collapse workspace navigation' }).click();
+    expect((await sidebar.getByRole('link', { name: 'Overview' }).boundingBox())?.height).toBeGreaterThanOrEqual(44); await sidebar.getByRole('button', { name: 'Collapse workspace navigation' }).click();
 
     const overview = sidebar.getByRole('link', { name: 'Overview' });
     const repositories = sidebar.getByRole('link', { name: 'Repositories' });
@@ -401,14 +401,14 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.locator('#main-content')).toBeFocused();
 
     const searchTrigger = page.getByRole('button', { name: /Search repos, findings, SDKs/ });
-    await searchTrigger.focus();
+    expect((await searchTrigger.boundingBox())?.height).toBeGreaterThanOrEqual(44); await searchTrigger.focus();
     await page.keyboard.press('Enter');
     const commandPalette = page.getByRole('dialog', { name: 'Search MY OWL' });
     await expect(commandPalette).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Search repositories and workspace navigation' })).toBeFocused();
     const commandPaletteResults = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
     expect(commandPaletteResults.violations, 'command palette').toEqual([]);
-    const commandButtons = commandPalette.getByRole('button');
+    const commandButtons = commandPalette.getByRole('button'); for (const button of await commandButtons.all()) expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await page.keyboard.press('Shift+Tab');
     await expect(commandButtons.last()).toBeFocused();
     await page.keyboard.press('Tab');

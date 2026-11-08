@@ -61,7 +61,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
           type="button"
           aria-label="Search repos, findings, SDKs... ⌘K"
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-3 bg-[#F6F6F4] hover:bg-zinc-200/60 border border-[#E8E8E5] rounded-xl px-3.5 py-1.5 text-xs text-[#686868] transition-colors shadow-2xs"
+          className="flex min-h-11 items-center gap-3 bg-[#F6F6F4] hover:bg-zinc-200/60 border border-[#E8E8E5] rounded-xl px-3.5 py-1.5 text-xs text-[#686868] transition-colors shadow-2xs"
         >
           <Search aria-hidden="true" className="h-3.5 w-3.5 text-zinc-500" />
           <span className="hidden sm:inline">Search repos, findings, SDKs...</span>
@@ -79,7 +79,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
             id="github-connected-btn"
             onClick={onOpenConnectModal}
             title="GitHub connected — click to manage repositories"
-            className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl px-3.5 py-2 text-xs font-medium transition-colors shadow-2xs"
+            className="inline-flex min-h-11 items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl px-3.5 py-2 text-xs font-medium transition-colors shadow-2xs"
           >
             <Github aria-hidden="true" className="h-3.5 w-3.5 text-emerald-700" />
             <span className="hidden sm:inline">GitHub Connected</span>

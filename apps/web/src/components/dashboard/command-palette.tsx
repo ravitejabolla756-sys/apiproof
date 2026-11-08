@@ -171,7 +171,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     key={item.href}
                     type="button"
                     onClick={() => navigate(item.href)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
+                    className="min-h-11 w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
                       <Icon aria-hidden="true" className="h-4 w-4 text-purple-700" />
@@ -196,7 +196,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     key={repo.id}
                     type="button"
                     onClick={() => navigate(`/dashboard/repositories/${repo.id}`)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
+                    className="min-h-11 w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
                       <FolderGit2 aria-hidden="true" className="h-4 w-4 text-purple-700" />
@@ -223,7 +223,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     key={inv.id}
                     type="button"
                     onClick={() => navigate('/dashboard/inventory')}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
+                    className="min-h-11 w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
                     <div className="flex items-center gap-2.5">
                       <Boxes aria-hidden="true" className="h-4 w-4 text-purple-700" />
