@@ -686,3 +686,8 @@ Phase 0 read-only checks:
 ### 2026-11-08 SEC-11 current-HEAD full suite after legacy wrapper filtering
 
 - Seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes on HEAD `abb403887b50b9776d40a1fecdf792261392e1f5`: 175 files passed / 1 skipped (176 total), 1,458 tests passed / 4 skipped (1,462 total), 342.56 seconds. Remote database URL variables were removed and the only seed was process-scoped. Four skipped tests require Docker; this does not establish PostgreSQL, staging, or production behavior.
+
+### 2026-11-08 SEC-13 protected status authorization regressions
+
+- Added route integration cases for missing authorization, wrong authentication scheme, wrong bearer secret, and a missing server-side `CRON_SECRET`; each returns the same generic 401 response without exposing queue or heartbeat data. The test restores the process environment in `finally` and changes no operational auth or alert policy.
+- `provider-intelligence-cron-routes` passes 7/7 with a process-only local seed and remote database URLs removed; targeted ESLint, full workspace typecheck, and `git diff --check` pass. No external status endpoint was contacted. Alert destinations/thresholds, scan-worker cadence, PostgreSQL behavior and staged recovery remain open SEC-13 gates.
