@@ -1783,6 +1783,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `pnpm lint` passed; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed with 1,341 tests passed, 4 skipped tests, 162 test files passed and 1 skipped file in 121.86 seconds.
 - Scope: this is hermetic local regression evidence; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 compatibility-map refresh busy semantics
+
+- Change: compatibility-map refresh and retry controls now expose `aria-busy="true"` while their request is pending; existing topology, retry and review-only behavior is unchanged.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/compatibility-map-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; web production build passed with 83 generated pages; the complete compatibility-map recovery spec passed 2/2 in 15.9 seconds.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 repository-refresh button busy semantics
 
 - Change: the repository dialog’s Refresh repositories control now exposes `aria-busy="true"` while a post-load refresh is pending; the initial-load panel remains intact while later refreshes preserve the form and control state.

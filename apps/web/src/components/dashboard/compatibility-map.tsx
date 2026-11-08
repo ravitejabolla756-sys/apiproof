@@ -188,14 +188,14 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
                 : <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
             </button>
           ))}
-          <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Refresh compatibility map"
+          <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} aria-label="Refresh compatibility map"
             className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-[#E8E8E5] bg-white p-2 text-[#686868] disabled:opacity-50">
             <RefreshCw aria-hidden="true" className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Retry compatibility map refresh" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
+      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} aria-label="Retry compatibility map refresh" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
 
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs md:grid-cols-3">
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">

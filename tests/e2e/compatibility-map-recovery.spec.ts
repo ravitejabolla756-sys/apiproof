@@ -23,11 +23,16 @@ test('recovers compatibility-map initial and refresh failures', async ({ page })
   await signIn(page);
   let attempts = 0;
   let phase: 'initial' | 'initial-recovery' | 'refresh-failure' | 'refresh-recovery' = 'initial';
+  let releaseRefresh: (() => void) | undefined;
+  const refreshResponse = new Promise<void>((resolve) => { releaseRefresh = resolve; });
   await page.route('**/api/compatibility-map', async (route) => {
     attempts += 1;
     if (phase === 'initial' || phase === 'refresh-failure') {
       if (phase === 'initial') phase = 'initial';
-      else phase = 'refresh-recovery';
+      else {
+        await refreshResponse;
+        phase = 'refresh-recovery';
+      }
       await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Compatibility data could not be loaded (503).' }) });
     } else {
       if (phase === 'initial-recovery') phase = 'refresh-failure';
@@ -46,6 +51,8 @@ test('recovers compatibility-map initial and refresh failures', async ({ page })
   expect((await refresh.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await refresh.boundingBox())?.width).toBeGreaterThanOrEqual(44);
   await refresh.focus(); await expect(refresh).toBeFocused(); await page.keyboard.press('Enter');
+  await expect(refresh).toHaveAttribute('aria-busy', 'true');
+  releaseRefresh?.();
   const refreshAlert = page.getByRole('alert').filter({ hasText: 'Refresh failed:' });
   await expect(refreshAlert).toBeVisible({ timeout: 30_000 });
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'compatibility refresh error state').toEqual([]);
