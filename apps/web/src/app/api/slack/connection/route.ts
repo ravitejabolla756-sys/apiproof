@@ -39,7 +39,14 @@ export async function DELETE(req: Request) {
     }
     throw error;
   }
-  await requireWorkspaceMember(user.id, workspace.id);
+  try {
+    await requireWorkspaceMember(user.id, workspace.id);
+  } catch (error: unknown) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers: privateHeaders });
+    }
+    throw error;
+  }
   const now = new Date().toISOString();
   const db = getDatabase();
   const result = await db.execute(`UPDATE slack_connections SET status = 'revoked', token_ciphertext = '', token_iv = '', token_auth_tag = '', updated_at = ?

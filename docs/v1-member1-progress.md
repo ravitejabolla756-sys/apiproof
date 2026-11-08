@@ -408,3 +408,8 @@ Phase 0 read-only checks:
 - Route audit found that `requireRepositoryAccess` correctly rejected an unknown persisted workspace role with `WORKSPACE_ROLE_INVALID`, but `/api/migrations/plan` and `/api/migrations/propose` did not recognize that authorization error and returned HTTP 500. Both handlers now use the centralized `isWorkspaceAuthorizationError` predicate and return a generic 404 `NOT_FOUND` response without exposing the role error.
 - Added route regressions for a persisted `future_role`: migration planning and proposal both return the generic denial, create no migration or pull-request record, and preserve the no-side-effect boundary. Existing cross-workspace tests still verify the nonmember path.
 - `phase2-multi-tenant-workspaces` passes 17/17; targeted ESLint and full workspace `pnpm typecheck` pass. SQLite-local evidence only; ORG-05 remains PARTIAL pending Member 2 capability-contract approval and effective PostgreSQL/RLS verification.
+
+### 2026-11-08 ORG-05 Slack disconnect revalidation race
+
+- `DELETE /api/slack/connection` rechecks workspace membership after resolving the user's default workspace so concurrent revocation cannot disconnect an organization connection. A denial from that second check previously escaped as an unhandled error; the route now maps recognized authorization errors to the existing generic 403 response before mutating connection state.
+- Added a regression that simulates membership denial after workspace resolution and verifies the connection remains active and no `slack_disconnected` activity event is written. `slack-phase1` passes 22/22; targeted ESLint and full workspace `pnpm typecheck` pass. Local SQLite evidence only; PostgreSQL concurrency and Member 2 capability approval remain outstanding.

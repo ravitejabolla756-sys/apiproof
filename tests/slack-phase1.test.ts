@@ -13,6 +13,7 @@ vi.mock('../apps/web/src/lib/server/verification-worker-registry.js', async (imp
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import * as workspaceService from '../apps/web/src/lib/server/workspace-service.js';
 import { createSlackAuthorizationUrl, consumeSlackOAuthState, saveSlackConnection } from '../apps/web/src/lib/server/slack-oauth.js';
 import { decryptSlackToken, encryptSlackToken, verifySlackActionValue, verifySlackRequestSignature } from '../apps/web/src/lib/server/slack-security.js';
 import { enqueueNewFindingNotifications, processOneSlackNotificationDelivery, queueSlackProposalOutcome } from '../apps/web/src/lib/server/slack-notifications.js';
@@ -195,6 +196,35 @@ describe('MY OWL Slack Phase 1', () => {
       [workspace.id],
     );
     expect(connection?.status).toBe('active');
+  });
+
+  it('maps membership revocation between workspace resolution and disconnect to a generic denial', async () => {
+    const account = await createUserWithSession('slack-disconnect-race@example.test', 'Pass1234!', 'Disconnect Race');
+    const workspace = await getDefaultWorkspaceForUser(account.user.id);
+    await connectSlack(workspace.id, account.user.id);
+    vi.spyOn(workspaceService, 'requireWorkspaceMember').mockRejectedValueOnce(new Error('Workspace not found or access denied.'));
+
+    const response = await deleteSlackConnection(new Request('https://myowl.example.test/api/slack/connection', {
+      method: 'DELETE',
+      headers: {
+        cookie: `apiproof_session=${account.session.id}`,
+        host: 'myowl.example.test',
+        origin: 'https://myowl.example.test',
+      },
+    }));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.' });
+    const connection = await getDatabase().queryOne<{ status: string }>(
+      'SELECT status FROM slack_connections WHERE workspace_id = ?',
+      [workspace.id],
+    );
+    expect(connection?.status).toBe('active');
+    expect(await getDatabase().queryOne(
+      "SELECT id FROM activity_events WHERE user_id = ? AND type = 'slack_disconnected'",
+      [account.user.id],
+    )).toBeUndefined();
   });
 
   it('rejects malformed/expired OAuth state and requires encryption configuration', async () => {
