@@ -44,6 +44,29 @@ test.describe('workspace audit trail', () => {
     await page.unroute('**/api/workspace/members');
   });
 
+  test('keeps the owner role when demotion is refused by last-owner protection', async ({ page }) => {
+    await page.route('**/api/workspace/members', async (route) => {
+      if (route.request().method() === 'PATCH') {
+        await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'A workspace must retain at least one owner.', code: 'LAST_OWNER_REQUIRED' }) });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ members: [{ id: 'owner-member', userId: 'seed-owner', name: 'APIProof Developer', email: 'developer@apiproof.dev', role: 'owner', createdAt: '2026-11-08T00:00:00.000Z' }] }),
+      });
+    });
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    const role = page.getByLabel('Role for developer@apiproof.dev');
+    await expect(role).toHaveValue('owner', { timeout: 30_000 });
+    await role.selectOption('member');
+    await expect(page.getByRole('alert').filter({ hasText: 'A workspace must retain at least one owner.' })).toBeVisible({ timeout: 30_000 });
+    await expect(role).toHaveValue('owner');
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'last-owner role refusal').toEqual([]);
+    await page.unroute('**/api/workspace/members');
+  });
+
   test('announces an empty workspace list instead of a loading state', async ({ page }) => {
     await page.route('**/api/workspaces', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: null, workspaces: [] }) });
