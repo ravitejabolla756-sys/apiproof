@@ -13,12 +13,12 @@ export default function ActivityPage() {
 
   async function loadActivity() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/activity");
       const json = await res.json() as { activities?: ActivityItem[]; error?: string };
       if (!res.ok) throw new Error(json.error || "Unable to load activity.");
       setActivities(json.activities || []);
+      setError(null);
     } catch (err) {
       console.error("Failed to load activity:", err);
       setError(err instanceof Error ? err.message : "Unable to load activity.");
@@ -58,7 +58,7 @@ export default function ActivityPage() {
         </Button>
       </div>
 
-      {error && <DashboardDataError message={error} onRetry={() => void loadActivity()} />}
+      {error && <DashboardDataError message={error} onRetry={() => void loadActivity()} busy={loading} />}
 
       {error ? null : loading ? (
         <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]">

@@ -141,3 +141,7 @@ The final repository-connect submit control remains visible while its request is
 ## Latest workspace recovery evidence — 2026-11-08
 
 Workspace member, invitation and audit retry controls remain visible and expose disabled plus `aria-busy` semantics while recovery requests are pending; the organization-audit suite passes 11/11 and the production build passes with 83 generated pages. This is local evidence only. PostgreSQL/RBAC, hosted CI, integrated staging, Member 1 revocation integration and manual assistive-technology review remain open; release recommendation stays NO-GO.
+
+## Latest activity recovery evidence — 2026-11-08
+
+The activity degraded-state retry remains visible and exposes disabled plus `aria-busy` semantics while its request is pending; the new focused journey passes 1/1, existing secondary-route coverage passes 3/3, and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC and production remain open. Release recommendation stays NO-GO.
