@@ -7,6 +7,7 @@ import { GET as getGitHubRepositories } from '../apps/web/src/app/api/github/rep
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
+import { resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
 
 const DB_PATH = path.resolve('.tmp/github-repository-status-route.db');
 
@@ -14,6 +15,7 @@ describe('GET /api/github/repositories/status', () => {
   beforeEach(() => {
     process.env.APIPROOF_SECRET = 'repository-status-test-secret-at-least-32-chars';
     process.env.APIPROOF_DB_PATH = DB_PATH;
+    resetRateLimits();
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
     initDatabase(DB_PATH);
   });
@@ -101,5 +103,25 @@ describe('GET /api/github/repositories/status', () => {
     expect(repositoriesResponse.status).toBe(403);
     expect(repositoriesResponse.headers.get('cache-control')).toContain('no-store');
     expect(await repositoriesResponse.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+  });
+
+  it('bounds GitHub installation-state creation per user without contacting GitHub', async () => {
+    const { user, session } = await createUserWithSession('github-install-limit@example.com', 'Strong-password-1!', 'Install Limit');
+    const request = () => getGitHubInstallUrl(new Request('http://localhost/api/github/install', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }));
+
+    const firstTen = await Promise.all(Array.from({ length: 10 }, request));
+    expect(firstTen.every((response) => response.status === 200)).toBe(true);
+    expect(firstTen[0]?.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+    const denied = await request();
+    expect(denied.status).toBe(429);
+    expect(denied.headers.get('retry-after')).toBeTruthy();
+
+    const states = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM github_installation_states WHERE user_id = ?',
+      [user.id],
+    );
+    expect(Number(states?.count)).toBe(10);
   });
 });
