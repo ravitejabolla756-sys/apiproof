@@ -582,6 +582,10 @@ Phase 0 read-only checks:
 - `DELETE /api/repositories/{id}` now invokes the shared CSRF check before identity lookup or membership checks. The regression sends a cross-origin request and verifies a stable 403 `CSRF_REJECTED` response with the repository row preserved.
 - `repositories-list-route` passes 8/8; targeted ESLint and full `pnpm typecheck` pass. The existing owner/admin/member capability contract is unchanged.
 
+### 2026-11-08 ORG-05 / SEC-04 current-HEAD full verification
+
+- After the repository DELETE CSRF guard, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,442 tests passed / 4 skipped; 272.34 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This remains local evidence only.
+
 ### 2026-11-08 current-HEAD serial suite
 
 - After AUTH-05 token-race serialization and AUTH-10 malformed OAuth-state expiry rejection, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 173 files passed / 1 skipped; 1,440 tests passed / 4 skipped; 239.64 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This is local SQLite/test evidence, not production or PostgreSQL proof.
