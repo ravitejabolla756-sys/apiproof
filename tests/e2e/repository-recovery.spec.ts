@@ -2,6 +2,23 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './helpers.js';
 
 test.describe('repository recovery journeys', () => {
+  test('announces repository detail loading as a busy state', async ({ page }) => {
+    await signIn(page);
+    let releaseDetails: (() => void) | undefined;
+    const detailsLoading = new Promise<void>((resolve) => { releaseDetails = resolve; });
+    await page.route(/\/api\/repositories\/repo-loading(?:\?.*)?$/, async (route) => {
+      await detailsLoading;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repository: { id: 'repo-loading', owner: 'acme', name: 'owl', full_name: 'acme/owl', github_repository_id: 'gh-loading', default_branch: 'main', status: 'healthy', last_scan_at: null, created_at: '2026-11-07T00:00:00.000Z' }, scans: [], findings: [] }) });
+    });
+    await page.goto('/dashboard/repositories/repo-loading', { waitUntil: 'domcontentloaded' });
+    const loading = page.getByRole('status').filter({ hasText: 'Loading repository details...' });
+    await expect(loading).toBeVisible();
+    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    releaseDetails?.();
+    await expect(page.getByRole('heading', { name: 'owl', exact: true })).toBeVisible({ timeout: 30_000 });
+    await page.unroute(/\/api\/repositories\/repo-loading(?:\?.*)?$/);
+  });
+
   test('recovers repository list and detail routes after transient failures', async ({ page }) => {
     await signIn(page);
 

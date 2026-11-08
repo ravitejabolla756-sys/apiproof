@@ -52,6 +52,8 @@ Latest compatibility-intelligence evidence: the route and loading status expose 
 
 Latest provider-coverage evidence: the route and loading status expose `aria-busy` during initial and refresh requests; the secondary-route suite passes 2/2 with refresh touch targets and axe-clean empty content. Hosted CI, provider approval, PostgreSQL/RBAC, manual screen-reader review, staging and production remain open.
 
+Latest activity/migration/repository-detail evidence: delayed-response journeys pass 5/5 with `aria-busy` on activity, migration and repository-detail loading states, while existing refresh, retry, focus, empty/error and axe checks remain green. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

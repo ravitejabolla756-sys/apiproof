@@ -1840,3 +1840,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/providers/page.tsx`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the secondary-route suite passed 2/2 in 14.9 seconds, covering provider loading busy semantics, refresh touch targets, empty-state behavior, and axe-clean content.
 - Scope: this advances local UI-12/UI-13, ORG-11 and NOT-03 evidence only; hosted CI, integrated staging, manual screen-reader review, provider approval, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 activity, migration and repository-detail busy semantics
+
+- Change: activity and migration workbench roots and loading statuses now expose `aria-busy="true"` while requests are pending; repository-detail loading status exposes the same state and its loaded surface reflects scan mutations as busy without changing scan or retry behavior.
+- Files: `apps/web/src/app/dashboard/activity/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/e2e/secondary-route-refresh-accessibility.spec.ts`, `tests/e2e/repository-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the hermetic focused Playwright run passed 5/5 in 50.2 seconds, covering activity, migration and repository-detail pending states plus existing refresh, recovery and axe/accessibility coverage.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

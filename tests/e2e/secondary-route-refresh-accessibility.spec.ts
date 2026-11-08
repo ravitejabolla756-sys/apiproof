@@ -66,3 +66,23 @@ test('announces provider coverage loading as a busy state', async ({ page }) => 
   await expect(page.getByText('No provider coverage records are available yet')).toBeVisible({ timeout: 30_000 });
   await page.unroute('**/api/provider-coverage');
 });
+
+test('announces activity and migration loading as busy states', async ({ page }) => {
+  await signIn(page);
+  for (const state of [
+    { path: '/dashboard/activity', api: '**/api/activity', loading: 'Loading activity log...', heading: 'Workspace Audit Activity Log', empty: 'No activity recorded yet' },
+    { path: '/dashboard/migrations', api: '**/api/migrations', loading: 'Loading review records...', heading: 'Evidence Review Workbench', empty: 'No active evidence review records yet' },
+  ]) {
+    let release: (() => void) | undefined;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    await page.route(state.api, async (route) => { await pending; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(state.path.endsWith('activity') ? { activities: [] } : { migrations: [] }) }); });
+    await page.goto(state.path, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('status')).toContainText(state.loading);
+    await expect(page.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+    await expect(page.getByRole('heading', { name: state.heading })).toBeVisible();
+    await expect(page.getByRole('heading', { name: state.heading }).locator('..').locator('..').locator('..')).toHaveAttribute('aria-busy', 'true');
+    release?.();
+    await expect(page.getByText(state.empty)).toBeVisible({ timeout: 30_000 });
+    await page.unroute(state.api);
+  }
+});

@@ -119,7 +119,7 @@ export default function RepositoryDetailPage({
 
   if (loading) {
     return (
-      <div role="status" aria-live="polite" aria-atomic="true" className="py-20 text-center text-xs text-[#686868] font-sans">
+      <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-xs text-[#686868] font-sans">
         <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading repository details...</span>
       </div>
@@ -141,7 +141,7 @@ export default function RepositoryDetailPage({
   const latestScanIsActive = scanning || latestScan?.status === "pending" || latestScan?.status === "running";
 
   return (
-    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={scanning ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* BACK BUTTON */}
       <div>
         <Link
