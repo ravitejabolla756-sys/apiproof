@@ -340,7 +340,7 @@ Phase 0 read-only checks:
 
 ### 2026-11-08 SEC-15 feature-branch CI trigger
 
-- The CI workflow now runs the existing validation pipeline on pushes to Member 1's `codex/v1-backend-security` branch, so a future normal backup push receives lint, typecheck, provider validation, test, build and release-manifest checks. The workflow has no deployment job.
+- The CI workflow now runs the existing validation pipeline on pushes to Member 1's `codex/v1-backend-security` branch, so a future normal backup push receives lint, typecheck, provider validation, test, build and release-manifest checks. Workflow permissions are limited to `contents: read`; there is no deployment job.
 - This is a local workflow change only; no GitHub push was performed. GitHub branch-protection rules, required-check configuration, review requirements and bypass permissions still require repository-admin read-back.
 - Current task accounting: 7 locally `DONE_VERIFIED`, 18 `PARTIAL` (including external-gated work), 0 `MISSING`, 1 `BLOCKED`, 1 `NOT_STARTED`; production-verified remains 0. SEC-15 moved from `BLOCKED` to `PARTIAL_EXTERNAL_BLOCKED` because local CI coverage is now branch-aware while repository-admin settings remain unavailable.
 
