@@ -518,7 +518,7 @@ test.describe('authenticated product surfaces', () => {
     });
 
     await page.goto('/dashboard/settings/notifications');
-    await expect(page.getByText('Loading preferences…')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Loading preferences…')).toBeVisible({ timeout: 30_000 }); const notificationSurface = page.getByRole('heading', { name: 'Notification preferences' }).locator('..').locator('..'); await expect(notificationSurface).toHaveAttribute('aria-busy', 'true');
     initialPreferenceRequestsClosed = true; releasePreferences?.();
     await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('table')).toHaveCount(0);

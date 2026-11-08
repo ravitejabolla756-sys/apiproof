@@ -34,6 +34,8 @@ Latest repository-dialog evidence: repository recovery and disconnected-app jour
 
 Latest workspace-settings evidence: the settings surface exposes `aria-busy` while GitHub and billing requests are pending; the complete dashboard data-state suite passes 16/16 with loading, empty, error, retry and action-feedback coverage. Hosted CI, manual screen-reader review, staging and production remain open.
 
+Latest notification-settings evidence: the preferences surface exposes `aria-busy` during loading and save operations; the loading/error/retry/recovery journey passes 1/1 with axe-clean recovered content. Hosted CI, provider delivery, manual screen-reader review, staging and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.
