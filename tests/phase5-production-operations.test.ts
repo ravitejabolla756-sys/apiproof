@@ -171,6 +171,20 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(parsed.message).toContain('[REDACTED]');
   });
 
+  it('redacts raw GitHub OAuth, user, and refresh token formats', () => {
+    const tokens = [
+      'gho_1234567890abcdefghijklmnopqrstuvwxyz',
+      'ghu_1234567890abcdefghijklmnopqrstuvwxyz',
+      'ghr_1234567890abcdefghijklmnopqrstuvwxyz',
+    ];
+
+    const redacted = redactSecretString(`GitHub response ${tokens.join(' ')}`);
+
+    for (const token of tokens) expect(redacted).not.toContain(token);
+    expect(redacted).toContain('GitHub response');
+    expect(redacted.match(/\[REDACTED\]/g)).toHaveLength(tokens.length);
+  });
+
   it('redacts credential key variants and safely formats circular log context', () => {
     const context: Record<string, unknown> = {
       passwordHash: 'stored-password-hash',
