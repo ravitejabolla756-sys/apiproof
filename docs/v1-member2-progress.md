@@ -2777,3 +2777,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; provider-rule recovery coverage passed 3/3; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 provider-review recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 workspace-context error focus
+
+- Change: dashboard sidebar workspace-list failures now focus the retryable alert while preserving backend-authoritative workspace selection and retry behavior.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; server-backed workspace context coverage passed 1/1; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12 and ORG-02 workspace-context recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 contract review and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

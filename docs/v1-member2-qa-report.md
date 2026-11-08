@@ -1361,6 +1361,14 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — workspace-context recovery focus checkpoint
+
+- Impeccable detector: PASS with no findings for the dashboard sidebar workspace context and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `CI=true PLAYWRIGHT_PORT=3127 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 --grep "server-backed workspace context selector" --reporter=line`: PASS, 1/1; the unavailable workspace-list alert receives focus before retry and the selector recovers to the server-provided workspace.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.
