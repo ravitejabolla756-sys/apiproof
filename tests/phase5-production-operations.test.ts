@@ -192,6 +192,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       oauthAccessToken: 'oauth-token-material',
       awsSecretAccessKey: 'aws-access-key-material',
       serviceRoleKey: 'service-role-key-material',
+      googleOAuthClientSecret: 'google-oauth-client-secret-fixture',
       secret_value: 'secret-value-material',
       signingKey: 'signing-key-material',
       envName: 'BILLING_WEBHOOK_SECRET',
@@ -209,6 +210,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       oauthAccessToken: '[REDACTED]',
       awsSecretAccessKey: '[REDACTED]',
       serviceRoleKey: '[REDACTED]',
+      googleOAuthClientSecret: '[REDACTED]',
       secret_value: '[REDACTED]',
       signingKey: '[REDACTED]',
       envName: 'BILLING_WEBHOOK_SECRET',
@@ -216,7 +218,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       self: '[CIRCULAR]',
     });
     const serialized = JSON.stringify(parsed);
-    for (const secret of ['stored-password-hash', 'private-key-material', 'oauth-token-material', 'aws-access-key-material', 'service-role-key-material', 'secret-value-material', 'signing-key-material']) {
+    for (const secret of ['stored-password-hash', 'private-key-material', 'oauth-token-material', 'aws-access-key-material', 'service-role-key-material', 'google-oauth-client-secret-fixture', 'secret-value-material', 'signing-key-material']) {
       expect(serialized).not.toContain(secret);
     }
   });

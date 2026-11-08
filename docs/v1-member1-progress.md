@@ -821,3 +821,9 @@ Phase 0 read-only checks:
 
 - At code HEAD `a6738865fd602cfb0991a1bd5af8d95a504380a3`, `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 175 files passed / 1 skipped; 1,469 tests passed / 4 skipped in 733.81 seconds. A throwaway seed was process-scoped and `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL` were removed. Four tests remain skipped because they require Docker. The SEC-13/SEC-16, auth-session, email-verification, activity, provider-review and OAuth fixture-restoration changes all passed in this run.
 - Vitest reported transform 11.73s, import 308.91s, test execution 322.48s, and environment 0.045s; these reported components do not account for the full 733.81s duration. This run is 75.53s slower than the preceding 658.28s serial run. No assertion failed, but runtime variability and unallocated orchestration time remain unresolved. Local-only evidence; PostgreSQL, staging, providers and production remain unverified.
+
+### 2026-11-08 SEC-11 Google OAuth credential-key regression
+
+- Added a structured-logger regression proving `googleOAuthClientSecret` is recognized after key normalization and its value is absent from serialized output. This confirms the existing generic credential-key redactor handles the configured Google OAuth naming shape; no undocumented bare Google secret prefix was added.
+- `phase5-production-operations.test.ts` passes 14/14 with a process-only SQLite seed and remote DB URL variables unset; targeted ESLint and full workspace `pnpm typecheck` pass. The initial invocation without the required local seed password failed in fixture setup before reaching assertions and was rerun correctly.
+- Google’s published OAuth documentation identifies client secrets as credentials but does not specify a stable standalone secret prefix. This test establishes local key-based redaction only; it does not establish Google token-format coverage or external log-sink behavior.
