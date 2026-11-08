@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/WEB-15 contact-form touch targets
+
+- Change: public contact name, email, inquiry-type, and message controls now expose explicit 44px minimum touch targets while preserving native required-field validation and the truthful no-delivery beta boundary.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; contact-form browser journey passed 2/2 in 8.3 seconds at 390px with all form controls and submit action measured at 44px or larger, no-message status verified, required-field focus recovery verified, and no false success state; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13 and WEB-15 evidence only; hosted CI, manual screen-reader review, legal approval, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 command-palette search touch target
 
 - Change: the authenticated command-palette search textbox now exposes an explicit 44px minimum touch target while preserving autofocus, focus containment, Escape recovery, filtering, and navigation behavior.

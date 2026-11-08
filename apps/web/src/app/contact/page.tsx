@@ -58,7 +58,7 @@ export default function ContactPage() {
                       type="text"
                       required
                       placeholder="Alex Rivera"
-                      className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
+                      className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -68,7 +68,7 @@ export default function ContactPage() {
                       type="email"
                       required
                       placeholder="alex@company.com"
-                      className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
+                      className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
                     />
                   </div>
                 </div>
@@ -77,7 +77,7 @@ export default function ContactPage() {
                   <label htmlFor="contact-type" className="font-medium text-slate-700">Inquiry Type</label>
                   <select
                     id="contact-type"
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] focus:outline-none focus:ring-2 focus:ring-black/10"
+                    className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] focus:outline-none focus:ring-2 focus:ring-black/10"
                     defaultValue=""
                     required
                   >
@@ -97,7 +97,7 @@ export default function ContactPage() {
                     rows={4}
                     required
                     placeholder="Tell us about your tech stack, repository setup, or technical question..."
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 resize-none"
+                    className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 resize-none"
                   />
                 </div>
 

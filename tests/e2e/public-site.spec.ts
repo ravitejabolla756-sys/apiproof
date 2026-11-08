@@ -134,7 +134,7 @@ test.describe('public beta surfaces', () => {
     await page.getByLabel('Work Email').fill('qa@example.test');
     await page.getByLabel('Inquiry Type').selectOption('support');
     await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
-    const submit = page.getByRole('button', { name: 'Review inquiry state' }); expect((await submit.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    const submit = page.getByRole('button', { name: 'Review inquiry state' }); for (const field of [page.getByLabel('Full Name'), page.getByLabel('Work Email'), page.getByLabel('Inquiry Type'), page.getByLabel('How can we help?'), submit]) expect((await field.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await submit.click();
     const contactStatus = page.getByRole('status'); await expect(contactStatus).toBeVisible(); await expect(contactStatus).toContainText('No message was sent'); await expect(contactStatus).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('Contact intake is not connected to a delivery service in this beta.')).toBeVisible(); });
