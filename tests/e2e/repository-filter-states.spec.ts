@@ -32,7 +32,10 @@ test('distinguishes filtered repository emptiness and clears filters', async ({ 
   await expect(filteredEmpty.getByRole('button', { name: 'Clear filters' })).toBeVisible();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'filtered repository empty state').toEqual([]);
 
-  await filteredEmpty.getByRole('button', { name: 'Clear filters' }).click();
+  const clearFilters = filteredEmpty.getByRole('button', { name: 'Clear filters' });
+  await clearFilters.focus();
+  await expect(clearFilters).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(search).toHaveValue('');
   await expect(page.getByRole('link', { name: 'owl-platform' })).toBeVisible();
 
