@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02 repositories-context validation
+
+- Change: Repository list reads and repository-connect POST requests now use the shared workspace resolver for explicit contexts, returning typed organization errors for malformed IDs while preserving membership checks and existing repository/GitHub behavior.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/repositories-list-route.test.ts --no-file-parallelism` passed 5/5.
+- Scope: local ORG-02 repository workspace-context hardening only; GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 compatibility-map context error boundary
 
 - Change: The compatibility-map read endpoint now translates malformed or unavailable explicit workspace contexts through the shared organization error response before loading tenant-scoped compatibility data.

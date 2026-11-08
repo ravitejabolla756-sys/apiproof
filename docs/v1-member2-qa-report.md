@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 repositories-context validation
+
+- PASS: Repository list and connect requests validate explicit workspace contexts through the shared resolver and return typed errors for malformed IDs.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded repository-route coverage passed 5/5.
+- NOT_RUN: GitHub/provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 compatibility-map context error boundary
 
 - PASS: Compatibility-map requests with malformed explicit workspace contexts return typed organization errors before tenant-scoped compatibility data is loaded.

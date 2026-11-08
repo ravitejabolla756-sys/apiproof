@@ -29,6 +29,28 @@ describe('GET /api/repositories', () => {
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
 
+  it('returns a typed error for malformed explicit workspace contexts', async () => {
+    const owner = await createUserWithSession('workspace-context@example.test', 'Strong-password-1!', 'Workspace Context');
+    const getResponse = await GET(new Request('http://localhost/api/repositories?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(getResponse.status).toBe(400);
+    expect(await getResponse.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+
+    const postResponse = await POST(new Request('http://localhost/api/repositories', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${owner.session.id}`,
+        origin: 'http://localhost',
+        host: 'localhost',
+      },
+      body: JSON.stringify({ workspaceId: 'not valid', githubRepositoryId: '123' }),
+    }));
+    expect(postResponse.status).toBe(400);
+    expect(await postResponse.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
   it('returns only the authenticated user default workspace repositories and no global GitHub metadata', async () => {
     const ownerA = await createUserWithSession('workspace-a@example.test', 'Strong-password-1!', 'Workspace A');
     const ownerB = await createUserWithSession('workspace-b@example.test', 'Strong-password-1!', 'Workspace B');

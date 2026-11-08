@@ -4,9 +4,8 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
 import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import {
-  requireWorkspaceMember,
   getWorkspaceGitHubInstallation,
 } from '@/lib/server/workspace-service.js';
 import {
@@ -24,7 +23,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
 
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
+  let workspace: Awaited<ReturnType<typeof resolveWorkspaceForRequest>>;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    return organizationErrorResponse(error);
+  }
   const db = getDatabase();
   const repos = await db.query(`
     SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
@@ -70,7 +74,7 @@ export async function POST(req: Request) {
     // otherwise use the server-validated active workspace context.
     let workspaceId: string;
     if (body.workspaceId && typeof body.workspaceId === 'string') {
-      const ws = await requireWorkspaceMember(user.id, body.workspaceId);
+      const ws = await resolveWorkspaceForRequest(req, user.id, body.workspaceId);
       workspaceId = ws.id;
     } else {
       workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
@@ -202,6 +206,9 @@ export async function POST(req: Request) {
       },
     });
   } catch (error: unknown) {
+    if (error instanceof Error && (error.message.includes('access denied') || 'code' in error)) {
+      return organizationErrorResponse(error);
+    }
     const message = error instanceof Error ? error.message : 'Failed to connect repository.';
     if (message.includes('idx_repositories_active_github_identity') || message.includes('unique constraint') || message.includes('duplicate key')) {
       return NextResponse.json({ error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED' }, { status: 409 });
