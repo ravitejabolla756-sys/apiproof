@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — NOT-01/NOT-02 transactional email contract proposal
+
+- Change: Added a review-only email contract covering immutable event identity, required/optional categories, server-side recipient authorization, template safety, idempotency, provider acknowledgement, retries, dead-letter handling and redaction.
+- Evidence: Proposal is explicitly non-operational: no provider, domain, SMTP configuration, worker or email delivery was enabled. `git diff --check` passed.
+- Scope: local NOT-01/NOT-02 contract preparation only; owner/Member 1/provider/privacy review remains required.
+
 ## 2026-11-08 checkpoint — BILL-11 enterprise inquiry intake contract proposal
 
 - Change: Added a review-only enterprise intake contract defining destination selection, server-owned submission, anti-spam, idempotency, privacy, redaction and uncertain-handoff states while preserving the current non-sending beta boundary.

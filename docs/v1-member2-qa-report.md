@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — NOT-01/NOT-02 transactional email contract
+
+- PASS: Added a review-only email contract defining server-owned event identity, required-message protection, optional preference checks, template safety, retries, dead-letter handling and redaction.
+- NOT_RUN: No provider, domain, SMTP configuration, worker or email delivery was enabled; owner/Member 1/provider/privacy review remains required.
+
 ## 2026-11-08 — BILL-11 enterprise intake contract
 
 - PASS: Added a review-only enterprise inquiry contract covering destination approval, server-side validation, anti-spam, idempotency, privacy and bounded delivery states.
