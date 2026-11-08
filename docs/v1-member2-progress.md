@@ -2742,3 +2742,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/data-state.tsx`, `tests/e2e/repository-recovery.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; repository, repository-detail and activity recovery coverage passed 4/4; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 shared recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, provider approval and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 workspace-administration feedback focus
+
+- Change: Workspace Administration’s top-level settings save/load feedback now receives focus after terminal responses; member, invitation and audit section retry contracts remain unchanged.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; organization/member/invitation/audit coverage passed 13/13; targeted ESLint and `git diff --check` passed. Impeccable reported only five incumbent purple-palette warnings on untouched headings, with no new state finding.
+- Scope: local UI-12/UI-13 and ORG-02/ORG-03/ORG-11 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation contract and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

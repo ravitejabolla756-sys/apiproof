@@ -189,6 +189,7 @@ test.describe('workspace audit trail', () => {
     await page.goto('/dashboard/settings/workspace');
     const alert = page.getByRole('alert').filter({ hasText: 'Workspace settings are temporarily unavailable.' });
     await expect(alert).toBeVisible({ timeout: 30_000 });
+    await expect(alert).toBeFocused();
     await expect(alert.getByRole('button', { name: 'Retry' })).toBeVisible();
     expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace settings initial failure').toEqual([]);
     allowSettingsRecovery = true;

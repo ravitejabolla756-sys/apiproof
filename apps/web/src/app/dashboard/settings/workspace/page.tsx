@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, Clipboard, Loader2, ShieldCheck, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -39,6 +39,11 @@ export default function WorkspaceSettingsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
   const [memberAction, setMemberAction] = useState<string | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (message || error) feedbackRef.current?.focus();
+  }, [message, error]);
 
   async function load() {
     setLoading(true);
@@ -240,8 +245,8 @@ export default function WorkspaceSettingsPage() {
       </div>
 
       {actionStatus && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{actionStatus}</p>}
-      {message && <div role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">{message}</div>}
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800"><span>{error}</span>{!workspace && <Button type="button" variant="outline" size="sm" onClick={() => void load()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry</Button>}</div>}
+      {message && <div ref={feedbackRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 outline-none focus-visible:ring-2 focus-visible:ring-emerald-900 focus-visible:ring-offset-2">{message}</div>}
+      {error && <div ref={feedbackRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{error}</span>{!workspace && <Button type="button" variant="outline" size="sm" onClick={() => void load()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry</Button>}</div>}
 
       {workspace && workspace.role === 'owner' && (
         <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="workspace-profile-heading">
