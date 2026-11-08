@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { createSessionAsync, hashPassword, type Session, type User } from './auth.js';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { pruneExpiredOAuthStates } from './oauth-state-storage.js';
 import { createWorkspaceForUser } from './workspace-service.js';
 
 const GITHUB_TOKEN_ENDPOINT = 'https://github.com/login/oauth/access_token';
@@ -98,6 +99,7 @@ export function getGitHubLoginStateCookieOptions(expiresAt?: Date): {
 
 export async function persistGitHubLoginOAuthState(state: GitHubLoginOAuthState, returnTo?: string): Promise<void> {
   const now = new Date();
+  await pruneExpiredOAuthStates('github_login_oauth_states', now);
   await getDatabase().execute(`
     INSERT INTO github_login_oauth_states (state_hash, code_verifier, return_to, expires_at, created_at)
     VALUES (?, ?, ?, ?, ?)

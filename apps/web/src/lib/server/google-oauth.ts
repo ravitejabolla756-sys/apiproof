@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { createSessionAsync, hashPassword, type Session, type User } from './auth.js';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { pruneExpiredOAuthStates } from './oauth-state-storage.js';
 import { createWorkspaceForUser } from './workspace-service.js';
 
 const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
@@ -107,6 +108,7 @@ function valuesEqual(left: string, right: string): boolean {
 export async function persistGoogleOAuthState(state: GoogleOAuthState, returnTo?: string): Promise<void> {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + OAUTH_STATE_TTL_MS).toISOString();
+  await pruneExpiredOAuthStates('google_oauth_states', now);
   await getDatabase().execute(`
     INSERT INTO google_oauth_states (state_hash, code_verifier, nonce, return_to, expires_at, created_at)
     VALUES (?, ?, ?, ?, ?, ?)

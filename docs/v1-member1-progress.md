@@ -632,6 +632,10 @@ Phase 0 read-only checks:
 - The mock webhook parser now rejects normalized billing periods whose end is equal to or earlier than the start. Added signed-input regressions for both cases; provider-specific event mapping and PostgreSQL lifecycle verification remain open.
 - Full seeded serial suite on billing code HEAD `95d24f60bc2e03f588b2657d9e9026702532c53d`: 175 files passed / 1 skipped; 1,452 tests passed / 4 skipped in 294.89 seconds. All four skipped tests are opt-in real-Docker checks in `tests/docker-verification-live.test.ts`; the local Docker CLI is installed but the Docker Desktop Linux daemon is unavailable. No remote database URLs were used, and only a process-local seed was configured.
 
+### 2026-11-08 AUTH-10 OAuth state retention bounds
+
+- Added shared cleanup of expired transient Google/GitHub login state rows before storing a new attempt. Existing expiry indexes support cleanup, and tests verify expired rows are removed while active rows remain. Consumed-but-unexpired state stays available for replay detection; linked provider identities are unaffected. Live provider verification remains open.
+
 ### 2026-11-08 SEC-11 durable error current-HEAD suite
 
 - After worker error-message persistence hardening, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 174 files passed / 1 skipped; 1,447 tests passed / 4 skipped; 243.72 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This does not establish PostgreSQL or production evidence.

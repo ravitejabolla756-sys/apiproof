@@ -160,6 +160,17 @@ describe('Google OAuth 2.0 sign-in', () => {
     expect(await getDatabase().queryOne<{ consumed_at: string | null }>('SELECT consumed_at FROM google_oauth_states WHERE state_hash = ?', [stateHash])).toMatchObject({ consumed_at: null });
   });
 
+  it('prunes expired transient states when persisting a new login attempt', async () => {
+    const expired = await seedState();
+    const expiredHash = crypto.createHash('sha256').update(expired.state).digest('hex');
+    await getDatabase().execute('UPDATE google_oauth_states SET expires_at = ? WHERE state_hash = ?', [new Date(Date.now() - 1_000).toISOString(), expiredHash]);
+    const active = await seedState();
+    const activeHash = crypto.createHash('sha256').update(active.state).digest('hex');
+
+    await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [expiredHash])).resolves.toBeUndefined();
+    await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
+  });
+
   it('rejects invalid claims and signatures before account creation', async () => {
     const config = getGoogleOAuthConfig({ NODE_ENV: 'test', GOOGLE_OAUTH_CLIENT_ID: clientId, GOOGLE_OAUTH_CLIENT_SECRET: clientSecret });
     expect(config).not.toBeNull();
