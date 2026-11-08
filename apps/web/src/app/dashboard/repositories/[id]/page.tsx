@@ -191,6 +191,7 @@ export default function RepositoryDetailPage({
               size="sm"
               variant="primary"
               disabled={scanning}
+              aria-busy={scanning ? 'true' : undefined}
               onClick={handleTriggerScan}
               className="min-h-11 gap-1.5 text-xs font-medium"
             >
@@ -257,6 +258,7 @@ export default function RepositoryDetailPage({
               size="sm"
               variant={scans[0]?.status === "failed" || scans.length === 0 ? "primary" : "outline"}
               disabled={scanning}
+              aria-busy={scanning ? 'true' : undefined}
               onClick={handleTriggerScan}
               className="min-h-11 gap-1.5 text-xs font-medium"
             >

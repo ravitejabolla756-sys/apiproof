@@ -48,6 +48,7 @@ export function ScanProgress() {
           size="sm"
           onClick={handleStartScan}
           disabled={isScanning}
+          aria-busy={isScanning ? 'true' : undefined}
           className="h-8 text-xs font-mono gap-1.5"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? "animate-spin text-emerald-400" : ""}`} />

@@ -301,6 +301,7 @@ export default function RepositoriesTablePage() {
                               size="sm"
                               variant="outline"
                               disabled={isScanning}
+                              aria-busy={isScanning ? 'true' : undefined}
                               onClick={() => handleTriggerScan(repo.id)}
                               className="min-h-11 text-xs gap-1 font-medium"
                             >
