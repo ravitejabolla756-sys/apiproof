@@ -332,3 +332,8 @@ Phase 0 read-only checks:
 
 - Reviewed authenticated workspace read paths and the existing centralized role boundary. The inspected endpoints constrain records to current memberships and approved persisted role values; sensitive provider-rule and billing mutations remain owner-gated, and unknown-role paths have explicit denial coverage.
 - The combined authorization regression set passes 9 files / 75 tests using process-only random seed material for disposable SQLite fixtures: workspace read routes, repository listing, GitHub repository status/installation callback, compatibility map, overview, provider review queue, Slack and billing foundation. This verifies local SQLite behavior only; role-capability adoption awaits Member 2's approved contract and PostgreSQL/RLS verification.
+
+### 2026-11-08 SEC-11 connection URL userinfo redaction
+
+- Logger string sanitization now removes username/password userinfo from credentialed URLs embedded directly in exception text, preserving the scheme, host and path for useful diagnostics.
+- `phase5-production-operations` plus provider privacy/bounds suites pass 16/16; targeted ESLint and full workspace `pnpm typecheck` pass. This is local redaction coverage only; external monitoring provider, destination, retention and alert policy remain owner/staging gates.

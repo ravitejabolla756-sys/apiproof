@@ -93,12 +93,16 @@ const SECRET_REGEX_PATTERNS = [
   /-----BEGIN [A-Z ]+ PRIVATE KEY-----[\s\S]*?-----END [A-Z ]+ PRIVATE KEY-----/g,
 ];
 
+// URLs can be copied directly into an exception message without a sensitive
+// field name (for example, a database driver's connection error).
+const URL_CREDENTIALS_REGEX = /\b([a-z][a-z0-9+.-]*:\/\/)[^/\s@]+:[^/\s@]*@/gi;
+
 /**
  * Redacts secrets from string values using pattern matching.
  */
 export function redactSecretString(str: string): string {
   if (!str || typeof str !== 'string') return str;
-  let sanitized = str;
+  let sanitized = str.replace(URL_CREDENTIALS_REGEX, '$1[REDACTED]@');
   for (const pattern of SECRET_REGEX_PATTERNS) {
     sanitized = sanitized.replace(pattern, '[REDACTED]');
   }

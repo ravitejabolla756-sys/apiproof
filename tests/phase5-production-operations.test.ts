@@ -216,6 +216,18 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(sanitized.match(/\[REDACTED\]/g)).toHaveLength(3);
   });
 
+  it('redacts credentials in connection URLs embedded directly in diagnostics', () => {
+    const rawUser = 'local-build-user';
+    const rawPassword = 'url-password-must-not-escape';
+    const diagnostic = `driver failed for postgres://${rawUser}:${rawPassword}@db.example.test/app and https://${rawUser}:${rawPassword}@api.example.test/v1`;
+    const sanitized = redactSecretString(diagnostic);
+
+    expect(sanitized).not.toContain(rawUser);
+    expect(sanitized).not.toContain(rawPassword);
+    expect(sanitized).toContain('postgres://[REDACTED]@db.example.test/app');
+    expect(sanitized).toContain('https://[REDACTED]@api.example.test/v1');
+  });
+
   it('preserves known operational error categories while redacting token-like values', () => {
     const formatted = formatLogEntry('warn', 'Slack delivery failed', {
       category: 'SLACK_API_TOKEN_REVOKED',
