@@ -486,3 +486,8 @@ Phase 0 read-only checks:
 
 - `/api/repositories` preserves workspace-denial and duplicate-identity mappings, while unexpected persistence failures now return a fixed `INTERNAL_ERROR` response.
 - `repository-connect-error-safety` passes 1/1 with an injected persistence failure; targeted ESLint and full workspace `pnpm typecheck` pass. PostgreSQL behavior, external monitoring and staging evidence remain unresolved.
+
+### 2026-11-08 current-HEAD full-suite rerun after generic 404 contract update
+
+- The first seeded serial full-suite run on code HEAD `4a67e685b73ebf3fe307f8471bd56dc8b8597d2c` exposed one stale assertion in `phase2-multi-tenant-workspaces.test.ts`: it expected the older repository-specific 404 text. Updated only that expected response to the route's established generic non-enumerating message; status, authorization, and no-side-effect assertions remain intact.
+- The affected Phase 2 suite passes 17/17. A second seeded serial full-suite run passes 172 files / 1 skipped (173 total), 1,424 tests / 4 skipped (1,428 total), in 259.45 seconds. The four skipped tests require Docker. `DATABASE_URL` and `APIPROOF_DATABASE_URL` were unset; a process-only local seed was used. No external provider, production system, or deployment was used.

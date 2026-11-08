@@ -260,7 +260,7 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
       }));
       expect(routeResponse.status).toBe(404);
       expect(await routeResponse.json()).toEqual({
-        error: 'Repository not found or access denied.',
+        error: 'Resource not found or access denied.',
         code: 'NOT_FOUND',
       });
       expect(db.prepare('SELECT COUNT(*) AS count FROM pull_requests WHERE migration_id = ?').get(migrationIdB)).toEqual({ count: 0 });
