@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — organization mutation owner recheck
+
+- PASS: Organization mutations revalidate owner capability inside their transaction before writing settings, membership, or invitation state.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 14/14.
+- NOT_RUN: Final Member 1 RBAC/PostgreSQL contract, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — NOT-10 digest-unavailable preference boundary
 
 - PASS: Weekly digest email and Slack preferences now remain disabled/unavailable while the digest contract is unapproved and no scheduler or delivery worker exists.

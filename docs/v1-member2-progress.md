@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — organization mutation owner recheck
+
+- Change: Added an owner-capability recheck inside the transaction for workspace settings, member role/removal, invitation creation and invitation cancellation, closing the stale-owner authorization window between request preflight and mutation.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and `tests/organization-management.test.ts` passed 14/14.
+- Scope: local ORG-02/ORG-03/ORG-04 authorization hardening only; final Member 1 RBAC/PostgreSQL contract, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — NOT-10 digest-unavailable preference boundary
 
 - Change: Marked weekly digest delivery unavailable for both email and Slack until the unapproved digest scheduler, event/retention contract and provider path exist; users can no longer enable a non-existent Slack digest.

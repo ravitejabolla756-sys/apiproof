@@ -236,6 +236,8 @@ Latest audit-resilience evidence: malformed persisted audit metadata falls back 
 
 Latest digest-boundary evidence: weekly digest email and Slack controls remain unavailable until NOT-10 approval and implementation; the fresh 83-page production build passes and the rebuilt authenticated settings journey passes 1/1 with the Slack digest control disabled. No digest scheduler, worker, provider delivery or cadence was activated; release recommendation stays NO-GO.
 
+Latest organization-authorization evidence: workspace settings, member mutations, invitation creation and invitation cancellation recheck owner capability inside their transaction; organization-management coverage passes 14/14 and repository typecheck passes. Final RBAC/PostgreSQL contract, hosted CI, staging and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.
