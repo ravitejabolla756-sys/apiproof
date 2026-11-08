@@ -221,3 +221,4 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - Current-HEAD seeded serial full suite: PASS locally at `e09acff12f82bcf39cb68529899dd1d999a1bad5`; 175 files passed / 1 skipped, 1,470 tests passed / 4 skipped, 716.45 seconds. Four Docker-dependent tests remain skipped. PostgreSQL, providers, staging, and production remain unverified.
 - Docker availability check on 2026-11-09: FAIL to connect to the local Docker Desktop Linux engine; the four container-backed tests remain skipped. This is an environment limitation, not a test bypass.
 - Current-HEAD lint: PASS, `pnpm lint` completed with zero warnings. External database, provider, staging, legal, and production gates remain unchanged.
+- Current-HEAD production dependency audit: PASS at the high-severity threshold; four moderate advisories remain documented, with no high or critical suppression.
