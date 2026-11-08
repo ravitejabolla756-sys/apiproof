@@ -42,9 +42,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
     }
     if (message.includes('not found') || message.includes('access denied')) {
-      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+      return NextResponse.json({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
     }
-    console.error('Migration planning failed:', error);
-    return NextResponse.json({ error: message, code: 'PLANNING_FAILED' }, { status: 500 });
+    console.error('Migration planning failed.');
+    return NextResponse.json({ error: 'Migration planning failed.', code: 'PLANNING_FAILED' }, { status: 500 });
   }
 }

@@ -461,3 +461,8 @@ Phase 0 read-only checks:
 
 - Verified at checkout HEAD `14a1dfeb32e42dc1b5ae1e15e8d94d84bbca2161` (documentation-only commit since code HEAD `7d07f00814475cf4605dca7f4d9f63e066ef851a`). `pnpm exec vitest run tests/sec13-worker-observability.test.ts tests/sec16-load-resilience.test.ts --no-file-parallelism --maxWorkers=1 --reporter=dot` passed: 2 files, 18 tests.
 - This targeted rerun confirms deterministic SEC-13 failure/degraded/stale/malformed/missing-store cases and SEC-16 bounded workload/failure/retry/timeout containment on the current checkout. It does not close alert-destination, approved thresholds, staging failure-recovery, or infrastructure gates.
+
+### 2026-11-08 SEC-11 migration API error safety
+
+- Migration planning and proposal routes now map service exceptions to reviewed generic client messages; internal exception text is no longer returned or logged. Stable error codes and HTTP status mappings remain intact.
+- `migration-api-error-safety` passes 2/2; targeted ESLint and full workspace `pnpm typecheck` pass. External monitoring provider, alert routing, retention, thresholds and staging rehearsal remain unresolved.
