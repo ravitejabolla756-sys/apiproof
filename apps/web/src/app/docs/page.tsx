@@ -161,7 +161,7 @@ export default function DocsPage() {
           </div>
           <Link
             href="/how-it-works"
-            className="text-[#004EE8] hover:underline flex items-center gap-1 font-semibold"
+            className="inline-flex min-h-11 items-center gap-1 text-[#004EE8] font-semibold hover:underline"
           >
             <span>View 9-Stage Pipeline Specification</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -202,7 +202,7 @@ export default function DocsPage() {
                       </p>
                     </div>
 
-                    <div className="pt-2 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                    <div className="pt-2 text-[11px] font-mono text-slate-600 flex items-center justify-between">
                       <span>docs/{category.id}</span>
                       <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#004EE8] transition-transform group-hover:translate-x-0.5" />
                     </div>
@@ -226,13 +226,13 @@ export default function DocsPage() {
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href="/blog"
-              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-mono font-medium transition-colors border border-white/10"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/10 px-5 py-2.5 text-white text-xs font-mono font-medium transition-colors border border-white/10 hover:bg-white/15"
             >
               Engineering Blog
             </Link>
             <Link
               href="/contact"
-              className="btn-lime px-5 py-2.5 rounded-full text-xs font-mono font-bold text-black shadow-sm"
+              className="btn-lime inline-flex min-h-11 items-center justify-center px-5 py-2.5 rounded-full text-xs font-mono font-bold text-black shadow-sm"
             >
               Contact Us
             </Link>

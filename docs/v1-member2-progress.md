@@ -1456,3 +1456,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/pricing/page.tsx`, `tests/e2e/billing-boundaries.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; billing-boundary browser journey passed 1/1 in 15.3 seconds with both actionable links measured at 390px; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12 and BILL-07 boundary evidence only; provider lifecycle, hosted CI, staging and production verification remain open. No backend/shared contract, provider, payment, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 docs CTA and contrast audit
+
+- Change: documentation-page pipeline, blog and contact links now have explicit 44px minimum touch targets. The repeated `docs/...` metadata color was raised from `text-slate-400` to `text-slate-600` after axe identified a 2.45:1 contrast failure on the docs surface.
+- Files: `apps/web/src/app/docs/page.tsx`, `tests/e2e/docs-accessibility.spec.ts`.
+- Evidence: initial focused axe run reproduced the page-local contrast failure; after the fix, Impeccable detector returned no findings, targeted ESLint and `git diff --check` passed, docs mobile CTA/axe journey passed 1/1, repository typecheck passed, and the web production build passed with 83 generated pages.
+- Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
