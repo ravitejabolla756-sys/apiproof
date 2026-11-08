@@ -1512,3 +1512,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/auth-recovery-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused recovery journey passed 1/1 in 8.2 seconds at 390px with both pages axe-clean; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 compatibility-map touch targets
+
+- Change: compatibility topology repository selectors and initial/refresh retry actions now expose explicit 44px touch targets, including the icon-only refresh control; keyboard behavior and retry semantics are unchanged.
+- Files: `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/e2e/compatibility-map-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused compatibility recovery journey passed 1/1 in 12.5 seconds with measured 44px controls and axe-clean refresh error coverage; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, manual screen-reader review, PostgreSQL/RBAC, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.

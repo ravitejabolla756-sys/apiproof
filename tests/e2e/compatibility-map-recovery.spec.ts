@@ -22,14 +22,18 @@ test('recovers compatibility-map initial and refresh failures', async ({ page })
   await expect(initialAlert).toBeVisible({ timeout: 30_000 });
   phase = 'initial-recovery';
   const initialRetry = initialAlert.getByRole('button', { name: 'Retry' });
+  expect((await initialRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await initialRetry.focus(); await expect(initialRetry).toBeFocused(); await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Compatibility topology' })).toBeVisible({ timeout: 30_000 });
   const refresh = page.getByRole('button', { name: 'Refresh compatibility map' });
+  expect((await refresh.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect((await refresh.boundingBox())?.width).toBeGreaterThanOrEqual(44);
   await refresh.focus(); await expect(refresh).toBeFocused(); await page.keyboard.press('Enter');
   const refreshAlert = page.getByRole('alert').filter({ hasText: 'Refresh failed:' });
   await expect(refreshAlert).toBeVisible({ timeout: 30_000 });
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'compatibility refresh error state').toEqual([]);
   const refreshRetry = refreshAlert.getByRole('button', { name: 'Retry compatibility map refresh' });
+  expect((await refreshRetry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await refreshRetry.focus(); await expect(refreshRetry).toBeFocused(); await page.keyboard.press('Enter');
   await expect(refreshAlert).toBeHidden({ timeout: 30_000 });
   expect(attempts).toBeGreaterThanOrEqual(4);

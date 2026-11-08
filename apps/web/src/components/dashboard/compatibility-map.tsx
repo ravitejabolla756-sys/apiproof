@@ -139,7 +139,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   if (error && repositories.length === 0) {
     return <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
       <p>{error}</p>
-      <button type="button" onClick={() => void loadMap(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
+      <button type="button" onClick={() => void loadMap(true)} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111]">
         <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />Retry
       </button>
     </div>;
@@ -148,7 +148,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   if (repositories.length === 0) {
     return <div role="status" aria-live="polite" aria-atomic="true" className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-8 text-center text-xs text-[#686868]">
       <p>Connect a GitHub repository to build your compatibility map.</p>
-      {onConnect && <button type="button" onClick={onConnect} className="mt-3 rounded-lg bg-[#111111] px-4 py-2 font-medium text-white">Connect repository</button>}
+      {onConnect && <button type="button" onClick={onConnect} className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#111111] px-4 py-2 font-medium text-white">Connect repository</button>}
     </div>;
   }
 
@@ -180,7 +180,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         <div className="flex flex-wrap items-center gap-2">
           {repositories.map((repository) => (
             <button key={repository.id} type="button" aria-label={`Show compatibility for ${repository.name}`} aria-pressed={selectedRepoId === repository.id} onClick={() => setSelectedRepoId(repository.id)}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-colors ${selectedRepoId === repository.id ? "border-[#111111] bg-white font-semibold text-[#111111]" : "border-[#E8E8E5] bg-white text-[#686868] hover:text-[#111111]"}`}>
+              className={`flex min-h-11 items-center gap-2 rounded-xl border px-3 py-1.5 text-xs transition-colors ${selectedRepoId === repository.id ? "border-[#111111] bg-white font-semibold text-[#111111]" : "border-[#E8E8E5] bg-white text-[#686868] hover:text-[#111111]"}`}>
               <GitBranch aria-hidden="true" className="h-3.5 w-3.5 text-zinc-400" />
               <span className="font-mono text-[11px]">{repository.name}</span>
               {repository.latestScanStatus === "failed"
@@ -189,13 +189,13 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
             </button>
           ))}
           <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Refresh compatibility map"
-            className="rounded-lg border border-[#E8E8E5] bg-white p-2 text-[#686868] disabled:opacity-50">
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-[#E8E8E5] bg-white p-2 text-[#686868] disabled:opacity-50">
             <RefreshCw aria-hidden="true" className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Retry compatibility map refresh" className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
+      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-label="Retry compatibility map refresh" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
 
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs md:grid-cols-3">
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
