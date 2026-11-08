@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-02/NOT-03 Slack connection context boundary
+
+- Change: Slack connection status and disconnect routes now translate malformed or unavailable workspace contexts through the shared organization error response while preserving private no-store headers and existing Slack credential handling.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded `tests/slack-phase1.test.ts` passed 22/22.
+- Scope: local ORG-02/NOT-03 Slack workspace-boundary hardening only; provider approval/delivery, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 GitHub repository-picker context boundary
 
 - Change: GitHub repository-picker requests now use the shared workspace resolver, normalizing malformed explicit contexts before any provider call while preserving private no-store responses.

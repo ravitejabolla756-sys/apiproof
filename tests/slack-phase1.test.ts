@@ -148,6 +148,15 @@ describe('MY OWL Slack Phase 1', () => {
     expect(workspaceB.id).not.toBe(workspaceA.id);
   });
 
+  it('returns a typed error for malformed explicit workspace contexts', async () => {
+    const account = await createUserWithSession('status-context@example.test', 'Pass1234!', 'Status Context');
+    const response = await getSlackConnection(new Request('https://myowl.example.test/api/slack/connection?workspaceId=not%20safe', {
+      headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
+  });
+
   it('rejects malformed/expired OAuth state and requires encryption configuration', async () => {
     const { userId } = await user('oauth-expired@example.test');
     const url = new URL(await createSlackAuthorizationUrl(userId));

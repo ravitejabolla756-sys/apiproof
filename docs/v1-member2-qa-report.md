@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02/NOT-03 Slack connection context boundary
+
+- PASS: Slack connection status and disconnect requests use the shared workspace error contract and preserve private no-store responses.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and seeded Slack Phase 1 coverage passed 22/22.
+- NOT_RUN: Provider approval/delivery, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 GitHub repository-picker context boundary
 
 - PASS: GitHub repository-picker requests normalize malformed workspace contexts through the shared resolver before contacting the provider.

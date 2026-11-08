@@ -2,15 +2,26 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
 
+function workspaceErrorResponse(error: unknown): Response {
+  const response = organizationErrorResponse(error);
+  response.headers.set('Cache-Control', privateHeaders['Cache-Control']);
+  return response;
+}
+
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
+  let workspace: Awaited<ReturnType<typeof resolveWorkspaceForRequest>>;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    return workspaceErrorResponse(error);
+  }
   const row = await getDatabase().queryOne<{ team_name: string; connected_at: string }>(`
     SELECT team_name, connected_at FROM slack_connections WHERE workspace_id = ? AND status = 'active'
   `, [workspace.id]);
@@ -22,7 +33,12 @@ export async function DELETE(req: Request) {
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
+  let workspace: Awaited<ReturnType<typeof resolveWorkspaceForRequest>>;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    return workspaceErrorResponse(error);
+  }
   const now = new Date().toISOString();
   const db = getDatabase();
   const result = await db.execute(`UPDATE slack_connections SET status = 'revoked', token_ciphertext = '', token_iv = '', token_auth_tag = '', updated_at = ?
