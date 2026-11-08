@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 dashboard-specific retry keyboard coverage
+
+- Change: Extended Slack status recovery and Workspace Settings data-retry journeys to focus their retry controls, verify focus visibility, and activate recovery with Enter while preserving existing alert/status and axe assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; complete dashboard data-state suite passed 16/16 in 1.8 minutes. Artifacts: `/tmp/myowl-v1-dashboard-retry-keyboard-artifacts`.
+- Scope: local UI-12 dashboard state/accessibility evidence only; no Slack connection, billing/provider, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 responsive findings recovery keyboard coverage
 
 - Change: Extended the mobile responsive findings filtered-empty journey to focus the “Clear filters” action, verify focus visibility, and activate recovery with Enter while preserving multi-provider wrapping, no-overflow and axe assertions.

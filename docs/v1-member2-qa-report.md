@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Dashboard-specific retry keyboard coverage
+
+- PASS: Complete dashboard data-state suite passed 16/16 in 1.8 minutes; Slack status and Workspace Settings retries now verify keyboard focus and Enter activation, with existing alert/status and axe assertions retained.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Slack/billing/provider delivery, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Responsive findings recovery keyboard coverage
 
 - PASS: Complete responsive findings suite passed 2/2 in 17.3 seconds; mobile filtered-empty recovery now verifies keyboard focus and Enter activation, retaining multi-provider wrapping, no-overflow and axe assertions.
