@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 login-surface touch targets
+
+- Change: login OAuth actions, email/password fields, submit action, recovery link, and signup-mode name/email/password controls now expose explicit 44px minimum touch targets while preserving auth mode state, validation, provider boundaries, and recovery navigation.
+- Files: `apps/web/src/app/login/page.tsx`, `tests/e2e/login-accessibility.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; mobile login accessibility journey passed 1/1 in 7.6 seconds with measured login and signup controls at 44px or larger and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/UI-13 and NOT-02 evidence only; hosted CI, manual screen-reader review, Member 1 auth integration, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12/WEB-15 contact-form touch targets
 
 - Change: public contact name, email, inquiry-type, and message controls now expose explicit 44px minimum touch targets while preserving native required-field validation and the truthful no-delivery beta boundary.

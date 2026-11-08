@@ -21,3 +21,5 @@ Last updated: 2026-11-08. This is a checklist, not launch approval.
 Latest local UI-12 evidence: command-palette search textbox and dialog close controls are measured at 44px or larger in the focused mobile dialog journey; focus containment, Escape recovery and axe-clean dialog states pass. Hosted CI, manual screen-reader review, staging and production remain open.
 
 Latest public-form evidence: contact name, email, inquiry-type, message and submit controls are measured at 44px or larger; required-field validation and truthful no-delivery recovery pass. Legal approval, hosted CI, manual review, staging and production remain open.
+
+Latest auth-entry evidence: login OAuth, credential, recovery and signup controls are measured at 44px or larger with axe-clean mobile coverage. Member 1 auth integration, hosted CI, manual review, staging and production remain open.
