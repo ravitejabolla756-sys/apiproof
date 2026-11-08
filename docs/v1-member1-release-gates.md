@@ -78,7 +78,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - AUTH-10 session-expiry regression: PASS, `auth-session`, GitHub OAuth, and Google OAuth suites 3 files / 31 tests; malformed/expired timestamps are rejected and session rows purged in both validation paths. Targeted ESLint, full pnpm typecheck, and pnpm build pass; build-generated config edits were restored. Central account-verification policy and PostgreSQL concurrency remain unverified.
 
-- Latest seeded serial full suite: PASS on code HEAD `b848217`; 167 files passed / 1 skipped (168 total), 1,402 tests passed / 4 skipped (1,406 total), 474.17 seconds, no failures. Remote database URL variables were removed; the only seed credential was a process-scoped throwaway local value. Current source also passes `pnpm build`; build-generated Next config edits were restored. External database/staging gates remain open.
+- Latest seeded serial full suite: PASS on code HEAD `f155af6`; 167 files passed / 1 skipped (168 total), 1,402 tests passed / 4 skipped (1,406 total), 517.90 seconds, no failures. Remote database URL variables were removed; the only seed credential was a process-scoped throwaway local value. Current source also passes `pnpm build`; build-generated Next config edits were restored. External database/staging gates remain open.
 
 - BILL-03 bounded webhook request stream: PASS locally, billing provider boundary and foundation suites 2 files / 23 tests; targeted ESLint and full workspace `pnpm typecheck` pass. The route rejects oversized bodies while streaming and preserves signed bytes through strict UTF-8 decode. Provider sandbox verification remains outstanding.
 
