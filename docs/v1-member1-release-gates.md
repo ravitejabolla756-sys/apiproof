@@ -100,6 +100,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - SEC-04 rate-limit concurrency: PASS locally, password-reset suite 11/11 and production-integrity suite 17/17. Of 40 concurrent SQLite requests, exactly 7 pass a quota of 7, all others are denied, and the persisted counter caps at 8; expired fixed-window reset passes. Targeted ESLint, full workspace typecheck, and `pnpm build` pass. PostgreSQL concurrency and trusted proxy header behavior remain unverified in staging.
 - SEC-04 forwarded-protocol ambiguity: PASS locally, `auth-hardening` 8/8; comma-separated `X-Forwarded-Proto` values fail closed while the existing single-value proxy case passes. Targeted ESLint and full workspace typecheck pass. Deployed proxy provenance/normalization still requires staging verification.
+- SEC-16 error reporting: PASS locally, `sec16-load-resilience` 11/11; only allowlisted error codes are exposed and token/AWS-secret-shaped exception messages collapse to `OPERATION_FAILED`. Targeted ESLint and full workspace typecheck pass. This does not replace staged worker-failure recovery evidence.
 
 - BILL-10 subscription-state regression matrix: PASS, 2 billing suites / 24 tests; every non-granting state is checked against all billable metrics, and active/trialing are checked across all metrics. Targeted ESLint passes. The suite preserves current behavior; grace and suspension policy still requires owner/product approval.
 

@@ -50,6 +50,10 @@ Captured during the seeded serial full repository run on code HEAD `93b79f88c424
 
 These are one-run local observations, not SLOs, staging capacity claims, or evidence about real provider/PostgreSQL behavior.
 
+## 2026-11-08 error-redaction hardening regression
+
+Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-parallelism --maxWorkers=1 --reporter=dot`. The suite passed 11/11 after replacing regex-only error-code acceptance with an explicit allowlist. The failure-injection case confirms both token-style and AWS secret-key-style exception messages are excluded from report output. The run also emitted 24-operation local measurements at concurrency 4: API health p50/p95 0.284/2.343 ms; GitHub webhook signature/claim/record 2.886/4.023 ms; SQLite SELECT 0.022/0.051 ms; worker queue metrics 0.148/0.267 ms. Single-run local observations only, not SLO or staging-capacity evidence.
+
 ## 2026-11-08 focused SEC-13/SEC-16 rerun
 
 At checkout HEAD `14a1dfeb32e42dc1b5ae1e15e8d94d84bbca2161` (no source changes since code HEAD `7d07f00814475cf4605dca7f4d9f63e066ef851a`), the serial focused command covering worker observability and the SEC-16 local harness passed 2 files / 18 tests. SEC-16's fresh local measurements: API health p50/p95/p99 0.283/2.436/2.664 ms (5,476 ops/s); GitHub webhook signature/claim/record 2.907/4.074/4.334 ms (1,065 ops/s); SQLite SELECT 0.025/0.120/0.133 ms (57,513 ops/s); worker queue metrics 0.176/0.345/0.490 ms (11,856 ops/s). All four scenarios used 24 local in-process operations at concurrency 4. These are single-run local observations, not capacity or SLO claims. Approved alerting and staged failure recovery remain open.

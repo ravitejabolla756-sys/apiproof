@@ -245,16 +245,18 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
       concurrency: 2,
       operation: (iteration) => {
         if (iteration === 2 || iteration === 6) throw new Error('INJECTED_API_FAILURE');
-        if (iteration === 4) throw new Error('token=secret-must-not-escape');
+        if (iteration === 4) throw new Error('AWS_SECRET_ACCESS_KEY:ABCD1234MUSTNOTESCAPE');
+        if (iteration === 5) throw new Error('token=secret-must-not-escape');
       },
     });
 
     expect(report.iterations).toBe(8);
-    expect(report.succeeded).toBe(5);
-    expect(report.failed).toBe(3);
+    expect(report.succeeded).toBe(4);
+    expect(report.failed).toBe(4);
     expect(report.maxInFlight).toBeLessThanOrEqual(2);
-    expect(report.errors).toEqual({ INJECTED_API_FAILURE: 2, OPERATION_FAILED: 1 });
+    expect(report.errors).toEqual({ INJECTED_API_FAILURE: 2, OPERATION_FAILED: 2 });
     expect(JSON.stringify(report)).not.toContain('secret-must-not-escape');
+    expect(JSON.stringify(report)).not.toContain('ABCD1234MUSTNOTESCAPE');
   });
 
   it('signals cooperative cancellation when an operation exceeds its deadline', async () => {

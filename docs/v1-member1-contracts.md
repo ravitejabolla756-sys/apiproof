@@ -120,6 +120,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 - The local SEC-16 harness is test-only and in-process. It refuses `NODE_ENV=production`, creates no HTTP client or socket, and uses an isolated SQLite database path under `.tmp`.
 - Workloads are bounded by hard iteration, concurrency, timeout and retry limits. Reports include total/success/failure counts, sanitized error categories, actual-start throughput, max in-flight operations, and p50/p95/p99 latency. If a timeout prevents scheduling, unstarted iterations do not inflate measured throughput.
 - Local scenarios cover health/API execution, signed webhook verification and durable delivery claim/record, SQLite queries, and queue telemetry. Failure injection is deterministic and limited to the harness callback; it cannot reach a provider or production resource.
+- Load-report error categories are explicitly allowlisted harness codes; unrecognized exception messages collapse to `OPERATION_FAILED` so credential-like values cannot be copied into reports.
 - Staging execution remains a separate gate requiring approved traffic limits, fixture data, metrics/SLO thresholds, worker failure injection, and recovery evidence.
 
 ## HTTP security (SEC-08)

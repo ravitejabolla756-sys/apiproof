@@ -38,6 +38,19 @@ export interface RetryReport {
   errors: ReadonlyArray<string>;
 }
 
+const SAFE_ERROR_CODES = new Set([
+  'API_HEALTH_FAILED',
+  'DATABASE_LOCAL_FAILED',
+  'INJECTED_API_FAILURE',
+  'INJECTED_RETRY_EXHAUSTION',
+  'INJECTED_TRANSIENT_FAILURE',
+  'OPERATION_ABORTED',
+  'OPERATION_TIMEOUT',
+  'WEBHOOK_CLAIM_FAILED',
+  'WEBHOOK_SIGNATURE_FAILED',
+  'WORKER_METRICS_FAILED',
+]);
+
 function assertLocalHarnessEnvironment(): void {
   if (process.env.NODE_ENV === 'production' || process.env.DATABASE_URL || process.env.APIPROOF_DATABASE_URL) {
     throw new Error('SEC16_LOCAL_ONLY: load and resilience harness cannot run in production');
@@ -51,7 +64,7 @@ function assertBoundedInteger(name: string, value: number, minimum: number, maxi
 }
 
 function safeErrorCode(error: unknown): string {
-  if (error instanceof Error && /^[A-Z0-9_:-]{1,80}$/.test(error.message)) return error.message;
+  if (error instanceof Error && SAFE_ERROR_CODES.has(error.message)) return error.message;
   return 'OPERATION_FAILED';
 }
 
