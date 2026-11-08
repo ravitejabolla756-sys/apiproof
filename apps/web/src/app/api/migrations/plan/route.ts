@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { generateMigrationForFinding } from '@/lib/server/planning-service.js';
+import { isWorkspaceAuthorizationError } from '@/lib/server/workspace-service.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import {
   assertCsrfProtection,
@@ -37,6 +38,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, migration });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Migration planning failed.';
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
+    }
     if (message.includes('not found') || message.includes('access denied')) {
       return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
     }

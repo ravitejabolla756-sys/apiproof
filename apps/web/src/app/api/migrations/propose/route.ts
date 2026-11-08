@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { enqueueMigrationProposal, getMigrationProposalJobStatus } from '@/lib/server/proposal-verification-jobs.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
+import { isWorkspaceAuthorizationError } from '@/lib/server/workspace-service.js';
 import {
   assertCsrfProtection,
   validateSafeId,
@@ -65,6 +66,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, proposal });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Proposal generation failed.';
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
+    }
     if (message.includes('PLAN_LIMIT_EXCEEDED')) {
       return NextResponse.json({ error: message, code: 'PLAN_LIMIT_EXCEEDED', metric: 'draft_prs' }, { status: 402 });
     }

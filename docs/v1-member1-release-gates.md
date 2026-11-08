@@ -116,3 +116,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 migration-proposal route: PASS, `phase2-multi-tenant-workspaces` 17/17; a nonmember's request for another workspace's migration returns generic 404 and creates no pull-request row. Targeted ESLint and full workspace typecheck pass. The route denial is local SQLite evidence; PostgreSQL/RLS and live provider behavior remain open.
 
 - SEC-16 multi-worker timeout regression: PASS, `sec16-load-resilience` 11/11; two active never-settling operations time out, no further iterations start, and the report records 4 not started. Targeted ESLint and full workspace typecheck pass. This does not establish staging recovery or SLO behavior.
+
+- ORG-05 unknown-role action mapping: PASS, `phase2-multi-tenant-workspaces` 17/17. Unknown persisted roles on the migration-planning and proposal APIs receive generic 404 responses and create no migration or pull-request records. Targeted ESLint and full workspace typecheck pass; effective PostgreSQL/RLS and Member 2 contract approval remain outstanding.

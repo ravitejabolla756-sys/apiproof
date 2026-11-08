@@ -147,7 +147,8 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
     it('TEST F: User A cannot create a migration for Workspace B', async () => {
       const actorA = await createUserWithSession('user_a@example.com', 'Pass12345!', 'User A');
       const userA = actorA.user;
-      const userB = createUser('user_b@example.com', 'Pass12345!', 'User B');
+      const actorB = await createUserWithSession('user_b@example.com', 'Pass12345!', 'User B');
+      const userB = actorB.user;
       const wsB = await getDefaultWorkspaceForUser(userB.id);
 
       const repoIdB = `repo_${crypto.randomBytes(8).toString('hex')}`;
@@ -189,12 +190,26 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
       }));
       expect(routeResponse.status).toBe(404);
       expect(db.prepare('SELECT COUNT(*) AS count FROM migrations WHERE finding_id = ?').get(findingIdB)).toEqual({ count: 0 });
+
+      db.prepare('UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?').run('future_role', wsB.id, userB.id);
+      const unknownRoleResponse = await planMigrationRoute(new Request('http://localhost/api/migrations/plan', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `apiproof_session=${actorB.session.id}`,
+        },
+        body: JSON.stringify({ findingId: findingIdB }),
+      }));
+      expect(unknownRoleResponse.status).toBe(404);
+      expect(await unknownRoleResponse.json()).toEqual({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' });
+      expect(db.prepare('SELECT COUNT(*) AS count FROM migrations WHERE finding_id = ?').get(findingIdB)).toEqual({ count: 0 });
     });
 
     it('TEST G: User A cannot propose a PR for Workspace B', async () => {
       const actorA = await createUserWithSession('user_a@example.com', 'Pass12345!', 'User A');
       const userA = actorA.user;
-      const userB = createUser('user_b@example.com', 'Pass12345!', 'User B');
+      const actorB = await createUserWithSession('user_b@example.com', 'Pass12345!', 'User B');
+      const userB = actorB.user;
       const wsB = await getDefaultWorkspaceForUser(userB.id);
 
       const repoIdB = `repo_${crypto.randomBytes(8).toString('hex')}`;
@@ -248,6 +263,19 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
         error: 'Repository not found or access denied.',
         code: 'NOT_FOUND',
       });
+      expect(db.prepare('SELECT COUNT(*) AS count FROM pull_requests WHERE migration_id = ?').get(migrationIdB)).toEqual({ count: 0 });
+
+      db.prepare('UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?').run('future_role', wsB.id, userB.id);
+      const unknownRoleResponse = await proposeMigrationRoute(new Request('http://localhost/api/migrations/propose', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `apiproof_session=${actorB.session.id}`,
+        },
+        body: JSON.stringify({ migrationId: migrationIdB }),
+      }));
+      expect(unknownRoleResponse.status).toBe(404);
+      expect(await unknownRoleResponse.json()).toEqual({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' });
       expect(db.prepare('SELECT COUNT(*) AS count FROM pull_requests WHERE migration_id = ?').get(migrationIdB)).toEqual({ count: 0 });
     });
 
