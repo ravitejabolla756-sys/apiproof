@@ -8,6 +8,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { GET as providerChangelogGet, POST as providerChangelogPost } from '../apps/web/src/app/api/internal/provider-changelog/route.js';
 import { GET as scheduledRescanGet } from '../apps/web/src/app/api/internal/scheduled-rescan/route.js';
+import { GET as scanWorkerGet } from '../apps/web/src/app/api/internal/scan-worker/route.js';
 import { GET as providerIntelligenceStatusGet } from '../apps/web/src/app/api/internal/provider-intelligence/status/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-provider-intelligence-cron-routes.db');
@@ -107,6 +108,26 @@ describe('provider intelligence cron route contracts', () => {
     } finally {
       if (previousSecret === undefined) delete process.env.CRON_SECRET;
       else process.env.CRON_SECRET = previousSecret;
+    }
+  });
+
+  it('rejects same-character-count Unicode bearer values without throwing across cron routes', async () => {
+    const malformedSecret = `${'x'.repeat(CRON_SECRET.length - 1)}é`;
+    expect(malformedSecret.length).toBe(CRON_SECRET.length);
+    expect(Buffer.byteLength(malformedSecret, 'utf8')).not.toBe(Buffer.byteLength(CRON_SECRET, 'utf8'));
+
+    const routes = [
+      (request: NextRequest) => providerChangelogGet(request),
+      (request: NextRequest) => scheduledRescanGet(request),
+      (request: NextRequest) => scanWorkerGet(request),
+      (request: NextRequest) => providerIntelligenceStatusGet(request),
+    ];
+    for (const get of routes) {
+      const response = await get(new NextRequest('http://localhost/api/internal/test', {
+        headers: { authorization: `Bearer ${malformedSecret}` },
+      }));
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
     }
   });
 

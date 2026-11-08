@@ -1,6 +1,6 @@
-import { timingSafeEqual } from 'node:crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { isAuthorizedCronRequest } from '../../../../../lib/server/cron-authorization.js';
 import { getDatabase } from '../../../../../lib/server/db/index.js';
 import { getProviderSourceHealth } from '../../../../../lib/server/provider-source-health.js';
 import { workerRuntimeIdentity } from '../../../../../lib/server/provider-intelligence-feature.js';
@@ -10,13 +10,6 @@ import { getWorkerHeartbeats } from '../../../../../lib/server/worker-observabil
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET?.trim();
-  const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/, '');
-  if (!secret || !provided || provided.length !== secret.length) return false;
-  return timingSafeEqual(Buffer.from(provided, 'utf8'), Buffer.from(secret, 'utf8'));
-}
 
 type CountRow = { count: number | string };
 
@@ -28,7 +21,7 @@ async function countWhere(table: string, where: string): Promise<number> {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorizedCronRequest(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const [sourceHealth, worker, heartbeats, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
       getProviderSourceHealth(),
