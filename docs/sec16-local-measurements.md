@@ -83,3 +83,18 @@ Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-par
 | Scan-worker queue metrics | 1.711 | 0.152 | 0.259 | 0.465 | 14,027.70 | 4 |
 
 The process used a newly generated, process-only local seed and had `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL` removed. No network traffic was generated. This is one host-specific local observation, not an SLO, capacity claim, or remote database/provider evidence.
+
+## 2026-11-08 aggregate scenario-budget regression
+
+Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-parallelism --maxWorkers=1 --reporter=dot`. The suite passes 12/12. New guards estimate the worst-case serialized batch budget from iteration/retry count, configured concurrency, and per-operation timeout, rejecting workloads whose operation-time budget exceeds 60 seconds before callbacks run. This is an input-budget bound, not a hard wall-clock preemption guarantee for callbacks that ignore abort or block the event loop. Targeted ESLint and workspace typecheck pass.
+
+The same run measured 24 operations at concurrency 4 per local scenario:
+
+| Scenario | p50 ms | p95 ms | p99 ms | Throughput ops/s |
+| --- | ---: | ---: | ---: | ---: |
+| API health | 1.026 | 6.782 | 7.533 | 1,790 |
+| GitHub webhook | 5.183 | 7.751 | 8.511 | 588 |
+| SQLite query | 0.041 | 0.189 | 0.202 | 29,633 |
+| Worker queue metrics | 0.209 | 0.336 | 0.633 | 10,509 |
+
+Host load and local SQLite affect these timings. These are reproducible local harness observations, not capacity, SLO, staging, or provider evidence.
