@@ -16,7 +16,10 @@ test.describe('public auth-entry state announcements', () => {
       await route.fulfill({ status: 410, contentType: 'application/json', body: JSON.stringify({ error: 'This invitation has expired.' }) });
     });
     await page.goto('/invite/accept?token=expired-token');
-    await page.getByRole('button', { name: 'Accept invitation' }).click();
+    const acceptInvitation = page.getByRole('button', { name: 'Accept invitation' });
+    await acceptInvitation.focus();
+    await expect(acceptInvitation).toBeFocused();
+    await page.keyboard.press('Enter');
     const alert = page.getByRole('alert').filter({ hasText: 'This invitation has expired.' });
     await expect(alert).toBeVisible();
     await expect(alert).toHaveAttribute('aria-live', 'assertive');
