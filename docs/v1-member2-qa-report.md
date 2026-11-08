@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-02 overview-context error boundary
+
+- PASS: The dashboard overview endpoint returns typed organization errors for malformed explicit workspace contexts before querying dashboard data.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check` and organization-management coverage passed 16/16.
+- NOT_RUN: PostgreSQL/RBAC verification, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 activity-context error boundary
 
 - PASS: Activity requests with malformed explicit workspace contexts return typed organization errors without changing the existing tenant-isolated activity query.
