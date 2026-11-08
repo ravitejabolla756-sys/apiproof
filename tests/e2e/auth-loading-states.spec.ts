@@ -55,7 +55,8 @@ test.describe('authentication loading announcements', () => {
     await page.goto('/login');
     await page.getByLabel('Email').fill('unknown@example.test');
     await page.getByLabel('Password').fill('wrong-password');
-    await page.locator('form button[type="submit"]').click();
+    const signInSubmit = page.locator('form button[type="submit"]');
+    await signInSubmit.focus(); await expect(signInSubmit).toBeFocused(); await page.keyboard.press('Enter');
     const signInStatus = page.getByText('Signing in...', { exact: true }); await expect(signInStatus).toBeVisible(); await expect(signInStatus).toHaveAttribute('aria-atomic', 'true');
     releaseLogin?.();
     const loginAlert = page.getByRole('alert').filter({ hasText: 'Invalid email or password.' }); await expect(loginAlert).toBeVisible(); await expect(loginAlert).toHaveAttribute('aria-live', 'assertive'); await expect(loginAlert).toHaveAttribute('aria-atomic', 'true');
@@ -73,7 +74,8 @@ test.describe('authentication loading announcements', () => {
     });
     await page.goto('/forgot-password');
     await page.getByLabel('Email').fill('member@example.test');
-    await page.getByRole('button', { name: 'Send reset link' }).click();
+    const sendResetLink = page.getByRole('button', { name: 'Send reset link' });
+    await sendResetLink.focus(); await expect(sendResetLink).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByText('Sending…', { exact: true })).toBeVisible();
     releaseRequest?.();
     const requestStatus = page.getByRole('status'); await expect(requestStatus).toContainText('If an account exists'); await expect(requestStatus).toHaveAttribute('aria-atomic', 'true');
@@ -91,7 +93,8 @@ test.describe('authentication loading announcements', () => {
     });
     await page.goto('/reset-password#token=test-token');
     await page.getByLabel('New password').fill('new-password-123');
-    await page.getByRole('button', { name: 'Reset password' }).click();
+    const resetPassword = page.getByRole('button', { name: 'Reset password' });
+    await resetPassword.focus(); await expect(resetPassword).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByText('Updating…', { exact: true })).toBeVisible();
     releaseReset?.();
     const resetStatus = page.getByRole('status'); await expect(resetStatus).toContainText('Password updated.'); await expect(resetStatus).toHaveAttribute('aria-atomic', 'true');
