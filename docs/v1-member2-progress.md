@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — current public production-bundle performance probe
+
+- Evidence: `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes against the rebuilt production bundle. Median load times were 10–30 ms, response times 2–10 ms, and encoded HTML sizes 6.1–17.0 KiB over loopback.
+- Scope: strengthens local WEB-14/WEB-15 performance evidence only; the expected deferred production-database warning was emitted by the local server. No Lighthouse/Core Web Vitals, public-network, hosted deployment or production claim is made.
+
 ## 2026-11-08 checkpoint — isolated full browser matrix after response hardening
 
 - Evidence: Rebuilt current-worktree production bundle generated 83 pages. `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test --workers=1` passed **159/159 in 4.4 minutes** across all committed browser specs, including public/authenticated accessibility, organization, billing boundaries, notification/settings, provider-review, repository-recovery and finding/migration workflows. Artifacts: `/tmp/myowl-v1-ui13-full-matrix-iBpfXo`.

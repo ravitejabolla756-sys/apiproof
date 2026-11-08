@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — current public production-bundle performance probe
+
+- PASS: All 9 representative public routes returned HTTP 200 over three loopback samples against the rebuilt production bundle; median load was 10–30 ms, response 2–10 ms, and encoded HTML 6.1–17.0 KiB.
+- NOT_RUN: Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology review and production remain open. The expected deferred production-database warning was observed locally.
+
 ## 2026-11-08 — isolated full browser matrix after response hardening
 
 - PASS: Rebuilt current-worktree bundle generated 83 pages; all 159 committed browser tests passed in 4.4 minutes on isolated port 3101 with a fresh test server, including public/authenticated accessibility, organization, billing, notifications/settings, provider-review, repository-recovery and finding/migration workflows.
