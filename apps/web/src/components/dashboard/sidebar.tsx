@@ -184,7 +184,7 @@ export function Sidebar() {
           aria-label={collapsed ? 'Expand workspace navigation' : 'Collapse workspace navigation'}
           aria-expanded={!collapsed}
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:block p-1.5 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-[#F6F6F4] transition-colors"
+          className="hidden min-h-11 min-w-11 items-center justify-center rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-[#F6F6F4] transition-colors md:flex"
         >
           {collapsed ? <ChevronRight aria-hidden="true" className="w-4 h-4" /> : <ChevronLeft aria-hidden="true" className="w-4 h-4" />}
         </button>
@@ -262,15 +262,15 @@ export function Sidebar() {
             onChange={handleWorkspaceChange}
             disabled={workspaceSwitching || workspaces.length < 2}
             aria-busy={workspaceSwitching ? 'true' : undefined}
-            className="w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
+            className="min-h-11 w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
           >
             {workspaces.length === 0 && <option value="">{workspaceLoadError ? 'Workspace list unavailable' : workspaceLoadComplete ? 'No workspaces available' : 'Loading workspace…'}</option>}
             {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
           </select>
-          {workspaceLoadError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} className="font-semibold underline underline-offset-2">Try again</button></p>}
+          {workspaceLoadError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">Try again</button></p>}
           {workspaceLoadComplete && !workspaceLoadError && workspaces.length === 0 && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">No workspaces are available.</p>}
           {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
-          {workspaceContextError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-rose-700"><span>{workspaceContextError}</span>{workspaceRetryId && <button type="button" onClick={() => void switchWorkspace(workspaceRetryId)} className="font-semibold underline underline-offset-2">Retry workspace switch</button>}</p>}
+          {workspaceContextError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-rose-700"><span>{workspaceContextError}</span>{workspaceRetryId && <button type="button" onClick={() => void switchWorkspace(workspaceRetryId)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">Retry workspace switch</button>}</p>}
         </div>
         <div className="flex items-center justify-between">
             <div className={`flex flex-col min-w-0 pr-2 ${collapsed ? "md:hidden" : ""}`}>
@@ -287,7 +287,7 @@ export function Sidebar() {
               onClick={handleLogout}
               disabled={isSigningOut}
               aria-busy={isSigningOut ? 'true' : undefined}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
+              className="flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
               title="Sign out"
             >
               <LogOut aria-hidden="true" className="w-3.5 h-3.5" />

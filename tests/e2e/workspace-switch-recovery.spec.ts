@@ -19,11 +19,13 @@ test('recovers a failed workspace context switch', async ({ page }) => {
   await page.goto('/dashboard');
   const selector = page.getByLabel('Active workspace');
   await expect(selector).toHaveValue('ws_primary', { timeout: 30_000 });
+  expect((await selector.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await selector.selectOption('ws_secondary');
   const alert = page.getByRole('alert').filter({ hasText: 'Workspace could not be changed.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
   expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations, 'workspace switch error').toEqual([]);
   const retryWorkspaceSwitch = alert.getByRole('button', { name: 'Retry workspace switch' });
+  expect((await retryWorkspaceSwitch.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await retryWorkspaceSwitch.focus();
   await expect(retryWorkspaceSwitch).toBeFocused();
   await page.keyboard.press('Enter');
