@@ -52,6 +52,53 @@ const SUBSCRIPTION_STATUSES = new Set(['active', 'past_due', 'canceled', 'triali
 const BILLING_PLAN_IDS = new Set(['free', 'pro', 'team', 'enterprise']);
 export const MAX_BILLING_WEBHOOK_BYTES = 256 * 1024;
 
+/** Validate provider-neutral event data before any durable billing projection. */
+export function assertNormalizedBillingWebhookEvent(value: unknown): asserts value is BillingWebhookEvent {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BillingWebhookInputError();
+  const event = value as Record<string, unknown>;
+  const isBoundedText = (item: unknown, maxLength: number): item is string =>
+    typeof item === 'string'
+    && item.length > 0
+    && item.length <= maxLength
+    && item.trim() === item
+    && !Array.from(item).some((character) => {
+      const code = character.charCodeAt(0);
+      return code < 0x20 || code === 0x7f;
+    });
+
+  if (!isBoundedText(event.id, 255)
+    || !isBoundedText(event.provider, 64)
+    || !/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(event.provider)
+    || !isBoundedText(event.eventType, 255)
+    || typeof event.rawPayload !== 'string'
+    || event.rawPayload.length === 0
+    || Buffer.byteLength(event.rawPayload, 'utf8') > MAX_BILLING_WEBHOOK_BYTES) {
+    throw new BillingWebhookInputError();
+  }
+
+  for (const key of ['customerId', 'subscriptionId'] as const) {
+    const identifier = event[key];
+    if (identifier !== undefined && !isBoundedText(identifier, 255)) throw new BillingWebhookInputError();
+  }
+  if (event.status !== undefined && (typeof event.status !== 'string' || !SUBSCRIPTION_STATUSES.has(event.status))) {
+    throw new BillingWebhookInputError();
+  }
+  if (event.planId !== undefined && (typeof event.planId !== 'string' || !BILLING_PLAN_IDS.has(event.planId))) {
+    throw new BillingWebhookInputError();
+  }
+
+  for (const key of ['periodStart', 'periodEnd'] as const) {
+    const period = event[key];
+    if (period !== undefined && (typeof period !== 'string' || !Number.isFinite(Date.parse(period)))) {
+      throw new BillingWebhookInputError();
+    }
+  }
+  if (typeof event.periodStart === 'string' && typeof event.periodEnd === 'string'
+    && Date.parse(event.periodEnd) <= Date.parse(event.periodStart)) {
+    throw new BillingWebhookInputError();
+  }
+}
+
 export class MockBillingProvider implements BillingProvider {
   name = 'mock';
 
@@ -113,9 +160,6 @@ export class MockBillingProvider implements BillingProvider {
       ? (itemData as Record<string, unknown>).price : undefined;
     const plan = price && typeof price === 'object' && !Array.isArray(price)
       ? (price as Record<string, unknown>).nickname : body.plan_id;
-    if (typeof status === 'string' && !SUBSCRIPTION_STATUSES.has(status)) throw new BillingWebhookInputError();
-    if (typeof plan === 'string' && !BILLING_PLAN_IDS.has(plan)) throw new BillingWebhookInputError();
-
     const normalizePeriod = (value: unknown): string | undefined => {
       if (value === undefined || value === null) return undefined;
       const milliseconds = typeof value === 'number' && Number.isFinite(value) ? value * 1000
@@ -126,11 +170,8 @@ export class MockBillingProvider implements BillingProvider {
     };
     const periodStart = normalizePeriod(object.current_period_start ?? body.period_start);
     const periodEnd = normalizePeriod(object.current_period_end ?? body.period_end);
-    if (periodStart && periodEnd && Date.parse(periodEnd) <= Date.parse(periodStart)) {
-      throw new BillingWebhookInputError();
-    }
 
-    return {
+    const event: BillingWebhookEvent = {
       id,
       provider: 'mock',
       eventType,
@@ -142,6 +183,8 @@ export class MockBillingProvider implements BillingProvider {
       ...(typeof periodEnd === 'string' ? { periodEnd } : {}),
       rawPayload: rawBody,
     };
+    assertNormalizedBillingWebhookEvent(event);
+    return event;
   }
 }
 

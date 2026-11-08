@@ -27,7 +27,7 @@ import {
   recordWorkspaceUsage,
   processBillingWebhookEvent,
 } from '../apps/web/src/lib/server/billing/service.js';
-import { MockBillingProvider } from '../apps/web/src/lib/server/billing/provider.js';
+import { BillingWebhookInputError, MockBillingProvider } from '../apps/web/src/lib/server/billing/provider.js';
 import { PLANS } from '../apps/web/src/lib/server/billing/plans.js';
 import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout/route.js';
 import { POST as createBillingPortal } from '../apps/web/src/app/api/billing/portal/route.js';
@@ -526,5 +526,32 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
 
     await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'past_due', planId: 'pro' });
     await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({ allowed: false });
+  });
+
+  it('rejects invalid normalized adapter output before claiming or projecting an event', async () => {
+    const user = await createUserAsync('billing-normalized-boundary@apiproof.test', 'Pass123!#$', 'Normalized Boundary');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    await getWorkspaceSubscription(workspace.id);
+    await getDatabase().execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_normalized_boundary', status = 'past_due'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    await expect(processBillingWebhookEvent({
+      id: 'evt_normalized_period_invalid',
+      provider: 'mock',
+      eventType: 'customer.subscription.updated',
+      customerId: 'cus_normalized_boundary',
+      status: 'active',
+      planId: 'team',
+      periodStart: '2026-02-01T00:00:00.000Z',
+      periodEnd: '2026-01-01T00:00:00.000Z',
+      rawPayload: '{"id":"evt_normalized_period_invalid"}',
+    })).rejects.toBeInstanceOf(BillingWebhookInputError);
+
+    await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'past_due', planId: 'free' });
+    await expect(getDatabase().queryOne(
+      'SELECT id FROM billing_webhook_events WHERE id = ?', ['evt_normalized_period_invalid'],
+    )).resolves.toBeUndefined();
   });
 });

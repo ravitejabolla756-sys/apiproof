@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { getDatabase } from '../db/index.js';
 import { getPlanDefinition, type PlanDefinition } from './plans.js';
-import type { BillingWebhookEvent } from './provider.ts';
+import { assertNormalizedBillingWebhookEvent, type BillingWebhookEvent } from './provider.js';
 
 export interface WorkspaceSubscription {
   workspaceId: string;
@@ -254,6 +254,7 @@ export async function recordWorkspaceUsage(
 }
 
 export async function processBillingWebhookEvent(event: BillingWebhookEvent): Promise<{ success: boolean; duplicate: boolean }> {
+  assertNormalizedBillingWebhookEvent(event);
   const db = getDatabase();
   const payloadHash = crypto.createHash('sha256').update(event.rawPayload).digest('hex');
   const now = new Date().toISOString();
