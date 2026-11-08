@@ -1345,6 +1345,14 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — compatibility-map recovery focus checkpoint
+
+- Impeccable detector: PASS with no findings for the compatibility-map component and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `CI=true PLAYWRIGHT_PORT=3125 pnpm exec playwright test tests/e2e/compatibility-map-recovery.spec.ts --workers=1 --reporter=line`: PASS, 2/2; initial and refresh failure alerts receive focus while retry/refresh controls retain their busy semantics.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

@@ -84,6 +84,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const requestId = useRef(0);
   const controller = useRef<AbortController | null>(null);
   const hasRepositories = useRef(false);
@@ -130,8 +131,12 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
     };
   }, [loadMap]);
 
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
+
   if (error && repositories.length === 0) {
-    return <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900">
+    return <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="rounded-2xl border border-[#F8D7DA] bg-[#FDF2F2] p-6 text-center text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
       <p>{error}</p>
       <button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-busy={refreshing ? 'true' : undefined} className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#E8E8E5] bg-white px-3 py-2 font-medium text-[#111111] disabled:opacity-50">
         <RefreshCw aria-hidden="true" className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Retrying…' : 'Retry'}
@@ -195,7 +200,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         </div>
       </div>
 
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} aria-label="Retry compatibility map refresh" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
+      {error && <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-2 rounded-lg border border-[#F8D7DA] bg-[#FDF2F2] px-3 py-2 text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>Refresh failed: {error}</span><button type="button" onClick={() => void loadMap(true)} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} aria-label="Retry compatibility map refresh" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{refreshing ? "Retrying…" : "Retry"}</button></div>}
 
       <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-xs md:grid-cols-3">
         <div className="space-y-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
