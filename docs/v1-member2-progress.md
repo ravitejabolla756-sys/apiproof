@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 pipeline axe and contrast remediation
+
+- Change: inactive pipeline visualization panels now become inert while hidden, preventing focusable code regions from remaining inside `aria-hidden` content; the AST badge now uses the passing slate contrast token. Stage controls retain their 44px targets.
+- Files: `apps/web/src/components/landing/scroll-pipeline.tsx`, `tests/e2e/pipeline-accessibility.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; focused pipeline keyboard/touch-target/axe journey passed 1/1 in 8.6 seconds; public axe and contrast audits passed 2/2 in 1.0 minute across all audited public routes; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/WEB-15 evidence only; full manual assistive-technology review, hosted CI, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 auth, FAQ and pipeline navigation touch targets
 
 - Change: FAQ support CTA, landing pipeline stage navigation, dashboard sidebar brand navigation, and standalone login/recovery/verification home links now expose explicit 44px minimum touch targets while preserving destinations, keyboard behavior, and existing state semantics.

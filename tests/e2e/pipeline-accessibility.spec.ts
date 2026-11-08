@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test('exposes accessible pipeline stage navigation', async ({ page }) => {
   await page.goto('/');
@@ -19,4 +20,5 @@ test('exposes accessible pipeline stage navigation', async ({ page }) => {
     expect(box?.height, `stage ${index + 1} height`).toBeGreaterThanOrEqual(44);
     expect(box?.width, `stage ${index + 1} width`).toBeGreaterThanOrEqual(44);
   }
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });

@@ -465,6 +465,7 @@ export function ScrollPipeline() {
               {/* ================================================================= */}
               <div
                 aria-hidden={activeStep !== 0}
+                inert={activeStep !== 0}
                 className={`absolute inset-0 space-y-5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   activeStep === 0
                     ? 'opacity-100 translate-y-0 pointer-events-auto z-10'
@@ -585,7 +586,7 @@ export function ScrollPipeline() {
                     <div className="font-bold text-[#000E29] text-sm">src/billing.ts</div>
                     <div className="text-slate-600 text-[11px]">Line 42</div>
                   </div>
-                  <span className="text-slate-500 text-xs bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-slate-600 text-xs bg-slate-100 px-2 py-0.5 rounded">
                     AST Node: CallExpression
                   </span>
                 </div>
