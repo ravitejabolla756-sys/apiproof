@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 responsive findings recovery keyboard coverage
+
+- Change: Extended the mobile responsive findings filtered-empty journey to focus the “Clear filters” action, verify focus visibility, and activate recovery with Enter while preserving multi-provider wrapping, no-overflow and axe assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; complete responsive findings suite passed 2/2 in 17.3 seconds. Artifacts: `/tmp/myowl-v1-findings-responsive-keyboard-artifacts`.
+- Scope: local UI-12/UI-13 responsive/accessibility evidence only; hosted CI, integrated staging, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 repository filtered-empty keyboard recovery
 
 - Change: Extended the repository filtered-empty journey to focus the “Clear filters” recovery action, verify focus visibility, and activate it with Enter before restoring the repository list; health-filter keyboard assertions remain intact.
