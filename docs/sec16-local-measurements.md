@@ -17,6 +17,21 @@ Host: Node `v24.14.1`, Windows `10.0.26300`, Intel Core Ultra 5 125H, 18 logical
 
 The run passed all 4 SEC-16 tests. Separate deterministic scenarios verified transient recovery within three attempts, exhaustion at the configured retry limit, and injected operation failures with sanitized error reporting. These values are a single local regression baseline, not an SLO or a capacity claim; host load and SQLite scheduling affect timing. Staging load, provider/database infrastructure behavior, operational thresholds, and worker-death recovery remain separately gated.
 
+## 2026-11-08 bounded retry timeout regression
+
+Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --reporter=dot`. The suite passed 10/10 after adding a deterministic never-settling retry callback. The test uses a 5 ms timeout and verifies cooperative abort and that the retry loop stops after the first uncertain attempt. This is control-flow verification, not a throughput or capacity measurement.
+
+The same test run emitted the following local in-process measurements (24 operations per scenario, concurrency 4):
+
+| Scenario | p50 ms | p95 ms | p99 ms | Throughput ops/s | Max in flight |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| API health handler | 0.27 | 3.56 | 3.78 | 4,403.18 | 4 |
+| GitHub webhook signature/claim/record | 12.47 | 20.91 | 22.24 | 236.77 | 4 |
+| SQLite `SELECT 1` | 0.02 | 0.04 | 0.13 | 70,609.00 | 4 |
+| Scan-worker queue metrics | 0.17 | 0.34 | 1.84 | 6,510.95 | 4 |
+
+These are environment-specific single-run observations and do not establish SLOs, staging capacity, or real provider/database behavior.
+
 ## 2026-11-08 SEC-16 throughput accounting correction
 
 - When a timeout stopped the harness from starting remaining iterations, `throughputPerSecond` still divided requested iterations by elapsed duration. The metric now uses actual started operations, and the timeout regression verifies the numerator reflects `started` rather than `iterations`.

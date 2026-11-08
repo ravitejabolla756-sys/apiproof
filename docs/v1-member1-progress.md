@@ -322,3 +322,8 @@ Phase 0 read-only checks:
 
 - Worker health now reports `freshness: unknown` when a persisted scheduled-worker heartbeat has a malformed start timestamp; invalid telemetry can no longer appear fresh merely because its parsed age fell back to zero.
 - `sec13-worker-observability` passes 7/7, targeted ESLint passes, and full workspace `pnpm typecheck` passes. A combined run with `phase5-production-operations` failed during that file's setup because `APIPROOF_LOCAL_SEED_PASSWORD` is not configured in this environment; no credential was supplied or exposed. SEC-13 remains PARTIAL pending approved alerting/SLO decisions, PostgreSQL query-plan evidence, and staged worker-failure rehearsal.
+
+### 2026-11-08 SEC-16 bounded retry timeout
+
+- Bounded retry attempts now have a validated per-attempt timeout and cooperative abort signal. A timeout stops the retry loop because the in-process callback may still be running and its side-effect state is unknown.
+- `sec16-load-resilience` passes 10/10, targeted ESLint passes, and full workspace `pnpm typecheck` passes. The retry-timeout regression verifies one attempt starts, its signal is aborted, and no overlapping retry begins. Staging infrastructure, SLOs, and real worker-failure recovery remain unverified.

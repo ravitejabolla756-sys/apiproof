@@ -177,18 +177,30 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
  */
 export async function runBoundedRetryScenario(options: {
   maxAttempts: number;
-  operation: (attempt: number) => Promise<void> | void;
+  timeoutMs?: number;
+  operation: (attempt: number, signal: AbortSignal) => Promise<void> | void;
 }): Promise<RetryReport> {
   assertLocalHarnessEnvironment();
   assertBoundedInteger('max_attempts', options.maxAttempts, 1, 10);
+  const timeoutMs = options.timeoutMs ?? SEC16_DEFAULT_TIMEOUT_MS;
+  assertBoundedInteger('timeout_ms', timeoutMs, 1, 60_000);
   const errors: string[] = [];
 
   for (let attempt = 1; attempt <= options.maxAttempts; attempt += 1) {
+    const controller = new AbortController();
     try {
-      await options.operation(attempt);
+      await withTimeout(
+        Promise.resolve(options.operation(attempt, controller.signal)),
+        timeoutMs,
+        () => controller.abort(),
+      );
       return { status: 'recovered', attempts: attempt, errors };
     } catch (error) {
-      errors.push(safeErrorCode(error));
+      const code = safeErrorCode(error);
+      errors.push(code);
+      // The timed-out callback may still be performing side effects. Do not
+      // start another attempt while its completion state is unknown.
+      if (code === 'OPERATION_TIMEOUT') return { status: 'exhausted', attempts: attempt, errors };
     }
   }
 

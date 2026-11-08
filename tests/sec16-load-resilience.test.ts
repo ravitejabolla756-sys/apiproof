@@ -178,6 +178,24 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     });
   });
 
+  it('times out a retry attempt, signals abort, and does not overlap a retry', async () => {
+    let attemptsStarted = 0;
+    let signalAborted = false;
+    const report = await runBoundedRetryScenario({
+      maxAttempts: 4,
+      timeoutMs: 5,
+      operation: (_attempt, signal) => {
+        attemptsStarted += 1;
+        signal.addEventListener('abort', () => { signalAborted = true; }, { once: true });
+        return new Promise<void>(() => undefined);
+      },
+    });
+
+    expect(attemptsStarted).toBe(1);
+    expect(signalAborted).toBe(true);
+    expect(report).toEqual({ status: 'exhausted', attempts: 1, errors: ['OPERATION_TIMEOUT'] });
+  });
+
   it('rejects unsafe or unbounded scenario labels before executing operations', async () => {
     let operationCalled = false;
     await expect(runLocalLoadScenario({
