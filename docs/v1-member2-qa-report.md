@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Auth submission keyboard semantics
+
+- PASS: Complete auth-loading suite passed 4/4 in 22.7 seconds; login, reset-request and password-reset submissions now verify keyboard focus and Enter activation while retaining loading, error and status assertions.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12 evidence only. Transactional email, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Latest full browser regression
 
 - PASS: Production build generated 83 static pages; complete CI-mode Playwright matrix passed 92/92 in 2.7 minutes after the latest accessibility/recovery coverage additions.

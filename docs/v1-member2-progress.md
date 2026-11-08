@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 auth submission keyboard semantics
+
+- Change: Extended login, password-reset-request and password-reset loading journeys to focus their submit controls, verify focus visibility, and activate each submission with Enter while preserving session/error/loading/status assertions.
+- Evidence: Targeted ESLint and `git diff --check` passed; complete auth-loading suite passed 4/4 in 22.7 seconds. Artifacts: `/tmp/myowl-v1-auth-loading-keyboard-artifacts`.
+- Scope: local UI-12 auth/accessibility evidence only; no email delivery, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 latest full regression after accessibility coverage
 
 - Change: Rebuilt the web bundle and ran the complete committed browser matrix after the latest auth-entry, control-semantics, Slack, dashboard, repository and findings keyboard coverage.
