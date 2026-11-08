@@ -233,6 +233,22 @@ describe('Production Authentication & Session Persistence', () => {
       const data = (await throttledRes.json()) as { code: string };
       expect(data.code).toBe('RATE_LIMIT_EXCEEDED');
     });
+
+    it('stores only a digest of the normalized login email in the rate-limit key', async () => {
+      for (const email of ['Privacy@example.com', 'privacy@example.com']) {
+        const response = await authPost(createRequest('https://apiproof.test/api/auth', {
+          body: { action: 'login', email, password: 'WrongPassword!' },
+        }));
+        expect(response.status).toBe(401);
+      }
+
+      const rows = await getDatabase().query<{ key: string; points: number }>(
+        "SELECT key, points FROM rate_limits WHERE key LIKE 'auth:login:%'",
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0]?.key).not.toContain('privacy@example.com');
+      expect(rows[0]?.points).toBe(2);
+    });
   });
 
   // ---------------------------------------------------------------------------

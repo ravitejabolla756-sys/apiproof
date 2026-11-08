@@ -179,7 +179,8 @@ export async function POST(req: Request) {
       const { email, password } = validation.data;
 
       // Rate limit: 10 login attempts per 5 minutes per IP + email
-      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${email}`, 10, 5 * 60 * 1000);
+      const emailKey = crypto.createHash('sha256').update(email, 'utf8').digest('hex');
+      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${emailKey}`, 10, 5 * 60 * 1000);
       if (!rateCheck.allowed) {
         return rateLimitResponse(rateCheck.resetInMs);
       }
