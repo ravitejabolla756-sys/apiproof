@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-03 invitation expiry
+
+- PASS: Added an expired-invitation backend assertion covering stable refusal and no membership creation; `tests/organization-management.test.ts` passed 11/11 in 882 ms.
+- NOT_RUN: Provider-backed invitation email, PostgreSQL/RBAC and production verification remain open.
+
 ## 2026-11-08 — NOT-01/NOT-02 transactional email contract
 
 - PASS: Added a review-only email contract defining server-owned event identity, required-message protection, optional preference checks, template safety, retries, dead-letter handling and redaction.

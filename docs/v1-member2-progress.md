@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-03 invitation expiry contract test
+
+- Change: Added backend contract coverage for an expired invitation, asserting the stable `INVITATION_EXPIRED` refusal and verifying no workspace membership is created.
+- Evidence: Targeted ESLint and `git diff --check` passed; `tests/organization-management.test.ts` passed 11/11 in 882 ms. Provider-backed email delivery remains unimplemented and gated.
+- Scope: local ORG-03 authorization/expiry evidence only; approved transactional email, Member 1 integration, PostgreSQL and production verification remain open.
+
 ## 2026-11-08 checkpoint — NOT-01/NOT-02 transactional email contract proposal
 
 - Change: Added a review-only email contract covering immutable event identity, required/optional categories, server-side recipient authorization, template safety, idempotency, provider acknowledgement, retries, dead-letter handling and redaction.

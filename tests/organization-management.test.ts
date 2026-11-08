@@ -101,6 +101,17 @@ describe('workspace administration', () => {
     await expect(acceptWorkspaceInvitation(owner.user.id, first.token)).rejects.toMatchObject({ code: 'INVITATION_ALREADY_USED' });
   });
 
+  it('rejects an expired invitation without creating membership', async () => {
+    const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    const invited = await createUserWithSession('expired-member@example.test', 'MemberPassword123!', 'Expired Member');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const created = await createWorkspaceInvitation(owner.user.id, workspace.id, invited.user.email, 'member');
+    await getDatabase().execute('UPDATE workspace_invitations SET expires_at = ? WHERE id = ?', ['2020-01-01T00:00:00.000Z', created.invitation.id]);
+
+    await expect(acceptWorkspaceInvitation(invited.user.id, created.token)).rejects.toMatchObject({ code: 'INVITATION_EXPIRED' });
+    expect(await getDatabase().queryOne('SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?', [workspace.id, invited.user.id])).toBeUndefined();
+  });
+
   it('protects invitations from email mismatch and retains at least one owner', async () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const wrongUser = await createUserWithSession('wrong@example.test', 'WrongPassword123!', 'Wrong');
