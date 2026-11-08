@@ -2116,3 +2116,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/providers/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/provider-repository-recovery-loading.spec.ts`, `tests/e2e/repository-recovery.spec.ts`.
 - Evidence: targeted ESLint and `git diff --check` passed; Impeccable detector returned no findings; provider/repository focused and existing recovery coverage passed 6/6; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13, ORG-02 and ORG-11 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/NOT-06 notification recovery busy semantics
+
+- Change: notification preferences now preserve the initial-load error surface while retrying and expose disabled plus `aria-busy="true"` on Try again until recovery succeeds, without changing preference save behavior.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-recovery-loading.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; Impeccable reported one incumbent purple-palette warning on an untouched heading and no new state finding; the new held-retry and existing notification journeys passed 4/4; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and NOT-06 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, provider delivery, PostgreSQL/RBAC and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

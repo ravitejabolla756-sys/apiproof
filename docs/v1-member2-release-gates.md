@@ -161,3 +161,7 @@ Inventory and compatibility degraded-state retries remain visible and expose dis
 ## Latest provider/repository recovery evidence — 2026-11-08
 
 Provider-coverage and repository-list degraded-state retries remain visible and expose disabled plus `aria-busy` semantics while their requests are pending; focused and existing provider/repository coverage passes 6/6 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open. Release recommendation stays NO-GO.
+
+## Latest notification recovery evidence — 2026-11-08
+
+Notification-preference initial-load recovery remains visible and exposes disabled plus `aria-busy` semantics while its request is pending; focused and existing notification coverage passes 4/4 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, provider delivery, PostgreSQL/RBAC and production remain open. Release recommendation stays NO-GO.

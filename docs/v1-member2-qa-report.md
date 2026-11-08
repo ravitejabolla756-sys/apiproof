@@ -717,6 +717,14 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, GitHub/provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — notification recovery busy checkpoint
+
+- Impeccable detector: no new finding; one incumbent purple-palette warning remains on the untouched notification heading.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/notification-recovery-loading.spec.ts tests/e2e/public-site.spec.ts -g "notification|preference" --reporter=line`: PASS, 4/4; the held Try again action remains visible and exposes disabled/`aria-busy` during recovery, while account and preference save/error journeys remain green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, provider delivery, PostgreSQL/RBAC and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.
