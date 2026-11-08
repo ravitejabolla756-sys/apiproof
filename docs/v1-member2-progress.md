@@ -1790,6 +1790,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported five incumbent purple-palette warnings on untouched workspace headings; targeted ESLint and `git diff --check` passed; focused Playwright coverage passed 1/1 in 10.1 seconds; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-04 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 disabled-control contrast regression
+
+- Change: raised the shared disabled button opacity from 50% to 70% so disabled busy controls retain WCAG AA text contrast while preserving the disabled cursor/state treatment.
+- Files: `apps/web/src/components/ui/button.tsx`.
+- Evidence: the first full CI-mode matrix exposed one `/dashboard/inventory` axe contrast failure at 4.14:1 after the new disabled refresh semantics; targeted detector, ESLint and `git diff --check` passed after correction; the affected authenticated-route audit passed 1/1 in 8.4 seconds; the complete current matrix passed 142/142 in 3.6 minutes; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 regression evidence only; the expected owner-privilege refusal log remains a negative-case fixture, while hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 compatibility-map retry busy semantics
 
 - Change: the dashboard compatibility-map initial retry now stays visible, disabled and marked `aria-busy="true"` while recovery is pending, preserving the truthful repository/provenance boundary.
