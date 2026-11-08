@@ -1778,6 +1778,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, and repository typecheck passed; the focused settings-loading journey passed 1/1, and the complete dashboard data-state suite passed 16/16 in 1.1 minutes, including loading, empty, error, retry and action-feedback coverage.
 - Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 finding-detail loading semantics
+
+- Change: the finding-detail workbench loading status now exposes `aria-busy="true"`, complementing existing busy semantics for migration planning and secure verification actions without changing the review-only workflow.
+- Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/finding-detail-loading.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; focused hermetic Playwright coverage passed 2/2 in 7.1 seconds for delayed finding loading and existing migration-plan action feedback.
+- Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 notification-settings busy semantics
 
 - Change: the notification-preferences surface now exposes `aria-busy="true"` during initial loading and preference saves, while retaining its existing live announcements, required-message protections, and beta delivery boundary.

@@ -54,6 +54,8 @@ Latest provider-coverage evidence: the route and loading status expose `aria-bus
 
 Latest activity/migration/repository-detail evidence: delayed-response journeys pass 5/5 with `aria-busy` on activity, migration and repository-detail loading states, while existing refresh, retry, focus, empty/error and axe checks remain green. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
 
+Latest finding-detail evidence: delayed finding loading and existing migration-plan action feedback pass 2/2 with `aria-busy` on the initial loading status and action controls. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.
