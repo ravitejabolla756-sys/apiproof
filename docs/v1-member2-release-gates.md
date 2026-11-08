@@ -115,3 +115,5 @@ Latest repository-scan evidence: repository scan controls expose `aria-busy` whi
 Latest invitation evidence: workspace invitation creation exposes `aria-busy` while the POST is pending and preserves the manual-share beta boundary; rebuilt-bundle focused coverage passes 1/1 in 12.6 seconds. Approved transactional email, hosted CI, integrated staging, PostgreSQL/RBAC, Member 1 review and production remain open.
 
 Latest GitHub authorization evidence: settings and repository-dialog authorization controls expose `aria-busy` while installation requests are pending; rebuilt-bundle loading/recovery coverage passes 2/2 in 13.9 seconds. GitHub/provider approval, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+Latest member-role evidence: the owner-only workspace role selector exposes `aria-busy` while a role mutation is pending; focused coverage passes 1/1 in 10.1 seconds and the 83-page production build passes. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production remain open.

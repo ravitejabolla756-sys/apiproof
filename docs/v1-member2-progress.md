@@ -1783,6 +1783,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `pnpm lint` passed; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed with 1,341 tests passed, 4 skipped tests, 162 test files passed and 1 skipped file in 121.86 seconds.
 - Scope: this is hermetic local regression evidence; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/ORG-04 member-role action busy semantics
+
+- Change: the owner-only workspace member role selector now exposes `aria-busy="true"` while a role mutation is pending; existing owner-only and last-owner protections are unchanged.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/member-role-action-loading.spec.ts`.
+- Evidence: Impeccable detector reported five incumbent purple-palette warnings on untouched workspace headings; targeted ESLint and `git diff --check` passed; focused Playwright coverage passed 1/1 in 10.1 seconds; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-04 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12/NOT-03 GitHub authorization action busy semantics
 
 - Change: GitHub authorization controls in workspace settings and the repository connection dialog now expose `aria-busy="true"` while installation URL requests are pending; existing failure/retry and popup behavior remains unchanged.
