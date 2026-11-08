@@ -115,10 +115,10 @@ export default function LoginPage() {
             type="button"
             disabled={loading}
             onClick={() => { setMode('login'); setError(''); }}
-            className={`flex-1 py-2.5 rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
+            className={`flex min-h-11 flex-1 items-center justify-center rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
               mode === 'login'
                 ? 'bg-white text-[#0F172A] shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                : 'text-slate-600 hover:text-slate-800'
             }`}
           >
             Sign In
@@ -127,10 +127,10 @@ export default function LoginPage() {
             type="button"
             disabled={loading}
             onClick={() => { setMode('signup'); setError(''); }}
-            className={`flex-1 py-2.5 rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
+            className={`flex min-h-11 flex-1 items-center justify-center rounded-lg font-mono text-xs font-medium uppercase tracking-wider transition-all disabled:opacity-60 ${
               mode === 'signup'
                 ? 'bg-white text-[#0F172A] shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                : 'text-slate-600 hover:text-slate-800'
             }`}
           >
             Create Account
@@ -163,7 +163,7 @@ export default function LoginPage() {
             </svg>
             Continue with GitHub
           </button>
-          <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+          <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-wider text-slate-600">
             <span className="h-px flex-1 bg-slate-200" />
             <span>or use email</span>
             <span className="h-px flex-1 bg-slate-200" />
@@ -251,7 +251,7 @@ export default function LoginPage() {
         )}
       </div>
 
-      <p className="mt-6 text-xs text-slate-500">
+      <p className="mt-6 text-xs text-slate-600">
         Deterministic AST analysis. No AI required.
       </p>
     </main></>

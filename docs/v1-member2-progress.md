@@ -1470,3 +1470,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/about/page.tsx`, `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-contrast-audit.spec.ts`.
 - Evidence: the audit first reproduced `/about` and `/contact` failures; after correction, the full public contrast journey passed 1/1 across all 16 routes in 26.0 seconds; detector, targeted ESLint and `git diff --check` passed; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this materially strengthens local UI-12 and WEB-15 evidence; hosted CI, manual assistive-technology review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 full public axe audit
+
+- Change: added a retained all-rule axe audit over 21 public/auth-entry routes. Fixed login inactive-tab, divider and footer-note contrast and added explicit 44px mode-tab targets.
+- Files: `apps/web/src/app/login/page.tsx`, `tests/e2e/public-axe-audit.spec.ts`, `tests/e2e/login-accessibility.spec.ts`.
+- Evidence: the initial full audit reproduced three `/login` color-contrast failures; after correction, all 21 routes passed axe in 39.1 seconds; login mobile tab/axe journey passed 1/1 in 7.5 seconds; detector, targeted ESLint, `git diff --check`, repository typecheck and web production build passed with 83 generated pages.
+- Scope: this materially strengthens local UI-12/UI-13 and WEB-15 evidence; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
