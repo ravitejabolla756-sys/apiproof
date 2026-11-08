@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — repository detail and scan response cache boundaries
+
+- PASS: Repository detail/delete and scan responses are private/non-cacheable across direct authorization, access denial, plan-limit, provider, success and failure paths.
+- PASS: Seeded repository and organization coverage passed 27/27; targeted ESLint, web typecheck and diff checks passed.
+- NOT_RUN: Live GitHub/provider authorization, hosted CI, staging and production scans remain open.
+
 ## 2026-11-08 — migration, pull-request and GitHub-install response cache boundaries
 
 - PASS: Migration planning/list, pull-request list and GitHub installation-start responses are private/non-cacheable across direct unauthorized, success and failure paths.

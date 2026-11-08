@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — repository detail and scan response cache boundaries
+
+- Change: Repository detail/delete and live-scan responses now use the shared private `no-store` policy for authorization, access denial, plan limits, provider failures, scan success and scan failure outcomes.
+- Evidence: Seeded repository and organization coverage passed 27/27; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: local UI-13/repository data-protection hardening only; live GitHub/provider authorization and production scans remain separately gated.
+
 ## 2026-11-08 checkpoint — migration, pull-request and GitHub-install response cache boundaries
 
 - Change: Migration planning/list, pull-request list and GitHub installation-start responses now use the shared private `no-store` policy for unauthorized, successful and direct failure outcomes; organization errors retain their existing policy.

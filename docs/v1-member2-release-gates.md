@@ -28,6 +28,8 @@ Latest billing privacy evidence: checkout, portal and subscription responses use
 
 Latest integration-route privacy evidence: migration planning/list, pull-request list and GitHub installation-start responses use private non-cacheable headers; seeded organization/GitHub/repository coverage passes 36/36 and web typecheck passes. PostgreSQL/RBAC, provider approval, hosted CI, staging and production remain open.
 
+Latest repository privacy evidence: repository detail/delete and scan responses use private non-cacheable headers across access, limit, provider, success and failure paths; seeded repository/organization coverage passes 27/27 and web typecheck passes. Live provider authorization, hosted CI, staging and production scans remain open.
+
 Latest provider-coverage UI-12 evidence: the fallback unavailable state exposes a polite atomic status region; Impeccable detector, targeted lint, repository typecheck and provider/repository recovery browser coverage pass 2/2. Hosted CI, manual assistive-technology review, staging and production remain open.
 
 Latest UI-13 evidence: the rebuilt current-worktree production bundle generated 83 pages and the complete isolated Playwright matrix passed 159/159 in 3.8 minutes on port 3101 with a fresh SQLite database. Hosted CI, integrated staging, full manual assistive-technology review and production remain open.

@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let repo;
@@ -15,7 +16,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     const access = await requireRepositoryAccess(id, user.id);
     repo = access.repository;
   } catch {
-    return NextResponse.json({ error: 'Repository not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Repository not found' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const db = getDatabase();
@@ -40,14 +41,14 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     repository: repo,
     findings,
     scans,
-  });
+  }, { headers: PRIVATE_NO_STORE_HEADERS });
 }
 
 export async function DELETE(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let repo;
@@ -55,11 +56,11 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
     const access = await requireRepositoryAccess(id, user.id);
     repo = access.repository;
   } catch {
-    return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
+    return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const db = getDatabase();
   await db.execute('DELETE FROM repositories WHERE id = ?', [repo.id]);
 
-  return NextResponse.json({ success: true, id: repo.id });
+  return NextResponse.json({ success: true, id: repo.id }, { headers: PRIVATE_NO_STORE_HEADERS });
 }

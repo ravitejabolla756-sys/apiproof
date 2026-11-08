@@ -12,6 +12,7 @@ import {
 import { checkWorkspaceLimit, recordWorkspaceUsage } from '@/lib/server/billing/service';
 import { assertFounderScanAuthorization, FounderScanAuthorizationError } from '@/lib/server/founder-scan-authorization';
 import { safeFailureCode } from '@/lib/server/productization-persistence';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const csrf = assertCsrfProtection(req);
@@ -27,16 +28,16 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
     assertFounderScanAuthorization(user.id);
   } catch (error) {
     if (error instanceof FounderScanAuthorizationError && error.code === 'FOUNDER_SCAN_ID_NOT_CONFIGURED') {
-      return NextResponse.json({ error: 'Live scan authorization is not configured.', code: error.code }, { status: 503 });
+      return NextResponse.json({ error: 'Live scan authorization is not configured.', code: error.code }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    return NextResponse.json({ error: 'Live scans are restricted to the authorized founder account.', code: 'FOUNDER_SCAN_NOT_AUTHORIZED' }, { status: 403 });
+    return NextResponse.json({ error: 'Live scans are restricted to the authorized founder account.', code: 'FOUNDER_SCAN_NOT_AUTHORIZED' }, { status: 403, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   // Rate limit: 10 scans per 5 minutes per user
@@ -53,7 +54,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     repo = access.repository;
     workspaceId = access.workspace.id;
   } catch {
-    return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
+    return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   // Billing plan scan limit check (runs after authorization)
@@ -65,13 +66,13 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
       metric: 'scans',
       limit: limitCheck.limit,
       current: limitCheck.current,
-    }, { status: 402 });
+    }, { status: 402, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
     const result = await runRepositoryScan(repo.id, user.id);
     await recordWorkspaceUsage(workspaceId, 'scans');
-    return NextResponse.json({ success: true, result });
+    return NextResponse.json({ success: true, result }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';
     console.error('Scan execution failed', { code: safeFailureCode(error, 'SCAN_FAILED') });
@@ -79,20 +80,20 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
       return NextResponse.json({
         error: 'Target repository is empty or has no commits on the default branch. Add an initial commit and run a fresh scan.',
         code: 'REPOSITORY_EMPTY',
-      }, { status: 422 });
+      }, { status: 422, headers: PRIVATE_NO_STORE_HEADERS });
     }
     if (message.includes('GITHUB_DEFAULT_BRANCH_NOT_FOUND')) {
       return NextResponse.json({
         error: `Default branch '${repo.default_branch}' not found in remote repository.`,
         code: 'DEFAULT_BRANCH_NOT_FOUND',
-      }, { status: 422 });
+      }, { status: 422, headers: PRIVATE_NO_STORE_HEADERS });
     }
     if (message.includes('GITHUB_AUTHORIZATION_FAILED')) {
       return NextResponse.json({
         error: 'GitHub App is not authorized to access this repository. Check installation permissions.',
         code: 'GITHUB_UNAUTHORIZED',
-      }, { status: 403 });
+      }, { status: 403, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    return NextResponse.json({ error: 'Scan failed. Review the repository status and try again.', code: 'SCAN_FAILED' }, { status: 500 });
+    return NextResponse.json({ error: 'Scan failed. Review the repository status and try again.', code: 'SCAN_FAILED' }, { status: 500, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }

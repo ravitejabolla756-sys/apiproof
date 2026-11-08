@@ -107,6 +107,7 @@ describe('GET /api/repositories', () => {
       { params: Promise.resolve({ id: 'repo_b' }) },
     );
     expect(foreignRepositoryResponse.status).toBe(404);
+    expect(foreignRepositoryResponse.headers.get('cache-control')).toBe('private, no-store, max-age=0');
   });
 
   it('rejects the legacy owner/name connection payload without creating a synthetic repository', async () => {
