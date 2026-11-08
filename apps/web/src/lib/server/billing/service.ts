@@ -288,26 +288,37 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
       `, [event.customerId]);
 
       if (sub) {
-        let newStatus = event.status || 'active';
-        let planId = event.planId;
+        let newStatus: string | undefined;
+        let planId: string | undefined;
 
-        if (event.eventType === 'customer.subscription.deleted') {
+        if (event.eventType === 'customer.subscription.updated') {
+          // An incomplete subscription snapshot must never grant entitlements
+          // through a default status. Only an explicit normalized state is usable.
+          if (event.status) {
+            newStatus = event.status;
+            planId = event.planId;
+          }
+        } else if (event.eventType === 'customer.subscription.deleted') {
           newStatus = 'canceled';
           planId = 'free';
         } else if (event.eventType === 'invoice.payment_failed') {
           newStatus = 'past_due';
         }
 
-        await tx.execute(`
-          UPDATE workspace_subscriptions
-          SET status = ?,
-              plan_id = COALESCE(?, plan_id),
-              subscription_id = COALESCE(?, subscription_id),
-              current_period_start = COALESCE(?, current_period_start),
-              current_period_end = COALESCE(?, current_period_end),
-              updated_at = ?
-          WHERE workspace_id = ?
-        `, [newStatus, planId || null, event.subscriptionId || null, event.periodStart || null, event.periodEnd || null, now, sub.workspace_id]);
+        // Unknown provider events are durably claimed for idempotency but do
+        // not affect subscription state or workspace entitlements.
+        if (newStatus !== undefined) {
+          await tx.execute(`
+            UPDATE workspace_subscriptions
+            SET status = ?,
+                plan_id = COALESCE(?, plan_id),
+                subscription_id = COALESCE(?, subscription_id),
+                current_period_start = COALESCE(?, current_period_start),
+                current_period_end = COALESCE(?, current_period_end),
+                updated_at = ?
+            WHERE workspace_id = ?
+          `, [newStatus, planId || null, event.subscriptionId || null, event.periodStart || null, event.periodEnd || null, now, sub.workspace_id]);
+        }
       }
     }
 

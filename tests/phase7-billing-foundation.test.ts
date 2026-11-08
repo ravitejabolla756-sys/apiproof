@@ -498,4 +498,33 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     `);
     expect(Number(recorded?.count)).toBe(1);
   });
+
+  it('does not grant entitlements for unknown or incomplete subscription events', async () => {
+    const user = await createUserAsync('billing-unrecognized-event@apiproof.test', 'Pass123!#$', 'Unrecognized Event');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_unrecognized_event', plan_id = 'pro', status = 'past_due'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    const provider = new MockBillingProvider();
+    const signAndProcess = async (payload: Record<string, unknown>) => {
+      const rawPayload = JSON.stringify(payload);
+      const signature = crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(rawPayload).digest('hex');
+      const event = await provider.verifyAndParseWebhook(rawPayload, signature);
+      return processBillingWebhookEvent(event);
+    };
+
+    await signAndProcess({
+      id: 'evt_unknown_billing', type: 'customer.tax_id.updated', customer_id: 'cus_unrecognized_event', status: 'active', plan_id: 'team',
+    });
+    await signAndProcess({
+      id: 'evt_incomplete_subscription', type: 'customer.subscription.updated', customer_id: 'cus_unrecognized_event', plan_id: 'team',
+    });
+
+    await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'past_due', planId: 'pro' });
+    await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({ allowed: false });
+  });
 });
