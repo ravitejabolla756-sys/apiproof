@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-12 pipeline contrast hardening and full browser regression
+
+- FIXED: The landing pipeline’s active-stage axe audit found low-contrast slate, emerald and amber text; darker accessible tokens now meet the contrast requirement without changing the visual hierarchy.
+- PASS: Impeccable detector and targeted ESLint report no findings; the rebuilt web bundle generated 83 pages; `pipeline-accessibility.spec.ts` passed 1/1; the complete current-worktree Playwright matrix passed 161/161 in 4.0 minutes. Artifacts: `/tmp/myowl-v1-ui13-pipeline-contrast-aUJs1a`.
+- NOT_RUN: Hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 — UI-12 repository-detail scan feedback semantics
 
 - PASS: Keyboard-triggered repository-detail scan failure announces an assertive alert without false success; a second keyboard-triggered attempt announces polite success and leaves the action enabled.
@@ -26,7 +32,7 @@
 
 ## 2026-11-08 — isolated full browser matrix after finding-detail accessibility hardening
 
-- PASS: Rebuilt current-worktree bundle generated 83 pages; all 160 committed browser tests passed in 4.5 minutes on isolated port 3101 with a fresh test server, including public/authenticated accessibility, organization, billing, notifications/settings, provider-review, repository-recovery and populated/error finding-detail workflows.
+- PASS: The prior rebuilt current-worktree bundle generated 83 pages and all 160 committed browser tests passed in 4.5 minutes; the newer full matrix after pipeline contrast hardening passes 161/161 in 4.0 minutes and is recorded above.
 - NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, full manual screen-reader review and production remain open. Artifacts: `/tmp/myowl-v1-ui13-full-matrix-finding-a11y-SHJ9Do`.
 
 ## 2026-11-08 — UI-12 workspace administration audit

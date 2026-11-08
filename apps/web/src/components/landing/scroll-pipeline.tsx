@@ -211,12 +211,12 @@ export function ScrollPipeline() {
                     <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono tracking-widest text-[#004EE8] uppercase font-bold">
                       <span>MY OWL PIPELINE</span>
                       <span className="text-slate-300">/</span>
-                      <span className="text-slate-500">AST TRACING ENGINE</span>
+                      <span className="text-slate-600">AST TRACING ENGINE</span>
                     </div>
 
                     {/* Mono Stage Label with Thin Connector Rule */}
                     <div className="flex items-center gap-3 font-mono text-[11px] tracking-wider text-slate-600">
-                      <span className="font-semibold text-slate-500">{stage.number}</span>
+                      <span className="font-semibold text-slate-600">{stage.number}</span>
                       <span className="w-8 sm:w-12 h-px bg-slate-200" />
                       <span className="font-bold text-slate-600 uppercase tracking-widest text-[10px]">
                         {stage.tag}
@@ -256,7 +256,7 @@ export function ScrollPipeline() {
                             <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-rose-600 font-bold">
                               BREAKING CHANGE
                             </div>
-                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-sans line-clamp-1 sm:line-clamp-none">
+                            <div className="text-[10px] sm:text-[11px] text-slate-600 font-sans line-clamp-1 sm:line-clamp-none">
                               subscription discount parameter changed
                             </div>
                           </div>
@@ -278,10 +278,10 @@ export function ScrollPipeline() {
                           </div>
                           <div className="w-px h-7 sm:h-8 bg-slate-200 mx-0.5 sm:mx-1" />
                           <div className="space-y-0.5">
-                            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-emerald-700 font-bold">
+                            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-emerald-800 font-bold">
                               1 CALL SITE REACHED
                             </div>
-                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-sans">
+                            <div className="text-[10px] sm:text-[11px] text-slate-600 font-sans">
                               26 safe invocations filtered out
                             </div>
                           </div>
@@ -306,7 +306,7 @@ export function ScrollPipeline() {
                             <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-blue-700 font-bold">
                               ZERO AUTO-MERGE
                             </div>
-                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-sans">
+                            <div className="text-[10px] sm:text-[11px] text-slate-600 font-sans">
                               Preserves indentation &amp; style
                             </div>
                           </div>
@@ -315,7 +315,7 @@ export function ScrollPipeline() {
 
                       {idx === 3 && (
                         <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono">
-                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center font-bold text-sm shrink-0">
                             ✓
                           </div>
                           <div>
@@ -328,10 +328,10 @@ export function ScrollPipeline() {
                           </div>
                           <div className="w-px h-7 sm:h-8 bg-slate-200 mx-0.5 sm:mx-1" />
                           <div className="space-y-0.5">
-                            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-emerald-700 font-bold">
+                            <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-emerald-800 font-bold">
                               DRAFT PR #142
                             </div>
-                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-sans">
+                            <div className="text-[10px] sm:text-[11px] text-slate-600 font-sans">
                               Isolated branch ready for review
                             </div>
                           </div>
@@ -605,12 +605,12 @@ export function ScrollPipeline() {
 
                   <div className="flex items-center justify-between py-2.5">
                     <span className="font-bold text-amber-800 font-mono">src/billing.ts:42</span>
-                    <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">AFFECTED</span>
+                    <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">AFFECTED</span>
                   </div>
                 </div>
 
                 {/* Understated Metadata */}
-                <div className="pt-2 border-t border-slate-200/90 flex items-center justify-between text-xs text-slate-500">
+                <div className="pt-2 border-t border-slate-200/90 flex items-center justify-between text-xs text-slate-600">
                   <span className="font-bold text-[#000E29]">1 affected call site</span>
                   <span>26 unrelated instances excluded</span>
                 </div>
@@ -651,7 +651,7 @@ export function ScrollPipeline() {
               >
                 {/* Header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/90 text-xs">
-                  <div className="font-bold text-slate-500 tracking-wider text-[11px] uppercase">
+                  <div className="font-bold text-slate-600 tracking-wider text-[11px] uppercase">
                     MIGRATION PLAN
                   </div>
                   <div className="font-semibold text-[#000E29]">src/billing.ts:42</div>
@@ -675,11 +675,11 @@ export function ScrollPipeline() {
                 </div>
 
                 {/* Metadata Stats */}
-                <div className="pt-1 border-t border-slate-100 flex items-center gap-5 text-xs font-mono text-slate-500">
+                <div className="pt-1 border-t border-slate-100 flex items-center gap-5 text-xs font-mono text-slate-600">
                   <span><span className="font-bold text-slate-800">1</span> file</span>
                   <span><span className="font-bold text-slate-800">1</span> call site</span>
                   <span><span className="font-bold text-slate-800">1</span> patch</span>
-                  <span><span className="font-bold text-emerald-700">0</span> unrelated</span>
+            <span><span className="font-bold text-emerald-800">0</span> unrelated</span>
                 </div>
 
                 {/* Branch & Safety Policy */}
@@ -690,7 +690,7 @@ export function ScrollPipeline() {
                       apiproof/stripe-v18-update
                     </span>
                   </div>
-                  <div className="text-emerald-700 font-semibold">Zero auto-merge</div>
+                  <div className="text-emerald-800 font-semibold">Zero auto-merge</div>
                 </div>
               </div>
 
@@ -712,7 +712,7 @@ export function ScrollPipeline() {
                   </div>
                   <div
                     className={`font-bold transition-colors duration-300 ${
-                      allPassed ? 'text-emerald-700' : 'text-slate-600'
+                      allPassed ? 'text-emerald-800' : 'text-slate-600'
                     }`}
                   >
                     {allPassed ? '4 / 4 PASSED' : 'VERIFYING GATES...'}
@@ -779,7 +779,7 @@ export function ScrollPipeline() {
                         DRAFT PR READY
                       </span>
                     </div>
-                    <span className="text-slate-500 font-bold text-xs">#142</span>
+                    <span className="text-slate-600 font-bold text-xs">#142</span>
                   </div>
 
                   <div className="text-xs font-sans font-medium text-slate-800 leading-normal">
@@ -788,7 +788,7 @@ export function ScrollPipeline() {
 
                   {/* Small Green State Pill */}
                   <div className="pt-2 flex items-center justify-between text-[11px]">
-                    <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
+                    <span className="inline-flex items-center gap-1.5 text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                       Verified · Draft only · No auto-merge
                     </span>
@@ -812,7 +812,7 @@ export function ScrollPipeline() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span ref={statusTextRef} className="text-slate-500">
+            <span ref={statusTextRef} className="text-slate-600">
               01 / 04 — DETECTS CHANGES
             </span>
             <span className="text-[#004EE8]">↓</span>
