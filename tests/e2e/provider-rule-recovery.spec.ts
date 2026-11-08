@@ -2,6 +2,24 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
+test('announces provider-rule loading as a busy state', async ({ page }) => {
+  await signIn(page);
+  let releaseRules: (() => void) | undefined;
+  const rulesLoading = new Promise<void>((resolve) => { releaseRules = resolve; });
+  await page.route('**/api/provider-rules', async (route) => {
+    await rulesLoading;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ candidates: [], coverageSummary: { candidates: 0, pendingCandidates: 0, reviewedCandidates: 0, reviewedProviders: 0, providersMissingReviewedRules: [], providersWithExecutableTemplates: [] } }) });
+  });
+  await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
+  const loading = page.getByRole('status').filter({ hasText: 'Loading provider evidence…' });
+  await expect(loading).toBeVisible();
+  await expect(loading).toHaveAttribute('aria-busy', 'true');
+  await expect(page.getByRole('heading', { name: 'Rule review' }).locator('..').locator('..').locator('..')).toHaveAttribute('aria-busy', 'true');
+  releaseRules?.();
+  await expect(page.getByRole('status').filter({ hasText: 'No provider rule candidates are waiting for review.' })).toBeVisible({ timeout: 30_000 });
+  await page.unroute('**/api/provider-rules');
+});
+
 test('keeps provider-rule load failures distinct from an empty queue', async ({ page }) => {
   await signIn(page);
   let attempts = 0;

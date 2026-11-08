@@ -60,6 +60,8 @@ Latest repository-dialog evidence: the complete recovery suite passes 3/3 with b
 
 Latest settings evidence: account, notification and workspace initial loading states expose `aria-busy`, with focused settings and organization-audit journeys passing 12/12. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
 
+Latest provider-rule evidence: delayed provider-rule loading and existing failure/retry recovery pass 2/2 with busy semantics on the workbench and loading status, plus axe-clean alert/empty coverage. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.

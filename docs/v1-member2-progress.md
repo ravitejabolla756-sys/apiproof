@@ -1799,6 +1799,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported only six incumbent purple heading-accent warnings and no change-related finding; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; focused hermetic Playwright coverage passed 12/12 in 25.0 seconds across account, notification, workspace-settings and organization-audit pending/recovery journeys.
 - Scope: this advances local UI-12/UI-13, AUTH-08, NOT-06 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 provider-rule review loading semantics
+
+- Change: the provider-rule review workbench now exposes `aria-busy="true"` on its root while loading or populating the review queue, and on its loading status region, preserving review-only provider intelligence and existing retry/edit/test flows.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-recovery.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the provider-rule recovery suite passed 2/2 in 4.4 seconds, covering delayed loading and existing failure/retry and axe-clean alert/empty states.
+- Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 notification-settings busy semantics
 
 - Change: the notification-preferences surface now exposes `aria-busy="true"` during initial loading and preference saves, while retaining its existing live announcements, required-message protections, and beta delivery boundary.
