@@ -1554,3 +1554,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; auth-entry suite passed 2/2 in 8.7 seconds, including axe-clean verification and a measured 44px expired-invitation sign-in recovery link; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local ORG-03/UI-12/UI-13 and NOT-02 evidence only; approved transactional email, hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — ORG-11 provider-review touch targets
+
+- Change: provider-rule review refresh, retry, queue, priority-filter, and filtered-empty recovery actions now expose explicit 44px touch targets while review-only and approval-gated behavior remains unchanged.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-filter-states.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused provider-rule filter recovery journey passed 1/1 in 15.7 seconds with measured 44px filter/recovery controls and axe-clean filtered-empty content; repository typecheck passed; web production build passed with 83 generated pages.
+- Scope: this advances local ORG-11/UI-12/UI-13 evidence only; PostgreSQL/RBAC, hosted CI, manual screen-reader review, staging and production verification remain open. No provider activation, backend/shared contract, production or remote Git operation was performed.

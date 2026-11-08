@@ -33,6 +33,7 @@ test('recovers from an empty provider-rule priority filter', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'Rule review' })).toBeVisible();
   const filter = page.getByRole('group', { name: 'Review priority filter' });
   const p0 = filter.getByRole('button', { name: 'P0 (0)' });
+  expect((await p0.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await p0.focus();
   await expect(p0).toBeFocused();
   await page.keyboard.press('Enter');
@@ -43,6 +44,7 @@ test('recovers from an empty provider-rule priority filter', async ({ page }) =>
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'provider-rule filtered empty state').toEqual([]);
 
   const showAll = filteredEmpty.getByRole('button', { name: 'Show all candidates' });
+  expect((await showAll.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await showAll.focus();
   await expect(showAll).toBeFocused();
   await page.keyboard.press('Enter');
