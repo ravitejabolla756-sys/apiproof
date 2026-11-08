@@ -786,3 +786,8 @@ Phase 0 read-only checks:
 
 - The worker-heartbeat test fixture now snapshots and restores `NODE_ENV`, `APIPROOF_DB_PATH`, and `APIPROOF_SKIP_DEFAULT_SEED` around every case. This avoids leaking local SQLite/test configuration into later serial suites.
 - `tests/sec13-worker-observability.test.ts` passes 9/9; targeted ESLint, workspace test TypeScript check, and `git diff --check` pass. This does not verify production scheduling, PostgreSQL, alert routing, or staging worker failure recovery.
+
+### 2026-11-08 AUTH-10 / ORG-05 test-environment isolation
+
+- Auth-session tests now restore their local DB path and test secret; activity route tests restore their DB path and test secret; provider-review route tests restore `NODE_ENV` and the DB path. This prevents these integration fixtures from contaminating subsequent serial suites.
+- Seeded serial `auth-session.test.ts`, `activity-timestamp.test.ts`, and `provider-review-queue-route.test.ts` pass 3 files / 39 tests. Targeted ESLint, workspace test TypeScript check, and `git diff --check` pass. PostgreSQL and live callback/browser evidence remain external gates.

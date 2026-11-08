@@ -46,9 +46,12 @@ import {
 import { resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-auth-session.db');
+const ENVIRONMENT_KEYS = ['APIPROOF_DB_PATH', 'APIPROOF_SECRET'] as const;
+let originalEnvironment: Partial<Record<(typeof ENVIRONMENT_KEYS)[number], string>>;
 
 describe('Production Authentication & Session Persistence', () => {
   beforeEach(() => {
+    originalEnvironment = Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, process.env[key]]));
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SECRET = 'auth-test-secret-at-least-32-chars-long!';
     resetRateLimits();
@@ -63,6 +66,11 @@ describe('Production Authentication & Session Persistence', () => {
     try { closeDatabase(); } catch { /* ignore */ }
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
+    }
+    for (const key of ENVIRONMENT_KEYS) {
+      const value = originalEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 

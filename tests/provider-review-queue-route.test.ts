@@ -13,9 +13,12 @@ import * as providerRuleService from '../apps/web/src/lib/server/provider-rule-s
 import { mapProviderRuleEditError, mapProviderRuleReviewError } from '../apps/web/src/lib/server/provider-rule-api-errors.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-provider-review-queue-route.db');
+const ENVIRONMENT_KEYS = ['NODE_ENV', 'APIPROOF_DB_PATH'] as const;
+let originalEnvironment: Partial<Record<(typeof ENVIRONMENT_KEYS)[number], string>>;
 
 describe('provider review queue bootstrap route', () => {
   beforeEach(() => {
+    originalEnvironment = Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, process.env[key]]));
     process.env.NODE_ENV = 'test';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
@@ -25,6 +28,11 @@ describe('provider review queue bootstrap route', () => {
   afterEach(() => {
     closeDatabase();
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
+    for (const key of ENVIRONMENT_KEYS) {
+      const value = originalEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
 
   it('requires an authenticated owner and rejects cross-site mutations', async () => {
