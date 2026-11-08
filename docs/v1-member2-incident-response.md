@@ -60,6 +60,36 @@ Assign one incident commander, one technical lead, and one communications owner.
 
 Before closing, the technical lead records: root cause, affected scope, containment, corrective change, regression test, remaining uncertainty, and evidence links. The incident commander verifies that the original reproduction no longer succeeds, authorization tests cover both sides of the boundary, and monitoring/alert ownership exists for the repaired path. The communications owner publishes a factual summary only after owner/security review.
 
+### Closure evidence checklist
+
+Do not close an incident from a green deploy or an empty queue alone. The incident record must link, or explicitly mark unavailable, each of these bounded artifacts:
+
+- a UTC timeline containing detection, severity changes, containment, recovery and closure decisions;
+- the affected capability, tenant scope and data classification, with identifiers redacted or access-controlled;
+- the exact containment action, approver, rollback condition and confirmation that unrelated capabilities remained enabled;
+- a redacted reproduction or a documented reason reproduction was unsafe or impossible;
+- the regression test, configuration check or manual verification that disproves the original failure;
+- provider, webhook, delivery or deployment identifiers needed for reconciliation, without secrets or payment data;
+- customer, regulator or status-page communication decisions, including who approved any external wording;
+- unresolved uncertainty, follow-up owner and due date, with a separate owner decision for any accepted risk.
+
+If an artifact is unavailable because the repository has no approved monitoring, provider, staging or production access, record `NOT_AVAILABLE — approval or external evidence required`; never replace it with a local fixture result. A closure review is incomplete until the service owner and security owner accept that limitation.
+
+### Escalation handoff record
+
+For every SEV-0 or SEV-1, the incident commander should make the handoff explicit in the incident record:
+
+| Handoff field | Required record |
+|---|---|
+| UTC handoff time | Timestamp and outgoing/incoming owner |
+| Current severity | Severity and evidence supporting it |
+| Containment state | Active control, rollback condition and next check |
+| Customer impact | Affected tenants/capabilities, or `not yet known` |
+| Next decision | The decision needed, approver and deadline |
+| Communication state | Drafted, approved, sent, or deliberately withheld with rationale |
+
+The handoff table is a record format, not evidence that an on-call rotation or alert channel currently exists.
+
 ## Tabletop exercise
 
 Run this scenario before enabling live integrations: “A member accepts an invitation from a different account, then sees another workspace’s repository activity.” The expected response is to reproduce with two users, verify email-bound single-use token behavior, inspect membership predicates, revoke the affected member sessions, preserve redacted evidence, and keep the public status page explicitly unclaimed until an approved source is connected. Record gaps; do not mark the exercise as a production control.

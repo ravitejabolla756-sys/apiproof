@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — SEC-18 incident closure and escalation evidence contract
+
+- Change: Strengthened the incident-response draft with a bounded closure-evidence checklist and an explicit SEV-0/SEV-1 handoff record, including truthful `NOT_AVAILABLE` handling when monitoring, staging, provider or production evidence is not approved.
+- Evidence: Documentation diff checked with `git diff --check`; no live monitoring, staffing, provider, staging or production claim was added. SEC-18 remains PARTIAL pending owner/Member 1 review and a recorded tabletop exercise.
+- Scope: local SEC-18 runbook progress only; this does not establish an on-call rotation, approved status source, monitoring, or production incident readiness.
+
 ## 2026-11-08 checkpoint — UI-12/UI-13 rebuilt-bundle matrix after organization boundaries
 
 - Change: Rebuilt the web production bundle and ran the complete committed browser matrix after the member-workspace permission boundary, last-owner refusal states, stale-workspace recovery, and full route-accessibility coverage additions.

@@ -1,5 +1,10 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — SEC-18 incident runbook evidence contract
+
+- PASS: Documentation diff check passed after adding bounded closure-evidence and SEV-0/SEV-1 handoff templates to the incident-response draft.
+- NOT_RUN: No live monitoring, on-call, provider, staging or production incident exercise was performed; owner/Member 1 review and the tabletop remain required.
+
 ## 2026-11-08 — Rebuilt-bundle matrix after organization boundary coverage
 
 - PASS: Production build generated 83 static pages; the complete CI-mode Playwright matrix passed 99/99 in 2.9 minutes against isolated SQLite `/tmp/myowl-v1-full-current-20261108-member2.db` with one worker.
