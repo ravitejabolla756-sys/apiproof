@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 checkpoint — UI-12 security and updates icon semantics
+
+- PASS: Decorative SVGs on Security and Updates now remain out of the accessibility tree; the public icon regression covers homepage, mobile navigation, Security and Updates.
+- PASS: Impeccable detector returned `[]`; targeted ESLint, diff check and rebuilt 83-page bundle passed; public icon plus public axe subset passed 3/3 in 11.1 seconds.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

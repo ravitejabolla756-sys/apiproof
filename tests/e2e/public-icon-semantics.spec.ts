@@ -9,4 +9,9 @@ test('keeps decorative homepage and mobile-navigation icons out of the accessibi
   await page.getByRole('button', { name: 'Open menu' }).click();
   await expect(page.locator('#mobile-site-navigation')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Close menu' }).locator('svg')).toHaveAttribute('aria-hidden', 'true');
+  for (const route of ['/security', '/updates']) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    const missingRouteIconSemantics = await page.locator('main svg').evaluateAll((icons) => icons.filter((icon) => icon.getAttribute('aria-hidden') !== 'true').length);
+    expect(missingRouteIconSemantics, route).toBe(0);
+  }
 });

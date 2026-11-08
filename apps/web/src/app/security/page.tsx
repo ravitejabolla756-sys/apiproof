@@ -171,7 +171,7 @@ export default function SecurityPage() {
                 <div className="pt-4 border-t border-slate-100 space-y-2 font-mono text-xs text-slate-700">
                   {pillar.points.map((pt) => (
                     <div key={pt} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <CheckCircle2 aria-hidden="true" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span>{pt}</span>
                     </div>
                   ))}

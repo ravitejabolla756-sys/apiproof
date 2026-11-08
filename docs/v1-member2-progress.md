@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12 security and updates icon semantics
+
+- Change: Extended decorative SVG hiding to the Security and Updates public routes and expanded the public icon regression beyond the homepage/mobile navigation.
+- Evidence: Impeccable detector returned `[]`; targeted ESLint and `git diff --check` passed; rebuilt web bundle generated 83 pages; public icon semantics plus the public axe audit subset passed **3/3 in 11.1 seconds** on isolated port 3108.
+- Scope: advances local UI-12/WEB-15 public screen-reader semantics only; manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - Change: Marked decorative homepage trust/pricing/CTA icons, pipeline icons and mobile navigation icons as `aria-hidden`, with a focused public accessibility-tree regression.

@@ -115,7 +115,7 @@ export default function UpdatesPage() {
                   <ul className="space-y-2 text-xs text-slate-600">
                     {item.improvements.map((bullet, bIdx) => (
                       <li key={bIdx} className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{bullet}</span>
                       </li>
                     ))}
@@ -149,7 +149,7 @@ export default function UpdatesPage() {
               className="btn-lime min-h-11 text-sm px-8 py-3.5 shadow-[0_0_30px_rgba(208,241,0,0.45)] hover:scale-105 active:scale-95 inline-flex items-center gap-2"
             >
               <span>Connect GitHub Free</span>
-              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
+              <ArrowRight aria-hidden="true" className="w-4 h-4 text-black stroke-[2.5]" />
             </Link>
           </div>
         </div>
