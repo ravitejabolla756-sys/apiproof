@@ -742,3 +742,7 @@ Phase 0 read-only checks:
 
 - Fixed the logger's cycle-tracking cleanup for arrays. Repeated references to the same diagnostic object within array entries are now independently sanitized instead of being mislabeled as circular, while true array cycles still become `[CIRCULAR]`. Added coverage confirming each shared object's password field is redacted and actual cyclic arrays remain serializable.
 - `phase5-production-operations` passes 14/14; targeted ESLint and workspace `pnpm typecheck` pass. This is local formatter/redaction evidence only; external monitoring, log-sink access/retention, PostgreSQL ACLs and staging remain unverified.
+
+### 2026-11-08 current-HEAD full serial suite after AUTH-10 and SEC-11 updates
+
+- Seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes on code HEAD `7aa12b7d3f4ca5500acb67f88a75ca97a1e8ebe1`: 175 files passed / 1 skipped (176 total); 1,466 tests passed / 4 skipped (1,470 total) in 285.58 seconds. The seed/password were generated in the process environment, all application and staging database URL variables were removed, and tests used their isolated local fixtures. Four opt-in Docker-backed tests remain skipped because the Docker daemon is unavailable. This is local suite evidence only; PostgreSQL, staging, providers and production were not tested.
