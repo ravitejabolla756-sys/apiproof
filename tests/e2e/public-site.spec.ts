@@ -187,8 +187,8 @@ test.describe('authenticated product surfaces', () => {
     }); await page.goto('/dashboard/settings/notifications');
     const findingsSlack = page.getByLabel('Breaking findings via slack');
     await expect(findingsSlack).toBeChecked();
-    await findingsSlack.uncheck();
-    await page.getByRole('button', { name: 'Save preferences' }).click();
+    await findingsSlack.uncheck(); const savePreferences = page.getByRole('button', { name: 'Save preferences' });
+    await savePreferences.focus(); await expect(savePreferences).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByRole('status')).toContainText('Saving notification preferences…', { timeout: 30_000 });
     releaseSave?.(); await expect(page.getByRole('status')).toContainText('Notification preferences saved.', { timeout: 30_000 });
     expect(postedUpdates).toEqual({ updates: [
@@ -196,7 +196,7 @@ test.describe('authenticated product surfaces', () => {
       { category: 'findings', channel: 'slack', enabled: false },
     ] });
     await expect(findingsSlack).not.toBeChecked();
-    failSave = true; await findingsSlack.check(); await page.getByRole('button', { name: 'Save preferences' }).click(); await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 }); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification save error').toEqual([]);
+    failSave = true; await findingsSlack.check(); await savePreferences.focus(); await expect(savePreferences).toBeFocused(); await page.keyboard.press('Enter'); await expect(page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' })).toBeVisible({ timeout: 30_000 }); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification save error').toEqual([]);
     await page.unroute('**/api/account/notifications');
   });
 
