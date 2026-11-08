@@ -357,3 +357,4 @@ Phase 0 read-only checks:
 ### 2026-11-08 full-suite verification after SEC-04 hardening
 
 - On code HEAD `27b83de2fe260b908d924edf33a8740dd0f7e683`, the full serial Vitest suite passes: 168 files passed / 1 skipped (169 total), 1,410 tests passed / 4 skipped (1,414 total), runtime 296.05 seconds. The four skips remain the conditional Docker-backed tests in `tests/docker-verification-live.test.ts`. The suite used a process-only random seed for local SQLite fixtures; no remote database URL or service was configured.
+- `pnpm build` also passes on this code state. Next.js rewrote `apps/web/next-env.d.ts` and `apps/web/tsconfig.json` during the build; both generated changes were inspected and restored, leaving only the pre-existing untracked paths.
