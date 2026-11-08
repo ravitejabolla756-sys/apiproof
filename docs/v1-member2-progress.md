@@ -5,6 +5,11 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-13 isolated full browser matrix
+
+- Evidence: Rebuilt `pnpm --filter @apiproof/web build` passed with 83 generated pages. A temporary isolated Playwright configuration served this current worktree’s production bundle through `apps/web/scripts/playwright-server.ts` on port 3101 with a fresh SQLite database; the complete `tests/e2e` matrix passed **159/159 in 3.8 minutes**. Failed tests from an earlier port-3100 attempt were invalid because that port was occupied by an unrelated `/Users/sandstone/Documents/apiproof` dev server; the six affected tests passed 31/31 in the isolated rerun. Temporary config was removed after verification; artifacts: `/tmp/myowl-v1-ui13-local-matrix-artifacts`.
+- Scope: local UI-12/UI-13 production-bundle browser evidence only; hosted CI, integrated staging, full screen-reader/manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 provider-coverage unavailable state semantics
 
 - Change: The provider-coverage page’s fallback unavailable state now exposes a polite, atomic `role="status"` region, completing the route’s loading/error/empty/unavailable announcement semantics without changing its truthful copy or retry behavior.

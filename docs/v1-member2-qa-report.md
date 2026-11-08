@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — UI-13 isolated full browser matrix
+
+- PASS: Rebuilt `pnpm --filter @apiproof/web build` generated 83 pages. The complete current-worktree production-bundle Playwright matrix passed **159/159 in 3.8 minutes** on an isolated port 3101 and fresh SQLite database; the temporary test configuration was removed after the run.
+- PASS: The six failures from the earlier port-3100 run were reproduced as environment contamination: port 3100 was served by an unrelated `/Users/sandstone/Documents/apiproof` dev server. The affected files passed 31/31 against the isolated current-worktree server.
+- NOT_RUN: Hosted CI, integrated staging, full screen-reader/manual assistive-technology review and production remain open. Artifacts: `/tmp/myowl-v1-ui13-local-matrix-artifacts`.
+
 ## 2026-11-08 — UI-12 provider-coverage unavailable state semantics
 
 - PASS: The provider-coverage fallback unavailable state now announces as a polite atomic status region while preserving the existing error alert and retry path.
