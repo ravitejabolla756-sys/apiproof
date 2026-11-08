@@ -3,10 +3,43 @@ import type { ProductizationScanResult } from '@apiproof/analyzers';
 export const PRODUCTIZATION_MAX_JSON_BYTES = 1_500_000;
 const SAFE_IDENTIFIER = /^[A-Za-z0-9_.$/@:{}[\]#?&=+%~*'"-]{1,300}$/;
 const UNSAFE_VALUE_PATTERN = /(?:sk-[A-Za-z0-9_-]{8,}|sk-ant-[A-Za-z0-9_-]{8,}|gh[pousr]_[A-Za-z0-9_]{8,}|(?:secret|token|password|private[_-]?key)[-_][A-Za-z0-9_-]{4,}|RAW_SOURCE_MUST_)/i;
+const SAFE_FAILURE_CODES = new Set([
+  'BASELINE_SHA_MISMATCH',
+  'GITHUB_APP_NOT_CONFIGURED',
+  'GITHUB_AUTHENTICATION_FAILED',
+  'GITHUB_AUTHORIZATION_FAILED',
+  'GITHUB_BINARY_FILE_UNSUPPORTED',
+  'GITHUB_DEFAULT_BRANCH_NOT_FOUND',
+  'GITHUB_FILE_FETCH_ERROR',
+  'GITHUB_FILE_NOT_FOUND',
+  'GITHUB_FILE_TOO_LARGE',
+  'GITHUB_HTTP_METHOD_NOT_ALLOWED',
+  'GITHUB_INSTALLATION_APP_MISMATCH',
+  'GITHUB_INSTALLATION_NOT_FOUND',
+  'GITHUB_INVALID_RESPONSE',
+  'GITHUB_PRIVATE_KEY_ASYNC_REQUIRED',
+  'GITHUB_PRIVATE_KEY_UNREADABLE',
+  'GITHUB_READ_FAILED',
+  'GITHUB_REF_NOT_FOUND',
+  'GITHUB_REPOSITORY_EMPTY',
+  'GITHUB_REPOSITORY_NOT_APPROVED',
+  'GITHUB_REPOSITORY_NOT_FOUND',
+  'GITHUB_REPOSITORY_NOT_FOUND_IN_INSTALLATION',
+  'GITHUB_TRANSPORT_FAILED',
+  'INVALID_BASELINE_SHA',
+  'INVALID_REVIEWED_REGISTRY',
+  'PRODUCTIZATION_SCAN_FAILED',
+  'PROVIDER_INTELLIGENCE_EVIDENCE_LIMIT',
+  'REPOSITORY_NOT_ACTIVE',
+  'REPOSITORY_NOT_FOUND',
+  'REPOSITORY_SOURCE_UNAVAILABLE',
+  'SCAN_EXECUTION_FAILED',
+]);
 
 export function safeFailureCode(error: unknown, fallback: string): string {
   const value = error instanceof Error ? error.message : '';
-  return /^[A-Z][A-Z0-9_]{2,80}$/.test(value) ? value : fallback;
+  const code = /^([A-Z][A-Z0-9_]{2,80})(?=$|[:\s])/.exec(value)?.[1];
+  return code && SAFE_FAILURE_CODES.has(code) ? code : fallback;
 }
 
 function safeString(value: unknown, fallback = '[redacted]'): string {

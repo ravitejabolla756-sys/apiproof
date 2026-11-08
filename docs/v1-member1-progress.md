@@ -600,6 +600,11 @@ Phase 0 read-only checks:
 - Provider-rescan and proposal-verification workers now persist fixed generic error messages while retaining operational error categories/status. This prevents raw provider/runtime exception text from accumulating in worker status records.
 - Focused verification: `provider-rescan-worker` plus `proposal-recovery` pass 32/32; targeted ESLint and full `pnpm typecheck` pass. External log sinks, database access controls and retention remain unverified.
 
+### 2026-11-08 SEC-11 allowlisted worker error codes
+
+- `safeFailureCode` now extracts only explicitly recognized scan/GitHub error categories, including safe prefixes with descriptive suffixes. Unknown uppercase strings and secret-shaped values use the fixed fallback rather than reaching logs or worker records.
+- Focused verification: `failure-code-safety`, `phase4-async-scan-worker`, `p0-live-scan-security`, `provider-intelligence-worker-e2e`, and `sec16-load-resilience` pass 46/46; targeted ESLint and full `pnpm typecheck` pass. External telemetry and database controls remain unverified.
+
 ### 2026-11-08 SEC-11 durable error current-HEAD suite
 
 - After worker error-message persistence hardening, seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes: 174 files passed / 1 skipped; 1,447 tests passed / 4 skipped; 243.72 seconds. Four Docker-backed tests remain skipped. Remote database URL variables were removed and a process-only throwaway seed was used. This does not establish PostgreSQL or production evidence.
