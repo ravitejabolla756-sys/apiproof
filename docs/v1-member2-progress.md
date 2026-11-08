@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — current-tree quality and seeded regression reconciliation
+
+- Evidence: `pnpm lint` passed; `pnpm typecheck` passed; `pnpm --filter @apiproof/web build` passed and generated 83 pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,365 tests across 161 passing files**, with 1 skipped file and 4 skipped tests, in 177.60 seconds.
+- Advisory: the build emitted only the existing non-blocking Next.js ESLint-plugin configuration warning. No production/provider/staging operation was performed.
+- Scope: refreshes current local quality evidence for UI-12/UI-13 and all dependent local task slices; hosted CI, PostgreSQL/RBAC, providers, manual assistive-technology review and production remain open.
+
 ## 2026-11-08 checkpoint — UI-13 full browser regression after 404 and invoice boundary coverage
 
 - Evidence: The complete current-worktree Playwright matrix ran **163 tests and passed 163/163 in 4.4 minutes** with `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3101 pnpm exec playwright test --workers=1`. This includes the dedicated public HTTP-404 axe/contrast checks and the strengthened invoice-history beta boundary. Artifacts: `/tmp/myowl-v1-ui13-full-matrix-ftPTBv`.

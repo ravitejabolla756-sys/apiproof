@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — current-tree quality and seeded regression reconciliation
+
+- PASS: `pnpm lint` and `pnpm typecheck` passed; the web production build generated 83 pages; the seeded Vitest regression passed 1,365 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 177.60 seconds.
+- ADVISORY: The build emitted the existing non-blocking Next.js ESLint-plugin configuration warning.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, providers, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-08 — UI-13 full browser regression after 404 and invoice boundary coverage
 
 - PASS: The complete current-worktree Playwright matrix ran 163 tests and passed 163/163 in 4.4 minutes on one worker, including the new public HTTP-404 axe/contrast checks and strengthened invoice-history beta boundary. Artifacts: `/tmp/myowl-v1-ui13-full-matrix-ftPTBv`.
