@@ -770,7 +770,7 @@ Phase 0 read-only checks:
 ### 2026-11-08 MIG-01 model-plan identifier validation
 
 - The provider-agnostic model-output validator now rejects duplicate step IDs before those IDs can enter a migration plan. This preserves unambiguous identity for downstream review and persistence; production planning remains deterministic-only pending provider, security, cost, timeout and owner approvals.
-- `tests/planning.test.ts` passes 9/9; targeted ESLint and `tsc -p tsconfig.test.json --noEmit` pass. No full suite or production/provider check was run for this focused change.
+- `tests/planning.test.ts` passes 9/9; targeted ESLint, `tsc -p tsconfig.test.json --noEmit`, and `pnpm --filter @apiproof/core build` pass. No production/provider check was run for this focused change.
 
 ### 2026-11-08 SEC-16 test-environment isolation
 
