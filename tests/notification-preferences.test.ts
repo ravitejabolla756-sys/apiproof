@@ -47,5 +47,8 @@ describe('notification preferences', () => {
     const account = await createUserWithSession('notifications@example.test', 'NotifyPassword123!', 'Notify User');
     await expect(updateNotificationPreferences(account.user.id, [{ category: 'unknown' as 'findings', channel: 'email', enabled: true }]))
       .rejects.toThrow('Invalid notification preference');
+    await expect(updateNotificationPreferences(account.user.id, [{ category: 'security', channel: 'slack', enabled: true }]))
+      .rejects.toThrow('Invalid notification preference');
+    expect(await getNotificationPreferences(account.user.id)).toHaveLength(12);
   });
 });

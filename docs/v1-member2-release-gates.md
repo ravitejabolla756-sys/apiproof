@@ -226,6 +226,8 @@ Latest invitation-safety evidence: invitation acceptance validates existing memb
 
 Latest workspace-context evidence: default-workspace recovery checks and creates inside a transaction, with a PostgreSQL user-row lock for the no-membership path; seeded organization/repository coverage passes 17/17 and repository typecheck passes. PostgreSQL hosted verification, final RBAC contract, hosted CI, staging and production remain open; release recommendation stays NO-GO.
 
+Latest notification-boundary evidence: preference updates now reject unsupported category/channel pairs before persistence; seeded preference, Slack and scan-failure coverage passes 29/29 and repository typecheck passes. Provider approval/delivery, final event contracts, hosted CI, staging and production remain open; release recommendation stays NO-GO.
+
 ## Latest command-palette recovery evidence — 2026-11-08
 
 Command-palette search-data failures are now announced with a visible retryable alert, preserving context and exposing disabled plus `aria-busy` during recovery; focused recovery/dialog/control coverage passes 7/7 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, provider approval and production remain open. Release recommendation stays NO-GO.

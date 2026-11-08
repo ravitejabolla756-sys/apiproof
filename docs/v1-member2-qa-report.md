@@ -1,5 +1,12 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — NOT-03 notification preference pair validation
+
+- PASS: Notification preference updates accept only exact server-owned category/channel pairs and reject unsupported combinations without changing the preference set.
+- PASS: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and seeded preference/Slack/scan-failure regression coverage passed 29/29.
+- ADVISORY: The first notification regression invocation omitted `APIPROOF_LOCAL_SEED_PASSWORD` and failed before tests during fixture initialization; the documented seeded rerun passed.
+- NOT_RUN: Provider approval/delivery, Member 1 event contracts, hosted CI, staging and production remain open.
+
 ## 2026-11-08 — ORG-02 atomic default-workspace recovery
 
 - PASS: Default-workspace recovery now checks and creates the workspace inside one transaction, with a PostgreSQL user-row lock for the no-membership path.

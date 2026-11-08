@@ -28,6 +28,7 @@ const DEFAULTS: Array<{ category: NotificationCategory; channel: NotificationCha
 
 const VALID_CATEGORIES = new Set<NotificationCategory>(DEFAULTS.map((item) => item.category));
 const VALID_CHANNELS = new Set<NotificationChannel>(DEFAULTS.map((item) => item.channel));
+const VALID_PREFERENCE_KEYS = new Set(DEFAULTS.map((item) => `${item.category}:${item.channel}`));
 
 export async function getNotificationPreferences(userId: string): Promise<NotificationPreference[]> {
   const rows = await getDatabase().query<{ category: NotificationCategory; channel: NotificationChannel; enabled: number | boolean }>(
@@ -58,7 +59,9 @@ export async function isNotificationPreferenceEnabled(
 
 export async function updateNotificationPreferences(userId: string, updates: Array<{ category: NotificationCategory; channel: NotificationChannel; enabled: boolean }>): Promise<NotificationPreference[]> {
   for (const update of updates) {
-    if (!VALID_CATEGORIES.has(update.category) || !VALID_CHANNELS.has(update.channel)) throw new Error('Invalid notification preference category or channel.');
+    if (!VALID_CATEGORIES.has(update.category) || !VALID_CHANNELS.has(update.channel) || !VALID_PREFERENCE_KEYS.has(`${update.category}:${update.channel}`)) {
+      throw new Error('Invalid notification preference category or channel.');
+    }
     const required = DEFAULTS.find((item) => item.category === update.category && item.channel === update.channel)?.required;
     if (required && !update.enabled) throw new Error('Security and account-recovery notifications cannot be disabled.');
   }

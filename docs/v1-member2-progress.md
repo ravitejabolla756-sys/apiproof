@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — NOT-03 notification preference pair validation
+
+- Change: Tightened notification preference validation to the exact server-owned category/channel pairs, rejecting unsupported combinations such as security via Slack before persistence.
+- Evidence: Targeted ESLint, repository `pnpm typecheck`, `git diff --check`, and `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/notification-preferences.test.ts tests/slack-phase1.test.ts tests/scan-failure-notifications.test.ts --no-file-parallelism` passed 29/29. An initial run without the required local seed variable failed during fixture setup only and was rerun successfully.
+- Scope: local NOT-03/UI-12 preference-boundary hardening only; provider approval/delivery, Member 1 event contracts, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — ORG-02 atomic default-workspace recovery
 
 - Change: Made no-membership default-workspace recovery transaction-scoped and added a PostgreSQL user-row lock where supported, preventing concurrent stale-context recovery from creating duplicate default workspaces while preserving multi-workspace users.
