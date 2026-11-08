@@ -757,3 +757,8 @@ Phase 0 read-only checks:
 
 - Provider-neutral billing period strings now require timezone-qualified RFC3339 syntax with valid calendar, clock and offset fields; accepted strings and finite epoch-second inputs normalize to canonical UTC ISO timestamps. The shared projector rejects noncanonical timestamps even when called directly, preventing permissive `Date.parse()` strings such as `"1"` or impossible dates from being interpreted as subscription periods.
 - `billing-provider-boundary` and `phase7-billing-foundation` pass 2 files / 29 tests; targeted ESLint and workspace `pnpm typecheck` pass. The mock remains unavailable in production; vendor-specific formats, signature verification, price mapping and sandbox behavior remain gated on provider approval and credentials.
+
+### 2026-11-08 current-HEAD full serial suite after BILL-03 and login-key privacy changes
+
+- Seeded serial `pnpm test -- --no-file-parallelism --maxWorkers=1 --reporter=dot` passes on code HEAD `7b2fbbf1f0a699a0bcfbfcbb9759aefad29eb346`: 175 files passed / 1 skipped (176 total); 1,468 tests passed / 4 skipped (1,472 total) in 484.41 seconds. A throwaway seed/password were process-scoped and all application/staging database URL variables were removed. Four opt-in Docker-backed tests remain skipped. This is local suite evidence, not PostgreSQL, staging, provider or production verification.
+- Runtime is 484.41 seconds versus 285.58 seconds at the immediately prior recorded full run (`7aa12b7`), with both runs serial and dot-reported. No failure occurred, but the runtime variance remains unexplained; the previously identified CLI child-process hotspot does not account for this difference by itself.
