@@ -837,3 +837,4 @@ Phase 0 read-only checks:
 
 - Extended `tests/workspace-read-route-role.test.ts` to exercise the authenticated `GET /api/findings/[id]` route with an unknown persisted workspace role and with cross-tenant users, including a known foreign finding ID. All three denied responses are 404 and do not disclose the finding title.
 - The focused route test passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. The full suite was not rerun for this test-only addition. PostgreSQL/RLS isolation and Member 2's role contract remain external/shared gates.
+- Follow-up detail-route checks: `repositories-list-route` and `provider-intelligence-api-consistency` now also exercise unknown-role denial for repository detail and compatibility-proof reads. The combined focused run passes 2 files / 11 tests; targeted ESLint and workspace typecheck pass. No provider calls or remote databases are involved.

@@ -220,7 +220,13 @@ describe('GET /api/repositories', () => {
       INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
       VALUES ('repo_unknown_role_delete', ?, ?, 'role-org', 'role-repo', 'role-org/role-repo', 'role-1', 'main', 'connected', 'connected', 'active', ?)
     `, [workspace.id, user.user.id, now]);
-    const { DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+    const { GET: getRepository, DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+
+    const detailResponse = await getRepository(new Request('http://localhost/api/repositories/repo_unknown_role_delete', {
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }), { params: Promise.resolve({ id: 'repo_unknown_role_delete' }) });
+    expect(detailResponse.status).toBe(404);
+    expect(JSON.stringify(await detailResponse.json())).not.toContain('role-org/role-repo');
 
     const response = await deleteRepository(new Request('http://localhost/api/repositories/repo_unknown_role_delete', {
       method: 'DELETE',
