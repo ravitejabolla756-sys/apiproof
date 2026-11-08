@@ -11,6 +11,12 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 - Evidence: Targeted ESLint and `git diff --check` passed; `tests/e2e/public-link-crawl.spec.ts` passed 1/1 in 33.1 seconds. Artifacts: `/tmp/myowl-v1-public-link-crawl-report`, `/tmp/myowl-v1-public-link-crawl-artifacts`.
 - Scope: local WEB-15/UI-13 link-integrity evidence only; manual assistive-technology review, hosted CI, integrated staging and production verification remain open.
 
+## 2026-11-08 checkpoint — UI-13 rebuilt matrix with public link crawl
+
+- Change: Rebuilt the web bundle and ran the complete committed browser matrix after adding the full public-route same-origin link crawl.
+- Evidence: Production build generated 83 static pages; CI-mode Playwright suite passed 100/100 in 2.9 minutes against isolated SQLite `/tmp/myowl-v1-full-current-20261108-public-links.db` with one worker. Artifacts: `/tmp/myowl-v1-full-current-20261108-public-links-report`, `/tmp/myowl-v1-full-current-20261108-public-links-artifacts`.
+- Scope: local UI-12/UI-13/WEB-15 regression evidence only; hosted CI, integrated staging, full manual screen-reader review, backend/provider contracts and production remain open.
+
 ## 2026-11-08 checkpoint — BILL-09 invoice history contract proposal
 
 - Change: Added a provider-neutral invoice-history contract proposal covering billing-owner authorization, workspace binding, normalized monetary fields, provider-link safety, retention/redaction and loading/empty/failure UI states.
