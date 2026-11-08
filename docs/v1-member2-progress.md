@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — ORG-02 member-role touch target
+
+- Change: owner-only workspace member-role selects now expose an explicit 44px minimum touch target while preserving last-owner protection, role authorization, and refusal behavior.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; last-owner demotion-refusal journey passed 1/1 in 13.8 seconds with a measured role selector and axe-clean refusal state; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local ORG-02/ORG-04/UI-12 evidence only; PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 findings filter touch targets
 
 - Change: findings search, severity filters, and provider filters now expose explicit 44px minimum touch targets while preserving filtering, selection state, keyboard behavior, and empty-state recovery.

@@ -60,6 +60,7 @@ test.describe('workspace audit trail', () => {
     await page.goto('/dashboard/settings/workspace');
     const role = page.getByLabel('Role for developer@apiproof.dev');
     await expect(role).toHaveValue('owner', { timeout: 30_000 });
+    expect((await role.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await role.selectOption('member');
     await expect(page.getByRole('alert').filter({ hasText: 'A workspace must retain at least one owner.' })).toBeVisible({ timeout: 30_000 });
     await expect(role).toHaveValue('owner');
