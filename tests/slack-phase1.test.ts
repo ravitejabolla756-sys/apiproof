@@ -20,8 +20,10 @@ import { enqueueNewFindingNotifications, processOneSlackNotificationDelivery, qu
 import { acceptSlackAction, processOneSlackInteractionJob } from '../apps/web/src/lib/server/slack-interactions.js';
 import { GET as getSlackConnection } from '../apps/web/src/app/api/slack/connection/route.js';
 import { DELETE as deleteSlackConnection } from '../apps/web/src/app/api/slack/connection/route.js';
+import { POST as startSlackConnection } from '../apps/web/src/app/api/slack/connect/route.js';
 import { GET as slackCallback } from '../apps/web/src/app/api/slack/callback/route.js';
 import { POST as slackInteraction } from '../apps/web/src/app/api/slack/interactions/route.js';
+import * as slackOAuthService from '../apps/web/src/lib/server/slack-oauth.js';
 
 const DB_PATH = path.resolve('.tmp/test-slack-phase1.db');
 const now = () => new Date().toISOString();
@@ -77,6 +79,23 @@ describe('MY OWL Slack Phase 1', () => {
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  it('does not expose Slack authorization setup errors to clients', async () => {
+    const account = await createUserWithSession('slack-connect-error@example.test', 'Pass1234!', 'Slack Connect Error');
+    const secretMarker = 'SLACK_CLIENT_SECRET:DO_NOT_EXPOSE';
+    vi.spyOn(slackOAuthService, 'createSlackAuthorizationUrl').mockRejectedValue(new Error(secretMarker));
+
+    const response = await startSlackConnection(new Request('https://myowl.example.test/api/slack/connect', {
+      method: 'POST',
+      headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+    expect(body).toEqual({ error: 'Slack connection could not be started.' });
+    expect(JSON.stringify(body)).not.toContain(secretMarker);
   });
 
   it('binds OAuth state to the authenticated user and consumes it exactly once', async () => {

@@ -476,3 +476,8 @@ Phase 0 read-only checks:
 
 - `/api/github/repositories` retains its reviewed authentication-failure response and now maps unexpected repository-service exceptions to a fixed generic response.
 - `github-repositories-error-safety` passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. External monitoring and staging gates remain open.
+
+### 2026-11-08 SEC-11 Slack connection error safety
+
+- `/api/slack/connect` now returns a fixed user-facing availability message for setup failures instead of exposing caught exception text to the dashboard.
+- The focused `slack-phase1` regression passes 1/1 (22 unrelated tests skipped by name filter); targeted ESLint and full workspace `pnpm typecheck` pass. External monitoring and staging gates remain unresolved.

@@ -11,8 +11,7 @@ export async function POST(req: Request) {
   try {
     const url = await createSlackAuthorizationUrl(user.id);
     return NextResponse.json({ url }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
-  } catch (error) {
-    const code = error instanceof Error ? error.message : 'SLACK_CONNECTION_UNAVAILABLE';
-    return NextResponse.json({ error: code }, { status: 503, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  } catch {
+    return NextResponse.json({ error: 'Slack connection could not be started.' }, { status: 503, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
   }
 }
