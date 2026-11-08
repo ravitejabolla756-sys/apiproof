@@ -3,6 +3,23 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
+  test('recovers an unauthorized stale workspace cookie without leaking context', async ({ page }) => {
+    await signIn(page);
+    const initialResponse = await page.request.get('/api/workspaces');
+    expect(initialResponse.status()).toBe(200);
+    const initial = await initialResponse.json() as { activeWorkspaceId?: string; workspaces?: Array<{ id: string }> };
+    expect(initial.activeWorkspaceId).toBeTruthy();
+    expect(initial.workspaces?.some((workspace) => workspace.id === initial.activeWorkspaceId)).toBe(true);
+
+    await page.context().addCookies([{ name: 'apiproof_workspace_id', value: 'ws_stale_not_authorized', url: new URL(page.url()).origin }]);
+    const recoveredResponse = await page.request.get('/api/workspaces');
+    expect(recoveredResponse.status()).toBe(200);
+    const recovered = await recoveredResponse.json() as { activeWorkspaceId?: string; workspaces?: Array<{ id: string }> };
+    expect(recovered.activeWorkspaceId).toBe(initial.activeWorkspaceId);
+    expect(recovered.workspaces?.some((workspace) => workspace.id === 'ws_stale_not_authorized')).toBe(false);
+    expect((await new AxeBuilder({ page }).include('aside').analyze()).violations, 'stale workspace recovery').toEqual([]);
+  });
+
   test('announces an empty workspace list instead of a loading state', async ({ page }) => {
     await page.route('**/api/workspaces', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: null, workspaces: [] }) });
