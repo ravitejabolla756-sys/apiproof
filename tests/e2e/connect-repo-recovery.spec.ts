@@ -43,6 +43,7 @@ test('traps repository dialog focus and restores the invoking control on Escape'
   const dialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
   const closeButton = dialog.getByRole('button', { name: 'Close repository connection dialog' });
   const connectGitHub = dialog.getByRole('button', { name: 'Connect GitHub', exact: true });
+  await expect(connectGitHub).toBeVisible();
   await expect(closeButton).toBeFocused();
   await page.keyboard.press('Shift+Tab');
   await expect(connectGitHub).toBeFocused();

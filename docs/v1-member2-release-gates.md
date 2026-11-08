@@ -30,7 +30,7 @@ Latest provider-review evidence: edit-mode Rule title input is measured at 44px 
 
 Latest dashboard-navigation evidence: brand and Overview breadcrumb links are measured at 44px or larger, with collapsed-sidebar naming retained. Hosted CI, manual review, PostgreSQL/RBAC, staging and production remain open.
 
-Latest repository-dialog evidence: selected repository labels are measured at 44px or larger with named-radio keyboard selection, focus recovery and axe-clean dialog coverage. GitHub configuration, hosted CI, PostgreSQL/RBAC, manual review, staging and production remain open.
+Latest repository-dialog evidence: repository recovery and disconnected-app journeys pass 2/2 locally with axe-clean dialog content, visible-control focus trapping and invoking-control restoration on Escape; selected repository labels remain measured at 44px or larger with named-radio keyboard selection. GitHub configuration, hosted CI, PostgreSQL/RBAC, manual review, staging and production remain open.
 
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 

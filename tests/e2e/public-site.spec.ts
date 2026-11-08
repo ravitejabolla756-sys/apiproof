@@ -228,9 +228,9 @@ test.describe('authenticated product surfaces', () => {
     }
   });
   test('exposes an accessible server-backed workspace context selector', async ({ page }) => {
-    let workspaceRequests = 0; let releaseWorkspaceRecovery: (() => void) | undefined; const workspaceRecovery = new Promise<void>((resolve) => { releaseWorkspaceRecovery = resolve; });
-    await page.route('**/api/workspaces', async (route) => { workspaceRequests += 1; if (workspaceRequests === 1) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace list unavailable.' }) }); return; } await workspaceRecovery; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: 'ws_primary', workspaces: [{ id: 'ws_primary', name: 'Primary Workspace' }] }) }); }); await signIn(page);
-    const workspaceError = page.getByRole('alert').filter({ hasText: 'Workspace list unavailable.' }); await expect(workspaceError).toBeVisible({ timeout: 30_000 }); await workspaceError.getByRole('button', { name: 'Try again' }).click(); releaseWorkspaceRecovery?.();
+    let workspaceRequests = 0; let allowWorkspaceRecovery = false;
+    await page.route('**/api/workspaces', async (route) => { workspaceRequests += 1; if (!allowWorkspaceRecovery) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace list unavailable.' }) }); return; } await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: 'ws_primary', workspaces: [{ id: 'ws_primary', name: 'Primary Workspace' }] }) }); }); await signIn(page);
+    const workspaceError = page.getByRole('alert').filter({ hasText: 'Workspace list unavailable.' }); await expect(workspaceError).toBeVisible({ timeout: 30_000 }); allowWorkspaceRecovery = true; await workspaceError.getByRole('button', { name: 'Try again' }).click();
     const selector = page.getByLabel('Active workspace'); await expect(selector).toBeVisible({ timeout: 30_000 });
     await expect(selector).toHaveValue(/.+/);
     await expect(selector.locator('option')).toHaveCount(1);

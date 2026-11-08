@@ -66,8 +66,10 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     }
 
     if (event.key !== 'Tab') return;
-    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>('input, button:not([disabled]), [href]');
-    if (!focusable?.length) return;
+    const focusable = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>('input, button:not([disabled]), [href]') ?? [],
+    ).filter((element) => element.offsetParent !== null && !element.hasAttribute('aria-hidden'));
+    if (focusable.length === 0) return;
 
     const first = focusable[0]!;
     const last = focusable[focusable.length - 1]!;
@@ -261,7 +263,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         aria-modal="true"
         aria-labelledby="connect-repository-title"
         ref={dialogRef}
-        onKeyDown={handleDialogKeyDown}
+        onKeyDownCapture={handleDialogKeyDown}
         className="bg-white border border-[#E8E8E5] w-full max-w-lg rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
       >
         {/* Header */}
