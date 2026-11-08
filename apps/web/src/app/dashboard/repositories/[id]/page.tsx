@@ -117,7 +117,7 @@ export default function RepositoryDetailPage({
     }
   }
 
-  if (loading) {
+  if (loading && !repo) {
     return (
       <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-xs text-[#686868] font-sans">
         <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
@@ -141,7 +141,7 @@ export default function RepositoryDetailPage({
   const latestScanIsActive = scanning || latestScan?.status === "pending" || latestScan?.status === "running";
 
   return (
-    <div aria-busy={scanning ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={loading || scanning ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
       {/* BACK BUTTON */}
       <div>
         <Link
@@ -182,6 +182,8 @@ export default function RepositoryDetailPage({
               size="sm"
               variant="outline"
               onClick={loadData}
+              disabled={loading}
+              aria-busy={loading ? 'true' : undefined}
               icon={<RefreshCw aria-hidden="true" className="w-3.5 h-3.5" />}
               className="min-h-11 text-xs font-medium"
             >

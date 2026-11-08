@@ -1790,6 +1790,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported five incumbent purple-palette warnings on untouched workspace headings; targeted ESLint and `git diff --check` passed; focused Playwright coverage passed 1/1 in 10.1 seconds; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-04 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 findings and repository refresh action semantics
+
+- Change: findings-list and repository-list refresh controls now expose `aria-busy="true"` while loading; repository detail preserves its loaded surface during refresh and exposes the same busy state on its route and control.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/e2e/repository-and-findings-refresh-loading.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused refresh coverage passed 1/1 in 16.8 seconds; existing repository recovery and findings-filter coverage passed 3/3 in 23.4 seconds; web production build passed with 83 generated pages.
+- Scope: this advances local UI-12/UI-13 and ORG-02/ORG-11 evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 compatibility-intelligence refresh action semantics
 
 - Change: the compatibility-intelligence refresh control now exposes `aria-busy="true"` and remains disabled while reviewed compatibility data is pending, preserving the reviewed-source-only claim boundary.
