@@ -1491,3 +1491,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/about/page.tsx`, `tests/e2e/about-accessibility.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; mobile About CTA/axe journey passed 1/1 in 7.1 seconds at 390px; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12 and WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — release-gate accessibility evidence refresh
+
+- Change: refreshed `docs/v1-member2-release-gates.md` to include the retained full public axe audit (21 routes) and authenticated axe audit (15 routes), while keeping hosted CI, manual assistive technology, PostgreSQL/RBAC, staging and production gates open.
+- Files: `docs/v1-member2-release-gates.md`.
+- Evidence: documentation-only update grounded in commits `0696160` and `aed29c8`; no gate was marked PASS without corresponding local evidence, and production remains NO-GO.
+- Scope: release-gate truthfulness/documentation only; no backend, provider, production or remote Git operation was performed.
