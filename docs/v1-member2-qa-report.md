@@ -760,6 +760,14 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, Member 1 event integration and production checks remain NOT_RUN.
 
+## 2026-11-08 — provider-rule recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the provider-rule review component and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/provider-rule-recovery.spec.ts tests/e2e/provider-rule-action-loading.spec.ts --reporter=line`: PASS, 4/4 in 20.5 seconds; provider-rule recovery remains visible and exposes disabled/`aria-busy` while held, while loading, empty-queue and sample-test journeys remain green.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

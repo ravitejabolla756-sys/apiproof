@@ -85,15 +85,16 @@ export function ProviderRuleReview() {
   const [editing, setEditing] = useState<Record<string, boolean>>({});
   const [editValues, setEditValues] = useState<Record<string, { title: string; description: string; patterns: string; replacement: string; migrationTemplate: string; notes: string }>>({});
 
-  async function load() {
+  async function load(preserveError = false) {
     setLoading(true);
-    setError(null);
+    if (!preserveError) setError(null);
     try {
       const response = await fetch("/api/provider-rules", { cache: "no-store" });
       const body = await response.json() as { candidates?: Candidate[]; coverageSummary?: CoverageSummary; error?: string };
       if (!response.ok) throw new Error(body.error ?? "Unable to load provider rules.");
       setCandidates(body.candidates ?? []);
       setCoverageSummary(body.coverageSummary ?? null);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load provider rules.");
     } finally {
@@ -247,7 +248,7 @@ export function ProviderRuleReview() {
         </div>
       </div>
 
-      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800"><span>{error}</span><button type="button" onClick={() => void load()} disabled={loading} aria-busy={loading ? 'true' : undefined} aria-label="Retry provider rules" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{loading ? "Retrying…" : "Retry"}</button></div>}
+      {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800"><span>{error}</span><button type="button" onClick={() => void load(true)} disabled={loading} aria-busy={loading ? 'true' : undefined} aria-label="Retry provider rules" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 font-medium text-rose-900 disabled:opacity-50">{loading ? "Retrying…" : "Retry"}</button></div>}
       {coverageSummary && <section className="grid gap-3 sm:grid-cols-3" aria-label="Provider review coverage"><div className="rounded-xl border border-[#E8E8E5] bg-white p-4"><p className="text-[10px] font-semibold uppercase tracking-wide text-[#686868]">Reviewed providers</p><p className="mt-2 text-2xl font-semibold text-[#111111]">{coverageSummary.reviewedProviders} <span className="text-sm font-normal text-[#686868]">/ 19</span></p><p className="mt-1 text-[11px] text-[#686868]">Rules promoted with evidence</p></div><div className="rounded-xl border border-[#E8E8E5] bg-white p-4"><p className="text-[10px] font-semibold uppercase tracking-wide text-[#686868]">Pending candidates</p><p className="mt-2 text-2xl font-semibold text-[#111111]">{coverageSummary.pendingCandidates}</p><p className="mt-1 text-[11px] text-[#686868]">Require human fixtures and review</p></div><div className="rounded-xl border border-[#E8E8E5] bg-white p-4"><p className="text-[10px] font-semibold uppercase tracking-wide text-[#686868]">Guarded templates</p><p className="mt-2 text-2xl font-semibold text-[#111111]">{coverageSummary.providersWithExecutableTemplates.length}</p><p className="mt-1 text-[11px] text-[#686868]">Providers with deterministic remediation</p></div></section>}
       {coverageSummary && coverageSummary.providersMissingReviewedRules.length > 0 && <div className="rounded-lg border border-amber-100 bg-amber-50/50 px-4 py-3 text-[11px] text-amber-900"><span className="font-semibold">Providers still needing reviewed rules:</span> {coverageSummary.providersMissingReviewedRules.join(", ")}</div>}
       {!loading && candidates.length > 0 && <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Review priority filter"><span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-[#686868]">Focus:</span>{(["all", "P0", "P1", "P2"] as const).map((priority) => <button key={priority} type="button" aria-pressed={priorityFilter === priority} onClick={() => setPriorityFilter(priority)} className={`inline-flex min-h-11 items-center justify-center rounded-full border px-3 py-1.5 text-[11px] font-medium ${priorityFilter === priority ? "border-[#111111] bg-[#111111] text-white" : "border-[#D9D9D4] bg-white text-[#555555] hover:bg-[#F6F6F4]"}`}>{priority === "all" ? `All (${candidates.length})` : `${priority} (${candidates.filter((candidate) => candidate.coverage?.priority === priority).length})`}</button>)}</div>}

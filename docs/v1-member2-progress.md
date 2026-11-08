@@ -2151,3 +2151,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/e2e/finding-detail-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; finding-detail loading/recovery coverage passed 2/2 in 16.9 seconds; existing finding-workbench action coverage passed 1/1 in 11.7 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13 and ORG-11 degraded-state evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 event integration and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 provider-rule recovery busy semantics
+
+- Change: Provider Rule Review now preserves its load-failure alert during retry and clears it only after a successful queue response; Retry provider rules remains disabled and exposes `aria-busy="true"` while recovery is pending.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-recovery.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; provider-rule recovery plus action-loading coverage passed 4/4 in 20.5 seconds, including the deterministic held-retry journey; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Scope: this advances local UI-12/UI-13 and provider-review degraded-state evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
