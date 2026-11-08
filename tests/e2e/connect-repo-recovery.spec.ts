@@ -32,6 +32,36 @@ test('keeps initial GitHub repository failures distinct from a disconnected app'
   await page.unroute('**/api/github/repositories');
 });
 
+test('keeps initial repository recovery visible and busy while retrying', async ({ page }) => {
+  await signIn(page);
+  let allowRecovery = false;
+  let releaseRecovery: (() => void) | undefined;
+  const recoveryPending = new Promise<void>((resolve) => { releaseRecovery = resolve; });
+  await page.route('**/api/github/repositories', async (route) => {
+    if (!allowRecovery) {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Failed to load GitHub repositories.' }) });
+      return;
+    }
+    await recoveryPending;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
+  });
+  await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Connect repository', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Connect GitHub Repository' });
+  const unavailable = dialog.getByRole('alert').filter({ hasText: 'GitHub repositories are temporarily unavailable.' });
+  await expect(unavailable).toBeVisible({ timeout: 30_000 });
+  const retryRepositories = unavailable.getByRole('button', { name: 'Retry repositories' });
+  allowRecovery = true;
+  await retryRepositories.click();
+  await expect(unavailable).toBeVisible();
+  await expect(retryRepositories).toBeDisabled();
+  await expect(retryRepositories).toHaveAttribute('aria-busy', 'true');
+  releaseRecovery?.();
+  await expect(dialog.getByRole('status').filter({ hasText: 'GitHub App Not Connected' })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Close repository connection dialog' }).click();
+  await page.unroute('**/api/github/repositories');
+});
+
 test('announces repository dialog loading as a busy state', async ({ page }) => {
   await signIn(page);
   let releaseRepositories: (() => void) | undefined;

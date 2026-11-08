@@ -2137,3 +2137,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/settings-recovery-loading.spec.ts`.
 - Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; the new held-retry journey passed 1/1 in 14.0 seconds; existing workspace-settings data-state coverage passed 2/2 in 18.2 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Scope: this advances local UI-12/UI-13, ORG-02 and BILL-07 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12/UI-13 repository-connect recovery busy semantics
+
+- Change: the repository-connect modal now preserves its initial GitHub repository failure surface during retry and exposes disabled plus `aria-busy="true"` on Retry repositories until recovery resolves.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/e2e/connect-repo-recovery.spec.ts`.
+- Evidence: targeted ESLint, `git diff --check` and Impeccable detector passed with no findings; repository-connect recovery coverage passed 4/4 in 25.8 seconds, including the held-retry journey; adjacent submit-loading coverage passed 1/1 in 14.1 seconds; web production build passed with 83 generated pages. The existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Scope: this advances local UI-12/UI-13 and ORG-02 recovery evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, GitHub/provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

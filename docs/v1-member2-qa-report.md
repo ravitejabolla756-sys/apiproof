@@ -742,6 +742,15 @@ The latest CI-configured complete run passed 161 test files and 1,340 tests, wit
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, GitHub/provider approval and production checks remain NOT_RUN.
 
+## 2026-11-08 — repository-connect recovery busy checkpoint
+
+- Impeccable detector: PASS with no findings for the repository-connect modal and recovery journey.
+- Targeted ESLint and `git diff --check`: PASS.
+- `pnpm exec playwright test tests/e2e/connect-repo-recovery.spec.ts --reporter=line`: PASS, 4/4 in 25.8 seconds; initial repository failure recovery keeps the retry surface visible and exposes disabled/`aria-busy` while the held request recovers, while focus and accessibility journeys remain green.
+- `pnpm exec playwright test tests/e2e/connect-repo-action-loading.spec.ts --reporter=line`: PASS, 1/1 in 14.1 seconds.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, GitHub/provider approval and production checks remain NOT_RUN.
+
 ## 2026-11-08 — findings recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the findings route and new test.

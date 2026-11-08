@@ -82,14 +82,14 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     }
   }
 
-  const loadRepositories = useCallback(async (showLoading: boolean) => {
+  const loadRepositories = useCallback(async (showLoading: boolean, preserveError = false) => {
     const requestId = ++repositoryRequestId.current;
     repositoryController.current?.abort();
     const controller = new AbortController();
     repositoryController.current = controller;
     if (showLoading) {
       setLoadingRepos(true);
-      setError(null);
+      if (!preserveError) setError(null);
     }
     try {
       const res = await fetch('/api/github/repositories', { cache: 'no-store', signal: controller.signal });
@@ -302,15 +302,15 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
             </div>
           )}
 
-          {loadingRepos && !initialRepositoryLoadComplete.current ? (
+          {error && !initialRepositoryLoadComplete.current ? (
+            <div role="alert" aria-live="assertive" aria-atomic="true" className="py-8 text-center space-y-4">
+              <p className="text-xs text-rose-800">GitHub repositories are temporarily unavailable.</p>
+              <Button type="button" variant="outline" size="sm" disabled={loadingRepos} aria-busy={loadingRepos ? 'true' : undefined} onClick={() => void loadRepositories(true, true)}>Retry repositories</Button>
+            </div>
+          ) : loadingRepos && !initialRepositoryLoadComplete.current ? (
             <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-12 flex flex-col items-center justify-center gap-3 text-[#686868]">
               <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin text-purple-700" />
               <span className="text-xs">Loading available repositories...</span>
-            </div>
-          ) : error && !initialRepositoryLoadComplete.current ? (
-            <div role="alert" aria-live="assertive" aria-atomic="true" className="py-8 text-center space-y-4">
-              <p className="text-xs text-rose-800">GitHub repositories are temporarily unavailable.</p>
-              <Button type="button" variant="outline" size="sm" onClick={() => void loadRepositories(true)}>Retry repositories</Button>
             </div>
           ) : !connected ? (
             <div role="status" aria-live="polite" aria-atomic="true" className="py-8 text-center space-y-4">

@@ -173,3 +173,7 @@ Repository-detail degraded-state retry remains visible and exposes disabled plus
 ## Latest workspace-settings recovery evidence — 2026-11-08
 
 Workspace Settings preserves its degraded-state alert during retry and exposes disabled plus `aria-busy` semantics on Retry settings load while repository and billing requests are pending; focused plus existing workspace-settings coverage passes 3/3 and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open. Release recommendation stays NO-GO.
+
+## Latest repository-connect recovery evidence — 2026-11-08
+
+The repository-connect modal preserves its initial GitHub repository failure surface during retry and exposes disabled plus `aria-busy` semantics on Retry repositories while recovery is pending; recovery coverage passes 4/4, adjacent submit-loading coverage passes 1/1, and the production build passes with 83 generated pages. This is local evidence only; hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, GitHub/provider approval and production remain open. Release recommendation stays NO-GO.
