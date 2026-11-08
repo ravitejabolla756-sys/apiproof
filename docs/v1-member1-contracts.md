@@ -158,3 +158,4 @@ The following tests are implementation-ready but remain contract-gated; they int
 - 2026-11-08 SEC-11: Slack connect failures return a fixed user-facing message; configuration and storage exception details remain server-side. Regression coverage is in `tests/slack-phase1.test.ts`.
 - 2026-11-08 SEC-11: Repository connection retains its reviewed `FORBIDDEN` and `REPOSITORY_ALREADY_CONNECTED` outcomes; unexpected persistence exceptions map to fixed `INTERNAL_ERROR` without returning exception content.
 - 2026-11-08 SEC-11: GitHub installation callback maps known foreign/missing installation cases to `UNKNOWN_INSTALLATION`; other provider failures return fixed `GITHUB_API_ERROR` text without echoing provider exception content.
+- 2026-11-08 AUTH-10: Session expiry is exclusive: `expires_at <= now` is invalid. The sync and async validators must reject and purge malformed, past, and exactly-at-current-instant expiry values.

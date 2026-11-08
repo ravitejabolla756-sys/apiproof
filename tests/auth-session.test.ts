@@ -325,6 +325,19 @@ describe('Production Authentication & Session Persistence', () => {
       expect(await validateSessionAsync(asyncSession.id)).toBeNull();
       expect(await db.queryOne('SELECT id FROM sessions WHERE id IN (?, ?)', [syncSession.id, asyncSession.id])).toBeUndefined();
     });
+
+    it('rejects and purges sessions expiring at the current instant in both validation paths', async () => {
+      const { user } = await createUserWithSession('boundary-expiry@example.com', 'Password123!', 'Boundary Expiry');
+      const syncSession = await createSession(user.id);
+      const asyncSession = await createSessionAsync(user.id);
+      const db = getDatabase();
+      const expiryAtNow = new Date().toISOString();
+      await db.execute('UPDATE sessions SET expires_at = ? WHERE id IN (?, ?)', [expiryAtNow, syncSession.id, asyncSession.id]);
+
+      expect(await validateSession(syncSession.id)).toBeNull();
+      expect(await validateSessionAsync(asyncSession.id)).toBeNull();
+      expect(await db.queryOne('SELECT id FROM sessions WHERE id IN (?, ?)', [syncSession.id, asyncSession.id])).toBeUndefined();
+    });
   });
 
   // ---------------------------------------------------------------------------
