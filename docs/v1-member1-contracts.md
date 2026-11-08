@@ -40,6 +40,7 @@ This document records backend contracts that require coordination with Member 2.
 
 ## Retention and deletion (SEC-19)
 
+- `docs/database-backup-and-safety.md` inventories all 46 distinct Member 1 application table names by data area. Every retention disposition remains undecided pending legal/owner approval; the inventory is not production schema evidence or deletion authorization.
 - Account security data (`users`, password hash, OAuth identities, sessions, password-reset tokens and email-verification tokens) is user-scoped. Account closure must invalidate sessions/tokens first, then delete or anonymize the account according to the approved legal policy; it must not delete another user's workspaces or memberships implicitly.
 - Workspace operational data (`workspace_members`, repositories, scans, findings, migrations, pull requests, resolution/lifecycle evidence, activity, provider rescans, Slack deliveries/actions and worker jobs) is workspace-scoped. A workspace deletion request must either cascade through an approved retention plan or enter an auditable anonymization workflow; no current endpoint performs this operation.
 - Billing records (`workspace_subscriptions`, usage and provider webhook/event records) and future invoice identifiers are retention-sensitive. They must be retained for the approved statutory/provider period while access is revoked and personal data is minimized where legally permitted.

@@ -24,6 +24,22 @@ The intended production design is a managed PostgreSQL service with workspace mu
 
 Retention entries above are planning values only. Legal basis, user notice, exceptions, holds, deletion scope, and approval are unresolved. No account/workspace deletion policy is authorized by this table.
 
+### Complete Member 1 application-table inventory (schema-derived)
+
+The following inventory reconciles the 46 unique `CREATE TABLE IF NOT EXISTS` names in `apps/web/src/lib/server/db/schema.ts` and the Member 1 TypeScript migration sources. Grouping is for data discovery only; the table names do not establish legal classification, actual production contents, cascade behavior, or deletion authorization. **Retention and deletion disposition for every group remains UNDECIDED pending legal/owner approval.**
+
+| Data area | Tables in this branch | Retention / deletion status |
+| :--- | :--- | :--- |
+| Account identity and authentication | `users`, `sessions`, `password_reset_tokens`, `email_verification_tokens`, `github_oauth_accounts`, `github_login_oauth_states`, `google_oauth_accounts`, `google_oauth_states` | UNDECIDED; identify security, provider, and statutory holds before policy approval |
+| Workspace tenancy and revocation audit | `workspaces`, `workspace_members`, `workspace_member_revocation_requests`, `workspace_security_audit_events` | UNDECIDED; Member 2 must approve member/workspace lifecycle contracts |
+| Repository and product evidence | `repositories`, `scans`, `findings`, `finding_lifecycle_events`, `finding_resolution_verifications`, `migrations`, `pull_requests`, `github_scan_requests`, `github_webhook_deliveries`, `activity_events` | UNDECIDED; confirm source-derived data scope, audit obligations, and dependent-record treatment |
+| GitHub and Slack integration records | `github_installations`, `github_installation_states`, `slack_connections`, `slack_oauth_states`, `slack_notification_deliveries`, `slack_action_tokens`, `slack_notification_dismissals`, `slack_interaction_jobs` | UNDECIDED; distinguish credentials/action tokens from delivery and audit evidence |
+| Billing and entitlement records | `workspace_subscriptions`, `workspace_usage`, `billing_webhook_events` | UNDECIDED; owner/legal must approve statutory and provider-required retention |
+| Provider change intelligence and rescans | `provider_change_sources`, `provider_changelog_entries`, `provider_rule_candidates`, `provider_rule_reviews`, `provider_rescan_jobs`, `repository_provider_usage`, `repository_rescan_jobs`, `slack_provider_change_deliveries` | UNDECIDED; define workspace attribution, provider provenance, and audit retention |
+| Operational and migration-control data | `_apiproof_migrations`, `rate_limits`, `migration_verification_jobs`, `migration_verification_workers`, `worker_run_heartbeats` | UNDECIDED; define operational/debug retention and migration-history preservation |
+
+This inventory covers **46 distinct Member 1 schema table names**. Member 2's separate `workspace_invitations` table is not part of this branch's current schema inventory and must be added during approved cross-member integration. Backups, provider snapshots, external log sinks, and GitHub/Slack/provider-held copies are separate retention surfaces and are not represented by these application-table names. Do not delete or anonymize any listed records until the policy and Member 2 contracts are approved.
+
 ---
 
 ## 2. Backup Expectations & Recovery (RPO / RTO)
