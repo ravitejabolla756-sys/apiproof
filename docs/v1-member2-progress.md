@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — UI-12/UI-13 repository dialog focus lifecycle
+
+- Change: Added a hermetic repository-connection modal journey covering initial focus, Shift+Tab and Tab focus wrapping, Escape dismissal, focus restoration to the invoking control, and post-dismissal axe cleanliness.
+- Evidence: Targeted ESLint and `git diff --check` passed; focused repository-dialog journey passed 1/1 in 15.4 seconds. Artifacts: `/tmp/myowl-v1-repository-dialog-focus-artifacts`.
+- Scope: local UI-12/UI-13 modal accessibility evidence only; no GitHub activation, backend contract, hosted CI, staging or production action was performed.
+
 ## 2026-11-08 checkpoint — UI-12 notification preference save keyboard semantics
 
 - Change: Extended optional notification preference success and failure journeys to focus “Save preferences”, verify focus visibility, and activate both saves with Enter while preserving payload, loading/success, error and axe assertions.

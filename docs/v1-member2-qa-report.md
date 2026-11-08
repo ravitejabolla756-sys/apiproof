@@ -2,6 +2,12 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
+## 2026-11-08 — Repository dialog focus lifecycle
+
+- PASS: Focused repository-dialog journey passed 1/1 in 15.4 seconds; initial focus, Shift+Tab/Tab wrapping, Escape dismissal, invoking-control focus restoration and post-dismissal axe checks all passed.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- Scope: local UI-12/UI-13 evidence only. GitHub activation, hosted CI, integrated staging, backend contracts and production remain open.
+
 ## 2026-11-08 — Notification preference save keyboard semantics
 
 - PASS: Focused notification preference journey passed 1/1 in 11.1 seconds; successful and failed saves now verify keyboard focus and Enter activation while retaining payload, loading/success, error and axe assertions.
