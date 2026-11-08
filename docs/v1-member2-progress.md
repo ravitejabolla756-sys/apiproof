@@ -5,6 +5,12 @@ Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
+## 2026-11-08 checkpoint — ORG-11 audit-response cache boundary
+
+- Change: Workspace audit reads now return `Cache-Control: private, no-store, max-age=0` for success and unauthorized responses; shared organization errors use the same private no-store policy so malformed, denied and server-failure responses cannot be reused from a cache.
+- Evidence: Added an HTTP-boundary regression; `tests/organization-management.test.ts` passed 21/21, targeted ESLint, repository `pnpm typecheck`, and `git diff --check` passed.
+- Scope: local ORG-11/organization data-protection hardening only; PostgreSQL/RBAC, hosted CI, staging, retention review and production remain open.
+
 ## 2026-11-08 checkpoint — UI-13 Playwright cross-worktree isolation
 
 - Change: Playwright now derives its base URL/server port from `PLAYWRIGHT_PORT` and refuses to reuse an existing server by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in for a verified same-worktree listener.

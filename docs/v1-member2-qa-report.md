@@ -1,5 +1,11 @@
 # MY OWL V1 — Member 2 QA Report
 
+## 2026-11-08 — ORG-11 audit-response cache boundary
+
+- PASS: Audit success and unauthorized responses are private/non-cacheable, and shared organization errors carry the same cache policy.
+- PASS: Organization-management coverage passed 21/21; targeted ESLint, repository typecheck and diff checks passed.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, retention review and production remain open.
+
 ## 2026-11-08 — UI-13 Playwright cross-worktree isolation
 
 - PASS: Playwright port/base URL configuration is now environment-overridable and existing-server reuse is opt-in, preventing silent reuse of an unrelated checkout’s dev server.

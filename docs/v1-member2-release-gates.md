@@ -26,6 +26,8 @@ Latest UI-13 evidence: the rebuilt current-worktree production bundle generated 
 
 Latest browser-harness evidence: Playwright now refuses existing-server reuse by default, supports `PLAYWRIGHT_PORT`, and the focused provider/repository recovery suite passes 2/2 against a newly spawned port-3101 server. Hosted CI, integrated staging and production remain open.
 
+Latest ORG-11 evidence: workspace audit success/unauthorized responses and shared organization errors are private and non-cacheable; organization-management coverage passes 21/21 with repository typecheck passing. PostgreSQL/RBAC, retention review, hosted CI, staging and production remain open.
+
 Latest full local regression evidence: the seeded Vitest repository run passes 1,362 tests across 161 passing files, with 1 skipped file and 4 skipped tests, in 124.27 seconds after the SQLite transaction-serialization and provider-rule mutation context-boundary fixes. PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
 
 Latest provider-rule mutation evidence: edit, review, test and seed routes normalize malformed workspace IDs while preserving owner denial; seeded provider-review coverage passes 4/4 and repository typecheck passes. Provider approval, PostgreSQL/RBAC verification, hosted CI, staging and production remain open.

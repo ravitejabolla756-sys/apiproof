@@ -11,6 +11,7 @@ import { GET as overviewRoute } from '../apps/web/src/app/api/overview/route.js'
 import { GET as findingsRoute } from '../apps/web/src/app/api/findings/route.js';
 import { GET as pullRequestsRoute } from '../apps/web/src/app/api/pull-requests/route.js';
 import { GET as migrationsRoute } from '../apps/web/src/app/api/migrations/route.js';
+import { GET as auditRoute } from '../apps/web/src/app/api/workspace/audit/route.js';
 import { PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
 import { DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
 import {
@@ -92,6 +93,15 @@ describe('workspace administration', () => {
     const event = page.events.find((item) => item.id === 'audit-sensitive')!;
     expect(event.metadata).toEqual({ token: '[REDACTED]', note: `${'x'.repeat(512)}[TRUNCATED]`, nested: { password: '[REDACTED]' } });
     expect(page.events.find((item) => item.id === 'audit-malformed')?.metadata).toEqual({});
+  });
+
+  it('marks audit responses private and non-cacheable at the HTTP boundary', async () => {
+    const owner = await createUserWithSession('audit-cache@example.test', 'OwnerPassword123!', 'Audit Cache');
+    const response = await auditRoute(new Request('https://apiproof.test/api/workspace/audit', {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
   });
 
   it('creates a single-use expiring invitation and accepts it only for the invited email', async () => {

@@ -4,6 +4,7 @@ import { OrganizationServiceError } from './organization-service.js';
 import { validateSafeId } from './validation.js';
 
 export const WORKSPACE_CONTEXT_COOKIE = 'apiproof_workspace_id';
+const PRIVATE_NO_STORE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0' };
 
 function readCookieValue(req: Request, name: string): string | null {
   const cookieHeader = req.headers.get('cookie');
@@ -40,11 +41,17 @@ export async function resolveWorkspaceForRequest(req: Request, userId: string, r
 export function organizationErrorResponse(error: unknown): Response {
   if (error instanceof OrganizationServiceError) {
     const status = error.code.endsWith('NOT_FOUND') ? 404 : 400;
-    return NextResponse.json({ error: error.message, code: error.code }, { status });
+    return NextResponse.json({ error: error.message, code: error.code }, { status, headers: PRIVATE_NO_STORE_HEADERS });
   }
   if (error instanceof Error && error.message.includes('access denied')) {
-    return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'WORKSPACE_ACCESS_DENIED' }, { status: 404 });
+    return NextResponse.json(
+      { error: 'Workspace not found or access denied.', code: 'WORKSPACE_ACCESS_DENIED' },
+      { status: 404, headers: PRIVATE_NO_STORE_HEADERS },
+    );
   }
   console.error('Organization request failed:', error);
-  return NextResponse.json({ error: 'Workspace request could not be completed.', code: 'WORKSPACE_REQUEST_FAILED' }, { status: 500 });
+  return NextResponse.json(
+    { error: 'Workspace request could not be completed.', code: 'WORKSPACE_REQUEST_FAILED' },
+    { status: 500, headers: PRIVATE_NO_STORE_HEADERS },
+  );
 }
