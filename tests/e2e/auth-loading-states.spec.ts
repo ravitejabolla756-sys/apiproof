@@ -79,7 +79,7 @@ test.describe('authentication loading announcements', () => {
     await sendResetLink.focus(); await expect(sendResetLink).toBeFocused(); await page.keyboard.press('Enter');
     const sendingStatus = page.getByText('Sending…', { exact: true }); await expect(sendingStatus).toBeVisible(); await expect(sendingStatus).toHaveAttribute('aria-busy', 'true');
     releaseRequest?.();
-    const requestStatus = page.getByRole('status'); await expect(requestStatus).toContainText('If an account exists'); await expect(requestStatus).toHaveAttribute('aria-atomic', 'true');
+    const requestStatus = page.getByRole('status'); await expect(requestStatus).toContainText('If an account exists'); await expect(requestStatus).toHaveAttribute('aria-atomic', 'true'); await expect(requestStatus).toBeFocused();
     await page.unroute('**/api/auth');
 
     let releaseReset: (() => void) | undefined;
@@ -98,7 +98,7 @@ test.describe('authentication loading announcements', () => {
     await resetPassword.focus(); await expect(resetPassword).toBeFocused(); await page.keyboard.press('Enter');
     const updatingStatus = page.getByText('Updating…', { exact: true }); await expect(updatingStatus).toBeVisible(); await expect(updatingStatus).toHaveAttribute('aria-busy', 'true');
     releaseReset?.();
-    const resetStatus = page.getByRole('status'); await expect(resetStatus).toContainText('Password updated.'); await expect(resetStatus).toHaveAttribute('aria-atomic', 'true');
+    const resetStatus = page.getByRole('status'); await expect(resetStatus).toContainText('Password updated.'); await expect(resetStatus).toHaveAttribute('aria-atomic', 'true'); await expect(resetStatus).toBeFocused();
   });
 
   test('announces auth-entry recovery failures without enabling unsafe reset actions', async ({ page }) => {

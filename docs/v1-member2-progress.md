@@ -2700,3 +2700,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/login/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; focused auth/login coverage passed 6/6; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12/UI-13 login-state evidence only; provider integration, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 password-recovery feedback focus
+
+- Change: forgot-password and reset-password success/error feedback now receives focus after submission or terminal validation, preserving recovery context while retaining live-region announcements and safe token handling.
+- Files: `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; focused password-recovery coverage passed 6/6; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 password-recovery evidence only; provider integration, manual assistive-technology review, hosted CI, staging, Member 1 integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

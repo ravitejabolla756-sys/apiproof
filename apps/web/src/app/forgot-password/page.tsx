@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ApiProofLogo } from '@/components/ui/logo';
 
@@ -9,6 +9,11 @@ export default function ForgotPasswordPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const feedbackRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (message || error) feedbackRef.current?.focus();
+  }, [message, error]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,8 +50,8 @@ export default function ForgotPasswordPage() {
             <label htmlFor="reset-email" className="mb-2 block font-mono text-xs font-medium uppercase tracking-wider text-slate-600">Email</label>
             <input id="reset-email" type="email" required maxLength={255} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10" />
           </div>
-          {message && <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800">{message}</p>}
-          {error && <p role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+          {message && <p ref={feedbackRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{message}</p>}
+          {error && <p ref={feedbackRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{error}</p>}
           <button type="submit" disabled={loading} className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#0F172A] py-3.5 font-mono text-xs font-medium uppercase tracking-wider text-white disabled:opacity-60">
             <span role={loading ? 'status' : undefined} aria-live={loading ? 'polite' : undefined} aria-atomic={loading ? 'true' : undefined} aria-busy={loading ? 'true' : undefined}>{loading ? 'Sending…' : 'Send reset link'}</span>
           </button>

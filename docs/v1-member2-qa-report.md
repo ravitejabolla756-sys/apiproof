@@ -1223,6 +1223,10 @@ Email verification now moves focus to its terminal success or error status after
 
 Login authentication failures now focus the assertive error alert while keeping the form available for retry. The rebuilt production bundle passed with 83 generated pages; focused auth/login coverage passed 6/6; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider integration, manual screen-reader, hosted CI, staging, Member 1 integration and production checks remain NOT_RUN.
 
+## Latest password-recovery focus evidence — 2026-11-08
+
+Forgot-password and reset-password feedback now receives focus after terminal responses. The rebuilt production bundle passed with 83 generated pages; focused recovery coverage passed 6/6; targeted ESLint, `git diff --check` and the Impeccable detector passed. Provider integration, manual screen-reader, hosted CI, staging, Member 1 integration and production checks remain NOT_RUN.
+
 ## 2026-11-08 — provider/repository recovery busy checkpoint
 
 - Impeccable detector: PASS with no findings for the provider and repository route changes.
