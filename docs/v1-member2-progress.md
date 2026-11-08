@@ -1785,6 +1785,12 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; focused hermetic Playwright coverage passed 2/2 in 7.1 seconds for delayed finding loading and existing migration-plan action feedback.
 - Scope: this advances local UI-12/UI-13 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-13 full production-build browser regression
+
+- Change: revalidated the complete committed Playwright matrix against the current local production build after the route-state accessibility work.
+- Evidence: `pnpm --filter @apiproof/web build` passed with 83 generated pages; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true pnpm exec playwright test --workers=1` passed 130/130 in 4.6 minutes, covering authenticated/public routes, organization flows, billing boundaries, notification/settings states, provider review, repository recovery, finding/migration workflows and accessibility assertions.
+- Scope: this advances local UI-12/UI-13 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval, legal/owner review and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 compatibility-map component loading semantics
 
 - Change: the shared dashboard compatibility-map loading status now exposes `aria-busy="true"`, preserving its initial/refresh error recovery, repository selection and review-only provenance behavior.

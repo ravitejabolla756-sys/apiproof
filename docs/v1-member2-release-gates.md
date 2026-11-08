@@ -64,6 +64,8 @@ Latest provider-rule evidence: delayed provider-rule loading and existing failur
 
 Latest compatibility-map evidence: delayed shared-component loading and existing initial/refresh retry recovery pass 2/2 with the loading status marked busy. Hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, provider approval and production remain open.
 
+Latest browser-E2E evidence: the current production build generated 83 pages and the complete 49-spec Playwright matrix passed 130/130 in 4.6 minutes on one worker. Hosted CI, integrated staging, PostgreSQL/RBAC, providers, manual assistive-technology review and production remain open.
+
 Latest auth-entry evidence: missing verification-token sign-in recovery and expired-invitation accept/recovery actions are measured at 44px or larger with assertive announcements and axe-clean states. Transactional email, Member 1 integration, hosted CI, manual review, staging and production remain open.
 
 Latest refund-page evidence: draft contact and pricing-review links are measured at 44px or larger with versioned draft metadata retained. Legal/provider approval, hosted CI, manual review, staging and production remain open.
