@@ -261,12 +261,13 @@ export function Sidebar() {
             value={activeWorkspaceId}
             onChange={handleWorkspaceChange}
             disabled={workspaceSwitching || workspaces.length < 2}
-            aria-busy={workspaceSwitching ? 'true' : undefined}
+            aria-busy={!workspaceLoadComplete || workspaceSwitching ? 'true' : undefined}
             className="min-h-11 w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
           >
             {workspaces.length === 0 && <option value="">{workspaceLoadError ? 'Workspace list unavailable' : workspaceLoadComplete ? 'No workspaces available' : 'Loading workspace…'}</option>}
             {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
           </select>
+          {!workspaceLoadComplete && <p role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="mt-1 text-[10px] text-[#686868]">Loading workspace list…</p>}
           {workspaceLoadError && <p role="alert" aria-live="assertive" aria-atomic="true" className="mt-1 text-[10px] text-rose-700">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">Try again</button></p>}
           {workspaceLoadComplete && !workspaceLoadError && workspaces.length === 0 && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">No workspaces are available.</p>}
           {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}

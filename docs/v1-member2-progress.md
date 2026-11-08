@@ -1798,6 +1798,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the authentication loading suite passed 5/5 in 5.4 seconds, including delayed verification, session validation, login, reset-request and password-reset progress.
 - Scope: this advances local UI-12/UI-13 and NOT-02 evidence only; hosted CI, integrated staging, manual screen-reader review, Member 1 auth integration, provider delivery and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12/ORG-02 workspace-picker loading semantics
+
+- Change: the shared workspace picker now exposes an explicit polite loading status and marks the selector busy while workspace discovery is pending, while retaining existing switch, retry, stale-cookie recovery and tenant-boundary behavior.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, `git diff --check`, repository typecheck and web production build passed; the complete organization-audit suite passed 11/11 in 16.4 seconds, including delayed workspace-list loading, stale-context recovery, role boundaries, invitation flows, audit recovery and axe checks.
+- Scope: this advances local UI-12/UI-13, ORG-02, ORG-04 and ORG-11 evidence only; hosted CI, integrated staging, manual screen-reader review, PostgreSQL/RBAC, Member 1 revocation integration, provider approval and production verification remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 auth submission busy semantics
 
 - Change: login, password-reset request, and password-reset submission progress nodes now expose `aria-busy="true"` alongside their existing busy forms and live announcements.

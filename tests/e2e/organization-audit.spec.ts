@@ -102,6 +102,22 @@ test.describe('workspace audit trail', () => {
     await page.unroute('**/api/workspaces');
   });
 
+  test('announces workspace-list loading as a busy state', async ({ page }) => {
+    let releaseWorkspaces: (() => void) | undefined;
+    const workspacesLoading = new Promise<void>((resolve) => { releaseWorkspaces = resolve; });
+    await page.route('**/api/workspaces', async (route) => {
+      await workspacesLoading;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: 'ws-primary', workspaces: [{ id: 'ws-primary', name: 'Primary Workspace', role: 'owner' }] }) });
+    });
+    await signIn(page); await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const sidebar = page.getByRole('complementary', { name: 'Workspace navigation' });
+    const loading = sidebar.getByRole('status').filter({ hasText: 'Loading workspace list…' });
+    await expect(loading).toBeVisible(); await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(sidebar.getByLabel('Active workspace')).toHaveAttribute('aria-busy', 'true');
+    releaseWorkspaces?.(); await expect(sidebar.getByLabel('Active workspace')).toHaveValue('ws-primary', { timeout: 30_000 });
+    await expect(loading).toHaveCount(0); await page.unroute('**/api/workspaces');
+  });
+
   test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
     await signIn(page);
     let memberRequests = 0; let allowCollectionRecovery = false;
@@ -217,7 +233,7 @@ test.describe('workspace audit trail', () => {
     });
 
     await page.goto('/dashboard/settings/workspace');
-    await expect(page.getByRole('status')).toContainText('Loading workspace settings…'); await expect(page.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+    const settingsLoadingStatus = page.getByRole('status').filter({ hasText: 'Loading workspace settings…' }); await expect(settingsLoadingStatus).toBeVisible(); await expect(settingsLoadingStatus).toHaveAttribute('aria-busy', 'true');
     releaseSettings?.();
     const auditAlert = page.getByRole('alert').filter({ hasText: 'Audit history is temporarily unavailable.' }); await expect(auditAlert).toBeVisible({ timeout: 30_000 }); await expect(auditAlert).toHaveAttribute('aria-live', 'assertive'); await expect(auditAlert).toHaveAttribute('aria-atomic', 'true');
     await expect(page.getByText('No administrative events recorded yet.')).toHaveCount(0);
