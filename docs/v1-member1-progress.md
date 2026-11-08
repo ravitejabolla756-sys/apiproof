@@ -376,4 +376,3 @@ Phase 0 read-only checks:
 
 - Added `docs/sec17-staging-rollback-rehearsal.md` with verified repository facts, hosting-owner approvals, preflight, smoke/monitoring criteria, abort conditions, and evidence requirements. The only source fact established locally is `apps/web/vercel.json` declaring the Next.js framework; active hosting project, preview triggers, staging alias, and rollback behavior remain unverified.
 - No hosting account, Vercel settings, deployment, staging resource, or production system was accessed or changed. SEC-17 remains `PARTIAL`; its staging rehearsal gate is blocked pending hosting-owner approval, and documentation does not count as completion.
-
