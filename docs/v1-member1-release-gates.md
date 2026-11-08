@@ -109,6 +109,8 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - SEC-13 heartbeat error-code privacy regression: PASS, targeted worker/production-operations/cron suites 3 files / 26 tests with a process-only throwaway local seed and serial file execution; verifies strict operational-code allowlisting on writes and sanitization of legacy persisted values on reads. Targeted ESLint and workspace typecheck pass. An initial parallel attempt failed from missing local seed setup and overlapping SQLite DB-file cleanup; the serial rerun passed. Staging alerts and PostgreSQL behavior remain unverified.
 
+- SEC-13 future-heartbeat timestamp regression: PASS, `sec13-worker-observability` 9/9; future-dated persisted timestamps now produce `freshness: unknown` rather than reporting a current heartbeat. Targeted ESLint and workspace typecheck pass. Staging clock behavior and PostgreSQL remain unverified.
+
 - 2026-11-08 lint integration: PASS, root `pnpm lint` reports no Next plugin detection or Pages-directory warnings after registering the Next.js flat config with monorepo root settings. `pnpm typecheck` and `pnpm build` pass; logo uses `next/image`. Generated Next config edits were restored. No deployment was initiated, and this does not change production verification status.
 
 - 2026-11-08 current-HEAD full-suite rerun: PASS on `93b79f88c424c12d423b1bfdbd4291749053a5f4`; 168 files passed / 1 skipped, 1,410 tests passed / 4 skipped, 260.75 seconds. Four Docker-backed live-verification tests remain skipped; suite used a process-only test seed and no database URL. Fresh SEC-16 local measurements were recorded separately; staging and production remain unverified.

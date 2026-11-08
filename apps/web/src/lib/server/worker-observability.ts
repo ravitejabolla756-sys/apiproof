@@ -117,7 +117,8 @@ export async function getWorkerHeartbeats(now = new Date()): Promise<WorkerHeart
   const byComponent = new Map<WorkerComponent, WorkerHeartbeat>();
   for (const row of rows) {
     const started = Date.parse(row.started_at);
-    const ageMs = Number.isFinite(started) ? Math.max(0, now.getTime() - started) : 0;
+    const timestampValid = Number.isFinite(started) && started <= now.getTime();
+    const ageMs = timestampValid ? now.getTime() - started : 0;
     const window = FRESHNESS_WINDOWS_MS[row.component];
     byComponent.set(row.component, {
       component: row.component,
@@ -127,7 +128,7 @@ export async function getWorkerHeartbeats(now = new Date()): Promise<WorkerHeart
       status: row.status,
       errorCode: sanitizeWorkerErrorCode(row.error_code),
       ageMs,
-      freshness: window === undefined || !Number.isFinite(started)
+      freshness: window === undefined || !timestampValid
         ? 'unknown'
         : ageMs <= window ? 'current' : 'stale',
     });

@@ -62,6 +62,14 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     expect(heartbeat).toMatchObject({ runId, status: 'running', freshness: 'unknown' });
   });
 
+  it('fails closed to unknown freshness when persisted heartbeat time is in the future', async () => {
+    const runId = await startWorkerRun('provider-changelog-scheduler', new Date('2026-11-07T12:00:00.000Z'));
+    const heartbeat = (await getWorkerHeartbeats(new Date('2026-11-07T11:59:59.999Z')))
+      .find((item) => item.runId === runId);
+
+    expect(heartbeat).toMatchObject({ runId, ageMs: 0, status: 'running', freshness: 'unknown' });
+  });
+
   it('surfaces failed and degraded outcomes with sanitized, bounded error codes', async () => {
     const startedAt = new Date('2026-11-07T10:00:00.000Z');
     const failedRun = await startWorkerRun('provider-changelog-scheduler', startedAt);
