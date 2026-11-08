@@ -139,6 +139,24 @@ describe('GitHub Installation Reassociation Hardening', () => {
     )).toMatchObject({ consumed_at: null });
   });
 
+  it('does not expose GitHub provider exception details in callback responses', async () => {
+    const { user, session } = await createUserWithSession('provider-error@example.com', 'Pass12345!', 'Provider Error');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const state = await createGitHubInstallationState(user.id, ws.id);
+    const secretMarker = 'GITHUB_APP_PRIVATE_KEY:DO_NOT_EXPOSE';
+    vi.mocked(githubModule.verifyGitHubAppInstallation).mockRejectedValueOnce(new Error(secretMarker));
+
+    const response = await callbackGet(new Request(
+      `http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}&state=${state}`,
+      { headers: { cookie: `apiproof_session=${session.id}` } },
+    ));
+    const body = await response.json() as CallbackErrorData;
+
+    expect(response.status).toBe(502);
+    expect(body).toEqual({ error: 'Unable to validate the GitHub installation right now.', code: 'GITHUB_API_ERROR' });
+    expect(JSON.stringify(body)).not.toContain(secretMarker);
+  });
+
   it('redirects HTML OAuth completion with a no-store response for cross-tab refresh', async () => {
     const { user, session } = await createUserWithSession('html-callback@example.com', 'Pass12345!', 'HTML Callback');
     const ws = await getDefaultWorkspaceForUser(user.id);
