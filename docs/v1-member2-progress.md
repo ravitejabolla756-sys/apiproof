@@ -1597,6 +1597,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector reported six incumbent purple-palette warnings on untouched settings visuals and no new touch-target finding; targeted ESLint and `git diff --check` passed; signed-in mobile settings journey passed 1/1 in 24.3 seconds with measured 44px controls across all four settings routes and axe-clean main content; repository typecheck passed; web production build passed with 83 generated pages.
 - Scope: this advances local UI-12/UI-13 and ORG-02 evidence only; PostgreSQL/RBAC, hosted CI, manual assistive-technology review, staging, Member 1 revocation integration, and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
 
+## 2026-11-08 checkpoint — UI-12 landing navbar brand touch target
+
+- Change: the shared landing-navbar brand link now exposes an explicit 44px minimum touch target while preserving its home destination, accessible name, responsive layout and mobile-menu behavior.
+- Files: `apps/web/src/components/landing/navbar.tsx`, `tests/e2e/navbar-accessibility.spec.ts`.
+- Evidence: targeted ESLint and `git diff --check` passed; navbar mobile accessibility journey passed 1/1 in 7.9 seconds with the brand link, menu toggle and mobile navigation links measured at 44px or larger and axe-clean menu content; repository typecheck passed; web production build passed with 83 generated pages and the existing non-blocking Next.js ESLint-plugin configuration warning.
+- Scope: this advances local UI-12/WEB-15 evidence only; hosted CI, manual screen-reader review, staging and production verification remain open. No backend/shared contract, provider, production or remote Git operation was performed.
+
 ## 2026-11-08 checkpoint — UI-12 pipeline axe and contrast remediation
 
 - Change: inactive pipeline visualization panels now become inert while hidden, preventing focusable code regions from remaining inside `aria-hidden` content; the AST badge now uses the passing slate contrast token. Stage controls retain their 44px targets.

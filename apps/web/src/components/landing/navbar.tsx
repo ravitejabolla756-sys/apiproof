@@ -119,7 +119,7 @@ export function LandingNavbar() {
           {/* LEFT: Geometric Developer Logo & Brand Wordmark (No background box) */}
           <Link
             href="/"
-            className="flex items-center gap-2 sm:gap-2.5 group shrink-0 focus:outline-hidden"
+            className="inline-flex min-h-11 items-center gap-2 sm:gap-2.5 group shrink-0 focus:outline-hidden"
             aria-label="MY OWL Home"
           >
             <MyOwlLogo className="h-5 sm:h-6 w-auto transition-transform group-hover:scale-105" variant="light" />

@@ -41,3 +41,5 @@ Latest footer evidence: all 18 shared footer brand/navigation links are measured
 Latest navigation evidence: FAQ support, pipeline stage, dashboard brand, and standalone auth home controls are measured at 44px or larger in focused local journeys. The pipeline route retains two unrelated incumbent axe findings; hosted CI, manual review, staging and production remain open.
 
 Latest public accessibility evidence: the pipeline’s inactive-panel focus issue and AST badge contrast issue are remediated; focused pipeline axe, full public axe, and public contrast audits pass locally. Hosted CI, manual review, staging and production remain open.
+
+Latest navbar evidence: the landing brand link, mobile menu toggle, and mobile navigation links are measured at 44px or larger with axe-clean menu content. Hosted CI, manual review, staging and production remain open.

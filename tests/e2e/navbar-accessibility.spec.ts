@@ -5,6 +5,10 @@ test('keeps public navbar controls touch-sized and accessible on mobile', async 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pricing');
 
+  const brandLink = page.getByRole('link', { name: 'MY OWL Home' });
+  await expect(brandLink).toBeVisible();
+  expect((await brandLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+
   const toggle = page.locator('button[aria-controls="mobile-site-navigation"]');
   expect((await toggle.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await toggle.boundingBox())?.width).toBeGreaterThanOrEqual(44);
