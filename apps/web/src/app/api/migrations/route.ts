@@ -3,6 +3,7 @@ import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle.js';
+import { sanitizePersistedVerificationReport } from '@/lib/server/verification-report-privacy.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -27,6 +28,7 @@ export async function GET(req: Request) {
 
   const mapped = (migrations as Array<Record<string, unknown>>).map((m) => ({
     ...m,
+    verification_report: sanitizePersistedVerificationReport(typeof m.verification_report === 'string' ? m.verification_report : null),
     execution_verified: hasExecutionVerifiedMigrationEvidence(m.verification_report),
     lifecycle_state: getMigrationLifecycleState({
       status: typeof m.status === 'string' ? m.status : null,

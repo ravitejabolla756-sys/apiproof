@@ -8,11 +8,35 @@ import { GET as activityGet } from '../apps/web/src/app/api/activity/route.js';
 import { GET as findingsGet } from '../apps/web/src/app/api/findings/route.js';
 import { GET as migrationsGet } from '../apps/web/src/app/api/migrations/route.js';
 import { GET as pullRequestsGet } from '../apps/web/src/app/api/pull-requests/route.js';
+import { GET as findingGet } from '../apps/web/src/app/api/findings/[id]/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-workspace-read-route-role.db');
 const ORIGINAL_DB_PATH = process.env.APIPROOF_DB_PATH;
 const ORIGINAL_SKIP_SEED = process.env.APIPROOF_SKIP_DEFAULT_SEED;
 const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+const REPORT_LEAK_MARKER = 'ghp_verification_output_secret_123456';
+
+function persistedVerificationReport(): string {
+  return JSON.stringify({
+    schemaVersion: '1.0',
+    migrationId: 'role_migration',
+    repositoryId: 'role-repo-1',
+    failureReasons: [`Verification failed: ${REPORT_LEAK_MARKER}`],
+    report: {
+      verificationId: 'verification-role-test', patchId: 'patch-role-test', fixtureId: 'fixture-role-test',
+      status: 'VERIFICATION_TEST_FAILED', workspace: `C:\\temp\\${REPORT_LEAK_MARKER}`,
+      steps: [{ stage: 'TEST', status: 'FAILED', exitCode: 1, durationMs: 10,
+        stdoutDigest: 'a'.repeat(64), stderrDigest: 'b'.repeat(64),
+        stdout: REPORT_LEAK_MARKER, stderr: `stderr ${REPORT_LEAK_MARKER}`,
+        stdoutTruncated: false, stderrTruncated: false }],
+      summary: { buildPassed: false, typecheckPassed: false, testPassed: false, statement: 'Local check failed.' },
+      environment: { runtime: 'DockerSandbox', node: 'node:test', lifecycleScriptsEnabled: false, inheritedEnvironment: ['PATH', 'CI', 'NODE_ENV'] },
+      networkPolicy: { mode: 'NETWORK_DISABLED', enforced: true },
+      resourceLimits: { timeoutMs: 1000, memoryMb: 256, cpu: 'bounded', maxOutputBytes: 1024 },
+      artifacts: [], warnings: [REPORT_LEAK_MARKER], requiresHumanReview: true,
+    },
+  });
+}
 
 describe('workspace read route role validation', () => {
   beforeEach(() => {
@@ -71,6 +95,7 @@ describe('workspace read route role validation', () => {
       INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
       VALUES ('role_activity', ?, 'role_repo', 'scan_completed', 'Role fixture activity', 'Synthetic test record', ?)
     `, [user.id, now]);
+    await db.execute('UPDATE migrations SET verification_report = ? WHERE id = ?', [persistedVerificationReport(), 'role_migration']);
 
     const routes = [
       { url: 'http://localhost/api/activity', get: activityGet, key: 'activities' },
@@ -88,8 +113,15 @@ describe('workspace read route role validation', () => {
         expect(response.status, `${route.url} role=${role}`).toBe(200);
         const payload = await response.json() as Record<string, unknown[]>;
         expect(payload[route.key], `${route.url} role=${role}`).toHaveLength(1);
+        if (route.key === 'migrations') expect(JSON.stringify(payload)).not.toContain(REPORT_LEAK_MARKER);
       }
     }
+
+    const detailedFinding = await findingGet(new Request('http://localhost/api/findings/role_finding', {
+      headers: { cookie: `apiproof_session=${session.id}` },
+    }), { params: Promise.resolve({ id: 'role_finding' }) });
+    expect(detailedFinding.status).toBe(200);
+    expect(JSON.stringify(await detailedFinding.json())).not.toContain(REPORT_LEAK_MARKER);
 
     await db.execute('UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?', ['owner-like', workspace.id, user.id]);
     await db.execute(`

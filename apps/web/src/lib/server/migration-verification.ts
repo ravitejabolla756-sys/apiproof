@@ -32,6 +32,8 @@ import { isApprovedDynamicProductionChange, loadApprovedDynamicPatchRule, loadPr
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { createSyntheticTestFixtureFiles } from './test-fixture-source.js';
 import { readBoundMigrationProof } from './migration-proof.js';
+import { sanitizeVerificationReport } from './verification-report-privacy.js';
+import { safeFailureCode } from './productization-persistence.js';
 
 export interface MigrationVerificationOptions {
   sandbox?: ExecutionSandbox;
@@ -140,6 +142,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
         warnings: [...report.warnings, `Verification modified tracked source or configuration: ${workspaceDrift.join(', ')}`],
       });
     }
+    report = sanitizeVerificationReport(report);
     const reportDigest = digest(JSON.stringify(report));
     const passed = report.status === 'VERIFICATION_PASSED';
     const evidence = passed ? createVerificationEvidence({
@@ -159,7 +162,7 @@ export async function verifyMigrationForProposal(input: { migration: MigrationVe
       sourceDigests,
       resultingDigests,
     }) : null;
-    const wrapper = { schemaVersion: '1.0', migrationId: input.migration.id, repositoryId: input.repo.github_repository_id, baselineSha, patchDigest, targetFiles, sourceDigests, resultingDigests, report, evidence, failureReasons: passed ? [] : [...workspaceDrift.map((file) => `VERIFICATION_WORKSPACE_MUTATED: ${file}`), report.status] };
+    const wrapper = { schemaVersion: '1.0', migrationId: input.migration.id, repositoryId: input.repo.github_repository_id, baselineSha, patchDigest, targetFiles, sourceDigests, resultingDigests, report, evidence, failureReasons: passed ? [] : [...(workspaceDrift.length ? ['VERIFICATION_WORKSPACE_MUTATED'] : []), report.status] };
     const db = getDatabase();
     await db.execute('UPDATE migrations SET patch_digest = ?, patch_content = ?, patch_diff = ?, verification_report = ?, status = ? WHERE id = ?', [patchDigest, JSON.stringify(patchContent), patchDiff, JSON.stringify(wrapper), passed ? 'verified' : 'verification_failed', input.migration.id]);
     failurePersisted = true;
@@ -192,7 +195,7 @@ async function persistVerificationFailure(input: { migration: MigrationVerificat
     resultingDigests: attemptedPatch?.resultingDigests ?? {},
     report: null,
     evidence: null,
-    failureReasons: [reason],
+    failureReasons: [safeFailureCode(error, 'VERIFICATION_FAILED')],
     failedAt: new Date().toISOString(),
   };
   if (attemptedPatch) {

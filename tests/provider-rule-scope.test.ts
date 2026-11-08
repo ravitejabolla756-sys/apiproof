@@ -147,14 +147,20 @@ describe('provider rule workspace scope', () => {
     const plan = deterministicPlan(planningInput);
     await db.execute(`INSERT INTO migrations (id, finding_id, repository_id, plan_id, status, plan_json, baseline_sha, created_at) VALUES ('dynamic-proposal-migration', ?, 'dynamic-proposal-repo', ?, 'planned', ?, ?, ?)`, [findingId, plan.generatedBy.changeDigest, JSON.stringify(plan), sha, now]);
     const { verifyMigrationForProposal } = await import('../apps/web/src/lib/server/migration-verification.js');
+    const diagnosticSecret = 'twilio-sandbox-output-secret-123456';
     const result = await verifyMigrationForProposal({
       migration: { id: 'dynamic-proposal-migration', finding_id: findingId, repository_id: 'dynamic-proposal-repo', plan_id: plan.generatedBy.changeDigest, plan_json: JSON.stringify(plan), patch_diff: null, patch_digest: null, baseline_sha: sha, verification_report: null },
       finding: { id: findingId, repository_id: 'dynamic-proposal-repo', usage_id: 'dynamic-proposal-usage', change_id: 'workspace-change-a', provider: 'slack', confidence: 0.9, file_path: 'src/slack.ts', line_number: 3, symbol: 'conversations.history', reason: 'breaking', reason_codes: '["MATCHED_OPERATION"]', evidence: '[]', source_snippet: source, source_digest: sourceDigest },
       repo: { id: 'dynamic-proposal-repo', workspace_id: 'workspace-a', owner: 'owner', name: 'repo', full_name: 'owner/repo', github_repository_id: '123', default_branch: 'main', lifecycle: 'active' },
-      options: { sourceFiles: { 'src/slack.ts': source, 'package.json': JSON.stringify({ name: 'dynamic-repo', scripts: { test: 'node -e "process.exit(0)"' } }), 'pnpm-lock.yaml': "lockfileVersion: '9.0'\nimporters:\n  .:\n    specifiers: {}\n" }, sandbox: new FakeSandbox() },
+      options: { sourceFiles: { 'src/slack.ts': source, 'package.json': JSON.stringify({ name: 'dynamic-repo', scripts: { test: 'node -e "process.exit(0)"' } }), 'pnpm-lock.yaml': "lockfileVersion: '9.0'\nimporters:\n  .:\n    specifiers: {}\n" }, sandbox: new FakeSandbox({ BUILD: { stdout: diagnosticSecret }, TEST: { stderr: diagnosticSecret } }) },
     });
     expect(result.evidence.proofLevel).toBe('CONTRACT_VERIFIED');
     expect(result.patchContent['src/slack.ts']).toContain('conversations.list');
+    expect(JSON.stringify(result.wrapper)).not.toContain(diagnosticSecret);
+    expect(result.report.steps.every((step) => step.stdout === '' && step.stderr === '')).toBe(true);
+    expect(JSON.stringify(await db.queryOne<{ verification_report: string }>(
+      'SELECT verification_report FROM migrations WHERE id = ?', ['dynamic-proposal-migration'],
+    ))).not.toContain(diagnosticSecret);
     expect(await db.queryOne<{ status: string }>('SELECT status FROM migrations WHERE id = ?', ['dynamic-proposal-migration'])).toEqual({ status: 'verified' });
     expect(rule.changeDigest).toBe(crypto.createHash('sha256').update(JSON.stringify(change)).digest('hex'));
   });

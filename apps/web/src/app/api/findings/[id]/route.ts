@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { formatCanonicalMigrationBranch } from '@apiproof/core';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDatabase } from '@/lib/server/db';
-import { requireFindingAccess } from '@/lib/server/workspace-service';
-import { getMigrationLifecycleState } from '@/lib/server/migration-lifecycle';
-import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
-import { resolveFindingCapability } from '@/lib/server/finding-capability';
+import { getCurrentUser } from '@/lib/server/auth.js';
+import { getDatabase } from '@/lib/server/db.js';
+import { requireFindingAccess } from '@/lib/server/workspace-service.js';
+import { getMigrationLifecycleState } from '@/lib/server/migration-lifecycle.js';
+import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
+import { resolveFindingCapability } from '@/lib/server/finding-capability.js';
+import { sanitizePersistedVerificationReport } from '@/lib/server/verification-report-privacy.js';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -135,6 +136,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     },
     migration: migration ? {
       ...migration,
+      verification_report: sanitizePersistedVerificationReport(typeof migration.verification_report === 'string' ? migration.verification_report : null),
       lifecycle_state: getMigrationLifecycleState({
         status: typeof migration.status === 'string' ? migration.status : null,
         verificationJobStatus: typeof migration.verification_job_status === 'string' ? migration.verification_job_status : null,
