@@ -22,6 +22,7 @@ import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning
 import { createGitHubProposal } from '../apps/web/src/lib/server/proposal-service.js';
 import { runMigrations } from '../apps/web/src/lib/server/db/migrator.js';
 import { POST as planMigrationRoute } from '../apps/web/src/app/api/migrations/plan/route.js';
+import { POST as proposeMigrationRoute } from '../apps/web/src/app/api/migrations/propose/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase2-workspaces.db');
 
@@ -191,7 +192,8 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
     });
 
     it('TEST G: User A cannot propose a PR for Workspace B', async () => {
-      const userA = createUser('user_a@example.com', 'Pass12345!', 'User A');
+      const actorA = await createUserWithSession('user_a@example.com', 'Pass12345!', 'User A');
+      const userA = actorA.user;
       const userB = createUser('user_b@example.com', 'Pass12345!', 'User B');
       const wsB = await getDefaultWorkspaceForUser(userB.id);
 
@@ -232,6 +234,21 @@ describe('Phase 2 — Multi-Tenant SaaS Workspace Foundation', () => {
       await expect(createGitHubProposal(migrationIdB, userA.id)).rejects.toThrow(
         /Repository not found or access denied/
       );
+
+      const routeResponse = await proposeMigrationRoute(new Request('http://localhost/api/migrations/propose', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `apiproof_session=${actorA.session.id}`,
+        },
+        body: JSON.stringify({ migrationId: migrationIdB }),
+      }));
+      expect(routeResponse.status).toBe(404);
+      expect(await routeResponse.json()).toEqual({
+        error: 'Repository not found or access denied.',
+        code: 'NOT_FOUND',
+      });
+      expect(db.prepare('SELECT COUNT(*) AS count FROM pull_requests WHERE migration_id = ?').get(migrationIdB)).toEqual({ count: 0 });
     });
 
     it('TEST H: User A cannot access Workspace B activity', async () => {

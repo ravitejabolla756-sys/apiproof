@@ -392,3 +392,8 @@ Phase 0 read-only checks:
 - Extended the multi-tenant workspace regression so a session belonging to another workspace cannot invoke `POST /api/migrations/plan` for a foreign finding. The route returns 404 and persists no migration row; the existing service-level authorization assertion remains.
 - Importing the route into the strict test project exposed an extensionless `planning-service` alias import and an untyped request body. The route now uses the repository's `.js` source-import convention and types the parsed body as `{ findingId?: unknown }`, leaving validation to `validateSafeId`.
 - `phase2-multi-tenant-workspaces` passes 17/17, targeted ESLint passes, and full workspace `pnpm typecheck` passes. This is local SQLite application-boundary evidence only; PostgreSQL/RLS remains unverified.
+
+### 2026-11-08 ORG-05 migration-proposal API denial
+
+- Extended the multi-tenant test so an authenticated user from another workspace cannot invoke `POST /api/migrations/propose` for a foreign migration. The API returns the generic 404 `NOT_FOUND` response and no pull-request row is created; the existing service-level denial assertion remains.
+- `phase2-multi-tenant-workspaces` passes 17/17, targeted ESLint passes, and full workspace `pnpm typecheck` passes. The test exercises the local route/service/SQLite boundary and does not contact GitHub; provider-backed proposal behavior and PostgreSQL/RLS remain unverified.
