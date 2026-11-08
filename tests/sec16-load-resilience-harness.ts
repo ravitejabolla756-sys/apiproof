@@ -52,7 +52,12 @@ const SAFE_ERROR_CODES = new Set([
 ]);
 
 function assertLocalHarnessEnvironment(): void {
-  if (process.env.NODE_ENV === 'production' || process.env.DATABASE_URL || process.env.APIPROOF_DATABASE_URL) {
+  if (
+    process.env.NODE_ENV === 'production' ||
+    process.env.DATABASE_URL ||
+    process.env.APIPROOF_DATABASE_URL ||
+    process.env.APIPROOF_STAGING_DATABASE_URL
+  ) {
     throw new Error('SEC16_LOCAL_ONLY: load and resilience harness cannot run in production');
   }
 }

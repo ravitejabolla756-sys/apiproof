@@ -57,3 +57,16 @@ Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-par
 ## 2026-11-08 focused SEC-13/SEC-16 rerun
 
 At checkout HEAD `14a1dfeb32e42dc1b5ae1e15e8d94d84bbca2161` (no source changes since code HEAD `7d07f00814475cf4605dca7f4d9f63e066ef851a`), the serial focused command covering worker observability and the SEC-16 local harness passed 2 files / 18 tests. SEC-16's fresh local measurements: API health p50/p95/p99 0.283/2.436/2.664 ms (5,476 ops/s); GitHub webhook signature/claim/record 2.907/4.074/4.334 ms (1,065 ops/s); SQLite SELECT 0.025/0.120/0.133 ms (57,513 ops/s); worker queue metrics 0.176/0.345/0.490 ms (11,856 ops/s). All four scenarios used 24 local in-process operations at concurrency 4. These are single-run local observations, not capacity or SLO claims. Approved alerting and staged failure recovery remain open.
+
+## 2026-11-08 database-environment boundary regression
+
+Command: `pnpm test -- --no-file-parallelism --maxWorkers=1 tests/sec16-load-resilience.test.ts --reporter=dot`. The suite passed 11/11 after extending the local-only guard to reject `DATABASE_URL`, `APIPROOF_DATABASE_URL`, and `APIPROOF_STAGING_DATABASE_URL`; the test verifies the callback is never invoked for each remote-database setting. ESLint and workspace typecheck pass. Fresh 24-operation, concurrency-4 local observations:
+
+| Scenario | Duration ms | p50 ms | p95 ms | p99 ms | Throughput ops/s | Max in flight |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| API health handler | 8.870 | 0.576 | 5.043 | 5.454 | 2,705.81 | 4 |
+| GitHub webhook signature/claim/record | 37.118 | 4.615 | 6.339 | 7.047 | 646.58 | 4 |
+| SQLite `SELECT 1` | 0.348 | 0.024 | 0.048 | 0.132 | 68,886.34 | 4 |
+| Scan-worker queue metrics | 1.845 | 0.171 | 0.273 | 0.485 | 13,010.95 | 4 |
+
+Single-run host-specific observations only; they are not SLOs, capacity claims or evidence about remote databases/providers. No network traffic was generated.

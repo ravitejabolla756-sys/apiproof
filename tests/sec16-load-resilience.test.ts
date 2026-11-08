@@ -12,6 +12,7 @@ const TEST_DB_PATH = path.resolve('.tmp/test-sec16-load-resilience.db');
 const WEBHOOK_SECRET = 'sec16-local-webhook-secret';
 const ORIGINAL_DATABASE_URL = process.env.DATABASE_URL;
 const ORIGINAL_APIPROOF_DATABASE_URL = process.env.APIPROOF_DATABASE_URL;
+const ORIGINAL_APIPROOF_STAGING_DATABASE_URL = process.env.APIPROOF_STAGING_DATABASE_URL;
 
 function signedBody(rawBody: string): string {
   return `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(rawBody, 'utf8').digest('hex')}`;
@@ -37,6 +38,7 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
     delete process.env.DATABASE_URL;
     delete process.env.APIPROOF_DATABASE_URL;
+    delete process.env.APIPROOF_STAGING_DATABASE_URL;
     process.env.APIPROOF_SECRET = 'sec16-local-test-secret-minimum-32-chars';
     process.env.GITHUB_WEBHOOK_SECRET = WEBHOOK_SECRET;
     process.env.NEXT_PUBLIC_APP_URL = 'https://apiproof.test';
@@ -53,6 +55,8 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     else process.env.DATABASE_URL = ORIGINAL_DATABASE_URL;
     if (ORIGINAL_APIPROOF_DATABASE_URL === undefined) delete process.env.APIPROOF_DATABASE_URL;
     else process.env.APIPROOF_DATABASE_URL = ORIGINAL_APIPROOF_DATABASE_URL;
+    if (ORIGINAL_APIPROOF_STAGING_DATABASE_URL === undefined) delete process.env.APIPROOF_STAGING_DATABASE_URL;
+    else process.env.APIPROOF_STAGING_DATABASE_URL = ORIGINAL_APIPROOF_STAGING_DATABASE_URL;
   });
 
   it('measures bounded in-process API, webhook, database, and worker operations', async () => {
@@ -227,8 +231,11 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
       process.env.NODE_ENV = 'production';
       await expect(runLocalLoadScenario(scenario)).rejects.toThrow('SEC16_LOCAL_ONLY');
       process.env.NODE_ENV = 'test';
-      process.env.DATABASE_URL = 'postgres://example.invalid/local-safety-test';
-      await expect(runLocalLoadScenario(scenario)).rejects.toThrow('SEC16_LOCAL_ONLY');
+      for (const variable of ['DATABASE_URL', 'APIPROOF_DATABASE_URL', 'APIPROOF_STAGING_DATABASE_URL']) {
+        process.env[variable] = 'postgres://example.invalid/local-safety-test';
+        await expect(runLocalLoadScenario(scenario)).rejects.toThrow('SEC16_LOCAL_ONLY');
+        delete process.env[variable];
+      }
       expect(operationCalled).toBe(false);
     } finally {
       if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
