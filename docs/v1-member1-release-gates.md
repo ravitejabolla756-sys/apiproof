@@ -105,6 +105,8 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 
 - BILL-10 subscription-state regression matrix: PASS, 2 billing suites / 24 tests; every non-granting state is checked against all billable metrics, and active/trialing are checked across all metrics. Targeted ESLint passes. The suite preserves current behavior; grace and suspension policy still requires owner/product approval.
 
+- BILL-02/SEC-04 billing mutation CSRF regression: PASS locally, `phase7-billing-foundation` 17/17; checkout and portal reject cross-site POSTs before authentication/provider work with `CSRF_REJECTED`. Targeted ESLint and full workspace `pnpm typecheck` pass. Provider sandbox, production configuration and deployment behavior remain unverified; no live billing or deployment was used.
+
 - 2026-11-08 lint integration: PASS, root `pnpm lint` reports no Next plugin detection or Pages-directory warnings after registering the Next.js flat config with monorepo root settings. `pnpm typecheck` and `pnpm build` pass; logo uses `next/image`. Generated Next config edits were restored. No deployment was initiated, and this does not change production verification status.
 
 - 2026-11-08 current-HEAD full-suite rerun: PASS on `93b79f88c424c12d423b1bfdbd4291749053a5f4`; 168 files passed / 1 skipped, 1,410 tests passed / 4 skipped, 260.75 seconds. Four Docker-backed live-verification tests remain skipped; suite used a process-only test seed and no database URL. Fresh SEC-16 local measurements were recorded separately; staging and production remain unverified.

@@ -254,6 +254,23 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(await enterpriseResponse.json()).toMatchObject({ error: expect.stringContaining('purchasable') });
   });
 
+  it('rejects cross-site billing checkout and portal requests before authentication or provider work', async () => {
+    const checkoutResponse = await createCheckout(new Request('https://apiproof.test/api/billing/checkout', {
+      method: 'POST',
+      headers: { origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site', 'content-type': 'application/json' },
+      body: JSON.stringify({ planId: 'pro' }),
+    }));
+    const portalResponse = await createBillingPortal(new Request('https://apiproof.test/api/billing/portal', {
+      method: 'POST',
+      headers: { origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site' },
+    }));
+
+    for (const response of [checkoutResponse, portalResponse]) {
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ code: 'CSRF_REJECTED' });
+    }
+  });
+
   it('denies billing reads and mutations for an unknown persisted workspace role', async () => {
     const user = await createUserAsync('billing-unknown-role@apiproof.test', 'Pass123!#$', 'Unknown Billing Role');
     const session = createSession(user.id);
@@ -290,9 +307,9 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     process.env.NODE_ENV = 'production';
 
     try {
-      const response = await createBillingPortal(new Request('http://localhost/api/billing/portal', {
+      const response = await createBillingPortal(new Request('https://localhost/api/billing/portal', {
         method: 'POST',
-        headers: { cookie: `apiproof_session=${session.id}` },
+        headers: { cookie: `apiproof_session=${session.id}`, origin: 'https://localhost', host: 'localhost' },
       }));
       expect(response.status).toBe(503);
       expect(await response.json()).toEqual({ error: 'Billing portal is unavailable' });
