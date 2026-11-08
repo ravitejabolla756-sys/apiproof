@@ -23,6 +23,7 @@ test('keeps enterprise intake explicitly non-sending until an approved destinati
 
   await submit.click();
   const status = page.getByRole('status');
+  await expect(status).toBeFocused();
   await expect(status).toContainText('No message was sent');
   await expect(status).toContainText('Contact intake is not connected to a delivery service in this beta.');
   await expect(page.getByRole('link', { name: /accepted|delivered|enterprise/i })).toHaveCount(0);

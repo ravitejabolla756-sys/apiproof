@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
@@ -8,6 +8,11 @@ import { CheckCircle2, ArrowRight, ShieldCheck, Server, FileCode, HelpCircle } f
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (submitted) statusRef.current?.focus();
+  }, [submitted]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +44,7 @@ export default function ContactPage() {
           {/* Right Column: Form Card */}
           <div className="lg:col-span-7 bg-[#EFF1F5] rounded-[32px] p-8 md:p-10 border border-black/[0.04] shadow-xs">
             {submitted ? (
-              <div role="status" aria-live="polite" aria-atomic="true" className="py-16 text-center space-y-4">
+              <div ref={statusRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="py-16 text-center space-y-4 outline-none focus-visible:ring-2 focus-visible:ring-[#000E29] focus-visible:ring-offset-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
                   <CheckCircle2 aria-hidden="true" className="w-7 h-7" />
                 </div>

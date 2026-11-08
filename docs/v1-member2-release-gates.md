@@ -333,3 +333,7 @@ Command-palette search-data failures are now announced with a visible retryable 
 ## Latest UI-12 logo semantics evidence — 2026-11-08
 
 Accessible names for login, auth-recovery and dashboard branding links are no longer duplicated by the logo image. Local production build and focused browser coverage pass; manual assistive-technology review, hosted CI, staging and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 contact focus evidence — 2026-11-08
+
+The contact form’s truthful non-sending result receives focus after submission, preserving keyboard recovery. Local build and focused browser coverage pass; approved intake routing, manual assistive-technology review, hosted CI, staging and production remain NOT_RUN. Release recommendation stays NO-GO.

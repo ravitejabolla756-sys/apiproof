@@ -2672,3 +2672,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/login/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/verify-email/page.tsx`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/login-accessibility.spec.ts`.
 - Evidence: rebuilt web production bundle passed with 83 generated pages; login and auth-recovery accessibility journeys passed 2/2; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
 - Scope: local UI-12 screen-reader semantics only; manual assistive-technology review, hosted CI, staging and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — UI-12 contact outcome focus recovery
+
+- Change: the non-sending contact intake outcome is now focusable and receives focus after submission, so keyboard and assistive-technology users are taken directly to the truthful result instead of losing focus when the form is replaced.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/enterprise-intake-boundary.spec.ts`.
+- Evidence: rebuilt web production bundle passed with 83 generated pages; enterprise-intake and public contact/validation journeys passed 3/3; targeted ESLint, `git diff --check` and Impeccable detector passed with no findings.
+- Scope: local UI-12/UI-13 contact-state evidence only; approved intake routing, manual assistive-technology review, hosted CI, staging and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
