@@ -466,3 +466,8 @@ Phase 0 read-only checks:
 
 - Migration planning and proposal routes now map service exceptions to reviewed generic client messages; internal exception text is no longer returned or logged. Stable error codes and HTTP status mappings remain intact.
 - `migration-api-error-safety` passes 2/2; targeted ESLint and full workspace `pnpm typecheck` pass. External monitoring provider, alert routing, retention, thresholds and staging rehearsal remain unresolved.
+
+### 2026-11-08 SEC-11 inventory API error safety
+
+- `/api/inventory` now returns a fixed generic error when provider-registry loading fails instead of exposing dynamic exception text.
+- `inventory-error-safety` passes 1/1; targeted ESLint and full workspace `pnpm typecheck` pass. External monitoring provider, alert routing, retention, thresholds and staging rehearsal remain unresolved.

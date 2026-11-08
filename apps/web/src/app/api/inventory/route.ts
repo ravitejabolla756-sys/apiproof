@@ -81,8 +81,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       providers,
       totalRulesCount: providers.reduce((total, provider) => total + provider.rulesCount, 0),
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load inventory';
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ ok: false, error: 'Failed to load inventory.' }, { status: 500 });
   }
 }
