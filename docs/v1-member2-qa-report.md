@@ -2,9 +2,9 @@
 
 Updated implementation report; browser checks are local evidence only and are not production approval.
 
-## 2026-11-08 — ORG-04/UI-12 last-owner refusal state
+## 2026-11-08 — ORG-04/UI-12 last-owner refusal states
 
-- PASS: Complete organization-audit suite passed 8/8 in 39.6 seconds; member removal refusal with `LAST_OWNER_REQUIRED` leaves the owner visible, announces the error, and remains axe-clean.
+- PASS: Complete organization-audit suite passed 9/9 in 43.9 seconds; member removal and role-demotion refusals with `LAST_OWNER_REQUIRED` leave the owner visible/owner, announce the error, and remain axe-clean.
 - PASS: Targeted ESLint and `git diff --check` passed.
 - Scope: local ORG-04/UI-12 evidence only. Final revocation contract, PostgreSQL/RBAC, hosted CI, integrated staging and production remain open.
 
