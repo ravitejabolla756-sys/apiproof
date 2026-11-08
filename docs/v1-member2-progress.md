@@ -571,6 +571,11 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,341 tests with 4 skipped tests across 161 passing test files and 1 skipped file in 122.22 seconds.
 - Scope: this refreshes local regression evidence only; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain NOT_RUN. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-08 checkpoint — WEB-15 current public performance probe
+
+- Evidence: after the current web production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load was 10–32ms, median response was 2–4ms, and median encoded HTML was 6.0–17.0KiB over loopback.
+- Scope: this strengthens local WEB-15 performance evidence only; the expected deferred production-database warning was emitted by the local server, and no Lighthouse/Core Web Vitals, hosted deployment, manual assistive-technology or production claim is made. No production resource or remote Git operation was performed.
 - Next safe action: complete the remaining local UI-12 screen-reader/state audit; then request Member 1 review of the workspace-context and notification event-template-retention contracts before defining the PR-08 transaction-safe resolution outbox. Keep production recommendation NO-GO.
 
 ## 2026-11-07 checkpoint — UI-12 loading/error/empty state accessibility
