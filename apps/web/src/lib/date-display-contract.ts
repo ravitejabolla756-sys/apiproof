@@ -24,3 +24,10 @@ export function formatDisplayDateTime(value: string | null | undefined): string 
   const safeValue = toSafeDisplayDateTime(value);
   return safeValue ? new Date(safeValue).toLocaleString() : 'Unavailable';
 }
+
+export function formatDisplayTime(value: string | null | undefined): string {
+  const safeValue = toSafeDisplayDateTime(value);
+  return safeValue
+    ? new Date(safeValue).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : 'Unavailable';
+}

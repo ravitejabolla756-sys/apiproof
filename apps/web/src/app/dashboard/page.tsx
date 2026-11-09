@@ -9,6 +9,7 @@ import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, Refre
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 import { toSafeExternalUrl } from "@/lib/external-link-contract";
+import { formatDisplayDate, formatDisplayTime } from "@/lib/date-display-contract";
 
 interface OverviewData {
   workspace?: {
@@ -246,7 +247,7 @@ export default function DashboardOverviewPage() {
             <article key={change.id} className="rounded-2xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-full bg-sky-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-sky-800">{change.provider_id}</span>
-                <span className="text-[10px] text-[#686868]">{new Date(change.published_at ?? change.first_seen_at).toLocaleDateString()}</span>
+                <span className="text-[10px] text-[#686868]">{formatDisplayDate(change.published_at ?? change.first_seen_at)}</span>
               </div>
               <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-[#111111]">{change.title}</h3>
               <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-[#686868]">{change.description}</p>
@@ -275,7 +276,7 @@ export default function DashboardOverviewPage() {
               const max = Math.max(...data.findingsThisWeek.map((item) => item.total), 1);
               return data.findingsThisWeek.map((item) => (
                 <div key={item.day} className="flex items-center gap-3 text-xs">
-                  <span className="w-20 shrink-0 text-[#686868]">{new Date(`${item.day}T00:00:00`).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                  <span className="w-20 shrink-0 text-[#686868]">{formatDisplayDate(item.day)}</span>
                   <div
                     role="img"
                     className="h-2 flex-1 overflow-hidden rounded-full bg-[#F0F0ED]"
@@ -315,7 +316,7 @@ export default function DashboardOverviewPage() {
               <div key={fix.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-3">
                 <div className="min-w-0">
                   <p className="truncate text-xs font-medium text-[#111111]">{fix.finding_title}</p>
-                  <p className="mt-1 truncate text-[10px] text-[#686868]">{fix.repo_name} · {new Date(fix.created_at).toLocaleDateString()}</p>
+                  <p className="mt-1 truncate text-[10px] text-[#686868]">{fix.repo_name} · {formatDisplayDate(fix.created_at)}</p>
                 </div>
                 {toSafePullRequestUrl(fix.pr_url) ? (
                   <a href={toSafePullRequestUrl(fix.pr_url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 shrink-0 items-center text-[10px] font-medium text-purple-700 hover:underline">Draft PR</a>
@@ -540,7 +541,7 @@ export default function DashboardOverviewPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-right text-xs hidden sm:block">
                         <div className="text-[#111111] font-medium">{repo.findings_count} findings</div>
-                        <div className="text-[#686868] text-[11px]">{repo.last_scan_at ? new Date(repo.last_scan_at).toLocaleDateString() : 'Not scanned'}</div>
+                        <div className="text-[#686868] text-[11px]">{repo.last_scan_at ? formatDisplayDate(repo.last_scan_at) : 'Not scanned'}</div>
                       </div>
                       <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E8E8E5] bg-white px-3.5 py-2 text-xs font-sans font-medium text-[#111111] shadow-xs transition-all duration-200 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-black/20">
                         Inspect
@@ -578,7 +579,7 @@ export default function DashboardOverviewPage() {
                     <div className="flex items-center justify-between text-[#111111] font-medium">
                       <span className="truncate">{act.title}</span>
                       <span className="text-[10px] text-[#686868] shrink-0 font-mono">
-                        {new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {formatDisplayTime(act.created_at)}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#686868] leading-relaxed">

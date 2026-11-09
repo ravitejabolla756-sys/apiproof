@@ -1681,6 +1681,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Overview, migrations and finding-detail pull-request links now share the credential-free HTTPS boundary. Focused contract tests passed 2/2; lint, typecheck and the 83-page web build passed; dashboard data-state and workbench accessibility browser coverage passed 17/17.
 - NOT_RUN: Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — dashboard date-display contract reuse
+
+- PASS: Dashboard API timestamps now use the fail-closed display adapter for provider changes, findings trends, recent fixes, repository scans and activity times. Focused date-display coverage passed 3/3; targeted ESLint, repository typecheck and `git diff --check` passed.
+- ADVISORY: Impeccable reported only three unchanged dashboard palette warnings.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDisplayDate, formatDisplayDateTime, toSafeDisplayDateTime } from '../apps/web/src/lib/date-display-contract.js';
+import { formatDisplayDate, formatDisplayDateTime, formatDisplayTime, toSafeDisplayDateTime } from '../apps/web/src/lib/date-display-contract.js';
 
 describe('workspace date display boundary', () => {
   it('accepts valid timestamps and formats them for display', () => {
@@ -15,5 +15,9 @@ describe('workspace date display boundary', () => {
       expect(formatDisplayDate(value)).toBe('Unavailable');
       expect(formatDisplayDateTime(value)).toBe('Unavailable');
     }
+  });
+
+  it('fails closed for an impossible activity timestamp', () => {
+    expect(formatDisplayTime('2026-04-31T12:00:00.000Z')).toBe('Unavailable');
   });
 });

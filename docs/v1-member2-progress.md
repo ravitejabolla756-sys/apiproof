@@ -3136,3 +3136,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/activity-utils.ts`, `tests/activity-timestamp.test.ts`.
 - Evidence: seeded `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/activity-timestamp.test.ts --reporter=dot` passed 20/20; targeted ESLint, full repository typecheck and `git diff --check` passed. An initial unseeded invocation failed only at shared SQLite fixture setup because `APIPROOF_LOCAL_SEED_PASSWORD` was unset.
 - Scope: advances local UI-12/activity resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — UI-12 dashboard date-display hardening
+
+- Change: Reused the fail-closed date-display contract for provider changes, findings trends, recent fixes, repository scans and recent activity on the dashboard. Impossible or malformed API timestamps now render `Unavailable` rather than `Invalid Date` or a JavaScript-normalized date; the existing local refresh timestamp remains client-generated.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/lib/date-display-contract.ts`, `tests/date-display-contract.test.ts`.
+- Evidence: focused date-display Vitest coverage passed 3/3; targeted ESLint, full repository typecheck and `git diff --check` passed. Impeccable detection reported only three unchanged incumbent dashboard palette warnings.
+- Scope: advances local UI-12 dashboard resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
