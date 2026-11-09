@@ -3944,3 +3944,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --reporter=dot` passed **200 test files, 1 skipped; 1,503 tests, 4 skipped** in 111.8 seconds. The unseeded invocation was also checked and failed only because the repository requires the explicit local seed variable (`MISSING_LOCAL_SEED_PASSWORD`), not because of a product assertion.
 - Scope: Local regression evidence for the current branch; hosted CI, PostgreSQL/RBAC, staging, provider delivery, legal review, manual assistive-technology review and production remain external gates.
+
+## 2026-11-10 checkpoint — workspace administration narrow-screen text containment
+
+- Change: Workspace invitation and audit rows now establish shrink/wrap boundaries for long server-owned email, actor and action strings; audit timestamps remain non-shrinking so narrow layouts cannot create document-level horizontal overflow.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: Organization/audit contract coverage passed **16/16**; targeted ESLint, web typecheck and `git diff --check` passed. The new narrow-screen browser run was not executed because the current `.next` verification environment failed to become ready after the production-build process stalled; no organization endpoint, authorization or revocation contract changed.
+- Scope: Advances UI-12/ORG-02 responsive resilience only; PostgreSQL/RBAC, ORG-10 revocation and manual assistive-technology review remain external gates.

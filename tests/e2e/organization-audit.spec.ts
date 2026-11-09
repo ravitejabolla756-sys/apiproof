@@ -283,6 +283,20 @@ test.describe('workspace audit trail', () => {
     await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
   });
 
+  test('contains long invitation addresses on narrow screens', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    const inviteEmail = `${'long-invitation-address-'.repeat(8)}${Date.now()}@example.test`;
+    await page.getByLabel('Invite email').fill(inviteEmail);
+    await page.getByRole('button', { name: 'Create invite link' }).click();
+    await expect(page.getByText(inviteEmail, { exact: true })).toBeVisible({ timeout: 30_000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'long invitation address').toEqual([]);
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
+  });
+
   test('does not present an audit failure as an empty trail', async ({ page }) => {
     await signIn(page);
     let releaseSettings: (() => void) | undefined;
