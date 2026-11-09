@@ -40,3 +40,7 @@ Abort before deploying if project/environment identity is ambiguous, staging is 
 ## Exit criteria
 
 SEC-17 can move beyond `BLOCKED` only after an authorized rehearsal records candidate and restored deployment identities, passes approved smoke/monitoring thresholds, and verifies database compatibility and staging isolation. This plan alone is not rehearsal evidence and is not production approval.
+
+## Offline evidence integrity
+
+`apps/web/src/lib/server/sec17-rollback-evidence.ts` validates a repository-local evidence object before review. It requires staging-only evidence, candidate and known-good deployment identities, approved threshold metadata, pre/post smoke observations, rollback result and restored identity, migration disposition, confirmed staging isolation, and `productionPromotionObserved: false`. It rejects unsupported fields, unsafe identifiers, inconsistent smoke counts, threshold failures, and restored deployment mismatches. The validator performs no deployment, hosting API call, database mutation, or secret read; a passing validator is evidence-format integrity only, not proof that a rehearsal occurred.

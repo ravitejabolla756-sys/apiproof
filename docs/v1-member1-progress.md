@@ -870,3 +870,7 @@ Phase 0 read-only checks:
 ### 2026-11-09 SEC-19 policy-neutral request-state foundation
 
 - Added `sec19-request-state.ts` and five focused tests for the proposed retention/deletion request lifecycle, safe transitions, resumable failures, cross-tenant/idempotency conflicts, bounded identifiers and scrubbed outcome/audit references. No database, deletion, anonymization, token invalidation or retention duration was introduced; legal/owner and Member 2 decisions remain required.
+
+### 2026-11-09 SEC-17 offline evidence integrity
+
+- Added `sec17-rollback-evidence.ts` and four focused tests for strict staging rollback evidence: deployment identities, approved thresholds, smoke-count consistency, restored known-good identity, migration disposition, staging isolation and explicit absence of production promotion. The validator is format/integrity evidence only; no hosting account, deployment, rollback or production resource was accessed.
