@@ -629,3 +629,7 @@ The provider-neutral invoice adapter now has a fail-closed parser for future ser
 ## Latest UI-13 billing usage-bar evidence — 2026-11-09
 
 The disconnected billing browser journey verifies zero-valued progress-bar fills, including the zero-limit draft-PR metric, and passes **1/1** against the rebuilt bundle. Hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest UI-13 installation navigation evidence — 2026-11-09
+
+GitHub installation navigation now fails closed for malformed script and protocol-relative values while preserving valid same-origin/HTTPS navigation. External-link contract coverage passed **3/3**, GitHub recovery coverage passed **1/1**, and the rebuilt web build generated **83 pages**. Provider host allowlisting, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

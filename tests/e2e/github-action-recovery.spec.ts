@@ -18,6 +18,8 @@ test('labels GitHub installation recovery for the failed action', async ({ page 
     installAttempts += 1;
     if (installAttempts === 1) {
       await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Failed to generate installation URL' }) });
+    } else if (installAttempts === 2) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: 'javascript:alert(1)' }) });
     } else {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: '/dashboard/settings?github=connected' }) });
     }
@@ -33,8 +35,10 @@ test('labels GitHub installation recovery for the failed action', async ({ page 
   await retryGitHub.focus();
   await expect(retryGitHub).toBeFocused();
   await page.keyboard.press('Enter');
+  await expect(alert).toContainText('Failed to generate installation URL');
+  await alert.getByRole('button', { name: 'Retry GitHub connection' }).click();
   await expect(page).toHaveURL(/\/dashboard\/settings\?github=connected/, { timeout: 30_000 });
-  expect(installAttempts).toBe(2);
+  expect(installAttempts).toBe(3);
   await page.unroute('**/api/github/repositories');
   await page.unroute('**/api/billing/subscription');
   await page.unroute('**/api/slack/connection');

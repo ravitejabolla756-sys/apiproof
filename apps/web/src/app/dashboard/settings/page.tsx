@@ -7,6 +7,7 @@ import { SlackConnectionCard } from "@/components/dashboard/slack-connection-car
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 import { formatDisplayDate } from "@/lib/date-display-contract";
 import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
+import { toSafeNavigationUrl } from "@/lib/external-link-contract";
 import Link from "next/link";
 
 interface GitHubInstallationInfo {
@@ -79,10 +80,11 @@ export default function SettingsPage() {
     try {
       const res = await fetch('/api/github/install');
       const data = await res.json();
-      if (!res.ok || !data.url) {
+      const installUrl = toSafeNavigationUrl(typeof data.url === 'string' ? data.url : null);
+      if (!res.ok || !installUrl) {
         throw new Error(data.error || "Failed to generate installation URL");
       }
-      window.location.href = data.url;
+      window.location.href = installUrl;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initiate GitHub connection.");
       setErrorAction('connect');

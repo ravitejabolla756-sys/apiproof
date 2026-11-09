@@ -3275,3 +3275,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Extended the disconnected-billing browser journey to assert that all zero-valued usage bars, including the zero-limit draft-PR metric, compute a `0px` fill width rather than an invalid CSS value.
 - Files: `tests/e2e/settings-github-state.spec.ts`.
 - Evidence: Rebuilt-bundle CI-mode browser coverage passed **1/1**; targeted ESLint and diff checks passed. Hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — UI-13 installation navigation boundary
+
+- Change: GitHub installation navigation now validates the server-returned URL before assigning `window.location.href`, allowing same-origin paths and credential-free HTTPS destinations while failing closed for protocol-relative and script URLs.
+- Files: `apps/web/src/lib/external-link-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/external-link-contract.test.ts`, `tests/e2e/github-action-recovery.spec.ts`.
+- Evidence: External-link contract tests passed **3/3**; rebuilt-bundle GitHub recovery coverage passed **1/1** across provider failure, malformed URL and valid retry; targeted ESLint, test TypeScript, diff checks and the 83-page production build passed. Provider host allowlisting remains a shared contract decision.
