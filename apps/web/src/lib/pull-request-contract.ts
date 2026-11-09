@@ -1,4 +1,4 @@
-import { toSafeExternalUrl } from '@/lib/external-link-contract';
+import { toSafeExternalUrl } from './external-link-contract.js';
 
 /**
  * Keep provider-supplied pull-request links inert unless they are absolute,

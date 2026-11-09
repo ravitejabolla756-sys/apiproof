@@ -3035,3 +3035,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed **1,374 tests across 165 files**, with 1 skipped file and 4 skipped tests, in 115.51 seconds.
 - Advisory: An unseeded invocation stopped at shared SQLite fixture initialization because the repository test contract requires `APIPROOF_LOCAL_SEED_PASSWORD`; the documented seeded invocation passed.
 - Scope: refreshes local regression evidence for the current Member 2 tree. Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — BILL-09 impossible-date projection hardening
+
+- Change: Invoice issue timestamps now validate their calendar component before JavaScript date parsing, rejecting impossible dates that the platform would otherwise normalize (for example, February 31). The existing provider-neutral adapter and unavailable beta boundary remain unchanged. The pull-request safety adapter now uses a relative module import so the repository test TypeScript configuration resolves the shared external-link contract consistently.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/lib/pull-request-contract.ts`, `tests/invoice-history-contract.test.ts`.
+- Evidence: focused invoice coverage passed 4/4; combined invoice/external-link/pull-request coverage passed 8/8; targeted ESLint, repository typecheck and `git diff --check` passed; Impeccable detector returned `[]`; rebuilt web bundle generated 83 pages; `CI=true PLAYWRIGHT_PORT=3181 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1.
+- Scope: advances local BILL-09/UI-12 resilience and restores repository-wide test typecheck resolution. Provider invoice sourcing, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.

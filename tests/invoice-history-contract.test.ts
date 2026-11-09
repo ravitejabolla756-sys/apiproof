@@ -27,6 +27,7 @@ describe('invoice history adapter boundary', () => {
   it('fails closed for malformed issue dates', () => {
     expect(toSafeInvoiceDateTime('2026-11-09T00:00:00.000Z')).toBe('2026-11-09T00:00:00.000Z');
     expect(toSafeInvoiceDateTime('not-a-date')).toBeNull();
+    expect(toSafeInvoiceDateTime('2026-02-31T00:00:00.000Z')).toBeNull();
     expect(formatInvoiceDate('not-a-date')).toBe('Unavailable');
   });
 });
