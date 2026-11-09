@@ -4202,3 +4202,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added focused NOT-10/UI-13 browser coverage proving the unapproved digest contract remains visibly unavailable, both weekly-digest controls stay disabled, the settings surface is axe-clean, and skip-link focus reaches `#main-content`.
 - Scope: Advances local digest-preference UI evidence only; cadence, recipients, timezone, scheduler, worker, retention and delivery policy remain unimplemented pending approval.
 - Evidence: Rebuilt-bundle notification coverage passed **1/1** on isolated port 3158 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.
+
+## 2026-11-10 checkpoint — workspace administration skip-link regression
+
+- Change: Added focused ORG-02/UI-13 browser coverage for workspace administration headings, members/audit regions, axe cleanliness and keyboard skip-link focus.
+- Scope: Advances local organization-settings accessibility evidence only; workspace authorization, invitation delivery, role/RBAC, audit retention and Member 1 ORG-10 revocation remain server-owned.
+- Evidence: Rebuilt-bundle organization coverage passed **1/1** on isolated port 3159 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.

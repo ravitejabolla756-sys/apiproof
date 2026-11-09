@@ -2440,3 +2440,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Notification settings keep both weekly-digest controls disabled while `DIGEST_CONTRACT_PENDING`, retain the truthful unavailable message, pass axe, and preserve keyboard skip-link focus; rebuilt-bundle coverage passed **1/1** on isolated port 3158 after a fresh 83-page production build.
 - PASS: Targeted ESLint and `git diff --check` passed.
 - NOT_RUN: Digest cadence/recipient/scheduler/worker/retention approval, hosted CI, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — workspace administration skip-link regression
+
+- PASS: Workspace administration headings and populated members/audit regions remain axe-clean and preserve keyboard skip-link focus; rebuilt-bundle coverage passed **1/1** on isolated port 3159 after a fresh 83-page production build.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- NOT_RUN: PostgreSQL/RBAC, invitation delivery, audit retention, ORG-10 revocation integration, hosted CI, manual assistive-technology review, staging and production remain open.
