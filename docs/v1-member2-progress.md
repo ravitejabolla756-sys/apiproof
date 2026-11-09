@@ -3181,3 +3181,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed **1,378 tests across 166 passing files**, with 1 skipped file and 4 skipped tests, in 113.20 seconds; full `pnpm lint` passed.
 - Scope: refreshes local regression evidence after the ORG-04 contract-copy and timestamp-boundary changes. The current local member-removal backend remains excluded from integration; PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, providers, legal approval and production remain open.
+
+## 2026-11-09 checkpoint — BILL-09 shared date-validation contract
+
+- Change: Invoice issue-date validation now delegates to the shared fail-closed display-date contract used by dashboard and organization surfaces; invoice formatting behavior and provider-neutral unavailable state are unchanged.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`.
+- Scope: advances local BILL-09/UI-12 consistency only. Provider invoice projection, authorization, tenant isolation, retention and sandbox verification remain open.

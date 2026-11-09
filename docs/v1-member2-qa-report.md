@@ -1718,6 +1718,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Seeded Vitest regression passed **1,378 tests across 166 passing files**, with 1 skipped file and 4 skipped tests, in 113.20 seconds; full `pnpm lint` passed.
 - NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, provider delivery, legal approval and production remain unverified.
 
+## 2026-11-09 — shared invoice date validation
+
+- PASS: Invoice date validation delegates to the shared display-date boundary; existing invoice contract coverage preserves rejection of malformed and impossible dates.
+- NOT_RUN: Provider invoice source, billing authorization, tenant isolation, retention/legal approval and sandbox integration remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
