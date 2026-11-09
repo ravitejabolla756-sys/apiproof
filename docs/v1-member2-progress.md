@@ -3412,3 +3412,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/member2-billing-boundaries.test.ts` passed **9/9** across 2 files; focused ESLint passed with `--max-warnings 0`, and `git diff --check` passed.
 - Scope: The existing provider-neutral invoice adapter and unavailable-state UI remain the safe local boundary. No provider response, invoice source, entitlement, checkout, retention policy or billing credential was added; BILL-09 remains PARTIAL pending the shared billing contract and approval gates.
+
+## 2026-11-09 checkpoint — ORG-02 workspace form hardening
+
+- Change: Added stable `name`/autocomplete metadata to workspace name and slug fields, plus native `name`, email input mode and 254-character bound to the invite field. This improves browser autofill, assistive technology and oversized-input behavior without changing invitation or authorization contracts.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: The focused metadata journey passed **1/1**; the full organization-audit suite passed **14/14**; focused ESLint, web typecheck, web production build and `git diff --check` passed. The Impeccable detector reported only the incumbent purple-palette warnings on existing headings.
+- Scope: Advances local ORG-02/UI-12 resilience only. Owner role policy, PostgreSQL/RBAC, ORG-10 revocation integration, invitation delivery and hosted/manual verification remain open.

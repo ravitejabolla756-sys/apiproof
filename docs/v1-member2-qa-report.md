@@ -1895,6 +1895,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/member2-billing-boundaries.test.ts` passed **9/9** across 2 files; focused ESLint passed with `--max-warnings 0`, and `git diff --check` passed.
 - NOT_RUN: Provider invoice source/schema, billing-owner authorization, tenant isolation, retention/legal approval, sandbox provider verification, hosted CI, staging and production remain open.
 
+## 2026-11-09 — ORG-02 workspace form hardening
+
+- PASS: Workspace name/slug controls now expose stable form names and appropriate autocomplete metadata; the invite email control exposes a stable name, email input mode and a 254-character native bound. Focused browser coverage passed **1/1** and the full `tests/e2e/organization-audit.spec.ts` suite passed **14/14**.
+- PASS: Focused ESLint, web typecheck, web production build and `git diff --check` passed. The Impeccable detector reported only incumbent purple-palette warnings on existing headings.
+- NOT_RUN: PostgreSQL/RBAC, ORG-10 workspace-scoped revocation integration, approved invitation delivery, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — workspace projection text validation
 
 - PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.

@@ -3,6 +3,25 @@ import AxeBuilder from '@axe-core/playwright';
 import { signIn, withAcceptedInvitation } from './helpers.js';
 
 test.describe('workspace audit trail', () => {
+  test('exposes stable workspace form metadata and native input bounds', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    const workspaceName = page.getByLabel('Name', { exact: true });
+    const workspaceSlug = page.getByLabel('Slug', { exact: true });
+    const inviteEmail = page.getByLabel('Invite email');
+    await expect(workspaceName).toHaveAttribute('name', 'workspaceName');
+    await expect(workspaceName).toHaveAttribute('autocomplete', 'organization');
+    await expect(workspaceName).toHaveAttribute('maxlength', '100');
+    await expect(workspaceSlug).toHaveAttribute('name', 'workspaceSlug');
+    await expect(workspaceSlug).toHaveAttribute('autocomplete', 'off');
+    await expect(workspaceSlug).toHaveAttribute('maxlength', '64');
+    await expect(inviteEmail).toHaveAttribute('name', 'inviteEmail');
+    await expect(inviteEmail).toHaveAttribute('autocomplete', 'email');
+    await expect(inviteEmail).toHaveAttribute('maxlength', '254');
+    await expect(inviteEmail).toHaveAttribute('inputmode', 'email');
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'workspace form metadata').toEqual([]);
+  });
+
   test('recovers an unauthorized stale workspace cookie without leaking context', async ({ page }) => {
     await signIn(page);
     const initialResponse = await page.request.get('/api/workspaces');
