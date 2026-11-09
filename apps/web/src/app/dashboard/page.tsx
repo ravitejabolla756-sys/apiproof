@@ -8,6 +8,7 @@ import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
 import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2, ShieldCheck, ScanLine, ExternalLink } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
+import { toSafeExternalUrl } from "@/lib/external-link-contract";
 
 interface OverviewData {
   workspace?: {
@@ -249,9 +250,9 @@ export default function DashboardOverviewPage() {
               </div>
               <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-[#111111]">{change.title}</h3>
               <p className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-[#686868]">{change.description}</p>
-              <a href={change.source_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center gap-1 text-[11px] font-medium text-purple-700 hover:underline">
+              {toSafeExternalUrl(change.source_url) ? <a href={toSafeExternalUrl(change.source_url) ?? undefined} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center gap-1 text-[11px] font-medium text-purple-700 hover:underline">
                 View official source <ExternalLink aria-hidden="true" className="h-3 w-3" />
-              </a>
+              </a> : <span className="mt-3 text-[11px] text-[#686868]">Official source unavailable</span>}
             </article>
           )) : (
             <p role="status" aria-live="polite" aria-atomic="true" className="py-5 text-xs text-[#686868]">No provider changelog entries have been recorded yet.</p>

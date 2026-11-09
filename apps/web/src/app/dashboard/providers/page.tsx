@@ -5,6 +5,7 @@ import { ExternalLink, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DashboardDataError } from '@/components/dashboard/data-state';
+import { toSafeExternalUrl } from '@/lib/external-link-contract';
 
 type ProviderCoverage = {
   providerId: string;
@@ -182,7 +183,7 @@ export default function ProvidersPage() {
                 {data.providers.map((provider) => (
                   <tr key={provider.providerId} className="border-b border-[#F0F0ED] last:border-0">
                     <td className="px-5 py-4"><div className="font-semibold text-[#111111]">{provider.providerName}</div><div className="font-mono text-[10px] text-[#686868]">{provider.providerId}</div></td>
-                    <td className="px-5 py-4"><div className="flex items-center gap-2"><CoverageBadge tone="slate">Configured</CoverageBadge><SourceHealthBadge status={provider.sourceHealth.status} /><a href={provider.sourceUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.providerName} official source`} className="inline-flex min-h-11 min-w-11 items-center justify-center"><ExternalLink aria-hidden="true" className="h-3.5 w-3.5 text-purple-700" /></a></div><div className="mt-1 text-[10px] text-[#686868]">{provider.sourceType}</div></td>
+                    <td className="px-5 py-4"><div className="flex items-center gap-2"><CoverageBadge tone="slate">Configured</CoverageBadge><SourceHealthBadge status={provider.sourceHealth.status} />{toSafeExternalUrl(provider.sourceUrl) ? <a href={toSafeExternalUrl(provider.sourceUrl) ?? undefined} target="_blank" rel="noreferrer" aria-label={`Open ${provider.providerName} official source`} className="inline-flex min-h-11 min-w-11 items-center justify-center"><ExternalLink aria-hidden="true" className="h-3.5 w-3.5 text-purple-700" /></a> : <span className="text-xs text-[#686868]">Source unavailable</span>}</div><div className="mt-1 text-[10px] text-[#686868]">{provider.sourceType}</div></td>
                     <td className="px-5 py-4"><ParserBadge status={provider.sourceHealth.parserStatus} /></td>
                     <td className="px-5 py-4"><div className="font-semibold text-[#111111]">{provider.reviewedRuleCount}</div><div className="text-[10px] text-[#686868]">{provider.candidateCount} candidates</div></td>
                     <td className="px-5 py-4">{provider.scannerCoverage === 'reviewed-rules' ? <CoverageBadge tone="green">Reviewed rules</CoverageBadge> : <CoverageBadge tone="amber">Review needed</CoverageBadge>}</td>

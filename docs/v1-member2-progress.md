@@ -2965,6 +2965,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned `[]`; focused Vitest passed 2/2; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3171 pnpm exec playwright test tests/e2e/workbench-action-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1.
 - Scope: advances local UI-12/UI-13 pull-request safety and accessibility evidence only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 checkpoint — external source-link safety boundary
+
+- Change: Added a shared credential-free HTTPS adapter for backend-provided external source URLs and applied it to dashboard provider changes, compatibility sources, provider coverage and provider-rule review. Invalid values now render as unavailable; provider host allowlisting remains a shared contract decision.
+- Files: `apps/web/src/lib/external-link-contract.ts`, `apps/web/src/lib/pull-request-contract.ts`, `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `apps/web/src/app/dashboard/providers/page.tsx`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/external-link-contract.test.ts`.
+- Evidence: Focused Vitest passed 4/4; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; compatibility, provider-rule and workbench browser coverage passed 5/5; `git diff --check` passed. Impeccable reported only unchanged dashboard palette warnings.
+- Scope: advances local UI-12/UI-13/WEB-15 source-link safety only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 checkpoint — dashboard pull-request link consistency
 
 - Change: Applied the existing credential-free HTTPS pull-request URL boundary to the dashboard overview, migrations workbench and finding detail surfaces; unsafe values now fall back to the existing local inspection/status state or an unavailable label.

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink, Info, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
+import { toSafeExternalUrl } from "@/lib/external-link-contract";
 
 type ReviewedChange = {
   providerId: string;
@@ -125,9 +126,9 @@ export default function CompatibilityPage() {
                 {change.replacement?.parameter && <p className="mt-1">Replacement parameter: <span className="font-mono">{change.replacement.parameter}</span></p>}
                 <p className="mt-1 text-[10px]">Reviewed by {change.reviewer} on {change.reviewedAt}</p>
               </div>
-              <a href={change.officialSourceUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-medium text-purple-700 hover:underline">
+              {toSafeExternalUrl(change.officialSourceUrl) ? <a href={toSafeExternalUrl(change.officialSourceUrl) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-medium text-purple-700 hover:underline">
                 Official source <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
-              </a>
+              </a> : <span className="text-xs text-[#686868]">Official source unavailable</span>}
             </article>
           ))}
         </section>
