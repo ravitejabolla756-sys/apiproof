@@ -83,15 +83,15 @@ export default function PullRequestsPage() {
       ) : (
         <div className="space-y-4">
           {pullRequests.map((pr) => (
-            <div key={pr.id} className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#E8E8E5]">
-                <div className="space-y-1">
+            <div key={pr.id} className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
+              <div className="flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#E8E8E5]">
+                <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-base text-[#111111]">
+                    <span className="min-w-0 break-words font-semibold text-base text-[#111111]">
                       Pull Request #{pr.number}: {pr.title}
                     </span>
                   </div>
-                  <div className="text-xs text-[#686868] font-mono">
+                  <div className="break-words text-xs text-[#686868] font-mono">
                     Repository: {pr.repo_name} · Branch: <code className="text-[#111111]">{pr.branch_name}</code> → <code className="text-[#111111]">{pr.base_branch}</code>
                   </div>
                 </div>
@@ -119,8 +119,8 @@ export default function PullRequestsPage() {
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-between">
-                <span className="text-xs text-[#686868]">Created: {formatDisplayDateTime(pr.created_at)}</span>
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <span className="break-words text-xs text-[#686868]">Created: {formatDisplayDateTime(pr.created_at)}</span>
                 {toSafePullRequestUrl(pr.url) ? (
                   <a href={toSafePullRequestUrl(pr.url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                     <span>Inspect on GitHub</span>

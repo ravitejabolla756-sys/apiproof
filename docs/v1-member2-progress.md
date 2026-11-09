@@ -3965,3 +3965,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/activity/page.tsx`, `tests/e2e/activity-recovery-loading.spec.ts`.
 - Evidence: Seeded activity API/contract coverage passed **22/22**; rebuilt-bundle activity recovery and 320px overflow/axe coverage passed **2/2** on isolated port 3114 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
 - Scope: Advances UI-12/UI-13 activity responsiveness only; activity authorization and tenant-scoped projections remain server-owned.
+
+## 2026-11-10 checkpoint — pull-request queue narrow-screen text containment
+
+- Change: Pull-request cards now establish flex shrink/wrap boundaries for long titles, repository/branch metadata and timestamps while preserving the review-state pill and GitHub action.
+- Files: `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/workbench-action-accessibility.spec.ts`.
+- Evidence: Pull-request contract coverage passed **4/4**; rebuilt-bundle workbench coverage passed **2/2** on isolated port 3115, including the 320px long-metadata case and axe checks, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+- Scope: Advances UI-12/UI-13 pull-request responsiveness only; PR authorization, provider state and merge policy remain server-owned.

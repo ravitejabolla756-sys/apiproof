@@ -64,3 +64,26 @@ test('keeps core workbench action links touch-sized on mobile', async ({ page })
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, '/dashboard/pull-requests').toEqual([]);
   await page.unroute('**/api/pull-requests');
 });
+
+test('contains long pull-request metadata on narrow screens', async ({ page }) => {
+  await signIn(page);
+  await page.setViewportSize({ width: 320, height: 844 });
+  const longTitle = 'Long pull request '.repeat(16);
+  await page.route('**/api/pull-requests', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ pullRequests: [{
+        id: 'pr-long-metadata', number: 42, title: longTitle, branch_name: 'feature/'.concat('long-branch-'.repeat(12)),
+        base_branch: 'main', url: 'https://example.test/pr/42', state: 'open', created_at: '2026-11-10T00:00:00.000Z',
+        patch_digest: 'digest-long-metadata', repo_name: 'owl', repo_full_name: 'fixture/owl', symbol: 'client.request',
+        file_path: 'src/client.ts', change_id: 'fixture-change',
+      }] }),
+    });
+  });
+  await page.goto('/dashboard/pull-requests');
+  await expect(page.getByText(longTitle, { exact: false })).toBeVisible({ timeout: 30_000 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'long pull-request metadata').toEqual([]);
+  await page.unroute('**/api/pull-requests');
+});
