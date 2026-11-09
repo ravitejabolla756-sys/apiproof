@@ -2102,3 +2102,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Activity responses now normalize required event fields and fail closed on malformed/duplicate records; activity contract/timestamp coverage passed **22/22** and the activity/provider recovery and accessibility suites passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Workspace authorization, tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — migration workbench projection adapter
+
+- PASS: Migration workbench responses now normalize review metadata and fail closed on malformed/duplicate records; focused migration contract coverage passed **2/2** and the secondary-route/recovery browser suites passed **5/5**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Migration backend authorization/history, hosted CI, staging, manual assistive-technology review and production remain open.

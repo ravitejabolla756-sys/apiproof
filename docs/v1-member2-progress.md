@@ -3627,3 +3627,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/activity-utils.ts`, `apps/web/src/app/dashboard/activity/page.tsx`, `tests/activity-timestamp.test.ts`.
 - Evidence: Activity contract/timestamp coverage passed **22/22**, including valid, malformed and duplicate projections; the activity/provider recovery and accessibility suites passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 activity resilience only. Workspace authorization, tenant isolation and server audit ownership remain unchanged.
+
+## 2026-11-09 checkpoint — migration workbench projection adapter
+
+- Change: Added a typed migration workbench parser that normalizes review metadata and rejects invalid line numbers, unknown lifecycle states, malformed records and duplicate IDs before rendering evidence.
+- Files: `apps/web/src/lib/migration-workbench-contract.ts`, `apps/web/src/app/dashboard/migrations/page.tsx`, `tests/migration-workbench-contract.test.ts`.
+- Evidence: Focused migration contract coverage passed **2/2** and the secondary-route/recovery browser suites passed **5/5**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 review-workbench response safety only. No migration IDs, migration history or backend proposal behavior was modified.

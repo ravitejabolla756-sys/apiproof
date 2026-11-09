@@ -7,31 +7,10 @@ import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
+import { parseMigrationWorkbenchCollection, type MigrationWorkbenchProjection } from "@/lib/migration-workbench-contract";
 import { FileCheck2, CheckCircle2, GitPullRequest, Loader2, RefreshCw, ExternalLink } from "lucide-react";
 
-interface MigrationItem {
-  id: string;
-  finding_id: string;
-  repository_id: string;
-  plan_id: string;
-  status: string;
-  patch_diff: string;
-  patch_digest: string;
-  created_at: string;
-  finding_title: string;
-  symbol: string;
-  file_path: string;
-  line_number: number;
-  change_id: string;
-  repo_name: string;
-  repo_full_name: string;
-  pr_number?: number | null;
-  pr_url?: string | null;
-  branch_name?: string | null;
-  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
-  pr_state?: string | null;
-  execution_verified?: boolean;
-}
+type MigrationItem = MigrationWorkbenchProjection;
 
 export default function MigrationsWorkbenchPage() {
   const [migrations, setMigrations] = useState<MigrationItem[]>([]);
@@ -42,9 +21,11 @@ export default function MigrationsWorkbenchPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/migrations");
-      const json = await res.json() as { migrations?: MigrationItem[]; error?: string };
-      if (!res.ok) throw new Error(json.error || "Unable to load migration records.");
-      setMigrations(json.migrations || []);
+      const json = await res.json() as unknown;
+      const parsed = parseMigrationWorkbenchCollection(json);
+      const error = typeof json === 'object' && json !== null && 'error' in json && typeof json.error === 'string' ? json.error : null;
+      if (!res.ok || !parsed) throw new Error(error || "Unable to load migration records.");
+      setMigrations(parsed);
       setError(null);
     } catch (err) {
       console.error("Failed to load migrations:", err);
