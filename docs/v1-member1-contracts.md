@@ -131,6 +131,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 - Protected operational status includes per-run heartbeat status and sanitized error code for the scan worker, six-hour provider-changelog scheduler, and nightly rescan scheduler. Scheduler freshness is measured against 12-hour and 30-hour proposed windows; scan-worker cadence is intentionally `unknown` until its actual scheduler is confirmed. Alert destinations and final thresholds still require owner approval.
 - Heartbeat records use independent run IDs to preserve overlapping invocations, retain only the most recent 100 completed records per component (active runs are retained), and do not contain tenant or credential data. Telemetry writes are best-effort and cannot change the worker outcome.
 - Apply `sec13_worker_run_heartbeats_v1` through the existing migration workflow before relying on persisted heartbeat values. Until then, or if the heartbeat store is unavailable, protected status remains available and reports an explicit unknown heartbeat state.
+- `assessWorkerHealth` is a pure, destination-neutral classifier for healthy/degraded/failed/unknown evidence. `evaluateWorkerHealthAlert` accepts owner-supplied queue thresholds and emits only stable component/reason-code/severity fields; it never sends an alert or treats unknown evidence as an alert.
 - Alert destinations, retention and escalation policy require owner approval before staging/production configuration.
 
 ## Load and resilience testing (SEC-16)

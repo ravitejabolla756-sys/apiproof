@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getDatabase } from './db/index.js';
+import type { ScanWorkerMetrics } from './scan-worker-metrics.js';
 
 export const WORKER_COMPONENTS = ['scan-worker', 'provider-changelog-scheduler', 'nightly-rescan-scheduler'] as const;
 export type WorkerComponent = typeof WORKER_COMPONENTS[number];
@@ -14,6 +15,26 @@ export interface WorkerHeartbeat {
   errorCode: string | null;
   ageMs: number;
   freshness: 'current' | 'stale' | 'unknown';
+}
+
+export type WorkerHealthLevel = 'healthy' | 'degraded' | 'failed' | 'unknown';
+
+export interface WorkerHealthAssessment {
+  component: WorkerComponent;
+  level: WorkerHealthLevel;
+  reasons: string[];
+}
+
+export interface WorkerHealthAlertThresholds {
+  maxStalledProcessingJobs: number;
+  maxRetryExhaustedJobs: number;
+}
+
+export interface WorkerHealthAlert {
+  component: WorkerComponent;
+  shouldAlert: boolean;
+  severity: 'warning' | 'critical' | null;
+  reasonCodes: string[];
 }
 
 const FRESHNESS_WINDOWS_MS: Partial<Record<WorkerComponent, number>> = {
@@ -32,6 +53,73 @@ const SAFE_WORKER_ERROR_CODES = new Set([
 
 function sanitizeWorkerErrorCode(errorCode: string | null): string | null {
   return errorCode === null ? null : SAFE_WORKER_ERROR_CODES.has(errorCode) ? errorCode : 'WORKER_FAILED';
+}
+
+/**
+ * Converts persisted worker evidence into a stable, non-secret health contract.
+ * This is intentionally a pure classifier: alert routing and escalation remain
+ * deployment policy, while callers receive deterministic reasons they can test.
+ */
+export function assessWorkerHealth(
+  heartbeat: WorkerHeartbeat,
+  metrics: Pick<ScanWorkerMetrics, 'stalledProcessingJobs' | 'retryExhaustedJobs'>,
+): WorkerHealthAssessment {
+  const reasons: string[] = [];
+  if (heartbeat.status === 'failed') reasons.push('HEARTBEAT_FAILED');
+  if (heartbeat.status === 'degraded') reasons.push('HEARTBEAT_DEGRADED');
+  if (heartbeat.freshness === 'stale') reasons.push('HEARTBEAT_STALE');
+  if (heartbeat.status === 'unknown') reasons.push('HEARTBEAT_UNKNOWN');
+  if (heartbeat.component === 'scan-worker' && metrics.stalledProcessingJobs > 0) {
+    reasons.push('STALLED_JOBS_PRESENT');
+  }
+  if (heartbeat.component === 'scan-worker' && metrics.retryExhaustedJobs > 0) {
+    reasons.push('RETRY_EXHAUSTED_JOBS_PRESENT');
+  }
+
+  const level: WorkerHealthLevel = reasons.includes('HEARTBEAT_FAILED') || reasons.includes('RETRY_EXHAUSTED_JOBS_PRESENT')
+    ? 'failed'
+    : reasons.length > 0 && !reasons.every((reason) => reason === 'HEARTBEAT_UNKNOWN')
+      ? 'degraded'
+      : heartbeat.status === 'unknown'
+        ? 'unknown'
+        : 'healthy';
+  return { component: heartbeat.component, level, reasons };
+}
+
+/**
+ * Produces a destination-neutral alert decision from already-scrubbed health
+ * evidence. Thresholds are injected so owners can approve them per environment
+ * without coupling the backend to a monitoring vendor or inventing policy.
+ */
+export function evaluateWorkerHealthAlert(
+  heartbeat: WorkerHeartbeat,
+  metrics: Pick<ScanWorkerMetrics, 'stalledProcessingJobs' | 'retryExhaustedJobs'>,
+  thresholds: WorkerHealthAlertThresholds,
+): WorkerHealthAlert {
+  if (!Number.isInteger(thresholds.maxStalledProcessingJobs) || thresholds.maxStalledProcessingJobs < 0
+    || !Number.isInteger(thresholds.maxRetryExhaustedJobs) || thresholds.maxRetryExhaustedJobs < 0) {
+    throw new Error('WORKER_HEALTH_INVALID_ALERT_THRESHOLDS');
+  }
+  const assessment = assessWorkerHealth(heartbeat, metrics);
+  const reasonCodes = assessment.reasons.filter((reason) => reason !== 'STALLED_JOBS_PRESENT' && reason !== 'RETRY_EXHAUSTED_JOBS_PRESENT');
+  if (heartbeat.component === 'scan-worker' && metrics.stalledProcessingJobs > thresholds.maxStalledProcessingJobs) {
+    reasonCodes.push('STALLED_JOBS_THRESHOLD_EXCEEDED');
+  }
+  if (heartbeat.component === 'scan-worker' && metrics.retryExhaustedJobs > thresholds.maxRetryExhaustedJobs) {
+    reasonCodes.push('RETRY_EXHAUSTED_JOBS_THRESHOLD_EXCEEDED');
+  }
+
+  const heartbeatAlert = heartbeat.status === 'failed' || heartbeat.status === 'degraded' || heartbeat.freshness === 'stale';
+  const stalledThresholdExceeded = reasonCodes.includes('STALLED_JOBS_THRESHOLD_EXCEEDED');
+  const retryThresholdExceeded = reasonCodes.includes('RETRY_EXHAUSTED_JOBS_THRESHOLD_EXCEEDED');
+  const critical = heartbeat.status === 'failed' || retryThresholdExceeded;
+  const shouldAlert = heartbeatAlert || stalledThresholdExceeded || retryThresholdExceeded;
+  return {
+    component: heartbeat.component,
+    shouldAlert,
+    severity: shouldAlert ? critical ? 'critical' : 'warning' : null,
+    reasonCodes,
+  };
 }
 
 export async function startWorkerRun(component: WorkerComponent, now = new Date()): Promise<string> {

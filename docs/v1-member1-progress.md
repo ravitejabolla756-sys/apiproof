@@ -853,3 +853,8 @@ Phase 0 read-only checks:
 - Current-HEAD lint follow-up on 2026-11-09: `pnpm lint` passed with `--max-warnings 0`. This validates the current tracked source and does not change any task's external PostgreSQL, provider, staging, legal, or production gate.
 - Current-HEAD dependency audit follow-up on 2026-11-09: `pnpm audit --prod --audit-level=high` exited successfully; four moderate advisories remain and are documented. No high or critical advisory was suppressed.
 - Current-HEAD build follow-up on 2026-11-09: `pnpm build` passed for all workspace packages and the Next.js web application, including compilation and generation of 64 static pages. Next.js temporarily changed `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; those build-generated edits were inspected and restored exactly. No deployment occurred.
+
+### 2026-11-09 SEC-13 destination-neutral alert evaluation
+
+- Added pure `assessWorkerHealth` and threshold-injected `evaluateWorkerHealthAlert` helpers. They classify sanitized heartbeat and queue evidence into stable healthy/degraded/failed/unknown outcomes and alert reason codes without selecting a monitoring vendor, sending notifications, or treating unknown evidence as a false alert.
+- `tests/sec13-worker-observability.test.ts` passes 15/15; `pnpm --filter @apiproof/web typecheck`, targeted ESLint, and `git diff --check` pass. Approved alert destinations, threshold policy, PostgreSQL query behavior, scheduler cadence, and staged worker-failure rehearsal remain external gates.

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
-import { finishWorkerRun, getWorkerHeartbeats, pruneWorkerHeartbeatHistory, startWorkerRun, tryFinishWorkerRun, tryStartWorkerRun } from '../apps/web/src/lib/server/worker-observability.js';
+import { assessWorkerHealth, evaluateWorkerHealthAlert, finishWorkerRun, getWorkerHeartbeats, pruneWorkerHeartbeatHistory, startWorkerRun, tryFinishWorkerRun, tryStartWorkerRun } from '../apps/web/src/lib/server/worker-observability.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-sec13-worker-observability.db');
 const ENVIRONMENT_KEYS = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED'] as const;
@@ -146,5 +146,76 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     expect(health).toHaveLength(3);
     expect(health.every((item) => item.status === 'unknown' && item.freshness === 'unknown')).toBe(true);
     expect(health.every((item) => item.errorCode === 'HEARTBEAT_STORE_UNAVAILABLE')).toBe(true);
+  });
+
+  it('classifies failed and stalled evidence without exposing operational details', async () => {
+    const failed = assessWorkerHealth({
+      component: 'scan-worker', runId: 'failed-run', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: '2026-11-07T00:00:01.000Z', status: 'failed', errorCode: 'WORKER_FAILED', ageMs: 1,
+      freshness: 'unknown',
+    }, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 });
+    const stalled = assessWorkerHealth({
+      component: 'scan-worker', runId: 'running-run', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: null, status: 'running', errorCode: null, ageMs: 1, freshness: 'unknown',
+    }, { stalledProcessingJobs: 2, retryExhaustedJobs: 0 });
+
+    expect(failed).toEqual({ component: 'scan-worker', level: 'failed', reasons: ['HEARTBEAT_FAILED'] });
+    expect(stalled).toEqual({ component: 'scan-worker', level: 'degraded', reasons: ['STALLED_JOBS_PRESENT'] });
+    expect(JSON.stringify({ failed, stalled })).not.toContain('run');
+  });
+
+  it('keeps missing heartbeat evidence explicitly unknown', () => {
+    expect(assessWorkerHealth({
+      component: 'provider-changelog-scheduler', runId: '', startedAt: '', finishedAt: null,
+      status: 'unknown', errorCode: 'NO_HEARTBEAT_RECORDED', ageMs: 0, freshness: 'unknown',
+    }, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 })).toEqual({
+      component: 'provider-changelog-scheduler', level: 'unknown', reasons: ['HEARTBEAT_UNKNOWN'],
+    });
+  });
+
+  it('evaluates destination-neutral alerts with injected thresholds', () => {
+    const alert = evaluateWorkerHealthAlert({
+      component: 'scan-worker', runId: 'worker-1', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: null, status: 'running', errorCode: null, ageMs: 1, freshness: 'unknown',
+    }, { stalledProcessingJobs: 2, retryExhaustedJobs: 1 }, {
+      maxStalledProcessingJobs: 1, maxRetryExhaustedJobs: 0,
+    });
+    expect(alert).toEqual({
+      component: 'scan-worker', shouldAlert: true, severity: 'critical',
+      reasonCodes: ['STALLED_JOBS_THRESHOLD_EXCEEDED', 'RETRY_EXHAUSTED_JOBS_THRESHOLD_EXCEEDED'],
+    });
+  });
+
+  it('does not turn unknown evidence into a false alert', () => {
+    const alert = evaluateWorkerHealthAlert({
+      component: 'nightly-rescan-scheduler', runId: '', startedAt: '', finishedAt: null,
+      status: 'unknown', errorCode: 'NO_HEARTBEAT_RECORDED', ageMs: 0, freshness: 'unknown',
+    }, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 }, {
+      maxStalledProcessingJobs: 0, maxRetryExhaustedJobs: 0,
+    });
+    expect(alert).toEqual({
+      component: 'nightly-rescan-scheduler', shouldAlert: false, severity: null,
+      reasonCodes: ['HEARTBEAT_UNKNOWN'],
+    });
+  });
+
+  it('does not alert for queue values within the injected limits', () => {
+    const alert = evaluateWorkerHealthAlert({
+      component: 'scan-worker', runId: 'worker-1', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: null, status: 'running', errorCode: null, ageMs: 1, freshness: 'unknown',
+    }, { stalledProcessingJobs: 1, retryExhaustedJobs: 0 }, {
+      maxStalledProcessingJobs: 1, maxRetryExhaustedJobs: 0,
+    });
+    expect(alert).toEqual({ component: 'scan-worker', shouldAlert: false, severity: null, reasonCodes: [] });
+  });
+
+  it('rejects negative or non-integer alert thresholds', () => {
+    const heartbeat = {
+      component: 'scan-worker' as const, runId: 'worker-1', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: null, status: 'running' as const, errorCode: null, ageMs: 1, freshness: 'unknown' as const,
+    };
+    expect(() => evaluateWorkerHealthAlert(heartbeat, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 }, {
+      maxStalledProcessingJobs: -1, maxRetryExhaustedJobs: 0,
+    })).toThrow('WORKER_HEALTH_INVALID_ALERT_THRESHOLDS');
   });
 });
