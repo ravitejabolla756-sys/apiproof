@@ -32,7 +32,7 @@ Latest repository privacy evidence: repository detail/delete and scan responses 
 
 Latest provider/invitation privacy evidence: provider-rule edit/review/test and invitation acceptance responses use private non-cacheable headers; seeded organization/provider-review coverage passes 26/26 and web typecheck passes. Provider approval, transactional delivery, PostgreSQL/RBAC, hosted CI, staging and production remain open.
 
-Latest cumulative regression evidence: seeded Vitest regression passes 1,504 tests across 200 passing files, with 1 skipped file and 4 skipped tests, in 112.02 seconds. PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, provider delivery, legal approval and production remain open.
+Latest cumulative regression evidence: seeded Vitest regression passes 1,504 tests across 200 passing files, with 1 skipped file and 4 skipped tests, in 112.76 seconds; full repository lint passes with zero warnings. PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, provider delivery, legal approval and production remain open.
 
 Latest shared-response evidence: generic validation, CSRF and rate-limit helpers emit private non-cacheable responses; seeded auth/billing/organization coverage passes 39/39 and web typecheck passes. PostgreSQL/RBAC, hosted CI, staging, provider delivery, manual assistive-technology review and production remain open.
 

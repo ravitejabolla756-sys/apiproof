@@ -4246,3 +4246,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: A fresh 83-page production bundle passed `PERFORMANCE_SAMPLES=3 pnpm website:performance` across `/`, `/features`, `/how-it-works`, `/security`, `/docs`, `/pricing`, `/faq`, `/contact` and `/status` on isolated loopback port 3169. Median load times were **11–40 ms**, response times **2–5 ms**, and encoded HTML sizes **6.1–17.2 KiB**.
 - Scope: Advances local WEB-15/UI-12 performance evidence only. This is not Lighthouse/Core Web Vitals, public-network, hosted CI, staging or production evidence; no deployment or public monitor was used.
+
+## 2026-11-10 checkpoint — current repository quality regression
+
+- Evidence: Full repository `pnpm lint` passed with zero warnings; seeded `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,504 tests across 200 passing files**, with **4 skipped tests** and **1 skipped file**, in **112.76 seconds**.
+- Scope: Refreshes local quality evidence for all Member 2 slices. Hosted CI, PostgreSQL/RBAC, provider delivery, legal approval, manual assistive-technology review, staging and production remain external gates.
