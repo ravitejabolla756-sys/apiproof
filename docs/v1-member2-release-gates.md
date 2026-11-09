@@ -504,6 +504,10 @@ Invoice issue-date rendering now fails closed for malformed timestamps, with foc
 
 Invoice issue-date validation now rejects impossible calendar dates before platform normalization. Invoice/external-link/pull-request contract coverage passes 8/8, repository typecheck and lint pass, the rebuilt web bundle generates 83 pages, and the billing-boundary browser check passes 1/1. Provider authorization/source/retention approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest UI-12/NOT-10 mobile notification evidence — 2026-11-09
+
+The 390px notification-settings journey verifies focusable overflow handling, no document overflow, 44px unavailable digest controls and axe-clean content; the focused browser test passes 1/1 and related local contract tests pass 9/9. Manual assistive-technology review, hosted CI, staging, provider delivery, digest scheduling and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.

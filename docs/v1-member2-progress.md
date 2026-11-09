@@ -3042,3 +3042,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/lib/pull-request-contract.ts`, `tests/invoice-history-contract.test.ts`.
 - Evidence: focused invoice coverage passed 4/4; combined invoice/external-link/pull-request coverage passed 8/8; targeted ESLint, repository typecheck and `git diff --check` passed; Impeccable detector returned `[]`; rebuilt web bundle generated 83 pages; `CI=true PLAYWRIGHT_PORT=3181 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1.
 - Scope: advances local BILL-09/UI-12 resilience and restores repository-wide test typecheck resolution. Provider invoice sourcing, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 mobile notification settings coverage
+
+- Change: Extended the authenticated notification-settings journey to run at 390px and verify no document-level horizontal overflow, keyboard focus on the scrollable preference region, 44px touch wrappers for unavailable digest controls, and an axe-clean mobile state. Digest policy and delivery availability remain unchanged.
+- Files: `tests/e2e/public-site.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3182 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 --reporter=line -g "loads account, workspace, and notification settings"` passed 1/1; targeted ESLint, test TypeScript, `git diff --check` and related digest/invoice/notification Vitest coverage passed 9/9.
+- Scope: advances local UI-12/UI-13/NOT-10 verification only. Manual assistive-technology review, hosted CI, staging, provider delivery and production remain open.

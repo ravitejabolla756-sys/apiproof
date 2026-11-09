@@ -1551,6 +1551,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Targeted ESLint, repository typecheck, `git diff --check`, Impeccable detector (`[]`), the 83-page web build and `CI=true PLAYWRIGHT_PORT=3181 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` (1/1) passed.
 - NOT_RUN: Provider-backed invoice source, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — UI-12/UI-13 mobile notification settings coverage
+
+- PASS: The authenticated notification-settings journey now verifies 390px no-overflow behavior, keyboard focus on the preference-region scroller, 44px wrappers for unavailable weekly-digest controls and axe-clean content; the focused Playwright run passed 1/1.
+- PASS: Targeted ESLint, test TypeScript, `git diff --check` and related digest/invoice/notification Vitest coverage passed 9/9.
+- NOT_RUN: Manual assistive-technology review, hosted CI, staging, provider delivery, digest scheduling and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

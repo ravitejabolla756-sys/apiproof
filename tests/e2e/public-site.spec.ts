@@ -136,7 +136,7 @@ test.describe('public beta surfaces', () => {
   test('keeps the contact form on required-field validation', async ({ page }) => { await page.goto('/contact'); await page.getByRole('button', { name: 'Review inquiry state' }).click(); const name = page.getByLabel('Full Name'); await expect(name).toBeFocused(); await expect(page.getByRole('status')).toHaveCount(0); expect(await name.evaluate((input: HTMLInputElement) => input.validationMessage)).toBe('Please fill out this field.'); }); });
 test.describe('authenticated product surfaces', () => {
   test('signs in with the local seed and loads account, workspace, and notification settings', async ({ page }) => {
-    await signIn(page);
+    await page.setViewportSize({ width: 390, height: 844 }); await signIn(page);
     await page.goto('/dashboard/settings/account');
     await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer', { timeout: 30_000 });
@@ -146,7 +146,7 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
     await page.goto('/dashboard/settings/notifications');
     await expect(page.getByRole('heading', { name: 'Notification preferences' })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); await expect(page.getByLabel('Weekly digest via email')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via slack')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via email')).toHaveAttribute('aria-describedby', 'digest-contract-status'); await expect(page.getByLabel('Weekly digest via slack')).toHaveAttribute('aria-describedby', 'digest-contract-status'); await expect(page.getByLabel('Security alerts via email')).toHaveAttribute('aria-describedby', 'notification-delivery-status'); await expect(page.getByText('Digest scheduling is unavailable until its cadence, recipient and scheduler contract is approved.')).toBeVisible();
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); await expect(page.getByLabel('Weekly digest via email')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via slack')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via email')).toHaveAttribute('aria-describedby', 'digest-contract-status'); await expect(page.getByLabel('Weekly digest via slack')).toHaveAttribute('aria-describedby', 'digest-contract-status'); await expect(page.getByLabel('Security alerts via email')).toHaveAttribute('aria-describedby', 'notification-delivery-status'); await expect(page.getByText('Digest scheduling is unavailable until its cadence, recipient and scheduler contract is approved.')).toBeVisible(); const preferenceRegion = page.getByRole('region', { name: 'Notification preferences table' }); await preferenceRegion.focus(); await expect(preferenceRegion).toBeFocused(); expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true); for (const checkbox of [page.getByLabel('Weekly digest via email'), page.getByLabel('Weekly digest via slack')]) expect(await checkbox.evaluate((input) => input.closest('label')?.getBoundingClientRect().height ?? 0)).toBeGreaterThanOrEqual(44);
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });
