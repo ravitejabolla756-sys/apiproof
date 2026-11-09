@@ -21,16 +21,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0;
+function normalizedText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 function isRole(value: unknown): value is 'owner' | 'member' {
   return value === 'owner' || value === 'member';
 }
 
-function isStringOrNull(value: unknown): value is string | null {
-  return value === null || typeof value === 'string';
+function normalizedStringOrNull(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  return normalizedText(value) ?? undefined;
 }
 
 export function parseMemberCollection(payload: unknown): MemberProjection[] | null {
@@ -38,10 +41,15 @@ export function parseMemberCollection(payload: unknown): MemberProjection[] | nu
   const seen = new Set<string>();
   const members: MemberProjection[] = [];
   for (const item of payload.members) {
-    if (!isRecord(item) || !isNonEmptyString(item.id) || !isNonEmptyString(item.userId) || !isNonEmptyString(item.email) || !isNonEmptyString(item.name) || !isRole(item.role) || !isNonEmptyString(item.createdAt)) return null;
-    if (seen.has(item.id)) return null;
-    seen.add(item.id);
-    members.push({ id: item.id, userId: item.userId, email: item.email, name: item.name, role: item.role, createdAt: item.createdAt });
+    const id = isRecord(item) ? normalizedText(item.id) : null;
+    const userId = isRecord(item) ? normalizedText(item.userId) : null;
+    const email = isRecord(item) ? normalizedText(item.email) : null;
+    const name = isRecord(item) ? normalizedText(item.name) : null;
+    const createdAt = isRecord(item) ? normalizedText(item.createdAt) : null;
+    if (!isRecord(item) || !id || !userId || !email || !name || !isRole(item.role) || !createdAt) return null;
+    if (seen.has(id)) return null;
+    seen.add(id);
+    members.push({ id, userId, email, name, role: item.role, createdAt });
   }
   return members;
 }
@@ -51,10 +59,16 @@ export function parseInvitationCollection(payload: unknown): InvitationProjectio
   const seen = new Set<string>();
   const invitations: InvitationProjection[] = [];
   for (const item of payload.invitations) {
-    if (!isRecord(item) || !isNonEmptyString(item.id) || !isNonEmptyString(item.email) || !isRole(item.role) || !isNonEmptyString(item.expiresAt) || !isStringOrNull(item.acceptedAt) || !isStringOrNull(item.revokedAt) || !isNonEmptyString(item.createdAt)) return null;
-    if (seen.has(item.id)) return null;
-    seen.add(item.id);
-    invitations.push({ id: item.id, email: item.email, role: item.role, expiresAt: item.expiresAt, acceptedAt: item.acceptedAt, revokedAt: item.revokedAt, createdAt: item.createdAt });
+    const id = isRecord(item) ? normalizedText(item.id) : null;
+    const email = isRecord(item) ? normalizedText(item.email) : null;
+    const expiresAt = isRecord(item) ? normalizedText(item.expiresAt) : null;
+    const acceptedAt = isRecord(item) ? normalizedStringOrNull(item.acceptedAt) : undefined;
+    const revokedAt = isRecord(item) ? normalizedStringOrNull(item.revokedAt) : undefined;
+    const createdAt = isRecord(item) ? normalizedText(item.createdAt) : null;
+    if (!isRecord(item) || !id || !email || !isRole(item.role) || !expiresAt || acceptedAt === undefined || revokedAt === undefined || !createdAt) return null;
+    if (seen.has(id)) return null;
+    seen.add(id);
+    invitations.push({ id, email, role: item.role, expiresAt, acceptedAt, revokedAt, createdAt });
   }
   return invitations;
 }

@@ -10,6 +10,13 @@ describe('organization collection response contracts', () => {
     expect(parseInvitationCollection({ invitations: [invitation] })).toEqual([invitation]);
   });
 
+  it('normalizes collection text and rejects duplicate IDs after normalization', () => {
+    expect(parseMemberCollection({ members: [{ ...member, id: ' member-1 ', name: ' Member ' }] })).toEqual([member]);
+    expect(parseInvitationCollection({ invitations: [{ ...invitation, id: ' invite-1 ', email: ' invite@example.test ' }] })).toEqual([invitation]);
+    expect(parseMemberCollection({ members: [member, { ...member, id: ' member-1 ', name: 'Other' }] })).toBeNull();
+    expect(parseInvitationCollection({ invitations: [invitation, { ...invitation, id: ' invite-1 ', email: 'other@example.test' }] })).toBeNull();
+  });
+
   it.each([
     ['missing members', { members: null }],
     ['malformed member role', { members: [{ ...member, role: 'admin' }] }],

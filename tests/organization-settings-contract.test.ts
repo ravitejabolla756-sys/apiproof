@@ -8,6 +8,10 @@ describe('workspace settings response contract', () => {
     expect(parseWorkspaceSettings({ workspace })).toEqual(workspace);
   });
 
+  it('normalizes workspace display text before it reaches the settings form', () => {
+    expect(parseWorkspaceSettings({ workspace: { ...workspace, id: ' ws-primary ', name: ' Primary Workspace ', slug: ' primary-workspace ' } })).toEqual(workspace);
+  });
+
   it.each([
     ['missing workspace', {}],
     ['missing ID', { workspace: { ...workspace, id: '' } }],

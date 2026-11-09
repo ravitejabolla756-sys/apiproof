@@ -3529,3 +3529,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The shared notification preference parser now rejects a server projection that marks a required security/account notification as disabled, preserving the existing non-disablable safety invariant before UI rendering.
 - Files: `apps/web/src/lib/notification-preferences-contract.ts`, `tests/notification-preferences-contract.test.ts`.
 - Scope: Advances local NOT-06/UI-12 fail-closed response validation only. It does not select optional-channel cadence, recipients, scheduler or provider behavior.
+
+## 2026-11-09 checkpoint — ORG-02 organization projection normalization
+
+- Change: Workspace settings, member and invitation parsers now trim server-owned display/identity fields before rendering and reject duplicate member/invitation IDs after normalization.
+- Files: `apps/web/src/lib/organization-settings-contract.ts`, `apps/web/src/lib/organization-collection-contract.ts`, `tests/organization-settings-contract.test.ts`, `tests/organization-collection-contract.test.ts`.
+- Scope: Advances local ORG-02/UI-12 response safety only. Server-derived authorization, tenant isolation, PostgreSQL/RBAC, invitation delivery and ORG-10 revocation remain unchanged and open.
