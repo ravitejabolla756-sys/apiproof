@@ -3992,3 +3992,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Provider inventory cards now establish shrink/wrap boundaries for long provider names, categories, capabilities, rule identifiers, titles and descriptions; the provider contract and registry behavior are unchanged.
 - Scope: Advances UI-12/UI-13 inventory responsiveness only; provider authorization, registry provenance and scan contracts remain server-owned.
 - Evidence: Inventory contract coverage passed **2/2**; rebuilt-bundle inventory filter/loading/long-metadata coverage passed **3/3** on isolated port 3118, including the 320px axe case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — migration workbench narrow metadata containment
+
+- Change: Migration workbench cards now establish shrink/wrap boundaries for long change IDs, finding titles, paths, repository names, digests and verification metadata while preserving intentional patch-diff horizontal scrolling.
+- Scope: Advances UI-12/UI-13 migration workbench resilience only; migration planning, verification, provider evidence and database migration contracts remain server-owned.
+- Evidence: Migration workbench contract coverage passed **2/2**; rebuilt-bundle workbench action/long-metadata coverage passed **3/3** on isolated port 3119, including the 320px axe case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

@@ -87,3 +87,28 @@ test('contains long pull-request metadata on narrow screens', async ({ page }) =
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'long pull-request metadata').toEqual([]);
   await page.unroute('**/api/pull-requests');
 });
+
+test('contains long migration metadata on narrow screens', async ({ page }) => {
+  await signIn(page);
+  await page.setViewportSize({ width: 320, height: 844 });
+  const longTitle = `Breaking change ${'title-name-'.repeat(12)}`;
+  await page.route('**/api/migrations', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ migrations: [{
+        id: 'migration-long-metadata', finding_id: 'finding-long-metadata', repository_id: 'repo-long-metadata', plan_id: 'plan-long-metadata',
+        status: 'planned', patch_diff: `@@ ${'diff-line-'.repeat(12)} @@`, patch_digest: 'digest-long-metadata-'.repeat(10), created_at: '2026-11-10T00:00:00.000Z',
+        finding_title: longTitle, symbol: `client.${'method-'.repeat(8)}`, file_path: `src/${'nested-directory-'.repeat(8)}client.ts`, line_number: 42,
+        change_id: `change-${'identifier-'.repeat(10)}`, repo_name: `repo-${'name-'.repeat(10)}`, repo_full_name: `fixture/${'repository-name-'.repeat(10)}`,
+        pr_number: null, pr_url: null, branch_name: null, lifecycle_state: 'Migration Planned', pr_state: null, execution_verified: false,
+      }] }),
+    });
+  });
+
+  await page.goto('/dashboard/migrations');
+  await expect(page.getByText(longTitle, { exact: false })).toBeVisible({ timeout: 30_000 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'long migration metadata').toEqual([]);
+  await page.unroute('**/api/migrations');
+});

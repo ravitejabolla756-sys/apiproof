@@ -89,24 +89,24 @@ export default function MigrationsWorkbenchPage() {
           {migrations.map((mig) => (
             <div
               key={mig.id}
-              className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs"
+              className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E8E5]">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-semibold text-[10px] uppercase">
+                <div className="min-w-0">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-semibold text-[10px] uppercase">
                       {mig.change_id}
                     </span>
-                    <h2 className="text-lg font-semibold text-[#111111]">
+                    <h2 className="min-w-0 break-words text-lg font-semibold text-[#111111]">
                       {mig.finding_title}
                     </h2>
                   </div>
-                  <div className="text-xs text-[#686868] mt-1 font-mono">
+                  <div className="mt-1 break-all text-xs text-[#686868] font-mono">
                     Target file: {mig.file_path}:{mig.line_number} · Repo: {mig.repo_name}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-3">
                   <StatusPill
                     status={mig.lifecycle_state === 'Verification Passed' || mig.lifecycle_state === 'Pull Request Merged' ? 'verified' : mig.lifecycle_state === 'Verification Failed' || mig.lifecycle_state === 'Pull Request Closed' ? 'warning' : mig.lifecycle_state === 'Draft PR Created' || mig.lifecycle_state === 'Pull Request Open' ? 'pr_created' : mig.lifecycle_state === 'Pull Request State Unavailable' ? 'neutral' : 'detected'}
                     label={mig.lifecycle_state || 'Verification Pending'}
@@ -120,10 +120,10 @@ export default function MigrationsWorkbenchPage() {
               {/* WORKBENCH SPLIT */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                 {/* CODE DIFF ON LEFT (60%) */}
-                <div className="lg:col-span-7 bg-[#F6F6F4] rounded-[24px] border border-[#E8E8E5] p-5 space-y-3 flex flex-col justify-between">
-                  <div className="text-xs font-semibold text-[#111111] flex items-center justify-between">
-                    <span>{mig.execution_verified ? 'Verified Transformation Output' : 'Planned Transformation (not applied)'}</span>
-                    <span className="font-mono text-[11px] text-[#686868]">{mig.file_path}</span>
+                <div className="min-w-0 lg:col-span-7 bg-[#F6F6F4] rounded-[24px] border border-[#E8E8E5] p-5 space-y-3 flex flex-col justify-between">
+                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#111111]">
+                    <span className="min-w-0 break-words">{mig.execution_verified ? 'Verified Transformation Output' : 'Planned Transformation (not applied)'}</span>
+                    <span className="min-w-0 break-all font-mono text-[11px] text-[#686868]">{mig.file_path}</span>
                   </div>
 
                   <pre tabIndex={0} aria-label={`Migration diff for ${mig.file_path}`} className="rounded-2xl bg-zinc-950 p-4 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
@@ -132,7 +132,7 @@ export default function MigrationsWorkbenchPage() {
                 </div>
 
                 {/* VERIFICATION INSPECTOR ON RIGHT (40%) */}
-                <div className="lg:col-span-5 bg-[#EEF7F2] rounded-[24px] border border-[#D1EBE0] p-5 space-y-4 flex flex-col justify-between">
+                <div className="min-w-0 lg:col-span-5 bg-[#EEF7F2] rounded-[24px] border border-[#D1EBE0] p-5 space-y-4 flex flex-col justify-between">
                   <div className="space-y-1">
                     <div className="text-xs font-semibold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
                       <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600" /> Verification Invariants
@@ -147,23 +147,23 @@ export default function MigrationsWorkbenchPage() {
                   </div>
 
                   <div className="space-y-2 text-xs">
-                    <div className="p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between shadow-2xs">
-                      <div>
+                    <div className="min-w-0 p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between gap-3 shadow-2xs">
+                      <div className="min-w-0">
                         <div className="font-semibold text-[#111111]">Patch Scope Check</div>
-                        <div className="text-[11px] text-[#686868]">{mig.execution_verified ? `Validated target: ${mig.file_path}` : `Planned target: ${mig.file_path}; checked during verification`}</div>
+                        <div className="break-all text-[11px] text-[#686868]">{mig.execution_verified ? `Validated target: ${mig.file_path}` : `Planned target: ${mig.file_path}; checked during verification`}</div>
                       </div>
                       {mig.execution_verified ? <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
                     </div>
-                    <div className="p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between shadow-2xs">
-                      <div>
+                    <div className="min-w-0 p-3 rounded-xl bg-white border border-[#D1EBE0] flex items-center justify-between gap-3 shadow-2xs">
+                      <div className="min-w-0">
                         <div className="font-semibold text-[#111111]">{mig.execution_verified ? 'Resulting Patch Digest' : 'Planned Digest (not verified)'}</div>
-                        <div className="text-[11px] text-[#686868] font-mono truncate">{mig.patch_digest ? `${mig.patch_digest.slice(0, 18)}...` : 'Resulting patch digest pending'}</div>
+                        <div className="break-all text-[11px] text-[#686868] font-mono">{mig.patch_digest ? `${mig.patch_digest.slice(0, 18)}...` : 'Resulting patch digest pending'}</div>
                       </div>
                       {mig.execution_verified ? <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0" /> : <span className="text-[#686868]">Pending</span>}
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-[#D1EBE0] flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#D1EBE0] pt-2">
                     {toSafePullRequestUrl(mig.pr_url) ? (
                       <a href={toSafePullRequestUrl(mig.pr_url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                         <GitPullRequest aria-hidden="true" className="w-3.5 h-3.5" />
