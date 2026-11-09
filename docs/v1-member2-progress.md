@@ -3613,3 +3613,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/pull-request-contract.ts`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/pull-request-contract.test.ts`.
 - Evidence: Focused pull-request contract coverage now includes collection parsing; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 pull-request response safety only. Workspace authorization, provider URL allowlisting and backend tenant isolation remain authoritative/shared work.
+
+## 2026-11-09 checkpoint — provider coverage response adapter
+
+- Change: Added a typed provider-coverage response parser that validates nested summary, queue, provider and source-health metadata before rendering; malformed payloads now use the existing unavailable/retry state.
+- Files: `apps/web/src/lib/provider-coverage-contract.ts`, `apps/web/src/app/dashboard/providers/page.tsx`, `tests/provider-coverage-contract.test.ts`.
+- Evidence: Focused contract coverage includes canonical and malformed nested projections; the provider coverage refresh/accessibility suite passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12 provider-coverage resilience only. Provider source truth, scheduling, authorization and production monitoring remain unchanged.

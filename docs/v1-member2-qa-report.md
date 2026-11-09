@@ -2092,3 +2092,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Pull-request collections are normalized and malformed/duplicate projections fail closed before render; focused pull-request contract coverage includes collection parsing, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Workspace authorization, provider URL allowlisting, backend tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — provider coverage response adapter
+
+- PASS: Provider coverage now fails closed on malformed nested summary/provider/source-health data; focused contract coverage includes valid and malformed projections and the provider coverage refresh/accessibility suite passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Provider source truth, scheduling, authorization, production monitoring, hosted CI, staging, manual assistive-technology review and production remain open.

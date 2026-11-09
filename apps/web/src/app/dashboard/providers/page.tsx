@@ -6,56 +6,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DashboardDataError } from '@/components/dashboard/data-state';
 import { toSafeExternalUrl } from '@/lib/external-link-contract';
+import { parseProviderCoverageResponse, type ProviderCoverage, type ProviderCoverageResponse } from '@/lib/provider-coverage-contract';
 
-type ProviderCoverage = {
-  providerId: string;
-  providerName: string;
-  sourceUrl: string;
-  sourceType: string;
-  discoveryAvailable: boolean;
-  candidateCount: number;
-  reviewedRuleCount: number;
-  scannerCoverage: 'reviewed-rules' | 'no-reviewed-rules';
-  autoRescan: boolean;
-  autoFix: 'guarded-human-review';
-  migrationTemplateStatus: 'deterministic-ast' | 'review-only';
-  migrationTemplateLimitation: string;
-  migrationTemplateCount: number;
-  verifiedMigrationTemplateCount: number;
-  reviewOnlyTemplateProposalCount: number;
-  candidateCountWithoutTemplateProposal: number;
-  migrationTemplatePromotion: {
-    candidateIds: string[];
-    proposalModes: Array<'transform' | 'manual-guidance'>;
-    nextStep: string;
-  } | null;
-  sourceHealth: {
-    status: 'never-run' | 'healthy' | 'due' | 'failing' | 'disabled';
-    lastSuccessAt: string | null;
-    nextAttemptAt: string | null;
-    failureCount: number;
-    parserStatus: 'structured' | 'review-only' | 'not-run';
-  };
-};
-
-type CoverageResponse = {
-  summary: {
-    configuredSources: number;
-    discoveryProviders: number;
-    providersWithReviewedRules: number;
-    reviewedRules: number;
-    providersWithMigrationTemplates: number;
-    migrationTemplates: number;
-    providersWithVerifiedMigrationTemplates: number;
-    verifiedMigrationTemplates: number;
-    providersWithReviewOnlyTemplateProposals: number;
-    reviewOnlyTemplateProposals: number;
-    autoFixPolicy: 'guarded-human-review';
-    reviewQueue: { P0: number; P1: number; P2: number };
-    migrationTemplatePromotionQueue: Array<{ providerId: string; candidateIds: string[]; proposalModes: Array<'transform' | 'manual-guidance'>; nextStep: string }>;
-  };
-  providers: ProviderCoverage[];
-};
+type CoverageResponse = ProviderCoverageResponse;
 
 function CoverageBadge({ tone, children }: { tone: 'green' | 'amber' | 'slate'; children: ReactNode }) {
   const colors = {
@@ -94,9 +47,11 @@ export default function ProvidersPage() {
     setLoading(true);
     try {
       const response = await fetch('/api/provider-coverage', { cache: 'no-store' });
-      const payload = await response.json() as CoverageResponse & { error?: string };
-      if (!response.ok) throw new Error(payload.error || 'Unable to load provider coverage.');
-      setData(payload);
+      const payload = await response.json() as unknown;
+      const parsed = parseProviderCoverageResponse(payload);
+      const error = typeof payload === 'object' && payload !== null && 'error' in payload && typeof payload.error === 'string' ? payload.error : null;
+      if (!response.ok || !parsed) throw new Error(error || 'Unable to load provider coverage.');
+      setData(parsed);
       setError(null);
     } catch (caught) {
       setData(null);
