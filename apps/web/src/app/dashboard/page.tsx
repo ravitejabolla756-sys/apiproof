@@ -103,7 +103,7 @@ export default function DashboardOverviewPage() {
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (error) errorRef.current?.focus();
+    if (error && !document.activeElement?.matches('#main-content, .skip-link')) errorRef.current?.focus();
   }, [error]);
 
   const loadOverview = useCallback(async () => {

@@ -4172,3 +4172,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The shared authenticated data-error surface now preserves an explicit skip-link move to `#main-content` instead of stealing focus during the error transition; ordinary data errors still focus their assertive retry surface.
 - Scope: Advances UI-12/UI-13 loading/error-state keyboard QA across the shared dashboard data pages; API authorization, tenant scope and backend contracts remain unchanged.
 - Evidence: Rebuilt-bundle focused browser coverage passed **1/1** on isolated port 3152 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed.
+
+## 2026-11-10 checkpoint — page error skip-link focus preservation
+
+- Change: Dashboard overview, workspace settings, notification settings, login, compatibility, invoice history and Slack status error effects now preserve an explicit skip-link transition to `#main-content`; ordinary error changes still focus their assertive recovery surface. The existing finding/provider/shared-data guards now also recognize the focused skip-link before its anchor transition completes.
+- Scope: Advances UI-12/UI-13 keyboard and error-state coverage across page-level recovery surfaces; authentication, tenant, billing, notification and provider contracts remain unchanged.
+- Evidence: Rebuilt-bundle route accessibility coverage passed **16/16** on isolated port 3154 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The Impeccable detector reported only incumbent dashboard palette warnings on unchanged lines.

@@ -2410,3 +2410,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The shared dashboard data-error surface preserves keyboard focus on `#main-content` after an explicit skip-link activation while retaining assertive error focus for ordinary data changes. Rebuilt-bundle focused Playwright/axe coverage passed **1/1** on isolated port 3152 after a fresh web production build generating **83 pages**.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the Impeccable detector reported no findings.
 - NOT_RUN: Hosted CI, manual assistive-technology review, API authorization/tenant verification, integrated staging and production remain open.
+
+## 2026-11-10 — page error skip-link focus preservation
+
+- PASS: Page-level dashboard, settings, notification, login, compatibility, invoice and Slack error recovery preserves keyboard focus on `#main-content` during explicit skip-link activation while ordinary error transitions retain assertive focus. Rebuilt-bundle Playwright/axe route accessibility coverage passed **16/16** on isolated port 3154 after a fresh web production build generating **83 pages**.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed. The Impeccable detector reported only pre-existing unchanged dashboard palette tokens.
+- NOT_RUN: Hosted CI, manual assistive-technology review, authentication/tenant/provider verification, integrated staging and production remain open.

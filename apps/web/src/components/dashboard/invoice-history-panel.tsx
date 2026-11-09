@@ -25,7 +25,7 @@ export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter
   }, [adapter]);
 
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
+  useEffect(() => { if (error && !document.activeElement?.matches('#main-content, .skip-link')) errorRef.current?.focus(); }, [error]);
 
   return (
     <section aria-labelledby="invoice-history-heading" className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-3 shadow-xs">

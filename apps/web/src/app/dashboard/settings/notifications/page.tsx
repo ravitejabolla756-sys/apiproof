@@ -48,7 +48,7 @@ export default function NotificationSettingsPage() {
   useEffect(() => {
     void loadPreferences();
   }, [loadPreferences]);
-  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
+  useEffect(() => { if (error && !document.activeElement?.matches('#main-content, .skip-link')) errorRef.current?.focus(); }, [error]);
 
   function toggle(category: string, channel: NotificationPreference['channel']) {
     setPreferences((current) => current.map((item) => item.category === category && item.channel === channel && !item.required ? { ...item, enabled: !item.enabled } : item));

@@ -19,7 +19,7 @@ export default function LoginPage() {
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (error) errorRef.current?.focus();
+    if (error && !document.activeElement?.matches('#main-content, .skip-link')) errorRef.current?.focus();
   }, [error]);
 
   // If already authenticated, redirect to /dashboard

@@ -68,7 +68,7 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
   }, [loadMap]);
 
   useEffect(() => {
-    if (error) errorRef.current?.focus();
+    if (error && !document.activeElement?.matches('#main-content, .skip-link')) errorRef.current?.focus();
   }, [error]);
 
   if (error && repositories.length === 0) {
