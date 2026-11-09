@@ -697,3 +697,7 @@ The notification GET route is covered against stored weekly-digest opt-ins and r
 ## Latest ORG-02 projection validation evidence — 2026-11-09
 
 The workspace selector parser now rejects whitespace-only IDs and names before rendering. PostgreSQL/RBAC, Member 1 role/revocation integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest repository quality evidence — 2026-11-09
+
+The current branch passes `pnpm lint` with zero warnings and the no-file-parallelism repository regression with **1,420 passed**, **4 skipped**, across **173 files** with **1 skipped file**. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

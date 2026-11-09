@@ -3374,3 +3374,7 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Workspace-context parsing now fails closed for whitespace-only workspace IDs or names before they reach the selector, preserving server-authoritative membership/context behavior.
 - Files: `apps/web/src/lib/workspace-context-contract.ts`, `tests/workspace-context-contract.test.ts`.
 - Evidence: Workspace contract coverage passed **9/9** with targeted ESLint and `git diff --check`; no backend authorization, role or revocation behavior was changed.
+
+## 2026-11-09 checkpoint — current repository quality regression
+
+- Evidence: On the current branch, `pnpm lint` passed with zero warnings; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,420 tests**, **4 skipped**, across **173 test files** with **1 skipped file** in 112.13 seconds. This refreshes local regression evidence after the recent invoice, digest, workspace and public-form slices; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
