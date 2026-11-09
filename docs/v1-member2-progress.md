@@ -3741,3 +3741,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Invalid successful repository-detail projections now use the existing capitalized `Unavailable` recovery wording, preserving the date-boundary contract after projection validation was added.
 - Evidence: `dashboard-date-display.spec.ts` passed **5/5**; targeted repository-detail ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 recovery consistency only; repository authorization and scan contracts remain unchanged.
+
+## 2026-11-09 checkpoint — enterprise intake hydration guard
+
+- Change: The public contact submit control now remains disabled until the client hydrates, preventing an early native form navigation from bypassing the non-sending enterprise-intake state and its focus recovery.
+- Files: `apps/web/src/app/contact/page.tsx`.
+- Evidence: Enterprise-intake boundary coverage passed **1/1**; contact cases in the public-site suite passed **2/2**; web typecheck, targeted ESLint, production build and `git diff --check` passed. The build retained the existing non-blocking Next.js ESLint-plugin warning.
+- Scope: Advances WEB-11/WEB-15 and UI-12/UI-13 local accessibility behavior only; no message delivery, provider integration or billing behavior was added.

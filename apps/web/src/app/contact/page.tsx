@@ -9,7 +9,12 @@ import { enterpriseIntakeAvailability } from "@/lib/enterprise-intake-contract";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const statusRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (submitted) statusRef.current?.focus();
@@ -119,7 +124,8 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="min-h-11 px-8 py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold transition-all shadow-xs"
+                  disabled={!hydrated}
+                  className="min-h-11 px-8 py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold transition-all shadow-xs disabled:cursor-wait disabled:opacity-70"
                 >
                   Review inquiry state
                 </button>

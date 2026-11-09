@@ -2187,3 +2187,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Invalid repository-detail projections preserve the existing capitalized `Unavailable` recovery contract; dashboard date-boundary coverage passed **5/5**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — enterprise intake hydration guard
+
+- PASS: Contact submission is gated until client hydration, so an early mobile click cannot fall through to a native navigation; the non-sending status region receives focus after submission. Enterprise-intake boundary coverage passed **1/1**, and the two contact cases in the public-site suite passed **2/2**.
+- PASS: Targeted contact ESLint, web typecheck, production build and `git diff --check` passed. The production build retained the existing non-blocking warning that the Next.js plugin was not detected in the ESLint configuration.
+- NOT_RUN: Hosted CI, integrated staging, manual screen-reader/assistive-technology review, approved contact delivery destination and production remain open.
