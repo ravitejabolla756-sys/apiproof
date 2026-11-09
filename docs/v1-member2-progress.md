@@ -3316,3 +3316,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Notification settings now enforce `DigestAvailability` at the UI boundary, keeping weekly digest email and Slack controls disabled even if a future preference projection reports delivery availability before cadence, scheduler and recipient contracts are approved.
 - Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-preference-contract.spec.ts`.
 - Evidence: Rebuilt-bundle malformed-projection, optimistic-digest-projection and notification-recovery coverage passed **3/3**; targeted ESLint, test TypeScript, diff checks and the 83-page production build passed. No scheduler or provider behavior was added.
+
+## 2026-11-09 checkpoint — NOT-10 optimistic delivery guard
+
+- Change: Weekly digest controls now derive their disabled/unavailable state from the pending digest contract as well as channel delivery availability, preventing an optimistic server projection from exposing editable digest settings prematurely.
+- Evidence: Rebuilt-bundle notification contract and recovery coverage passed **3/3**; no scheduler, queue, template or provider behavior was introduced.

@@ -657,3 +657,7 @@ Notification preference failures now focus the assertive recovery alert; rebuilt
 ## Latest NOT-10 digest contract evidence — 2026-11-09
 
 Weekly digest controls remain disabled until the approved cadence, recipient and scheduler contract exists, even when a preference projection claims delivery availability. The rebuilt-bundle notification contract/recovery suite passed **3/3**. Provider delivery, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-10 optimistic projection evidence — 2026-11-09
+
+The notification UI now fails closed when a digest projection optimistically reports delivery availability while the shared digest contract remains pending. Focused rebuilt-bundle coverage passed **3/3**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
