@@ -3725,3 +3725,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/account-profile-contract.ts`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/account-profile-contract.test.ts`.
 - Evidence: Account contract coverage passed **3/3** and account action-loading browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances AUTH-08/UI-12 local action-state safety only; password policy and session semantics remain server-owned.
+
+## 2026-11-09 checkpoint — public-site QA matrix
+
+- Evidence: Current-branch Playwright public-site matrix passed **26/26** with one worker, covering public content/crawl controls, mobile navigation, reduced motion, accessibility scans, contact/intake boundaries, invitations, notification settings, account security, workspace context, authenticated route browsing and safe error states.
+- Scope: Strengthens local WEB-15/UI-12/UI-13 evidence only; hosted deployment, manual assistive-technology review, legal approval and provider-backed behavior remain external gates.

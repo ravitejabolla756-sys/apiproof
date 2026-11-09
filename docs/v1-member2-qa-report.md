@@ -2172,3 +2172,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Password change completion now requires an explicit successful response projection; account contract coverage passed **3/3** and account action-loading browser coverage passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Password provider/session integration beyond existing local evidence, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — public-site QA matrix
+
+- PASS: Full current-branch `tests/e2e/public-site.spec.ts` matrix passed **26/26**, including public truthful-copy/crawl checks, mobile navigation, reduced-motion and axe checks, contact boundary behavior, invitation/member flows, notification/account settings, workspace selection, authenticated route coverage and safe error states.
+- NOT_RUN: Hosted CI, integrated staging, manual screen-reader/assistive-technology review, legal sign-off, provider-backed delivery/billing and production verification remain open.
