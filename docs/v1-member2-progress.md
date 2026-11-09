@@ -4058,3 +4058,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The public contact experience now establishes shrink boundaries for the responsive grid, form card, support topics, headings and status copy while preserving the truthful owner-provided intake boundary and existing form behavior.
 - Scope: Advances WEB-15/UI-12 responsive QA only; contact delivery, enterprise intake ownership and production routing remain unimplemented by design.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3131, including the 320px axe/overflow case and 44px form controls, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — pricing narrow plan containment
+
+- Change: Public pricing plan cards now establish shrink/wrap boundaries for plan headings, badges, prices and feature copy while preserving the beta-only checkout boundary and enterprise inquiry route.
+- Scope: Advances BILL-07/UI-12/UI-13/WEB-15 responsive QA only; paid provider lifecycle, checkout authorization and billing activation remain server/owner-controlled.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3132, including the 320px axe/overflow case, 44px actionable links and the no-paid-checkout copy, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings. The initial browser assertion used a curly apostrophe inconsistent with the rendered copy and passed after correcting the locator.
