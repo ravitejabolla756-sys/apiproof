@@ -108,11 +108,11 @@ export function Sidebar() {
     if (logoutError) logoutErrorRef.current?.focus();
   }, [logoutError]);
 
-  async function switchWorkspace(workspaceId: string) {
+  async function switchWorkspace(workspaceId: string, preserveError = false) {
     if (!workspaceId || workspaceId === activeWorkspaceId || workspaceSwitching) return;
     setWorkspaceSwitching(true);
     setWorkspaceRetryId(workspaceId);
-    setWorkspaceContextError(null);
+    if (!preserveError) setWorkspaceContextError(null);
     try {
       const response = await fetch('/api/workspace/context', {
         method: 'POST',
@@ -290,7 +290,7 @@ export function Sidebar() {
           {workspaceLoadError && <p ref={workspaceErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-1 text-[10px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} disabled={workspaceLoadRetrying} aria-busy={workspaceLoadRetrying ? 'true' : undefined} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-70">{workspaceLoadRetrying ? 'Retrying workspace list…' : 'Try again'}</button></p>}
           {workspaceLoadComplete && !workspaceLoadError && workspaces.length === 0 && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">No workspaces are available.</p>}
           {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
-          {workspaceContextError && <p ref={workspaceContextErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{workspaceContextError}</span>{workspaceRetryId && <button type="button" onClick={() => void switchWorkspace(workspaceRetryId)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">Retry workspace switch</button>}</p>}
+          {workspaceContextError && <p ref={workspaceContextErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{workspaceContextError}</span>{workspaceRetryId && <button type="button" onClick={() => void switchWorkspace(workspaceRetryId, true)} disabled={workspaceSwitching} aria-busy={workspaceSwitching ? 'true' : undefined} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-70">{workspaceSwitching ? 'Retrying workspace switch…' : 'Retry workspace switch'}</button>}</p>}
         </div>
         <div className="flex items-center justify-between">
             <div className={`flex flex-col min-w-0 pr-2 ${collapsed ? "md:hidden" : ""}`}>

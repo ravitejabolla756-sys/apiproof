@@ -429,3 +429,7 @@ Read-only comparison with Member 1 commit `4138c9a8ef42725769971332d8a4e168ea1b5
 ## 2026-11-09 UI-12/ORG-02 workspace-list recovery evidence
 
 Workspace-list retry now remains visible and exposes disabled plus `aria-busy` during recovery. Repository typecheck, rebuilt web production build, focused retry coverage 1/1 and the full organization-audit suite 12/12 pass locally; Impeccable reports no findings on the changed targets. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 revocation integration and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## 2026-11-09 UI-12/ORG-02 workspace-switch recovery evidence
+
+Workspace context-switch retry now remains visible and exposes disabled plus `aria-busy` during recovery while preserving the server-authoritative context contract. Repository typecheck, rebuilt web production build, detector checks and the combined organization/workspace-switch browser suite pass 14/14 locally. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 revocation integration and production remain NOT_RUN. Release recommendation stays NO-GO.

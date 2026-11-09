@@ -1424,3 +1424,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `CI=true PLAYWRIGHT_PORT=3136 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --grep "keeps workspace-list recovery" --reporter=line`: PASS, 1/1.
 - `CI=true PLAYWRIGHT_PORT=3137 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line`: PASS, 12/12.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
+## 2026-11-09 — workspace-context recovery busy checkpoint
+
+- `pnpm typecheck`: PASS after the workspace-switch recovery change.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages; existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Impeccable detector on sidebar and affected browser targets: PASS with no findings.
+- `CI=true PLAYWRIGHT_PORT=3142 pnpm exec playwright test tests/e2e/organization-audit.spec.ts tests/e2e/workspace-switch-recovery.spec.ts --workers=1 --reporter=line`: PASS, 14/14.
+- The suite covers workspace-list retry persistence/busy semantics, context-switch retry persistence/busy semantics, stale-context recovery, last-owner protections, organization collection recovery, invitation recovery, audit recovery and axe checks.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.

@@ -192,7 +192,7 @@ test.describe('workspace audit trail', () => {
     await expect(retryMembers).toBeDisabled(); await expect(retryMembers).toHaveAttribute('aria-busy', 'true');
     releaseMemberRecovery?.();
     const retryInvitations = page.getByRole('button', { name: 'Retry invitations' });
-    await retryInvitations.focus(); await expect(retryInvitations).toBeFocused(); await page.keyboard.press('Enter');
+    await retryInvitations.focus(); await expect(retryInvitations).toBeFocused(); await retryInvitations.press('Enter');
     await expect(retryInvitations).toBeDisabled(); await expect(retryInvitations).toHaveAttribute('aria-busy', 'true');
     releaseInvitationRecovery?.();
     await expect(page.getByText('Member history is temporarily unavailable.')).toHaveCount(0);

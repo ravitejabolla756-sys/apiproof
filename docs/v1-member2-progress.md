@@ -2831,3 +2831,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint, repository `pnpm typecheck`, `git diff --check` and the rebuilt web production build passed; the focused held-retry journey passed 1/1 and the complete organization-audit suite passed 12/12.
 - Scope: local UI-12/ORG-02 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-09 checkpoint — UI-12/ORG-02 workspace-switch retry busy semantics
+
+- Change: failed workspace context switches now keep their retry alert visible during a retry and expose disabled plus `aria-busy="true"` until the server-authoritative context request resolves; ordinary selector changes still clear stale errors before a new request.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: rebuilt web production build passed with 83 generated pages; repository typecheck passed; Impeccable detector returned no findings; organization-audit plus workspace-switch recovery passed 14/14, including held workspace-list and workspace-switch retries and invitation/member recovery.
+- Scope: local UI-12/ORG-02 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
