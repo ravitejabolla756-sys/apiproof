@@ -160,7 +160,7 @@ test.describe('authenticated dashboard data states', () => {
     await expect(page.getByRole('heading', { name: 'P0 candidate' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'P1 candidate' })).toHaveCount(0);
     await page.route('**/api/provider-rules/candidate-p0/test', async (route) => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ matches: [{ token: 'fixture', line: 1, snippet: 'fixture()' }] }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, matches: [{ token: 'fixture', line: 1, snippet: 'fixture()' }] }) });
     });
     await page.getByLabel('Sample code for P0 candidate').fill('fixture()');
     await page.getByRole('button', { name: 'Test sample' }).click();
@@ -307,7 +307,7 @@ test.describe('authenticated dashboard data states', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ migration: { id: 'migration_a11y', status: 'planned', patch_diff: '', patch_digest: 'digest', lifecycle_state: 'Migration Planned', target_branch: 'owl-migration' } }),
+        body: JSON.stringify({ success: true, migration: { id: 'migration_a11y', status: 'planned', patch_diff: '', patch_digest: 'digest', lifecycle_state: 'Migration Planned', target_branch: 'owl-migration' } }),
       });
     });
 
@@ -329,10 +329,10 @@ test.describe('authenticated dashboard data states', () => {
 
     await page.route('**/api/migrations/propose', async (route) => {
       if (route.request().method() === 'POST') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ job: { id: 'verification-job-a11y', status: 'verification_in_progress' } }) });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, job: { id: 'verification-job-a11y', status: 'verification_in_progress' } }) });
         return;
       }
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ job: { id: 'verification-job-a11y', status: 'verification_in_progress' } }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'verification-job-a11y', status: 'verification_in_progress' }) });
     });
     const verifyButton = page.getByRole('button', { name: 'Verify and create Draft PR' });
     await verifyButton.click();

@@ -3904,3 +3904,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/auth-response-contract.ts`, `apps/web/src/app/login/page.tsx`, `tests/auth-response-contract.test.ts`, `tests/e2e/auth-loading-states.spec.ts`.
 - Evidence: Authentication response contract coverage passed **2/2**; rebuilt-bundle authentication loading/recovery coverage passed **6/6** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances AUTH-08/UI-12 local authentication response safety only; credential verification, session issuance, OAuth and backend authorization remain server-owned.
+
+## 2026-11-09 checkpoint — migration action response guard
+
+- Change: Finding workbench migration planning, verified-proposal creation and verification polling now validate explicit success/job/proposal envelopes before updating UI state; malformed 2xx responses fail closed instead of silently implying a plan or verification state. The provider-rule sample-test fixture was aligned with its existing `ok: true` contract.
+- Files: `apps/web/src/lib/migration-action-contract.ts`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/migration-action-contract.test.ts`, `tests/e2e/dashboard-data-states.spec.ts`.
+- Evidence: Migration action contract coverage passed **3/3**; rebuilt-bundle dashboard data-state coverage passed **16/16** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 migration-workbench response safety only; verification execution, GitHub authorization, Draft PR creation and server-side safety invariants remain backend/provider-owned.

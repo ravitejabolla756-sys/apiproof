@@ -8,6 +8,7 @@ import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/veri
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 import { Button } from "@/components/ui/button";
 import { parseFindingDetailResponse } from "@/lib/finding-detail-contract";
+import { parseMigrationActionError, parseMigrationPlanResponse, parseMigrationProposalResponse, parseMigrationVerificationResponse } from "@/lib/migration-action-contract";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -128,8 +129,8 @@ export default function FindingDetailPage({
       fetchStatus: async () => {
         const response = await fetch(`/api/migrations/propose?migrationId=${encodeURIComponent(migrationId)}`, { cache: 'no-store' });
         if (!response.ok) return null;
-        const payload = await response.json();
-        return payload.job as { status?: string; errorCode?: string; proposal?: { number: number; state: string; branchName: string } } | null;
+        const payload = parseMigrationVerificationResponse(await response.json());
+        return payload ? { status: payload.status, proposal: payload.proposal } : null;
       },
       onStatus: (job) => {
         setMigration((current) => current?.id === migrationId ? { ...current, verification_job_status: job.status } : current);
@@ -159,9 +160,10 @@ export default function FindingDetailPage({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ findingId: finding.id }),
       });
-      const payload = await response.json() as { migration?: MigrationDetail; error?: string };
-      if (!response.ok || !payload.migration) throw new Error(payload.error ?? 'Migration planning failed.');
-      setMigration(payload.migration);
+      const rawPayload = await response.json() as unknown;
+      const payload = parseMigrationPlanResponse(rawPayload);
+      if (!response.ok || !payload) throw new Error(parseMigrationActionError(rawPayload, 'Migration planning failed.'));
+      setMigration(payload.migration as unknown as MigrationDetail);
       setMessage({ text: 'Migration plan created. Review it before requesting a verified Draft PR.' });
     } catch (error) {
       setMessage({ text: error instanceof Error ? error.message : 'Migration planning failed.', error: true });
@@ -180,20 +182,18 @@ export default function FindingDetailPage({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ migrationId: migration.id }),
       });
-      const payload = await response.json() as {
-        proposal?: { number: number; state: string; branchName: string };
-        job?: { id?: string; status?: string };
-        error?: string;
-      };
-      if (!response.ok) throw new Error(payload.error ?? 'Draft PR creation failed.');
+      const rawPayload = await response.json() as unknown;
+      const payload = parseMigrationProposalResponse(rawPayload);
+      if (!response.ok || !payload) throw new Error(parseMigrationActionError(rawPayload, 'Draft PR creation failed.'));
       if (payload.proposal) {
         setMessage({ text: `${getPullRequestStateLabel(payload.proposal.state)} #${payload.proposal.number} on branch ${payload.proposal.branchName}.` });
         await loadFinding();
       } else if (payload.job) {
+        const job = payload.job;
         setMigration((current) => current ? {
           ...current,
-          verification_job_id: payload.job?.id ?? current.verification_job_id,
-          verification_job_status: payload.job?.status ?? 'verification_in_progress',
+          verification_job_id: job.id,
+          verification_job_status: job.status,
           lifecycle_state: 'Verification Pending',
         } : current);
         setMessage({ text: 'Secure verification started. No repository change will be created until verification passes.' });

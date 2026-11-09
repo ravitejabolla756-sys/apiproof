@@ -2327,3 +2327,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Login/signup now require explicit success data before navigation; malformed error values use safe fallback copy. Authentication response contract coverage passed **2/2**.
 - PASS: Rebuilt-bundle authentication loading/recovery coverage passed **6/6** after a fresh web production build generating **83 pages**. Hosted CI, backend session integration, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — migration action response guard
+
+- PASS: Finding workbench migration-plan, proposal and verification-polling responses now require reviewed envelopes; malformed successful responses fail closed. The provider-rule sample-test fixture now includes its documented success marker. Contract coverage passed **3/3**.
+- PASS: Rebuilt-bundle dashboard data-state coverage passed **16/16** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Verification worker/GitHub provider integration, hosted CI, staging, manual assistive-technology review and production remain open.
