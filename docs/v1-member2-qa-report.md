@@ -1997,6 +1997,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The unavailable invoice-history state remains action-free, contained and axe-clean at 320px, 768px and 1280px in the focused browser matrix.
 - NOT_RUN: Provider projection, billing-owner authorization, hosted-link policy, retention, sandbox integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — UI-12 narrow public-route containment
+
+- PASS: The new 320px public-route containment and axe matrix passed across all audited public routes against the rebuilt bundle.
+- NOT_RUN: Manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

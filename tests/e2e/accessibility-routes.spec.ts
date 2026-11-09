@@ -255,6 +255,19 @@ test.describe('route accessibility audit', () => {
     }
   });
 
+  test('keeps every public route contained at the narrow mobile breakpoint', async ({ page }) => {
+    test.setTimeout(240_000);
+    await page.setViewportSize({ width: 320, height: 800 });
+    for (const route of publicRoutes) {
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      expect(response?.status(), route).toBe(200);
+      await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${route} creates narrow-mobile overflow`).toBe(true);
+      const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
+      expect(results.violations, `${route} narrow mobile`).toEqual([]);
+    }
+  });
+
   test('honors reduced motion inside the authenticated dashboard shell', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await signIn(page);
