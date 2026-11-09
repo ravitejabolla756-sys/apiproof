@@ -4100,3 +4100,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Public engineering-note cards now establish shrink/wrap boundaries for article categories, titles, summaries and code-note rows while preserving code-snippet truncation and the existing six-article surface.
 - Scope: Advances WEB-15/UI-12/UI-13 responsive QA only; article publishing, content ownership and deployment verification remain outside this local slice.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3138, including the 320px axe/overflow case, six-article assertion and no unsupported interaction state, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — security architecture narrow containment
+
+- Change: Public security architecture pillars and data-handling sections now establish shrink/wrap boundaries for security badges, control descriptions, invariant copy and storage-boundary panels while preserving the intentional keyboard-focusable matrix scroll region.
+- Scope: Advances WEB-15/UI-12/UI-13 responsive and keyboard QA only; security controls, operational ownership and deployment configuration remain unchanged.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3139, including the 320px axe/overflow case and focused security-matrix region, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

@@ -122,47 +122,47 @@ export default function SecurityPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* HEADER */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="min-w-0 text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <Lock aria-hidden="true" className="w-3.5 h-3.5 text-slate-700" />
             <span>SECURITY ARCHITECTURE &amp; INVARIANTS</span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
+          <h1 className="break-words font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
             Security Built on Verifiable Boundaries
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
             MY OWL is engineered for security-conscious development teams. We document our actual security controls, write contracts, and architectural invariants truthfully.
           </p>
         </div>
 
         {/* 4 CORE SECURITY ARCHITECTURE PILLARS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-6">
           {securityArchitecture.map((pillar) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={pillar.title}
-                className="rounded-3xl bg-white border border-slate-200/80 p-7 sm:p-8 flex flex-col justify-between space-y-6 shadow-xs"
+                className="min-w-0 rounded-3xl bg-white border border-slate-200/80 p-7 sm:p-8 flex flex-col justify-between space-y-6 shadow-xs"
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[#001033] border border-slate-200">
                       <Icon aria-hidden="true" className="w-5 h-5 stroke-[2]" />
                     </div>
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-slate-600 uppercase bg-slate-100 px-2.5 py-1 rounded-full">
+                    <span className="break-words text-[10px] font-mono font-bold tracking-wider text-slate-600 uppercase bg-slate-100 px-2.5 py-1 rounded-full">
                       {pillar.tag}
                     </span>
                   </div>
 
                   <div>
-                    <h2 className="font-serif text-2xl font-normal text-[#000E29]">
+                    <h2 className="break-words font-serif text-2xl font-normal text-[#000E29]">
                       {pillar.title}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed font-sans">
+                    <p className="break-words text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed font-sans">
                       {pillar.description}
                     </p>
                   </div>
@@ -170,9 +170,9 @@ export default function SecurityPage() {
 
                 <div className="pt-4 border-t border-slate-100 space-y-2 font-mono text-xs text-slate-700">
                   {pillar.points.map((pt) => (
-                    <div key={pt} className="flex items-center gap-2">
+                    <div key={pt} className="flex min-w-0 items-start gap-2">
                       <CheckCircle2 aria-hidden="true" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>{pt}</span>
+                      <span className="break-words">{pt}</span>
                     </div>
                   ))}
                 </div>
@@ -182,15 +182,15 @@ export default function SecurityPage() {
         </div>
 
         {/* SECURITY INVARIANT MATRIX */}
-        <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
-          <div className="max-w-2xl space-y-2">
+        <div className="min-w-0 rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-xs">
+          <div className="min-w-0 max-w-2xl space-y-2">
             <p className="text-xs font-mono font-semibold tracking-wider text-[#004EE8] uppercase">
               OPERATIONAL INVARIANTS
             </p>
-            <h2 className="font-serif text-2xl sm:text-3xl text-[#000E29] font-normal">
+            <h2 className="break-words font-serif text-2xl sm:text-3xl text-[#000E29] font-normal">
               Security Invariant Matrix
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-sans">
+            <p className="break-words text-xs sm:text-sm text-slate-600 font-sans">
               Strict execution boundaries enforced by our GitHub App write contracts and platform architecture.
             </p>
           </div>
@@ -235,21 +235,21 @@ export default function SecurityPage() {
         </div>
 
         {/* HONEST DATA HANDLING SECTION */}
-        <div className="rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 space-y-6">
-          <div className="max-w-2xl space-y-2">
+        <div className="min-w-0 rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 space-y-6">
+          <div className="min-w-0 max-w-2xl space-y-2">
             <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
               DATA HANDLING &amp; SOURCE INTEGRITY
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-normal">
+            <h2 className="break-words font-serif text-2xl sm:text-3xl font-normal">
               What We Store and What We Discard
             </h2>
-            <p className="text-sm text-slate-300 leading-relaxed font-sans">
+            <p className="break-words text-sm text-slate-300 leading-relaxed font-sans">
               We believe in radical transparency about data boundaries. We do not make vague marketing claims; here is exactly what our database holds.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10 text-xs font-mono">
-            <div className="space-y-3 p-5 rounded-2xl bg-white/[0.04] border border-white/10">
+          <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10 text-xs font-mono">
+            <div className="min-w-0 space-y-3 p-5 rounded-2xl bg-white/[0.04] border border-white/10">
               <div className="text-emerald-400 font-bold uppercase text-[11px]">WHAT IS STORED IN DATABASE</div>
               <ul className="space-y-2 text-slate-300 font-sans text-xs leading-relaxed">
                 <li>• Repository identity (GitHub ID, full name, default branch name)</li>
@@ -261,7 +261,7 @@ export default function SecurityPage() {
               </ul>
             </div>
 
-            <div className="space-y-3 p-5 rounded-2xl bg-white/[0.04] border border-white/10">
+            <div className="min-w-0 space-y-3 p-5 rounded-2xl bg-white/[0.04] border border-white/10">
               <div className="text-cyan-400 font-bold uppercase text-[11px]">WHAT IS NEVER STORED</div>
               <ul className="space-y-2 text-slate-300 font-sans text-xs leading-relaxed">
                 <li>• Full repository source trees or unimpacted files</li>
