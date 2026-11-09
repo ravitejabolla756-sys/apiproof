@@ -3431,3 +3431,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: The notification browser contract now asserts that both disabled weekly-digest controls reference the explicit `digest-contract-status` explanation. The focused notification suite passed **2/2** with targeted ESLint and `git diff --check` passing.
 - Scope: This verifies the existing fail-closed UI contract only; cadence, recipients, timezone, scheduler, retention, provider delivery and Member 1 event contracts remain intentionally unimplemented.
+
+## 2026-11-09 checkpoint — WEB-15/BILL-11 contact email input hardening
+
+- Change: Added `inputMode="email"` to the truthful, non-sending public contact form’s work-email field so mobile browsers expose an appropriate keyboard without changing intake or delivery behavior.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: After rebuilding the production bundle, the enterprise intake boundary and both contact-form journeys passed **3/3**; targeted ESLint, Impeccable detector, web typecheck, web build and `git diff --check` passed.
+- Scope: Advances local WEB-15/BILL-11 form quality only. No intake destination, delivery service, SLA, spam control or production behavior was added.

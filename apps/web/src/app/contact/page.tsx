@@ -78,6 +78,7 @@ export default function ContactPage() {
                       required
                       maxLength={254}
                       autoComplete="email"
+                      inputMode="email"
                       placeholder="alex@company.com"
                       className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-base text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
                     />

@@ -1911,6 +1911,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Both disabled weekly-digest controls are now covered for their `aria-describedby="digest-contract-status"` linkage, and the focused notification browser suite passed **2/2**. Targeted ESLint and `git diff --check` passed.
 - NOT_RUN: Scheduler, cadence, recipient, timezone, retention, provider delivery and Member 1 event-contract verification remain open.
 
+## 2026-11-09 — WEB-15/BILL-11 contact email input hardening
+
+- PASS: The public work-email field now requests the email keyboard through `inputMode="email"` while preserving the non-sending boundary. The rebuilt-bundle enterprise intake and contact-form journeys passed **3/3**; targeted ESLint, detector, web typecheck, web build and `git diff --check` passed.
+- NOT_RUN: Approved intake destination, delivery/spam controls, SLA policy, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — workspace projection text validation
 
 - PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.
