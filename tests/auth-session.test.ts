@@ -38,6 +38,7 @@ import {
   createSession,
   createSessionAsync,
   createUserWithSession,
+  isValidSessionId,
   validateSession,
   validateSessionAsync,
   getAuthCookieOptions,
@@ -431,6 +432,15 @@ describe('Production Authentication & Session Persistence', () => {
   // E. LOGOUT FLOW
   // ---------------------------------------------------------------------------
   describe('E. Logout Flow', () => {
+    it('rejects malformed or oversized session identifiers before database lookup', async () => {
+      expect(isValidSessionId('ses_valid_session_id')).toBe(true);
+      expect(isValidSessionId('invalid-session')).toBe(false);
+      expect(isValidSessionId(`ses_${'a'.repeat(129)}`)).toBe(false);
+      expect(isValidSessionId('ses_bad value')).toBe(false);
+      expect(validateSession('invalid-session')).toBeNull();
+      await expect(validateSessionAsync(`ses_${'a'.repeat(129)}`)).resolves.toBeNull();
+    });
+
     it('invalidates the session in DB, returns cleared cookie, and rejects subsequent calls', async () => {
       const db = getDatabase();
 

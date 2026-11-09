@@ -891,3 +891,8 @@ Phase 0 read-only checks:
 
 - Added `deliverWorkerHealthAlert`, an injected sink boundary that sends only actionable alert decisions and returns `not_needed`, `sent`, or `failed` without propagating destination failures into worker execution.
 - `sec13-worker-observability` now covers successful delivery, non-actionable suppression, and contained sink failure. No monitoring provider, credential, destination, schedule or staging behavior was selected.
+
+### 2026-11-09 AUTH-10 malformed session input boundary
+
+- Added a shared `isValidSessionId` guard and applied it to both synchronous and asynchronous session validation. Malformed, whitespace-bearing and oversized cookie values now fail closed before database lookup.
+- `auth-session` plus `auth-hardening` pass 27/27; web typecheck, targeted ESLint and `git diff --check` pass. This does not close the central verified-user policy, PostgreSQL concurrency or live browser/provider gates.
