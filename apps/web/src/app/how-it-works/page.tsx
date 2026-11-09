@@ -185,35 +185,35 @@ export default function HowItWorksPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* HEADER */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="min-w-0 text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <span>DETERMINISTIC PIPELINE SPECIFICATION</span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
+          <h1 className="break-words font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
             From API Change to Verified Draft PR
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
             A step-by-step technical breakdown of how MY OWL detects upstream breaking changes, traces affected call sites, verifies migrations, and stops at a Draft PR.
           </p>
         </div>
 
         {/* INVARIANTS CALLOUT BAR */}
-        <div className="rounded-2xl bg-[#000E29] text-white p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono border border-white/10">
-          <div className="flex items-center gap-2.5">
+        <div className="min-w-0 rounded-2xl bg-[#000E29] text-white p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono border border-white/10">
+          <div className="min-w-0 flex items-center gap-2.5">
             <Lock className="w-4 h-4 text-cyan-400 shrink-0" aria-hidden="true" />
-            <span>Read-Only Default Branch</span>
+            <span className="break-words">Read-Only Default Branch</span>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="min-w-0 flex items-center gap-2.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
-            <span>Zero Auto-Merge Policy</span>
+            <span className="break-words">Zero Auto-Merge Policy</span>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="min-w-0 flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-lime-400 shrink-0" aria-hidden="true" />
-            <span>4-Gate Compiler Verification</span>
+            <span className="break-words">4-Gate Compiler Verification</span>
           </div>
         </div>
 
@@ -222,49 +222,49 @@ export default function HowItWorksPage() {
           {steps.map((item) => (
             <div
               key={item.step}
-              className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-xs hover:border-slate-300 transition-colors"
+              className="min-w-0 rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-xs hover:border-slate-300 transition-colors"
             >
               {/* Step Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
+              <div className="flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div className="flex min-w-0 flex-wrap items-center gap-3">
                   <span className="font-mono text-xs font-bold text-white bg-[#000E29] px-2.5 py-1 rounded-md">
                     {item.step}
                   </span>
-                  <span className="font-mono text-xs font-bold text-[#004EE8] uppercase tracking-wider">
+                  <span className="break-words font-mono text-xs font-bold text-[#004EE8] uppercase tracking-wider">
                     {item.name}
                   </span>
                   <span className="text-slate-300 hidden sm:inline">•</span>
-                  <h2 className="font-serif text-xl sm:text-2xl text-[#000E29] font-normal">
+                  <h2 className="break-words font-serif text-xl sm:text-2xl text-[#000E29] font-normal">
                     {item.title}
                   </h2>
                 </div>
               </div>
 
               {/* Summary */}
-              <p className="text-sm text-slate-700 leading-relaxed font-sans">
+              <p className="break-words text-sm text-slate-700 leading-relaxed font-sans">
                 {item.summary}
               </p>
 
               {/* Technical Specifications Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                <div className="min-w-0 p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
                   <span className="text-slate-500 font-bold uppercase text-[10px] block">INPUT</span>
-                  <p className="text-slate-800 font-sans text-xs leading-relaxed">{item.input}</p>
+                  <p className="break-words text-slate-800 font-sans text-xs leading-relaxed">{item.input}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
+                <div className="min-w-0 p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
                   <span className="text-slate-500 font-bold uppercase text-[10px] block">PROCESSING</span>
-                  <p className="text-slate-800 font-sans text-xs leading-relaxed">{item.processing}</p>
+                  <p className="break-words text-slate-800 font-sans text-xs leading-relaxed">{item.processing}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
+                <div className="min-w-0 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
                   <span className="text-emerald-800 font-bold uppercase text-[10px] block">OUTPUT</span>
-                  <p className="text-emerald-950 font-sans text-xs leading-relaxed">{item.output}</p>
+                  <p className="break-words text-emerald-950 font-sans text-xs leading-relaxed">{item.output}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-rose-50/70 border border-rose-100 space-y-1">
+                <div className="min-w-0 p-3.5 rounded-xl bg-rose-50/70 border border-rose-100 space-y-1">
                   <span className="text-rose-800 font-bold uppercase text-[10px] block">FAILURE CONDITION (FAIL CLOSED)</span>
-                  <p className="text-rose-950 font-sans text-xs leading-relaxed">{item.failureCondition}</p>
+                  <p className="break-words text-rose-950 font-sans text-xs leading-relaxed">{item.failureCondition}</p>
                 </div>
               </div>
 
@@ -273,9 +273,9 @@ export default function HowItWorksPage() {
                 role="region"
                 aria-label={`${item.name} system artifact`}
                 tabIndex={0}
-                className="rounded-xl bg-[#000E29] text-white p-4 font-mono text-xs overflow-x-auto space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2"
+                className="min-w-0 max-w-full rounded-xl bg-[#000E29] text-white p-4 font-mono text-xs overflow-x-auto space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2"
               >
-                <span className="text-slate-400 text-[10px] uppercase tracking-wider block">
+                <span className="break-words text-slate-400 text-[10px] uppercase tracking-wider block">
                   SYSTEM ARTIFACT: {item.name}
                 </span>
                 <pre className="text-slate-200 text-[11px] leading-relaxed pt-1">
@@ -295,7 +295,7 @@ export default function HowItWorksPage() {
             <span>Connect GitHub Free</span>
             <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" aria-hidden="true" />
           </Link>
-          <div className="text-xs font-mono text-slate-500">
+          <div className="break-words text-xs font-mono text-slate-500">
             Read-only observation · Isolated branches · Human review boundary
           </div>
         </div>
