@@ -3460,3 +3460,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - The latest evidence supersedes older inventory-row counts: UI-12/UI-13/public and authenticated browser coverage is now **189/189** on the current production bundle; the repository regression is **1,420 passed, 4 skipped**; current lint, typecheck and build checks are green.
 - The task statuses remain intentionally unchanged at **4 DONE_VERIFIED_LOCAL, 21 PARTIAL, 1 BLOCKED**. Local evidence does not close hosted CI, staging, PostgreSQL/RBAC, provider, legal, manual assistive-technology, deletion, scheduler or production gates.
+
+## 2026-11-09 checkpoint — ORG-04/SEC-19 unsafe removal gate
+
+- Change: Added a frontend `ORG_10_CONTRACT_PENDING` boundary that removes the legacy member-removal action from the owner UI until Member 1’s workspace-scoped revocation transaction is integrated. The UI explicitly explains that personal sessions and other-workspace access must be preserved; role updates, invitations and membership reads remain available.
+- Files: `apps/web/src/lib/workspace-member-revocation-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/workspace-member-revocation-contract.test.ts`, `tests/e2e/organization-audit.spec.ts`, `tests/e2e/public-site.spec.ts`, `docs/v1-member2-contracts.md`.
+- Evidence: Contract coverage passed **1/1**; rebuilt-bundle affected organization/member journeys passed **2/2**; targeted ESLint, web typecheck, web build, detector and `git diff --check` passed.
+- Scope: This is a safety gate, not ORG-10 completion. The authoritative backend transaction, idempotency, final-owner concurrency, audit event and PostgreSQL proof remain Member 1/integration dependencies.

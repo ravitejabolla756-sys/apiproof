@@ -295,7 +295,7 @@ test.describe('authenticated product surfaces', () => {
     const inviteEmail = `browser-accept-${Date.now()}@example.test`;
     await withAcceptedInvitation(page, browser, inviteEmail, async () => {});
   });
-  test('updates and removes a real accepted workspace member', async ({ page, browser }) => {
+  test('updates a real accepted workspace member while removal stays contract-gated', async ({ page, browser }) => {
     await signIn(page);
     const memberEmail = `browser-member-${Date.now()}@example.test`;
     await withAcceptedInvitation(page, browser, memberEmail, async (invitedPage: Page) => {
@@ -308,12 +308,10 @@ test.describe('authenticated product surfaces', () => {
       await roleSelector.selectOption('member');
       await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
       await expect(roleSelector).toHaveValue('member');
-      page.once('dialog', (dialog) => { expect(dialog.message()).toContain('workspace-scoped revocation flow preserves personal sessions and access to other workspaces'); void dialog.accept(); });
-      await roleSelector.locator('..').getByRole('button', { name: 'Remove' }).click();
-      await expect(page.getByRole('status')).toContainText('Member removed.', { timeout: 30_000 });
-      await expect(page.getByLabel(`Role for ${memberEmail}`)).toHaveCount(0);
+      await expect(roleSelector.locator('..').getByRole('button', { name: 'Remove' })).toHaveCount(0);
+      await expect(page.getByRole('note').filter({ hasText: 'Member removal is unavailable until workspace-scoped revocation is connected.' })).toBeVisible();
       await invitedPage.goto('/dashboard', { waitUntil: 'domcontentloaded' });
-      await expect(invitedPage).toHaveURL(/\/login/);
+      await expect(invitedPage).toHaveURL(/\/dashboard/);
     });
   });
   test('covers the seeded dashboard primary browsing routes', async ({ page }) => {

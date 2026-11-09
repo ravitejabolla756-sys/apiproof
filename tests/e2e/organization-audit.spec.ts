@@ -46,7 +46,7 @@ test.describe('workspace audit trail', () => {
     expect((await new AxeBuilder({ page }).include('aside').analyze()).violations, 'stale workspace recovery').toEqual([]);
   });
 
-  test('keeps the owner visible when member removal is refused by last-owner protection', async ({ page }) => {
+  test('keeps member removal unavailable until workspace-scoped revocation is integrated', async ({ page }) => {
     await page.route('**/api/workspace/members', async (route) => {
       if (route.request().method() === 'DELETE') {
         await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'A workspace must retain at least one owner.', code: 'LAST_OWNER_REQUIRED' }) });
@@ -58,15 +58,13 @@ test.describe('workspace audit trail', () => {
         body: JSON.stringify({ members: [{ id: 'owner-member', userId: 'seed-owner', name: 'APIProof Developer', email: 'developer@apiproof.dev', role: 'owner', createdAt: '2026-11-08T00:00:00.000Z' }] }),
       });
     });
-    page.on('dialog', (dialog) => void dialog.accept());
     await signIn(page);
     await page.goto('/dashboard/settings/workspace');
     const remove = page.getByRole('button', { name: 'Remove', exact: true });
-    await expect(remove).toBeVisible({ timeout: 30_000 });
-    await remove.click();
-    await expect(page.getByRole('alert').filter({ hasText: 'A workspace must retain at least one owner.' })).toBeVisible({ timeout: 30_000 });
+    await expect(remove).toHaveCount(0);
+    await expect(page.getByRole('note').filter({ hasText: 'Member removal is unavailable until workspace-scoped revocation is connected.' })).toBeVisible({ timeout: 30_000 });
     await expect(page.locator('#main-content').getByText('developer@apiproof.dev', { exact: true })).toBeVisible();
-    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'last-owner refusal').toEqual([]);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'member removal unavailable').toEqual([]);
     await page.unroute('**/api/workspace/members');
   });
 

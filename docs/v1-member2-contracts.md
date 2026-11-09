@@ -45,6 +45,8 @@ The remote `codex/v1-backend-security` at `4138c9a8ef42725769971332d8a4e168ea1b5
 
 Member 1's revocation service defines the pending ORG-04/SEC-19 handoff: owner-capability authorization inside a transaction; workspace-scoped membership/session/email-verification/password-reset/OAuth invalidation; preservation of personal sessions and other-workspace memberships; idempotency keyed by `(workspace, idempotencyKey)`; last-owner protection; and durable `workspace.member_revocation.v1` evidence. The current Member 2 removal path must not be integrated against that service until its endpoint, transaction, migration and audit-event boundaries are reviewed together.
 
+The Member 2 frontend now fails closed on member removal while that handoff is pending. The Remove control is not rendered and the owner-facing UI explains that workspace-scoped revocation must be connected first; role updates, invitation cancellation and read-only membership views remain available. This prevents the current local endpoint—which deletes every session for the target user—from being invoked through the product UI. The gate must be removed only after the ORG-10 endpoint, idempotency key, final-owner protection, audit event and PostgreSQL transaction behavior are integrated and verified.
+
 | Area | Member 1 / owner decision required | Current local boundary | Do not activate until |
 |---|---|---|---|
 | `BILL-09` invoice history | Provider invoice projection, billing-owner capability, URL lifetime/allowlist, retention and audit taxonomy | Settings shows an axe-clean unavailable state with no invoice action | Provider sandbox fixtures, authorization/retention tests and legal approval |
@@ -81,6 +83,7 @@ Review outcome must be recorded in this matrix and the relevant task documents b
 - 2026-11-09: Read-only comparison with Member 1's backed-up branch identified hard migration-ID collisions at `024–027` and recorded the revocation-service handoff; no migration was renumbered and no branch was merged.
 - 2026-11-09: Added a typed provider-neutral invoice-history adapter and accessible settings states. The default remains `PROVIDER_NOT_CONFIGURED`; provider projection, billing-owner authorization, hosted URL policy, retention and legal approval remain required before integration.
 - 2026-11-09: Added a typed digest-availability boundary to notification settings. It reports `DIGEST_CONTRACT_PENDING` without selecting cadence, recipients, scheduler behavior or a delivery provider; those choices remain a shared contract decision.
+- 2026-11-09: Gated the Member 2 removal control behind the pending ORG-10 revocation contract. The local legacy endpoint remains excluded from product use because it invalidates all target-user sessions; role updates and invitations remain available.
 - 2026-11-09: Added a provider-neutral invoice hosted-link guard that permits only credential-free absolute HTTPS URLs. Provider allowlisting, authorization, tenant isolation and URL lifetime remain shared billing decisions.
 
 ## 2026-11-09 Member 1 integration handoff

@@ -1956,6 +1956,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The current 189/189 CI-mode browser result and 1,420-test seeded Vitest result supersede older 167/167 and earlier regression counts in the historical inventory. Current lint, typecheck, web build and diff checks are green.
 - NOTE: The task statuses remain **4 DONE_VERIFIED_LOCAL, 21 PARTIAL, 1 BLOCKED** because local automation cannot prove hosted CI, staging, PostgreSQL/RBAC, provider, legal, manual assistive-technology, deletion, scheduler or production gates.
 
+## 2026-11-09 — ORG-04/SEC-19 unsafe removal gate
+
+- PASS: The frontend no longer exposes the legacy member-removal action while ORG-10 is pending; the owner sees the workspace-scoped revocation explanation, while role updates and membership access remain available. Contract coverage passed **1/1** and rebuilt-bundle organization/member journeys passed **2/2**.
+- PASS: Targeted ESLint, web typecheck, web build, detector and `git diff --check` passed.
+- NOT_RUN: Member 1 ORG-10 endpoint/transaction integration, idempotency, final-owner concurrency, audit event, PostgreSQL/RBAC and staged/production verification remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
