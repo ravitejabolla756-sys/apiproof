@@ -31,3 +31,16 @@ test('keeps password recovery actions touch-sized and accessible on mobile', asy
   await resetPassword.focus(); await expect(resetPassword).toBeFocused();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });
+
+test('keeps missing verification-token recovery accessible on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/verify-email');
+  const alert = page.getByRole('alert').filter({ hasText: 'missing its token' });
+  await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
+  const signIn = page.getByRole('link', { name: 'Continue to sign in' });
+  expect((await signIn.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await signIn.focus(); await expect(signIn).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+});

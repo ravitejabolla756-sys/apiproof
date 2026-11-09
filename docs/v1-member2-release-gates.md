@@ -532,6 +532,10 @@ The mobile HTTP-404 journey validates successful same-origin recovery links, 44p
 
 Password-recovery mobile coverage verifies no document overflow and keyboard focus on the Send reset link and Reset password actions, with the focused browser test passing 1/1. Hosted CI, staging, manual assistive-technology review, provider delivery and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest NOT-02 verification-entry evidence — 2026-11-09
+
+The missing verification-token mobile state has focused assertive feedback, a 44px sign-in recovery action, no document overflow and axe-clean content; the auth-recovery suite passes 2/2. Member 1 AUTH-05 integration, approved email provider/domain, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.

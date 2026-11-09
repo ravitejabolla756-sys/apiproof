@@ -1587,6 +1587,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Password-recovery mobile coverage now verifies no document overflow and keyboard focus on reset actions in addition to 44px controls and axe checks; the focused Playwright test passed 1/1 with targeted ESLint, test TypeScript and `git diff --check` passing.
 - NOT_RUN: Hosted CI, staging, manual assistive-technology review, provider delivery and production remain open.
 
+## 2026-11-09 — NOT-02 verification-entry mobile recovery coverage
+
+- PASS: Missing verification-token recovery now has mobile coverage for focused assertive feedback, a 44px sign-in action, no document overflow and axe-clean content; the auth-recovery suite passed 2/2 with targeted ESLint, test TypeScript and `git diff --check` passing.
+- NOT_RUN: Member 1 AUTH-05 integration, approved email provider/domain, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.
