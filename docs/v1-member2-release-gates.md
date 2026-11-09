@@ -6,6 +6,7 @@ Last updated: 2026-11-10. This is a checklist, not launch approval.
 |---|---|---|
 | Isolated worktree | PASS | `/Users/sandstone/Documents/myowl/MY-OWL-V1`, branch `codex/v1-frontend-product`; verify exact HEAD with `git log -1` |
 | Original dirty work preserved | PASS | Current worktree preserves the two pre-existing GSAP dependency edits in `apps/web/package.json` and `pnpm-lock.yaml`; no reset, clean, stash, or overwrite was performed |
+| GitHub backup readiness | READY_NOT_PUSHED | `origin/codex/v1-frontend-product` is an ancestor of `HEAD`; 760 outgoing commits / 330 files pass range diff checks with no sensitive-path, private-key, credential, generated-artifact or dependency-manifest matches. Push still requires explicit authorization |
 | Member 1 integration | NOT_INTEGRATED | Deliberately integrate reviewed commits/contracts only after shared changes are complete |
 | Typecheck/lint/build | PASS | Current-tree `pnpm lint` and `pnpm typecheck` pass; `pnpm --filter @apiproof/web build` generated 83 static pages. The build emitted only the existing non-blocking Next.js ESLint-plugin configuration warning |
 | Full test suite | PASS | Current-tree seeded `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passes 1,504 tests across 200 passing files, with 1 skipped file and 4 skipped tests, in 112.02 seconds; PostgreSQL and hosted CI remain unverified |

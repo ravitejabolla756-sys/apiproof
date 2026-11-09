@@ -4251,3 +4251,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: Full repository `pnpm lint` passed with zero warnings; seeded `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,504 tests across 200 passing files**, with **4 skipped tests** and **1 skipped file**, in **112.76 seconds**.
 - Scope: Refreshes local quality evidence for all Member 2 slices. Hosted CI, PostgreSQL/RBAC, provider delivery, legal approval, manual assistive-technology review, staging and production remain external gates.
+
+## 2026-11-10 checkpoint — local backup-readiness audit
+
+- Evidence: `origin/codex/v1-frontend-product` is an ancestor of `HEAD`; the branch is **760 commits ahead**. The outgoing range contains **330 files**, no sensitive-path matches, no private-key/credential markers, no generated artifact or package-lock paths, and passes `git diff --check`.
+- Decision: The branch is locally ready for an authorized fast-forward GitHub backup. No push was performed; the pre-existing dirty GSAP dependency edits in `apps/web/package.json` and `pnpm-lock.yaml` remain outside the outgoing commit range.
