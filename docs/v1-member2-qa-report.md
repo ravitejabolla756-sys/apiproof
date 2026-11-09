@@ -2246,3 +2246,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The compatibility dashboard contract test now checks moved proof type declarations in the shared contract module while continuing to assert the dashboard's rendering usage. The focused test passed **1/1**.
 - PASS: Seeded Vitest full suite passed **191/192 files** with **1 skipped file**; **1,472 tests passed** and **4 skipped**, with no failures. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — rebuilt-bundle responsive accessibility matrix
+
+- PASS: A fresh web production build generated **83 pages**, then the route accessibility matrix passed **16/16** in 55.2 seconds. The matrix covered public/authenticated axe checks, keyboard skip-link focus, dynamic detail recovery, mobile/tablet/narrow-mobile overflow containment and reduced-motion behavior.
+- NOT_RUN: Hosted CI, integrated staging, manual screen-reader/assistive-technology review and production remain open.

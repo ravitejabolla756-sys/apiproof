@@ -3808,3 +3808,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Updated the compatibility dashboard source-contract test to inspect `compatibility-proof-contract.ts` for moved type declarations while retaining page rendering assertions.
 - Evidence: Seeded Vitest full suite passed **192 files: 191 passed, 1 skipped; 1,472 tests passed, 4 skipped**. The focused compatibility contract test passed **1/1**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Test-maintenance only; no runtime behavior or backend contract changed.
+
+## 2026-11-09 checkpoint — rebuilt-bundle responsive accessibility matrix
+
+- Evidence: After a fresh web production build generated **83 pages**, `CI=true PLAYWRIGHT_PORT=3133 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --reporter=line --timeout=300000` passed **16/16** in 55.2 seconds. Coverage includes public and authenticated axe audits, skip-link focus transfer, dynamic detail recovery, 390px/320px mobile and tablet containment, and reduced-motion behavior.
+- Scope: Strengthens local UI-12/UI-13 evidence only; manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain external gates.
