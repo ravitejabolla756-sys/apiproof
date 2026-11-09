@@ -2062,3 +2062,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
 - PASS: Impeccable detector `[]`; targeted ESLint and `git diff --check`; `CI=true PLAYWRIGHT_PORT=3150 pnpm exec playwright test tests/e2e/public-info-cta-accessibility.spec.ts --workers=1 --grep "ordered product-update list|conversion links" --reporter=line` passed 2/2; repository typecheck passed; web build generated 83 pages.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.
+
+## 2026-11-09 — invitation acceptance network-failure recovery
+
+- PASS: Invitation acceptance now converts fetch and response parsing failures into a focused, assertive recovery alert while preserving the invited-account sign-in path. The public auth-entry suite passed **3/3**, including an aborted network request; targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Invitation invalidation/idempotency, delivery, authorization, audit event persistence, hosted CI, staging, manual assistive-technology review and production remain open.

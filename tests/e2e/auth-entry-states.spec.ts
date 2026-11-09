@@ -41,4 +41,18 @@ test.describe('public auth-entry state announcements', () => {
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
     await page.unroute('**/api/workspace/invitations/accept');
   });
+
+  test('turns invitation network failures into a focused recovery state', async ({ page }) => {
+    await page.route('**/api/workspace/invitations/accept', async (route) => {
+      await route.abort('failed');
+    });
+    await page.goto('/invite/accept?token=network-failure-token');
+    await page.getByRole('button', { name: 'Accept invitation' }).click();
+    const alert = page.getByRole('alert').filter({ hasText: 'Unable to reach the invitation service.' });
+    await expect(alert).toBeVisible();
+    await expect(alert).toBeFocused();
+    await expect(page.getByRole('link', { name: 'Sign in with the invited account' })).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+    await page.unroute('**/api/workspace/invitations/accept');
+  });
 });

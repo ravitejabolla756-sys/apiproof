@@ -3571,3 +3571,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Extracted the pricing page’s paid-plan display-only labels and no-checkout message into a typed `BILLING_CHECKOUT_CONTRACT_PENDING` boundary; the cards remain non-interactive.
 - Files: `apps/web/src/lib/billing-checkout-contract.ts`, `apps/web/src/app/pricing/page.tsx`, `tests/billing-checkout-contract.test.ts`.
 - Scope: Advances local BILL-07/WEB-15 truthfulness only. Provider lifecycle, entitlement, checkout authorization, payment credentials, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — invitation acceptance network-failure recovery
+
+- Change: Wrapped invitation acceptance fetch/JSON handling in a fail-closed recovery state and guarded the action when no token is present. Network failures now produce a focused alert and the existing sign-in recovery link instead of an unhandled promise rejection.
+- Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: Public auth-entry browser coverage passed **3/3**, including the aborted-request scenario; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-03/UI-12/UI-13 invitation UX resilience only. Invitation invalidation, delivery, authorization, idempotency, audit events and Member 1 integration remain external/shared contract gates.

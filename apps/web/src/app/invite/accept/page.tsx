@@ -14,11 +14,17 @@ function AcceptInvitationForm() {
   const statusRef = useRef<HTMLDivElement>(null);
 
   async function accept() {
+    if (!token) return;
     setState('loading');
-    const response = await fetch('/api/workspace/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
-    const data = await response.json() as { workspace?: { name: string }; error?: string };
-    if (!response.ok || !data.workspace) { setMessage(data.error || 'Unable to accept this invitation.'); setState('error'); return; }
-    setMessage(`You joined ${data.workspace.name}.`); setState('success');
+    try {
+      const response = await fetch('/api/workspace/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
+      const data = await response.json() as { workspace?: { name: string }; error?: string };
+      if (!response.ok || !data.workspace) { setMessage(data.error || 'Unable to accept this invitation.'); setState('error'); return; }
+      setMessage(`You joined ${data.workspace.name}.`); setState('success');
+    } catch {
+      setMessage('Unable to reach the invitation service. Try again later or sign in with the invited account.');
+      setState('error');
+    }
   }
 
   useEffect(() => { if (!token) { setMessage('This invitation link is missing its token.'); setState('error'); } }, [token]);
