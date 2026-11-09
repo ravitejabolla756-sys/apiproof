@@ -3477,3 +3477,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: After the unsafe-removal gate, repository lint and typecheck passed; seeded Vitest passed **1,421 tests** with **4 skipped** across **173 passing test files** and **1 skipped file** (174 total) in 109.47 seconds. The full CI-mode Playwright matrix passed **189/189** in 3.3 minutes against the current production bundle.
 - Scope: Confirms no regression across public/authenticated accessibility, organization, billing, notification, contact/status and recovery surfaces. It remains isolated local evidence and does not prove hosted CI, staging, PostgreSQL/RBAC, providers, legal approval, manual assistive technology or production.
+
+## 2026-11-09 checkpoint — AUTH-09 deletion boundary
+
+- Change: Added a disabled, non-submitting Account deletion section that states deletion is unavailable until the retention/deletion contract is approved and that no request can be submitted from the beta surface.
+- Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Rebuilt-bundle account/workspace/notification settings journey passed **1/1**; targeted ESLint, web typecheck, web build and `git diff --check` passed.
+- Scope: This makes the AUTH-09 block explicit without creating a destructive route, claiming a retention policy or changing sessions. Legal/owner approval and Member 1 deletion contracts remain required.

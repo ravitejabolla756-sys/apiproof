@@ -143,6 +143,7 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByLabel('Display name')).toHaveValue('APIProof Developer', { timeout: 30_000 });
     await expect(page.getByLabel('Display name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email'); await expect(page.getByLabel('Email')).toHaveAttribute('aria-describedby', 'account-email-help');
+    await expect(page.getByRole('heading', { name: 'Account deletion' })).toBeVisible(); await expect(page.getByRole('button', { name: 'Account deletion unavailable' })).toBeDisabled(); await expect(page.getByRole('button', { name: 'Account deletion unavailable' })).toHaveAttribute('aria-describedby', 'account-deletion-help'); await expect(page.getByText('No deletion request can be submitted from this beta surface.')).toBeVisible();
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByRole('heading', { name: 'Workspace administration' })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();

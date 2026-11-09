@@ -1972,6 +1972,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Post-gate seeded Vitest passed **1,421 tests** with **4 skipped** across **173 passing files** and **1 skipped file**; lint and typecheck passed. The current full CI-mode browser matrix passed **189/189** in 3.3 minutes.
 - NOT_RUN: Hosted CI, staging, PostgreSQL/RBAC, provider delivery, legal approval, full manual assistive-technology review and production remain open.
 
+## 2026-11-09 — AUTH-09 deletion boundary
+
+- PASS: Account settings now exposes a disabled, described “Account deletion unavailable” control and explicitly states that no deletion request can be submitted. The rebuilt-bundle account/settings journey passed **1/1**; targeted ESLint, web typecheck, web build and `git diff --check` passed.
+- NOT_RUN: Legal retention/deletion approval, Member 1 deletion contract, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
