@@ -136,18 +136,18 @@ export default function FeaturesPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* HEADER */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="min-w-0 text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <span>VERIFIED PLATFORM CAPABILITIES</span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
+          <h1 className="break-words font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
             Developer Infrastructure for Breaking API Changes
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
             Everything implemented in MY OWL is grounded in compiler truth, deterministic patch generation, and strict pre-flight verification.
           </p>
         </div>
@@ -157,37 +157,37 @@ export default function FeaturesPage() {
           {featureGroups.map((group) => (
             <section
               key={group.group}
-              className="rounded-3xl bg-white border border-slate-200/80 p-8 sm:p-10 space-y-8 shadow-xs"
+              className="min-w-0 rounded-3xl bg-white border border-slate-200/80 p-8 sm:p-10 space-y-8 shadow-xs"
             >
               {/* Group Header */}
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-slate-100">
-                <div className="space-y-1">
+              <div className="flex min-w-0 flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-slate-100">
+                <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#004EE8]">
                     <span>{group.group}</span>
                     <span className="text-slate-300">/</span>
                     <span className="text-slate-500">{group.tag}</span>
                   </div>
-                  <h2 className="font-serif text-2xl sm:text-3xl text-[#000E29] font-normal">
+                  <h2 className="break-words font-serif text-2xl sm:text-3xl text-[#000E29] font-normal">
                     {group.title}
                   </h2>
                 </div>
-                <p className="text-xs text-slate-500 font-mono sm:max-w-xs text-left sm:text-right">
+                <p className="break-words text-xs text-slate-500 font-mono sm:max-w-xs text-left sm:text-right">
                   {group.summary}
                 </p>
               </div>
 
               {/* Features Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-6">
                 {group.features.map((feat) => (
                   <div
                     key={feat.name}
-                    className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 hover:border-slate-200 transition-colors"
+                    className="min-w-0 p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 hover:border-slate-200 transition-colors"
                   >
-                    <h3 className="font-semibold text-sm text-[#000E29] flex items-center gap-2">
+                    <h3 className="break-words font-semibold text-sm text-[#000E29] flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#004EE8] shrink-0" />
                       {feat.name}
                     </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                    <p className="break-words text-xs text-slate-600 leading-relaxed font-sans">
                       {feat.desc}
                     </p>
                   </div>
@@ -198,11 +198,11 @@ export default function FeaturesPage() {
         </div>
 
         {/* CTA BOTTOM */}
-        <div className="rounded-3xl bg-[#000E29] text-white p-8 sm:p-12 text-center space-y-6">
-          <h2 className="font-serif text-3xl sm:text-4xl font-normal max-w-xl mx-auto">
+        <div className="min-w-0 rounded-3xl bg-[#000E29] text-white p-8 sm:p-12 text-center space-y-6">
+          <h2 className="break-words font-serif text-3xl sm:text-4xl font-normal max-w-xl mx-auto">
             Ready to protect your repositories from silent API breakage?
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+          <p className="break-words text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
             Install the GitHub App in under a minute. Connect repositories, run an AST scan, and inspect verified migration proposals.
           </p>
           <div className="pt-2">

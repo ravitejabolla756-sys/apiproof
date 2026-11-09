@@ -4064,3 +4064,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Public pricing plan cards now establish shrink/wrap boundaries for plan headings, badges, prices and feature copy while preserving the beta-only checkout boundary and enterprise inquiry route.
 - Scope: Advances BILL-07/UI-12/UI-13/WEB-15 responsive QA only; paid provider lifecycle, checkout authorization and billing activation remain server/owner-controlled.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3132, including the 320px axe/overflow case, 44px actionable links and the no-paid-checkout copy, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings. The initial browser assertion used a curly apostrophe inconsistent with the rendered copy and passed after correcting the locator.
+
+## 2026-11-10 checkpoint — features narrow capability containment
+
+- Change: Public feature groups now establish shrink/wrap boundaries for capability headings, summaries, descriptions and the conversion panel while preserving the evidence-backed product copy and navigation.
+- Scope: Advances WEB-15/UI-12/UI-13 responsive QA only; provider capability truth, hosted deployment and production verification remain outside this local slice.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3133, including the 320px axe/overflow case and the primary conversion touch target, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
