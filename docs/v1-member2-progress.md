@@ -4010,3 +4010,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Dashboard overview repository and activity cards now establish shrink/wrap boundaries for long repository names, branches, activity titles and descriptions while keeping status badges and timestamps reachable.
 - Scope: Advances UI-12/UI-13 dashboard resilience only; overview authorization, tenant scope and server-owned projections remain unchanged.
 - Evidence: Rebuilt-bundle dashboard overview long-metadata coverage passed **1/1** on isolated port 3121, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The Impeccable detector reported only three pre-existing palette warnings on unchanged dashboard lines.
+
+## 2026-11-10 checkpoint — compatibility proof narrow metadata containment
+
+- Change: Reviewed compatibility cards now establish shrink/wrap boundaries for provider IDs, change IDs, titles, scope dimensions and affected/replacement metadata while preserving authoritative-source links and claim semantics.
+- Scope: Advances UI-12/UI-13 compatibility proof resilience only; provider provenance, review status and compatibility claims remain server-owned.
+- Evidence: Compatibility proof contract tests passed **2/2**; rebuilt-bundle compatibility coverage passed **1/1** on isolated port 3122, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
