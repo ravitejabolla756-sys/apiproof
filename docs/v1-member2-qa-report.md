@@ -2217,3 +2217,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Audit cursor merges reject duplicate event IDs across pages, and workspace-list recovery remains visible under duplicate development-effect requests. Audit contract coverage passed **10/10** and the isolated workspace recovery browser test passed **1/1**.
 - PASS: Targeted sidebar/workspace ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: PostgreSQL/RBAC, audit retention, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — member-role response guard
+
+- PASS: Member role updates fail closed when the returned collection contains an unsupported role or malformed record; member-role coverage passed **2/2** and organization-management service coverage passed **22/22**.
+- PASS: Targeted workspace-settings ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Backend authorization/RBAC, concurrent final-owner verification, ORG-10 integration, hosted CI, staging and production remain open.

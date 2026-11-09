@@ -199,9 +199,10 @@ export default function WorkspaceSettingsPage() {
     setMemberAction(member.id); setActionStatus(`Updating role for ${member.email}…`); setError(null); setMessage(null);
     try {
       const response = await fetch('/api/workspace/members', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, role }) });
-      const data = await readJson<{ members?: Member[] }>(response);
-      if (!response.ok || !data.members) throw new Error(data.error || 'Unable to update member role.');
-      setMembers(data.members); setMessage('Member role updated.');
+      const rawData = await readJson<{ members?: unknown }>(response);
+      const data = parseMemberCollection(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to update member role.');
+      setMembers(data); setMessage('Member role updated.');
     } catch (roleError) {
       setError(roleError instanceof Error ? roleError.message : 'Unable to update member role.');
     } finally {

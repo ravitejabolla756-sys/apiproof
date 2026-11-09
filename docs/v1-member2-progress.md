@@ -3776,3 +3776,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/organization-audit-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/organization-audit-contract.test.ts`.
 - Evidence: Audit contract coverage passed **10/10**; the workspace-list recovery browser test passed **1/1**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-02/ORG-11 and UI-12/UI-13 local resilience only; workspace authorization, audit retention and Member 1's ORG-10 revocation transaction remain server-owned.
+
+## 2026-11-09 checkpoint — member-role response guard
+
+- Change: Workspace member role updates now validate the returned member collection with the shared organization parser before replacing local state; malformed roles or duplicate records fail closed in the existing action error state.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/member-role-action-loading.spec.ts`.
+- Evidence: Member-role browser coverage passed **2/2**, organization-management service coverage passed **22/22**, targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-04 local response safety only; authorization, final-owner protection, workspace-scoped revocation and session preservation remain backend-owned.
