@@ -3748,3 +3748,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/contact/page.tsx`.
 - Evidence: Enterprise-intake boundary coverage passed **1/1**; contact cases in the public-site suite passed **2/2**; web typecheck, targeted ESLint, production build and `git diff --check` passed. The build retained the existing non-blocking Next.js ESLint-plugin warning.
 - Scope: Advances WEB-11/WEB-15 and UI-12/UI-13 local accessibility behavior only; no message delivery, provider integration or billing behavior was added.
+
+## 2026-11-09 checkpoint — mobile navigation hydration guard
+
+- Change: The public mobile-navigation toggle now remains disabled until the landing navbar hydrates, preventing an early click from being lost before the menu event handler exists.
+- Files: `apps/web/src/components/landing/navbar.tsx`.
+- Evidence: Mobile navbar accessibility and public icon-semantics coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 and WEB-15 interaction reliability only; navigation destinations, authentication and public content contracts remain unchanged.

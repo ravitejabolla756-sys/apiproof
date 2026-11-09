@@ -27,6 +27,7 @@ const MOBILE_NAV_LINKS = [
 export function LandingNavbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const mobileMenuToggleRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -35,6 +36,7 @@ export function LandingNavbar() {
   const pathname = usePathname();
 
   useEffect(() => {
+    setHydrated(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80);
     };
@@ -177,7 +179,8 @@ export function LandingNavbar() {
               type="button"
               ref={mobileMenuToggleRef}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-hidden"
+              disabled={!hydrated}
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-hidden disabled:cursor-wait disabled:opacity-70"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-site-navigation"
