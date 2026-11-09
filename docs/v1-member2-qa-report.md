@@ -1539,6 +1539,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Impeccable detector `[]`; targeted ESLint and `git diff --check`; `CI=true PLAYWRIGHT_PORT=3147 pnpm exec playwright test tests/e2e/public-contrast-audit.spec.ts tests/e2e/public-axe-audit.spec.ts --workers=1 --reporter=line` passed 4/4; `pnpm typecheck`; web build generated 83 pages.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.
 
+## 2026-11-09 — seeded repository-wide Vitest regression
+
+- PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed 1,374 tests across 165 passing files, with 1 skipped file and 4 skipped tests, in 115.51 seconds.
+- ADVISORY: The unseeded default invocation stopped during shared SQLite fixture initialization because `APIPROOF_LOCAL_SEED_PASSWORD` was unset; this is an environment/setup failure, not a test assertion failure. The seeded invocation is the repository-documented local test contract.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

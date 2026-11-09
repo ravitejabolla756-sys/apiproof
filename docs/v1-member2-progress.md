@@ -3029,3 +3029,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/public-info-cta-accessibility.spec.ts`.
 - Evidence: `CI=true PLAYWRIGHT_PORT=3172 pnpm exec playwright test tests/e2e/public-info-cta-accessibility.spec.ts --workers=1 --reporter=line --grep "status page|updates timeline"` passed 2/2; `git diff --check` passed.
 - Scope: advances local WEB-13/UI-12/WEB-15 evidence only. An approved monitoring source, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — seeded repository-wide Vitest regression
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed **1,374 tests across 165 files**, with 1 skipped file and 4 skipped tests, in 115.51 seconds.
+- Advisory: An unseeded invocation stopped at shared SQLite fixture initialization because the repository test contract requires `APIPROOF_LOCAL_SEED_PASSWORD`; the documented seeded invocation passed.
+- Scope: refreshes local regression evidence for the current Member 2 tree. Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain open.
