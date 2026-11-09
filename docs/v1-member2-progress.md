@@ -4160,3 +4160,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Dynamic finding-detail error recovery no longer steals focus from an explicit skip-link move to `#main-content`; initial/retry error announcements still focus the assertive recovery surface when appropriate.
 - Scope: Advances UI-12/UI-13 local keyboard and error-state QA only; finding authorization, provider evidence, hosted CI and production remain external.
 - Evidence: Rebuilt-bundle accessibility-route coverage passed **16/16** on isolated port 3149 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed.
+
+## 2026-11-10 checkpoint — provider-rule skip-link focus preservation
+
+- Change: Provider-rule review error recovery now preserves an explicit skip-link move to `#main-content` instead of stealing focus back to the alert during the initial error transition; ordinary error announcements still focus the assertive recovery surface.
+- Scope: Advances UI-12/UI-13 provider-review keyboard/error-state QA only; provider authorization, evidence provenance, review mutation and backend ownership remain unchanged.
+- Evidence: Rebuilt-bundle focused browser coverage passed **1/1** on isolated port 3151 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed.

@@ -69,7 +69,7 @@ export function ProviderRuleReview() {
   useEffect(() => { void load(); }, []);
 
   useEffect(() => {
-    if (error) errorRef.current?.focus();
+    if (error && document.activeElement?.id !== 'main-content') errorRef.current?.focus();
   }, [error]);
 
   async function seedReviewQueue() {

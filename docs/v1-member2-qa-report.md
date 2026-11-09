@@ -2398,3 +2398,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Dynamic finding-detail error recovery preserves keyboard focus on `#main-content` after an explicit skip-link activation while retaining the error-region focus behavior for ordinary error changes. Rebuilt-bundle accessibility-route coverage passed **16/16** on isolated port 3149 after a fresh web production build generating **83 pages**.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the Impeccable detector reported no findings.
 - NOT_RUN: Hosted CI, manual assistive-technology review, finding authorization/provider verification, integrated staging and production remain open.
+
+## 2026-11-10 — provider-rule skip-link focus preservation
+
+- PASS: Provider-rule review error recovery preserves keyboard focus on `#main-content` after an explicit skip-link activation while retaining assertive error focus for ordinary error changes. Rebuilt-bundle focused Playwright/axe coverage passed **1/1** on isolated port 3151 after a fresh web production build generating **83 pages**.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the Impeccable detector reported no findings.
+- NOT_RUN: Hosted CI, manual assistive-technology review, provider authorization/evidence verification, integrated staging and production remain open.
