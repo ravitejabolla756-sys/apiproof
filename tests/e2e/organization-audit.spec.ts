@@ -118,6 +118,36 @@ test.describe('workspace audit trail', () => {
     await expect(loading).toHaveCount(0); await page.unroute('**/api/workspaces');
   });
 
+  test('keeps workspace-list recovery visible and busy while retrying', async ({ page }) => {
+    let requests = 0;
+    let releaseRecovery: (() => void) | undefined;
+    const recoveryPending = new Promise<void>((resolve) => { releaseRecovery = resolve; });
+    await page.route('**/api/workspaces', async (route) => {
+      requests += 1;
+      if (requests === 1) {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Workspace list unavailable.' }) });
+        return;
+      }
+      await recoveryPending;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ activeWorkspaceId: 'ws-primary', workspaces: [{ id: 'ws-primary', name: 'Primary Workspace' }] }) });
+    });
+    await signIn(page);
+    const sidebar = page.getByRole('complementary', { name: 'Workspace navigation' });
+    const alert = sidebar.getByRole('alert').filter({ hasText: 'Workspace list unavailable.' });
+    await expect(alert).toBeVisible({ timeout: 30_000 });
+    const retry = alert.getByRole('button');
+    await retry.click();
+    await expect(alert).toBeVisible();
+    await expect(retry).toBeDisabled();
+    await expect(retry).toHaveAttribute('aria-busy', 'true');
+    await expect(retry).toHaveText('Retrying workspace list…');
+    releaseRecovery?.();
+    await expect(alert).toHaveCount(0);
+    await expect(sidebar.getByLabel('Active workspace')).toHaveValue('ws-primary', { timeout: 30_000 });
+    expect(requests).toBe(2);
+    await page.unroute('**/api/workspaces');
+  });
+
   test('distinguishes unavailable members and invitations from empty states', async ({ page }) => {
     await signIn(page);
     let memberRequests = 0; let allowCollectionRecovery = false; let memberRecoveryPending = true; let releaseMemberRecovery: (() => void) | undefined;

@@ -1414,3 +1414,13 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `pnpm exec playwright test tests/e2e/findings-recovery-loading.spec.ts tests/e2e/findings-filter-responsive.spec.ts --reporter=line`: PASS, 3/3; the held Try again action remains visible and exposes disabled/`aria-busy` during recovery, while existing responsive/filter behavior remains green.
 - `pnpm --filter @apiproof/web build`: PASS, 83 generated pages. Existing Next.js ESLint-plugin configuration warning remains non-blocking.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC and production checks remain NOT_RUN.
+
+## 2026-11-09 — workspace-list recovery busy checkpoint
+
+- `pnpm exec eslint apps/web/src/components/dashboard/sidebar.tsx tests/e2e/organization-audit.spec.ts`: PASS.
+- `pnpm typecheck`: PASS across workspace packages and test TypeScript configuration.
+- `pnpm --filter @apiproof/web build`: PASS, 83 generated pages; existing Next.js ESLint-plugin configuration warning remains non-blocking.
+- Impeccable detector on the changed sidebar/test targets: PASS with no findings.
+- `CI=true PLAYWRIGHT_PORT=3136 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --grep "keeps workspace-list recovery" --reporter=line`: PASS, 1/1.
+- `CI=true PLAYWRIGHT_PORT=3137 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line`: PASS, 12/12.
+- Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.

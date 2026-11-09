@@ -2824,3 +2824,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Audit: reverified the master goal, branch, HEAD, worktree and remaining-task contract matrix after goal resumption.
 - Evidence: branch `codex/v1-frontend-product`; HEAD `3b9bb31`; only pre-existing modifications are `apps/web/package.json` and `pnpm-lock.yaml`; progress matrix contains 26 unique task rows; `git diff --check` passes.
 - Outcome: no new independent local task was authorized by the current contracts. The remaining 22 rows retain their documented Member 1, provider, legal, owner, hosted CI/staging, PostgreSQL/RBAC or manual-review gates. No implementation, provider activation, production change or remote Git operation was performed.
+
+## 2026-11-09 checkpoint — UI-12/ORG-02 workspace-list retry busy semantics
+
+- Change: workspace-list recovery now keeps its alert visible during retry and exposes disabled plus `aria-busy="true"` on the retry control until the authorized workspace list resolves; successful recovery clears the error state without changing the server-authoritative workspace contract.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, repository `pnpm typecheck`, `git diff --check` and the rebuilt web production build passed; the focused held-retry journey passed 1/1 and the complete organization-audit suite passed 12/12.
+- Scope: local UI-12/ORG-02 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.

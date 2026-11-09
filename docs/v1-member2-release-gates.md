@@ -425,3 +425,7 @@ The resumed audit reconfirmed the current branch and 26-row evidence matrix. No 
 ## 2026-11-09 Member 1 migration-collision evidence
 
 Read-only comparison with Member 1 commit `4138c9a8ef42725769971332d8a4e168ea1b5c0e` found migration-ID collisions at `024`, `025`, `026` and `027`. The migrator's ID primary key and skip-by-ID behavior make this an integration blocker until a single namespace and upgrade path are reviewed. Member 1's durable member-revocation service also requires coordinated ORG-04/SEC-19 endpoint, invalidation-scope and audit-event integration. Release recommendation remains NO-GO.
+
+## 2026-11-09 UI-12/ORG-02 workspace-list recovery evidence
+
+Workspace-list retry now remains visible and exposes disabled plus `aria-busy` during recovery. Repository typecheck, rebuilt web production build, focused retry coverage 1/1 and the full organization-audit suite 12/12 pass locally; Impeccable reports no findings on the changed targets. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 revocation integration and production remain NOT_RUN. Release recommendation stays NO-GO.

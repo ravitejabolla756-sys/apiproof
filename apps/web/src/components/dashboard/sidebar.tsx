@@ -33,6 +33,7 @@ export function Sidebar() {
   const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string }>>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
   const [workspaceLoadComplete, setWorkspaceLoadComplete] = useState(false);
+  const [workspaceLoadRetrying, setWorkspaceLoadRetrying] = useState(false);
   const [workspaceSwitching, setWorkspaceSwitching] = useState(false);
   const [workspaceRetryId, setWorkspaceRetryId] = useState<string | null>(null);
   const [workspaceLoadError, setWorkspaceLoadError] = useState(false);
@@ -71,7 +72,7 @@ export function Sidebar() {
   useEffect(() => {
     let active = true;
     async function loadWorkspaces() {
-      setWorkspaceLoadError(false);
+      setWorkspaceLoadRetrying(true);
       setWorkspaceLoadComplete(false);
       try {
         const response = await fetch('/api/workspaces', { cache: 'no-store' });
@@ -80,12 +81,15 @@ export function Sidebar() {
         const data = await response.json();
         if (Array.isArray(data.workspaces)) setWorkspaces(data.workspaces);
         if (typeof data.activeWorkspaceId === 'string') setActiveWorkspaceId(data.activeWorkspaceId);
+        setWorkspaceLoadError(false);
         setWorkspaceLoadComplete(true);
       } catch {
         if (active) {
           setWorkspaceLoadError(true);
           setWorkspaceLoadComplete(true);
         }
+      } finally {
+        if (active) setWorkspaceLoadRetrying(false);
       }
     }
     void loadWorkspaces();
@@ -283,7 +287,7 @@ export function Sidebar() {
             {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
           </select>
           {!workspaceLoadComplete && <p role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="mt-1 text-[10px] text-[#686868]">Loading workspace list…</p>}
-          {workspaceLoadError && <p ref={workspaceErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-1 text-[10px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">Try again</button></p>}
+          {workspaceLoadError && <p ref={workspaceErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-1 text-[10px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">Workspace list unavailable. <button type="button" onClick={() => setWorkspaceLoadAttempt((attempt) => attempt + 1)} disabled={workspaceLoadRetrying} aria-busy={workspaceLoadRetrying ? 'true' : undefined} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-70">{workspaceLoadRetrying ? 'Retrying workspace list…' : 'Try again'}</button></p>}
           {workspaceLoadComplete && !workspaceLoadError && workspaces.length === 0 && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">No workspaces are available.</p>}
           {workspaceSwitching && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-[10px] text-[#686868]">Switching workspace…</p>}
           {workspaceContextError && <p ref={workspaceContextErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{workspaceContextError}</span>{workspaceRetryId && <button type="button" onClick={() => void switchWorkspace(workspaceRetryId)} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-2">Retry workspace switch</button>}</p>}
