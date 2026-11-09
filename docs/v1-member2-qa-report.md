@@ -1728,6 +1728,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Malformed billing usage data is rejected into the existing settings alert; no `NaN` is rendered. Focused contract coverage passed 6/6 and the rebuilt-bundle dashboard-date browser suite passed 5/5.
 - NOT_RUN: Provider-backed billing lifecycle, authorization, retention/legal approval, hosted CI, PostgreSQL/RBAC, staging and production remain open.
 
+## 2026-11-09 — billing fixture contract correction
+
+- PASS: The GitHub-action loading fixture now matches the backend subscription projection by including period timestamps; runtime validation remains strict.
+- NOTE: The full matrix also exposed two existing focus/redirect failures requiring isolated reruns; no production behavior was changed for those paths.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

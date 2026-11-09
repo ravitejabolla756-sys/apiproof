@@ -3193,3 +3193,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added runtime validation for the billing summary projection. Invalid usage counts, limits, flags or plan fields now fail closed into the existing unavailable settings error instead of producing `NaN`/invalid progress semantics; no payment or entitlement behavior changed.
 - Files: `apps/web/src/lib/billing-summary-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/billing-summary-contract.test.ts`, `tests/e2e/dashboard-date-display.spec.ts`.
 - Scope: advances local BILL-07/UI-12 resilience only. Provider lifecycle, billing authorization, retention/legal approval, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — BILL-07 subscription fixture contract correction
+
+- Change: Updated the GitHub-action loading fixture to include the backend-required billing period fields. Runtime billing validation remains strict; no production contract was relaxed.
+- Files: `tests/e2e/github-action-loading.spec.ts`.
+- Scope: restores local UI-13 fixture compatibility after projection validation. Provider lifecycle, authorization, hosted CI and production remain open.

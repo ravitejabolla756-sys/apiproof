@@ -78,11 +78,14 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
 
     const first = focusable[0]!;
     const last = focusable[focusable.length - 1]!;
-    if (event.shiftKey && document.activeElement === first) {
+    const activeIndex = focusable.indexOf(document.activeElement as HTMLElement);
+    if (event.shiftKey && activeIndex <= 0) {
       event.preventDefault();
+      event.stopPropagation();
       last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
+    } else if (!event.shiftKey && activeIndex === focusable.length - 1) {
       event.preventDefault();
+      event.stopPropagation();
       first.focus();
     }
   }
