@@ -17,11 +17,11 @@ test('marks repository connection submit busy while the request is pending', asy
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === '/api/repositories' && route.request().method() === 'POST') {
       await connectPending;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repository: { id: 'repo-connect-loading' } }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, repository: { id: 'repo-connect-loading' } }) });
       return;
     }
     if (pathname.endsWith('/scan')) {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: { findingsCount: 0 } }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, result: { findingsCount: 0 } }) });
       return;
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });

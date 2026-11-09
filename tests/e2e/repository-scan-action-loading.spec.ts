@@ -15,7 +15,7 @@ test('marks repository scan action busy while the scan request is pending', asyn
   const scanPending = new Promise<void>((resolve) => { releaseScan = resolve; });
   await page.route('**/api/repositories/repo-scan-loading/scan', async (route) => {
     await scanPending;
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: { findingsCount: 0 } }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, result: { findingsCount: 0 } }) });
   });
   await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
   const scan = page.getByRole('button', { name: 'Scan', exact: true });
@@ -50,7 +50,7 @@ test('announces repository-detail scan failure and success without false feedbac
       await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Scan service is temporarily unavailable.' }) });
       return;
     }
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: { findingsCount: 0 } }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, result: { findingsCount: 0 } }) });
   });
 
   await page.goto(`/dashboard/repositories/${repositoryId}`, { waitUntil: 'domcontentloaded' });

@@ -12,6 +12,7 @@ import {
 import { isCurrentRepositoryRequest, shouldReloadRepositoriesAfterStatusRefresh } from '@/lib/github-repository-picker';
 import { parseGitHubRepositoryPickerResponse } from '@/lib/github-repository-picker-contract';
 import { parseGitHubConnectionStatus } from '@/lib/github-installation-contract';
+import { parseRepositoryConnectionResponse, parseRepositoryScanResponse } from '@/lib/repository-scan-contract';
 
 interface GitHubRepoItem {
   id: string;
@@ -219,12 +220,12 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to connect repository.');
-      }
-
-      const connectedRepoId = data.repository?.id;
+      const rawData = await res.json() as unknown;
+      const errorMessage = rawData && typeof rawData === 'object' && 'error' in rawData && typeof rawData.error === 'string' ? rawData.error : undefined;
+      if (!res.ok) throw new Error(errorMessage || 'Failed to connect repository.');
+      const data = parseRepositoryConnectionResponse(rawData);
+      if (!data) throw new Error('Repository connection response is temporarily unavailable.');
+      const connectedRepoId = data.repositoryId;
 
       // 1. Repository is connected -> Automatically initiate first scan
       if (connectedRepoId) {
@@ -233,9 +234,9 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
           const scanRes = await fetch(`/api/repositories/${connectedRepoId}/scan`, {
             method: 'POST',
           });
-          const scanData = await scanRes.json();
-          if (scanRes.ok && scanData.result) {
-            const count = scanData.result.findingsCount ?? 0;
+          const scanData = parseRepositoryScanResponse(await scanRes.json());
+          if (scanRes.ok && scanData) {
+            const count = scanData.findingsCount;
             setStatusMessage(`Initial scan completed: ${count} breaking change${count === 1 ? '' : 's'} identified.`);
           } else {
             // Non-fatal: repo connected, scan failed gracefully

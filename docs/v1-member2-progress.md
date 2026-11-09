@@ -3855,3 +3855,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/provider-rule-contract.ts`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/provider-rule-contract.test.ts`, `tests/e2e/provider-rule-action-loading.spec.ts`.
 - Evidence: Provider-rule contract coverage passed **4/4**; rebuilt-bundle provider-rule loading/action/filter/recovery coverage passed **5/5**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 provider-rule action safety only; review authorization, audit persistence, provider evidence and rescan execution remain server-owned.
+
+## 2026-11-09 checkpoint — repository connection action guard
+
+- Change: Repository connection now requires the backend's explicit `success: true` projection and a non-empty repository ID before starting the initial scan; scan feedback reuses the existing non-negative findings-count adapter instead of trusting nested JSON directly.
+- Files: `apps/web/src/lib/repository-scan-contract.ts`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/repository-scan-contract.test.ts`, `tests/e2e/connect-repo-action-loading.spec.ts`, `tests/e2e/repository-scan-action-loading.spec.ts`.
+- Evidence: Repository connection/scan contract coverage passed **3/3**; rebuilt-bundle connection and scan-action browser coverage passed **3/3** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 repository action safety only; repository authorization, GitHub identity, billing limits and scan execution remain server-owned.

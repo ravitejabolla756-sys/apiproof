@@ -2287,3 +2287,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Review, edit and queue-seed actions require explicit `ok: true`; sample-rule matches are validated before display. The E2E sample response fixture now includes the documented success marker. Contract coverage passed **4/4**.
 - PASS: Rebuilt-bundle provider-rule loading/action/filter/recovery coverage passed **5/5**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Review authorization, audit/provider verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — repository connection action guard
+
+- PASS: Repository connection requires explicit success and repository identity before starting its initial scan, and scan feedback validates the findings-count projection. Contract coverage passed **3/3**.
+- PASS: Rebuilt-bundle repository connection and scan-action coverage passed **3/3** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Repository authorization/GitHub integration, billing-limit verification, hosted CI, staging, manual assistive-technology review and production remain open.
