@@ -240,7 +240,7 @@ export default function RepositoriesTablePage() {
                     <tr key={repo.id} className="group hover:bg-[#F6F6F4]/50 transition-colors">
                       <td colSpan={8} className="p-0">
                         {/* Main Table Row */}
-                        <div className="flex items-center justify-between py-3.5 px-4">
+                        <div className="flex min-w-0 items-center justify-between py-3.5 px-4">
                           <div className="w-10">
                             <button
                               type="button"
@@ -258,15 +258,15 @@ export default function RepositoriesTablePage() {
                             </button>
                           </div>
 
-                          <div className="flex-1 font-medium text-[#111111] flex items-center gap-2">
+                          <div className="min-w-0 flex-1 font-medium text-[#111111] flex items-center gap-2">
                             <GitBranch aria-hidden="true" className="w-4 h-4 text-zinc-400" />
-                            <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 items-center font-mono text-xs hover:underline">
+                            <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 min-w-0 items-center break-words font-mono text-xs hover:underline">
                               {repo.name}
                             </Link>
-                            <span className="text-[11px] text-[#686868] font-mono hidden md:inline">({repo.full_name})</span>
+                            <span className="min-w-0 break-words text-[11px] text-[#686868] font-mono hidden md:inline">({repo.full_name})</span>
                           </div>
 
-                          <div className="w-28 text-[#686868] font-mono">
+                          <div className="w-28 break-all text-[#686868] font-mono">
                             {repo.default_branch}
                           </div>
 
@@ -332,16 +332,16 @@ export default function RepositoriesTablePage() {
 
                         {/* Expanded Row Detail Drawer */}
                         {isExpanded && (
-                          <div id={"repository-details-" + repo.id} role="region" aria-label={"Details for " + repo.name} className="bg-[#F6F6F4] p-5 border-t border-[#E8E8E5] space-y-4 text-xs">
-                            <div className="text-xs font-semibold text-[#111111] flex items-center justify-between">
-                              <span>Repository metadata: {repo.full_name}</span>
-                              <span className="font-mono text-[11px] text-[#686868]">ID: {repo.id}</span>
+                          <div id={"repository-details-" + repo.id} role="region" aria-label={"Details for " + repo.name} className="min-w-0 bg-[#F6F6F4] p-5 border-t border-[#E8E8E5] space-y-4 text-xs">
+                            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#111111]">
+                              <span className="min-w-0 break-words">Repository metadata: {repo.full_name}</span>
+                              <span className="shrink-0 break-all font-mono text-[11px] text-[#686868]">ID: {repo.id}</span>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                               <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
                                 <span className="text-[#686868] block text-[10px] uppercase font-semibold">GitHub Repo ID</span>
-                                <span className="text-[#111111] font-mono font-semibold">{repo.github_repository_id}</span>
+                                <span className="break-all text-[#111111] font-mono font-semibold">{repo.github_repository_id}</span>
                               </div>
                               <div className="p-3.5 rounded-xl bg-white border border-[#E8E8E5] space-y-1">
                                 <span className="text-[#686868] block text-[10px] uppercase font-semibold">Completed Scans</span>
