@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBillingSummary } from '../apps/web/src/lib/billing-summary-contract.js';
+import { billingUsagePercent, parseBillingSummary } from '../apps/web/src/lib/billing-summary-contract.js';
 
 const validSummary = {
   subscription: { planId: 'free', status: 'beta', currentPeriodStart: '2026-11-01T00:00:00.000Z', currentPeriodEnd: '2026-12-01T00:00:00.000Z' },
@@ -15,5 +15,12 @@ describe('billing summary contract boundary', () => {
   it('rejects malformed numeric projections instead of producing invalid progress values', () => {
     expect(parseBillingSummary({ ...validSummary, metrics: { ...validSummary.metrics, scans: { current: Number.NaN, limit: 10, allowed: true } } })).toBeNull();
     expect(parseBillingSummary({ ...validSummary, plan: { ...validSummary.plan, limits: { ...validSummary.plan.limits, maxRepositories: -1 } } })).toBeNull();
+  });
+
+  it('keeps usage-bar widths finite when a beta metric has a zero limit', () => {
+    expect(billingUsagePercent(0, 0)).toBe(0);
+    expect(billingUsagePercent(1, 0)).toBe(100);
+    expect(billingUsagePercent(5, 10)).toBe(50);
+    expect(billingUsagePercent(15, 10)).toBe(100);
   });
 });

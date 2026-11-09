@@ -1788,6 +1788,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Zero-valued findings trend data now renders finite 0% segments instead of `NaN%` CSS widths.
 - NOT_RUN: Hosted CI, manual assistive-technology review, staging and production remain open.
 
+## 2026-11-09 — finite billing usage bars
+
+- PASS: Zero-limit beta billing metrics now produce finite progress-bar widths; focused billing contract coverage passed 3/3 and rebuilt-bundle billing/settings browser coverage passed 2/2.
+- NOT_RUN: Provider-backed billing lifecycle, signed webhooks, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

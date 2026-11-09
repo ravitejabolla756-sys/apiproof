@@ -617,3 +617,7 @@ All identified dashboard pull-request navigation surfaces now suppress malformed
 ## Latest UI-12 dashboard trend evidence — 2026-11-09
 
 Zero-valued findings trend data now renders finite `0%` segments instead of `NaN%` CSS widths. The rebuilt-bundle dashboard browser regression passed **18/18**, including the new zero-trend case, existing trend accessibility coverage, loading states and recoverable error states. Hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest UI-12/BILL-07 billing-bar evidence — 2026-11-09
+
+Zero-limit beta billing metrics now render finite progress-bar widths. Billing contract coverage passed **3/3**, the rebuilt web build generated **83 pages**, and focused billing/settings browser coverage passed **2/2**. Provider-backed billing, signed webhooks, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

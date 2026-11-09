@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 import { formatDisplayDate } from "@/lib/date-display-contract";
-import { parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
+import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
 import Link from "next/link";
 
 interface GitHubInstallationInfo {
@@ -170,7 +170,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-purple-700 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.repositories.current / billing.metrics.repositories.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.repositories.current, billing.metrics.repositories.limit)}%`,
                         }}
                       />
                     </div>}
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-emerald-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.scans.current / billing.metrics.scans.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.scans.current, billing.metrics.scans.limit)}%`,
                         }}
                       />
                     </div>}
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-indigo-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.draftPrs.current / billing.metrics.draftPrs.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.draftPrs.current, billing.metrics.draftPrs.limit)}%`,
                         }}
                       />
                     </div>}

@@ -29,6 +29,12 @@ export interface BillingMetric {
   allowed: boolean;
 }
 
+/** Return a finite, clamped percentage for a usage bar, including a zero limit. */
+export function billingUsagePercent(current: number, limit: number | null): number {
+  if (limit === null || !Number.isFinite(current) || !Number.isFinite(limit) || limit <= 0) return current > 0 ? 100 : 0;
+  return Math.min(100, Math.max(0, (current / limit) * 100));
+}
+
 function isOptionalNonNegativeInteger(value: unknown): value is number | null {
   return value === null || (typeof value === 'number' && Number.isInteger(value) && value >= 0);
 }

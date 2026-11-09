@@ -3257,3 +3257,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Findings trend segment widths now guard zero-total data against `0 / 0` CSS calculations while preserving accessible zero-valued trend bars.
 - Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-trend-zero-state.spec.ts`.
 - Evidence: Added a rebuilt-bundle browser regression for zero-valued findings trends; hosted CI, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/BILL-07 finite billing usage bars
+
+- Change: Added `billingUsagePercent` as the shared finite, clamped usage-bar calculation so zero-limit beta metrics render `0%` (or a bounded `100%` for inconsistent positive usage) instead of `NaN%` or `Infinity%` CSS widths.
+- Files: `apps/web/src/lib/billing-summary-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/billing-summary-contract.test.ts`.
+- Evidence: Billing contract tests passed **3/3**; targeted ESLint, test TypeScript and diff checks passed; the rebuilt web production build generated **83 pages**; billing/settings browser coverage passed **2/2**. Provider-backed billing, hosted CI, staging and production remain open.
