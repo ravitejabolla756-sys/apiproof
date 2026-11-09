@@ -2866,3 +2866,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - File: `apps/web/src/components/landing/proof-terminal.tsx`.
 - Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; public axe and contrast audits passed 4/4; repository typecheck passed; web production build generated 83 pages.
 - Scope: advances local UI-12/WEB-15 contrast evidence only. Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/WEB-15 updates timeline semantics
+
+- Change: Converted the public updates timeline from anonymous containers to an accessible ordered list with stable item keys; visual layout and copy remain unchanged.
+- Files: `apps/web/src/app/updates/page.tsx`, `tests/e2e/public-info-cta-accessibility.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; focused informational-route accessibility coverage passed 2/2 after the rebuilt web bundle; repository typecheck and build passed with 83 pages.
+- Scope: advances local UI-12/WEB-15 semantic structure only. Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.

@@ -13,6 +13,14 @@ test('keeps informational-route conversion links touch-sized on mobile', async (
   }
 });
 
+test('exposes the updates timeline as an ordered product-update list', async ({ page }) => {
+  await page.goto('/updates');
+  const updates = page.getByRole('list', { name: 'Product updates' });
+  await expect(updates).toBeVisible();
+  await expect(updates.locator(':scope > li')).toHaveCount(4);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+});
+
 test('keeps the shared footer brand and navigation links touch-sized on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/blog');

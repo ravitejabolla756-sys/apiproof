@@ -76,9 +76,9 @@ export default function UpdatesPage() {
         </div>
 
         {/* TIMELINE FEED */}
-        <div className="space-y-16 pt-8">
-          {updates.map((item, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        <ol aria-label="Product updates" className="space-y-16 pt-8">
+          {updates.map((item) => (
+            <li key={item.title} className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
 
               {/* Left Column: Date & Title */}
               <div className="md:col-span-4 space-y-1 relative pl-6 border-l-2 border-black/10 md:border-l-0 md:pl-0">
@@ -127,9 +127,9 @@ export default function UpdatesPage() {
                 </p>
               </div>
 
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
 
       </main>
 
