@@ -39,6 +39,12 @@ This document records interfaces Member 2 needs from the backend. It does not gr
 
 These are the handoff decisions required before Member 2 integrates shared backend behavior. The current branch intentionally implements only truthful unavailable/beta boundaries for these rows.
 
+### Member 1 branch comparison — migration namespace collision
+
+The remote `codex/v1-backend-security` at `4138c9a8ef42725769971332d8a4e168ea1b5c0e` was fetched read-only on 2026-11-09 for contract comparison. It uses migration IDs `024` (`email_verification_tokens_and_user_state`), `025` (`audited_finding_lifecycle`), `026` (`finding_resolution_verification_evidence`) and `027` (`durable_workspace_member_revocation`). This branch uses the same IDs for `workspace_invitations_and_audit_events`, `user_notification_preferences`, `email_delivery_ledger` and `slack_scan_failure_deliveries`, respectively. Because `_apiproof_migrations.id` is the primary key and the migrator skips an already-applied ID without checking its name, these are hard cross-branch collisions, not merge-order differences. Member 1 and Member 2 must agree on a single globally unique migration namespace and a source-grounded upgrade/rollback path before either branch is integrated.
+
+Member 1's revocation service defines the pending ORG-04/SEC-19 handoff: owner-capability authorization inside a transaction; workspace-scoped membership/session/email-verification/password-reset/OAuth invalidation; preservation of personal sessions and other-workspace memberships; idempotency keyed by `(workspace, idempotencyKey)`; last-owner protection; and durable `workspace.member_revocation.v1` evidence. The current Member 2 removal path must not be integrated against that service until its endpoint, transaction, migration and audit-event boundaries are reviewed together.
+
 | Area | Member 1 / owner decision required | Current local boundary | Do not activate until |
 |---|---|---|---|
 | `BILL-09` invoice history | Provider invoice projection, billing-owner capability, URL lifetime/allowlist, retention and audit taxonomy | Settings shows an axe-clean unavailable state with no invoice action | Provider sandbox fixtures, authorization/retention tests and legal approval |
@@ -72,3 +78,4 @@ Review outcome must be recorded in this matrix and the relevant task documents b
 - 2026-11-08: Added the settings-page invoice-history beta boundary and focused browser assertion; provider-backed invoice data remains intentionally unimplemented pending the shared billing contract.
 - 2026-11-08: Established and verified the response privacy invariant across authenticated product APIs, shared validation/rate-limit helpers, operational routes and billing/GitHub webhooks; local route suites and the full seeded/browser regressions pass, while hosted/staging/production verification remains open.
 - 2026-11-08: Added a cross-member review matrix for invoice, digest, enterprise-intake, status, delivery and deletion/revocation contracts; no shared backend, provider, production or remote Git operation was performed.
+- 2026-11-09: Read-only comparison with Member 1's backed-up branch identified hard migration-ID collisions at `024–027` and recorded the revocation-service handoff; no migration was renumbered and no branch was merged.

@@ -421,3 +421,7 @@ The current branch passes the full local CI-mode Playwright matrix at 167/167. H
 ## 2026-11-09 resumed blocked-audit checkpoint
 
 The resumed audit reconfirmed the current branch and 26-row evidence matrix. No new local implementation was started because the remaining 22 tasks still require the documented cross-member contracts, owner/provider/legal approvals, hosted CI or staging evidence, PostgreSQL/RBAC verification, or manual operational review. Release recommendation remains NO-GO; no production or provider action was taken.
+
+## 2026-11-09 Member 1 migration-collision evidence
+
+Read-only comparison with Member 1 commit `4138c9a8ef42725769971332d8a4e168ea1b5c0e` found migration-ID collisions at `024`, `025`, `026` and `027`. The migrator's ID primary key and skip-by-ID behavior make this an integration blocker until a single namespace and upgrade path are reviewed. Member 1's durable member-revocation service also requires coordinated ORG-04/SEC-19 endpoint, invalidation-scope and audit-event integration. Release recommendation remains NO-GO.
