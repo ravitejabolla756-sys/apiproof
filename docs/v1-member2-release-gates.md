@@ -717,3 +717,7 @@ A redacted local-only tabletop rehearsal is recorded for the cross-account invit
 ## Latest NOT-10 HTTP read/write evidence — 2026-11-09
 
 Both notification preference HTTP boundaries are covered against digest opt-in attempts and return weekly-digest controls disabled/unavailable while scheduler contracts remain pending. Notification preference coverage passed **5/5**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest Member 2 local contract evidence — 2026-11-09
+
+Invoice adapter responses are parsed at runtime before rendering; weekly-digest controls remain unchecked/disabled and are excluded from writes while NOT-10 is pending; audit cursor pages reject duplicate IDs; workspace-list recovery is deterministic under duplicate development effects; member-role responses and invitation creation/cancellation responses require reviewed projections. Focused local evidence passed for invoice **6/6**, notification contract **8/8**, organization audit **10/10**, member-role **2/2**, invitation contract **4/4**, and authenticated invitation create/cancel **1/1**; the rebuilt web production build passes with **83 pages**. Provider authorization, PostgreSQL/RBAC, Member 1 ORG-10 integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
