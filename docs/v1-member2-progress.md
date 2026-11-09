@@ -3599,3 +3599,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/workspace-invitation-contract.ts`, `apps/web/src/app/invite/accept/page.tsx`, `tests/workspace-invitation-contract.test.ts`, `tests/e2e/auth-entry-states.spec.ts`.
 - Evidence: Focused contract coverage and auth-entry browser coverage include malformed payload recovery; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-03/UI-12 response-shape safety only. Server authorization, token invalidation, idempotency, delivery and audit contracts remain authoritative backend/shared work.
+
+## 2026-11-09 checkpoint — workspace context normalization
+
+- Change: Workspace selector parsing now trims server-owned workspace IDs/names and active IDs before comparison and rendering, rejects blank active IDs, and detects duplicates after normalization.
+- Files: `apps/web/src/lib/workspace-context-contract.ts`, `tests/workspace-context-contract.test.ts`.
+- Evidence: Focused workspace-context contract coverage passed **12/12**; the workspace-context browser suite passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-02/UI-12 client projection safety only. Server authorization, tenant isolation, PostgreSQL/RLS and Member 1 integration remain external/shared gates.

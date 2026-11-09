@@ -2082,3 +2082,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Accepted-invitation responses are normalized and malformed workspace projections fail closed; focused contract and auth-entry coverage include the malformed-success state, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Server authorization/token invalidation, delivery, idempotency, audit persistence, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — workspace context normalization
+
+- PASS: Workspace context responses normalize IDs/names before rendering and reject blank or duplicate normalized IDs; focused contract coverage passed **12/12** and the workspace-context browser suite passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Server authorization, tenant isolation, PostgreSQL/RLS, hosted CI, staging, manual assistive-technology review and production remain open.
