@@ -5,13 +5,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, KeyRound, Loader2, Mail, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { accountDeletionAvailability } from '@/lib/account-deletion-contract';
+import { parseAccountProfileResponse, type AccountProfileProjection } from '@/lib/account-profile-contract';
 
-interface AccountProfile {
-  email: string;
-  name: string;
-  authProviders: string[];
-  hasLocalPassword: boolean;
-}
+type AccountProfile = AccountProfileProjection;
 
 export default function AccountSettingsPage() {
   const [account, setAccount] = useState<AccountProfile | null>(null);
@@ -35,10 +31,12 @@ export default function AccountSettingsPage() {
     if (!preserveError) setError(null);
     try {
       const response = await fetch('/api/account');
-      const data = await response.json() as { account?: AccountProfile; error?: string };
-      if (!response.ok || !data.account) throw new Error(data.error || 'Unable to load account settings.');
-      setAccount(data.account);
-      setName(data.account.name);
+      const data = await response.json() as unknown;
+      const account = parseAccountProfileResponse(data);
+      const error = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : undefined;
+      if (!response.ok || !account) throw new Error(error || 'Unable to load account settings.');
+      setAccount(account);
+      setName(account.name);
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load account settings.');
@@ -60,10 +58,12 @@ export default function AccountSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       });
-      const data = await response.json() as { account?: AccountProfile; error?: string };
-      if (!response.ok || !data.account) throw new Error(data.error || 'Unable to save your name.');
-      setAccount(data.account);
-      setName(data.account.name);
+      const data = await response.json() as unknown;
+      const account = parseAccountProfileResponse(data);
+      const error = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : undefined;
+      if (!response.ok || !account) throw new Error(error || 'Unable to save your name.');
+      setAccount(account);
+      setName(account.name);
       setMessage('Profile updated.');
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save your name.');

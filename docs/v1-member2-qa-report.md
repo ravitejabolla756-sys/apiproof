@@ -2162,3 +2162,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Dashboard shell refreshes now use the typed connection-status adapter; focused installation/status coverage passed **6/6**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Provider authorization, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — account profile projection guard
+
+- PASS: Account settings validates profile projections before form population or update replacement; focused contract coverage passed **2/2** and account/recovery browser coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Account deletion/legal retention, hosted CI, staging, manual assistive-technology review and production remain open.

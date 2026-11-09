@@ -3711,3 +3711,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/github-installation-contract.ts`, `apps/web/src/app/dashboard/layout.tsx`, `tests/github-installation-contract.test.ts`.
 - Evidence: GitHub installation/status and sync coverage passed **6/6**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 shell resilience only; session and installation authorization remain server-owned.
+
+## 2026-11-09 checkpoint — account profile projection guard
+
+- Change: Account settings now validates profile GET/PATCH responses before populating or replacing editable controls; deletion remains behind the existing `DELETION_CONTRACT_PENDING` boundary.
+- Files: `apps/web/src/lib/account-profile-contract.ts`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/account-profile-contract.test.ts`.
+- Evidence: Account profile contract coverage passed **2/2** and account/recovery browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 and AUTH-09 local safety only; account authorization, deletion policy and retention remain shared/legal contracts.
