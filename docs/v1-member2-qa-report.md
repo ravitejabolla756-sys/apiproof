@@ -1713,6 +1713,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Member-removal confirmation copy now names workspace-scoped revocation and preservation of personal sessions/other workspaces; the real member-management browser journey asserts the wording.
 - BLOCKED: The current local backend still deletes all sessions and must be replaced by Member 1's authoritative ORG-10 transaction before integration.
 
+## 2026-11-09 — seeded regression after ORG-04 copy alignment
+
+- PASS: Seeded Vitest regression passed **1,378 tests across 166 passing files**, with 1 skipped file and 4 skipped tests, in 113.20 seconds; full `pnpm lint` passed.
+- NOT_RUN: PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review, provider delivery, legal approval and production remain unverified.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
