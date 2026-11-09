@@ -2117,3 +2117,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Repository responses now normalize identity fields and fail closed on malformed counters, missing identity or duplicate records; focused repository contract coverage passed **2/2** and the repository/date/workbench browser suites passed **8/8**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Repository authorization, tenant isolation, provider integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — compatibility proof projection adapter
+
+- PASS: Compatibility-proof responses now validate reviewed identity, nested scope/replacement metadata and duplicate IDs before rendering; focused contract coverage passed **2/2** and compatibility-recovery/date browser coverage passed **7/7**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Official-source provenance, review authorization, provider intelligence, hosted CI, staging, manual assistive-technology review and production remain open.

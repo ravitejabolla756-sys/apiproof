@@ -5,35 +5,9 @@ import { ExternalLink, Info, Loader2, RefreshCw, ShieldCheck } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { toSafeExternalUrl } from "@/lib/external-link-contract";
+import { parseCompatibilityProofResponse, type CompatibilityProofProjection } from "@/lib/compatibility-proof-contract";
 
-type ReviewedChange = {
-  providerId: string;
-  changeId: string;
-  title: string;
-  changeType: string;
-  officialSourceUrl: string;
-  publishedAt: string | null;
-  effectiveAt: string | null;
-  removalAt: string | null;
-  severity: string;
-  applicabilityScope: { dimensions: string[] };
-  affectedModels: string[];
-  affectedResources: string[];
-  affectedResponseFields: string[];
-  affectedEndpoints: string[];
-  affectedDomains: string[];
-  authOrHeaderPatterns: string[];
-  affectedParameters: string[];
-  replacement?: { model?: string; endpoint?: string; domain?: string; authOrHeader?: string; parameter?: string; resources?: string[] } | null;
-  reviewer: string;
-  reviewedAt: string;
-};
-
-type CompatibilityProofResponse = {
-  claimsAvailable: boolean;
-  reason: string | null;
-  changes: ReviewedChange[];
-};
+type CompatibilityProofResponse = CompatibilityProofProjection;
 
 export default function CompatibilityPage() {
   const [data, setData] = useState<CompatibilityProofResponse | null>(null);
@@ -44,9 +18,11 @@ export default function CompatibilityPage() {
     setLoading(true);
     try {
       const response = await fetch("/api/compatibility-proof", { cache: "no-store" });
-      const payload = await response.json() as CompatibilityProofResponse & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Unable to load compatibility records.");
-      setData(payload);
+      const payload = await response.json() as unknown;
+      const parsed = parseCompatibilityProofResponse(payload);
+      const error = typeof payload === 'object' && payload !== null && 'error' in payload && typeof payload.error === 'string' ? payload.error : null;
+      if (!response.ok || !parsed) throw new Error(error || "Unable to load compatibility records.");
+      setData(parsed);
       setError(null);
     } catch (caught) {
       setData(null);

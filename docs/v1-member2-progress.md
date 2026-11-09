@@ -3648,3 +3648,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/repository-contract.ts`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/repository-contract.test.ts`.
 - Evidence: Focused repository contract coverage passed **2/2** and the repository/date/workbench browser suites passed **8/8**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 repository inventory resilience only. Repository authorization, tenant isolation and provider integration remain unchanged.
+
+## 2026-11-09 checkpoint — compatibility proof projection adapter
+
+- Change: Added a typed compatibility-proof parser that validates reviewed change identity, scope arrays, replacement metadata and duplicate change IDs before rendering authoritative claims.
+- Files: `apps/web/src/lib/compatibility-proof-contract.ts`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `tests/compatibility-proof-contract.test.ts`.
+- Evidence: Focused compatibility-proof contract coverage passed **2/2** and compatibility-recovery/date browser coverage passed **7/7**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 compatibility-claims resilience only. Official-source provenance, review authorization and provider intelligence remain backend/shared contracts.
