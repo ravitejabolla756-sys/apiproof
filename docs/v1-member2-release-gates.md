@@ -520,6 +520,10 @@ The manual-copy invitation create/cancel journey passes at 390px with no documen
 
 The organization audit cursor-pagination journey passes at 390px with no document overflow and a 44px load-more control. PostgreSQL/RBAC, retention, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest WEB-15 auth-entry link evidence — 2026-11-09
+
+The same-origin public link crawl now covers verification, login, forgot-password and reset-password routes in addition to the public and invitation surfaces. Hosted CI, staging, manual assistive-technology review, live contact/delivery and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.

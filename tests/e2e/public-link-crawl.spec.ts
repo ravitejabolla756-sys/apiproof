@@ -4,7 +4,7 @@ import { assertPublicRoutes } from './helpers.js';
 const publicRoutes = [
   '/', '/about', '/blog', '/features', '/how-it-works', '/security', '/docs', '/pricing',
   '/faq', '/updates', '/contact', '/privacy', '/terms', '/refunds', '/status', '/cookies',
-  '/invite/accept',
+  '/invite/accept', '/verify-email', '/login', '/forgot-password', '/reset-password',
 ];
 
 test('checks same-origin links across every audited public route', async ({ page, request }) => {

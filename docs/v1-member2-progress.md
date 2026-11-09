@@ -3068,3 +3068,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/organization-audit.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3186 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line -g "loads the next audit page"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local UI-12/UI-13/ORG-11 evidence only. PostgreSQL/RBAC, retention, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — WEB-15 auth-entry same-origin link crawl
+
+- Change: Expanded the public link crawl to include verification, login, forgot-password and reset-password entry routes alongside the existing public pages and invitation route. The crawl still follows only same-origin paths and does not send forms or activate delivery.
+- Files: `tests/e2e/public-link-crawl.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3187 pnpm exec playwright test tests/e2e/public-link-crawl.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local WEB-15/UI-13 route/link verification only. Hosted CI, staging, manual assistive-technology review, live contact/delivery and production remain open.
