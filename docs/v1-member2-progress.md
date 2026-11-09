@@ -3287,3 +3287,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Workspace invitation creation now validates the returned link as a token-bearing `/invite/accept` URL on the current origin; equivalent loopback hostnames are accepted only for local harness operation with matching protocol and port, while external or script URLs fail closed.
 - Files: `apps/web/src/lib/external-link-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/external-link-contract.test.ts`, `tests/e2e/invitation-action-loading.spec.ts`.
 - Evidence: External-link contract coverage passed **4/4**; the rebuilt-bundle invitation and organization-audit suite passed **14/14**; the production build generated **83 pages**. Approved email delivery, Member 1 integration, PostgreSQL/RBAC, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — ORG-03 loopback-origin compatibility
+
+- Change: Refined invitation-link validation to accept only exact same-origin links or equivalent `localhost`/`127.0.0.1`/`::1` loopback hosts with matching protocol and port, keeping production external-origin rejection strict while supporting the local browser harness.
+- Evidence: External-link contract coverage passed **4/4**; rebuilt-bundle invitation and organization-audit coverage passed **14/14** after the correction; targeted ESLint, TypeScript, diff checks and the 83-page production build passed.

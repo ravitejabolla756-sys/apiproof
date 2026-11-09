@@ -637,3 +637,7 @@ GitHub installation navigation now fails closed for malformed script and protoco
 ## Latest ORG-03 invitation-link evidence — 2026-11-09
 
 Invitation creation now fails closed for malformed or external links while preserving token-bearing same-origin links. External-link contract coverage passed **4/4**, and the rebuilt-bundle invitation/organization-audit suite passed **14/14**. Approved email delivery, Member 1 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest ORG-03 loopback-origin evidence — 2026-11-09
+
+Invitation validation remains strict for production origins while accepting only equivalent local loopback hosts on the same protocol and port. The final rebuilt-bundle invitation/organization-audit suite passed **14/14**; approved delivery, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
