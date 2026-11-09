@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parsePasswordResetError, parsePasswordResetSuccess } from '@/lib/password-reset-contract';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -26,9 +27,17 @@ export default function ForgotPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'request_password_reset', email }),
       });
-      const data = await response.json();
-      if (!response.ok) setError(data.error || 'Password recovery is temporarily unavailable.');
-      else setMessage(data.message);
+      const data = await response.json() as unknown;
+      if (!response.ok) {
+        setError(parsePasswordResetError(data, 'Password recovery is temporarily unavailable.'));
+        return;
+      }
+      const success = parsePasswordResetSuccess(data);
+      if (!success) {
+        setError('Password recovery is temporarily unavailable.');
+        return;
+      }
+      setMessage(success.message);
     } catch {
       setError('Unable to submit the request. Please try again.');
     } finally {

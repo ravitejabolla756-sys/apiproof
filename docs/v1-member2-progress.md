@@ -3876,3 +3876,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/workspace-context-contract.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/workspace-context-contract.test.ts`, `tests/e2e/workspace-context-contract.spec.ts`.
 - Evidence: Workspace contract coverage passed **13/13**; rebuilt-bundle workspace context and switch-recovery coverage passed **4/4**; a fresh web production build generated **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-02/UI-12/UI-13 local response safety only; server authorization, tenant isolation, ORG-10 revocation and PostgreSQL/RBAC remain backend-owned.
+
+## 2026-11-09 checkpoint — password-reset response guard
+
+- Change: Forgot-password and reset-password forms now require the backend's explicit `{ success: true, message }` projection before showing success; malformed successful responses fail closed to the existing retryable error state, and malformed error payloads use safe fallback copy.
+- Files: `apps/web/src/lib/password-reset-contract.ts`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/password-reset-contract.test.ts`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: Password-reset contract coverage passed **2/2**; rebuilt-bundle authentication loading/recovery coverage passed **5/5**; a fresh web production build generated **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances AUTH-08/UI-12 local response safety only; password-reset token issuance, delivery, session invalidation, retention and backend authorization remain server-owned.

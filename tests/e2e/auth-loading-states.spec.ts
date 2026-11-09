@@ -71,7 +71,7 @@ test.describe('authentication loading announcements', () => {
         return;
       }
       await requestPending;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'If an account exists, a reset link has been sent.' }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'If an account exists, a reset link has been sent.' }) });
     });
     await page.goto('/forgot-password');
     await page.getByLabel('Email').fill('member@example.test');
@@ -90,7 +90,7 @@ test.describe('authentication loading announcements', () => {
         return;
       }
       await resetPending;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Password updated.' }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'Password updated.' }) });
     });
     await page.goto('/reset-password#token=test-token');
     await page.getByLabel('New password').fill('new-password-123');
@@ -109,6 +109,11 @@ test.describe('authentication loading announcements', () => {
     await page.route('**/api/auth', async (route) => { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Password recovery is temporarily unavailable.' }) }); });
     await page.goto('/forgot-password'); await page.getByLabel('Email').fill('member@example.test'); await page.getByRole('button', { name: 'Send reset link' }).click();
     const recoveryAlert = page.getByRole('alert').filter({ hasText: 'Password recovery is temporarily unavailable.' }); await expect(recoveryAlert).toBeVisible(); await expect(recoveryAlert).toHaveAttribute('aria-atomic', 'true'); await page.unroute('**/api/auth');
+
+    await page.route('**/api/auth', async (route) => { await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Looks successful but is missing the success marker.' }) }); });
+    await page.reload(); await page.getByLabel('Email').fill('member@example.test'); await page.getByRole('button', { name: 'Send reset link' }).click();
+    await expect(page.getByRole('alert').filter({ hasText: 'Password recovery is temporarily unavailable.' })).toBeVisible();
+    await page.unroute('**/api/auth');
   });
 
   test('marks email verification progress as busy', async ({ page }) => {

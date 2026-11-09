@@ -2305,3 +2305,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Workspace switching now validates the returned workspace projection and fails closed when it is missing or does not match the requested workspace. Contract coverage passed **13/13**.
 - PASS: Rebuilt-bundle workspace context and switch-recovery browser coverage passed **4/4**; a fresh web production build generated **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Backend tenant authorization, workspace revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — password-reset response guard
+
+- PASS: Forgot-password and reset-password success states now require an explicit success marker and non-empty message; malformed error payloads use safe fallback copy. Contract coverage passed **2/2**.
+- PASS: Rebuilt-bundle authentication loading and recovery coverage passed **5/5** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Password-reset delivery/provider verification, hosted CI, staging, manual assistive-technology review and production remain open.

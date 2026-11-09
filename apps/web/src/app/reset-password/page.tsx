@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parsePasswordResetError, parsePasswordResetSuccess } from '@/lib/password-reset-contract';
 
 export default function ResetPasswordPage() {
   const [token, setToken] = useState('');
@@ -33,13 +34,19 @@ export default function ResetPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'complete_password_reset', token, password }),
       });
-      const data = await response.json();
-      if (!response.ok) setError(data.error || 'Unable to reset password.');
-      else {
-        setMessage(data.message);
-        setToken('');
-        setPassword('');
+      const data = await response.json() as unknown;
+      if (!response.ok) {
+        setError(parsePasswordResetError(data, 'Unable to reset password.'));
+        return;
       }
+      const success = parsePasswordResetSuccess(data);
+      if (!success) {
+        setError('Unable to reset password.');
+        return;
+      }
+      setMessage(success.message);
+      setToken('');
+      setPassword('');
     } catch {
       setError('Unable to submit the request. Please try again.');
     } finally {
