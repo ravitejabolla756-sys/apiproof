@@ -60,33 +60,33 @@ export default function UpdatesPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* HEADER */}
-        <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="min-w-0 text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-200 text-xs font-mono font-medium">
             <span>PLATFORM CHANGELOG</span>
           </div>
-          <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight">
+          <h1 className="break-words font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight">
             Product Updates &amp; Engine Changelog
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+          <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed">
             Continuous improvements to AST matching, vendor API catalogs, verification gates, and GitHub App integrations.
           </p>
         </div>
 
         {/* TIMELINE FEED */}
-        <ol aria-label="Product updates" className="space-y-16 pt-8">
+        <ol aria-label="Product updates" className="min-w-0 space-y-16 pt-8">
           {updates.map((item) => (
-            <li key={item.title} className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            <li key={item.title} className="grid min-w-0 grid-cols-1 md:grid-cols-12 gap-8 items-start">
 
               {/* Left Column: Date & Title */}
-              <div className="md:col-span-4 space-y-1 relative pl-6 border-l-2 border-black/10 md:border-l-0 md:pl-0">
+              <div className="min-w-0 md:col-span-4 space-y-1 relative pl-6 border-l-2 border-black/10 md:border-l-0 md:pl-0">
                 <div className="hidden md:flex items-center gap-2 mb-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#000E29]" />
                   <span className="text-xs font-mono text-slate-500">{item.date}</span>
                 </div>
-                <h2 className="font-serif text-xl sm:text-2xl text-[#000E29] font-medium leading-snug">
+                <h2 className="break-words font-serif text-xl sm:text-2xl text-[#000E29] font-medium leading-snug">
                   {item.title}
                 </h2>
                 <div className="md:hidden text-xs font-mono text-slate-500 pt-1">
@@ -95,16 +95,16 @@ export default function UpdatesPage() {
               </div>
 
               {/* Right Column: Card Content */}
-              <div className="md:col-span-8 space-y-6">
+              <div className="min-w-0 md:col-span-8 space-y-6">
                 {/* Visual Banner */}
-                <div className="h-44 sm:h-52 rounded-2xl bg-[#030B1C] border border-black/[0.08] p-6 flex flex-col items-center justify-center text-white overflow-hidden shadow-xs text-center space-y-2">
+                <div className="min-w-0 h-44 sm:h-52 rounded-2xl bg-[#030B1C] border border-black/[0.08] p-6 flex flex-col items-center justify-center text-white overflow-hidden shadow-xs text-center space-y-2">
                   <span className="font-mono text-xs text-cyan-300">ENGINE UPDATE</span>
-                  <div className="font-serif text-2xl sm:text-3xl text-slate-200 font-light px-4">
+                  <div className="break-words font-serif text-2xl sm:text-3xl text-slate-200 font-light px-4">
                     &ldquo;{item.title}&rdquo;
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-700 leading-relaxed">
+                <p className="break-words text-sm text-slate-700 leading-relaxed">
                   {item.description}
                 </p>
 
@@ -114,15 +114,15 @@ export default function UpdatesPage() {
                   </div>
                   <ul className="space-y-2 text-xs text-slate-600">
                     {item.improvements.map((bullet, bIdx) => (
-                      <li key={bIdx} className="flex items-start gap-2">
+                      <li key={bIdx} className="flex min-w-0 items-start gap-2">
                         <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span>{bullet}</span>
+                        <span className="break-words">{bullet}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <p className="text-xs text-slate-500 italic pt-2 border-t border-black/[0.05]">
+                <p className="break-words text-xs text-slate-500 italic pt-2 border-t border-black/[0.05]">
                   {item.footerNote}
                 </p>
               </div>
@@ -136,11 +136,11 @@ export default function UpdatesPage() {
       {/* PRE-FOOTER RADIANT GRADIENT CTA */}
       <section className="relative w-full py-28 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(0deg,#001033_0%,#0050F8_55%,#5FBDF7_85%,#FAFAFA_100%)] text-white text-center">
         <div className="absolute inset-0 bg-star-pattern opacity-60 pointer-events-none" />
-        <div className="relative z-10 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
-          <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
+        <div className="relative z-10 min-w-0 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
+          <h2 className="break-words font-serif text-4xl sm:text-5xl font-normal leading-tight">
             Stop silent API breakage before it reaches production.
           </h2>
-          <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
+          <p className="break-words text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
             Connect your repository in seconds. Read-only AST observation, deterministic migration planning, and safe draft PRs.
           </p>
           <div className="pt-2">
