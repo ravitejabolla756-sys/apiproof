@@ -2317,3 +2317,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Email verification now requires an explicit success marker and non-empty message before reporting success or removing the URL fragment; malformed success responses use the existing invalid-or-expired recovery state. Combined email-verification/password-reset contract coverage passed **4/4**.
 - PASS: Rebuilt-bundle auth-entry and authentication-loading coverage passed **11/11** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Verification token issuance/resend, email-provider delivery, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — logout response guard
+
+- PASS: Dashboard logout requires explicit success data before navigation and preserves the existing server-confirmed 401 recovery behavior. Logout contract coverage passed **8/8**; rebuilt-bundle logout recovery coverage passed **1/1** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Backend session/cookie integration, hosted CI, staging, manual assistive-technology review and production remain open.

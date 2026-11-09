@@ -1,9 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { signOutSession } from '../apps/web/src/lib/session-logout.js';
+import { parseLogoutResponse, signOutSession } from '../apps/web/src/lib/session-logout.js';
 
 afterEach(() => vi.useRealTimers());
 
 describe('truthful dashboard logout', () => {
+  it('requires the explicit logout success projection', () => {
+    expect(parseLogoutResponse({ success: true })).toBe(true);
+    expect(parseLogoutResponse({ message: 'Logged out successfully.' })).toBe(false);
+    expect(parseLogoutResponse(null)).toBe(false);
+  });
+
   it('permits navigation only after the server acknowledges logout', async () => {
     await expect(signOutSession(async () => ({ status: 200, ok: true }))).resolves.toBeUndefined();
   });

@@ -3890,3 +3890,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/email-verification-contract.ts`, `apps/web/src/app/verify-email/page.tsx`, `tests/email-verification-contract.test.ts`, `tests/e2e/auth-entry-states.spec.ts`, `tests/e2e/auth-loading-states.spec.ts`.
 - Evidence: Email-verification and password-reset contract coverage passed **4/4**; the rebuilt-bundle combined auth-entry/loading suite passed **11/11**; a fresh web production build generated **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances AUTH-05/UI-12 local response safety only; verification token issuance, resend behavior, email provider delivery and Member 1 backend integration remain external.
+
+## 2026-11-09 checkpoint — logout response guard
+
+- Change: Dashboard logout now requires the backend's explicit `{ success: true }` projection before navigating away; malformed successful bodies fail closed, while a server-confirmed 401 remains treated as already signed out.
+- Files: `apps/web/src/lib/session-logout.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/session-logout.test.ts`.
+- Evidence: Logout contract coverage passed **8/8**; rebuilt-bundle logout recovery coverage passed **1/1** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances AUTH-08/UI-12 local logout truthfulness only; session invalidation and cookie behavior remain backend-owned.

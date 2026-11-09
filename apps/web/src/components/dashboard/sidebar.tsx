@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
-import { signOutSession } from "@/lib/session-logout";
+import { parseLogoutResponse, signOutSession } from "@/lib/session-logout";
 import { parseWorkspaceContext, parseWorkspaceSwitchResponse } from "@/lib/workspace-context-contract";
 import {
   LayoutDashboard,
@@ -172,12 +172,21 @@ export function Sidebar() {
     setIsSigningOut(true);
     setLogoutError(null);
     try {
-      await signOutSession((signal) => fetch('/api/auth', {
-        signal,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'logout' }),
-      }));
+      await signOutSession(async (signal) => {
+        const response = await fetch('/api/auth', {
+          signal,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'logout' }),
+        });
+        if (!response.ok || response.status === 401) return { ok: response.ok, status: response.status };
+        try {
+          const payload = await response.json() as unknown;
+          return { ok: parseLogoutResponse(payload), status: response.status };
+        } catch {
+          return { ok: false, status: response.status };
+        }
+      });
       window.location.replace('/login');
     } catch {
       setLogoutError('Sign out failed. Your session may still be active. Please try again.');
