@@ -2457,3 +2457,10 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Seeded Vitest regression passed **1,504 tests** across **200 passing files**, with **4 skipped tests** and **1 skipped file**, in **112.02 seconds** using `--no-file-parallelism`.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider delivery, legal approval, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — provider recovery fixture contract refresh
+
+- PASS: The provider-coverage recovery fixture now satisfies the strict parser contract; rebuilt-bundle targeted recovery and repository-dialog coverage passed **6/6**, and the connect-dialog suite passed **4/4**.
+- PARTIAL: The full current-worktree Playwright matrix reached **237/239**. The dialog focus assertion passed in isolation but was intermittent in the matrix; the password/session scenario was blocked by the local auth signup rate limiter returning **429** after repeated seeded runs. No production or backend behavior was changed.
+- PASS: Targeted ESLint and `git diff --check` passed; the fresh isolated web build generated **83 pages**.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider authorization, rate-limit reset/state, manual assistive-technology review, integrated staging and production remain open.

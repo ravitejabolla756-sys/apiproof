@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './helpers.js';
 
 const cases = [
-  { path: '/dashboard/providers', api: '**/api/provider-coverage', message: 'Provider coverage is temporarily unavailable.', empty: 'No provider coverage records are available yet', response: { summary: { configuredSources: 0, discoveryProviders: 0, providersWithReviewedRules: 0, reviewedRules: 0, providersWithMigrationTemplates: 0, migrationTemplates: 0, providersWithVerifiedMigrationTemplates: 0, verifiedMigrationTemplates: 0 }, providers: [] } },
+  { path: '/dashboard/providers', api: '**/api/provider-coverage', message: 'Provider coverage is temporarily unavailable.', empty: 'No provider coverage records are available yet', response: { summary: { configuredSources: 0, discoveryProviders: 0, providersWithReviewedRules: 0, reviewedRules: 0, providersWithMigrationTemplates: 0, migrationTemplates: 0, providersWithVerifiedMigrationTemplates: 0, verifiedMigrationTemplates: 0, providersWithReviewOnlyTemplateProposals: 0, reviewOnlyTemplateProposals: 0, autoFixPolicy: 'guarded-human-review', reviewQueue: { P0: 0, P1: 0, P2: 0 }, migrationTemplatePromotionQueue: [] }, providers: [] } },
   { path: '/dashboard/repositories', api: '**/api/repositories', message: 'Repositories are temporarily unavailable.', empty: 'No repositories connected yet', response: { repositories: [] } },
 ] as const;
 

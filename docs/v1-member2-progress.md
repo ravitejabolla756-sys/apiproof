@@ -4219,3 +4219,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,504 tests** across **200 passing files**, with **4 skipped tests** and **1 skipped file**, in **112.02 seconds**.
 - Scope: Refreshes current local regression evidence for the Member 2 UI, billing, notification, organization and contract-boundary slices; hosted CI, PostgreSQL/RBAC, providers, legal approval, manual assistive-technology review, staging and production remain external gates.
+
+## 2026-11-10 checkpoint — provider recovery fixture contract refresh
+
+- Change: Updated the provider-coverage recovery fixture with the strict summary fields required by the current fail-closed parser, including review-only proposals, guarded human review policy, review queue counts and promotion queue data. No runtime provider behavior or backend contract was changed.
+- Evidence: Targeted rebuilt-bundle recovery and repository-dialog coverage passed **6/6** on isolated port 3163; the focused connect-dialog suite passed **4/4** on isolated port 3166. The full 239-test matrix reached **237/239**: one dialog focus assertion was intermittent and passed in isolation, while the seeded password/session scenario received a local **429** after repeated suite runs. This is recorded as local test-environment contention, not a cleared hosted or backend gate.
+- Scope: Advances UI-13 provider recovery regression evidence only; provider authorization, hosted CI, rate-limit reset/state, staging and production remain external gates.
