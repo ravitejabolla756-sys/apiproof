@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Receipt } from 'lucide-react';
 import { formatInvoiceAmount, formatInvoiceDate, toSafeInvoiceDateTime, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter, type InvoiceHistoryAdapter, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
 
@@ -8,6 +8,7 @@ export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter
   const [result, setResult] = useState<InvoiceHistoryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -22,6 +23,7 @@ export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter
   }, [adapter]);
 
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
 
   return (
     <section aria-labelledby="invoice-history-heading" className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-3 shadow-xs">
@@ -32,7 +34,7 @@ export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter
       {loading ? (
         <p role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 text-xs text-[#686868]">Loading invoice history…</p>
       ) : error ? (
-        <div role="alert" aria-live="assertive" aria-atomic="true" className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800">
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
           <span>{error}</span>
           <button type="button" onClick={() => void load()} disabled={loading} aria-busy={loading ? 'true' : undefined} className="inline-flex min-h-11 items-center rounded-lg border border-rose-300 bg-white px-3 font-medium text-rose-900 disabled:cursor-not-allowed disabled:opacity-70">Retry invoice history</button>
         </div>

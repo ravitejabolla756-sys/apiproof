@@ -645,3 +645,7 @@ Invitation validation remains strict for production origins while accepting only
 ## Latest UI-12 trend legend evidence — 2026-11-09
 
 Dashboard trend color markers are explicitly hidden from assistive technology while their text labels remain available. Focused trend accessibility and zero-state browser coverage passed **2/2** against the rebuilt bundle. Manual assistive-technology review, hosted CI, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest BILL-09 invoice error evidence — 2026-11-09
+
+Invoice-history adapter failures now focus the assertive retry alert. The billing boundary browser test passed **1/1**, and the rebuilt web build generated **83 pages**. Provider-backed invoice errors, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

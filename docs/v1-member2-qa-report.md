@@ -1823,6 +1823,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Dashboard trend color markers are now explicitly decorative; the focused trend accessibility and zero-state browser checks passed 2/2 against the rebuilt bundle.
 - NOT_RUN: Manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — invoice error focus recovery
+
+- PASS: Invoice-history retry failures now focus the assertive alert while preserving retry semantics; the billing boundary browser test passed 1/1 and the rebuilt build generated 83 pages.
+- NOT_RUN: Provider-backed invoice source, live error projection, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

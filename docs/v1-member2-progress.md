@@ -3298,3 +3298,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Marked the dashboard trend legend’s visual color markers as decorative while retaining the Critical, High and Warning text labels for assistive technology.
 - Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-trend-accessibility.spec.ts`.
 - Evidence: Rebuilt-bundle trend accessibility and zero-trend coverage passed **2/2**; targeted ESLint, test TypeScript, diff checks and the 83-page production build passed. Manual assistive-technology review remains open.
+
+## 2026-11-09 checkpoint — BILL-09 invoice error focus recovery
+
+- Change: Invoice-history adapter failures now move keyboard focus to the assertive retry alert, preserving the existing retry action and beta-unavailable boundary.
+- Files: `apps/web/src/components/dashboard/invoice-history-panel.tsx`.
+- Evidence: Targeted ESLint, test TypeScript and diff checks passed; the rebuilt web production build generated **83 pages**; the billing boundary browser test passed **1/1**. A provider-backed error projection and live billing integration remain unavailable.
