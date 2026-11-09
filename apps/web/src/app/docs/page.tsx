@@ -136,28 +136,28 @@ export default function DocsPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* HEADER */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="min-w-0 text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <BookOpen className="w-3.5 h-3.5 text-slate-700" aria-hidden="true" />
             <span>TECHNICAL DOCUMENTATION</span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
+          <h1 className="break-words font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
             MY OWL Documentation
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+          <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
             Comprehensive reference guides, architecture deep-dives, verification contracts, and API integration specifications.
           </p>
         </div>
 
         {/* QUICK SEARCH / INTRO BAR */}
-        <div className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
-          <div className="flex items-center gap-3 text-slate-700">
+        <div className="min-w-0 rounded-2xl bg-white border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
+          <div className="min-w-0 flex items-center gap-3 text-slate-700">
             <Terminal className="w-4 h-4 text-[#004EE8]" aria-hidden="true" />
-            <span>Core Model: Ingest → AST Trace → Deterministic Plan → 4 Gates → Draft PR</span>
+            <span className="break-words">Core Model: Ingest → AST Trace → Deterministic Plan → 4 Gates → Draft PR</span>
           </div>
           <Link
             href="/how-it-works"
@@ -174,36 +174,36 @@ export default function DocsPage() {
             <section
               key={category.id}
               id={category.id}
-              className="rounded-3xl bg-white border border-slate-200/80 p-8 sm:p-10 space-y-6 shadow-xs"
+              className="min-w-0 rounded-3xl bg-white border border-slate-200/80 p-8 sm:p-10 space-y-6 shadow-xs"
             >
               {/* Category Header */}
-              <div className="pb-4 border-b border-slate-100 space-y-1">
+              <div className="min-w-0 pb-4 border-b border-slate-100 space-y-1">
                 <h2 className="text-xs font-mono font-bold text-[#004EE8] uppercase tracking-wider">
                   {category.name}
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
+                <p className="break-words text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                   {category.description}
                 </p>
               </div>
 
               {/* Articles Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {category.articles.map((art) => (
                   <div
                     key={art.slug}
-                    className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2.5 flex flex-col justify-between hover:border-slate-300 transition-colors group"
+                    className="min-w-0 p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2.5 flex flex-col justify-between hover:border-slate-300 transition-colors group"
                   >
                     <div className="space-y-1.5">
-                      <h3 className="font-semibold text-sm text-[#000E29] group-hover:text-[#004EE8] transition-colors">
+                      <h3 className="break-words font-semibold text-sm text-[#000E29] group-hover:text-[#004EE8] transition-colors">
                         {art.title}
                       </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                      <p className="break-words text-xs text-slate-600 leading-relaxed font-sans">
                         {art.desc}
                       </p>
                     </div>
 
-                    <div className="pt-2 text-[11px] font-mono text-slate-600 flex items-center justify-between">
-                      <span>docs/{category.id}</span>
+                    <div className="flex min-w-0 items-center justify-between gap-2 pt-2 text-[11px] font-mono text-slate-600">
+                      <span className="break-all">docs/{category.id}</span>
                       <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#004EE8] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                     </div>
                   </div>
@@ -214,16 +214,16 @@ export default function DocsPage() {
         </div>
 
         {/* BOTTOM HELP BANNER */}
-        <div className="rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <h2 className="font-serif text-2xl font-normal">
+        <div className="min-w-0 rounded-3xl bg-[#000E29] text-white p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="min-w-0 space-y-2 max-w-xl">
+            <h2 className="break-words font-serif text-2xl font-normal">
               Have technical questions or custom API requirements?
             </h2>
-            <p className="text-xs text-slate-300 font-sans leading-relaxed">
+            <p className="break-words text-xs text-slate-300 font-sans leading-relaxed">
               Explore our engineering articles on AST analysis and verification, or reach out to our team for custom rule integration.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/blog"
               className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/10 px-5 py-2.5 text-white text-xs font-mono font-medium transition-colors border border-white/10 hover:bg-white/15"

@@ -4088,3 +4088,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The public pipeline specification now establishes shrink/wrap boundaries for invariant callouts, step headers, technical input/output copy and CTA text while preserving keyboard-focusable horizontal scrolling for system-artifact code blocks.
 - Scope: Advances WEB-15/UI-12/UI-13 responsive and keyboard QA only; pipeline implementation claims and provider/backend behavior remain unchanged.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3136, including the 320px axe/overflow case, nine artifact-region focus checks and the primary conversion touch target, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — documentation catalog narrow containment
+
+- Change: Public documentation categories, article cards, core-model bar and help banner now establish shrink/wrap boundaries at narrow widths while preserving the existing taxonomy, ordered links and technical copy.
+- Scope: Advances WEB-15/UI-12/UI-13 responsive QA only; article publishing, content ownership and deployment verification remain outside this local slice.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3137, including the 320px axe/overflow case, category heading assertions and 44px help/core-model links, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
