@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
-import { assessWorkerHealth, evaluateWorkerHealthAlert, finishWorkerRun, getWorkerHeartbeats, pruneWorkerHeartbeatHistory, startWorkerRun, tryFinishWorkerRun, tryStartWorkerRun } from '../apps/web/src/lib/server/worker-observability.js';
+import { assessWorkerHealth, deliverWorkerHealthAlert, evaluateWorkerHealthAlert, finishWorkerRun, getWorkerHeartbeats, pruneWorkerHeartbeatHistory, startWorkerRun, tryFinishWorkerRun, tryStartWorkerRun } from '../apps/web/src/lib/server/worker-observability.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-sec13-worker-observability.db');
 const ENVIRONMENT_KEYS = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED'] as const;
@@ -217,5 +217,33 @@ describe('SEC-13 worker heartbeat and scheduler health', () => {
     expect(() => evaluateWorkerHealthAlert(heartbeat, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 }, {
       maxStalledProcessingJobs: -1, maxRetryExhaustedJobs: 0,
     })).toThrow('WORKER_HEALTH_INVALID_ALERT_THRESHOLDS');
+  });
+
+  it('delivers only actionable alerts through an injected destination-neutral sink', async () => {
+    const sent: unknown[] = [];
+    const sink = { send: async (alert: unknown) => { sent.push(alert); } };
+    const alert = evaluateWorkerHealthAlert({
+      component: 'scan-worker', runId: 'worker-1', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: null, status: 'failed', errorCode: 'SCAN_WORKER_FAILED', ageMs: 1, freshness: 'unknown',
+    }, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 }, {
+      maxStalledProcessingJobs: 0, maxRetryExhaustedJobs: 0,
+    });
+
+    await expect(deliverWorkerHealthAlert(alert, sink)).resolves.toBe('sent');
+    expect(sent).toEqual([alert]);
+    await expect(deliverWorkerHealthAlert({ ...alert, shouldAlert: false, severity: null }, sink)).resolves.toBe('not_needed');
+    expect(sent).toHaveLength(1);
+  });
+
+  it('contains destination failures without throwing into worker execution', async () => {
+    const alert = evaluateWorkerHealthAlert({
+      component: 'scan-worker', runId: 'worker-1', startedAt: '2026-11-07T00:00:00.000Z',
+      finishedAt: null, status: 'failed', errorCode: 'SCAN_WORKER_FAILED', ageMs: 1, freshness: 'unknown',
+    }, { stalledProcessingJobs: 0, retryExhaustedJobs: 0 }, {
+      maxStalledProcessingJobs: 0, maxRetryExhaustedJobs: 0,
+    });
+
+    await expect(deliverWorkerHealthAlert(alert, { send: async () => { throw new Error('provider secret'); } }))
+      .resolves.toBe('failed');
   });
 });

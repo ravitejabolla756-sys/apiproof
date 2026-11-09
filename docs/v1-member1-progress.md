@@ -886,3 +886,8 @@ Phase 0 read-only checks:
 - Added local safety bounds to structured log messages and error strings (4,000 characters each) and oversized sanitized context (replaced with a `[TRUNCATED]` marker above 16,000 serialized characters). Existing secret redaction and circular-reference handling remain unchanged.
 - `phase5-production-operations` passes 15/15 with a disposable process-only seed; web typecheck and targeted ESLint pass. The initial no-seed invocation failed closed as expected with `MISSING_LOCAL_SEED_PASSWORD`; it was rerun with the approved local seed and no remote database URLs.
 - This is local log-volume protection only. External sink limits, monitoring destination, retention, alert policy and staging rehearsal remain unresolved for SEC-11.
+
+### 2026-11-09 SEC-13 destination-neutral alert delivery
+
+- Added `deliverWorkerHealthAlert`, an injected sink boundary that sends only actionable alert decisions and returns `not_needed`, `sent`, or `failed` without propagating destination failures into worker execution.
+- `sec13-worker-observability` now covers successful delivery, non-actionable suppression, and contained sink failure. No monitoring provider, credential, destination, schedule or staging behavior was selected.

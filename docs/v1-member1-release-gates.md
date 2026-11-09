@@ -225,3 +225,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - Current-HEAD build: PASS, `pnpm build` completed all workspace package builds and the Next.js application generated 64 static pages. Build-generated changes to `apps/web/next-env.d.ts` and `apps/web/tsconfig.json` were restored; no deployment occurred.
 
 - SEC-11 bounded logger output: PASS locally, `phase5-production-operations` 15/15 with a disposable local seed; 4,000-character message/error bounds and 16,000-character context truncation are covered, with web typecheck and targeted ESLint passing. External sink, monitoring, retention, alert-routing and staging evidence remain open.
+
+- SEC-13 injected alert delivery: PASS locally, `sec13-worker-observability` covers actionable delivery, non-actionable suppression and contained sink failure. This is a destination-neutral local contract; monitoring provider, alert routing, retry/escalation policy, PostgreSQL and staging rehearsal remain open.

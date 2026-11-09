@@ -37,6 +37,12 @@ export interface WorkerHealthAlert {
   reasonCodes: string[];
 }
 
+export interface WorkerHealthAlertSink {
+  send(alert: WorkerHealthAlert): Promise<void>;
+}
+
+export type WorkerHealthAlertDelivery = 'not_needed' | 'sent' | 'failed';
+
 const FRESHNESS_WINDOWS_MS: Partial<Record<WorkerComponent, number>> = {
   // Twice the declared schedule interval plus a bounded delivery allowance.
   'provider-changelog-scheduler': 12 * 60 * 60 * 1_000,
@@ -120,6 +126,25 @@ export function evaluateWorkerHealthAlert(
     severity: shouldAlert ? critical ? 'critical' : 'warning' : null,
     reasonCodes,
   };
+}
+
+/**
+ * Delivers an already-evaluated alert through an injected sink. The sink is
+ * intentionally destination-neutral: provider selection, credentials and
+ * escalation policy stay outside the worker path. Delivery failure is
+ * observable to the caller but cannot turn telemetry into job failure.
+ */
+export async function deliverWorkerHealthAlert(
+  alert: WorkerHealthAlert,
+  sink: WorkerHealthAlertSink,
+): Promise<WorkerHealthAlertDelivery> {
+  if (!alert.shouldAlert) return 'not_needed';
+  try {
+    await sink.send(alert);
+    return 'sent';
+  } catch {
+    return 'failed';
+  }
 }
 
 export async function startWorkerRun(component: WorkerComponent, now = new Date()): Promise<string> {
