@@ -705,3 +705,7 @@ The current branch passes `pnpm lint` with zero warnings and the no-file-paralle
 ## Latest CI-mode browser evidence — 2026-11-09
 
 The current production-bundle Playwright matrix passed **188/188** in 3.3 minutes with one worker, covering public/authenticated accessibility and responsive routes, organization context/recovery, billing and invoice boundaries, notification digest controls, contact/status truthfulness and degraded/retry states. Authorized hosted CI, integrated staging, PostgreSQL/RBAC, full manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest WEB-15/BILL-11 contact validation evidence — 2026-11-09
+
+The public non-sending contact form now bounds name, email and message lengths at 120, 254 and 4,000 characters. Approved intake destination, delivery/spam controls, hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

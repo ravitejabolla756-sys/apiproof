@@ -63,6 +63,7 @@ export default function ContactPage() {
                       name="name"
                       type="text"
                       required
+                      maxLength={120}
                       autoComplete="name"
                       placeholder="Alex Rivera"
                       className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-base text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
@@ -75,6 +76,7 @@ export default function ContactPage() {
                       name="email"
                       type="email"
                       required
+                      maxLength={254}
                       autoComplete="email"
                       placeholder="alex@company.com"
                       className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-base text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10"
@@ -107,6 +109,7 @@ export default function ContactPage() {
                     name="message"
                     rows={4}
                     required
+                    maxLength={4000}
                     placeholder="Tell us about your tech stack, repository setup, or technical question..."
                     className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-base text-[#000E29] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 resize-none"
                   />

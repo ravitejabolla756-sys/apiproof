@@ -1898,6 +1898,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `CI=true PLAYWRIGHT_PORT=3157 pnpm exec playwright test --workers=1 --reporter=line` passed 188/188 against the current production bundle in 3.3 minutes, including public/authenticated accessibility, responsive, organization, billing, notification, contact/status, recovery and workspace-context journeys.
 - NOT_RUN: Authorized hosted CI, integrated staging, PostgreSQL/RBAC, full manual assistive-technology review and production remain open.
 
+## 2026-11-09 — contact input bounds
+
+- PASS: The public non-sending contact form exposes native maximum lengths for name, email and message fields, verified in the focused browser journey.
+- NOT_RUN: Approved intake destination, delivery/spam controls, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

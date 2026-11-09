@@ -3382,3 +3382,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 ## 2026-11-09 checkpoint — current CI-mode browser matrix
 
 - Evidence: `CI=true PLAYWRIGHT_PORT=3157 pnpm exec playwright test --workers=1 --reporter=line` passed **188/188** against the current production bundle in 3.3 minutes. Coverage includes public/authenticated axe and responsive checks, contact and status truthfulness, billing boundaries, notification digest gates, organization context/recovery, repository/finding workflows and retry states. Hosted CI, integrated staging, PostgreSQL/RBAC, full manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — WEB-15/BILL-11 contact input bounds
+
+- Change: Added native maximum lengths for contact name, email and message fields (120, 254 and 4,000 characters) while retaining the non-sending beta boundary and existing native required/email validation.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Focused rebuilt-bundle contact coverage passed **2/2**; targeted ESLint, detector, `git diff --check` and the web production build passed with **83 pages**. No intake destination, delivery, spam service or production behavior was added.
