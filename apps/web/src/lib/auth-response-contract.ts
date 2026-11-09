@@ -9,6 +9,11 @@ export function parseAuthMutationSuccess(payload: unknown): boolean {
   return isRecord(payload) && payload.success === true;
 }
 
+/** Validate the boolean session projection used by public navigation. */
+export function parseAuthenticatedSession(payload: unknown): boolean {
+  return isRecord(payload) && payload.authenticated === true;
+}
+
 /** Read an authentication error without rendering malformed response values. */
 export function parseAuthMutationError(payload: unknown, fallback: string): string {
   if (!isRecord(payload) || typeof payload.error !== 'string') return fallback;

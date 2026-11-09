@@ -3951,3 +3951,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: Organization/audit contract coverage passed **16/16**; rebuilt-bundle browser coverage passed **15/15** on isolated port 3112, including the new 320px long-invitation case and axe checks; the isolated production build generated **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed; no organization endpoint, authorization or revocation contract changed.
 - Scope: Advances UI-12/ORG-02 responsive resilience only; PostgreSQL/RBAC, ORG-10 revocation and manual assistive-technology review remain external gates.
+
+## 2026-11-10 checkpoint — public navbar session projection guard
+
+- Change: Public navigation now accepts `/api/auth` as authenticated only when the response contains the explicit boolean projection `{ authenticated: true }`; malformed truthy values no longer expose the Dashboard link.
+- Files: `apps/web/src/lib/auth-response-contract.ts`, `apps/web/src/components/landing/navbar.tsx`, `tests/auth-response-contract.test.ts`.
+- Evidence: Auth contract coverage passed **3/3**; rebuilt-bundle navbar coverage passed **2/2** on isolated port 3113 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+- Scope: Advances AUTH-08/UI-12 local response safety only; session issuance, authorization and cookie behavior remain backend-owned.

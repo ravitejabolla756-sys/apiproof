@@ -20,3 +20,14 @@ test('keeps public navbar controls touch-sized and accessible on mobile', async 
   for (const link of await links.all()) expect((await link.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await new AxeBuilder({ page }).include('#mobile-site-navigation').analyze()).violations).toEqual([]);
 });
+
+test('does not expose the dashboard for a malformed authenticated projection', async ({ page }) => {
+  await page.route('**/api/auth', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ authenticated: 'true' }) });
+  });
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto('/pricing');
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Get Started' })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Dashboard' })).toHaveCount(0);
+  await page.unroute('**/api/auth');
+});

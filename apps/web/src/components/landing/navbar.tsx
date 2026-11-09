@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Menu, X } from "lucide-react";
 import { MyOwlLogo } from "@/components/ui/logo";
+import { parseAuthenticatedSession } from "@/lib/auth-response-contract";
 
 // Desktop navbar links: Product, How it works, Security, Docs, Pricing
 const DESKTOP_NAV_LINKS = [
@@ -48,7 +49,7 @@ export function LandingNavbar() {
     fetch('/api/auth')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.authenticated) {
+        if (parseAuthenticatedSession(data)) {
           setIsAuthenticated(true);
         }
       })
