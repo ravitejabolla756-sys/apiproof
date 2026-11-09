@@ -4208,3 +4208,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added focused ORG-02/UI-13 browser coverage for workspace administration headings, members/audit regions, axe cleanliness and keyboard skip-link focus.
 - Scope: Advances local organization-settings accessibility evidence only; workspace authorization, invitation delivery, role/RBAC, audit retention and Member 1 ORG-10 revocation remain server-owned.
 - Evidence: Rebuilt-bundle organization coverage passed **1/1** on isolated port 3159 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.
+
+## 2026-11-10 checkpoint — account deletion boundary skip-link regression
+
+- Change: Added focused AUTH-08/AUTH-09/UI-13 browser coverage proving account deletion remains disabled and non-submitting while preserving keyboard skip-link focus on account settings.
+- Scope: Advances local account safety and accessibility evidence only; deletion authorization, retention, durable erasure and legal policy remain blocked pending contract approval.
+- Evidence: Rebuilt-bundle account coverage passed **1/1** on isolated port 3160 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.
