@@ -33,3 +33,18 @@ test('keeps beta billing boundaries truthful in browser flows', async ({ page })
   expect(portal.status()).toBe(403);
   expect(await portal.json()).toMatchObject({ error: expect.stringContaining('BILLING_NOT_AVAILABLE') });
 });
+
+test('keeps the invoice history boundary responsive across product breakpoints', async ({ page }) => {
+  await signIn(page);
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
+    const invoiceSection = page.locator('section[aria-labelledby="invoice-history-heading"]');
+    await expect(invoiceSection).toBeVisible({ timeout: 30_000 });
+    await expect(invoiceSection.getByRole('status')).toContainText('Invoice history is unavailable in the free beta.');
+    await expect(invoiceSection.getByRole('link')).toHaveCount(0);
+    await expect(invoiceSection.getByRole('button')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${width}px billing overflow`).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, `${width}px invoice history`).toEqual([]);
+  }
+});

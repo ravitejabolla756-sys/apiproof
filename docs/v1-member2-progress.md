@@ -3505,3 +3505,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/account-deletion-contract.ts`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/account-deletion-contract.test.ts`.
 - Evidence: Contract coverage passed **1/1**; the rebuilt-bundle account/settings browser journey passed **1/1**; the targeted detector returned `[]`, targeted ESLint, web typecheck, web build and `git diff --check` passed.
 - Scope: Advances local AUTH-09 truthfulness only. Legal retention approval, Member 1 deletion contract, destructive endpoint design, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/BILL-09 invoice boundary responsive matrix
+
+- Change: Extended the browser contract for the provider-neutral invoice-history unavailable state across 320px mobile, 768px tablet and 1280px desktop viewports; it must remain axe-clean, contained and action-free at each breakpoint.
+- Files: `tests/e2e/billing-boundaries.spec.ts`.
+- Scope: Advances local UI-12/UI-13/BILL-09 responsive evidence only. Provider invoice projection, billing-owner authorization, hosted links, retention, sandbox integration, hosted CI, staging and production remain open.
