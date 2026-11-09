@@ -3388,3 +3388,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added native maximum lengths for contact name, email and message fields (120, 254 and 4,000 characters) while retaining the non-sending beta boundary and existing native required/email validation.
 - Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Focused rebuilt-bundle contact coverage passed **2/2**; targeted ESLint, detector, `git diff --check` and the web production build passed with **83 pages**. No intake destination, delivery, spam service or production behavior was added.
+
+## 2026-11-09 checkpoint — SEC-18 local tabletop rehearsal
+
+- Change: Recorded a redacted, local-only incident-response rehearsal for the cross-account invitation scenario, including severity decision, containment, evidence boundaries, communication posture and explicit ORG-10/owner/security gaps.
+- Files: `docs/v1-member2-incident-response.md`.
+- Evidence: `pnpm exec vitest run tests/organization-management.test.ts` passed **22/22**; the rehearsal remains local planning evidence and does not establish monitoring, staffing, PostgreSQL/RBAC, workspace-scoped revocation, staging or production readiness.

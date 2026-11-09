@@ -1903,6 +1903,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The public non-sending contact form exposes native maximum lengths for name, email and message fields, verified in the focused browser journey.
 - NOT_RUN: Approved intake destination, delivery/spam controls, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — SEC-18 local tabletop rehearsal
+
+- PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
+- NOT_RUN: Owner/security sign-off, staffed monitoring, PostgreSQL/RBAC, Member 1 workspace-scoped revocation integration, staging and production exercise remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

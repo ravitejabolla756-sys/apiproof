@@ -709,3 +709,7 @@ The current production-bundle Playwright matrix passed **188/188** in 3.3 minute
 ## Latest WEB-15/BILL-11 contact validation evidence — 2026-11-09
 
 The public non-sending contact form now bounds name, email and message lengths at 120, 254 and 4,000 characters. Approved intake destination, delivery/spam controls, hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest SEC-18 tabletop evidence — 2026-11-09
+
+A redacted local-only tabletop rehearsal is recorded for the cross-account invitation scenario, backed by the 22/22 organization-management suite. Owner/security sign-off, staffed monitoring, PostgreSQL/RBAC, Member 1 ORG-10 integration, staging and production exercise remain **NOT_RUN**; release recommendation remains **NO-GO**.

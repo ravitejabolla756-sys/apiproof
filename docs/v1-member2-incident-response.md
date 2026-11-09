@@ -41,7 +41,7 @@ Before enabling a live integration or treating this runbook as an operational co
 | Status communication source | Approved status provider or owner-controlled publishing procedure | `NOT_AVAILABLE — status-source approval required` |
 | Provider and credential response | Approved rotation/suspension procedure without secrets in the record | `NOT_AVAILABLE — provider access required` |
 | Database and tenant-isolation response | Reviewed PostgreSQL roles/RLS evidence and restore/rollback procedure | `NOT_AVAILABLE — staging/Member 1 evidence required` |
-| Tabletop exercise | Timestamped redacted exercise record with gaps, owners and sign-off | `NOT_RUN — tabletop required` |
+| Tabletop exercise | Timestamped redacted exercise record with gaps, owners and sign-off | `LOCAL_ONLY — owner/security review and sign-off required` |
 
 ## First 15 minutes
 
@@ -118,7 +118,7 @@ The handoff table is a record format, not evidence that an on-call rotation or a
 
 Run this scenario before enabling live integrations: “A member accepts an invitation from a different account, then sees another workspace’s repository activity.” The expected response is to reproduce with two users, verify email-bound single-use token behavior, inspect membership predicates, revoke the affected member sessions, preserve redacted evidence, and keep the public status page explicitly unclaimed until an approved source is connected. Record gaps; do not mark the exercise as a production control.
 
-### Tabletop record template — not yet conducted
+### Tabletop record template — owner/security review pending
 
 Complete this record with the service owner and Member 1 before treating SEC-18 as reviewed. Use a fresh UTC timestamp and link only to redacted, non-production evidence.
 
@@ -135,4 +135,23 @@ Complete this record with the service owner and Member 1 before treating SEC-18 
 | Gaps, owners, and due dates | `TBD` |
 | Owner/security sign-off | `TBD` |
 
-The worksheet is planning evidence only. Until it is completed and reviewed, the incident-response gate remains PARTIAL/BLOCKED for live operations.
+The worksheet is planning evidence only. Until it is reviewed and signed off, the incident-response gate remains PARTIAL/BLOCKED for live operations.
+
+### Local non-production rehearsal — 2026-11-09
+
+This is a redacted local rehearsal, not a production incident, live-monitoring test, or owner/security approval. It used isolated test fixtures only.
+
+| Field | Local rehearsal record |
+|---|---|
+| Exercise date / facilitator | `2026-11-09T13:20:51Z` / Member 2 (Codex) |
+| Participants and assigned roles | `NOT_AVAILABLE` — service owner, security owner and communications owner were not present |
+| Scenario | A member attempts to accept a workspace invitation from a different account and access another workspace's activity |
+| Detection and first severity | Invitation email mismatch is a tenant-boundary signal; classify at least `SEV-1` until scope is disproved |
+| Reproduction evidence | `tests/organization-management.test.ts` passed **22/22**, including `INVITATION_EMAIL_MISMATCH`, expired-token rejection, owner protection and membership-boundary assertions |
+| Containment decision / rollback condition | Keep live member removal and invitation integration behind the reviewed ORG-10 transaction; do not use the current broad session invalidation path. Rollback condition is any evidence of unrelated-workspace access or loss of unrelated sessions. |
+| Session/invitation/audit evidence reviewed | Redacted local fixture assertions only; no production identifiers, tokens, cookies or repository data recorded |
+| Customer/status communication decision | Withhold publication; the public status page remains explicitly unclaimed until an approved source exists |
+| Gaps, owners and due dates | Member 1: ORG-10 endpoint/transaction and PostgreSQL proof; owner/security: severity, escalation channel and sign-off; due dates `TBD` |
+| Owner/security sign-off | `PENDING — local rehearsal does not establish approval` |
+
+The rehearsal confirms local detection and response sequencing only. It does not prove monitoring, staffing, PostgreSQL isolation, workspace-scoped revocation, provider delivery, staging or production readiness.
