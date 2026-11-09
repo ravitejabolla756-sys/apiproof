@@ -2240,3 +2240,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: The public status surface remains explicit about the missing monitor and provides a touch-sized support path without operational claims; status contract coverage passed **1/1** and public status/CTA accessibility coverage passed **7/7**.
 - NOT_RUN: Approved monitoring source/freshness policy, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — compatibility contract test maintenance
+
+- PASS: The compatibility dashboard contract test now checks moved proof type declarations in the shared contract module while continuing to assert the dashboard's rendering usage. The focused test passed **1/1**.
+- PASS: Seeded Vitest full suite passed **191/192 files** with **1 skipped file**; **1,472 tests passed** and **4 skipped**, with no failures. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Hosted CI, integrated staging, manual assistive-technology review and production remain open.

@@ -3802,3 +3802,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: The no-monitor status contract remains explicit and the public status page exposes no invented uptime or incident claims; status contract coverage passed **1/1** and public status/CTA accessibility coverage passed **7/7**.
 - Scope: Confirms WEB-13/UI-12 local behavior only; approved monitoring source, freshness policy, incident rehearsal and hosted/live verification remain external gates.
+
+## 2026-11-09 checkpoint — compatibility contract test maintenance
+
+- Change: Updated the compatibility dashboard source-contract test to inspect `compatibility-proof-contract.ts` for moved type declarations while retaining page rendering assertions.
+- Evidence: Seeded Vitest full suite passed **192 files: 191 passed, 1 skipped; 1,472 tests passed, 4 skipped**. The focused compatibility contract test passed **1/1**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Test-maintenance only; no runtime behavior or backend contract changed.
