@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { ArrowLeft, Bell, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { digestAvailability } from '@/lib/digest-notification-contract';
+import { parseNotificationPreferences, type NotificationPreference } from '@/lib/notification-preferences-contract';
 
-interface Preference { category: string; channel: 'email' | 'slack'; enabled: boolean; required: boolean; deliveryAvailable: boolean; }
 const LABELS: Record<string, string> = { security: 'Security alerts', account: 'Account and recovery', findings: 'Breaking findings', scan_failure: 'Scan failures', migration: 'Migration proposal outcomes', provider_change: 'Provider change alerts', weekly_digest: 'Weekly digest' };
 
 export default function NotificationSettingsPage() {
-  const [preferences, setPreferences] = useState<Preference[]>([]);
+  const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
@@ -29,9 +29,10 @@ export default function NotificationSettingsPage() {
     }
     try {
       const response = await fetch('/api/account/notifications');
-      const data = await response.json() as { preferences?: Preference[]; error?: string };
-      if (!response.ok || !data.preferences) throw new Error(data.error || 'Unable to load notification preferences.');
-      setPreferences(data.preferences);
+      const data = await response.json() as { error?: string; preferences?: unknown };
+      const parsedPreferences = parseNotificationPreferences(data);
+      if (!response.ok || !parsedPreferences) throw new Error(data.error || 'Unable to load notification preferences.');
+      setPreferences(parsedPreferences);
       setInitialLoadFailed(false);
       setError(null);
     } catch (loadError: unknown) {
@@ -47,7 +48,7 @@ export default function NotificationSettingsPage() {
     void loadPreferences();
   }, [loadPreferences]);
 
-  function toggle(category: string, channel: Preference['channel']) {
+  function toggle(category: string, channel: NotificationPreference['channel']) {
     setPreferences((current) => current.map((item) => item.category === category && item.channel === channel && !item.required ? { ...item, enabled: !item.enabled } : item));
   }
 
@@ -55,9 +56,10 @@ export default function NotificationSettingsPage() {
     setSaving(true); setActionStatus('Saving notification preferences…'); setMessage(null); setError(null);
     try {
       const response = await fetch('/api/account/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ updates: preferences.map(({ category, channel, enabled }) => ({ category, channel, enabled })) }) });
-      const data = await response.json() as { preferences?: Preference[]; error?: string };
-      if (!response.ok || !data.preferences) throw new Error(data.error || 'Unable to save notification preferences.');
-      setPreferences(data.preferences);
+      const data = await response.json() as { error?: string; preferences?: unknown };
+      const parsedPreferences = parseNotificationPreferences(data);
+      if (!response.ok || !parsedPreferences) throw new Error(data.error || 'Unable to save notification preferences.');
+      setPreferences(parsedPreferences);
       setMessage('Notification preferences saved.');
     } catch (saveError: unknown) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save notification preferences.');

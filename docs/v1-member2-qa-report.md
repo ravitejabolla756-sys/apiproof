@@ -1733,6 +1733,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The GitHub-action loading fixture now matches the backend subscription projection by including period timestamps; runtime validation remains strict.
 - NOTE: The full matrix also exposed two existing focus/redirect failures requiring isolated reruns; no production behavior was changed for those paths.
 
+## 2026-11-09 — notification projection validation
+
+- PASS: Notification settings now fail closed when the server response contains an unknown category/channel, malformed boolean flags or duplicate keys; no delivery or digest policy was changed.
+- TEST: Focused Vitest contract coverage was added for valid and malformed projections. Provider-controlled delivery, scheduler approval and hosted verification remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

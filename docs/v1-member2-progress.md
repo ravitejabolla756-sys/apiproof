@@ -3199,3 +3199,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Updated the GitHub-action loading fixture to include the backend-required billing period fields. Runtime billing validation remains strict; no production contract was relaxed.
 - Files: `tests/e2e/github-action-loading.spec.ts`.
 - Scope: restores local UI-13 fixture compatibility after projection validation. Provider lifecycle, authorization, hosted CI and production remain open.
+
+## 2026-11-09 checkpoint — NOT-06/UI-12 notification projection validation
+
+- Change: Notification settings now validate the server-owned preference projection before rendering or accepting updates. Unknown categories/channels, malformed flags and duplicate preference keys fail closed into the existing recovery state; digest availability and delivery policy remain unchanged.
+- Files: `apps/web/src/lib/notification-preferences-contract.ts`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/notification-preferences-contract.test.ts`.
+- Evidence: Focused contract coverage added for valid, malformed, duplicate and missing projections. Provider delivery, digest scheduling and Member 1 event integration remain open.
