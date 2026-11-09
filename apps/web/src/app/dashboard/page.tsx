@@ -296,9 +296,9 @@ export default function DashboardOverviewPage() {
             )}
           </div>
           <div className="mt-4 flex flex-wrap gap-4 text-[10px] text-[#686868]">
-            <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-rose-500" />Critical</span>
-            <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-amber-500" />High</span>
-            <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-sky-500" />Warning</span>
+            <span><i aria-hidden="true" className="mr-1 inline-block h-2 w-2 rounded-full bg-rose-500" />Critical</span>
+            <span><i aria-hidden="true" className="mr-1 inline-block h-2 w-2 rounded-full bg-amber-500" />High</span>
+            <span><i aria-hidden="true" className="mr-1 inline-block h-2 w-2 rounded-full bg-sky-500" />Warning</span>
           </div>
         </div>
 

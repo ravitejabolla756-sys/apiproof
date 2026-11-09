@@ -641,3 +641,7 @@ Invitation creation now fails closed for malformed or external links while prese
 ## Latest ORG-03 loopback-origin evidence — 2026-11-09
 
 Invitation validation remains strict for production origins while accepting only equivalent local loopback hosts on the same protocol and port. The final rebuilt-bundle invitation/organization-audit suite passed **14/14**; approved delivery, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest UI-12 trend legend evidence — 2026-11-09
+
+Dashboard trend color markers are explicitly hidden from assistive technology while their text labels remain available. Focused trend accessibility and zero-state browser coverage passed **2/2** against the rebuilt bundle. Manual assistive-technology review, hosted CI, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

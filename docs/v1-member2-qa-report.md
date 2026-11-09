@@ -1818,6 +1818,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The local browser harness’s `localhost`/`127.0.0.1` origin difference is handled only for matching loopback protocol/port; final invitation and organization-audit coverage passed 14/14.
 - NOT_RUN: Production external-origin behavior, approved email delivery, Member 1 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — trend legend semantics
+
+- PASS: Dashboard trend color markers are now explicitly decorative; the focused trend accessibility and zero-state browser checks passed 2/2 against the rebuilt bundle.
+- NOT_RUN: Manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

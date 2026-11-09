@@ -12,5 +12,8 @@ test('announces findings trend segment counts to assistive technology', async ({
   await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Findings this week' })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole('img', { name: '6 findings on 2026-11-08: 1 critical, 2 high, 3 warning' })).toBeVisible();
+  await expect(page.locator('i.bg-rose-500')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('i.bg-amber-500')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('i.bg-sky-500')).toHaveAttribute('aria-hidden', 'true');
   await page.unroute('**/api/overview');
 });
