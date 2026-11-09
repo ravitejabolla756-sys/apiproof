@@ -4154,3 +4154,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Compatibility-proof, findings and migration-workbench parsers now omit absent optional fields instead of constructing `undefined` properties, preserving their fail-closed projection semantics while satisfying the repository's strict `exactOptionalPropertyTypes` contract.
 - Scope: Advances UI-12/UI-13 projection safety and repository quality gates only; provider authorization, tenant isolation and backend ownership remain unchanged.
 - Evidence: Repository `pnpm lint` passed; repository `pnpm typecheck` passed across all workspace projects and `tsconfig.test.json`; focused compatibility-proof/findings/migration contract coverage passed **6/6**; the isolated web production build generated **83 pages** with only the existing non-blocking Next.js ESLint-plugin warning; `git diff --check` passed.
+
+## 2026-11-10 checkpoint — dynamic finding skip-link focus preservation
+
+- Change: Dynamic finding-detail error recovery no longer steals focus from an explicit skip-link move to `#main-content`; initial/retry error announcements still focus the assertive recovery surface when appropriate.
+- Scope: Advances UI-12/UI-13 local keyboard and error-state QA only; finding authorization, provider evidence, hosted CI and production remain external.
+- Evidence: Rebuilt-bundle accessibility-route coverage passed **16/16** on isolated port 3149 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed.

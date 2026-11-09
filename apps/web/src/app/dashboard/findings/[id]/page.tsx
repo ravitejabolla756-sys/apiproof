@@ -94,7 +94,7 @@ export default function FindingDetailPage({
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (error) errorRef.current?.focus();
+    if (error && document.activeElement?.id !== 'main-content') errorRef.current?.focus();
   }, [error]);
 
   async function loadFinding(preserveError = false) {

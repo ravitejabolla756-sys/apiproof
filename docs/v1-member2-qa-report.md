@@ -2392,3 +2392,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Compatibility-proof, findings and migration-workbench parsers now omit absent optional fields rather than constructing `undefined` properties; focused contract coverage passed **6/6** and repository `pnpm typecheck` now passes across all workspace projects and `tsconfig.test.json`.
 - PASS: Repository `pnpm lint`, targeted parser ESLint, `git diff --check`, and the isolated web production build passed; the build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning.
 - NOT_RUN: Provider authorization, tenant isolation, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-10 — dynamic finding skip-link focus preservation
+
+- PASS: Dynamic finding-detail error recovery preserves keyboard focus on `#main-content` after an explicit skip-link activation while retaining the error-region focus behavior for ordinary error changes. Rebuilt-bundle accessibility-route coverage passed **16/16** on isolated port 3149 after a fresh web production build generating **83 pages**.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the Impeccable detector reported no findings.
+- NOT_RUN: Hosted CI, manual assistive-technology review, finding authorization/provider verification, integrated staging and production remain open.
