@@ -4,75 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill, type StatusVariant } from "@/components/ui/status-pill";
 import { getProofMatchedTarget, getPullRequestStateLabel, getRegistryCoverageDescription, getRegistryCoverageLabel } from "@/lib/compatibility-map-labels";
+import { parseCompatibilityMapResponse, type CompatibilityMapProjection } from "@/lib/compatibility-map-contract";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, GitBranch, Layers, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 
-interface CompatibilityFinding {
-  id: string;
-  provider: string;
-  title: string;
-  status: string;
-  filePath: string;
-  symbol: string;
-  migration: { id: string; status: string | null } | null;
-  pullRequest: { id: string; number: number | null; state: string | null; url: string | null; createdAt: string | null } | null;
-}
-
-interface CompatibilityRepository {
-  id: string;
-  owner: string;
-  name: string;
-  fullName: string;
-  defaultBranch: string;
-  latestScanStatus: string;
-  latestCompletedScan: {
-    id: string;
-    sha: string | null;
-    baselineSha: string | null;
-    filesAnalyzed: number;
-    findingsCount: number;
-    completedAt: string | null;
-  } | null;
-  analysisEvidenceAvailable: boolean;
-  integrations: Array<{
-    provider: string;
-    providerName?: string;
-    detected: boolean;
-    usageCount: number | null;
-    mappedSymbolCount: number | null;
-    reviewedChangeCount: number;
-    packageName?: string | null;
-    declaredVersion?: string | null;
-    resolvedVersion?: string | null;
-    versionConfidence?: string | null;
-    capability?: string | null;
-    capabilities?: string[];
-  }>;
-  openFindingCount: number;
-  findings: CompatibilityFinding[];
-  compatibilityProofs?: Array<{
-    providerId: string;
-    changeId: string;
-    status: string;
-    changeTitle?: string;
-    severity?: string;
-    exactFile?: string | null;
-    exactLine?: number | null;
-    matchedModel?: string | null;
-    matchedResource?: string | null;
-    matchedEndpoint?: string | null;
-    matchedDomain?: string | null;
-    matchedParameter?: string | null;
-    matchedResponseField?: string | null;
-    matchedAuthOrHeader?: string | null;
-    officialSourceUrl?: string;
-    removalAt?: string | null;
-    reasonCodes?: string[];
-  }>;
-}
-
-interface CompatibilityMapResponse {
-  repositories: CompatibilityRepository[];
-}
+type CompatibilityRepository = CompatibilityMapProjection['repositories'][number];
 
 function proofStatusVariant(status: string): StatusVariant {
   return status === "AFFECTED" ? "affected" : status === "NOT_AFFECTED" ? "healthy" : "warning";
@@ -105,7 +40,8 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         signal: nextController.signal,
       });
       if (!response.ok) throw new Error(`Compatibility data could not be loaded (${response.status}).`);
-      const payload = await response.json() as CompatibilityMapResponse;
+      const payload = parseCompatibilityMapResponse(await response.json());
+      if (!payload) throw new Error('Compatibility data is temporarily unavailable.');
       if (id !== requestId.current) return;
       hasRepositories.current = payload.repositories.length > 0;
       setRepositories(payload.repositories);

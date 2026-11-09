@@ -3827,3 +3827,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/command-palette-contract.ts`, `apps/web/src/components/dashboard/command-palette.tsx`, `tests/command-palette-contract.test.ts`.
 - Evidence: Command-palette contract coverage passed **3/3**; rebuilt-bundle command-palette recovery coverage passed **1/1** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 local search resilience only; repository/inventory authorization and tenant-scoped server projections remain authoritative.
+
+## 2026-11-09 checkpoint — compatibility-map projection guard
+
+- Change: Added a nested compatibility-map adapter that validates repository identity, scan metadata, integration counts, finding envelopes, pull-request/migration nullability and duplicate IDs before rendering; malformed successful responses now use the existing retryable state.
+- Files: `apps/web/src/lib/compatibility-map-contract.ts`, `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/compatibility-map-contract.test.ts`.
+- Evidence: Compatibility-map contract coverage passed **3/3**; rebuilt-bundle compatibility-map and dashboard data-state browser coverage passed **18/18** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 compatibility-map resilience only; workspace authorization, provider provenance and backend evidence ownership remain unchanged.

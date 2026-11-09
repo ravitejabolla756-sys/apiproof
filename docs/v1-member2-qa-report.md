@@ -2263,3 +2263,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Command-palette search validates the minimal repository and inventory projections, rejecting malformed, negative-count and duplicate records into the existing retryable error state. Contract coverage passed **3/3**.
 - PASS: Rebuilt-bundle command-palette recovery coverage passed **1/1** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Backend tenant/authorization verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — compatibility-map projection guard
+
+- PASS: Compatibility-map rendering now validates nested repository, integration, finding, scan and duplicate-ID projections before use. Contract coverage passed **3/3**.
+- PASS: Rebuilt-bundle compatibility-map and dashboard data-state coverage passed **18/18** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Workspace authorization/provider evidence verification, hosted CI, staging, manual assistive-technology review and production remain open.
