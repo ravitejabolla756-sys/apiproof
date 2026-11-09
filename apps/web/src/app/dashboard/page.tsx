@@ -10,6 +10,7 @@ import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 import { toSafeExternalUrl } from "@/lib/external-link-contract";
 import { formatDisplayDate, formatDisplayTime } from "@/lib/date-display-contract";
+import { isOverviewResponse } from "@/lib/overview-contract";
 
 interface OverviewData {
   workspace?: {
@@ -112,8 +113,9 @@ export default function DashboardOverviewPage() {
       if (!res.ok) {
         throw new Error(`Overview request failed (${res.status})`);
       }
-      const json = await res.json() as OverviewData;
-      setData(json);
+      const json = await res.json() as unknown;
+      if (!isOverviewResponse(json)) throw new Error('The dashboard returned an invalid overview projection.');
+      setData(json as OverviewData);
       setError(null);
       setLastUpdatedAt(new Date());
     } catch (err) {

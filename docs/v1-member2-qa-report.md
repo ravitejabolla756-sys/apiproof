@@ -2122,3 +2122,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Compatibility-proof responses now validate reviewed identity, nested scope/replacement metadata and duplicate IDs before rendering; focused contract coverage passed **2/2** and compatibility-recovery/date browser coverage passed **7/7**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Official-source provenance, review authorization, provider intelligence, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — dashboard overview envelope guard
+
+- PASS: Dashboard overview now rejects missing collections and unsafe counters before rendering; focused envelope coverage passed **2/2** and dashboard loading/empty-state browser coverage passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Server authorization, tenant isolation, overview data ownership, hosted CI, staging, manual assistive-technology review and production remain open.

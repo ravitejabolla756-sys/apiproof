@@ -3655,3 +3655,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/compatibility-proof-contract.ts`, `apps/web/src/app/dashboard/compatibility/page.tsx`, `tests/compatibility-proof-contract.test.ts`.
 - Evidence: Focused compatibility-proof contract coverage passed **2/2** and compatibility-recovery/date browser coverage passed **7/7**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 compatibility-claims resilience only. Official-source provenance, review authorization and provider intelligence remain backend/shared contracts.
+
+## 2026-11-09 checkpoint — dashboard overview envelope guard
+
+- Change: Added a conservative overview-envelope guard for stats and required top-level collections; invalid responses now use the existing dashboard retry state instead of causing partial-render dereferences.
+- Files: `apps/web/src/lib/overview-contract.ts`, `apps/web/src/app/dashboard/page.tsx`, `tests/overview-contract.test.ts`.
+- Evidence: Focused overview contract coverage passed **2/2**; dashboard overview loading/empty-state browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 dashboard resilience only. Server authorization, tenant isolation and overview data ownership remain unchanged.
