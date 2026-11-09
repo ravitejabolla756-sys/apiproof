@@ -2991,6 +2991,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable reported only the unchanged notification-heading palette warning; targeted lint and typecheck passed; rebuilt web build generated 83 pages; notification recovery and authenticated notification-settings browser checks passed 2/2; `git diff --check` passed.
 - Scope: advances local NOT-10/UI-12 screen-reader context only. Shared digest contract, scheduler, delivery provider, retention, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 checkpoint — unavailable notification control descriptions
+
+- Change: Associated all unavailable notification channels with the existing delivery-status explanation, while retaining the dedicated digest-contract description for weekly digest controls. Preference guards and server-owned policy are unchanged.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable reported only the unchanged notification-heading palette warning; targeted lint and typecheck passed; rebuilt web build generated 83 pages; notification recovery and authenticated settings browser checks passed 2/2; `git diff --check` passed.
+- Scope: advances local NOT-06/NOT-10/UI-12 screen-reader context only. Provider delivery, digest scheduling, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 checkpoint — full local browser regression after link hardening
 
 - Change: Revalidated the complete local browser matrix after the shared external-link and pull-request link hardening; no source or contract rollback was required.

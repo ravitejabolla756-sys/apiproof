@@ -504,6 +504,10 @@ The focused billing, invoice, digest, notification-preference and email-delivery
 
 Disabled weekly-digest controls are now programmatically associated with the pending-contract explanation. Local notification recovery/settings checks pass; shared digest scheduling, provider, retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest notification accessibility evidence — 2026-11-09
+
+All unavailable notification controls now expose their truthful delivery explanation programmatically, with focused browser checks passing. Provider delivery, digest scheduling/retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
