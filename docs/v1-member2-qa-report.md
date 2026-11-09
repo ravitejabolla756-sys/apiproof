@@ -2350,3 +2350,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Repository dialog focus wrapping now handles asynchronously inserted boundary controls; the rebuilt-bundle repository recovery/focus suite passed **4/4** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Hosted CI, manual assistive-technology review, GitHub provider verification, staging and production remain open.
+
+## 2026-11-10 — legal-policy narrow containment
+
+- PASS: Privacy, terms, refund and cookie pages establish narrow-width shrink/wrap boundaries without changing draft/legal-review status or billing-policy language. Rebuilt-bundle Playwright and axe coverage passed **1/1** at 320px on isolated port 3141, including draft-versus-effective metadata assertions and 44px refund links.
+- PASS: Targeted ESLint, web typecheck, `git diff --check`, and the Impeccable detector passed with no findings; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning.
+- NOT_RUN: Owner/legal approval, billing/provider verification, hosted CI, integrated staging, manual assistive-technology review and production remain open.

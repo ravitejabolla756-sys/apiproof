@@ -40,22 +40,22 @@ export default function CookiesPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-12 outline-none">
+      <main id="main-content" tabIndex={-1} className="mx-auto min-w-0 max-w-4xl space-y-12 px-4 pb-24 pt-36 outline-none sm:px-6 lg:px-8">
 
         {/* HEADER */}
-        <div className="space-y-4 border-b border-black/[0.08] pb-10">
+        <div className="min-w-0 space-y-4 border-b border-black/[0.08] pb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <Cookie aria-hidden="true" className="w-3.5 h-3.5 text-slate-700" />
             <span>BROWSER STORAGE</span>
           </div>
 
-          <h1 className="font-serif text-4xl sm:text-5xl font-normal text-[#000E29] tracking-tight leading-[1.15]">
+          <h1 className="break-words font-serif text-4xl font-normal leading-[1.15] tracking-tight text-[#000E29] sm:text-5xl">
             Cookie Policy
           </h1>
-          <p className="text-xs font-mono text-slate-500">
+          <p className="break-words text-xs font-mono text-slate-500">
             Last updated: March 2026 · Effective immediately
           </p>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed pt-2">
+          <p className="break-words pt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
             This Cookie Policy describes how MY OWL uses essential cookies and local storage to operate a safe, authentication-protected platform.
           </p>
         </div>
@@ -63,11 +63,11 @@ export default function CookiesPage() {
         {/* COOKIE SECTIONS */}
         <div className="space-y-8">
           {sections.map((section) => (
-            <div key={section.title} className="rounded-[24px] bg-[#EFF1F5] p-6 sm:p-8 border border-black/[0.04] space-y-3">
-              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#000E29]">
+            <div key={section.title} className="min-w-0 space-y-3 rounded-[24px] border border-black/[0.04] bg-[#EFF1F5] p-6 sm:p-8">
+              <h2 className="break-words font-serif text-xl font-normal text-[#000E29] sm:text-2xl">
                 {section.title}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+              <p className="break-words whitespace-pre-line text-xs leading-relaxed text-slate-700 sm:text-sm">
                 {section.content}
               </p>
             </div>
@@ -78,11 +78,11 @@ export default function CookiesPage() {
 
       {/* PRE-FOOTER RADIANT GRADIENT CTA */}
       <section className="relative w-full py-28 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(0deg,#001033_0%,#0050F8_55%,#5FBDF7_85%,#FAFAFA_100%)] text-white text-center">
-        <div className="relative z-10 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
-          <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
+        <div className="relative z-10 mx-auto flex min-w-0 max-w-2xl flex-col items-center space-y-6">
+          <h2 className="break-words font-serif text-4xl font-normal leading-tight sm:text-5xl">
             Clear code intelligence without tracker bloat.
           </h2>
-          <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
+          <p className="break-words max-w-lg text-sm leading-relaxed text-slate-200 sm:text-base">
             Connect your repositories in 60 seconds. Strict read-only AST safety.
           </p>
           <div className="pt-2">

@@ -4112,3 +4112,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: FAQ questions, long answers and the support banner now establish shrink/wrap boundaries at narrow widths while preserving native disclosure semantics, focus styling and the truthful support route.
 - Scope: Advances WEB-15/UI-12/UI-13 responsive and interaction QA only; support delivery, incident handling and content ownership remain outside this local slice.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3140, including the 320px axe/overflow case, native FAQ disclosure assertion and the 44px support link, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — legal-policy narrow containment
+
+- Change: Privacy, terms, refund and cookie pages now establish shrink/wrap boundaries for draft metadata, policy headings, long policy copy and conversion links without changing legal status, effective-date language or billing claims.
+- Scope: Advances WEB-11/WEB-12/WEB-15 and UI-12/UI-13 responsive QA only; owner/legal approval, billing terms, cookie inventory and staging verification remain external gates.
+- Evidence: Rebuilt-bundle coverage passed **1/1** on isolated port 3141 across all four legal routes at 320px, including axe checks, draft-versus-effective metadata assertions and 44px refund links, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
