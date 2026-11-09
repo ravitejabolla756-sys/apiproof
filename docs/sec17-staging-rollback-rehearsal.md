@@ -44,3 +44,11 @@ SEC-17 can move beyond `BLOCKED` only after an authorized rehearsal records cand
 ## Offline evidence integrity
 
 `apps/web/src/lib/server/sec17-rollback-evidence.ts` validates a repository-local evidence object before review. It requires staging-only evidence, candidate and known-good deployment identities, approved threshold metadata, pre/post smoke observations, rollback result and restored identity, migration disposition, confirmed staging isolation, and `productionPromotionObserved: false`. It rejects unsupported fields, unsafe identifiers, inconsistent smoke counts, threshold failures, and restored deployment mismatches. The validator performs no deployment, hosting API call, database mutation, or secret read; a passing validator is evidence-format integrity only, not proof that a rehearsal occurred.
+
+Run it with a repository-relative JSON evidence path after an authorized rehearsal:
+
+```powershell
+pnpm --filter @apiproof/web sec17:validate-evidence -- path/to/rollback-evidence.json
+```
+
+Absolute paths, parent-directory traversal, missing input, invalid JSON, and invalid evidence all fail closed.

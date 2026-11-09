@@ -874,3 +874,4 @@ Phase 0 read-only checks:
 ### 2026-11-09 SEC-17 offline evidence integrity
 
 - Added `sec17-rollback-evidence.ts` and four focused tests for strict staging rollback evidence: deployment identities, approved thresholds, smoke-count consistency, restored known-good identity, migration disposition, staging isolation and explicit absence of production promotion. The validator is format/integrity evidence only; no hosting account, deployment, rollback or production resource was accessed.
+- Added the repository-local `sec17:validate-evidence` command. Its missing-input check fails closed; the package typecheck and targeted lint pass.

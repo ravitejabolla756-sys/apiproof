@@ -10,6 +10,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "next lint",
+    "sec17:validate-evidence": "tsx scripts/sec17-validate-evidence.ts",
     "db:migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
