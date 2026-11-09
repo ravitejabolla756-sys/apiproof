@@ -4124,3 +4124,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Workspace administration now establishes shrink/wrap boundaries for role badges, headings, revocation-gate copy and section descriptions while preserving backend-authoritative membership, invitation, audit and workspace-revocation behavior.
 - Scope: Advances ORG-02/UI-12/UI-13 responsive and accessibility evidence only; PostgreSQL/RBAC, Member 1 ORG-10 integration, concurrent owner protection and staging verification remain external gates.
 - Evidence: Rebuilt-bundle authenticated coverage passed **1/1** on isolated port 3142 at 320px, including overflow containment, 44px workspace-settings/save controls and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The Impeccable detector reported only the existing unchanged purple dashboard icon tokens.
+
+## 2026-11-10 checkpoint — settings and billing shell narrow containment
+
+- Change: The main Workspace Settings & Billing shell now establishes shrink/wrap boundaries for the page heading, plan status badge, quota metrics, billing-period copy and GitHub integration heading without changing beta-unavailable billing or provider behavior.
+- Scope: Advances BILL-07/BILL-08/BILL-09/UI-12/UI-13 responsive evidence only; provider-backed lifecycle, billing authorization, invoice source, hosted CI and production remain external gates.
+- Evidence: Rebuilt-bundle authenticated coverage passed **1/1** on isolated port 3143 at 320px, including overflow containment, settings navigation touch targets and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

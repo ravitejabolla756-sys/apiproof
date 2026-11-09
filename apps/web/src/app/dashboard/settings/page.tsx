@@ -97,14 +97,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div aria-busy={loading ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={loading ? 'true' : undefined} className="min-w-0 max-w-[1440px] space-y-6 font-sans text-xs">
       {/* HEADER */}
-      <div className="border-b border-[#E8E8E5] pb-6 space-y-1">
-        <h1 className="text-3xl font-medium tracking-tight text-[#111111] flex items-center gap-2">
-          <Sliders aria-hidden="true" className="w-6 h-6 text-purple-700" />
-          Workspace Settings & Billing
+      <div className="min-w-0 space-y-1 border-b border-[#E8E8E5] pb-6">
+        <h1 className="flex min-w-0 items-center gap-2 break-words text-3xl font-medium tracking-tight text-[#111111]">
+          <Sliders aria-hidden="true" className="h-6 w-6 shrink-0 text-purple-700" />
+          <span className="break-words">Workspace Settings &amp; Billing</span>
         </h1>
-        <p className="text-xs text-[#686868]">
+        <p className="break-words text-xs text-[#686868]">
           Manage workspace subscriptions, usage quotas, safety policies, and GitHub App integrations.
         </p>
       </div>
@@ -135,14 +135,14 @@ export default function SettingsPage() {
           </div>
 
           {/* BILLING & PLAN OVERVIEW */}
-          <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+          <div className="min-w-0 space-y-5 rounded-[28px] border border-[#E8E8E5] bg-white p-6 shadow-xs">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+              <h3 className="flex min-w-0 items-center gap-2 break-words text-base font-semibold text-[#111111]">
                 <CreditCard aria-hidden="true" className="w-4 h-4 text-purple-700" />
-                Subscription & Usage Quotas
+                <span className="break-words">Subscription &amp; Usage Quotas</span>
               </h3>
               {billing && (
-                <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-semibold uppercase tracking-wider">
+                <span className="max-w-full break-words rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-purple-800">
                   {billing.plan.name} Plan ({billing.subscription.status})
                 </span>
               )}
@@ -157,10 +157,10 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* METRIC 1: REPOSITORIES */}
-                  <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-2">
-                    <div className="flex items-center justify-between text-[11px] text-[#686868]">
-                      <span>Monitored Repos</span>
-                      <span className="font-mono font-semibold text-[#111111]">
+                  <div className="min-w-0 space-y-2 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-[11px] text-[#686868]">
+                      <span className="break-words">Monitored Repos</span>
+                      <span className="break-words font-mono font-semibold text-[#111111]">
                         {billing.metrics.repositories.current} / {billing.metrics.repositories.limit ?? 'Unlimited'}
                       </span>
                     </div>
@@ -183,10 +183,10 @@ export default function SettingsPage() {
                   </div>
 
                   {/* METRIC 2: SCANS */}
-                  <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-2">
-                    <div className="flex items-center justify-between text-[11px] text-[#686868]">
-                      <span>Scans (Monthly)</span>
-                      <span className="font-mono font-semibold text-[#111111]">
+                  <div className="min-w-0 space-y-2 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-[11px] text-[#686868]">
+                      <span className="break-words">Scans (Monthly)</span>
+                      <span className="break-words font-mono font-semibold text-[#111111]">
                         {billing.metrics.scans.current} / {billing.metrics.scans.limit ?? 'Unlimited'}
                       </span>
                     </div>
@@ -209,10 +209,10 @@ export default function SettingsPage() {
                   </div>
 
                   {/* METRIC 3: REPOSITORY WRITES */}
-                  <div className="p-4 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-2">
-                    <div className="flex items-center justify-between text-[11px] text-[#686868]">
-                      <span>Repository writes</span>
-                      <span className="font-mono font-semibold text-[#111111]">
+                  <div className="min-w-0 space-y-2 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-[11px] text-[#686868]">
+                      <span className="break-words">Repository writes</span>
+                      <span className="break-words font-mono font-semibold text-[#111111]">
                         Verified Draft PRs only
                       </span>
                     </div>
@@ -235,8 +235,8 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-[#E8E8E5]">
-                  <p className="text-[11px] text-[#686868]">
+                <div className="flex flex-col items-start justify-between gap-4 border-t border-[#E8E8E5] pt-2 sm:flex-row sm:items-center">
+                  <p className="break-words text-[11px] text-[#686868]">
                     Current billing period resets on{' '}
                     <span className="font-mono font-medium text-[#111111]">
                       {formatDisplayDate(billing.subscription.currentPeriodEnd)}
@@ -275,14 +275,14 @@ export default function SettingsPage() {
 
           {/* GITHUB APP SETTINGS */}
           <SlackConnectionCard />
-          <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+          <div className="min-w-0 space-y-5 rounded-[28px] border border-[#E8E8E5] bg-white p-6 shadow-xs">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+              <h3 className="flex min-w-0 items-center gap-2 break-words text-base font-semibold text-[#111111]">
                 <Github aria-hidden="true" className="w-4 h-4 text-[#111111]" />
-                GitHub App Integration
+                <span className="break-words">GitHub App Integration</span>
               </h3>
               {installation && (
-                <span className="px-2.5 py-1 rounded-full bg-[#EEF7F2] text-emerald-800 border border-[#D1EBE0] text-[11px] font-medium flex items-center gap-1">
+                <span className="flex max-w-full items-center gap-1 break-words rounded-full border border-[#D1EBE0] bg-[#EEF7F2] px-2.5 py-1 text-[11px] font-medium text-emerald-800">
                   <CheckCircle2 aria-hidden="true" className="w-3 h-3 text-emerald-600" />
                   GitHub connected
                 </span>

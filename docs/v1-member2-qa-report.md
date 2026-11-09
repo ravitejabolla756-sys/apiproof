@@ -2362,3 +2362,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Workspace administration establishes narrow-width shrink/wrap boundaries for role badges, headings, revocation-gate copy and section descriptions without changing membership, invitation, audit or workspace-revocation behavior. Rebuilt-bundle authenticated Playwright/axe coverage passed **1/1** at 320px on isolated port 3142, including overflow containment and 44px workspace-settings/save controls.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector reported only pre-existing unchanged purple icon tokens.
 - NOT_RUN: PostgreSQL/RBAC, Member 1 ORG-10 integration, concurrent final-owner verification, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-10 — settings and billing shell narrow containment
+
+- PASS: The main Workspace Settings & Billing shell establishes narrow-width shrink/wrap boundaries for the page heading, plan badge, quota metrics, billing-period copy and GitHub integration heading without changing beta-unavailable billing or provider behavior. Rebuilt-bundle authenticated Playwright/axe coverage passed **1/1** at 320px on isolated port 3143, including overflow containment and settings navigation touch targets.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector passed with no findings.
+- NOT_RUN: Provider-backed billing lifecycle, invoice authorization/source, hosted CI, integrated staging, manual assistive-technology review and production remain open.
