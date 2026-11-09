@@ -4004,3 +4004,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Provider coverage summary and migration-template promotion cards now establish shrink/wrap boundaries for long provider IDs, candidate IDs, remediation guidance and limitation text without changing review or auto-fix policy.
 - Scope: Advances UI-12/UI-13 provider coverage resilience only; provider source health, evidence provenance and migration promotion remain server-owned.
 - Evidence: Provider coverage contract tests passed **2/2**; rebuilt-bundle provider review queue coverage passed **1/1** on isolated port 3120, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — dashboard overview narrow metadata containment
+
+- Change: Dashboard overview repository and activity cards now establish shrink/wrap boundaries for long repository names, branches, activity titles and descriptions while keeping status badges and timestamps reachable.
+- Scope: Advances UI-12/UI-13 dashboard resilience only; overview authorization, tenant scope and server-owned projections remain unchanged.
+- Evidence: Rebuilt-bundle dashboard overview long-metadata coverage passed **1/1** on isolated port 3121, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The Impeccable detector reported only three pre-existing palette warnings on unchanged dashboard lines.

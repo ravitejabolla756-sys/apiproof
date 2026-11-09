@@ -170,7 +170,7 @@ export default function DashboardOverviewPage() {
   }
 
   return (
-    <div aria-busy={refreshing ? 'true' : undefined} className="space-y-8 font-sans">
+    <div aria-busy={refreshing ? 'true' : undefined} className="min-w-0 space-y-8 font-sans">
       <ConnectRepoModal
         isOpen={isConnectOpen}
         onClose={() => setIsConnectOpen(false)}
@@ -187,9 +187,9 @@ export default function DashboardOverviewPage() {
       )}
 
       {/* WELCOME BANNER (EDITORIAL) */}
-      <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-8 space-y-3 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+      <div className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-8 space-y-3 shadow-xs">
+        <div className="flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wider text-[#686868]">
               PRODUCTION WORKSPACE
             </div>
@@ -201,7 +201,7 @@ export default function DashboardOverviewPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
             <Button
               size="sm"
               variant="outline"
@@ -510,8 +510,8 @@ export default function DashboardOverviewPage() {
           )}
 
           {/* MONITORED REPOSITORIES TABLE */}
-          <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between">
+        <div className="min-w-0 rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
               <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
                 <GitBranch aria-hidden="true" className="w-4 h-4 text-purple-700" />
                 Monitored Repositories
@@ -524,10 +524,10 @@ export default function DashboardOverviewPage() {
             <div className="divide-y divide-[#E8E8E5]">
               {data?.repositories && data.repositories.length > 0 ? (
                 data.repositories.map((repo) => (
-                  <div key={repo.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/dashboard/repositories/${repo.id}`} className="inline-flex min-h-11 items-center text-sm font-semibold text-[#111111] hover:underline font-mono">
+                  <div key={repo.id} className="min-w-0 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <Link href={`/dashboard/repositories/${repo.id}`} className="min-w-0 max-w-full break-words inline-flex min-h-11 items-center text-sm font-semibold text-[#111111] hover:underline font-mono">
                           {repo.name}
                         </Link>
                         <StatusPill
@@ -535,12 +535,12 @@ export default function DashboardOverviewPage() {
                           label={repo.findings_count > 0 ? `${repo.findings_count} findings` : 'Healthy'}
                         />
                       </div>
-                      <div className="text-xs text-[#686868]">
+                      <div className="break-all text-xs text-[#686868]">
                         <span className="font-mono text-[11px] text-[#686868]">{repo.full_name}</span> · Branch: <span className="font-mono text-[11px] text-[#111111]">{repo.default_branch}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-3">
                       <div className="text-right text-xs hidden sm:block">
                         <div className="text-[#111111] font-medium">{repo.findings_count} findings</div>
                         <div className="text-[#686868] text-[11px]">{repo.last_scan_at ? formatDisplayDate(repo.last_scan_at) : 'Not scanned'}</div>
@@ -566,25 +566,25 @@ export default function DashboardOverviewPage() {
 
         {/* RIGHT 35%: RECENT ACTIVITY */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between">
+          <div className="min-w-0 rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
               <h3 className="text-base font-semibold text-[#111111]">Recent Activity</h3>
               <Link href="/dashboard/activity" className="inline-flex min-h-11 items-center text-xs text-[#686868] hover:text-[#111111] font-medium">
                 History
               </Link>
             </div>
 
-            <div className="space-y-3 font-sans text-xs">
+            <div className="min-w-0 space-y-3 font-sans text-xs">
               {data?.recentActivities && data.recentActivities.length > 0 ? (
                 data.recentActivities.map((act) => (
-                  <div key={act.id} className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
-                    <div className="flex items-center justify-between text-[#111111] font-medium">
-                      <span className="truncate">{act.title}</span>
+                  <div key={act.id} className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] space-y-1">
+                    <div className="flex min-w-0 items-center justify-between gap-2 text-[#111111] font-medium">
+                      <span className="min-w-0 break-words">{act.title}</span>
                       <span className="text-[10px] text-[#686868] shrink-0 font-mono">
                         {formatDisplayTime(act.created_at)}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#686868] leading-relaxed">
+                    <p className="break-words text-[11px] text-[#686868] leading-relaxed">
                       {act.description}
                     </p>
                   </div>
