@@ -3169,3 +3169,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/dashboard-date-display.spec.ts`.
 - Evidence: focused dashboard-date Playwright coverage passed 4/4 with axe-clean content; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local UI-12/UI-13 dashboard resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — ORG-04 revocation-copy contract alignment
+
+- Change: Corrected the member-removal confirmation to describe Member 1's required workspace-scoped revocation behavior: personal sessions and access to other workspaces are preserved. The local legacy backend path was not changed and remains explicitly blocked from integration because it currently deletes all sessions.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/public-site.spec.ts`, `docs/v1-member2-contracts.md`.
+- Evidence: The existing real invitation/member-management browser journey now asserts the contract-aligned confirmation copy; backend revocation, concurrency, PostgreSQL and Member 1 integration remain unverified.
+- Scope: advances local ORG-04/UI-12 contract truthfulness only. It does not claim the current backend removal path is safe.

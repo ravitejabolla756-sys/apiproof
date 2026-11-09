@@ -194,7 +194,7 @@ export default function WorkspaceSettingsPage() {
 
   async function removeMember(member: Member) {
     if (!workspace) return;
-    if (!window.confirm(`Remove ${member.email} from this workspace? Their active sessions will be signed out.`)) return;
+    if (!window.confirm(`Remove ${member.email} from this workspace? The approved workspace-scoped revocation flow preserves personal sessions and access to other workspaces.`)) return;
     setMemberAction(member.id); setActionStatus(`Removing ${member.email}…`); setError(null); setMessage(null);
     try {
       const response = await fetch('/api/workspace/members', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId }) });

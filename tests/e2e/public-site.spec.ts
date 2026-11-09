@@ -306,7 +306,7 @@ test.describe('authenticated product surfaces', () => {
       await roleSelector.selectOption('member');
       await expect(page.getByRole('status')).toContainText('Member role updated.', { timeout: 30_000 });
       await expect(roleSelector).toHaveValue('member');
-      page.once('dialog', (dialog) => void dialog.accept());
+      page.once('dialog', (dialog) => { expect(dialog.message()).toContain('workspace-scoped revocation flow preserves personal sessions and access to other workspaces'); void dialog.accept(); });
       await roleSelector.locator('..').getByRole('button', { name: 'Remove' }).click();
       await expect(page.getByRole('status')).toContainText('Member removed.', { timeout: 30_000 });
       await expect(page.getByLabel(`Role for ${memberEmail}`)).toHaveCount(0);
