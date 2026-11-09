@@ -2886,3 +2886,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: targeted ESLint, repository typecheck and `git diff --check` passed; rebuilt web production bundle generated 83 pages; focused organization collection recovery coverage passed 1/1 with axe-clean recovered states. Impeccable reports only five incumbent purple-heading warnings on unchanged workspace headings.
 - Scope: advances local UI-12/ORG-02/ORG-03/ORG-11 semantics only. Member 1 revocation integration, PostgreSQL/RBAC, retention, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/WEB-15 mobile form text sizing
+
+- Change: Raised login, contact, forgot-password and reset-password form controls to the 16px `text-base` floor to prevent mobile browser zoom on focus; button sizing and copy remain unchanged.
+- Files: `apps/web/src/app/login/page.tsx`, `apps/web/src/app/contact/page.tsx`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/e2e/login-accessibility.spec.ts`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint, repository typecheck and `git diff --check` passed; rebuilt web production bundle generated 83 pages; mobile computed-font-size assertions passed in login/contact coverage 2/2.
+- Scope: advances local UI-12/WEB-15 responsive behavior only. Manual assistive-technology review, hosted CI, integrated staging and production remain open.

@@ -127,7 +127,7 @@ test.describe('public beta surfaces', () => {
     await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/contact'); await page.getByLabel('Full Name').fill('Local QA User');
     await page.getByLabel('Work Email').fill('qa@example.test');
     await page.getByLabel('Inquiry Type').selectOption('support');
-    await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.');
+    await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.'); for (const field of [page.getByLabel('Full Name'), page.getByLabel('Work Email'), page.getByLabel('Inquiry Type'), page.getByLabel('How can we help?')]) await expect(field).toHaveCSS('font-size', '16px');
     await expect(page.getByLabel('Full Name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Work Email')).toHaveAttribute('autocomplete', 'email');
     const submit = page.getByRole('button', { name: 'Review inquiry state' }); for (const field of [page.getByLabel('Full Name'), page.getByLabel('Work Email'), page.getByLabel('Inquiry Type'), page.getByLabel('How can we help?'), submit]) expect((await field.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await submit.click();

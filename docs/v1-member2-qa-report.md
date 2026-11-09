@@ -1464,6 +1464,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - ADVISORY: Impeccable reports five incumbent purple-heading warnings on unchanged workspace headings; no new changed-state finding was reported.
 - NOT_RUN: Member 1 revocation integration, PostgreSQL/RBAC, retention review, hosted CI, integrated staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — UI-12/WEB-15 mobile form text sizing
+
+- PASS: Login, contact, forgot-password and reset-password form controls now use 16px text at mobile widths, preventing browser focus zoom while preserving the existing layout and copy.
+- PASS: Impeccable detector `[]`; targeted ESLint, `pnpm typecheck` and `git diff --check`; `pnpm --filter @apiproof/web build` generated 83 pages; `CI=true PLAYWRIGHT_PORT=3153 pnpm exec playwright test tests/e2e/login-accessibility.spec.ts tests/e2e/public-site.spec.ts --workers=1 --grep "login mode tabs|contact form without sending" --reporter=line` passed 2/2.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 proof-terminal contrast
 
 - PASS: Raised small secondary labels in the dark proof terminal from `text-zinc-500` to `text-zinc-400` to meet the small-text contrast floor while preserving the incumbent visual system and copy.

@@ -10,6 +10,7 @@ test('keeps login mode tabs touch-sized and accessible on mobile', async ({ page
   await expect(signInMode).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email');
   await expect(page.getByLabel('Password')).toHaveAttribute('autocomplete', 'current-password');
+  for (const field of [page.getByLabel('Email'), page.getByLabel('Password')]) await expect(field).toHaveCSS('font-size', '16px');
   await expect(createAccountMode).toHaveAttribute('aria-pressed', 'false');
   const homeLink = page.locator('main a[href="/"]');
   await expect(homeLink).toBeVisible();
@@ -30,6 +31,7 @@ test('keeps login mode tabs touch-sized and accessible on mobile', async ({ page
   await expect(page.getByLabel('Full Name')).toHaveAttribute('autocomplete', 'name');
   await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email');
   await expect(page.getByLabel('Password')).toHaveAttribute('autocomplete', 'new-password');
+  for (const field of [page.getByLabel('Full Name'), page.getByLabel('Email'), page.getByLabel('Password')]) await expect(field).toHaveCSS('font-size', '16px');
   for (const control of [page.getByLabel('Full Name'), page.getByLabel('Email'), page.getByLabel('Password'), page.getByRole('button', { name: 'Create Account', exact: true }).last()]) expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);

@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
         <form onSubmit={submit} aria-busy={loading} className="mt-6 space-y-5">
           <div>
             <label htmlFor="new-password" className="mb-2 block font-mono text-xs font-medium uppercase tracking-wider text-slate-600">New password</label>
-            <input id="new-password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" disabled={!token || loading} value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 disabled:opacity-60" />
+            <input id="new-password" type="password" required minLength={8} maxLength={128} autoComplete="new-password" disabled={!token || loading} value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-base text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 disabled:opacity-60" />
           </div>
           {!token && <p ref={feedbackRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="text-sm text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">This reset link is missing or invalid. Request a new one.</p>}
           {message && <p ref={feedbackRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{message}</p>}

@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
         <form onSubmit={submit} aria-busy={loading} className="mt-6 space-y-5">
           <div>
             <label htmlFor="reset-email" className="mb-2 block font-mono text-xs font-medium uppercase tracking-wider text-slate-600">Email</label>
-            <input id="reset-email" type="email" required maxLength={255} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10" />
+          <input id="reset-email" type="email" required maxLength={255} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-base text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10" />
           </div>
           {message && <p ref={feedbackRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{message}</p>}
           {error && <p ref={feedbackRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{error}</p>}

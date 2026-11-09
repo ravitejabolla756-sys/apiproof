@@ -189,7 +189,7 @@ export default function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Alex Morgan"
-                className="min-h-11 w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="min-h-11 w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           )}
@@ -207,7 +207,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="min-h-11 w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="min-h-11 w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -225,7 +225,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimum 8 characters"
-              className="min-h-11 w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="min-h-11 w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-[#E8E8E5] text-[#0F172A] text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10 focus:border-[#0F172A]/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
 
