@@ -27,3 +27,20 @@ export function toSafeNavigationUrl(value: string | null | undefined): string | 
   }
   return toSafeExternalUrl(value);
 }
+
+/** Validate the manual-copy invitation response against the current origin and route. */
+export function toSafeInvitationUrl(value: string | null | undefined, origin: string): string | null {
+  if (!value) return null;
+  try {
+    const parsed = new URL(value, origin);
+    const expected = new URL(origin);
+    const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
+    const equivalentLoopback = loopbackHosts.has(parsed.hostname) && loopbackHosts.has(expected.hostname)
+      && parsed.protocol === expected.protocol && parsed.port === expected.port;
+    if (parsed.origin !== expected.origin && !equivalentLoopback) return null;
+    if (parsed.pathname !== '/invite/accept' || !parsed.searchParams.get('token')) return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}

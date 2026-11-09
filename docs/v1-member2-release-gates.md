@@ -633,3 +633,7 @@ The disconnected billing browser journey verifies zero-valued progress-bar fills
 ## Latest UI-13 installation navigation evidence — 2026-11-09
 
 GitHub installation navigation now fails closed for malformed script and protocol-relative values while preserving valid same-origin/HTTPS navigation. External-link contract coverage passed **3/3**, GitHub recovery coverage passed **1/1**, and the rebuilt web build generated **83 pages**. Provider host allowlisting, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest ORG-03 invitation-link evidence — 2026-11-09
+
+Invitation creation now fails closed for malformed or external links while preserving token-bearing same-origin links. External-link contract coverage passed **4/4**, and the rebuilt-bundle invitation/organization-audit suite passed **14/14**. Approved email delivery, Member 1 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

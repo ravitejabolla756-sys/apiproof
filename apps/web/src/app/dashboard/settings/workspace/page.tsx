@@ -8,6 +8,7 @@ import { formatDisplayDate, formatDisplayDateTime, toSafeDisplayDateTime } from 
 import { parseAuditPage, type AuditEventProjection } from '../../../../lib/organization-audit-contract.js';
 import { parseInvitationCollection, parseMemberCollection, type InvitationProjection, type MemberProjection } from '../../../../lib/organization-collection-contract.js';
 import { parseWorkspaceSettings, type WorkspaceSettingsProjection } from '../../../../lib/organization-settings-contract.js';
+import { toSafeInvitationUrl } from '../../../../lib/external-link-contract.js';
 
 type Workspace = WorkspaceSettingsProjection;
 type Member = MemberProjection;
@@ -182,8 +183,9 @@ export default function WorkspaceSettingsPage() {
     try {
       const response = await fetch('/api/workspace/invitations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: inviteEmail, role: 'member' }) });
       const data = await readJson<{ inviteUrl?: string }>(response);
-      if (!response.ok || !data.inviteUrl) throw new Error(data.error || 'Unable to create invitation.');
-      setInviteEmail(''); setInviteUrl(data.inviteUrl); setMessage('Invitation created. Copy the link and send it through an approved channel.'); await load();
+      const safeInviteUrl = toSafeInvitationUrl(typeof data.inviteUrl === 'string' ? data.inviteUrl : null, window.location.origin);
+      if (!response.ok || !safeInviteUrl) throw new Error(data.error || 'Unable to create invitation.');
+      setInviteEmail(''); setInviteUrl(safeInviteUrl); setMessage('Invitation created. Copy the link and send it through an approved channel.'); await load();
     } catch (inviteError) {
       setError(inviteError instanceof Error ? inviteError.message : 'Unable to create invitation.');
     } finally { setInviting(false); setActionStatus(null); }

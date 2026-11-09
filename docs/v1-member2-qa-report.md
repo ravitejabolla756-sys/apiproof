@@ -1808,6 +1808,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Client navigation rejects a malformed `javascript:` installation response, preserves the recovery alert, and succeeds on a valid same-origin retry; contract coverage passed 3/3 and rebuilt-bundle browser coverage passed 1/1.
 - NOT_RUN: Provider host allowlisting, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — invitation-link boundary
+
+- PASS: Invitation creation accepts only token-bearing `/invite/accept` links for the current origin, with a narrowly scoped localhost/127.0.0.1 equivalence for the local harness; malformed and external links fail closed. Contract coverage passed 4/4 and the rebuilt-bundle organization/invitation suite passed 14/14.
+- NOT_RUN: Approved email delivery, Member 1 ORG-10 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

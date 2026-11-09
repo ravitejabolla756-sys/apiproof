@@ -13,7 +13,7 @@ test('marks invitation creation busy while the request is pending', async ({ pag
   await page.route('**/api/workspace/invitations', async (route) => {
     if (route.request().method() === 'POST') {
       await invitePending;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ inviteUrl: 'http://localhost:3000/invite/fixture-token' }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ inviteUrl: '/invite/accept?token=fixture-token' }) });
       return;
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitations: [] }) });
@@ -30,6 +30,7 @@ test('marks invitation creation busy while the request is pending', async ({ pag
   await expect(page.getByRole('button', { name: 'Creating…' })).toHaveAttribute('aria-busy', 'true');
   releaseInvite?.();
   await expect(page.getByRole('button', { name: 'Create invite link' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible();
   await page.unroute('**/api/workspace/settings');
   await page.unroute('**/api/workspace/members');
   await page.unroute('**/api/workspace/invitations');
