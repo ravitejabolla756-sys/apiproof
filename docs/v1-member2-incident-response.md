@@ -43,6 +43,20 @@ Before enabling a live integration or treating this runbook as an operational co
 | Database and tenant-isolation response | Reviewed PostgreSQL roles/RLS evidence and restore/rollback procedure | `NOT_AVAILABLE — staging/Member 1 evidence required` |
 | Tabletop exercise | Timestamped redacted exercise record with gaps, owners and sign-off | `LOCAL_ONLY — owner/security review and sign-off required` |
 
+### Non-secret contact register — owner/security review pending
+
+Keep escalation contacts outside source control when they are operationally sensitive. This table records only the role, approved destination and review metadata; it must not contain personal phone numbers, credentials, tokens or private provider links. Populate it with the service owner and security owner before live operations.
+
+| Role | Approved team or destination | Escalation window | Source / last reviewed | Approval state |
+|---|---|---|---|---|
+| Service owner | `TBD` | `TBD` | `TBD` | `NOT_AVAILABLE — owner review required` |
+| Security owner | `TBD` | `TBD` | `TBD` | `NOT_AVAILABLE — security review required` |
+| Incident commander | `TBD` | `TBD` | `TBD` | `NOT_AVAILABLE — on-call ownership required` |
+| Communications owner | `TBD` | `TBD` | `TBD` | `NOT_AVAILABLE — communications review required` |
+| Database / tenant-isolation escalation | `TBD` | `TBD` | `TBD` | `NOT_AVAILABLE — Member 1/staging evidence required` |
+
+Until this register is populated and reviewed, the runbook is a planning artifact only. Do not infer an escalation path from a source-code owner, repository history or an unverified mailbox.
+
 ## First 15 minutes
 
 1. Open an incident record with UTC timestamps, reporter, affected surface, suspected severity, and a no-secrets evidence location.

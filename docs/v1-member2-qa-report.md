@@ -2471,3 +2471,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The complete current-worktree production-bundle Playwright matrix passed **239/239 in 3.9 minutes** on isolated port 3168; the password/session journey passed **1/1** independently, and the fresh build generated **83 pages**.
 - PASS: Targeted ESLint and `git diff --check` passed.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider delivery, legal approval, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — SEC-18 non-secret escalation register
+
+- PASS: The incident-response draft now includes a non-secret escalation-register template with explicit approval states for service, security, incident-command, communications and database/tenant-isolation roles; no contact details or production-readiness claim was added.
+- NOT_RUN: Owner/security review, approved alert routing, staffed on-call coverage, PostgreSQL/staging evidence and the timestamped tabletop sign-off remain unavailable.

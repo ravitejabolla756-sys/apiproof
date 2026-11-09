@@ -4231,3 +4231,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The E2E `createLocalAccount` helper now assigns a distinct documentation-only client IP before disposable signup journeys, matching the existing sign-in and invitation helpers. This preserves the real rate limiter while preventing one serial browser matrix from exhausting a shared runner address.
 - Evidence: A fresh 83-page production bundle passed the full current-worktree Playwright matrix **239/239 in 3.9 minutes** on isolated port 3168. The previously rate-limited password/session journey passed **1/1** independently; targeted ESLint and `git diff --check` passed.
 - Scope: Advances UI-13 browser-harness stability and local AUTH-08 regression evidence only; hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain external gates.
+
+## 2026-11-10 checkpoint — SEC-18 non-secret escalation register
+
+- Change: Added a non-secret contact-register template to the incident-response runbook for service, security, incident-command, communications and database/tenant-isolation escalation roles. All entries remain explicitly `TBD`/`NOT_AVAILABLE`; no private contact, credential, provider link or staffing claim was invented.
+- Scope: Advances SEC-18 runbook completeness and reviewability only; owner/security approval, approved alert routing, PostgreSQL/staging evidence and a timestamped tabletop sign-off remain open.
