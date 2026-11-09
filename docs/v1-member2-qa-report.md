@@ -1901,6 +1901,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Focused ESLint, web typecheck, web production build and `git diff --check` passed. The Impeccable detector reported only incumbent purple-palette warnings on existing headings.
 - NOT_RUN: PostgreSQL/RBAC, ORG-10 workspace-scoped revocation integration, approved invitation delivery, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — ORG-02 native slug validation
+
+- PASS: The workspace slug form now mirrors the server’s 3–64 lowercase alphanumeric/hyphen boundary with native `minlength`, `maxlength`, escaped `pattern` and explanatory `title`; the focused rebuilt-bundle browser journey passed **1/1** for metadata and rejection of `bad slug`. Focused ESLint, web typecheck, web build and `git diff --check` passed.
+- NOTE: The server remains authoritative; the client constraint is progressive enhancement and does not replace backend validation.
+
 ## 2026-11-09 — workspace projection text validation
 
 - PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.

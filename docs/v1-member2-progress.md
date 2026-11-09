@@ -3419,3 +3419,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: The focused metadata journey passed **1/1**; the full organization-audit suite passed **14/14**; focused ESLint, web typecheck, web production build and `git diff --check` passed. The Impeccable detector reported only the incumbent purple-palette warnings on existing headings.
 - Scope: Advances local ORG-02/UI-12 resilience only. Owner role policy, PostgreSQL/RBAC, ORG-10 revocation integration, invitation delivery and hosted/manual verification remain open.
+
+## 2026-11-09 checkpoint — ORG-02 native slug validation
+
+- Change: Mirrored the server’s exact workspace-slug boundary in the owner form with native 3–64 character validation, lowercase alphanumeric/hyphen matching, and an explanatory validation title. The hyphen is escaped for current Chromium HTML pattern parsing so invalid slugs are rejected instead of silently bypassing native validation.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: After rebuilding the production bundle, the focused browser journey passed **1/1**; focused ESLint, web typecheck, web build and `git diff --check` passed.
+- Scope: This is client-side validation only; the server remains authoritative. ORG-02 role/RBAC, PostgreSQL, ORG-10 revocation and hosted/manual verification remain open.

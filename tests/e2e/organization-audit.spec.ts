@@ -14,7 +14,13 @@ test.describe('workspace audit trail', () => {
     await expect(workspaceName).toHaveAttribute('maxlength', '100');
     await expect(workspaceSlug).toHaveAttribute('name', 'workspaceSlug');
     await expect(workspaceSlug).toHaveAttribute('autocomplete', 'off');
+    await expect(workspaceSlug).toHaveAttribute('minlength', '3');
     await expect(workspaceSlug).toHaveAttribute('maxlength', '64');
+    await expect(workspaceSlug).toHaveAttribute('pattern', '[a-z0-9][a-z0-9\\-]{1,62}[a-z0-9]');
+    await expect(workspaceSlug).toHaveAttribute('title', /lowercase letters/);
+    await workspaceSlug.fill('bad slug');
+    await expect(workspaceSlug).toHaveValue('bad slug');
+    expect(await workspaceSlug.evaluate((input: HTMLInputElement) => input.validity.valid)).toBe(false);
     await expect(inviteEmail).toHaveAttribute('name', 'inviteEmail');
     await expect(inviteEmail).toHaveAttribute('autocomplete', 'email');
     await expect(inviteEmail).toHaveAttribute('maxlength', '254');
