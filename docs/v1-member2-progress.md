@@ -4094,3 +4094,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Public documentation categories, article cards, core-model bar and help banner now establish shrink/wrap boundaries at narrow widths while preserving the existing taxonomy, ordered links and technical copy.
 - Scope: Advances WEB-15/UI-12/UI-13 responsive QA only; article publishing, content ownership and deployment verification remain outside this local slice.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3137, including the 320px axe/overflow case, category heading assertions and 44px help/core-model links, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — engineering blog narrow containment
+
+- Change: Public engineering-note cards now establish shrink/wrap boundaries for article categories, titles, summaries and code-note rows while preserving code-snippet truncation and the existing six-article surface.
+- Scope: Advances WEB-15/UI-12/UI-13 responsive QA only; article publishing, content ownership and deployment verification remain outside this local slice.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3138, including the 320px axe/overflow case, six-article assertion and no unsupported interaction state, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

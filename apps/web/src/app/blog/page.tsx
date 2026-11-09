@@ -53,19 +53,19 @@ export default function BlogPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16 outline-none">
 
         {/* HEADER */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="min-w-0 text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/80 text-slate-800 text-xs font-mono font-medium">
             <Terminal className="w-3.5 h-3.5 text-slate-700" aria-hidden="true" />
             <span>ENGINEERING &amp; ARCHITECTURE NOTES</span>
           </div>
 
-          <h1 className="font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
+          <h1 className="break-words font-serif text-5xl sm:text-6xl font-normal text-[#000E29] tracking-tight leading-[1.1]">
             Technical Writing
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto">
+          <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto">
             Deep-dives into Abstract Syntax Tree analysis, deterministic patch generation, compiler verification gates, and Git write contracts.
           </p>
         </div>
@@ -75,29 +75,29 @@ export default function BlogPage() {
           {articles.map((art) => (
             <article
               key={art.title}
-              className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-4 shadow-xs hover:border-slate-300 transition-colors"
+              className="min-w-0 rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 space-y-4 shadow-xs hover:border-slate-300 transition-colors"
             >
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-500">
-                <span className="text-[#004EE8] font-bold uppercase tracking-wider">
+                <span className="break-words text-[#004EE8] font-bold uppercase tracking-wider">
                   {art.category}
                 </span>
                 <span>{art.readTime}</span>
               </div>
 
               <div className="space-y-2">
-                <h2 className="font-serif text-2xl text-[#000E29] font-normal leading-snug">
+                <h2 className="break-words font-serif text-2xl text-[#000E29] font-normal leading-snug">
                   {art.title}
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
+                <p className="break-words text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                   {art.summary}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 border border-slate-200/70 p-3 font-mono text-xs text-slate-700 flex items-center justify-between">
-                <span className="text-slate-500 text-[11px] truncate max-w-md">
+              <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl bg-slate-50 border border-slate-200/70 p-3 font-mono text-xs text-slate-700">
+                <span className="min-w-0 text-slate-500 text-[11px] truncate max-w-md">
                   {art.codeSnippet}
                 </span>
-                <span className="text-[#004EE8] text-[11px] font-semibold shrink-0 ml-2">
+                <span className="shrink-0 text-[#004EE8] text-[11px] font-semibold">
                   Technical Note
                 </span>
               </div>
