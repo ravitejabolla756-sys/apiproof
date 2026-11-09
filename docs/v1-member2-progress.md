@@ -3498,3 +3498,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/enterprise-intake-contract.ts`, `apps/web/src/app/contact/page.tsx`, `tests/enterprise-intake-contract.test.ts`.
 - Evidence: Intake contract coverage passed **1/1**; rebuilt-bundle enterprise/contact browser coverage passed **2/2**; targeted detector, ESLint, web typecheck, web build and `git diff --check` passed.
 - Scope: Advances local BILL-11/WEB-15 truthfulness only. No destination, delivery service, SLA, privacy policy, spam control or retention behavior was added.
+
+## 2026-11-09 checkpoint — AUTH-09 typed deletion boundary
+
+- Change: Extracted the existing non-destructive account deletion state into a typed `AccountDeletionAvailability` contract with `DELETION_CONTRACT_PENDING`; the settings page remains disabled and cannot submit a deletion request.
+- Files: `apps/web/src/lib/account-deletion-contract.ts`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/account-deletion-contract.test.ts`.
+- Evidence: Contract coverage passed **1/1**; the rebuilt-bundle account/settings browser journey passed **1/1**; the targeted detector returned `[]`, targeted ESLint, web typecheck, web build and `git diff --check` passed.
+- Scope: Advances local AUTH-09 truthfulness only. Legal retention approval, Member 1 deletion contract, destructive endpoint design, hosted CI, staging, manual assistive-technology review and production remain open.

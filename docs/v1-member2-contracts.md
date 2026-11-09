@@ -56,6 +56,8 @@ The Member 2 frontend now fails closed on member removal while that handoff is p
 | `NOT-01/02/03/04/05` delivery | Event identity, recipient authorization, template/version, retry/DLQ, retention and provider/domain | Local sink/outbox behavior remains non-production and provider-neutral | Member 1 event review, provider-controlled delivery and secret/redaction tests |
 | `AUTH-09` / `ORG-04` | Deletion/retention and member-revocation contracts, including PostgreSQL behavior | No destructive deletion flow is fabricated; local removal path remains contract-bound | Legal retention approval, reviewed revocation service and PostgreSQL proof |
 
+The account settings page now consumes a typed `DELETION_CONTRACT_PENDING` availability boundary. It deliberately exposes no request or endpoint until retention, legal and Member 1 deletion contracts are approved; the disabled control is not evidence that deletion is implemented.
+
 Review outcome must be recorded in this matrix and the relevant task documents before a shared implementation is merged. A local browser or SQLite pass does not satisfy provider, PostgreSQL, legal or production approval.
 
 ## Release-sensitive decisions

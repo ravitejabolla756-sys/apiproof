@@ -1987,6 +1987,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The non-sending public contact state is now supplied by a typed `NO_APPROVED_DESTINATION` contract. Contract coverage passed **1/1** and rebuilt-bundle enterprise/contact coverage passed **2/2**; detector, targeted ESLint, web typecheck, web build and `git diff --check` passed.
 - NOT_RUN: Approved destination, privacy/retention policy, delivery/spam controls, SLA, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — AUTH-09 typed deletion boundary
+
+- PASS: Account deletion copy and disabled action now come from the typed `DELETION_CONTRACT_PENDING` boundary; contract coverage passed **1/1**. The UI remains non-submitting and explicitly warns that no request can be made.
+- NOT_RUN: Legal retention/deletion approval, Member 1 deletion contract, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

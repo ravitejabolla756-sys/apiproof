@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, KeyRound, Loader2, Mail, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { accountDeletionAvailability } from '@/lib/account-deletion-contract';
 
 interface AccountProfile {
   email: string;
@@ -166,9 +167,9 @@ export default function AccountSettingsPage() {
           </section>
         </div>
         <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6" aria-labelledby="account-deletion-heading">
-          <h2 id="account-deletion-heading" className="text-base font-semibold text-amber-950">Account deletion</h2>
-          <p id="account-deletion-help" className="mt-2 max-w-2xl text-xs leading-relaxed text-amber-900">Account deletion is unavailable until the retention and deletion contract is approved. No deletion request can be submitted from this beta surface.</p>
-          <Button type="button" disabled aria-describedby="account-deletion-help" className="mt-4 min-h-11">Account deletion unavailable</Button>
+          <h2 id="account-deletion-heading" className="text-base font-semibold text-amber-950">{accountDeletionAvailability.heading}</h2>
+          <p id="account-deletion-help" className="mt-2 max-w-2xl text-xs leading-relaxed text-amber-900">{accountDeletionAvailability.message}</p>
+          <Button type="button" disabled aria-describedby="account-deletion-help" className="mt-4 min-h-11">{accountDeletionAvailability.actionLabel}</Button>
         </section>
         </>
       ) : null}
