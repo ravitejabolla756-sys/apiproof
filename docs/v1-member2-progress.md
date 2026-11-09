@@ -3535,3 +3535,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Workspace settings, member and invitation parsers now trim server-owned display/identity fields before rendering and reject duplicate member/invitation IDs after normalization.
 - Files: `apps/web/src/lib/organization-settings-contract.ts`, `apps/web/src/lib/organization-collection-contract.ts`, `tests/organization-settings-contract.test.ts`, `tests/organization-collection-contract.test.ts`.
 - Scope: Advances local ORG-02/UI-12 response safety only. Server-derived authorization, tenant isolation, PostgreSQL/RBAC, invitation delivery and ORG-10 revocation remain unchanged and open.
+
+## 2026-11-09 checkpoint — BILL-07 billing projection validation
+
+- Change: Billing summary parsing now returns a normalized projection, rejects empty text, invalid period dates and unsafe integer metrics, and preserves finite usage-bar behavior for zero limits.
+- Files: `apps/web/src/lib/billing-summary-contract.ts`, `tests/billing-summary-contract.test.ts`.
+- Scope: Advances local BILL-07/UI-12 data-boundary safety only. Checkout, portal, provider lifecycle, billing-owner authorization, payment credentials and production billing remain blocked or unavailable.

@@ -1,3 +1,5 @@
+import { toSafeDisplayDateTime } from './date-display-contract.js';
+
 export interface BillingSummary {
   subscription: {
     planId: string;
@@ -23,6 +25,7 @@ export interface BillingSummary {
   };
 }
 
+// eof
 export interface BillingMetric {
   current: number;
   limit: number | null;
@@ -36,14 +39,20 @@ export function billingUsagePercent(current: number, limit: number | null): numb
 }
 
 function isOptionalNonNegativeInteger(value: unknown): value is number | null {
-  return value === null || (typeof value === 'number' && Number.isInteger(value) && value >= 0);
+  return value === null || (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0);
+}
+
+function normalizedText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 function isBillingMetric(value: unknown): value is BillingMetric {
   if (!value || typeof value !== 'object') return false;
   const metric = value as Record<string, unknown>;
   return typeof metric.current === 'number'
-    && Number.isInteger(metric.current)
+    && Number.isSafeInteger(metric.current)
     && metric.current >= 0
     && isOptionalNonNegativeInteger(metric.limit)
     && typeof metric.allowed === 'boolean';
@@ -63,9 +72,15 @@ export function parseBillingSummary(value: unknown): BillingSummary | null {
   const metricsRecord = metrics as Record<string, unknown>;
   if (!limits || typeof limits !== 'object') return null;
   const limitsRecord = limits as Record<string, unknown>;
-  if (typeof subscriptionRecord.planId !== 'string' || typeof subscriptionRecord.status !== 'string'
-    || typeof subscriptionRecord.currentPeriodStart !== 'string' || typeof subscriptionRecord.currentPeriodEnd !== 'string'
-    || typeof planRecord.id !== 'string' || typeof planRecord.name !== 'string' || typeof planRecord.description !== 'string'
+  const planId = normalizedText(subscriptionRecord.planId);
+  const subscriptionStatus = normalizedText(subscriptionRecord.status);
+  const currentPeriodStart = typeof subscriptionRecord.currentPeriodStart === 'string' && toSafeDisplayDateTime(subscriptionRecord.currentPeriodStart);
+  const currentPeriodEnd = typeof subscriptionRecord.currentPeriodEnd === 'string' && toSafeDisplayDateTime(subscriptionRecord.currentPeriodEnd);
+  const planIdValue = normalizedText(planRecord.id);
+  const planName = normalizedText(planRecord.name);
+  const planDescription = normalizedText(planRecord.description);
+  if (!planId || !subscriptionStatus || !currentPeriodStart || !currentPeriodEnd
+    || !planIdValue || !planName || !planDescription
     || (planRecord.priceMonthly !== null && (typeof planRecord.priceMonthly !== 'number' || !Number.isFinite(planRecord.priceMonthly) || planRecord.priceMonthly < 0))
     || !isOptionalNonNegativeInteger(limitsRecord.maxRepositories)
     || !isOptionalNonNegativeInteger(limitsRecord.maxScansPerMonth)
@@ -74,5 +89,28 @@ export function parseBillingSummary(value: unknown): BillingSummary | null {
     || !isBillingMetric(metricsRecord.scans)
     || !isBillingMetric(metricsRecord.draftPrs)) return null;
 
-  return value as BillingSummary;
+  return {
+    subscription: {
+      planId,
+      status: subscriptionStatus,
+      currentPeriodStart,
+      currentPeriodEnd,
+    },
+    plan: {
+      id: planIdValue,
+      name: planName,
+      description: planDescription,
+      priceMonthly: planRecord.priceMonthly as number | null,
+      limits: {
+        maxRepositories: limitsRecord.maxRepositories as number | null,
+        maxScansPerMonth: limitsRecord.maxScansPerMonth as number | null,
+        maxDraftPrsPerMonth: limitsRecord.maxDraftPrsPerMonth as number | null,
+      },
+    },
+    metrics: {
+      repositories: metricsRecord.repositories as BillingMetric,
+      scans: metricsRecord.scans as BillingMetric,
+      draftPrs: metricsRecord.draftPrs as BillingMetric,
+    },
+  };
 }
