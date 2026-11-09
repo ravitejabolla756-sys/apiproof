@@ -3115,3 +3115,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed **1,374 tests across 165 passing files**, with 1 skipped file and 4 skipped tests, in 113.59 seconds.
 - Scope: refreshes local regression evidence after the latest UI-12/UI-13, NOT-02, ORG-11, WEB-15 and BILL-09 test additions. Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — ORG-03/ORG-11 fail-closed workspace date display
+
+- Change: Added a provider-neutral date-display adapter that rejects missing, malformed and impossible calendar timestamps before rendering workspace invitation expiry or audit-event `<time>` values; invalid data now displays `Unavailable` without an invalid `dateTime` attribute. Invitation, audit, retention and backend contracts remain unchanged.
+- Files: `apps/web/src/lib/date-display-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/date-display-contract.test.ts`.
+- Evidence: date-display/invoice focused Vitest coverage passed 6/6; targeted ESLint, full repository typecheck, `git diff --check` and Impeccable detection passed (only five unchanged incumbent palette warnings); `CI=true PLAYWRIGHT_PORT=3193 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line` passed 12/12; rebuilt web bundle generated 83 pages.
+- Scope: advances local ORG-03/ORG-11/UI-12 resilience only. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.

@@ -1607,6 +1607,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed 1,374 tests across 165 passing files, with 1 skipped file and 4 skipped tests, in 113.59 seconds.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — ORG-03/ORG-11 fail-closed workspace date display
+
+- PASS: Workspace invitation expiry and audit-event timestamps now fail closed for missing, malformed and impossible dates; focused date-display/invoice coverage passed 6/6, the full organization-audit browser suite passed 12/12, targeted ESLint/typecheck/diff checks passed, and the web build generated 83 pages.
+- ADVISORY: Impeccable reported only five unchanged workspace-heading purple-palette warnings.
+- NOT_RUN: PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

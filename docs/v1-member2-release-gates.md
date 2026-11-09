@@ -548,6 +548,10 @@ The beta invoice-history unavailable state verifies no document overflow at 390p
 
 The current tree passes 1,374 seeded Vitest tests across 165 files, with 1 skipped file and 4 skipped tests. Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest workspace date-safety evidence — 2026-11-09
+
+Workspace invitation and audit timestamps now fail closed for malformed projections; focused date coverage passes 6/6, organization browser coverage passes 12/12, typecheck/lint/build pass and the build generates 83 pages. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
