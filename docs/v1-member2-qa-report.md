@@ -1946,6 +1946,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Repository `pnpm lint` passed with zero warnings; `pnpm typecheck` passed across workspace and test projects; seeded Vitest passed **1,420 tests**, **4 skipped**, across **172 passing files**, **1 skipped file** and **173 total files** in 108.23 seconds; `git diff --check` passed.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
 
+## 2026-11-09 — current full browser matrix
+
+- PASS: Rebuilt-bundle CI-mode Playwright matrix passed **189/189** in 3.2 minutes with one worker, covering public/authenticated accessibility and responsive behavior, organization settings/invitations/member flows, billing boundaries, notification/digest gates, contact/status pages and recovery states.
+- NOT_RUN: Hosted CI execution, integrated staging, PostgreSQL/RBAC, provider delivery, full manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

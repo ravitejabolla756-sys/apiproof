@@ -3450,3 +3450,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `pnpm lint` passed with zero warnings; `pnpm typecheck` passed across all workspace projects and the test TypeScript project; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,420 tests** with **4 skipped** across **172 passing test files**, **1 skipped file**, and **173 total files** in 108.23 seconds. `git diff --check` also passed.
 - Scope: Refreshes local regression evidence after the ORG-02 form, WEB-15 contact and NOT-10 coverage slices. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — current full browser matrix
+
+- Evidence: `CI=true PLAYWRIGHT_PORT=3170 APIPROOF_DB_PATH=/tmp/myowl-v1-full-browser-current.db pnpm exec playwright test --workers=1 --reporter=line` passed **189/189** in 3.2 minutes against the current production bundle. Coverage includes public/authenticated axe and responsive checks, workspace settings and recovery, invitations/member management, billing boundaries, notification/digest contracts, contact/status truthfulness, repository/finding workflows and retry states.
+- Scope: This is isolated local CI-mode evidence. Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, full manual assistive-technology review and production remain open.
