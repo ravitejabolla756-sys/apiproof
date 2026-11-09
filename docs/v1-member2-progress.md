@@ -3762,3 +3762,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/invoice-history-panel.tsx`.
 - Evidence: Invoice contract coverage passed **6/6**; billing boundary browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances BILL-09 local projection safety only; provider authorization, tenant isolation, billing-owner permissions, retention and sandbox delivery remain external contracts.
+
+## 2026-11-09 checkpoint — digest preference safety boundary
+
+- Change: While NOT-10 remains unavailable, weekly-digest controls render unchecked and disabled even if a response claims delivery availability, and digest rows are excluded from preference PATCH updates until cadence, recipient and scheduler ownership are approved.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-preference-contract.spec.ts`.
+- Evidence: Notification contract coverage passed **8/8**; digest projection, save-filter and recovery browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances NOT-10 local safety only; no scheduler, queue, cadence, timezone, retention, provider delivery or opt-out policy was introduced.

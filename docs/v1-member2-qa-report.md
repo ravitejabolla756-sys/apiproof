@@ -2205,3 +2205,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invoice history validates adapter output at runtime before rendering; malformed responses use the retryable error boundary while the provider-unavailable state remains truthful. Invoice contract tests passed **6/6** and billing-boundary browser coverage passed **2/2**.
 - PASS: Targeted invoice-panel ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Approved provider source, invoice authorization/tenant isolation, billing-owner permissions, retention policy, sandbox integration and production billing remain open.
+
+## 2026-11-09 — digest preference safety boundary
+
+- PASS: Weekly-digest controls remain unchecked and disabled under the pending scheduler contract, and saving other preferences does not submit digest updates. Notification contract coverage passed **8/8**; digest projection/save-filter/recovery browser coverage passed **4/4**.
+- PASS: Targeted notification-settings ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Approved digest cadence, event model, scheduler ownership, timezone/retention policy, provider delivery and production remain open.
