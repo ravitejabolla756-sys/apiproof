@@ -2137,3 +2137,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Inventory validates provider identities and nested rules before filtering; focused contract coverage passed **2/2** and inventory/filter/recovery browser coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Provider registry backend authorization, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — finding detail envelope guard
+
+- PASS: Finding detail validates populated and explicit not-found envelopes before dereferencing workbench fields; focused contract coverage passed **2/2** and finding-detail/workbench loading browser coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Finding/migration authorization, hosted CI, staging, manual assistive-technology review and production remain open.

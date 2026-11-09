@@ -3676,3 +3676,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/inventory-contract.ts`, `apps/web/src/app/dashboard/inventory/page.tsx`, `tests/inventory-contract.test.ts`.
 - Evidence: Focused inventory contract coverage passed **2/2** and inventory/filter/recovery browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 inventory resilience only; provider registry ownership and compatibility authorization remain server-owned.
+
+## 2026-11-09 checkpoint — finding detail envelope guard
+
+- Change: Added a finding-workbench response adapter that validates required finding metadata, evidence arrays and migration basics before rendering while preserving the explicit not-found envelope.
+- Files: `apps/web/src/lib/finding-detail-contract.ts`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/finding-detail-contract.test.ts`.
+- Evidence: Focused finding-detail contract coverage passed **2/2** and finding-detail/workbench loading browser coverage passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 finding-detail resilience only; finding authorization and migration mutation contracts remain server-owned.

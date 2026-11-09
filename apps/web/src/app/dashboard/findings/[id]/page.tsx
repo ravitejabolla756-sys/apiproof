@@ -7,6 +7,7 @@ import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 import { Button } from "@/components/ui/button";
+import { parseFindingDetailResponse } from "@/lib/finding-detail-contract";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -100,10 +101,12 @@ export default function FindingDetailPage({
     if (!preserveError) setError(null);
     try {
       const res = await fetch(`/api/findings/${id}`);
-      const json = await res.json().catch(() => ({})) as { finding?: FindingDetail | null; migration?: MigrationDetail | null; error?: string };
-      if (!res.ok) throw new Error(json.error || 'Unable to load finding details.');
-      setFinding(json.finding || null);
-      setMigration(json.migration || null);
+      const json = await res.json().catch(() => ({})) as unknown;
+      const parsed = parseFindingDetailResponse(json);
+      const error = json && typeof json === 'object' && 'error' in json && typeof json.error === 'string' ? json.error : undefined;
+      if (!res.ok || !parsed) throw new Error(error || 'Unable to load finding details.');
+      setFinding(parsed.finding as FindingDetail | null);
+      setMigration(parsed.migration as MigrationDetail | null);
       setError(null);
     } catch (err: unknown) {
       console.error("Failed to load finding:", err);
