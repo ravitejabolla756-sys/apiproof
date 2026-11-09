@@ -50,6 +50,12 @@
 - PASS: Impeccable detector `[]`; targeted ESLint; `pnpm typecheck`; web build generated 83 pages; provider-rule action/filter browser coverage passed 2/2.
 - NOT_RUN: Provider approval, PostgreSQL/RBAC, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — UI-12 provider-review title input text sizing
+
+- PASS: The editable provider-rule title input now uses 16px text, completing the provider-review form-control mobile focus-zoom coverage.
+- PASS: Detector `[]`; targeted ESLint; `pnpm typecheck`; rebuilt web bundle generated 83 pages; provider-rule action/filter browser coverage passed 2/2.
+- NOT_RUN: Provider approval, PostgreSQL/RBAC, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

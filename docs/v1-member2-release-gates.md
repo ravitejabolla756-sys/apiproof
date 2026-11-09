@@ -475,3 +475,7 @@ The authenticated dashboard shell now has direct reduced-motion browser evidence
 ## Latest UI-12 provider-review form evidence — 2026-11-09
 
 Provider-review editable textareas now use the 16px mobile-safe text floor while preserving the review-only/provider approval boundary. Local typecheck, build and focused browser coverage pass; provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 provider-review input evidence — 2026-11-09
+
+The provider-rule title input now also uses the 16px mobile-safe text floor, completing the local provider-review form-control pass. Provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

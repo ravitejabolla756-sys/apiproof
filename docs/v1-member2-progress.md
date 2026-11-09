@@ -2943,3 +2943,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-action-loading.spec.ts`.
 - Evidence: Impeccable detector returned `[]`; targeted ESLint, repository typecheck and rebuilt web build passed with 83 pages; provider-rule action/filter browser coverage passed 2/2, including a computed 16px sample-code assertion.
 - Scope: advances local UI-12/provider-review responsive evidence only. Provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12 provider-review title input text sizing
+
+- Change: Raised the editable provider-rule title input to the 16px `text-base` floor, completing the provider-review form-control focus-zoom pass without changing review or approval behavior.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-filter-states.spec.ts`.
+- Evidence: Impeccable detector returned `[]`; targeted ESLint and repository typecheck passed; rebuilt web build generated 83 pages; provider-rule action/filter browser coverage passed 2/2 after rebuilding the production bundle.
+- Scope: advances local UI-12/provider-review responsive evidence only. Provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.

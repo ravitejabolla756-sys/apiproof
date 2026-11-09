@@ -54,7 +54,9 @@ test('recovers from an empty provider-rule priority filter', async ({ page }) =>
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'P1 candidate' })).toBeVisible();
   await page.getByRole('button', { name: 'Edit rule' }).click();
-  expect((await page.getByRole('textbox', { name: 'Rule title' }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  const ruleTitle = page.getByRole('textbox', { name: 'Rule title' });
+  await expect(ruleTitle).toHaveCSS('font-size', '16px');
+  expect((await ruleTitle.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'provider-rule edit state').toEqual([]);
   await page.unroute('**/api/provider-rules');
 });
