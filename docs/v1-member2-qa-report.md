@@ -1848,6 +1848,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Stored weekly-digest opt-ins are read as disabled until scheduling contracts are approved; notification service tests passed 5/5 and focused browser coverage passed 3/3.
 - NOT_RUN: Scheduler ownership, cadence, recipient, retention, provider delivery, hosted CI, staging and production remain open.
 
+## 2026-11-09 — worker-facing digest gate coverage
+
+- PASS: The worker preference helper returns false for both weekly-digest channels while the contract is pending; notification service coverage passed 5/5.
+- NOT_RUN: Scheduler ownership, approved cadence/recipient/retention and provider delivery remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

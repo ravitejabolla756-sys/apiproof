@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
-import { getNotificationPreferences, updateNotificationPreferences } from '../apps/web/src/lib/server/notification-preferences-service.js';
+import { getNotificationPreferences, isNotificationPreferenceEnabled, updateNotificationPreferences } from '../apps/web/src/lib/server/notification-preferences-service.js';
 import { GET as notificationsGet, PATCH as notificationsPatch } from '../apps/web/src/app/api/account/notifications/route.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-notification-preferences-${process.pid}.db`);
@@ -52,6 +52,8 @@ describe('notification preferences', () => {
     expect(updated.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false)).toBe(true);
     const stored = await getNotificationPreferences(account.user.id);
     expect(stored.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false)).toBe(true);
+    expect(await isNotificationPreferenceEnabled(account.user.id, 'weekly_digest', 'email')).toBe(false);
+    expect(await isNotificationPreferenceEnabled(account.user.id, 'weekly_digest', 'slack')).toBe(false);
   });
 
   it('does not allow cross-category or cross-channel values', async () => {

@@ -665,3 +665,7 @@ The notification UI now fails closed when a digest projection optimistically rep
 ## Latest NOT-10 server-side gate evidence — 2026-11-09
 
 Server preference reads force weekly-digest values disabled while scheduling contracts are pending, preventing direct stored opt-ins from activating future delivery. Notification service coverage passed **5/5**, focused browser coverage passed **3/3**, and the build generated **83 pages**. Scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-10 worker-gate evidence — 2026-11-09
+
+The worker-facing preference helper is covered for both weekly-digest channels and returns false while scheduling contracts are pending. Notification service coverage passed **5/5**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
