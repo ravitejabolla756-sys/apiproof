@@ -4130,3 +4130,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The main Workspace Settings & Billing shell now establishes shrink/wrap boundaries for the page heading, plan status badge, quota metrics, billing-period copy and GitHub integration heading without changing beta-unavailable billing or provider behavior.
 - Scope: Advances BILL-07/BILL-08/BILL-09/UI-12/UI-13 responsive evidence only; provider-backed lifecycle, billing authorization, invoice source, hosted CI and production remain external gates.
 - Evidence: Rebuilt-bundle authenticated coverage passed **1/1** on isolated port 3143 at 320px, including overflow containment, settings navigation touch targets and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — invitation recovery narrow containment
+
+- Change: The invitation-accept recovery surface now establishes shrink/wrap boundaries for long workspace names, error messages and recovery links while preserving the existing token, acceptance and sign-in contracts.
+- Scope: Advances ORG-03/UI-12/UI-13/WEB-15 local recovery QA only; invitation authorization, expiry, single-use invalidation, delivery and tenant isolation remain backend-owned.
+- Evidence: Rebuilt-bundle invitation coverage passed **1/1** on isolated port 3144 at 320px, including missing-token recovery, 44px sign-in recovery and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

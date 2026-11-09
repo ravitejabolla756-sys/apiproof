@@ -2368,3 +2368,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The main Workspace Settings & Billing shell establishes narrow-width shrink/wrap boundaries for the page heading, plan badge, quota metrics, billing-period copy and GitHub integration heading without changing beta-unavailable billing or provider behavior. Rebuilt-bundle authenticated Playwright/axe coverage passed **1/1** at 320px on isolated port 3143, including overflow containment and settings navigation touch targets.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector passed with no findings.
 - NOT_RUN: Provider-backed billing lifecycle, invoice authorization/source, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-10 — invitation recovery narrow containment
+
+- PASS: The invitation-accept recovery surface establishes narrow-width shrink/wrap boundaries for long workspace names, error messages and recovery links without changing token handling or acceptance behavior. Rebuilt-bundle Playwright/axe coverage passed **1/1** at 320px on isolated port 3144, including missing-token recovery and a 44px sign-in recovery link.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector passed with no findings.
+- NOT_RUN: Invitation authorization, expiry/single-use invalidation, approved delivery, tenant isolation, hosted CI, integrated staging, manual assistive-technology review and production remain open.
