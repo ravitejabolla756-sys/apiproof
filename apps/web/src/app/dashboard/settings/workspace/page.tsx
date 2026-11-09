@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { formatDisplayDate, formatDisplayDateTime, toSafeDisplayDateTime } from '../../../../lib/date-display-contract.js';
 import { parseAuditPage, type AuditEventProjection } from '../../../../lib/organization-audit-contract.js';
 import { parseInvitationCollection, parseMemberCollection, type InvitationProjection, type MemberProjection } from '../../../../lib/organization-collection-contract.js';
+import { parseWorkspaceSettings, type WorkspaceSettingsProjection } from '../../../../lib/organization-settings-contract.js';
 
-interface Workspace { id: string; name: string; slug: string; role: 'owner' | 'member'; }
+type Workspace = WorkspaceSettingsProjection;
 type Member = MemberProjection;
 type Invitation = InvitationProjection;
 type AuditEvent = AuditEventProjection;
@@ -71,10 +72,11 @@ export default function WorkspaceSettingsPage() {
       const memberData = parseMemberCollection(rawMemberData);
       const invitationData = parseInvitationCollection(rawInvitationData);
       const auditData = parseAuditPage(rawAuditData);
-      if (!responses[0]!.ok || !settings.workspace) throw new Error(settings.error || 'Unable to load workspace settings.');
-      setWorkspace(settings.workspace);
-      setName(settings.workspace.name);
-      setSlug(settings.workspace.slug);
+      const workspaceData = parseWorkspaceSettings(settings);
+      if (!responses[0]!.ok || !workspaceData) throw new Error(settings.error || 'Unable to load workspace settings.');
+      setWorkspace(workspaceData);
+      setName(workspaceData.name);
+      setSlug(workspaceData.slug);
       setMembers(responses[1]!.ok && memberData ? memberData : []);
       setInvitations(responses[2]!.ok && invitationData ? invitationData : []);
       setMembersError(responses[1]!.ok && memberData ? null : (responses[1]!.ok ? 'Unable to load workspace members.' : rawMemberData.error || 'Unable to load workspace members.'));
@@ -165,9 +167,10 @@ export default function WorkspaceSettingsPage() {
     setSaving(true); setActionStatus('Saving workspace settings…'); setError(null); setMessage(null);
     try {
       const response = await fetch('/api/workspace/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, slug }) });
-      const data = await readJson<{ workspace?: Workspace }>(response);
-      if (!response.ok || !data.workspace) throw new Error(data.error || 'Unable to save workspace settings.');
-      setWorkspace(data.workspace); setMessage('Workspace settings updated.');
+      const rawData = await readJson<{ workspace?: unknown }>(response);
+      const data = parseWorkspaceSettings(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to save workspace settings.');
+      setWorkspace(data); setMessage('Workspace settings updated.');
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save workspace settings.');
     } finally { setSaving(false); setActionStatus(null); }

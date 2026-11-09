@@ -3241,3 +3241,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 ## 2026-11-09 checkpoint — ORG-03/ORG-04 rebuilt-bundle collection regression
 
 - Evidence: The combined rebuilt-bundle organization collection/audit suite passed **14/14**, including malformed member/invitation recovery, owner/member boundaries, invitation recovery, audit pagination and stale-context behavior. Approved email delivery, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI and staging remain open.
+
+## 2026-11-09 checkpoint — ORG-02 workspace-settings projection validation
+
+- Change: Workspace administration now validates the server-owned workspace settings projection before rendering or accepting saved settings. Invalid identity, name, slug or role data fails closed into the existing settings recovery state; no authorization or mutation policy changed.
+- Files: `apps/web/src/lib/organization-settings-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/organization-settings-contract.test.ts`, `tests/e2e/organization-settings-contract.spec.ts`.
+- Evidence: Focused contract and axe-clean browser negative-path coverage added. PostgreSQL/RBAC and Member 1 role/revocation review remain open.
+
+## 2026-11-09 checkpoint — ORG-02 rebuilt-bundle settings regression
+
+- Evidence: The combined rebuilt-bundle workspace settings, member/invitation collection and audit suite passed **15/15**. PostgreSQL/RBAC, Member 1 role/revocation integration, approved email delivery, hosted CI and staging remain open.

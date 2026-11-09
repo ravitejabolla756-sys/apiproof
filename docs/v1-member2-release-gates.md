@@ -598,6 +598,10 @@ The rebuilt-bundle organization-audit suite passes 13/13, including stale contex
 
 The combined rebuilt-bundle member/invitation and organization-audit suites pass 14/14. Malformed collections fail closed without exposing partial member or invitation controls. Approved email delivery, PostgreSQL/RBAC, Member 1 ORG-10 integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest ORG-02 settings evidence — 2026-11-09
+
+The combined rebuilt-bundle workspace settings, member/invitation collection, and organization-audit suites pass 15/15. Invalid workspace settings projections fail closed without exposing the settings form. PostgreSQL/RBAC, Member 1 integration, approved email delivery, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

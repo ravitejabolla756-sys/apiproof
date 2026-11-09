@@ -1773,6 +1773,16 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Combined member/invitation and organization-audit browser coverage passes 14/14 against the rebuilt bundle.
 - NOT_RUN: Approved email delivery, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — workspace-settings projection validation
+
+- PASS: Invalid workspace settings responses now render the existing recovery alert without exposing the settings form, and the malformed state remains axe-clean.
+- NOT_RUN: PostgreSQL/RBAC, Member 1 role/revocation review, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — rebuilt-bundle workspace settings regression
+
+- PASS: Combined workspace settings, collection, and organization-audit browser coverage passes 15/15 against the rebuilt bundle.
+- NOT_RUN: PostgreSQL/RBAC, Member 1 integration, approved email delivery, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
