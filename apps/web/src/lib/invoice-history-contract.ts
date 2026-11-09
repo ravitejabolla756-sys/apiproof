@@ -29,6 +29,17 @@ export function formatInvoiceAmount(invoice: Pick<InvoiceHistoryRecord, 'totalMi
   }
 }
 
+export function toSafeInvoiceDateTime(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : value;
+}
+
+export function formatInvoiceDate(value: string | null | undefined): string {
+  const safeValue = toSafeInvoiceDateTime(value);
+  return safeValue ? new Date(safeValue).toLocaleDateString() : 'Unavailable';
+}
+
 export function toSafeInvoiceUrl(value: string | null | undefined): string | null {
   if (!value) return null;
   try {

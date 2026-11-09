@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatInvoiceAmount, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
+import { formatInvoiceAmount, formatInvoiceDate, toSafeInvoiceDateTime, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
 
 describe('invoice history adapter boundary', () => {
   it('keeps invoice history explicitly unavailable until a provider projection is configured', async () => {
@@ -22,5 +22,11 @@ describe('invoice history adapter boundary', () => {
     expect(formatInvoiceAmount({ totalMinor: 1250, currency: ' usd ' })).toMatch(/12\.50/);
     expect(formatInvoiceAmount({ totalMinor: Number.NaN, currency: 'USD' })).toBe('Unavailable');
     expect(formatInvoiceAmount({ totalMinor: 1250, currency: 'US' })).toBe('Unavailable');
+  });
+
+  it('fails closed for malformed issue dates', () => {
+    expect(toSafeInvoiceDateTime('2026-11-09T00:00:00.000Z')).toBe('2026-11-09T00:00:00.000Z');
+    expect(toSafeInvoiceDateTime('not-a-date')).toBeNull();
+    expect(formatInvoiceDate('not-a-date')).toBe('Unavailable');
   });
 });

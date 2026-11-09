@@ -2979,6 +2979,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned `[]`; focused invoice contract tests passed 3/3; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; billing-boundary and authenticated notification-settings browser checks passed 2/2; `git diff --check` passed.
 - Scope: advances local BILL-09/UI-12 resilience only. Provider invoice projection, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.
 
+## 2026-11-09 checkpoint — BILL-09 invoice date display hardening
+
+- Change: Added fail-closed invoice date helpers so malformed issue timestamps render `Unavailable` and do not populate an invalid `<time>` value; provider sourcing and retention behavior remain unchanged.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/components/dashboard/invoice-history-panel.tsx`, `tests/invoice-history-contract.test.ts`.
+- Evidence: Impeccable detector returned `[]`; focused invoice contract tests passed 4/4; targeted lint, typecheck and `git diff --check` passed; rebuilt web build generated 83 pages; billing-boundary browser coverage passed 1/1.
+- Scope: advances local BILL-09/UI-12 resilience only. Provider invoice projection, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.
+
 ## 2026-11-09 checkpoint — billing and notification contract regression
 
 - Evidence: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/digest-notification-contract.test.ts tests/member2-billing-boundaries.test.ts tests/notification-preferences.test.ts tests/email-delivery-state.test.ts tests/email-delivery.test.ts` passed 19/19 across 6 files after the invoice display hardening.

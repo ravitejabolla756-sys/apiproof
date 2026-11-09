@@ -1555,6 +1555,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invalid invoice currency and amount projections now render `Unavailable` rather than throwing. Focused contract coverage passed 3/3; lint, typecheck, build and billing/notification browser coverage passed locally.
 - NOT_RUN: Provider invoice source, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — BILL-09 invoice date display hardening
+
+- PASS: Malformed invoice issue timestamps now render `Unavailable` without an invalid time value. Focused invoice coverage passed 4/4; lint, typecheck, build and billing-boundary browser coverage passed locally.
+- NOT_RUN: Provider invoice source, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — billing and notification contract regression
 
 - PASS: Invoice, digest, billing-boundary, notification-preference and email-delivery contract suites passed 19/19 across 6 files after the BILL-09 display hardening.
