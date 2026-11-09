@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
+import { parseFindingCollection, type FindingProjection } from "@/lib/findings-contract";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -16,29 +17,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-interface FindingRecord {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  status: string;
-  created_at: string;
-  repo_name: string;
-  repo_full_name: string;
-  pr_number?: number | null;
-  pr_url?: string | null;
-  pr_state?: string | null;
-  capability?: {
-    migrationAvailable: boolean;
-    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
-  } | null;
-}
+type FindingRecord = FindingProjection;
 
 export default function FindingsListPage() {
   const [findings, setFindings] = useState<FindingRecord[]>([]);
@@ -52,9 +31,11 @@ export default function FindingsListPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/findings");
-      const json = await res.json() as { findings?: FindingRecord[]; error?: string };
-      if (!res.ok) throw new Error(json.error || "Unable to load compatibility findings.");
-      setFindings(json.findings || []);
+      const json = await res.json() as unknown;
+      const parsed = parseFindingCollection(json);
+      const error = typeof json === 'object' && json !== null && 'error' in json && typeof json.error === 'string' ? json.error : null;
+      if (!res.ok || !parsed) throw new Error(error || "Unable to load compatibility findings.");
+      setFindings(parsed);
       setError(null);
     } catch (err) {
       console.error("Failed to load findings:", err);

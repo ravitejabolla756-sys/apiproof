@@ -2107,3 +2107,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Migration workbench responses now normalize review metadata and fail closed on malformed/duplicate records; focused migration contract coverage passed **2/2** and the secondary-route/recovery browser suites passed **5/5**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Migration backend authorization/history, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — findings projection adapter
+
+- PASS: Findings responses now validate searchable fields, capabilities and PR metadata before filtering/rendering; focused findings contract coverage passed **2/2** and the findings-filter/workbench accessibility browser suites passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Finding authorization, tenant isolation, backend evidence ownership, hosted CI, staging, manual assistive-technology review and production remain open.

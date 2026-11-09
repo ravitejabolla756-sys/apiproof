@@ -3634,3 +3634,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/migration-workbench-contract.ts`, `apps/web/src/app/dashboard/migrations/page.tsx`, `tests/migration-workbench-contract.test.ts`.
 - Evidence: Focused migration contract coverage passed **2/2** and the secondary-route/recovery browser suites passed **5/5**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 review-workbench response safety only. No migration IDs, migration history or backend proposal behavior was modified.
+
+## 2026-11-09 checkpoint — findings projection adapter
+
+- Change: Added a typed findings collection parser that validates required searchable fields, line numbers, capability actions and optional PR metadata before filtering or rendering; malformed/duplicate collections now fail closed.
+- Files: `apps/web/src/lib/findings-contract.ts`, `apps/web/src/app/dashboard/findings/page.tsx`, `tests/findings-contract.test.ts`.
+- Evidence: Focused findings contract coverage passed **2/2** and the findings-filter/workbench accessibility browser suites passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 findings resilience only. Finding authorization, tenant isolation and backend evidence ownership remain unchanged.
