@@ -1723,6 +1723,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invoice date validation delegates to the shared display-date boundary; existing invoice contract coverage preserves rejection of malformed and impossible dates.
 - NOT_RUN: Provider invoice source, billing authorization, tenant isolation, retention/legal approval and sandbox integration remain open.
 
+## 2026-11-09 — malformed billing usage projection boundary
+
+- PASS: Malformed billing usage data is rejected into the existing settings alert; no `NaN` is rendered. Focused contract coverage passed 6/6 and the rebuilt-bundle dashboard-date browser suite passed 5/5.
+- NOT_RUN: Provider-backed billing lifecycle, authorization, retention/legal approval, hosted CI, PostgreSQL/RBAC, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

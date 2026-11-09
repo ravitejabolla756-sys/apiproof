@@ -3187,3 +3187,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Invoice issue-date validation now delegates to the shared fail-closed display-date contract used by dashboard and organization surfaces; invoice formatting behavior and provider-neutral unavailable state are unchanged.
 - Files: `apps/web/src/lib/invoice-history-contract.ts`.
 - Scope: advances local BILL-09/UI-12 consistency only. Provider invoice projection, authorization, tenant isolation, retention and sandbox verification remain open.
+
+## 2026-11-09 checkpoint — BILL-07 malformed usage projection boundary
+
+- Change: Added runtime validation for the billing summary projection. Invalid usage counts, limits, flags or plan fields now fail closed into the existing unavailable settings error instead of producing `NaN`/invalid progress semantics; no payment or entitlement behavior changed.
+- Files: `apps/web/src/lib/billing-summary-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/billing-summary-contract.test.ts`, `tests/e2e/dashboard-date-display.spec.ts`.
+- Scope: advances local BILL-07/UI-12 resilience only. Provider lifecycle, billing authorization, retention/legal approval, hosted CI, staging and production remain open.

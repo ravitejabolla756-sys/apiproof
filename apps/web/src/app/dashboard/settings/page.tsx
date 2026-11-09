@@ -6,37 +6,13 @@ import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 import { formatDisplayDate } from "@/lib/date-display-contract";
+import { parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
 import Link from "next/link";
 
 interface GitHubInstallationInfo {
   id: string;
   accountLogin: string;
   accountType: string;
-}
-
-interface BillingSummary {
-  subscription: {
-    planId: string;
-    status: string;
-    currentPeriodStart: string;
-    currentPeriodEnd: string;
-  };
-  plan: {
-    id: string;
-    name: string;
-    description: string;
-    priceMonthly: number | null;
-    limits: {
-      maxRepositories: number | null;
-      maxScansPerMonth: number | null;
-      maxDraftPrsPerMonth: number | null;
-    };
-  };
-  metrics: {
-    repositories: { current: number; limit: number | null; allowed: boolean };
-    scans: { current: number; limit: number | null; allowed: boolean };
-    draftPrs: { current: number; limit: number | null; allowed: boolean };
-  };
 }
 
 export default function SettingsPage() {
@@ -76,8 +52,10 @@ export default function SettingsPage() {
       }
 
       if (billingRes.ok) {
-        const billingData = await billingRes.json();
-        setBilling(billingData);
+        const billingData: unknown = await billingRes.json();
+        const parsedBilling = parseBillingSummary(billingData);
+        if (!parsedBilling) throw new Error('Billing summary is temporarily unavailable.');
+        setBilling(parsedBilling);
       }
       setError(null);
       setErrorAction(null);
