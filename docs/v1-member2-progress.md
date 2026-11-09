@@ -3553,3 +3553,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added a 320px authenticated-route matrix covering dashboard, settings, organization, billing, findings, repositories and recovery routes for document containment and axe-clean main content.
 - Files: `tests/e2e/accessibility-routes.spec.ts`.
 - Scope: Advances local UI-12/UI-13 responsive evidence only. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
+
+## 2026-11-09 checkpoint — NOT-06 required-control completeness guard
+
+- Change: Notification settings now require the server projection to include both non-disablable security and account-recovery controls before rendering or saving; partial responses fail closed instead of silently hiding required alerts. Recovery fixtures were updated to represent the reviewed shape.
+- Files: `apps/web/src/lib/notification-preferences-contract.ts`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, notification contract/recovery browser tests.
+- Scope: Advances local NOT-06/UI-12 fail-closed behavior only. Optional-channel delivery, digest scheduling, provider integration and Member 1 event contracts remain open.

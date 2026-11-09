@@ -29,6 +29,8 @@ test('keeps digest controls disabled even when a projection claims delivery is a
       contentType: 'application/json',
       body: JSON.stringify({
         preferences: [
+          { category: 'security', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+          { category: 'account', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
           { category: 'weekly_digest', channel: 'email', enabled: true, required: false, deliveryAvailable: true },
           { category: 'weekly_digest', channel: 'slack', enabled: true, required: false, deliveryAvailable: true },
         ],

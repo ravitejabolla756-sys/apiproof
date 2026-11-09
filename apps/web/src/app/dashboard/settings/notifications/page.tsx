@@ -31,7 +31,7 @@ export default function NotificationSettingsPage() {
     try {
       const response = await fetch('/api/account/notifications');
       const data = await response.json() as { error?: string; preferences?: unknown };
-      const parsedPreferences = parseNotificationPreferences(data);
+      const parsedPreferences = parseNotificationPreferences(data, { requireRequired: true });
       if (!response.ok || !parsedPreferences) throw new Error(data.error || 'Unable to load notification preferences.');
       setPreferences(parsedPreferences);
       setInitialLoadFailed(false);
@@ -59,7 +59,7 @@ export default function NotificationSettingsPage() {
     try {
       const response = await fetch('/api/account/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ updates: preferences.map(({ category, channel, enabled }) => ({ category, channel, enabled })) }) });
       const data = await response.json() as { error?: string; preferences?: unknown };
-      const parsedPreferences = parseNotificationPreferences(data);
+      const parsedPreferences = parseNotificationPreferences(data, { requireRequired: true });
       if (!response.ok || !parsedPreferences) throw new Error(data.error || 'Unable to save notification preferences.');
       setPreferences(parsedPreferences);
       setMessage('Notification preferences saved.');

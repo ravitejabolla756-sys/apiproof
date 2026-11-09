@@ -14,7 +14,10 @@ test('keeps notification recovery visible and busy while retrying', async ({ pag
       return;
     }
     await recoveryPending;
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ preferences: [] }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ preferences: [
+      { category: 'security', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+      { category: 'account', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+    ] }) });
   });
 
   await page.goto('/dashboard/settings/notifications', { waitUntil: 'domcontentloaded' });

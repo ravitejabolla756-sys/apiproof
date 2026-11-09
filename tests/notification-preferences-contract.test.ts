@@ -29,4 +29,12 @@ describe('notification preference response contract', () => {
     expect(parseNotificationPreferences({ preferences: null })).toBeNull();
     expect(parseNotificationPreferences(null)).toBeNull();
   });
+
+  it('can require the server projection to include non-disablable controls', () => {
+    expect(parseNotificationPreferences({ preferences: [validPreference] }, { requireRequired: true })).toBeNull();
+    expect(parseNotificationPreferences({ preferences: [
+      { category: 'security', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+      { category: 'account', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
+    ] }, { requireRequired: true })).not.toBeNull();
+  });
 });

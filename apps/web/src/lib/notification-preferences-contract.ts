@@ -7,6 +7,7 @@ export type NotificationPreference = {
 };
 
 const CATEGORIES = new Set(['security', 'account', 'findings', 'scan_failure', 'migration', 'provider_change', 'weekly_digest']);
+const REQUIRED_PREFERENCE_KEYS = new Set(['security:email', 'account:email']);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -17,7 +18,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * the reviewed preference projection. The parser intentionally does not
  * decide delivery policy; it only validates the server-owned shape.
  */
-export function parseNotificationPreferences(payload: unknown): NotificationPreference[] | null {
+export function parseNotificationPreferences(payload: unknown, options: { requireRequired?: boolean } = {}): NotificationPreference[] | null {
   if (!isRecord(payload) || !Array.isArray(payload.preferences)) return null;
 
   const seen = new Set<string>();
@@ -39,5 +40,6 @@ export function parseNotificationPreferences(payload: unknown): NotificationPref
     });
   }
 
+  if (options.requireRequired && [...REQUIRED_PREFERENCE_KEYS].some((key) => !seen.has(key))) return null;
   return preferences;
 }

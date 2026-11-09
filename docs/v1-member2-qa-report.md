@@ -2032,6 +2032,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The new 320px authenticated-route containment and axe matrix passed across all audited authenticated routes against the rebuilt bundle.
 - NOT_RUN: Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
 
+## 2026-11-09 — NOT-06 required-control completeness guard
+
+- PASS: Notification contract coverage and browser fixtures now verify that required security/account controls are present before the settings surface renders; partial projections fail closed.
+- NOT_RUN: Optional-channel event contracts, digest scheduling, provider delivery, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
