@@ -116,6 +116,24 @@ test.describe('authentication loading announcements', () => {
     await page.unroute('**/api/auth');
   });
 
+  test('fails closed when login returns a malformed success payload', async ({ page }) => {
+    await page.route('**/api/auth', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.continue();
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ user: { id: 'user-without-success-marker' } }) });
+    });
+    await page.goto('/login');
+    await page.getByLabel('Email').fill('member@example.test');
+    await page.getByLabel('Password').fill('password-123');
+    await page.getByRole('button', { name: 'Sign In' }).last().click();
+    const alert = page.getByRole('alert').filter({ hasText: 'Authentication failed.' });
+    await expect(alert).toBeVisible();
+    await expect(page).toHaveURL(/\/login$/);
+    await page.unroute('**/api/auth');
+  });
+
   test('marks email verification progress as busy', async ({ page }) => {
     let releaseVerification: (() => void) | undefined;
     const verificationPending = new Promise<void>((resolve) => { releaseVerification = resolve; });

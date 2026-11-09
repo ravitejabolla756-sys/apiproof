@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parseAuthMutationError, parseAuthMutationSuccess } from '@/lib/auth-response-contract';
 
 type AuthMode = 'login' | 'signup';
 
@@ -82,10 +83,17 @@ export default function LoginPage() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data = await res.json() as unknown;
 
       if (!res.ok) {
-        setError(data.error || 'Authentication failed.');
+        setError(parseAuthMutationError(data, 'Authentication failed.'));
+        setLoading(false);
+        isSubmitting.current = false;
+        return;
+      }
+
+      if (!parseAuthMutationSuccess(data)) {
+        setError('Authentication failed.');
         setLoading(false);
         isSubmitting.current = false;
         return;

@@ -2322,3 +2322,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Dashboard logout requires explicit success data before navigation and preserves the existing server-confirmed 401 recovery behavior. Logout contract coverage passed **8/8**; rebuilt-bundle logout recovery coverage passed **1/1** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Backend session/cookie integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — login response guard
+
+- PASS: Login/signup now require explicit success data before navigation; malformed error values use safe fallback copy. Authentication response contract coverage passed **2/2**.
+- PASS: Rebuilt-bundle authentication loading/recovery coverage passed **6/6** after a fresh web production build generating **83 pages**. Hosted CI, backend session integration, staging, manual assistive-technology review and production remain open.

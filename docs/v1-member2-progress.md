@@ -3897,3 +3897,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/session-logout.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/session-logout.test.ts`.
 - Evidence: Logout contract coverage passed **8/8**; rebuilt-bundle logout recovery coverage passed **1/1** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances AUTH-08/UI-12 local logout truthfulness only; session invalidation and cookie behavior remain backend-owned.
+
+## 2026-11-09 checkpoint — login response guard
+
+- Change: Login and signup now require the backend's explicit `success: true` projection before navigating to the dashboard; malformed successful bodies remain on the auth page with retryable feedback, and malformed error values use safe fallback copy.
+- Files: `apps/web/src/lib/auth-response-contract.ts`, `apps/web/src/app/login/page.tsx`, `tests/auth-response-contract.test.ts`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: Authentication response contract coverage passed **2/2**; rebuilt-bundle authentication loading/recovery coverage passed **6/6** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances AUTH-08/UI-12 local authentication response safety only; credential verification, session issuance, OAuth and backend authorization remain server-owned.
