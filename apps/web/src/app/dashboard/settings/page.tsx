@@ -7,6 +7,7 @@ import { SlackConnectionCard } from "@/components/dashboard/slack-connection-car
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 import { formatDisplayDate } from "@/lib/date-display-contract";
 import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
+import { billingPortalAvailability } from "@/lib/billing-portal-contract";
 import { toSafeNavigationUrl } from "@/lib/external-link-contract";
 import Link from "next/link";
 
@@ -249,14 +250,16 @@ export default function SettingsPage() {
                         size="sm"
                         variant="outline"
                         disabled
+                        aria-describedby="billing-portal-status"
                         className="gap-1.5 font-medium"
                       >
                         <CreditCard className="w-3.5 h-3.5" aria-hidden="true" />
-                        <span>Billing portal unavailable in beta</span>
+                        <span>{billingPortalAvailability.label}</span>
                       </Button>
                     )}
                   </div>
                 </div>
+                <p id="billing-portal-status" className="text-[11px] text-[#686868]">{billingPortalAvailability.message}</p>
               </div>
             ) : error ? (
               <div role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">

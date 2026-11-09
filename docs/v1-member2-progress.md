@@ -3559,3 +3559,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Notification settings now require the server projection to include both non-disablable security and account-recovery controls before rendering or saving; partial responses fail closed instead of silently hiding required alerts. Recovery fixtures were updated to represent the reviewed shape.
 - Files: `apps/web/src/lib/notification-preferences-contract.ts`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, notification contract/recovery browser tests.
 - Scope: Advances local NOT-06/UI-12 fail-closed behavior only. Optional-channel delivery, digest scheduling, provider integration and Member 1 event contracts remain open.
+
+## 2026-11-09 checkpoint — BILL-08 typed portal boundary
+
+- Change: Extracted the disabled billing-portal state into a typed `BILLING_PORTAL_CONTRACT_PENDING` boundary and associated the owner/provider explanation with the control; no redirect or provider session is created.
+- Files: `apps/web/src/lib/billing-portal-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/billing-portal-contract.test.ts`.
+- Scope: Advances local BILL-08/UI-12 truthfulness and semantics only. Provider session creation, owner authorization, return-URL allowlisting, hosted CI, staging and production remain open.

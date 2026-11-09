@@ -2037,6 +2037,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Notification contract coverage and browser fixtures now verify that required security/account controls are present before the settings surface renders; partial projections fail closed.
 - NOT_RUN: Optional-channel event contracts, digest scheduling, provider delivery, hosted CI, staging and production remain open.
 
+## 2026-11-09 — BILL-08 typed portal boundary
+
+- PASS: The disabled portal control now uses a typed contract, exposes an associated provider/return-URL explanation and has contract coverage passing **1/1**.
+- NOT_RUN: Provider session integration, owner authorization, return-URL allowlisting, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
