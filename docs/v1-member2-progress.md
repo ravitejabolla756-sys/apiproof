@@ -3103,3 +3103,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/login-accessibility.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3191 pnpm exec playwright test tests/e2e/login-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local UI-12/UI-13/AUTH-08 entry-state evidence only. Hosted CI, staging, manual assistive-technology review, provider approval and production remain open.
+
+## 2026-11-09 checkpoint — BILL-09 mobile unavailable-state overflow coverage
+
+- Change: Extended the beta billing browser boundary to verify that the provider-unavailable invoice-history state does not create document-level horizontal overflow at 390px. No provider response, invoice, checkout or entitlement was fabricated.
+- Files: `tests/e2e/billing-boundaries.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3192 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local BILL-09/UI-12 boundary verification only. Provider invoice source, billing authorization, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.

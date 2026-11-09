@@ -24,6 +24,7 @@ test('keeps beta billing boundaries truthful in browser flows', async ({ page })
   await expect(invoiceSection.getByRole('link')).toHaveCount(0);
   await expect(invoiceSection.getByRole('button')).toHaveCount(0);
   expect((await invoiceStatus.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'invoice history unavailable state').toEqual([]);
   const checkout = await page.request.post('/api/billing/checkout', { data: { planId: 'team' } });
   expect(checkout.status()).toBe(403);
