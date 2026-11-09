@@ -82,14 +82,26 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     const first = focusable[0]!;
     const last = focusable[focusable.length - 1]!;
     const activeIndex = focusable.indexOf(document.activeElement as HTMLElement);
-    if (event.shiftKey && activeIndex <= 0) {
+    const focusBoundary = (reverse: boolean) => {
+      const current = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>('input, button:not([disabled]), [href]') ?? [],
+      ).filter((element) => element.offsetParent !== null && !element.hasAttribute('aria-hidden'));
+      const target = reverse ? current[current.length - 1] : current[0];
+      target?.focus();
+    };
+    const wrapFocus = (reverse: boolean) => {
       event.preventDefault();
       event.stopPropagation();
-      last.focus();
+      (reverse ? last : first).focus();
+      // Async repository loading can insert the boundary control after this key event.
+      window.setTimeout(() => focusBoundary(reverse), 0);
+    };
+    if (activeIndex === -1) {
+      wrapFocus(event.shiftKey);
+    } else if (event.shiftKey && activeIndex === 0) {
+      wrapFocus(true);
     } else if (!event.shiftKey && activeIndex === focusable.length - 1) {
-      event.preventDefault();
-      event.stopPropagation();
-      first.focus();
+      wrapFocus(false);
     }
   }
 

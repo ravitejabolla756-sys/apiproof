@@ -3925,3 +3925,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/github-oauth-popup.ts`, `tests/github-oauth-popup.test.ts`.
 - Evidence: GitHub popup contract coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed. Rebuilt-bundle repository recovery coverage passed **3/4**, and the isolated focus-trap test passed **1/1** on rerun; the remaining full-file focus assertion is timing-flaky and is tracked separately from this URL guard.
 - Scope: Advances UI-12/UI-13 repository connection navigation safety only; GitHub OAuth authorization, installation ownership and provider configuration remain server/provider-owned.
+
+## 2026-11-10 checkpoint — repository dialog focus-trap stabilization
+
+- Change: Repository dialog Tab wrapping now re-queries controls on the next task after boundary focus, covering asynchronous repository-state insertion without allowing focus to escape or trapping it on the close control.
+- Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`.
+- Evidence: Rebuilt-bundle repository recovery/focus coverage passed **4/4** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 keyboard accessibility only; repository authorization and GitHub provider state remain server/provider-owned.
