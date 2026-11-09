@@ -4241,3 +4241,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: Repository `pnpm typecheck` passed across all workspace projects and `tsconfig.test.json`; focused invoice-history, digest-availability and organization-management suites passed **30/30** with the required local seed. `git diff --check` passed and the preserved dependency edits remain the only dirty files.
 - Scope: Confirms the current local BILL-09/NOT-10/ORG-02/ORG-03/ORG-04/ORG-11 contract boundaries after the UI-13 helper change. Provider-backed billing, digest scheduling/delivery, PostgreSQL/RBAC, Member 1 ORG-10 integration and external approvals remain outside local implementation authority.
+
+## 2026-11-10 checkpoint — public production-bundle performance probe
+
+- Evidence: A fresh 83-page production bundle passed `PERFORMANCE_SAMPLES=3 pnpm website:performance` across `/`, `/features`, `/how-it-works`, `/security`, `/docs`, `/pricing`, `/faq`, `/contact` and `/status` on isolated loopback port 3169. Median load times were **11–40 ms**, response times **2–5 ms**, and encoded HTML sizes **6.1–17.2 KiB**.
+- Scope: Advances local WEB-15/UI-12 performance evidence only. This is not Lighthouse/Core Web Vitals, public-network, hosted CI, staging or production evidence; no deployment or public monitor was used.

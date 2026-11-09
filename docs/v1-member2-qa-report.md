@@ -2482,3 +2482,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Repository typecheck passed across all workspace projects and test configuration; focused invoice-history, digest-availability and organization-management coverage passed **30/30** with the required local seed.
 - PASS: `git diff --check` passed; no generated files or dependency edits were altered.
 - NOT_RUN: Provider, PostgreSQL/RBAC, Member 1 ORG-10, hosted CI, staging, legal, manual assistive-technology and production verification remain external.
+
+## 2026-11-10 — public production-bundle performance probe
+
+- PASS: Fresh 83-page production-bundle loopback probe covered 9 representative public routes over 3 samples; median load was **11–40 ms**, response **2–5 ms**, and encoded HTML **6.1–17.2 KiB**.
+- NOT_RUN: Lighthouse/Core Web Vitals, public-network behavior, hosted CI, integrated staging, manual assistive-technology review and production remain unverified.
