@@ -3378,3 +3378,7 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 ## 2026-11-09 checkpoint — current repository quality regression
 
 - Evidence: On the current branch, `pnpm lint` passed with zero warnings; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,420 tests**, **4 skipped**, across **173 test files** with **1 skipped file** in 112.13 seconds. This refreshes local regression evidence after the recent invoice, digest, workspace and public-form slices; hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — current CI-mode browser matrix
+
+- Evidence: `CI=true PLAYWRIGHT_PORT=3157 pnpm exec playwright test --workers=1 --reporter=line` passed **188/188** against the current production bundle in 3.3 minutes. Coverage includes public/authenticated axe and responsive checks, contact and status truthfulness, billing boundaries, notification digest gates, organization context/recovery, repository/finding workflows and retry states. Hosted CI, integrated staging, PostgreSQL/RBAC, full manual assistive-technology review and production remain open.

@@ -701,3 +701,7 @@ The workspace selector parser now rejects whitespace-only IDs and names before r
 ## Latest repository quality evidence — 2026-11-09
 
 The current branch passes `pnpm lint` with zero warnings and the no-file-parallelism repository regression with **1,420 passed**, **4 skipped**, across **173 files** with **1 skipped file**. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest CI-mode browser evidence — 2026-11-09
+
+The current production-bundle Playwright matrix passed **188/188** in 3.3 minutes with one worker, covering public/authenticated accessibility and responsive routes, organization context/recovery, billing and invoice boundaries, notification digest controls, contact/status truthfulness and degraded/retry states. Authorized hosted CI, integrated staging, PostgreSQL/RBAC, full manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

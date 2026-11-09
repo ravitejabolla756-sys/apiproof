@@ -1893,6 +1893,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `pnpm lint` passed with zero warnings. `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed 1,420 tests with 4 skips across 173 files, including 1 skipped file, in 112.13 seconds.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
 
+## 2026-11-09 — current CI-mode browser matrix
+
+- PASS: `CI=true PLAYWRIGHT_PORT=3157 pnpm exec playwright test --workers=1 --reporter=line` passed 188/188 against the current production bundle in 3.3 minutes, including public/authenticated accessibility, responsive, organization, billing, notification, contact/status, recovery and workspace-context journeys.
+- NOT_RUN: Authorized hosted CI, integrated staging, PostgreSQL/RBAC, full manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
