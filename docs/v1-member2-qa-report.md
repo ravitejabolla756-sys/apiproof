@@ -2157,3 +2157,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Cross-tab GitHub status resolution preserves known state for malformed successful payloads; focused sync-contract coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Provider authorization, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — dashboard shell GitHub status adapter
+
+- PASS: Dashboard shell refreshes now use the typed connection-status adapter; focused installation/status coverage passed **6/6**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Provider authorization, hosted CI, staging, manual assistive-technology review and production remain open.

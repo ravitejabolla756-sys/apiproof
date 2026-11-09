@@ -13,6 +13,7 @@ import {
   publishGitHubConnectionChanged,
   resolveGitHubConnectionStatus,
 } from '@/lib/github-connection-sync';
+import { parseGitHubConnectionStatus } from '@/lib/github-installation-contract';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -50,11 +51,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     githubStatusController.current = controller;
     try {
       const res = await fetch('/api/github/repositories', { cache: 'no-store', signal: controller.signal });
-      const data = res.ok ? await res.json() as { connected?: unknown } : null;
+      const data = res.ok ? parseGitHubConnectionStatus(await res.json()) : null;
       if (requestId !== githubStatusRequestId.current || controller.signal.aborted) return;
       setGithubConnected((previous) => resolveGitHubConnectionStatus(
         previous,
-        res.ok ? { ok: true, connected: data?.connected } : { ok: false },
+        res.ok ? { ok: true, connected: data } : { ok: false },
       ));
     } catch {
       // Preserve the last authoritative state during transient failures.

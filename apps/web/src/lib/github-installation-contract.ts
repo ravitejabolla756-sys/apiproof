@@ -3,6 +3,10 @@ export type GitHubInstallationProjection = {
   installation: { id: string; accountLogin: string; accountType: string } | null;
 };
 
+export function parseGitHubConnectionStatus(value: unknown): boolean | null {
+  return record(value) && typeof value.connected === 'boolean' ? value.connected : null;
+}
+
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
