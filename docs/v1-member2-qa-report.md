@@ -2177,3 +2177,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Full current-branch `tests/e2e/public-site.spec.ts` matrix passed **26/26**, including public truthful-copy/crawl checks, mobile navigation, reduced-motion and axe checks, contact boundary behavior, invitation/member flows, notification/account settings, workspace selection, authenticated route coverage and safe error states.
 - NOT_RUN: Hosted CI, integrated staging, manual screen-reader/assistive-technology review, legal sign-off, provider-backed delivery/billing and production verification remain open.
+
+## 2026-11-09 — full browser regression and pipeline contrast fix
+
+- PARTIAL: Seeded full Playwright run completed **180/195 passed**. The remaining 15 failures were concentrated in signup rate-limit/test-order effects, long-suite recovery timing, and existing settings/workspace fixture timing; the actionable pipeline contrast failure was corrected and its focused accessibility test passed **1/1**.
+- NOT_RUN: Clean isolated full-suite rerun, hosted CI, integrated staging, manual screen-reader/assistive-technology review, legal sign-off, provider-backed delivery/billing and production remain open.

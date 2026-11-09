@@ -3730,3 +3730,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: Current-branch Playwright public-site matrix passed **26/26** with one worker, covering public content/crawl controls, mobile navigation, reduced motion, accessibility scans, contact/intake boundaries, invitations, notification settings, account security, workspace context, authenticated route browsing and safe error states.
 - Scope: Strengthens local WEB-15/UI-12/UI-13 evidence only; hosted deployment, manual assistive-technology review, legal approval and provider-backed behavior remain external gates.
+
+## 2026-11-09 checkpoint — full browser regression and pipeline contrast fix
+
+- Evidence: Seeded full Playwright run executed **195 tests: 180 passed, 15 failed**. Most failures were test-order/environment effects (signup rate-limit 429s and recovery assertions after the long accessibility run); one actionable pipeline axe failure was fixed by replacing low-contrast pipeline presentation tokens. Focused pipeline accessibility coverage then passed **1/1**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- Scope: Advances UI-12/UI-13 accessibility quality. A clean full-suite rerun with isolated test state, hosted CI and manual assistive-technology review remain open.
