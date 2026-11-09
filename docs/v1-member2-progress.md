@@ -3455,3 +3455,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `CI=true PLAYWRIGHT_PORT=3170 APIPROOF_DB_PATH=/tmp/myowl-v1-full-browser-current.db pnpm exec playwright test --workers=1 --reporter=line` passed **189/189** in 3.2 minutes against the current production bundle. Coverage includes public/authenticated axe and responsive checks, workspace settings and recovery, invitations/member management, billing boundaries, notification/digest contracts, contact/status truthfulness, repository/finding workflows and retry states.
 - Scope: This is isolated local CI-mode evidence. Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, full manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — current evidence reconciliation
+
+- The latest evidence supersedes older inventory-row counts: UI-12/UI-13/public and authenticated browser coverage is now **189/189** on the current production bundle; the repository regression is **1,420 passed, 4 skipped**; current lint, typecheck and build checks are green.
+- The task statuses remain intentionally unchanged at **4 DONE_VERIFIED_LOCAL, 21 PARTIAL, 1 BLOCKED**. Local evidence does not close hosted CI, staging, PostgreSQL/RBAC, provider, legal, manual assistive-technology, deletion, scheduler or production gates.

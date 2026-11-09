@@ -1951,6 +1951,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Rebuilt-bundle CI-mode Playwright matrix passed **189/189** in 3.2 minutes with one worker, covering public/authenticated accessibility and responsive behavior, organization settings/invitations/member flows, billing boundaries, notification/digest gates, contact/status pages and recovery states.
 - NOT_RUN: Hosted CI execution, integrated staging, PostgreSQL/RBAC, provider delivery, full manual assistive-technology review and production remain open.
 
+## 2026-11-09 — current evidence reconciliation
+
+- PASS: The current 189/189 CI-mode browser result and 1,420-test seeded Vitest result supersede older 167/167 and earlier regression counts in the historical inventory. Current lint, typecheck, web build and diff checks are green.
+- NOTE: The task statuses remain **4 DONE_VERIFIED_LOCAL, 21 PARTIAL, 1 BLOCKED** because local automation cannot prove hosted CI, staging, PostgreSQL/RBAC, provider, legal, manual assistive-technology, deletion, scheduler or production gates.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
