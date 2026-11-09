@@ -3972,3 +3972,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/e2e/workbench-action-accessibility.spec.ts`.
 - Evidence: Pull-request contract coverage passed **4/4**; rebuilt-bundle workbench coverage passed **2/2** on isolated port 3115, including the 320px long-metadata case and axe checks, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
 - Scope: Advances UI-12/UI-13 pull-request responsiveness only; PR authorization, provider state and merge policy remain server-owned.
+
+## 2026-11-10 checkpoint — findings narrow-screen text containment
+
+- Change: Finding cards now establish shrink/wrap boundaries for long titles, descriptions, file paths, symbols and rule metadata while keeping status and workbench actions reachable.
+- Files: `apps/web/src/app/dashboard/findings/page.tsx`, `tests/e2e/findings-filter-responsive.spec.ts`.
+- Evidence: Findings contract coverage passed **2/2**; rebuilt-bundle responsive/filter coverage passed **3/3** on isolated port 3116, including the 320px long-metadata case and axe checks, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+- Scope: Advances UI-12/UI-13 findings responsiveness only; finding authorization, provider evidence and migration contracts remain server-owned.

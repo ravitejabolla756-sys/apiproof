@@ -171,19 +171,19 @@ export default function FindingsListPage() {
           {filteredFindings.map((finding) => (
             <div
               key={finding.id}
-              className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs hover:border-[#111111]/30 transition-all"
+              className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs hover:border-[#111111]/30 transition-all"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
+              <div className="flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-semibold uppercase">
                       {finding.provider}
                     </span>
-                    <h2 className="text-lg font-semibold text-[#111111]">
+                    <h2 className="min-w-0 break-words text-lg font-semibold text-[#111111]">
                       {finding.title}
                     </h2>
                   </div>
-                  <p className="text-xs text-[#686868] leading-relaxed">
+                  <p className="break-words text-xs text-[#686868] leading-relaxed">
                     {finding.description}
                   </p>
                 </div>
@@ -200,19 +200,19 @@ export default function FindingsListPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+                <div className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                   <div className="text-[10px] text-[#686868] uppercase font-semibold">Repository</div>
-                  <div className="font-mono text-[#111111] font-semibold">{finding.repo_name}</div>
+                  <div className="break-words font-mono text-[#111111] font-semibold">{finding.repo_name}</div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+                <div className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                   <div className="text-[10px] text-[#686868] uppercase font-semibold">Affected File</div>
-                  <div className="font-mono text-[#111111] font-semibold">
+                  <div className="break-all font-mono text-[#111111] font-semibold">
                     {finding.file_path}:{finding.line_number}
                   </div>
                 </div>
-                <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+                <div className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                   <div className="text-[10px] text-[#686868] uppercase font-semibold">Matched Symbol</div>
-                  <div className="font-mono text-purple-700 font-semibold">{finding.symbol}</div>
+                  <div className="break-all font-mono text-purple-700 font-semibold">{finding.symbol}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                   <div className="text-[10px] text-[#686868] uppercase font-semibold">Detector Confidence</div>
@@ -227,8 +227,8 @@ export default function FindingsListPage() {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-[#E8E8E5] flex items-center justify-between text-xs">
-                <span className="text-[#686868] flex items-center gap-1.5 font-medium">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#E8E8E5] text-xs">
+                <span className="min-w-0 break-words text-[#686868] flex items-center gap-1.5 font-medium">
                   {finding.pr_number != null ? (
                     <>
                       <GitPullRequest aria-hidden="true" className="w-4 h-4 text-blue-600" />

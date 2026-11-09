@@ -108,3 +108,28 @@ test('recovers from a filtered-empty findings state', async ({ page }) => {
   await expect(search).toHaveValue('');
   await expect(page.getByRole('heading', { name: 'Filtered recovery finding' })).toBeVisible();
 });
+
+test('contains long finding metadata on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await signIn(page);
+  const longTitle = 'Breaking compatibility finding '.repeat(12);
+  await page.route('**/api/findings', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ findings: [{
+        id: 'finding-long-metadata', provider: 'github', change_id: 'rule-long-metadata', title: longTitle,
+        description: 'Description '.repeat(40), severity: 'high', confidence: '0.9',
+        file_path: `src/${'very-long-file-name-'.repeat(12)}.ts`, line_number: 1,
+        symbol: 'client.'.concat('request'.repeat(12)), status: 'open', created_at: '2026-11-10T00:00:00.000Z',
+        repo_name: 'fixture-repository', repo_full_name: 'fixture/fixture-repository', pr_number: null,
+        pr_url: null, pr_state: null, capability: { migrationAvailable: false, recommendedNextAction: 'MANUAL_REVIEW' },
+      }] }),
+    });
+  });
+  await page.goto('/dashboard/findings', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText(longTitle, { exact: false })).toBeVisible({ timeout: 30_000 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'long finding metadata').toEqual([]);
+  await page.unroute('**/api/findings');
+});
