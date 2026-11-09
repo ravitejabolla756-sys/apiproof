@@ -3143,3 +3143,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/lib/date-display-contract.ts`, `tests/date-display-contract.test.ts`.
 - Evidence: focused date-display Vitest coverage passed 3/3; targeted ESLint, full repository typecheck and `git diff --check` passed. Impeccable detection reported only three unchanged incumbent dashboard palette warnings.
 - Scope: advances local UI-12 dashboard resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — UI-12 repository and pull-request date-display hardening
+
+- Change: Applied the same fail-closed date-display contract to pull-request creation, repository last-scan and repository scan-completion timestamps. Invalid API values now render `Unavailable` instead of `Invalid Date`; existing missing-value labels remain unchanged.
+- Files: `apps/web/src/app/dashboard/pull-requests/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`.
+- Scope: advances local UI-12/UI-13 resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.

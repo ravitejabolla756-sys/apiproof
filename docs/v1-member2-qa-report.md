@@ -1687,6 +1687,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - ADVISORY: Impeccable reported only three unchanged dashboard palette warnings.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
 
+## 2026-11-09 — repository and pull-request date-display contract reuse
+
+- PASS: Pull-request, repository-list and repository-detail API timestamps now use the fail-closed display adapter. Existing date-contract coverage passed 3/3; targeted ESLint, repository typecheck, web build and `git diff --check` passed.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

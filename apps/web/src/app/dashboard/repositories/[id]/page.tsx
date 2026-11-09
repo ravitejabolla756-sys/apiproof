@@ -5,6 +5,7 @@ import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
+import { formatDisplayDateTime } from "@/lib/date-display-contract";
 import {
   GitBranch,
   AlertTriangle,
@@ -432,7 +433,7 @@ export default function RepositoryDetailPage({
                       {s.findings_count}
                     </td>
                     <td className="py-2.5 px-3 text-[#686868]">
-                      {s.completed_at ? new Date(s.completed_at).toLocaleString() : 'In progress'}
+                      {s.completed_at ? formatDisplayDateTime(s.completed_at) : 'In progress'}
                     </td>
                   </tr>
                 ))}

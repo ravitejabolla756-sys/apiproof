@@ -17,6 +17,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
+import { formatDisplayDate } from "@/lib/date-display-contract";
 
 interface RepositoryRecord {
   id: string;
@@ -289,7 +290,7 @@ export default function RepositoriesTablePage() {
                           </div>
 
                           <div className="w-32 text-[#686868] text-[11px]">
-                            {repo.last_scan_at ? new Date(repo.last_scan_at).toLocaleDateString() : 'Never'}
+                            {repo.last_scan_at ? formatDisplayDate(repo.last_scan_at) : 'Never'}
                           </div>
 
                           <div className="w-32">

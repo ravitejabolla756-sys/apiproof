@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
+import { formatDisplayDateTime } from "@/lib/date-display-contract";
 import { GitPullRequest, ExternalLink, ShieldCheck, Loader2, RefreshCw } from "lucide-react";
 
 interface PullRequestItem {
@@ -132,7 +133,7 @@ export default function PullRequestsPage() {
               </div>
 
               <div className="pt-2 flex items-center justify-between">
-                <span className="text-xs text-[#686868]">Created: {new Date(pr.created_at).toLocaleString()}</span>
+                <span className="text-xs text-[#686868]">Created: {formatDisplayDateTime(pr.created_at)}</span>
                 {toSafePullRequestUrl(pr.url) ? (
                   <a href={toSafePullRequestUrl(pr.url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                     <span>Inspect on GitHub</span>
