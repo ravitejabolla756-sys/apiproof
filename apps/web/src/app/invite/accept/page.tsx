@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 function AcceptInvitationForm() {
   const params = useSearchParams();
   const token = params.get('token') || '';
-  const [state, setState] = useState<'ready' | 'loading' | 'success' | 'error'>('ready');
-  const [message, setMessage] = useState('');
+  const [state, setState] = useState<'ready' | 'loading' | 'success' | 'error'>(token ? 'ready' : 'error');
+  const [message, setMessage] = useState(token ? '' : 'This invitation link is missing its token.');
   const statusRef = useRef<HTMLDivElement>(null);
 
   async function accept() {

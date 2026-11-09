@@ -13,6 +13,13 @@ test.describe('public auth-entry state announcements', () => {
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
   });
 
+  test('does not expose invitation acceptance without a token', async ({ page }) => {
+    await page.goto('/invite/accept');
+    await expect(page.getByRole('alert').filter({ hasText: 'This invitation link is missing its token.' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Accept invitation' })).toHaveCount(0);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+  });
+
   test('announces invitation acceptance failures and preserves sign-in recovery', async ({ page }) => {
     let releaseResponse!: () => void;
     const responseReleased = new Promise<void>((resolve) => { releaseResponse = resolve; });

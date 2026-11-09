@@ -2072,3 +2072,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Invitation URL parsing rejects blank and duplicate token parameters; focused external-link contract coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Backend token validation/invalidation, delivery, authorization, idempotency, audit persistence, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — invitation missing-token initial state
+
+- PASS: The invitation page renders directly into the missing-token alert and exposes no acceptance button without a token; focused auth-entry browser coverage includes this state, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Backend token validation/invalidation, delivery, authorization, idempotency, audit persistence, hosted CI, staging, manual assistive-technology review and production remain open.

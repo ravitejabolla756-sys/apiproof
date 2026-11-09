@@ -3585,3 +3585,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/external-link-contract.ts`, `tests/external-link-contract.test.ts`.
 - Evidence: Focused external-link contract coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-03 client-side link safety only. Server-side token hashing, single-use invalidation, email binding, authorization, idempotency and audit persistence remain authoritative backend/shared-contract work.
+
+## 2026-11-09 checkpoint — invitation missing-token initial state
+
+- Change: The invitation page now initializes directly into its missing-token error state when no token is present, preventing a transient acceptance control before the effect runs.
+- Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: The focused auth-entry browser suite now covers missing-token, API-rejection and network-failure states; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-03/UI-12 initial-render safety only. Backend token validation, invalidation, authorization and delivery remain unchanged.
