@@ -4236,3 +4236,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Change: Added a non-secret contact-register template to the incident-response runbook for service, security, incident-command, communications and database/tenant-isolation escalation roles. All entries remain explicitly `TBD`/`NOT_AVAILABLE`; no private contact, credential, provider link or staffing claim was invented.
 - Scope: Advances SEC-18 runbook completeness and reviewability only; owner/security approval, approved alert routing, PostgreSQL/staging evidence and a timestamped tabletop sign-off remain open.
+
+## 2026-11-10 checkpoint — contract regression after browser-harness hardening
+
+- Evidence: Repository `pnpm typecheck` passed across all workspace projects and `tsconfig.test.json`; focused invoice-history, digest-availability and organization-management suites passed **30/30** with the required local seed. `git diff --check` passed and the preserved dependency edits remain the only dirty files.
+- Scope: Confirms the current local BILL-09/NOT-10/ORG-02/ORG-03/ORG-04/ORG-11 contract boundaries after the UI-13 helper change. Provider-backed billing, digest scheduling/delivery, PostgreSQL/RBAC, Member 1 ORG-10 integration and external approvals remain outside local implementation authority.

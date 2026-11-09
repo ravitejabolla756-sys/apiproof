@@ -2476,3 +2476,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: The incident-response draft now includes a non-secret escalation-register template with explicit approval states for service, security, incident-command, communications and database/tenant-isolation roles; no contact details or production-readiness claim was added.
 - NOT_RUN: Owner/security review, approved alert routing, staffed on-call coverage, PostgreSQL/staging evidence and the timestamped tabletop sign-off remain unavailable.
+
+## 2026-11-10 — contract regression after browser-harness hardening
+
+- PASS: Repository typecheck passed across all workspace projects and test configuration; focused invoice-history, digest-availability and organization-management coverage passed **30/30** with the required local seed.
+- PASS: `git diff --check` passed; no generated files or dependency edits were altered.
+- NOT_RUN: Provider, PostgreSQL/RBAC, Member 1 ORG-10, hosted CI, staging, legal, manual assistive-technology and production verification remain external.
