@@ -905,3 +905,8 @@ Phase 0 read-only checks:
 - This preserves the existing role matrix and does not grant new permissions; PostgreSQL/RLS, Member 2 contract and organization integration evidence remain external.
 
 - Task-accounting reconciliation: ORG-05 is now `DONE_VERIFIED_LOCAL` based on the complete local authorization regression evidence. Local completion is 9/27; production-verified remains 0. PostgreSQL/RLS and Member 2 integration gates remain external.
+
+### 2026-11-09 SEC-15 CI workflow contract validator
+
+- Added a reusable read-only CI workflow validator covering the approved Member 1 branch trigger, pull-request target, `contents: read` permission, required lint/typecheck/provider/test/build/manifest gates, and forbidden write/deploy/manual-dispatch entries.
+- `release-manifest` passes 2/2 for the current workflow and an unsafe fixture; hosted GitHub branch protection, required-check enforcement, review rules and bypass permissions remain administrator-only evidence.
