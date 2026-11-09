@@ -4034,3 +4034,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Provider-rule review cards now establish shrink/wrap boundaries for provider IDs, titles, descriptions, review blockers, source actions and detector guidance while preserving intentional JSON payload scrolling and review policy.
 - Scope: Advances UI-12/UI-13 provider-rule review resilience only; evidence provenance, approval, audit and rescan contracts remain server-owned.
 - Evidence: Provider-rule contract tests passed **4/4**; rebuilt-bundle provider-rule review coverage passed **1/1** on isolated port 3126, including the 320px axe/overflow case and keyboard-focusable payload preview, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings. The initial axe run exposed and the follow-up fixed the pre-existing scrollable-payload focus defect.
+
+## 2026-11-10 checkpoint — repository detail narrow metadata containment
+
+- Change: Repository detail hero, scan status, finding cards and finding metadata now establish shrink/wrap boundaries for long repository identity, branch, GitHub ID, paths, symbols and descriptions while preserving the intentional scan-history table scroll region.
+- Scope: Advances UI-12/UI-13 repository-detail resilience only; repository authorization, scan identity and provider contracts remain server-owned.
+- Evidence: Repository detail contract tests passed **2/2**; rebuilt-bundle populated repository-detail coverage passed **1/1** on isolated port 3127, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings. The first browser attempt was a fixture-shape failure and passed after adding the required documented scan/finding fields.

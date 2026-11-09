@@ -116,7 +116,7 @@ export default function RepositoryDetailPage({
   const latestScanIsActive = scanning || latestScan?.status === "pending" || latestScan?.status === "running";
 
   return (
-    <div aria-busy={loading || scanning ? 'true' : undefined} className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div aria-busy={loading || scanning ? 'true' : undefined} className="min-w-0 space-y-6 max-w-[1440px] font-sans text-xs">
       {/* BACK BUTTON */}
       <div>
         <Link
@@ -129,11 +129,11 @@ export default function RepositoryDetailPage({
       </div>
 
       {/* HERO BAND */}
-      <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold font-mono text-[#111111]">
+      <div className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0 space-y-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <h1 className="min-w-0 break-words text-2xl font-bold font-mono text-[#111111]">
                 {repo.name}
               </h1>
               <StatusPill
@@ -141,18 +141,18 @@ export default function RepositoryDetailPage({
                 label={findings.length > 0 ? `${findings.length} Breaking Findings` : "All Gates Healthy"}
               />
             </div>
-            <div className="flex items-center gap-4 text-xs text-[#686868] font-mono">
-              <span>{repo.full_name}</span>
-              <span>·</span>
-              <span className="flex items-center gap-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-[#686868] font-mono">
+              <span className="break-all">{repo.full_name}</span>
+              <span className="shrink-0">·</span>
+              <span className="flex min-w-0 items-center gap-1 break-all">
                 <GitBranch aria-hidden="true" className="w-3.5 h-3.5 text-purple-700" /> {repo.default_branch}
               </span>
-              <span>·</span>
-              <span>GitHub ID: {repo.github_repository_id}</span>
+              <span className="shrink-0">·</span>
+              <span className="break-all">GitHub ID: {repo.github_repository_id}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
             <Button
               size="sm"
               variant="outline"
@@ -184,7 +184,7 @@ export default function RepositoryDetailPage({
 
         {/* HONEST SCAN STATE BANNER */}
         <div className="p-4 rounded-2xl bg-[#F6F6F4] border border-[#E8E8E5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
             <div aria-hidden="true" className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
               scanning
                 ? "bg-purple-50 text-purple-700 border-purple-200"
@@ -205,8 +205,8 @@ export default function RepositoryDetailPage({
               )}
             </div>
 
-            <div role="status" aria-live="polite" aria-atomic="true" className="space-y-0.5">
-              <div className="font-semibold text-[#111111] flex items-center gap-2">
+            <div role="status" aria-live="polite" aria-atomic="true" className="min-w-0 space-y-0.5">
+              <div className="flex min-w-0 flex-wrap items-center gap-2 font-semibold text-[#111111]">
                 <span>Scan Status:</span>
                 <span className="font-mono uppercase text-[11px] text-purple-800">
                   {scanning
@@ -218,7 +218,7 @@ export default function RepositoryDetailPage({
                     : "Scan Completed"}
                 </span>
               </div>
-              <p className="text-[11px] text-[#686868]">
+              <p className="break-words text-[11px] text-[#686868]">
                 {scanning
                   ? "Running deterministic in-memory AST analysis against latest commit tree..."
                   : scans.length === 0
@@ -310,37 +310,37 @@ export default function RepositoryDetailPage({
             {findings.map((finding) => (
               <div
                 key={finding.id}
-                className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs hover:border-[#111111]/30 transition-all"
+                className="min-w-0 rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs hover:border-[#111111]/30 transition-all"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-semibold uppercase">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <span className="max-w-full break-all px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-semibold uppercase">
                         {finding.provider}
                       </span>
-                      <h3 className="text-sm font-semibold text-[#111111]">
+                      <h3 className="break-words text-sm font-semibold text-[#111111]">
                         {finding.title}
                       </h3>
                     </div>
-                    <p className="text-xs text-[#686868] leading-relaxed">
+                    <p className="break-words text-xs text-[#686868] leading-relaxed">
                       {finding.description}
                     </p>
                   </div>
                   <StatusPill status="affected" label={finding.severity.toUpperCase()} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+                <div className="grid min-w-0 grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                     <div className="text-[10px] text-[#686868] uppercase font-semibold">Location</div>
-                    <div className="font-mono text-[#111111] font-semibold">
+                    <div className="break-all font-mono text-[#111111] font-semibold">
                       {finding.file_path}:{finding.line_number}
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+                  <div className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                     <div className="text-[10px] text-[#686868] uppercase font-semibold">Matched AST Symbol</div>
-                    <div className="font-mono text-purple-700 font-semibold">{finding.symbol}</div>
+                    <div className="break-all font-mono text-purple-700 font-semibold">{finding.symbol}</div>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
+                  <div className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5]">
                     <div className="text-[10px] text-[#686868] uppercase font-semibold">Detector Confidence</div>
                     <div
                       className="font-mono text-[#111111] font-semibold"
@@ -353,8 +353,8 @@ export default function RepositoryDetailPage({
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between border-t border-[#E8E8E5]">
-                  <span className="text-xs text-[#686868]">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E8E5] pt-2">
+                  <span className="break-words text-xs text-[#686868]">
                     Rule: <code className="font-mono text-[11px] text-[#111111]">{finding.change_id}</code>
                   </span>
                   <Link href={`/dashboard/findings/${finding.id}`} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
