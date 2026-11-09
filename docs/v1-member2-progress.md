@@ -3263,3 +3263,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added `billingUsagePercent` as the shared finite, clamped usage-bar calculation so zero-limit beta metrics render `0%` (or a bounded `100%` for inconsistent positive usage) instead of `NaN%` or `Infinity%` CSS widths.
 - Files: `apps/web/src/lib/billing-summary-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/billing-summary-contract.test.ts`.
 - Evidence: Billing contract tests passed **3/3**; targeted ESLint, test TypeScript and diff checks passed; the rebuilt web production build generated **83 pages**; billing/settings browser coverage passed **2/2**. Provider-backed billing, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — BILL-09 invoice projection fail-closed parser
+
+- Change: Added validation for future server-owned invoice-history projections, rejecting malformed dates, negative or unsafe amounts, invalid currencies, duplicate IDs and malformed records before rendering; the provider-neutral unavailable boundary remains unchanged.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
+- Evidence: Invoice contract coverage passed **5/5**; targeted ESLint, test TypeScript and diff checks passed; the rebuilt web production build generated **83 pages**. Provider schema, authorization, retention, sandbox and hosted verification remain open.

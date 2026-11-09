@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatInvoiceAmount, formatInvoiceDate, toSafeInvoiceDateTime, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
+import { formatInvoiceAmount, formatInvoiceDate, parseInvoiceHistoryResult, toSafeInvoiceDateTime, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
 
 describe('invoice history adapter boundary', () => {
   it('keeps invoice history explicitly unavailable until a provider projection is configured', async () => {
@@ -29,5 +29,16 @@ describe('invoice history adapter boundary', () => {
     expect(toSafeInvoiceDateTime('not-a-date')).toBeNull();
     expect(toSafeInvoiceDateTime('2026-02-31T00:00:00.000Z')).toBeNull();
     expect(formatInvoiceDate('not-a-date')).toBe('Unavailable');
+  });
+
+  it('accepts a valid server-owned ready projection and rejects malformed or duplicate records', () => {
+    const valid = {
+      status: 'ready',
+      invoices: [{ id: 'inv_1', number: 'INV-001', issuedAt: '2026-11-09T00:00:00.000Z', status: 'paid', totalMinor: 1250, currency: 'USD', hostedUrl: 'https://billing.example.test/invoices/inv_1' }],
+    };
+    expect(parseInvoiceHistoryResult(valid)).toEqual(valid);
+    expect(parseInvoiceHistoryResult({ ...valid, invoices: [{ ...valid.invoices[0], totalMinor: -1 }] })).toBeNull();
+    expect(parseInvoiceHistoryResult({ ...valid, invoices: [valid.invoices[0], valid.invoices[0]] })).toBeNull();
+    expect(parseInvoiceHistoryResult({ status: 'ready', invoices: [{ ...valid.invoices[0], issuedAt: 'not-a-date' }] })).toBeNull();
   });
 });

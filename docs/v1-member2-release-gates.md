@@ -621,3 +621,7 @@ Zero-valued findings trend data now renders finite `0%` segments instead of `NaN
 ## Latest UI-12/BILL-07 billing-bar evidence — 2026-11-09
 
 Zero-limit beta billing metrics now render finite progress-bar widths. Billing contract coverage passed **3/3**, the rebuilt web build generated **83 pages**, and focused billing/settings browser coverage passed **2/2**. Provider-backed billing, signed webhooks, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest BILL-09 invoice projection evidence — 2026-11-09
+
+The provider-neutral invoice adapter now has a fail-closed parser for future server-owned ready projections. Invoice contract coverage passed **5/5** and the rebuilt web build generated **83 pages**. Provider source/authorization, retention, sandbox integration, hosted CI, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
