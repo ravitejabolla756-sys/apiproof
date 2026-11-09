@@ -995,7 +995,7 @@ Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
 
 - The current shared workspace is authoritative for this continuation. It is on `codex/v1-frontend-product` with only the two pre-existing GSAP dependency edits in `apps/web/package.json` and `pnpm-lock.yaml`; they remain unstaged and untouched.
 - The historical Member 1/old-computer Windows worktree paths from the supplied audit are provenance notes only and were not accessed, merged, reset, cleaned or assimilated here.
-- Remote: `https://github.com/ravitejabolla756-sys/apiproof.git`; no local `origin/main` ref exists, and the current branch is 488 commits ahead of `origin/codex/v1-frontend-product` with no unpushed commits from this checkpoint.
+- Remote: `https://github.com/ravitejabolla756-sys/apiproof.git`; no local `origin/main` ref exists. Against the last-known local `origin/codex/v1-frontend-product` ref (`9460b47`), the current branch is 683 commits ahead and 0 behind; a remote refresh was attempted but did not complete, so this is not a fresh GitHub-state claim.
 - Architecture: Next.js App Router, Tailwind-style utility classes, direct SQLite/PostgreSQL adapters, workspace membership predicates, Vitest backend/contract coverage, and a committed single-worker Playwright/axe local browser harness.
 - No production/staging DB, provider, payment, email, deployment, secret or remote Git operation was used.
 
