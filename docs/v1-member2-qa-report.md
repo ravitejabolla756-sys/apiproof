@@ -1748,6 +1748,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: An active workspace ID outside the server-owned workspace list now produces the existing workspace recovery alert, disables the selector, and remains axe-clean.
 - NOT_RUN: PostgreSQL/RBAC tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — complete rebuilt-bundle browser regression
+
+- PASS: The complete current-tree CI-mode Playwright matrix passed 182/182 in 3.5 minutes with one worker, including the new notification and workspace projection boundaries.
+- NOT_RUN: Hosted GitHub Actions, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

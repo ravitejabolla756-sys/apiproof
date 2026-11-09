@@ -3217,3 +3217,7 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The dashboard workspace selector now validates workspace IDs/names, rejects duplicates and requires the active workspace ID to belong to the server-owned list. Inconsistent projections fail closed into the existing unavailable/retry state; stale-cookie recovery and tenant authorization remain server-owned.
 - Files: `apps/web/src/lib/workspace-context-contract.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/workspace-context-contract.test.ts`, `tests/e2e/workspace-context-contract.spec.ts`.
 - Evidence: Added focused unit and axe-clean browser negative-path coverage. PostgreSQL/RBAC and integrated Member 1 authorization evidence remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 rebuilt-bundle full browser regression
+
+- Evidence: The complete current-tree CI-mode Playwright matrix passed **182/182** in 3.5 minutes with one worker. This includes the malformed notification/workspace projection regressions, authentication, organization, billing, public-site, recovery, keyboard, responsive and axe coverage. Hosted CI, integrated staging, PostgreSQL/RBAC, provider approval, manual assistive-technology review and production remain open.

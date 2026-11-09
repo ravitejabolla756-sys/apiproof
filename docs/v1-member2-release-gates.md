@@ -586,6 +586,10 @@ The malformed-projection browser regression also passes 1/1 with no preference c
 
 The workspace selector now fails closed when the active ID is outside the server-owned list or entries are malformed/duplicated. The focused projection suite passes 7/7, the rebuilt-bundle browser projection and workspace-switch recovery journeys pass 3/3, lint/typecheck/build pass, and the build generates 83 pages. PostgreSQL/RBAC tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest full browser evidence — 2026-11-09
+
+The complete current-tree CI-mode Playwright matrix passes 182/182 in 3.5 minutes with one worker. This is local rebuilt-bundle evidence only; hosted CI, integrated staging, PostgreSQL/RBAC, provider/legal approvals, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
