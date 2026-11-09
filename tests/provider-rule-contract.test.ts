@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseProviderRuleResponse } from '../apps/web/src/lib/provider-rule-contract.js';
+import { parseProviderRuleActionResponse, parseProviderRuleResponse, parseProviderRuleTestResponse } from '../apps/web/src/lib/provider-rule-contract.js';
 
 const candidate = {
   id: 'candidate-1', providerId: 'stripe', title: 'Removed field', description: 'Review this change.', status: 'needs_review', severity: 'high',
@@ -20,5 +20,12 @@ describe('provider rule response', () => {
     expect(parseProviderRuleResponse({ candidates: [{ ...candidate, source: { url: '', type: 'official' } }] })).toBeNull();
     expect(parseProviderRuleResponse({ candidates: [candidate, candidate] })).toBeNull();
     expect(parseProviderRuleResponse({ candidates: [], coverageSummary: { candidates: -1, pendingCandidates: 0, reviewedCandidates: 0, reviewedProviders: 0, providersMissingReviewedRules: [], providersWithExecutableTemplates: [] } })).toBeNull();
+  });
+
+  it('requires explicit action success and validates sample matches', () => {
+    expect(parseProviderRuleActionResponse({ ok: true })).toBe(true);
+    expect(parseProviderRuleActionResponse({ ok: false })).toBe(false);
+    expect(parseProviderRuleTestResponse({ ok: true, matches: [{ token: 'client.old', line: 3, snippet: 'client.old()' }] })).toMatchObject({ matches: [{ line: 3 }] });
+    expect(parseProviderRuleTestResponse({ ok: true, matches: [{ token: 'client.old', line: '3', snippet: 'client.old()' }] })).toBeNull();
   });
 });

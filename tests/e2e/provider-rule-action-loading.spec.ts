@@ -28,7 +28,7 @@ test('marks provider-rule sample testing busy while the request is pending', asy
   const testPending = new Promise<void>((resolve) => { releaseTest = resolve; });
   await page.route('**/api/provider-rules/candidate-action/test', async (route) => {
     await testPending;
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ matches: [{ token: 'fixture.call', line: 1, snippet: 'fixture.call()' }] }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, matches: [{ token: 'fixture.call', line: 1, snippet: 'fixture.call()' }] }) });
   });
   await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Action loading candidate' })).toBeVisible({ timeout: 30_000 });

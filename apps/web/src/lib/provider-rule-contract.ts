@@ -45,6 +45,10 @@ export type ProviderRuleResponse = {
   } | null;
 };
 
+export type ProviderRuleTestResponse = {
+  matches: Array<{ token: string; line: number; snippet: string }>;
+};
+
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -123,4 +127,19 @@ export function parseProviderRuleResponse(value: unknown): ProviderRuleResponse 
     coverageSummary = { candidates: summary.candidates, pendingCandidates: summary.pendingCandidates, reviewedCandidates: summary.reviewedCandidates, reviewedProviders: summary.reviewedProviders, providersMissingReviewedRules: summary.providersMissingReviewedRules, providersWithExecutableTemplates: summary.providersWithExecutableTemplates };
   }
   return { candidates: candidates as ProviderRuleCandidate[], coverageSummary };
+}
+
+/** Require the explicit success marker returned by review, edit and seed actions. */
+export function parseProviderRuleActionResponse(value: unknown): boolean {
+  return record(value) && value.ok === true;
+}
+
+/** Validate the structured sample-test result before displaying matches. */
+export function parseProviderRuleTestResponse(value: unknown): ProviderRuleTestResponse | null {
+  if (!record(value) || value.ok !== true || !Array.isArray(value.matches)) return null;
+  const matches = value.matches.map((match) => {
+    if (!record(match) || !text(match.token) || !count(match.line) || !text(match.snippet)) return null;
+    return { token: match.token, line: match.line, snippet: match.snippet };
+  });
+  return matches.some((match) => match === null) ? null : { matches: matches as ProviderRuleTestResponse['matches'] };
 }

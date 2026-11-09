@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Edit3, ExternalLink, Loader2, RefreshCw, X } from "lucide-react";
 import { toSafeExternalUrl } from "@/lib/external-link-contract";
-import { parseProviderRuleResponse, type ProviderRuleCandidate as Candidate, type ProviderRuleResponse } from "@/lib/provider-rule-contract";
+import { parseProviderRuleActionResponse, parseProviderRuleResponse, parseProviderRuleTestResponse, type ProviderRuleCandidate as Candidate, type ProviderRuleResponse } from "@/lib/provider-rule-contract";
 
 type CoverageSummary = NonNullable<ProviderRuleResponse['coverageSummary']>;
 
@@ -77,8 +77,10 @@ export function ProviderRuleReview() {
     setError(null);
     try {
       const response = await fetch('/api/provider-rules/seed', { method: 'POST' });
-      const body = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(body.error ?? 'Unable to populate provider review queue.');
+      const rawBody = await response.json() as unknown;
+      const errorMessage = rawBody && typeof rawBody === 'object' && 'error' in rawBody && typeof rawBody.error === 'string' ? rawBody.error : undefined;
+      if (!response.ok) throw new Error(errorMessage ?? 'Unable to populate provider review queue.');
+      if (!parseProviderRuleActionResponse(rawBody)) throw new Error('Provider review queue response is temporarily unavailable.');
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to populate provider review queue.');
@@ -122,6 +124,7 @@ export function ProviderRuleReview() {
       });
       const body = await response.json() as { error?: string; code?: string };
       if (!response.ok) throw new Error(body.code ? `${body.error ?? "Rule review failed."} (${body.code})` : (body.error ?? "Rule review failed."));
+      if (!parseProviderRuleActionResponse(body)) throw new Error("Rule review response is temporarily unavailable.");
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Rule review failed.");
@@ -144,9 +147,12 @@ export function ProviderRuleReview() {
     setError(null);
     try {
       const response = await fetch(`/api/provider-rules/${encodeURIComponent(candidate.id)}/test`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, filePath: "sample.ts" }) });
-      const body = await response.json() as { matches?: Array<{ token: string; line: number; snippet: string }>; error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Rule test failed.");
-      setTestResults((current) => ({ ...current, [candidate.id]: { matches: body.matches ?? [] } }));
+      const rawBody = await response.json() as unknown;
+      const errorMessage = rawBody && typeof rawBody === 'object' && 'error' in rawBody && typeof rawBody.error === 'string' ? rawBody.error : undefined;
+      if (!response.ok) throw new Error(errorMessage ?? "Rule test failed.");
+      const body = parseProviderRuleTestResponse(rawBody);
+      if (!body) throw new Error("Rule test response is temporarily unavailable.");
+      setTestResults((current) => ({ ...current, [candidate.id]: body }));
     } catch (err) { setError(err instanceof Error ? err.message : "Rule test failed."); }
     finally { setBusy(null); }
   }
@@ -190,8 +196,10 @@ export function ProviderRuleReview() {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: value.title, description: value.description, apiOperationPatterns: value.patterns.split(/\r?\n/).map((item) => item.trim()).filter(Boolean), ...(replacement === undefined ? {} : { replacement }), ...(migrationTemplate === undefined ? {} : { migrationTemplate }), notes: value.notes }),
       });
-      const body = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Rule edit failed.");
+      const rawBody = await response.json() as unknown;
+      const errorMessage = rawBody && typeof rawBody === 'object' && 'error' in rawBody && typeof rawBody.error === 'string' ? rawBody.error : undefined;
+      if (!response.ok) throw new Error(errorMessage ?? "Rule edit failed.");
+      if (!parseProviderRuleActionResponse(rawBody)) throw new Error("Rule edit response is temporarily unavailable.");
       setEditing((current) => ({ ...current, [candidate.id]: false }));
       await load();
     } catch (err) { setError(err instanceof Error ? err.message : "Rule edit failed."); }

@@ -3848,3 +3848,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/provider-rule-contract.ts`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/provider-rule-contract.test.ts`.
 - Evidence: Provider-rule contract coverage passed **3/3**; rebuilt-bundle provider-rule loading/action/filter/recovery coverage passed **5/5** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 and provider-rule review resilience only; review authorization, evidence provenance and server-side rule promotion remain authoritative.
+
+## 2026-11-09 checkpoint — provider-rule action response guards
+
+- Change: Review, edit and queue-seed actions now require the backend's explicit `ok: true` response marker; sample-rule testing validates the structured `matches` projection before rendering. The stale sample-test fixture was updated to match the documented route contract.
+- Files: `apps/web/src/lib/provider-rule-contract.ts`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/provider-rule-contract.test.ts`, `tests/e2e/provider-rule-action-loading.spec.ts`.
+- Evidence: Provider-rule contract coverage passed **4/4**; rebuilt-bundle provider-rule loading/action/filter/recovery coverage passed **5/5**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 provider-rule action safety only; review authorization, audit persistence, provider evidence and rescan execution remain server-owned.
