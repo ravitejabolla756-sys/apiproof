@@ -496,6 +496,10 @@ The rebuilt-bundle Playwright suite passed 172/172 locally after link hardening.
 
 Invoice ready-state formatting now fails closed for malformed provider projections, with local contract, lint, typecheck, build and billing-boundary checks passing. Provider authorization/source/retention approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest billing/notification contract evidence — 2026-11-09
+
+The focused billing, invoice, digest, notification-preference and email-delivery suites pass 19/19 locally. Provider delivery, billing lifecycle, scheduler, retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

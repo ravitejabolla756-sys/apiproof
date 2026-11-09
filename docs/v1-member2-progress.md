@@ -2979,6 +2979,11 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned `[]`; focused invoice contract tests passed 3/3; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; billing-boundary and authenticated notification-settings browser checks passed 2/2; `git diff --check` passed.
 - Scope: advances local BILL-09/UI-12 resilience only. Provider invoice projection, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.
 
+## 2026-11-09 checkpoint — billing and notification contract regression
+
+- Evidence: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/digest-notification-contract.test.ts tests/member2-billing-boundaries.test.ts tests/notification-preferences.test.ts tests/email-delivery-state.test.ts tests/email-delivery.test.ts` passed 19/19 across 6 files after the invoice display hardening.
+- Scope: reinforces local BILL-09/NOT-01/NOT-06/NOT-10 contract evidence only. Provider delivery, billing lifecycle, scheduler, retention and Member 1 integration remain open.
+
 ## 2026-11-09 checkpoint — full local browser regression after link hardening
 
 - Change: Revalidated the complete local browser matrix after the shared external-link and pull-request link hardening; no source or contract rollback was required.
