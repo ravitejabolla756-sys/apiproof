@@ -18,21 +18,9 @@ import {
 } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 import { formatDisplayDate } from "@/lib/date-display-contract";
+import { parseRepositoryCollection, type RepositoryProjection } from "@/lib/repository-contract";
 
-interface RepositoryRecord {
-  id: string;
-  owner: string;
-  name: string;
-  full_name: string;
-  github_repository_id: string;
-  default_branch: string;
-  status: string;
-  last_scan_at: string | null;
-  created_at: string;
-  findings_count: number;
-  scans_count: number;
-  last_scan_sha: string | null;
-}
+type RepositoryRecord = RepositoryProjection;
 
 export default function RepositoriesTablePage() {
   const [repositories, setRepositories] = useState<RepositoryRecord[]>([]);
@@ -49,9 +37,11 @@ export default function RepositoriesTablePage() {
     setLoading(true);
     try {
       const res = await fetch("/api/repositories");
-      const json = await res.json() as { repositories?: RepositoryRecord[]; error?: string };
-      if (!res.ok) throw new Error(json.error || "Unable to load repositories.");
-      const nextRepositories = json.repositories || [];
+      const json = await res.json() as unknown;
+      const parsed = parseRepositoryCollection(json);
+      const error = typeof json === 'object' && json !== null && 'error' in json && typeof json.error === 'string' ? json.error : null;
+      if (!res.ok || !parsed) throw new Error(error || "Unable to load repositories.");
+      const nextRepositories = parsed;
       setRepositories(nextRepositories);
       if (nextRepositories.length > 0 && !expandedRepo) {
         setExpandedRepo(nextRepositories[0]!.id);

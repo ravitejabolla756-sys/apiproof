@@ -3641,3 +3641,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/findings-contract.ts`, `apps/web/src/app/dashboard/findings/page.tsx`, `tests/findings-contract.test.ts`.
 - Evidence: Focused findings contract coverage passed **2/2** and the findings-filter/workbench accessibility browser suites passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 findings resilience only. Finding authorization, tenant isolation and backend evidence ownership remain unchanged.
+
+## 2026-11-09 checkpoint — repository projection adapter
+
+- Change: Added a typed repository collection parser that normalizes server-owned identity fields, validates non-negative counters and rejects missing identity or duplicate records before filtering/rendering.
+- Files: `apps/web/src/lib/repository-contract.ts`, `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/repository-contract.test.ts`.
+- Evidence: Focused repository contract coverage passed **2/2** and the repository/date/workbench browser suites passed **8/8**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 repository inventory resilience only. Repository authorization, tenant isolation and provider integration remain unchanged.
