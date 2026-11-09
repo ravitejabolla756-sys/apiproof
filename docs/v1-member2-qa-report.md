@@ -1833,6 +1833,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Notification preference failures now focus the assertive retry alert; rebuilt-bundle recovery coverage passed 1/1.
 - NOT_RUN: Provider delivery, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — digest contract enforcement
+
+- PASS: Weekly digest controls remain disabled when the server projection optimistically reports delivery availability; malformed projection and recovery coverage also pass, for 3/3 rebuilt-bundle tests.
+- NOT_RUN: Approved cadence, recipient, timezone, scheduler, retention, provider delivery, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

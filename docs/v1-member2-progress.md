@@ -3310,3 +3310,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Notification preference load/save errors now focus the assertive recovery alert, preserving the existing retry and preference contract behavior.
 - Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-recovery-loading.spec.ts`.
 - Evidence: Rebuilt-bundle notification recovery coverage passed **1/1** with the alert focused before retry; targeted ESLint, test TypeScript, diff checks and the 83-page production build passed. Provider delivery and hosted/manual verification remain open.
+
+## 2026-11-09 checkpoint — NOT-10 digest contract enforcement
+
+- Change: Notification settings now enforce `DigestAvailability` at the UI boundary, keeping weekly digest email and Slack controls disabled even if a future preference projection reports delivery availability before cadence, scheduler and recipient contracts are approved.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-preference-contract.spec.ts`.
+- Evidence: Rebuilt-bundle malformed-projection, optimistic-digest-projection and notification-recovery coverage passed **3/3**; targeted ESLint, test TypeScript, diff checks and the 83-page production build passed. No scheduler or provider behavior was added.

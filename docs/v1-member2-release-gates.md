@@ -653,3 +653,7 @@ Invoice-history adapter failures now focus the assertive retry alert. The billin
 ## Latest NOT-06 notification error evidence — 2026-11-09
 
 Notification preference failures now focus the assertive recovery alert; rebuilt-bundle browser coverage passed **1/1**. Provider delivery, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-10 digest contract evidence — 2026-11-09
+
+Weekly digest controls remain disabled until the approved cadence, recipient and scheduler contract exists, even when a preference projection claims delivery availability. The rebuilt-bundle notification contract/recovery suite passed **3/3**. Provider delivery, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
