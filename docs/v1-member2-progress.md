@@ -4076,3 +4076,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Public product updates now establish shrink/wrap boundaries for changelog headings, timeline cards, banner titles, improvement bullets and footer copy while preserving the ordered update list and conversion route.
 - Scope: Advances WEB-15/UI-12/UI-13 responsive QA only; update publication, content ownership and deployment verification remain outside this local slice.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3134, including the 320px axe/overflow case, four-item ordered-list assertion and the primary conversion touch target, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — About page narrow mission containment
+
+- Change: The public About route now establishes shrink/wrap boundaries for mission copy, principle cards, headings and the conversion panel while preserving the existing evidence-backed product narrative.
+- Scope: Advances WEB-15/UI-12 responsive QA only; product claims, content ownership and deployment verification remain outside this local slice.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3135, including the 320px axe/overflow case and the primary conversion touch target, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
