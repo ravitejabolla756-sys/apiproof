@@ -79,15 +79,15 @@ export default function ActivityPage() {
         <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
           <div className="divide-y divide-[#E8E8E5]">
             {activities.map((act) => (
-              <div key={act.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1">
+              <div key={act.id} className="py-4 flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-[#111111]">{act.title}</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#F6F6F4] text-zinc-700 border border-[#E8E8E5] text-[10px] font-medium uppercase font-mono">
+                    <span className="min-w-0 break-words font-semibold text-sm text-[#111111]">{act.title}</span>
+                    <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-[#F6F6F4] text-zinc-700 border border-[#E8E8E5] text-[10px] font-medium uppercase font-mono">
                       {getActivityTypeLabel(act.type, act.title)}
                     </span>
                   </div>
-                  <p className="text-xs text-[#686868] leading-relaxed">
+                  <p className="break-words text-xs text-[#686868] leading-relaxed">
                     {act.description}
                   </p>
                 </div>

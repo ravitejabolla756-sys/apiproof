@@ -3958,3 +3958,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/auth-response-contract.ts`, `apps/web/src/components/landing/navbar.tsx`, `tests/auth-response-contract.test.ts`.
 - Evidence: Auth contract coverage passed **3/3**; rebuilt-bundle navbar coverage passed **2/2** on isolated port 3113 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
 - Scope: Advances AUTH-08/UI-12 local response safety only; session issuance, authorization and cookie behavior remain backend-owned.
+
+## 2026-11-10 checkpoint — activity log narrow-screen text containment
+
+- Change: Activity rows now establish flex shrink/wrap boundaries for long validated event titles and descriptions while keeping the event-type badge and timestamp stable.
+- Files: `apps/web/src/app/dashboard/activity/page.tsx`, `tests/e2e/activity-recovery-loading.spec.ts`.
+- Evidence: Seeded activity API/contract coverage passed **22/22**; rebuilt-bundle activity recovery and 320px overflow/axe coverage passed **2/2** on isolated port 3114 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+- Scope: Advances UI-12/UI-13 activity responsiveness only; activity authorization and tenant-scoped projections remain server-owned.
