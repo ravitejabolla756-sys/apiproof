@@ -19,6 +19,7 @@ import {
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
 import { formatDisplayDate } from "@/lib/date-display-contract";
 import { parseRepositoryCollection, type RepositoryProjection } from "@/lib/repository-contract";
+import { parseRepositoryScanResponse } from "@/lib/repository-scan-contract";
 
 type RepositoryRecord = RepositoryProjection;
 
@@ -67,15 +68,17 @@ export default function RepositoriesTablePage() {
       const res = await fetch(`/api/repositories/${repoId}/scan`, {
         method: "POST",
       });
-      const data = await res.json();
+      const data = await res.json() as unknown;
+      const parsed = parseRepositoryScanResponse(data);
+      const error = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : undefined;
 
-      if (!res.ok) {
-        throw new Error(data.error || "Scan execution failed.");
+      if (!res.ok || !parsed) {
+        throw new Error(error || "Scan execution failed.");
       }
 
       setScanMessage({
         id: repoId,
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: `Scan complete: ${parsed.findingsCount} findings recorded.`,
       });
       await loadRepositories();
     } catch (err: unknown) {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { formatDisplayDateTime } from "@/lib/date-display-contract";
 import { parseRepositoryDetailResponse, type RepositoryDetailResponse } from "@/lib/repository-detail-contract";
+import { parseRepositoryScanResponse } from "@/lib/repository-scan-contract";
 import {
   GitBranch,
   AlertTriangle,
@@ -72,14 +73,16 @@ export default function RepositoryDetailPage({
       const res = await fetch(`/api/repositories/${repo.id}/scan`, {
         method: "POST",
       });
-      const data = await res.json();
+      const data = await res.json() as unknown;
+      const parsed = parseRepositoryScanResponse(data);
+      const error = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : undefined;
 
-      if (!res.ok) {
-        throw new Error(data.error || "Scan execution failed.");
+      if (!res.ok || !parsed) {
+        throw new Error(error || "Scan execution failed.");
       }
 
       setMessage({
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: `Scan complete: ${parsed.findingsCount} findings recorded.`,
       });
       await loadData();
     } catch (err: unknown) {
