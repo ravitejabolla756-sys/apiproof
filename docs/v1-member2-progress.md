@@ -3394,3 +3394,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Recorded a redacted, local-only incident-response rehearsal for the cross-account invitation scenario, including severity decision, containment, evidence boundaries, communication posture and explicit ORG-10/owner/security gaps.
 - Files: `docs/v1-member2-incident-response.md`.
 - Evidence: `pnpm exec vitest run tests/organization-management.test.ts` passed **22/22**; the rehearsal remains local planning evidence and does not establish monitoring, staffing, PostgreSQL/RBAC, workspace-scoped revocation, staging or production readiness.
+
+## 2026-11-09 checkpoint — NOT-10 digest HTTP read/write gate
+
+- Change: Extended the digest boundary regression through both `GET` and `PATCH /api/account/notifications`, proving a client opt-in attempt receives the server-owned disabled/unavailable projection while scheduling remains pending.
+- Files: `tests/notification-preferences.test.ts`.
+- Evidence: Notification preference coverage passed **5/5**; no scheduler, worker, provider or migration behavior was added.

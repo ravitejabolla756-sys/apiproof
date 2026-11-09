@@ -61,6 +61,20 @@ describe('notification preferences', () => {
     expect(response.status).toBe(200);
     const body = await response.json() as { preferences: Array<{ category: string; enabled: boolean; deliveryAvailable: boolean }> };
     expect(body.preferences.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false && item.deliveryAvailable === false)).toBe(true);
+
+    const patchResponse = await notificationsPatch(new Request('https://apiproof.test/api/account/notifications', {
+      method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        origin: 'https://apiproof.test',
+        host: 'apiproof.test',
+        cookie: `apiproof_session=${account.session.id}`,
+      },
+      body: JSON.stringify({ updates: [{ category: 'weekly_digest', channel: 'email', enabled: true }] }),
+    }));
+    expect(patchResponse.status).toBe(200);
+    const patched = await patchResponse.json() as { preferences: Array<{ category: string; enabled: boolean; deliveryAvailable: boolean }> };
+    expect(patched.preferences.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false && item.deliveryAvailable === false)).toBe(true);
   });
 
   it('does not allow cross-category or cross-channel values', async () => {

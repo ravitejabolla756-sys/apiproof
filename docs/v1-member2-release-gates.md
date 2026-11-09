@@ -713,3 +713,7 @@ The public non-sending contact form now bounds name, email and message lengths a
 ## Latest SEC-18 tabletop evidence — 2026-11-09
 
 A redacted local-only tabletop rehearsal is recorded for the cross-account invitation scenario, backed by the 22/22 organization-management suite. Owner/security sign-off, staffed monitoring, PostgreSQL/RBAC, Member 1 ORG-10 integration, staging and production exercise remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-10 HTTP read/write evidence — 2026-11-09
+
+Both notification preference HTTP boundaries are covered against digest opt-in attempts and return weekly-digest controls disabled/unavailable while scheduler contracts remain pending. Notification preference coverage passed **5/5**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
