@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Receipt } from 'lucide-react';
-import { unavailableInvoiceHistoryAdapter, type InvoiceHistoryAdapter, type InvoiceHistoryRecord, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
+import { toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter, type InvoiceHistoryAdapter, type InvoiceHistoryRecord, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
 
 function formatAmount(invoice: InvoiceHistoryRecord): string {
   return new Intl.NumberFormat(undefined, {
@@ -51,7 +51,7 @@ export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter
         <div role="region" aria-label="Invoice history table" tabIndex={0} className="overflow-x-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-inset">
           <table className="w-full min-w-[38rem] text-left text-xs">
             <thead><tr className="border-b border-[#E8E8E5] text-[#686868]"><th scope="col" className="pb-3 font-medium">Invoice</th><th scope="col" className="pb-3 font-medium">Issued</th><th scope="col" className="pb-3 font-medium">Status</th><th scope="col" className="pb-3 text-right font-medium">Total</th><th scope="col" className="pb-3 text-right font-medium"><span className="sr-only">Actions</span></th></tr></thead>
-            <tbody>{result?.invoices.map((invoice) => <tr key={invoice.id} className="border-b border-[#E8E8E5] last:border-0"><th scope="row" className="py-4 font-medium text-[#333333]">{invoice.number}</th><td className="py-4 text-[#686868]"><time dateTime={invoice.issuedAt}>{new Date(invoice.issuedAt).toLocaleDateString()}</time></td><td className="py-4 capitalize text-[#686868]">{invoice.status}</td><td className="py-4 text-right font-mono text-[#333333]">{formatAmount(invoice)}</td><td className="py-4 text-right">{invoice.hostedUrl ? <a href={invoice.hostedUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-lg px-3 font-medium text-[#0050F8] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]">View invoice</a> : <span className="text-[#686868]">Unavailable</span>}</td></tr>)}</tbody>
+            <tbody>{result?.invoices.map((invoice) => { const safeHostedUrl = toSafeInvoiceUrl(invoice.hostedUrl); return <tr key={invoice.id} className="border-b border-[#E8E8E5] last:border-0"><th scope="row" className="py-4 font-medium text-[#333333]">{invoice.number}</th><td className="py-4 text-[#686868]"><time dateTime={invoice.issuedAt}>{new Date(invoice.issuedAt).toLocaleDateString()}</time></td><td className="py-4 capitalize text-[#686868]">{invoice.status}</td><td className="py-4 text-right font-mono text-[#333333]">{formatAmount(invoice)}</td><td className="py-4 text-right">{safeHostedUrl ? <a href={safeHostedUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-lg px-3 font-medium text-[#0050F8] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]">View invoice</a> : <span className="text-[#686868]">Unavailable</span>}</td></tr>; })}</tbody>
           </table>
         </div>
       )}
