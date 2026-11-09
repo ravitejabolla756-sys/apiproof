@@ -38,7 +38,8 @@ export function toSafeInvitationUrl(value: string | null | undefined, origin: st
     const equivalentLoopback = loopbackHosts.has(parsed.hostname) && loopbackHosts.has(expected.hostname)
       && parsed.protocol === expected.protocol && parsed.port === expected.port;
     if (parsed.origin !== expected.origin && !equivalentLoopback) return null;
-    if (parsed.pathname !== '/invite/accept' || !parsed.searchParams.get('token')) return null;
+    const tokens = parsed.searchParams.getAll('token');
+    if (parsed.pathname !== '/invite/accept' || tokens.length !== 1 || !tokens[0]?.trim()) return null;
     return parsed.toString();
   } catch {
     return null;

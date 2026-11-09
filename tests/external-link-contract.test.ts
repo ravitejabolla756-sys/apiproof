@@ -25,6 +25,8 @@ describe('external link boundary', () => {
     expect(toSafeInvitationUrl('http://127.0.0.1:3225/invite/accept?token=fixture-token', 'http://localhost:3225')).toBe('http://127.0.0.1:3225/invite/accept?token=fixture-token');
     expect(toSafeInvitationUrl('https://evil.example.test/invite/accept?token=fixture-token', 'http://localhost:3225')).toBeNull();
     expect(toSafeInvitationUrl('/invite/accept', 'http://localhost:3225')).toBeNull();
+    expect(toSafeInvitationUrl('/invite/accept?token=%20%20', 'http://localhost:3225')).toBeNull();
+    expect(toSafeInvitationUrl('/invite/accept?token=first&token=second', 'http://localhost:3225')).toBeNull();
     expect(toSafeInvitationUrl('javascript:alert(1)', 'http://localhost:3225')).toBeNull();
   });
 });

@@ -3578,3 +3578,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
 - Evidence: Public auth-entry browser coverage passed **3/3**, including the aborted-request scenario; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-03/UI-12/UI-13 invitation UX resilience only. Invitation invalidation, delivery, authorization, idempotency, audit events and Member 1 integration remain external/shared contract gates.
+
+## 2026-11-09 checkpoint — invitation token ambiguity guard
+
+- Change: The shared invitation-link boundary now rejects whitespace-only tokens and duplicate `token` query parameters instead of selecting an ambiguous value.
+- Files: `apps/web/src/lib/external-link-contract.ts`, `tests/external-link-contract.test.ts`.
+- Evidence: Focused external-link contract coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-03 client-side link safety only. Server-side token hashing, single-use invalidation, email binding, authorization, idempotency and audit persistence remain authoritative backend/shared-contract work.

@@ -2067,3 +2067,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Invitation acceptance now converts fetch and response parsing failures into a focused, assertive recovery alert while preserving the invited-account sign-in path. The public auth-entry suite passed **3/3**, including an aborted network request; targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Invitation invalidation/idempotency, delivery, authorization, audit event persistence, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — invitation token ambiguity guard
+
+- PASS: Invitation URL parsing rejects blank and duplicate token parameters; focused external-link contract coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Backend token validation/invalidation, delivery, authorization, idempotency, audit persistence, hosted CI, staging, manual assistive-technology review and production remain open.
