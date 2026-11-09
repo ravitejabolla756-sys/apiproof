@@ -1441,3 +1441,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `pnpm typecheck`; `pnpm --filter @apiproof/web build` generated 83 pages; `CI=true PLAYWRIGHT_PORT=3143 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1.
 - PASS: Targeted ESLint, `git diff --check` and Impeccable detector returned no findings.
 - NOT_RUN: Provider-backed invoice projection, billing-owner authorization, URL allowlist/lifetime, retention/legal approval, hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — NOT-10 digest availability boundary
+
+- PASS: Added a typed provider-neutral digest availability contract and surfaced its explicit pending-contract message in notification settings. Existing email and Slack digest controls remain disabled; no cadence, scheduler, worker or provider delivery is represented.
+- PASS: `pnpm exec vitest run tests/digest-notification-contract.test.ts tests/invoice-history-contract.test.ts tests/member2-billing-boundaries.test.ts --reporter=dot` — 6 tests passed across 3 files.
+- PASS: `pnpm typecheck`; `pnpm --filter @apiproof/web build` generated 83 pages; `CI=true PLAYWRIGHT_PORT=3144 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 --grep "notification settings" --reporter=line` passed 1/1.
+- PASS: Targeted ESLint and `git diff --check` passed. Impeccable reports only the incumbent purple heading warning on the unchanged notification page.
+- NOT_RUN: Approved cadence/timezone/event contract, recipient authorization, scheduler lease, retention/template policy, provider sink, Member 1 event review, hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.

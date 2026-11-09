@@ -2845,3 +2845,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/components/dashboard/invoice-history-panel.tsx`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/invoice-history-contract.test.ts`.
 - Evidence: focused contract tests pass 5/5; repository typecheck and web production build pass with 83 generated pages; billing-boundary browser coverage passes 1/1; targeted lint, `git diff --check` and Impeccable detector pass.
 - Scope: advances local BILL-09/UI-12 implementation while keeping provider projection, billing-owner authorization, hosted URL lifetime/allowlist, retention/legal approval and Member 1 integration open. BILL-09 remains PARTIAL and release recommendation remains NO-GO.
+
+## 2026-11-09 checkpoint — NOT-10 digest availability boundary
+
+- Change: Added a typed `DigestAvailability` boundary to notification settings. The UI now states that digest scheduling is unavailable until cadence, recipient and scheduler ownership are approved; existing email and Slack controls remain disabled and no schedule, worker or provider delivery was added.
+- Files: `apps/web/src/lib/digest-notification-contract.ts`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/digest-notification-contract.test.ts`.
+- Evidence: focused digest/invoice/billing contract tests pass 6/6; repository typecheck passes; notification settings browser coverage passes 1/1 after a rebuilt web bundle with 83 generated pages; targeted lint and `git diff --check` pass. Impeccable reports only the incumbent purple heading warning on the unchanged notification page.
+- Scope: advances local NOT-10/UI-12 truthfulness only. Cadence/timezone, event categories, recipient model, scheduler lease, retention, templates, provider sinks and Member 1 event review remain open. NOT-10 remains PARTIAL and release recommendation remains NO-GO.
