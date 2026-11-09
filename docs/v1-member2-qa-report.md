@@ -32,6 +32,12 @@
 - ADVISORY: Impeccable reports only the five incumbent purple-heading warnings on unchanged workspace headings.
 - NOT_RUN: Member 1 revocation integration, PostgreSQL/RBAC, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — UI-12/UI-13 tablet overflow regression
+
+- PASS: Existing 768px public/authenticated route axe coverage now also rejects document-level horizontal overflow for every route.
+- PASS: Targeted ESLint, `pnpm typecheck`, and `CI=true PLAYWRIGHT_PORT=3165 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --grep "tablet width" --reporter=line` passed; tablet coverage was 1/1.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, PostgreSQL/RBAC and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

@@ -226,6 +226,7 @@ test.describe('route accessibility audit', () => {
       await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
       const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
       expect(results.violations, `${route} tablet`).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${route} creates tablet overflow`).toBe(true);
     }
 
     await signIn(page);
@@ -234,6 +235,7 @@ test.describe('route accessibility audit', () => {
       await expect(page.locator('main#main-content h1').first(), route).toBeVisible({ timeout: 30_000 });
       const results = await new AxeBuilder({ page }).include('#main-content').disableRules(['color-contrast']).analyze();
       expect(results.violations, `${route} tablet`).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${route} creates tablet overflow`).toBe(true);
     }
   });
 

@@ -2922,3 +2922,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: Targeted ESLint and repository typecheck passed; the rebuilt web bundle generated 83 pages; organization-audit plus workspace-switch recovery passed 14/14. Impeccable reported only the five previously documented incumbent purple-heading warnings.
 - Scope: advances local UI-12/ORG-02 responsive evidence only. Member 1 ORG-10 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 tablet overflow regression
+
+- Change: Strengthened the existing 768px route accessibility audit to assert that every audited public and authenticated route stays within the tablet viewport, matching the existing mobile overflow invariant.
+- Files: `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: Targeted ESLint and repository typecheck passed; the rebuilt current web bundle's tablet route audit passed 1/1, covering all audited public and authenticated routes with axe and overflow assertions.
+- Scope: advances local UI-12/UI-13 responsive verification only. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
