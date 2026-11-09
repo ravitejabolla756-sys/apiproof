@@ -107,6 +107,7 @@ The following tests are implementation-ready but remain contract-gated; they int
 
 - The production planning route currently uses `DeterministicPlanner` only. It constructs a bounded, redacted `PlanningInput` from the reviewed provider registry, exact finding location, scan evidence and source digest, then persists a human-review-required plan; it does not modify source code.
 - `LLMPlanner` exists as a provider-agnostic core boundary for a future approved adapter. Its output is strict-schema validated, constrained to supplied symbols/files/evidence, rejects duplicate step identifiers before plan persistence, is marked `PLAN_NEEDS_REVIEW`, capped at 0.7 planning confidence and never treated as verification.
+- Provider exceptions at the `LLMPlanner` boundary collapse to the fixed `MODEL_PROVIDER_FAILED` error; raw provider messages, credentials and infrastructure details are never returned through this core contract.
 - No production model provider, credential, structured-output contract, cost budget, retry/timeout policy or approval exists in this workstream. The web route therefore must remain deterministic-only until those controls are approved and implemented together.
 - Deterministic patch generation, bounded isolated verification, provenance digests and sandbox checks are the only path to execution-backed migration evidence. Model output cannot select commands, files, registry rules, repository writes, merge operations or verification status.
 

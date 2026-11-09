@@ -1,3 +1,4 @@
+import { AnalysisError } from '@apiproof/shared';
 import type { MigrationPlan, PlanningInput, ModelOutput } from '@apiproof/shared';
 import { deterministicPlan } from './deterministic.js';
 import { validateModelOutput, validatePlan } from './validator.js';
@@ -12,7 +13,12 @@ export class LLMPlanner {
 
   async plan(input: PlanningInput): Promise<MigrationPlan> {
     if (!input.impacts.length || input.unresolvedQuestions.some((question) => question.includes('exact source usage'))) return deterministicPlan(input);
-    const raw = await this.client.generate({ change: input.change, facts: input.facts, impacts: input.impacts, snippets: input.snippets, migrationInstructions: input.migrationInstructions });
+    let raw: unknown;
+    try {
+      raw = await this.client.generate({ change: input.change, facts: input.facts, impacts: input.impacts, snippets: input.snippets, migrationInstructions: input.migrationInstructions });
+    } catch {
+      throw new AnalysisError('MODEL_PROVIDER_FAILED', 'Model provider failed.');
+    }
     const output: ModelOutput = validateModelOutput(raw, input);
     const base = deterministicPlan(input);
     const bySymbol = new Map(input.impacts.map((impact) => [impact.symbol, impact]));

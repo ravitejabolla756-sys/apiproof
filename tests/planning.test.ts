@@ -96,7 +96,10 @@ describe('LLM planner boundary and hallucination guards', () => {
   it('rejects malformed output and propagates provider failures without weakening deterministic planning', async () => {
     const { input } = await inputFor("client.subscriptions.create({ coupon: 'launch' });");
     expect(() => validateModelOutput({ summary: 'missing required fields' }, input)).toThrow(/structured planning schema/);
-    await expect(new LLMPlanner({ model: 'failing-test-model', generate: async () => { throw new Error('provider timeout'); } }).plan(input)).rejects.toThrow('provider timeout');
+    await expect(new LLMPlanner({ model: 'failing-test-model', generate: async () => { throw new Error('provider timeout SECRET=must-not-leak'); } }).plan(input))
+      .rejects.toMatchObject({ code: 'MODEL_PROVIDER_FAILED', message: 'Model provider failed.' });
+    await expect(new LLMPlanner({ model: 'failing-test-model', generate: async () => { throw new Error('provider timeout SECRET=must-not-leak'); } }).plan(input))
+      .rejects.not.toThrow('SECRET=must-not-leak');
     expect((await new DeterministicPlanner().plan(input)).status).toBe('PLAN_READY');
   });
 });
