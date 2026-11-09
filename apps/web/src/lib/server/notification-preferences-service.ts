@@ -30,13 +30,19 @@ const DEFAULTS: Array<{ category: NotificationCategory; channel: NotificationCha
 const VALID_CATEGORIES = new Set<NotificationCategory>(DEFAULTS.map((item) => item.category));
 const VALID_CHANNELS = new Set<NotificationChannel>(DEFAULTS.map((item) => item.channel));
 const VALID_PREFERENCE_KEYS = new Set(DEFAULTS.map((item) => `${item.category}:${item.channel}`));
+const DIGEST_SCHEDULING_AVAILABLE = false;
 
 export async function getNotificationPreferences(userId: string): Promise<NotificationPreference[]> {
   const rows = await getDatabase().query<{ category: NotificationCategory; channel: NotificationChannel; enabled: number | boolean }>(
     'SELECT category, channel, enabled FROM user_notification_preferences WHERE user_id = ?', [userId],
   );
   const stored = new Map(rows.map((row) => [`${row.category}:${row.channel}`, Boolean(row.enabled)]));
-  return DEFAULTS.map((item) => ({ ...item, enabled: stored.get(`${item.category}:${item.channel}`) ?? item.enabled }));
+  return DEFAULTS.map((item) => ({
+    ...item,
+    enabled: item.category === 'weekly_digest' && !DIGEST_SCHEDULING_AVAILABLE
+      ? false
+      : stored.get(`${item.category}:${item.channel}`) ?? item.enabled,
+  }));
 }
 
 /**
@@ -51,6 +57,7 @@ export async function isNotificationPreferenceEnabled(
 ): Promise<boolean> {
   const fallback = DEFAULTS.find((item) => item.category === category && item.channel === channel);
   if (!fallback) return false;
+  if (category === 'weekly_digest' && !DIGEST_SCHEDULING_AVAILABLE) return false;
   const row = await database.queryOne<{ enabled: number | boolean }>(
     'SELECT enabled FROM user_notification_preferences WHERE user_id = ? AND category = ? AND channel = ?',
     [userId, category, channel],

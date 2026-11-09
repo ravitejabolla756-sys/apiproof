@@ -3321,3 +3321,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Change: Weekly digest controls now derive their disabled/unavailable state from the pending digest contract as well as channel delivery availability, preventing an optimistic server projection from exposing editable digest settings prematurely.
 - Evidence: Rebuilt-bundle notification contract and recovery coverage passed **3/3**; no scheduler, queue, template or provider behavior was introduced.
+
+## 2026-11-09 checkpoint — NOT-10 server-side digest read gate
+
+- Change: Server notification preference reads and `isNotificationPreferenceEnabled` now force weekly-digest reads to disabled while scheduling contracts are pending, preventing a direct stored opt-in from activating a future scheduler prematurely.
+- Files: `apps/web/src/lib/server/notification-preferences-service.ts`, `tests/notification-preferences.test.ts`.
+- Evidence: Notification service coverage passed **5/5**; focused rebuilt-bundle notification contract/recovery coverage passed **3/3**; the production build generated **83 pages**. No scheduler, provider or migration behavior was added.

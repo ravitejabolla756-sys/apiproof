@@ -661,3 +661,7 @@ Weekly digest controls remain disabled until the approved cadence, recipient and
 ## Latest NOT-10 optimistic projection evidence — 2026-11-09
 
 The notification UI now fails closed when a digest projection optimistically reports delivery availability while the shared digest contract remains pending. Focused rebuilt-bundle coverage passed **3/3**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-10 server-side gate evidence — 2026-11-09
+
+Server preference reads force weekly-digest values disabled while scheduling contracts are pending, preventing direct stored opt-ins from activating future delivery. Notification service coverage passed **5/5**, focused browser coverage passed **3/3**, and the build generated **83 pages**. Scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

@@ -43,6 +43,17 @@ describe('notification preferences', () => {
       .rejects.toThrow('cannot be disabled');
   });
 
+  it('keeps digest reads disabled until scheduling contracts are approved', async () => {
+    const account = await createUserWithSession('digest-gate@example.test', 'NotifyPassword123!', 'Digest Gate');
+    const updated = await updateNotificationPreferences(account.user.id, [
+      { category: 'weekly_digest', channel: 'email', enabled: true },
+      { category: 'weekly_digest', channel: 'slack', enabled: true },
+    ]);
+    expect(updated.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false)).toBe(true);
+    const stored = await getNotificationPreferences(account.user.id);
+    expect(stored.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false)).toBe(true);
+  });
+
   it('does not allow cross-category or cross-channel values', async () => {
     const account = await createUserWithSession('notifications@example.test', 'NotifyPassword123!', 'Notify User');
     await expect(updateNotificationPreferences(account.user.id, [{ category: 'unknown' as 'findings', channel: 'email', enabled: true }]))
