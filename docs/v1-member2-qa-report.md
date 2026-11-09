@@ -2374,3 +2374,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The invitation-accept recovery surface establishes narrow-width shrink/wrap boundaries for long workspace names, error messages and recovery links without changing token handling or acceptance behavior. Rebuilt-bundle Playwright/axe coverage passed **1/1** at 320px on isolated port 3144, including missing-token recovery and a 44px sign-in recovery link.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector passed with no findings.
 - NOT_RUN: Invitation authorization, expiry/single-use invalidation, approved delivery, tenant isolation, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-10 — login shell narrow containment
+
+- PASS: The login shell establishes narrow-width shrink/wrap boundaries for the auth card, error copy and footer note without changing provider redirects, mode switching or credential submission. Rebuilt-bundle Playwright/axe coverage passed **1/1** at 320px on isolated port 3145, including 44px mode/recovery controls and overflow containment.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector passed with no findings.
+- NOT_RUN: Authentication/session integration, provider delivery, hosted CI, integrated staging, manual assistive-technology review and production remain open.

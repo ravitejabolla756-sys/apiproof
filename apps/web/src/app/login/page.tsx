@@ -110,7 +110,7 @@ export default function LoginPage() {
   }
 
   return (
-    <><a href="#main-content" className="skip-link">Skip to main content</a><main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans outline-none">
+    <><a href="#main-content" className="skip-link">Skip to main content</a><main id="main-content" tabIndex={-1} className="flex min-h-screen min-w-0 flex-col items-center justify-center bg-[#F5F5F7] px-4 font-sans outline-none">
       {/* Logo */}
       <Link href="/" className="inline-flex min-h-11 items-center gap-3 mb-10 group">
         <ApiProofLogo alt="" className="h-8 w-auto shrink-0 transition-transform group-hover:scale-105" variant="dark" />
@@ -120,7 +120,7 @@ export default function LoginPage() {
       </Link>
 
       {/* Auth Card */}
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[#E8E8E5] shadow-sm p-8">
+      <div className="w-full min-w-0 max-w-md rounded-2xl border border-[#E8E8E5] bg-white p-8 shadow-sm">
         <h1 className="sr-only">Sign in to MY OWL</h1>
         {/* Mode Switcher */}
         <div className="flex gap-1 p-1 bg-[#F5F5F7] rounded-xl mb-8">
@@ -238,7 +238,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">
+            <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">
               {error}
             </div>
           )}
@@ -269,7 +269,7 @@ export default function LoginPage() {
         )}
       </div>
 
-      <p className="mt-6 text-xs text-slate-600">
+      <p className="mt-6 break-words text-center text-xs text-slate-600">
         Deterministic AST analysis. No AI required.
       </p>
     </main></>
