@@ -3149,3 +3149,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Applied the same fail-closed date-display contract to pull-request creation, repository last-scan and repository scan-completion timestamps. Invalid API values now render `Unavailable` instead of `Invalid Date`; existing missing-value labels remain unchanged.
 - Files: `apps/web/src/app/dashboard/pull-requests/page.tsx`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`.
 - Scope: advances local UI-12/UI-13 resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — UI-13 malformed dashboard-date browser regression
+
+- Change: Added a browser regression that fixtures impossible repository, pull-request and scan-completion timestamps and verifies `Unavailable`, no `Invalid Date`, and axe-clean dashboard content. The test is run against a rebuilt production bundle so it cannot silently exercise stale output.
+- Files: `tests/e2e/dashboard-date-display.spec.ts`.
+- Evidence: rebuilt web bundle generated 83 pages; the focused Playwright suite passed 2/2; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local UI-12/UI-13 timestamp-boundary evidence only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.

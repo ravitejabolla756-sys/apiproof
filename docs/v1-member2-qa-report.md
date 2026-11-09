@@ -1692,6 +1692,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Pull-request, repository-list and repository-detail API timestamps now use the fail-closed display adapter. Existing date-contract coverage passed 3/3; targeted ESLint, repository typecheck, web build and `git diff --check` passed.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
 
+## 2026-11-09 — malformed dashboard-date browser regression
+
+- PASS: Rebuilt-bundle Playwright coverage passed 2/2 for malformed repository-list, pull-request and repository-detail scan timestamps; `Unavailable` was rendered, `Invalid Date` was absent, and the affected content was axe-clean. Targeted ESLint, test TypeScript, web build (83 pages) and `git diff --check` passed.
+- NOTE: An initial run against the prior production bundle was discarded as stale-bundle evidence; no product claim was based on it.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
