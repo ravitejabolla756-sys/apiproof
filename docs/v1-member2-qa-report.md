@@ -1539,6 +1539,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Impeccable detector `[]`; targeted ESLint and `git diff --check`; `CI=true PLAYWRIGHT_PORT=3147 pnpm exec playwright test tests/e2e/public-contrast-audit.spec.ts tests/e2e/public-axe-audit.spec.ts --workers=1 --reporter=line` passed 4/4; `pnpm typecheck`; web build generated 83 pages.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.
 
+## 2026-11-09 — WEB-13 no-monitor status browser evidence
+
+- PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.
+- NOT_RUN: Approved monitoring source, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — pull-request external-link safety boundary
 
 - PASS: Pull-request external links now pass through a credential-free HTTPS boundary; malformed, relative, non-HTTPS and credential-bearing values render as unavailable.

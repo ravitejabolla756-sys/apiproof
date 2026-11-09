@@ -21,6 +21,18 @@ test('exposes the updates timeline as an ordered product-update list', async ({ 
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });
 
+test('keeps the public status page explicit while no monitor is connected', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/status');
+
+  await expect(page.getByRole('heading', { name: 'A truthful status surface is coming.' })).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('No live monitor is connected');
+  const supportLink = page.getByRole('link', { name: 'Contact support' });
+  await expect(supportLink).toHaveAttribute('href', '/contact');
+  expect((await supportLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+});
+
 test('keeps the shared footer brand and navigation links touch-sized on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/blog');

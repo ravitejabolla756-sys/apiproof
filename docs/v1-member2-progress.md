@@ -2964,3 +2964,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/pull-request-contract.ts`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/pull-request-contract.test.ts`.
 - Evidence: Impeccable detector returned `[]`; focused Vitest passed 2/2; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3171 pnpm exec playwright test tests/e2e/workbench-action-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1.
 - Scope: advances local UI-12/UI-13 pull-request safety and accessibility evidence only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — WEB-13 no-monitor status browser evidence
+
+- Change: Added a mobile browser regression that verifies the public status page explicitly states that no live monitor is connected, keeps the support path available, preserves touch sizing and remains axe-clean.
+- Files: `tests/e2e/public-info-cta-accessibility.spec.ts`.
+- Evidence: `CI=true PLAYWRIGHT_PORT=3172 pnpm exec playwright test tests/e2e/public-info-cta-accessibility.spec.ts --workers=1 --reporter=line --grep "status page|updates timeline"` passed 2/2; `git diff --check` passed.
+- Scope: advances local WEB-13/UI-12/WEB-15 evidence only. An approved monitoring source, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain open.
