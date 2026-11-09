@@ -54,6 +54,13 @@ describe('notification preferences', () => {
     expect(stored.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false)).toBe(true);
     expect(await isNotificationPreferenceEnabled(account.user.id, 'weekly_digest', 'email')).toBe(false);
     expect(await isNotificationPreferenceEnabled(account.user.id, 'weekly_digest', 'slack')).toBe(false);
+
+    const response = await notificationsGet(new Request('https://apiproof.test/api/account/notifications', {
+      headers: { cookie: `apiproof_session=${account.session.id}` },
+    }));
+    expect(response.status).toBe(200);
+    const body = await response.json() as { preferences: Array<{ category: string; enabled: boolean; deliveryAvailable: boolean }> };
+    expect(body.preferences.filter((item) => item.category === 'weekly_digest').every((item) => item.enabled === false && item.deliveryAvailable === false)).toBe(true);
   });
 
   it('does not allow cross-category or cross-channel values', async () => {

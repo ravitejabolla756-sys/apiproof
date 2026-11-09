@@ -3362,3 +3362,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Tightened the provider-neutral invoice parser to reject whitespace-only invoice IDs, numbers, statuses and unavailable-state messages before they reach the UI; valid provider data and the unavailable beta boundary remain unchanged.
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
 - Evidence: Focused invoice contract coverage passed **5/5**; provider authorization/source, tenant isolation, retention, sandbox integration and hosted verification remain open.
+
+## 2026-11-09 checkpoint — NOT-10 digest HTTP read gate
+
+- Change: Added a route-level regression proving that a stored weekly-digest opt-in is still returned as disabled and unavailable through `GET /api/account/notifications` while scheduling remains unapproved.
+- Files: `tests/notification-preferences.test.ts`.
+- Evidence: Notification preference coverage passed **5/5**; no scheduler, worker, provider or migration behavior was added.

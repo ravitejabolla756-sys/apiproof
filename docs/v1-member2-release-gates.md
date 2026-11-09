@@ -689,3 +689,7 @@ The workspace selector now has focused browser coverage for rejected context swi
 ## Latest BILL-09 projection validation evidence — 2026-11-09
 
 The invoice adapter now rejects whitespace-only identity, status and unavailable-state message fields before rendering. Focused contract coverage passed **5/5**; provider authorization/source, tenant isolation, retention, sandbox integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-10 HTTP gate evidence — 2026-11-09
+
+The notification GET route is covered against stored weekly-digest opt-ins and returns them disabled/unavailable while scheduling contracts remain pending. Notification preference coverage passed **5/5**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
