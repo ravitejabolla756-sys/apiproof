@@ -1828,6 +1828,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invoice-history retry failures now focus the assertive alert while preserving retry semantics; the billing boundary browser test passed 1/1 and the rebuilt build generated 83 pages.
 - NOT_RUN: Provider-backed invoice source, live error projection, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — notification error focus recovery
+
+- PASS: Notification preference failures now focus the assertive retry alert; rebuilt-bundle recovery coverage passed 1/1.
+- NOT_RUN: Provider delivery, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

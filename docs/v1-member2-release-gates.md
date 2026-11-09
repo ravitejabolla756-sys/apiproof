@@ -649,3 +649,7 @@ Dashboard trend color markers are explicitly hidden from assistive technology wh
 ## Latest BILL-09 invoice error evidence — 2026-11-09
 
 Invoice-history adapter failures now focus the assertive retry alert. The billing boundary browser test passed **1/1**, and the rebuilt web build generated **83 pages**. Provider-backed invoice errors, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest NOT-06 notification error evidence — 2026-11-09
+
+Notification preference failures now focus the assertive recovery alert; rebuilt-bundle browser coverage passed **1/1**. Provider delivery, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

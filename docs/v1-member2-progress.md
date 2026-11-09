@@ -3304,3 +3304,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Invoice-history adapter failures now move keyboard focus to the assertive retry alert, preserving the existing retry action and beta-unavailable boundary.
 - Files: `apps/web/src/components/dashboard/invoice-history-panel.tsx`.
 - Evidence: Targeted ESLint, test TypeScript and diff checks passed; the rebuilt web production build generated **83 pages**; the billing boundary browser test passed **1/1**. A provider-backed error projection and live billing integration remain unavailable.
+
+## 2026-11-09 checkpoint — NOT-06 notification error focus recovery
+
+- Change: Notification preference load/save errors now focus the assertive recovery alert, preserving the existing retry and preference contract behavior.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-recovery-loading.spec.ts`.
+- Evidence: Rebuilt-bundle notification recovery coverage passed **1/1** with the alert focused before retry; targeted ESLint, test TypeScript, diff checks and the 83-page production build passed. Provider delivery and hosted/manual verification remain open.

@@ -20,6 +20,7 @@ test('keeps notification recovery visible and busy while retrying', async ({ pag
   await page.goto('/dashboard/settings/notifications', { waitUntil: 'domcontentloaded' });
   const alert = page.getByRole('alert').filter({ hasText: 'Notification preferences are temporarily unavailable.' });
   await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toBeFocused();
   const retry = alert.getByRole('button', { name: 'Try again' });
   await retry.click();
   await expect(retry).toBeDisabled();
