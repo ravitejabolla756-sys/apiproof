@@ -3096,3 +3096,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/auth-recovery-accessibility.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3190 pnpm exec playwright test tests/e2e/auth-recovery-accessibility.spec.ts --workers=1 --reporter=line` passed 2/2; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local NOT-02/UI-12/UI-13 verification only. Member 1 AUTH-05 integration, approved email provider/domain, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 login mode keyboard coverage
+
+- Change: Extended the mobile login accessibility journey to verify keyboard focus on both Sign In and Create Account mode tabs and no document-level horizontal overflow. Authentication behavior and social-provider boundaries remain unchanged.
+- Files: `tests/e2e/login-accessibility.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3191 pnpm exec playwright test tests/e2e/login-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local UI-12/UI-13/AUTH-08 entry-state evidence only. Hosted CI, staging, manual assistive-technology review, provider approval and production remain open.

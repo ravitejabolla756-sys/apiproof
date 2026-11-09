@@ -536,6 +536,10 @@ Password-recovery mobile coverage verifies no document overflow and keyboard foc
 
 The missing verification-token mobile state has focused assertive feedback, a 44px sign-in recovery action, no document overflow and axe-clean content; the auth-recovery suite passes 2/2. Member 1 AUTH-05 integration, approved email provider/domain, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest UI-12 login entry evidence — 2026-11-09
+
+Mobile login coverage verifies keyboard focus on both authentication mode tabs and no document overflow, with the focused browser test passing 1/1. Hosted CI, staging, manual assistive-technology review, provider approval and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.

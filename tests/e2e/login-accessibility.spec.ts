@@ -16,6 +16,8 @@ test('keeps login mode tabs touch-sized and accessible on mobile', async ({ page
   await expect(homeLink).toBeVisible();
   await expect(homeLink.locator('img')).toHaveAttribute('alt', '');
   expect((await homeLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await signInMode.focus(); await expect(signInMode).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
   for (const control of [page.getByRole('button', { name: 'Continue with Google' }), page.getByRole('button', { name: 'Continue with GitHub' }), page.getByLabel('Email'), page.getByLabel('Password'), page.getByRole('button', { name: 'Sign In', exact: true }).last(), page.getByRole('link', { name: 'Forgot password?' })]) expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 
@@ -28,6 +30,7 @@ test('keeps login mode tabs touch-sized and accessible on mobile', async ({ page
   await createAccountMode.click();
   await expect(signInMode).toHaveAttribute('aria-pressed', 'false');
   await expect(createAccountMode).toHaveAttribute('aria-pressed', 'true');
+  await createAccountMode.focus(); await expect(createAccountMode).toBeFocused();
   await expect(page.getByLabel('Full Name')).toHaveAttribute('autocomplete', 'name');
   await expect(page.getByLabel('Email')).toHaveAttribute('autocomplete', 'email');
   await expect(page.getByLabel('Password')).toHaveAttribute('autocomplete', 'new-password');
