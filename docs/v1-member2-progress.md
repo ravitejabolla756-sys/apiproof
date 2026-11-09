@@ -3438,3 +3438,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: After rebuilding the production bundle, the enterprise intake boundary and both contact-form journeys passed **3/3**; targeted ESLint, Impeccable detector, web typecheck, web build and `git diff --check` passed.
 - Scope: Advances local WEB-15/BILL-11 form quality only. No intake destination, delivery service, SLA, spam control or production behavior was added.
+
+## 2026-11-09 checkpoint — ORG-02 slug help association
+
+- Change: Associated the workspace slug’s explanatory help text with the input through `aria-describedby`, preserving the existing native validation and server-authoritative contract.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: After rebuilding the production bundle, the focused workspace form journey passed **1/1**; targeted ESLint, Impeccable detector, web typecheck, web build and `git diff --check` passed.
+- Scope: Advances local ORG-02/UI-12 semantics only. Role/RBAC, PostgreSQL, ORG-10 revocation and hosted/manual verification remain open.

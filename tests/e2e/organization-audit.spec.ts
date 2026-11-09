@@ -18,6 +18,7 @@ test.describe('workspace audit trail', () => {
     await expect(workspaceSlug).toHaveAttribute('maxlength', '64');
     await expect(workspaceSlug).toHaveAttribute('pattern', '[a-z0-9][a-z0-9\\-]{1,62}[a-z0-9]');
     await expect(workspaceSlug).toHaveAttribute('title', /lowercase letters/);
+    await expect(workspaceSlug).toHaveAttribute('aria-describedby', 'workspace-slug-help');
     await workspaceSlug.fill('bad slug');
     await expect(workspaceSlug).toHaveValue('bad slug');
     expect(await workspaceSlug.evaluate((input: HTMLInputElement) => input.validity.valid)).toBe(false);

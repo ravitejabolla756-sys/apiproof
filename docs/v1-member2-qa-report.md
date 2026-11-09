@@ -1936,6 +1936,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The public non-sending contact form exposes native maximum lengths for name, email and message fields, verified in the focused browser journey.
 - NOT_RUN: Approved intake destination, delivery/spam controls, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — ORG-02 slug help association
+
+- PASS: The workspace slug input now references its explanatory help text via `aria-describedby`; the focused rebuilt-bundle workspace journey passed **1/1**. Targeted ESLint, detector, web typecheck, web build and `git diff --check` passed.
+- NOT_RUN: PostgreSQL/RBAC, ORG-10 workspace-scoped revocation, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
