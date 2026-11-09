@@ -46,7 +46,7 @@ export default function RepositoryDetailPage({
       const parsed = parseRepositoryDetailResponse(json);
       if (!res.ok || !parsed) {
         const error = json && typeof json === 'object' && 'error' in json && typeof json.error === 'string' ? json.error : undefined;
-        throw new Error(error || (res.ok ? "Repository not found or access denied." : "Unable to load repository details."));
+        throw new Error(error || (res.ok ? "Repository details Unavailable." : "Unable to load repository details."));
       }
       setRepo(parsed.repository);
       setScans(parsed.scans);

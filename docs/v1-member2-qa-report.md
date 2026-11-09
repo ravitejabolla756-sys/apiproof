@@ -2182,3 +2182,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PARTIAL: Seeded full Playwright run completed **180/195 passed**. The remaining 15 failures were concentrated in signup rate-limit/test-order effects, long-suite recovery timing, and existing settings/workspace fixture timing; the actionable pipeline contrast failure was corrected and its focused accessibility test passed **1/1**.
 - NOT_RUN: Clean isolated full-suite rerun, hosted CI, integrated staging, manual screen-reader/assistive-technology review, legal sign-off, provider-backed delivery/billing and production remain open.
+
+## 2026-11-09 — repository detail unavailable-state correction
+
+- PASS: Invalid repository-detail projections preserve the existing capitalized `Unavailable` recovery contract; dashboard date-boundary coverage passed **5/5**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Hosted CI, integrated staging, manual assistive-technology review and production remain open.

@@ -3735,3 +3735,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: Seeded full Playwright run executed **195 tests: 180 passed, 15 failed**. Most failures were test-order/environment effects (signup rate-limit 429s and recovery assertions after the long accessibility run); one actionable pipeline axe failure was fixed by replacing low-contrast pipeline presentation tokens. Focused pipeline accessibility coverage then passed **1/1**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - Scope: Advances UI-12/UI-13 accessibility quality. A clean full-suite rerun with isolated test state, hosted CI and manual assistive-technology review remain open.
+
+## 2026-11-09 checkpoint — repository detail unavailable-state correction
+
+- Change: Invalid successful repository-detail projections now use the existing capitalized `Unavailable` recovery wording, preserving the date-boundary contract after projection validation was added.
+- Evidence: `dashboard-date-display.spec.ts` passed **5/5**; targeted repository-detail ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 recovery consistency only; repository authorization and scan contracts remain unchanged.
