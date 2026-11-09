@@ -103,9 +103,9 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div aria-busy={loading || savingName || savingPassword ? 'true' : undefined} className="max-w-4xl space-y-6 outline-none">
+    <div aria-busy={loading || savingName || savingPassword ? 'true' : undefined} className="min-w-0 max-w-4xl space-y-6 outline-none">
       <div className="flex flex-col gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <Link href="/dashboard/settings" className="mb-3 inline-flex min-h-11 items-center gap-2 text-xs font-medium text-[#686868] hover:text-[#111111]">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Workspace settings
@@ -127,11 +127,11 @@ export default function AccountSettingsPage() {
         </div>
       ) : account ? (
         <>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="profile-heading">
-            <div className="mb-5 flex items-start gap-3">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+          <section className="min-w-0 rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="profile-heading">
+            <div className="mb-5 flex min-w-0 items-start gap-3">
               <UserRound className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" />
-              <div><h2 id="profile-heading" className="text-base font-semibold text-[#111111]">Profile</h2><p className="mt-1 text-xs text-[#686868]">Your name appears in workspace activity and invitations.</p></div>
+              <div className="min-w-0"><h2 id="profile-heading" className="text-base font-semibold text-[#111111]">Profile</h2><p className="mt-1 break-words text-xs text-[#686868]">Your name appears in workspace activity and invitations.</p></div>
             </div>
             <form onSubmit={saveName} aria-busy={savingName} className="space-y-4">
               <div>
@@ -140,8 +140,8 @@ export default function AccountSettingsPage() {
               </div>
               <div>
                 <label htmlFor="account-email" className="mb-1.5 block text-xs font-medium text-[#333333]">Email</label>
-                <div className="flex min-h-11 items-center gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] px-3 text-base text-[#686868]">
-                  <Mail className="h-4 w-4" aria-hidden="true" /><input id="account-email" value={account.email} readOnly autoComplete="email" aria-describedby="account-email-help" className="min-w-0 flex-1 bg-transparent outline-none" />
+                <div className="flex min-w-0 min-h-11 items-center gap-2 rounded-lg border border-[#E8E8E5] bg-[#F6F6F4] px-3 text-base text-[#686868]">
+                  <Mail className="h-4 w-4 shrink-0" aria-hidden="true" /><input id="account-email" value={account.email} readOnly autoComplete="email" aria-describedby="account-email-help" className="min-w-0 flex-1 overflow-hidden text-ellipsis bg-transparent outline-none" />
                 </div>
                 <p id="account-email-help" className="mt-1.5 text-[11px] text-[#686868]">Email changes require a verified account-recovery flow and are not available here.</p>
               </div>
@@ -149,10 +149,10 @@ export default function AccountSettingsPage() {
             </form>
           </section>
 
-          <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="security-heading">
-            <div className="mb-5 flex items-start gap-3">
+          <section className="min-w-0 rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="security-heading">
+            <div className="mb-5 flex min-w-0 items-start gap-3">
               <KeyRound className="mt-0.5 h-5 w-5 text-purple-700" aria-hidden="true" />
-              <div><h2 id="security-heading" className="text-base font-semibold text-[#111111]">Password</h2><p className="mt-1 text-xs text-[#686868]">Changing it signs out every other active session.</p></div>
+              <div className="min-w-0"><h2 id="security-heading" className="text-base font-semibold text-[#111111]">Password</h2><p className="mt-1 break-words text-xs text-[#686868]">Changing it signs out every other active session.</p></div>
             </div>
             {account.hasLocalPassword ? (
               <form onSubmit={changePassword} aria-busy={savingPassword} className="space-y-4">
@@ -162,15 +162,15 @@ export default function AccountSettingsPage() {
                 <Button type="submit" disabled={savingPassword} className="min-h-11"><span role={savingPassword ? 'status' : undefined} aria-live={savingPassword ? 'polite' : undefined} aria-atomic={savingPassword ? 'true' : undefined} aria-busy={savingPassword ? 'true' : undefined}>{savingPassword ? 'Updating…' : 'Update password'}</span></Button>
               </form>
             ) : (
-              <div className="rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 text-xs text-[#686868]">
+              <div className="break-words rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 text-xs text-[#686868]">
                 This account uses {account.authProviders.filter((provider) => provider !== 'password').join(' and ') || 'an external provider'} sign-in. Password changes are unavailable until local-password enrollment is implemented.
               </div>
             )}
           </section>
         </div>
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6" aria-labelledby="account-deletion-heading">
+        <section className="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-6" aria-labelledby="account-deletion-heading">
           <h2 id="account-deletion-heading" className="text-base font-semibold text-amber-950">{accountDeletionAvailability.heading}</h2>
-          <p id="account-deletion-help" className="mt-2 max-w-2xl text-xs leading-relaxed text-amber-900">{accountDeletionAvailability.message}</p>
+          <p id="account-deletion-help" className="mt-2 max-w-2xl break-words text-xs leading-relaxed text-amber-900">{accountDeletionAvailability.message}</p>
           <Button type="button" disabled aria-describedby="account-deletion-help" className="mt-4 min-h-11">{accountDeletionAvailability.actionLabel}</Button>
         </section>
         </>

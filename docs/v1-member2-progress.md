@@ -4016,3 +4016,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Reviewed compatibility cards now establish shrink/wrap boundaries for provider IDs, change IDs, titles, scope dimensions and affected/replacement metadata while preserving authoritative-source links and claim semantics.
 - Scope: Advances UI-12/UI-13 compatibility proof resilience only; provider provenance, review status and compatibility claims remain server-owned.
 - Evidence: Compatibility proof contract tests passed **2/2**; rebuilt-bundle compatibility coverage passed **1/1** on isolated port 3122, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — account identity narrow metadata containment
+
+- Change: Account settings now establish shrink/wrap boundaries for long email, display-name and external-provider copy while preserving the disabled account-deletion contract.
+- Scope: Advances UI-12/AUTH-08 account settings resilience only; authentication, deletion and session contracts remain server-owned.
+- Evidence: Account profile/deletion contract tests passed **4/4**; rebuilt-bundle account settings coverage passed **1/1** on isolated port 3123, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
