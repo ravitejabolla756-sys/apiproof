@@ -3718,3 +3718,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/account-profile-contract.ts`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/account-profile-contract.test.ts`.
 - Evidence: Account profile contract coverage passed **2/2** and account/recovery browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 and AUTH-09 local safety only; account authorization, deletion policy and retention remain shared/legal contracts.
+
+## 2026-11-09 checkpoint — password action response guard
+
+- Change: Account password changes now require the explicit server success marker and message before clearing fields or announcing completion; session invalidation remains backend-owned.
+- Files: `apps/web/src/lib/account-profile-contract.ts`, `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/account-profile-contract.test.ts`.
+- Evidence: Account contract coverage passed **3/3** and account action-loading browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances AUTH-08/UI-12 local action-state safety only; password policy and session semantics remain server-owned.

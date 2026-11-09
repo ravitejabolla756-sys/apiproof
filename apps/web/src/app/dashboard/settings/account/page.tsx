@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, KeyRound, Loader2, Mail, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { accountDeletionAvailability } from '@/lib/account-deletion-contract';
-import { parseAccountProfileResponse, type AccountProfileProjection } from '@/lib/account-profile-contract';
+import { parseAccountProfileResponse, parsePasswordChangeResponse, type AccountProfileProjection } from '@/lib/account-profile-contract';
 
 type AccountProfile = AccountProfileProjection;
 
@@ -87,12 +87,14 @@ export default function AccountSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await response.json() as { message?: string; error?: string };
-      if (!response.ok) throw new Error(data.error || 'Unable to change your password.');
+      const data = await response.json() as unknown;
+      const message = parsePasswordChangeResponse(data);
+      const error = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : undefined;
+      if (!response.ok || !message) throw new Error(error || 'Unable to change your password.');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setMessage(data.message || 'Password updated.');
+      setMessage(message);
     } catch (passwordError) {
       setError(passwordError instanceof Error ? passwordError.message : 'Unable to change your password.');
     } finally {

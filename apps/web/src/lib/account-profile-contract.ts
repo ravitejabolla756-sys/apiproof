@@ -25,3 +25,8 @@ export function parseAccountProfileResponse(value: unknown): AccountProfileProje
     hasLocalPassword: value.account.hasLocalPassword,
   };
 }
+
+export function parsePasswordChangeResponse(value: unknown): string | null {
+  if (!record(value) || value.success !== true || !text(value.message)) return null;
+  return value.message;
+}

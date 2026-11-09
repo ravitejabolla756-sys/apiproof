@@ -2167,3 +2167,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Account settings validates profile projections before form population or update replacement; focused contract coverage passed **2/2** and account/recovery browser coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Account deletion/legal retention, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — password action response guard
+
+- PASS: Password change completion now requires an explicit successful response projection; account contract coverage passed **3/3** and account action-loading browser coverage passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Password provider/session integration beyond existing local evidence, hosted CI, staging, manual assistive-technology review and production remain open.
