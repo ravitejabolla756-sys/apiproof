@@ -4046,3 +4046,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Finding detail hero, repository identity, evidence labels and surrounding metadata now establish shrink/wrap boundaries for long provider IDs, titles, descriptions, paths, symbols and branch names while preserving keyboard-focusable code snippet scrolling.
 - Scope: Advances UI-12/UI-13 finding-detail resilience only; finding authorization, provider evidence and migration contracts remain server-owned.
 - Evidence: Finding-detail contract tests passed **2/2**; rebuilt-bundle responsive coverage passed **1/1** on isolated port 3128, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — notification settings narrow metadata containment
+
+- Change: Notification settings now establish shrink/wrap boundaries for heading, status and recovery copy, preserve a keyboard-focusable preference table region, and keep digest controls touch-sized without changing the unavailable digest contract or save filtering.
+- Scope: Advances UI-12/UI-13/NOT-10 responsive resilience only; cadence, recipients, scheduler, delivery providers and notification policy remain server/owner contracts.
+- Evidence: Digest and notification contract tests passed **9/9**; rebuilt-bundle responsive coverage passed **1/1** on isolated port 3130, including the 320px axe/overflow case and 44px digest-control wrappers, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The first browser attempt exposed a forced table-width overflow; removing that constraint produced the passing result. The Impeccable detector reported only the unchanged incumbent purple heading token.
