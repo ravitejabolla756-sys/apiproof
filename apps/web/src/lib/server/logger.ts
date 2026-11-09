@@ -28,6 +28,14 @@ export interface LogEntry {
   error?: string;
 }
 
+// Keep operational logs bounded even when an upstream provider or worker
+// returns an unexpectedly large diagnostic payload. These limits are local
+// safety bounds; they do not replace retention or sink-level policies.
+const MAX_LOG_MESSAGE_CHARS = 4_000;
+const MAX_LOG_ERROR_CHARS = 4_000;
+const MAX_LOG_CONTEXT_CHARS = 16_000;
+const LOG_TRUNCATION_MARKER = '[TRUNCATED]';
+
 // Sensitive key patterns to redact automatically
 const SENSITIVE_KEYS = new Set([
   'token',
@@ -171,27 +179,41 @@ export function formatLogEntry(
   context?: LogContext,
   error?: unknown
 ): string {
-  const sanitizedMsg = redactSecretString(message);
+  const sanitizedMsg = boundLogText(redactSecretString(message), MAX_LOG_MESSAGE_CHARS);
   const sanitizedContext = context ? redactSensitiveData(context) : undefined;
   let errorMsg: string | undefined;
 
   if (error) {
     if (error instanceof Error) {
-      errorMsg = redactSecretString(error.message);
+      errorMsg = boundLogText(redactSecretString(error.message), MAX_LOG_ERROR_CHARS);
     } else {
-      errorMsg = redactSecretString(String(error));
+      errorMsg = boundLogText(redactSecretString(String(error)), MAX_LOG_ERROR_CHARS);
     }
   }
+
+  const contextForEntry = sanitizedContext && Object.keys(sanitizedContext).length > 0
+    ? boundLogContext(sanitizedContext)
+    : undefined;
 
   const entry: LogEntry = {
     timestamp: new Date().toISOString(),
     level,
     message: sanitizedMsg,
-    ...(sanitizedContext && Object.keys(sanitizedContext).length > 0 ? { context: sanitizedContext } : {}),
+    ...(contextForEntry ? { context: contextForEntry } : {}),
     ...(errorMsg ? { error: errorMsg } : {}),
   };
 
   return JSON.stringify(entry);
+}
+
+function boundLogText(value: string, maxChars: number): string {
+  if (value.length <= maxChars) return value;
+  return `${value.slice(0, maxChars - LOG_TRUNCATION_MARKER.length)}${LOG_TRUNCATION_MARKER}`;
+}
+
+function boundLogContext(context: Record<string, unknown>): Record<string, unknown> {
+  if (JSON.stringify(context).length <= MAX_LOG_CONTEXT_CHARS) return context;
+  return { logContext: LOG_TRUNCATION_MARKER };
 }
 
 export const logger = {

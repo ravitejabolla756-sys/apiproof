@@ -273,6 +273,23 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(parsed.context.providerError).toBe('[REDACTED]');
   });
 
+  it('bounds oversized messages, errors, and structured context', () => {
+    const oversized = 'x'.repeat(20_000);
+    const parsed = JSON.parse(formatLogEntry('error', oversized, {
+      diagnostic: oversized,
+    }, new Error(oversized))) as {
+      message: string;
+      error: string;
+      context: Record<string, unknown>;
+    };
+
+    expect(parsed.message).toHaveLength(4_000);
+    expect(parsed.message.endsWith('[TRUNCATED]')).toBe(true);
+    expect(parsed.error).toHaveLength(4_000);
+    expect(parsed.error.endsWith('[TRUNCATED]')).toBe(true);
+    expect(parsed.context).toEqual({ logContext: '[TRUNCATED]' });
+  });
+
   // -------------------------------------------------------------------------
   // TEST 4: Health check route
   // -------------------------------------------------------------------------
