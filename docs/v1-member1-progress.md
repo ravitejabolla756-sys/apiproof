@@ -858,3 +858,7 @@ Phase 0 read-only checks:
 
 - Added pure `assessWorkerHealth` and threshold-injected `evaluateWorkerHealthAlert` helpers. They classify sanitized heartbeat and queue evidence into stable healthy/degraded/failed/unknown outcomes and alert reason codes without selecting a monitoring vendor, sending notifications, or treating unknown evidence as a false alert.
 - `tests/sec13-worker-observability.test.ts` passes 15/15; `pnpm --filter @apiproof/web typecheck`, targeted ESLint, and `git diff --check` pass. Approved alert destinations, threshold policy, PostgreSQL query behavior, scheduler cadence, and staged worker-failure rehearsal remain external gates.
+
+### 2026-11-09 SEC-13 retry-boundary regression coverage
+
+- Added `tests/scan-worker-retry-boundaries.test.ts` covering retryable provider failures before the limit, terminal behavior on the third attempt, non-retryable first-attempt failure, and bounded control-character-free failure messages. The isolated suite passes 4/4; no retry policy was changed.
