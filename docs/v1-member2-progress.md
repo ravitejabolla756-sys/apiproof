@@ -4022,3 +4022,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Account settings now establish shrink/wrap boundaries for long email, display-name and external-provider copy while preserving the disabled account-deletion contract.
 - Scope: Advances UI-12/AUTH-08 account settings resilience only; authentication, deletion and session contracts remain server-owned.
 - Evidence: Account profile/deletion contract tests passed **4/4**; rebuilt-bundle account settings coverage passed **1/1** on isolated port 3123, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — compatibility map narrow metadata containment
+
+- Change: The dashboard compatibility map now establishes shrink/wrap boundaries for repository selectors, repository identity, branch names, provider integrations, findings and proof metadata while preserving the intentional code/data presentation.
+- Scope: Advances UI-12/UI-13 compatibility-map resilience only; map authorization, scan provenance and compatibility evidence remain server-owned.
+- Evidence: Compatibility-map contract tests passed **3/3**; rebuilt-bundle dashboard compatibility-map coverage passed **1/1** on isolated port 3124, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
