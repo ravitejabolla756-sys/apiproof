@@ -4178,3 +4178,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Dashboard overview, workspace settings, notification settings, login, compatibility, invoice history and Slack status error effects now preserve an explicit skip-link transition to `#main-content`; ordinary error changes still focus their assertive recovery surface. The existing finding/provider/shared-data guards now also recognize the focused skip-link before its anchor transition completes.
 - Scope: Advances UI-12/UI-13 keyboard and error-state coverage across page-level recovery surfaces; authentication, tenant, billing, notification and provider contracts remain unchanged.
 - Evidence: Rebuilt-bundle route accessibility coverage passed **16/16** on isolated port 3154 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The Impeccable detector reported only incumbent dashboard palette warnings on unchanged lines.
+
+## 2026-11-10 checkpoint — non-modal feedback skip-link focus preservation
+
+- Change: Workspace administration, account/recovery, invitation, verification, contact and dashboard-sidebar feedback effects now preserve an explicit skip-link transition to `#main-content`; normal user-triggered feedback continues to receive focus for announcement.
+- Scope: Advances UI-12/UI-13 and local ORG-02/AUTH-08/WEB-15 keyboard-state coverage only; organization, deletion, verification, invitation and delivery contracts remain unchanged.
+- Evidence: Rebuilt-bundle route accessibility coverage passed **16/16** on isolated port 3155 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed.

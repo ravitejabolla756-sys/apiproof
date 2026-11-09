@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
   const feedbackRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if (message || error) feedbackRef.current?.focus();
+    if ((message || error) && !document.activeElement?.matches('#main-content, .skip-link')) feedbackRef.current?.focus();
   }, [message, error]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {

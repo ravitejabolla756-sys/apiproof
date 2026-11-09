@@ -14,7 +14,7 @@ export default function ResetPasswordPage() {
   const feedbackRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if (!token || message || error) feedbackRef.current?.focus();
+    if ((!token || message || error) && !document.activeElement?.matches('#main-content, .skip-link')) feedbackRef.current?.focus();
   }, [token, message, error]);
 
   useEffect(() => {

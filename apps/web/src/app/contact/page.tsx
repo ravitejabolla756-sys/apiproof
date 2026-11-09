@@ -17,7 +17,7 @@ export default function ContactPage() {
   }, []);
 
   useEffect(() => {
-    if (submitted) statusRef.current?.focus();
+    if (submitted && !document.activeElement?.matches('#main-content, .skip-link')) statusRef.current?.focus();
   }, [submitted]);
 
   const handleSubmit = (e: React.FormEvent) => {

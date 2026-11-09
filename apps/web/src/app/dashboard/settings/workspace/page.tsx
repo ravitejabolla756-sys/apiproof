@@ -52,13 +52,13 @@ export default function WorkspaceSettingsPage() {
   const auditErrorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (message || error) feedbackRef.current?.focus();
+    if ((message || error) && !document.activeElement?.matches('#main-content, .skip-link')) feedbackRef.current?.focus();
   }, [message, error]);
 
   useEffect(() => {
-    if (membersError) membersErrorRef.current?.focus();
-    else if (invitationsError) invitationsErrorRef.current?.focus();
-    else if (auditError) auditErrorRef.current?.focus();
+    if (membersError && !document.activeElement?.matches('#main-content, .skip-link')) membersErrorRef.current?.focus();
+    else if (invitationsError && !document.activeElement?.matches('#main-content, .skip-link')) invitationsErrorRef.current?.focus();
+    else if (auditError && !document.activeElement?.matches('#main-content, .skip-link')) auditErrorRef.current?.focus();
   }, [membersError, invitationsError, auditError]);
 
   async function load() {

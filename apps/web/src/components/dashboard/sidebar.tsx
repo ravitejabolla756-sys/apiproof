@@ -101,15 +101,15 @@ export function Sidebar() {
   }, [workspaceLoadAttempt]);
 
   useEffect(() => {
-    if (workspaceLoadError) workspaceErrorRef.current?.focus();
+    if (workspaceLoadError && !document.activeElement?.matches('#main-content, .skip-link')) workspaceErrorRef.current?.focus();
   }, [workspaceLoadError]);
 
   useEffect(() => {
-    if (workspaceContextError) workspaceContextErrorRef.current?.focus();
+    if (workspaceContextError && !document.activeElement?.matches('#main-content, .skip-link')) workspaceContextErrorRef.current?.focus();
   }, [workspaceContextError]);
 
   useEffect(() => {
-    if (logoutError) logoutErrorRef.current?.focus();
+    if (logoutError && !document.activeElement?.matches('#main-content, .skip-link')) logoutErrorRef.current?.focus();
   }, [logoutError]);
 
   async function switchWorkspace(workspaceId: string, preserveError = false) {

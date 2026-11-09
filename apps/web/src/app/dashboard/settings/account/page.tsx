@@ -23,7 +23,7 @@ export default function AccountSettingsPage() {
   const feedbackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (message || error) feedbackRef.current?.focus();
+    if ((message || error) && !document.activeElement?.matches('#main-content, .skip-link')) feedbackRef.current?.focus();
   }, [message, error]);
 
   async function loadAccount(preserveError = false) {

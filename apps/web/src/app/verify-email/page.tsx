@@ -13,7 +13,7 @@ export default function VerifyEmailPage() {
   const statusRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if (state !== 'loading') statusRef.current?.focus();
+    if (state !== 'loading' && !document.activeElement?.matches('#main-content, .skip-link')) statusRef.current?.focus();
   }, [state]);
 
   useEffect(() => {
