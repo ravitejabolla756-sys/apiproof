@@ -22,6 +22,7 @@ test('keeps authenticated settings controls touch-sized on mobile', async ({ pag
   await expectTouchSized(page.getByRole('link', { name: 'Workspace settings', exact: true }), 'Account back link');
   for (const label of ['Display name', 'Current password', 'New password', 'Confirm new password']) {
     await expectTouchSized(page.getByLabel(label), label);
+    await expect(page.getByLabel(label, { exact: true }).first()).toHaveCSS('font-size', '16px');
   }
   await expectTouchSized(page.getByRole('button', { name: 'Save profile', exact: true }), 'Save profile');
   await expectTouchSized(page.getByRole('button', { name: 'Update password', exact: true }), 'Update password');
@@ -31,6 +32,7 @@ test('keeps authenticated settings controls touch-sized on mobile', async ({ pag
   await expectTouchSized(page.getByRole('link', { name: 'Workspace settings', exact: true }), 'Workspace back link');
   for (const label of ['Name', 'Slug', 'Invite email']) {
     await expectTouchSized(page.getByLabel(label), label);
+    await expect(page.getByLabel(label, { exact: true }).first()).toHaveCSS('font-size', '16px');
   }
   for (const label of ['Save workspace', 'Create invite link']) {
     await expectTouchSized(page.getByRole('button', { name: label, exact: true }), label);

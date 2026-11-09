@@ -58,6 +58,8 @@ Latest organization semantics evidence: Workspace Settings member, invitation an
 
 Latest UI-12/WEB-15 responsive evidence: login, contact, forgot-password and reset-password controls now use 16px text to avoid mobile focus zoom; rebuilt-bundle login/contact coverage passes 2/2, typecheck/lint pass, and the web build generates 83 pages. Manual screen-reader review, hosted CI, integrated staging and production remain open.
 
+Latest authenticated settings responsive evidence: account and workspace settings controls now use 16px text for mobile focus behavior; the rebuilt 83-page bundle passes authenticated settings touch-target/font-size coverage 1/1 with axe checks, while incumbent workspace-heading warnings remain documented. Member 1 revocation integration, manual screen-reader review, hosted CI, integrated staging and production remain open.
+
 Latest SEC-18 evidence: the incident-response draft now records the highest-applicable-severity decision sequence and explicit readiness prerequisites for named owners, alert routing, status source, provider response, PostgreSQL/restore evidence and tabletop sign-off. All unavailable or unperformed operational evidence remains labeled `NOT_AVAILABLE` or `NOT_RUN`; owner/Member 1 review and the tabletop remain open.
 
 Latest public performance evidence: the current production bundle passed the 9-route loopback probe over three samples with median load 10–39 ms, response 2–5 ms and encoded HTML 6.1–17.0 KiB. This is not Lighthouse/Core Web Vitals or deployment evidence; hosted CI, staging and production remain open.
