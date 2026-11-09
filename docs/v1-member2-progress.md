@@ -3834,3 +3834,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/compatibility-map-contract.ts`, `apps/web/src/components/dashboard/compatibility-map.tsx`, `tests/compatibility-map-contract.test.ts`.
 - Evidence: Compatibility-map contract coverage passed **3/3**; rebuilt-bundle compatibility-map and dashboard data-state browser coverage passed **18/18** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 compatibility-map resilience only; workspace authorization, provider provenance and backend evidence ownership remain unchanged.
+
+## 2026-11-09 checkpoint — GitHub repository-picker projection guard
+
+- Change: Added a typed GitHub repository-picker adapter that validates the workspace connection boolean, repository identity fields, privacy/default-branch metadata and duplicate IDs before rendering; status refreshes now ignore malformed successful booleans instead of coercing them.
+- Files: `apps/web/src/lib/github-repository-picker-contract.ts`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/github-repository-picker-contract.test.ts`, `tests/e2e/connect-repo-recovery.spec.ts`.
+- Evidence: Picker contract coverage passed **2/2**; rebuilt-bundle repository connect/action/loading/recovery/empty-state coverage passed **8/8** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed. The focus-trap fixture now stubs the periodic status endpoint to keep the browser journey deterministic.
+- Scope: Advances UI-12/UI-13 and ORG-02 repository-picker response safety only; GitHub authorization, workspace tenancy and provider contracts remain server-owned.

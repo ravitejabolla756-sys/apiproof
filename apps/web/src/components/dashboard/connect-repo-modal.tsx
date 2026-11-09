@@ -10,6 +10,8 @@ import {
   isGitHubConnectionChangedMessage,
 } from '@/lib/github-connection-sync';
 import { isCurrentRepositoryRequest, shouldReloadRepositoriesAfterStatusRefresh } from '@/lib/github-repository-picker';
+import { parseGitHubRepositoryPickerResponse } from '@/lib/github-repository-picker-contract';
+import { parseGitHubConnectionStatus } from '@/lib/github-installation-contract';
 
 interface GitHubRepoItem {
   id: string;
@@ -102,13 +104,14 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     try {
       const res = await fetch('/api/github/repositories', { cache: 'no-store', signal: controller.signal });
       if (!res.ok) throw new Error('Failed to load GitHub repositories.');
-      const data = await res.json();
+      const data = parseGitHubRepositoryPickerResponse(await res.json());
+      if (!data) throw new Error('GitHub repositories are temporarily unavailable.');
       if (!isCurrentRepositoryRequest(requestId, repositoryRequestId.current) || controller.signal.aborted) return;
-      const isConnected = Boolean(data.connected);
+      const isConnected = data.connected;
       connectedRef.current = isConnected;
       initialRepositoryLoadComplete.current = true;
       setConnected(isConnected);
-      setRepositories(data.repositories || []);
+      setRepositories(data.repositories);
       setError(null);
     } catch (err: unknown) {
       if (!isCurrentRepositoryRequest(requestId, repositoryRequestId.current) || controller.signal.aborted) return;
@@ -123,10 +126,11 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     try {
       const res = await fetch('/api/github/repositories/status', { cache: 'no-store' });
       if (!res.ok) return;
-      const data = await res.json() as { connected?: unknown };
+      const data = parseGitHubConnectionStatus(await res.json());
       if (!isCurrentRepositoryRequest(requestId, statusRequestId.current)) return;
       if (!initialRepositoryLoadComplete.current) return;
-      const nextConnected = Boolean(data.connected);
+      if (data === null) return;
+      const nextConnected = data;
       if (shouldReloadRepositoriesAfterStatusRefresh(initialRepositoryLoadComplete.current, connectedRef.current, nextConnected)) {
         connectedRef.current = nextConnected;
         setConnected(nextConnected);

@@ -108,6 +108,9 @@ test('traps repository dialog focus and restores the invoking control on Escape'
   await page.route('**/api/github/repositories', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false, repositories: [] }) });
   });
+  await page.route('**/api/github/repositories/status', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ connected: false }) });
+  });
   await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
   const openButton = page.getByRole('button', { name: 'Connect repository', exact: true });
   await openButton.click();
@@ -125,4 +128,5 @@ test('traps repository dialog focus and restores the invoking control on Escape'
   await expect(openButton).toBeFocused();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'repository dialog dismissal').toEqual([]);
   await page.unroute('**/api/github/repositories');
+  await page.unroute('**/api/github/repositories/status');
 });
