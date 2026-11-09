@@ -866,3 +866,7 @@ Phase 0 read-only checks:
 ### 2026-11-09 BILL-03/BILL-04 webhook transaction rollback
 
 - Added a SQLite trigger-backed regression proving a projection failure rolls back the newly claimed billing receipt and preserves the prior subscription entitlement state. `phase7-billing-foundation` plus `billing-provider-boundary` pass 30/30 with an isolated process-only seed; provider-specific mapping, PostgreSQL concurrency and sandbox delivery remain external gates.
+
+### 2026-11-09 SEC-19 policy-neutral request-state foundation
+
+- Added `sec19-request-state.ts` and five focused tests for the proposed retention/deletion request lifecycle, safe transitions, resumable failures, cross-tenant/idempotency conflicts, bounded identifiers and scrubbed outcome/audit references. No database, deletion, anonymization, token invalidation or retention duration was introduced; legal/owner and Member 2 decisions remain required.

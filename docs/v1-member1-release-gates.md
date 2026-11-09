@@ -29,7 +29,7 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 | Branch protection | BLOCKED | Requires GitHub repository-admin read-back and approval |
 | Load/resilience evidence | PARTIAL | Local-only SEC-16 harness covers bounded API, webhook, SQLite and worker-metrics workloads, cooperative timeout cancellation, injected sanitized failures and retry recovery/exhaustion; latest local measurements are in `docs/sec16-local-measurements.md` and the current full-suite result is recorded below; approved staging traffic, SLOs, bottleneck and worker-failure-recovery evidence remain |
 | Deployment rollback rehearsal | BLOCKED | Hosting stack/staging rehearsal not authorized or verified |
-| Retention/deletion | PARTIAL / POLICY BLOCKED | `docs/database-backup-and-safety.md` inventories all 46 Member 1 application tables and marks retention undecided; legal retention policy, Member 2 deletion contract, backup/external-copy inventory, and durable workflow remain unapproved |
+| Retention/deletion | PARTIAL / POLICY BLOCKED | `docs/database-backup-and-safety.md` inventories all 46 Member 1 application tables and marks retention undecided; a policy-neutral request-state validator now covers reviewed transitions and idempotency conflicts, while legal retention policy, Member 2 deletion contract, backup/external-copy inventory, and durable persistence/workflow remain unapproved |
 | Final release security audit | NOT_TESTED | Must use a frozen candidate after all other gates |
 
 ## SEC-09 regression evidence
