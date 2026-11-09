@@ -1906,6 +1906,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The workspace slug form now mirrors the server’s 3–64 lowercase alphanumeric/hyphen boundary with native `minlength`, `maxlength`, escaped `pattern` and explanatory `title`; the focused rebuilt-bundle browser journey passed **1/1** for metadata and rejection of `bad slug`. Focused ESLint, web typecheck, web build and `git diff --check` passed.
 - NOTE: The server remains authoritative; the client constraint is progressive enhancement and does not replace backend validation.
 
+## 2026-11-09 — NOT-10 digest description coverage
+
+- PASS: Both disabled weekly-digest controls are now covered for their `aria-describedby="digest-contract-status"` linkage, and the focused notification browser suite passed **2/2**. Targeted ESLint and `git diff --check` passed.
+- NOT_RUN: Scheduler, cadence, recipient, timezone, retention, provider delivery and Member 1 event-contract verification remain open.
+
 ## 2026-11-09 — workspace projection text validation
 
 - PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.

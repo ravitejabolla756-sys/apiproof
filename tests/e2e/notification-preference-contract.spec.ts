@@ -40,6 +40,8 @@ test('keeps digest controls disabled even when a projection claims delivery is a
   await page.goto('/dashboard/settings/notifications', { waitUntil: 'domcontentloaded' });
   await expect(page.getByLabel('Weekly digest via email')).toBeDisabled();
   await expect(page.getByLabel('Weekly digest via slack')).toBeDisabled();
+  await expect(page.getByLabel('Weekly digest via email')).toHaveAttribute('aria-describedby', 'digest-contract-status');
+  await expect(page.getByLabel('Weekly digest via slack')).toHaveAttribute('aria-describedby', 'digest-contract-status');
   await expect(page.getByText('Digest scheduling is unavailable until its cadence, recipient and scheduler contract is approved.')).toBeVisible();
   await page.unroute('**/api/account/notifications');
 });

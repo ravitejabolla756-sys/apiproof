@@ -3426,3 +3426,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: After rebuilding the production bundle, the focused browser journey passed **1/1**; focused ESLint, web typecheck, web build and `git diff --check` passed.
 - Scope: This is client-side validation only; the server remains authoritative. ORG-02 role/RBAC, PostgreSQL, ORG-10 revocation and hosted/manual verification remain open.
+
+## 2026-11-09 checkpoint — NOT-10 digest description coverage
+
+- Evidence: The notification browser contract now asserts that both disabled weekly-digest controls reference the explicit `digest-contract-status` explanation. The focused notification suite passed **2/2** with targeted ESLint and `git diff --check` passing.
+- Scope: This verifies the existing fail-closed UI contract only; cadence, recipients, timezone, scheduler, retention, provider delivery and Member 1 event contracts remain intentionally unimplemented.
