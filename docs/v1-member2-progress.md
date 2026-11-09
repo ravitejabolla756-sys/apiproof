@@ -3949,5 +3949,5 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Change: Workspace invitation and audit rows now establish shrink/wrap boundaries for long server-owned email, actor and action strings; audit timestamps remain non-shrinking so narrow layouts cannot create document-level horizontal overflow.
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
-- Evidence: Organization/audit contract coverage passed **16/16**; targeted ESLint, web typecheck and `git diff --check` passed. The new narrow-screen browser run was not executed because the current `.next` verification environment failed to become ready after the production-build process stalled; no organization endpoint, authorization or revocation contract changed.
+- Evidence: Organization/audit contract coverage passed **16/16**; rebuilt-bundle browser coverage passed **15/15** on isolated port 3112, including the new 320px long-invitation case and axe checks; the isolated production build generated **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed; no organization endpoint, authorization or revocation contract changed.
 - Scope: Advances UI-12/ORG-02 responsive resilience only; PostgreSQL/RBAC, ORG-10 revocation and manual assistive-technology review remain external gates.
