@@ -447,3 +447,11 @@ Workspace-list retry now remains visible and exposes disabled plus `aria-busy` d
 ## 2026-11-09 UI-12/ORG-02 workspace-switch recovery evidence
 
 Workspace context-switch retry now remains visible and exposes disabled plus `aria-busy` during recovery while preserving the server-authoritative context contract. Repository typecheck, rebuilt web production build, detector checks and the combined organization/workspace-switch browser suite pass 14/14 locally. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 revocation integration and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 dashboard search-input evidence — 2026-11-09
+
+Findings, inventory, repository, command-palette and repository-picker search inputs now use the 16px mobile-safe text floor; focused local browser coverage is green and the web build generated 83 pages. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 ORG-10 integration, provider/legal approvals and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest backup-readiness evidence — 2026-11-09
+
+The local branch is fast-forward compatible with its remote tracking branch at 540 outgoing commits and 0 behind. The bounded content review found no sensitive paths, credential-shaped secrets, destructive production commands or generated artifacts; CI literals are test-only fixtures. Backup is not yet ready for a clean push because the required dirty dependency files and this checkpoint's implementation/test files remain uncommitted. No push was performed.

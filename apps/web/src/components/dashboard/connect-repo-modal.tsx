@@ -374,7 +374,7 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
                     placeholder="Filter repositories..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="min-h-11 w-full pl-9 pr-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+                    className="min-h-11 w-full pl-9 pr-3 py-2 rounded-xl border border-[#E8E8E5] bg-white text-base text-[#111111] focus:outline-none focus:ring-2 focus:ring-purple-600/20"
                   />
                 </div>
                 <Button type="button" variant="outline" size="sm" aria-label="Refresh repositories" disabled={loadingRepos} aria-busy={loadingRepos ? 'true' : undefined} onClick={() => void loadRepositories(true)}>

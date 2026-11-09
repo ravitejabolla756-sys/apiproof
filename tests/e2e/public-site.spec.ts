@@ -179,8 +179,8 @@ test.describe('authenticated product surfaces', () => {
     await expect(findingsSlack).toBeChecked();
     await findingsSlack.uncheck(); const savePreferences = page.getByRole('button', { name: 'Save preferences' });
     await savePreferences.focus(); await expect(savePreferences).toBeFocused(); await page.keyboard.press('Enter');
-    await expect(page.getByRole('status')).toContainText('Saving notification preferences…', { timeout: 30_000 });
-    releaseSave?.(); await expect(page.getByRole('status')).toContainText('Notification preferences saved.', { timeout: 30_000 });
+    await expect(page.getByRole('status').filter({ hasText: /notification preferences/i }).first()).toContainText('Saving notification preferences…', { timeout: 30_000 });
+    releaseSave?.(); await expect(page.getByRole('status').filter({ hasText: /notification preferences/i }).first()).toContainText('Notification preferences saved.', { timeout: 30_000 });
     expect(postedUpdates).toEqual({ updates: [
       { category: 'security', channel: 'email', enabled: true },
       { category: 'findings', channel: 'slack', enabled: false },

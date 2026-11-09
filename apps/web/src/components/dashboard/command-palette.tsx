@@ -163,7 +163,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command, search repositories or SDK rules..."
-            className="min-h-11 w-full bg-transparent border-0 px-3 py-3.5 text-xs text-[#111111] placeholder:text-zinc-400 focus:outline-none"
+            className="min-h-11 w-full bg-transparent border-0 px-3 py-3.5 text-base text-[#111111] placeholder:text-zinc-400 focus:outline-none"
           />
           <button type="button" aria-label="Close search" onClick={onClose} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg p-1 text-zinc-400 hover:text-[#111111]">
             <X aria-hidden="true" className="h-4 w-4" />

@@ -6,6 +6,19 @@
 - PASS: Impeccable detector returned `[]`; targeted ESLint, diff check and rebuilt 83-page bundle passed; public icon plus public axe subset passed 3/3 in 11.1 seconds.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
 
+## 2026-11-09 — UI-12 dashboard search-input text sizing
+
+- PASS: Findings, inventory, repository-list, command-palette and connect-repository search inputs now compute to 16px text while retaining their existing 44px touch targets and interaction behavior.
+- PASS: Impeccable detector `[]`; targeted ESLint; `pnpm typecheck`; web build generated 83 pages.
+- PASS: Focused Playwright rerun passed 5/5 for inventory filtering, repository filtering, repository picker recovery, notification-save status targeting and command-palette keyboard behavior. A broader 22-test selection passed 21/22 before the notification locator correction; the corrected affected tests are green.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging and production remain open.
+
+## 2026-11-09 — outgoing-range content security and backup audit
+
+- PASS: `git fetch origin --prune`; current branch `codex/v1-frontend-product`, HEAD `343ea5d`; `origin/codex/v1-frontend-product` is an ancestor; 540 outgoing commits, 0 behind. No sensitive credential paths, private-key/token patterns, destructive production commands or generated-artifact paths were found by the bounded outgoing-range review.
+- ADVISORY: The outgoing workflow contains test-only CI values (`APIPROOF_SECRET`, `APIPROOF_LOCAL_SEED_PASSWORD`) and E2E database mode/path; these are non-production fixtures, not credentials. The range includes only application/docs/tests/workflow content and no dependency diff.
+- BLOCKED_FOR_BACKUP: A clean backup commit is not yet prepared because the required uncommitted dependency changes remain, and the current UI/test implementation is also uncommitted. Fast-forward ancestry is safe; push remains unauthorized.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

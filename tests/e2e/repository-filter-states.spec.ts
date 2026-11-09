@@ -26,6 +26,7 @@ test('distinguishes filtered repository emptiness and clears filters', async ({ 
   await expect(page.getByRole('link', { name: 'owl-platform' })).toBeVisible();
 
   const search = page.getByRole('textbox', { name: 'Search repositories' });
+  await expect(search).toHaveCSS('font-size', '16px');
   await search.fill('missing-repository');
   const filteredEmpty = page.getByRole('status').filter({ hasText: 'No repositories found matching your filter.' });
   await expect(filteredEmpty).toBeVisible();
