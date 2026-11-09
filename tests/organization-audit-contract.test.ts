@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAuditPage } from '../apps/web/src/lib/organization-audit-contract.js';
+import { mergeAuditEvents, parseAuditPage } from '../apps/web/src/lib/organization-audit-contract.js';
 
 const validEvent = {
   id: 'audit-1',
@@ -23,6 +23,14 @@ describe('organization audit response contract', () => {
     expect(parseAuditPage({
       events: [validEvent, { ...validEvent, id: ' audit-1 ', action: 'member.updated' }],
     })).toBeNull();
+  });
+
+  it('merges cursor pages only when event IDs remain unique', () => {
+    const current = [validEvent];
+    const next = [{ ...validEvent, id: 'audit-2', action: 'member.updated' }];
+    expect(mergeAuditEvents(current, next)).toEqual([...current, ...next]);
+    expect(mergeAuditEvents(current, [validEvent])).toBeNull();
+    expect(mergeAuditEvents([validEvent, validEvent], [])).toBeNull();
   });
 
   it.each([

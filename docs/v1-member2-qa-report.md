@@ -2211,3 +2211,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Weekly-digest controls remain unchecked and disabled under the pending scheduler contract, and saving other preferences does not submit digest updates. Notification contract coverage passed **8/8**; digest projection/save-filter/recovery browser coverage passed **4/4**.
 - PASS: Targeted notification-settings ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Approved digest cadence, event model, scheduler ownership, timezone/retention policy, provider delivery and production remain open.
+
+## 2026-11-09 — organization audit pagination and workspace recovery
+
+- PASS: Audit cursor merges reject duplicate event IDs across pages, and workspace-list recovery remains visible under duplicate development-effect requests. Audit contract coverage passed **10/10** and the isolated workspace recovery browser test passed **1/1**.
+- PASS: Targeted sidebar/workspace ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: PostgreSQL/RBAC, audit retention, hosted CI, integrated staging, manual assistive-technology review and production remain open.

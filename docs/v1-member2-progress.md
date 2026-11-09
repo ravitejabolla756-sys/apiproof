@@ -3769,3 +3769,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/notification-preference-contract.spec.ts`.
 - Evidence: Notification contract coverage passed **8/8**; digest projection, save-filter and recovery browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances NOT-10 local safety only; no scheduler, queue, cadence, timezone, retention, provider delivery or opt-out policy was introduced.
+
+## 2026-11-09 checkpoint — organization audit pagination and workspace recovery
+
+- Change: Administrative audit cursor pages now reject duplicate IDs across page boundaries before rendering; the dashboard sidebar also deduplicates in-flight workspace-list requests so development-mode duplicate effects cannot hide a server recovery state.
+- Files: `apps/web/src/lib/organization-audit-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/organization-audit-contract.test.ts`.
+- Evidence: Audit contract coverage passed **10/10**; the workspace-list recovery browser test passed **1/1**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-02/ORG-11 and UI-12/UI-13 local resilience only; workspace authorization, audit retention and Member 1's ORG-10 revocation transaction remain server-owned.

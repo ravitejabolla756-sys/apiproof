@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, Clipboard, Loader2, ShieldCheck, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDisplayDate, formatDisplayDateTime, toSafeDisplayDateTime } from '../../../../lib/date-display-contract.js';
-import { parseAuditPage, type AuditEventProjection } from '../../../../lib/organization-audit-contract.js';
+import { mergeAuditEvents, parseAuditPage, type AuditEventProjection } from '../../../../lib/organization-audit-contract.js';
 import { parseInvitationCollection, parseMemberCollection, type InvitationProjection, type MemberProjection } from '../../../../lib/organization-collection-contract.js';
 import { parseWorkspaceSettings, type WorkspaceSettingsProjection } from '../../../../lib/organization-settings-contract.js';
 import { toSafeInvitationUrl } from '../../../../lib/external-link-contract.js';
@@ -105,7 +105,9 @@ export default function WorkspaceSettingsPage() {
       const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
       const data = parseAuditPage(rawData);
       if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load more audit events.');
-      setAudit((current) => [...current, ...data.events]);
+      const mergedAudit = mergeAuditEvents(audit, data.events);
+      if (!mergedAudit) throw new Error('Unable to load more audit events.');
+      setAudit(mergedAudit);
       setAuditCursor(data.nextCursor);
     } catch (loadError) {
       setAuditError(loadError instanceof Error ? loadError.message : 'Unable to load more audit events.');

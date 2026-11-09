@@ -46,6 +46,7 @@ export function Sidebar() {
   const workspaceErrorRef = useRef<HTMLParagraphElement>(null);
   const workspaceContextErrorRef = useRef<HTMLParagraphElement>(null);
   const logoutErrorRef = useRef<HTMLParagraphElement>(null);
+  const workspaceRequestRef = useRef<Promise<NonNullable<ReturnType<typeof parseWorkspaceContext>>> | null>(null);
 
   useEffect(() => {
     async function loadStats() {
@@ -76,11 +77,15 @@ export function Sidebar() {
       setWorkspaceLoadRetrying(true);
       setWorkspaceLoadComplete(false);
       try {
-        const response = await fetch('/api/workspaces', { cache: 'no-store' });
-        if (!response.ok) throw new Error('Workspace list unavailable.');
+        const request = workspaceRequestRef.current ?? (workspaceRequestRef.current = (async () => {
+          const response = await fetch('/api/workspaces', { cache: 'no-store' });
+          if (!response.ok) throw new Error('Workspace list unavailable.');
+          const data = parseWorkspaceContext(await response.json());
+          if (!data) throw new Error('Workspace list unavailable.');
+          return data;
+        })());
+        const data = await request;
         if (!active) return;
-        const data = parseWorkspaceContext(await response.json());
-        if (!data) throw new Error('Workspace list unavailable.');
         setWorkspaces(data.workspaces);
         setActiveWorkspaceId(data.activeWorkspaceId ?? '');
         setWorkspaceLoadError(false);
@@ -91,6 +96,7 @@ export function Sidebar() {
           setWorkspaceLoadComplete(true);
         }
       } finally {
+        if (workspaceRequestRef.current) workspaceRequestRef.current = null;
         if (active) setWorkspaceLoadRetrying(false);
       }
     }

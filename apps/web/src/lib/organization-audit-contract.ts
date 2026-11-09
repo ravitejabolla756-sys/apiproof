@@ -58,3 +58,17 @@ export function parseAuditPage(payload: unknown): AuditPageProjection | null {
 
   return { events, nextCursor };
 }
+
+/** Merge cursor pages without allowing a repeated event to duplicate the audit trail. */
+export function mergeAuditEvents(current: AuditEventProjection[], next: AuditEventProjection[]): AuditEventProjection[] | null {
+  const seen = new Set<string>();
+  for (const event of current) {
+    if (seen.has(event.id)) return null;
+    seen.add(event.id);
+  }
+  for (const event of next) {
+    if (seen.has(event.id)) return null;
+    seen.add(event.id);
+  }
+  return [...current, ...next];
+}
