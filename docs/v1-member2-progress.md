@@ -4184,3 +4184,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Workspace administration, account/recovery, invitation, verification, contact and dashboard-sidebar feedback effects now preserve an explicit skip-link transition to `#main-content`; normal user-triggered feedback continues to receive focus for announcement.
 - Scope: Advances UI-12/UI-13 and local ORG-02/AUTH-08/WEB-15 keyboard-state coverage only; organization, deletion, verification, invitation and delivery contracts remain unchanged.
 - Evidence: Rebuilt-bundle route accessibility coverage passed **16/16** on isolated port 3155 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed.
+
+## 2026-11-10 checkpoint — public status skip-link regression
+
+- Change: Added a dedicated WEB-13/UI-13 browser regression for keyboard skip-link focus on the truthful public status surface; no monitor, uptime claim or incident source was introduced.
+- Scope: Advances local public status communications and browser coverage only; approved monitoring source, freshness policy and incident rehearsal remain external.
+- Evidence: Rebuilt-bundle status coverage passed **3/3** on isolated port 3156 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.

@@ -2422,3 +2422,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Workspace, account/recovery, invitation, verification, contact and sidebar feedback preserves keyboard focus on `#main-content` during explicit skip-link activation while ordinary user-triggered feedback remains announced. Rebuilt-bundle Playwright/axe route accessibility coverage passed **16/16** on isolated port 3155 after a fresh web production build generating **83 pages**.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Hosted CI, manual assistive-technology review, organization/authentication/provider verification, integrated staging and production remain open.
+
+## 2026-11-10 — public status skip-link regression
+
+- PASS: The truthful public status surface now has dedicated keyboard skip-link coverage; status, support-touch-target and skip-link tests passed **3/3** against the rebuilt 83-page production bundle on isolated port 3156.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- NOT_RUN: Approved monitoring source/freshness policy, hosted CI, manual assistive-technology review, integrated staging and production remain open.

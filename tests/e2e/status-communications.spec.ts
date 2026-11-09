@@ -25,3 +25,12 @@ test('keeps the status support action touch-sized on mobile', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });
+
+test('moves keyboard focus to the status page main content', async ({ page }) => {
+  await page.goto('/status');
+  const skipLink = page.locator('.skip-link');
+  await skipLink.focus();
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main-content')).toBeFocused();
+});
