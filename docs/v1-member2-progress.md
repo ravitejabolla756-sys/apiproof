@@ -4106,3 +4106,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Public security architecture pillars and data-handling sections now establish shrink/wrap boundaries for security badges, control descriptions, invariant copy and storage-boundary panels while preserving the intentional keyboard-focusable matrix scroll region.
 - Scope: Advances WEB-15/UI-12/UI-13 responsive and keyboard QA only; security controls, operational ownership and deployment configuration remain unchanged.
 - Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3139, including the 320px axe/overflow case and focused security-matrix region, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — FAQ narrow disclosure containment
+
+- Change: FAQ questions, long answers and the support banner now establish shrink/wrap boundaries at narrow widths while preserving native disclosure semantics, focus styling and the truthful support route.
+- Scope: Advances WEB-15/UI-12/UI-13 responsive and interaction QA only; support delivery, incident handling and content ownership remain outside this local slice.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3140, including the 320px axe/overflow case, native FAQ disclosure assertion and the 44px support link, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

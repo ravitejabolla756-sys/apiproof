@@ -46,14 +46,14 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-4xl space-y-12 px-4 pb-24 pt-36 sm:px-6 lg:px-8 outline-none">
-        <header className="space-y-5 border-b border-black/[0.08] pb-10">
+      <main id="main-content" tabIndex={-1} className="mx-auto min-w-0 max-w-4xl space-y-12 px-4 pb-24 pt-36 sm:px-6 lg:px-8 outline-none">
+        <header className="min-w-0 space-y-5 border-b border-black/[0.08] pb-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-200/80 px-3 py-1 text-xs font-mono font-medium text-slate-800">
             <CircleHelp className="h-3.5 w-3.5" aria-hidden="true" />
             <span>PRODUCT FAQ</span>
           </div>
-          <h1 className="font-serif text-4xl font-normal leading-tight tracking-tight sm:text-5xl">Answers for teams evaluating MY OWL.</h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+          <h1 className="break-words font-serif text-4xl font-normal leading-tight tracking-tight sm:text-5xl">Answers for teams evaluating MY OWL.</h1>
+          <p className="break-words max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
             A concise guide to repository access, scan evidence, migration review, security boundaries and beta limitations.
           </p>
         </header>
@@ -61,19 +61,19 @@ export default function FAQPage() {
         <section aria-labelledby="faq-heading" className="space-y-3">
           <h2 id="faq-heading" className="sr-only">Frequently asked questions</h2>
           {faqs.map((faq) => (
-            <details key={faq.question} className="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-xs open:border-slate-300 sm:px-6">
-              <summary className="flex min-h-11 cursor-pointer list-none items-center rounded pr-8 text-sm font-semibold text-[#000E29] marker:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
-                <span className="relative block after:absolute after:right-0 after:top-0 after:text-lg after:font-normal after:text-slate-400 after:content-['+'] group-open:after:content-['−']">{faq.question}</span>
+            <details key={faq.question} className="group min-w-0 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-xs open:border-slate-300 sm:px-6">
+              <summary className="flex min-h-11 min-w-0 cursor-pointer list-none items-center rounded pr-8 text-sm font-semibold text-[#000E29] marker:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
+                <span className="relative block break-words after:absolute after:right-0 after:top-0 after:text-lg after:font-normal after:text-slate-400 after:content-['+'] group-open:after:content-['−']">{faq.question}</span>
               </summary>
-              <p className="max-w-3xl pt-3 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
+              <p className="break-words max-w-3xl pt-3 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
             </details>
           ))}
         </section>
 
-        <div className="flex flex-col items-start gap-3 rounded-3xl bg-[#000E29] p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
-          <div>
-            <h2 className="font-serif text-2xl font-normal">Need a verified answer for your stack?</h2>
-            <p className="mt-1 text-sm text-slate-300">Bring your provider, repository and review requirements to the team.</p>
+        <div className="flex min-w-0 flex-col items-start gap-3 rounded-3xl bg-[#000E29] p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="min-w-0">
+            <h2 className="break-words font-serif text-2xl font-normal">Need a verified answer for your stack?</h2>
+            <p className="break-words mt-1 text-sm text-slate-300">Bring your provider, repository and review requirements to the team.</p>
           </div>
           <Link href="/contact" className="btn-lime inline-flex min-h-11 shrink-0 items-center text-sm">
             Contact support <ArrowRight className="h-4 w-4" aria-hidden="true" />
