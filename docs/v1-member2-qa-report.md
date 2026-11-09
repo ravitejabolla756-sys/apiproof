@@ -2293,3 +2293,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Repository connection requires explicit success and repository identity before starting its initial scan, and scan feedback validates the findings-count projection. Contract coverage passed **3/3**.
 - PASS: Rebuilt-bundle repository connection and scan-action coverage passed **3/3** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Repository authorization/GitHub integration, billing-limit verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — Slack redirect and disconnect response guards
+
+- PASS: Slack authorization URLs are restricted to safe same-origin or credential-free HTTPS navigation, and disconnect requires the explicit disconnected projection. Contract coverage passed **4/4**.
+- PASS: Rebuilt-bundle Slack status/connect/disconnect browser coverage passed **3/3** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Slack provider authorization/delivery verification, hosted CI, staging, manual assistive-technology review and production remain open.

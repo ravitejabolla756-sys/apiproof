@@ -16,3 +16,11 @@ export function parseSlackConnectionStatus(value: unknown): SlackConnectionProje
     : null;
   return { connected: value.connected, teamName };
 }
+import { toSafeNavigationUrl } from './external-link-contract.js';
+
+
+/** Keep provider-returned OAuth redirects inert unless they are safe navigations. */
+export function parseSlackConnectResponse(value: unknown): string | null {
+  if (!record(value) || typeof value.url !== 'string') return null;
+  return toSafeNavigationUrl(value.url);
+}

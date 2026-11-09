@@ -3862,3 +3862,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/repository-scan-contract.ts`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/repository-scan-contract.test.ts`, `tests/e2e/connect-repo-action-loading.spec.ts`, `tests/e2e/repository-scan-action-loading.spec.ts`.
 - Evidence: Repository connection/scan contract coverage passed **3/3**; rebuilt-bundle connection and scan-action browser coverage passed **3/3** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 repository action safety only; repository authorization, GitHub identity, billing limits and scan execution remain server-owned.
+
+## 2026-11-09 checkpoint — Slack redirect and disconnect response guards
+
+- Change: Slack authorization responses now pass through the shared safe-navigation guard; JavaScript, credential-bearing or malformed URLs fail closed. Disconnect responses must explicitly report `connected: false` before local state changes.
+- Files: `apps/web/src/lib/slack-connection-contract.ts`, `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/slack-connection-contract.test.ts`.
+- Evidence: Slack contract coverage passed **4/4**; rebuilt-bundle Slack status/connect/disconnect browser coverage passed **3/3** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances NOT-03/UI-12 local redirect and action safety only; Slack OAuth authorization, recipient policy, provider delivery and Member 1 event contracts remain unchanged.

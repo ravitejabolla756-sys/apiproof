@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSlackConnectionStatus } from '../apps/web/src/lib/slack-connection-contract.js';
+import { parseSlackConnectResponse, parseSlackConnectionStatus } from '../apps/web/src/lib/slack-connection-contract.js';
 
 describe('Slack connection response', () => {
   it('accepts connected and disconnected projections', () => {
@@ -15,5 +15,13 @@ describe('Slack connection response', () => {
     expect(parseSlackConnectionStatus({ connected: 'true' })).toBeNull();
     expect(parseSlackConnectionStatus({ connected: true, teamName: 42 })).toBeNull();
     expect(parseSlackConnectionStatus(null)).toBeNull();
+  });
+
+  it('accepts only safe Slack authorization redirects', () => {
+    expect(parseSlackConnectResponse({ url: 'https://slack.com/oauth/v2/authorize?state=fixture' })).toBe('https://slack.com/oauth/v2/authorize?state=fixture');
+    expect(parseSlackConnectResponse({ url: '/dashboard/settings?slack=connected' })).toBe('/dashboard/settings?slack=connected');
+    expect(parseSlackConnectResponse({ url: 'javascript:alert(1)' })).toBeNull();
+    expect(parseSlackConnectResponse({ url: 'https://user:pass@slack.com/oauth' })).toBeNull();
+    expect(parseSlackConnectResponse({ url: 42 })).toBeNull();
   });
 });

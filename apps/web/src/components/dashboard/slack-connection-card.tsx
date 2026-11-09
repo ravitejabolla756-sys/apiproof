@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Loader2, MessageSquare, Unplug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { parseSlackConnectionStatus, type SlackConnectionProjection } from '@/lib/slack-connection-contract';
+import { parseSlackConnectResponse, parseSlackConnectionStatus, type SlackConnectionProjection } from '@/lib/slack-connection-contract';
 
 export function SlackConnectionCard() {
   const [status, setStatus] = useState<SlackConnectionProjection | null>(null);
@@ -53,9 +53,11 @@ export function SlackConnectionCard() {
     }
     try {
       const response = await fetch('/api/slack/connect', { method: 'POST' });
-      const data = await response.json() as { url?: string; error?: string };
-      if (!response.ok || !data.url) throw new Error(data.error || 'Slack connection could not be started.');
-      window.location.assign(data.url);
+      const rawData = await response.json() as unknown;
+      const errorMessage = rawData && typeof rawData === 'object' && 'error' in rawData && typeof rawData.error === 'string' ? rawData.error : undefined;
+      const authorizationUrl = parseSlackConnectResponse(rawData);
+      if (!response.ok || !authorizationUrl) throw new Error(errorMessage || 'Slack connection could not be started.');
+      window.location.assign(authorizationUrl);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack connection could not be started.');
       setErrorAction('connect');
@@ -71,9 +73,11 @@ export function SlackConnectionCard() {
     }
     try {
       const response = await fetch('/api/slack/connection', { method: 'DELETE' });
-      const data = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(data.error || 'Slack could not be disconnected.');
-      setStatus({ connected: false, teamName: null });
+      const rawData = await response.json() as unknown;
+      const errorMessage = rawData && typeof rawData === 'object' && 'error' in rawData && typeof rawData.error === 'string' ? rawData.error : undefined;
+      const data = parseSlackConnectionStatus(rawData);
+      if (!response.ok || !data || data.connected) throw new Error(errorMessage || 'Slack could not be disconnected.');
+      setStatus(data);
       setError(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack could not be disconnected.');
