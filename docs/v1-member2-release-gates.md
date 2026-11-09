@@ -576,6 +576,10 @@ Disabled weekly-digest controls are now programmatically associated with the pen
 
 All unavailable notification controls now expose their truthful delivery explanation programmatically, with focused browser checks passing. Provider delivery, digest scheduling/retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest notification projection evidence — 2026-11-09
+
+Notification settings now fail closed on malformed server-owned preference projections, including unknown categories/channels, non-boolean flags and duplicate keys. The focused contract suite passes 6/6, the authenticated settings journey passes 1/1, lint/typecheck pass and the production build generates 83 pages. Provider delivery, digest scheduling/retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
