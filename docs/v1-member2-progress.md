@@ -2957,3 +2957,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/repository-filter-states.spec.ts`.
 - Evidence: Impeccable detector returned `[]`; targeted ESLint, repository typecheck and rebuilt web build passed with 83 pages; repository filter/expansion browser coverage passed 1/1 after making the assertion tolerant of the existing first-row auto-expand behavior.
 - Scope: advances local UI-12/UI-13 repository semantics only. PostgreSQL/RBAC, GitHub/provider approval, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — pull-request external-link safety boundary
+
+- Change: Added a provider-neutral adapter for pull-request URLs that permits only absolute credential-free HTTPS destinations; unsafe or malformed backend values now render as unavailable instead of becoming navigation targets.
+- Files: `apps/web/src/lib/pull-request-contract.ts`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/pull-request-contract.test.ts`.
+- Evidence: Impeccable detector returned `[]`; focused Vitest passed 2/2; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3171 pnpm exec playwright test tests/e2e/workbench-action-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1.
+- Scope: advances local UI-12/UI-13 pull-request safety and accessibility evidence only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.

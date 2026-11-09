@@ -483,3 +483,7 @@ The provider-rule title input now also uses the 16px mobile-safe text floor, com
 ## Latest UI-12/UI-13 repository expansion evidence — 2026-11-09
 
 Repository expand/collapse controls now have explicit metadata-panel relationships and a named expanded region, with local browser coverage passing. PostgreSQL/RBAC, GitHub/provider approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest pull-request link safety evidence — 2026-11-09
+
+The pull-request queue now suppresses malformed or credential-bearing external URLs and preserves safe absolute HTTPS links. Local contract, lint, typecheck, build and mobile accessibility checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

@@ -1539,6 +1539,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Impeccable detector `[]`; targeted ESLint and `git diff --check`; `CI=true PLAYWRIGHT_PORT=3147 pnpm exec playwright test tests/e2e/public-contrast-audit.spec.ts tests/e2e/public-axe-audit.spec.ts --workers=1 --reporter=line` passed 4/4; `pnpm typecheck`; web build generated 83 pages.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.
 
+## 2026-11-09 — pull-request external-link safety boundary
+
+- PASS: Pull-request external links now pass through a credential-free HTTPS boundary; malformed, relative, non-HTTPS and credential-bearing values render as unavailable.
+- PASS: Focused contract coverage passed 2/2, targeted lint/typecheck passed, web build generated 83 pages and the mobile workbench accessibility browser test passed 1/1.
+- NOT_RUN: Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
