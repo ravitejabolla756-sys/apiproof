@@ -2356,3 +2356,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Privacy, terms, refund and cookie pages establish narrow-width shrink/wrap boundaries without changing draft/legal-review status or billing-policy language. Rebuilt-bundle Playwright and axe coverage passed **1/1** at 320px on isolated port 3141, including draft-versus-effective metadata assertions and 44px refund links.
 - PASS: Targeted ESLint, web typecheck, `git diff --check`, and the Impeccable detector passed with no findings; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning.
 - NOT_RUN: Owner/legal approval, billing/provider verification, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-10 — workspace administration narrow containment
+
+- PASS: Workspace administration establishes narrow-width shrink/wrap boundaries for role badges, headings, revocation-gate copy and section descriptions without changing membership, invitation, audit or workspace-revocation behavior. Rebuilt-bundle authenticated Playwright/axe coverage passed **1/1** at 320px on isolated port 3142, including overflow containment and 44px workspace-settings/save controls.
+- PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector reported only pre-existing unchanged purple icon tokens.
+- NOT_RUN: PostgreSQL/RBAC, Member 1 ORG-10 integration, concurrent final-owner verification, hosted CI, integrated staging, manual assistive-technology review and production remain open.
