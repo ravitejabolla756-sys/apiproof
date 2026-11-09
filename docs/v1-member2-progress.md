@@ -3932,3 +3932,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/connect-repo-modal.tsx`.
 - Evidence: Rebuilt-bundle repository recovery/focus coverage passed **4/4** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 keyboard accessibility only; repository authorization and GitHub provider state remain server/provider-owned.
+
+## 2026-11-10 checkpoint — invoice hosted-link projection normalization
+
+- Change: The BILL-09 invoice adapter now normalizes hosted links through the credential-free HTTPS guard while parsing server projections; unsafe provider values become an unavailable link instead of reaching the UI as raw data.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
+- Evidence: Focused invoice contract coverage passed **7/7**; provider authorization, billing-owner capability, URL allowlisting, retention and legal approval remain external contracts.
+- Scope: Advances BILL-09 local projection safety only; no provider endpoint, payment flow or billing credential was introduced.

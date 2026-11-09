@@ -46,6 +46,11 @@ export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult 
     const number = isRecord(item) ? normalizedText(item.number) : null;
     const status = isRecord(item) ? normalizedText(item.status) : null;
     const currency = isRecord(item) && typeof item.currency === 'string' ? item.currency.trim().toUpperCase() : null;
+    const hostedUrl = isRecord(item) && (item.hostedUrl === undefined || item.hostedUrl === null)
+      ? item.hostedUrl
+      : isRecord(item) && typeof item.hostedUrl === 'string'
+        ? toSafeInvoiceUrl(item.hostedUrl)
+        : undefined;
     if (!isRecord(item)
       || !id
       || !number
@@ -63,7 +68,7 @@ export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult 
       status,
       totalMinor: item.totalMinor,
       currency,
-      ...(item.hostedUrl === undefined ? {} : { hostedUrl: item.hostedUrl as string | null }),
+      ...(hostedUrl === undefined ? {} : { hostedUrl }),
     });
   }
   return { status: 'ready', invoices };

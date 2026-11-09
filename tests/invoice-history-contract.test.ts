@@ -69,4 +69,21 @@ describe('invoice history adapter boundary', () => {
       ],
     })).toBeNull();
   });
+
+  it('drops unsafe hosted links at the projection boundary', () => {
+    const result = parseInvoiceHistoryResult({
+      status: 'ready',
+      invoices: [{
+        id: 'inv_unsafe', number: 'INV-UNSAFE', issuedAt: '2026-11-09T00:00:00.000Z', status: 'paid',
+        totalMinor: 1, currency: 'USD', hostedUrl: 'javascript:alert(1)',
+      }],
+    });
+    expect(result).toEqual({
+      status: 'ready',
+      invoices: [{
+        id: 'inv_unsafe', number: 'INV-UNSAFE', issuedAt: '2026-11-09T00:00:00.000Z', status: 'paid',
+        totalMinor: 1, currency: 'USD', hostedUrl: null,
+      }],
+    });
+  });
 });
