@@ -3541,3 +3541,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Billing summary parsing now returns a normalized projection, rejects empty text, invalid period dates and unsafe integer metrics, and preserves finite usage-bar behavior for zero limits.
 - Files: `apps/web/src/lib/billing-summary-contract.ts`, `tests/billing-summary-contract.test.ts`.
 - Scope: Advances local BILL-07/UI-12 data-boundary safety only. Checkout, portal, provider lifecycle, billing-owner authorization, payment credentials and production billing remain blocked or unavailable.
+
+## 2026-11-09 checkpoint — ORG-11 audit projection normalization
+
+- Change: Audit-event parsing now normalizes event identity/display text and opaque cursors, rejects empty cursors, and detects duplicate event IDs after normalization; malformed timestamps remain representable so the UI can show a safe `Unavailable` state.
+- Files: `apps/web/src/lib/organization-audit-contract.ts`, `tests/organization-audit-contract.test.ts`.
+- Scope: Advances local ORG-11/UI-12 response safety only. Server-side audit authorization, retention, PostgreSQL/RBAC and Member 1 integration remain open.

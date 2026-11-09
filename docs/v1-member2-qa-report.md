@@ -2022,6 +2022,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Billing summary contract coverage now verifies normalized text, invalid-date rejection and safe integer bounds; focused billing tests pass **4/4**.
 - NOT_RUN: Provider lifecycle, checkout/portal authorization, payment credentials, PostgreSQL/RBAC, hosted CI, staging and production remain open.
 
+## 2026-11-09 — ORG-11 audit projection normalization
+
+- PASS: Audit contract coverage now verifies normalized event text, cursor normalization, empty-cursor rejection and duplicate-ID rejection; focused audit contract tests pass **7/7**.
+- NOT_RUN: Server RBAC/retention, PostgreSQL tenant proof, Member 1 integration, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

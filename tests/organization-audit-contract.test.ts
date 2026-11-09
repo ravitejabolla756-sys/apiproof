@@ -15,6 +15,16 @@ describe('organization audit response contract', () => {
     expect(parseAuditPage({ events: [validEvent] })).toEqual({ events: [validEvent], nextCursor: null });
   });
 
+  it('normalizes event text and catches duplicate IDs after normalization', () => {
+    expect(parseAuditPage({
+      events: [{ ...validEvent, id: ' audit-1 ', action: ' workspace.updated ', targetType: ' workspace ', actorEmail: ' owner@example.test ' }],
+      nextCursor: ' cursor-1 ',
+    })).toEqual({ events: [validEvent], nextCursor: 'cursor-1' });
+    expect(parseAuditPage({
+      events: [validEvent, { ...validEvent, id: ' audit-1 ', action: 'member.updated' }],
+    })).toBeNull();
+  });
+
   it.each([
     ['missing events', { nextCursor: null }],
     ['missing event ID', { events: [{ ...validEvent, id: '' }] }],
@@ -22,6 +32,7 @@ describe('organization audit response contract', () => {
     ['invalid metadata', { events: [{ ...validEvent, metadata: 'secret' }] }],
     ['duplicate event IDs', { events: [validEvent, validEvent] }],
     ['invalid cursor', { events: [], nextCursor: 4 }],
+    ['empty cursor', { events: [], nextCursor: '   ' }],
   ])('rejects %s', (_label, payload) => {
     expect(parseAuditPage(payload)).toBeNull();
   });
