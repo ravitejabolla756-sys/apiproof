@@ -1738,6 +1738,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Notification settings now fail closed when the server response contains an unknown category/channel, malformed boolean flags or duplicate keys; no delivery or digest policy was changed.
 - TEST: Focused Vitest contract coverage was added for valid and malformed projections. Provider-controlled delivery, scheduler approval and hosted verification remain open.
 
+## 2026-11-09 — malformed notification projection browser regression
+
+- PASS: A malformed server preference projection now produces the existing recovery alert, no preference table, and no axe violations in the authenticated browser surface.
+- NOT_RUN: Provider-controlled delivery, digest scheduling, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

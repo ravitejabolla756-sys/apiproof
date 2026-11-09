@@ -3205,3 +3205,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Notification settings now validate the server-owned preference projection before rendering or accepting updates. Unknown categories/channels, malformed flags and duplicate preference keys fail closed into the existing recovery state; digest availability and delivery policy remain unchanged.
 - Files: `apps/web/src/lib/notification-preferences-contract.ts`, `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/notification-preferences-contract.test.ts`.
 - Evidence: Focused contract coverage added for valid, malformed, duplicate and missing projections. Provider delivery, digest scheduling and Member 1 event integration remain open.
+
+## 2026-11-09 checkpoint — NOT-06/UI-13 malformed notification projection browser regression
+
+- Change: Added a rebuilt-bundle browser regression proving malformed notification preference responses render the existing recovery alert, do not expose controls, and remain axe-clean.
+- Files: `tests/e2e/notification-preference-contract.spec.ts`.
+- Evidence: The browser negative path is isolated from provider delivery and digest scheduling; external provider and hosted verification remain open.
