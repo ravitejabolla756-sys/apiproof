@@ -1577,6 +1577,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Same-origin link crawling now includes `/verify-email`, `/login`, `/forgot-password` and `/reset-password` in addition to the public pages and invitation route; the focused Playwright run passed 1/1 with targeted ESLint, test TypeScript and `git diff --check` passing.
 - NOT_RUN: Hosted CI, staging, manual assistive-technology review, live contact/delivery and production remain open.
 
+## 2026-11-09 — WEB-15 mobile 404 recovery-link verification
+
+- PASS: The mobile HTTP-404 journey now validates successful same-origin recovery links, 44px touch targets, no document overflow and axe-clean content; the focused Playwright test passed 1/1 with targeted ESLint, test TypeScript and `git diff --check` passing.
+- NOT_RUN: Hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

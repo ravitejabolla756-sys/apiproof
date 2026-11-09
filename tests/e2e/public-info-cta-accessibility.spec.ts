@@ -33,6 +33,22 @@ test('keeps the public status page explicit while no monitor is connected', asyn
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });
 
+test('keeps the public not-found recovery links valid on mobile', async ({ page, request }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto('/route-that-does-not-exist');
+  expect(response?.status()).toBe(404);
+  for (const label of ['Return Home', 'Explore Features']) {
+    const link = page.getByRole('link', { name: label, exact: true });
+    const href = await link.getAttribute('href');
+    expect(href, label).toBeTruthy();
+    const target = await request.get(href!);
+    expect(target.status(), href ?? label).toBeLessThan(400);
+    expect((await link.boundingBox())?.height, label).toBeGreaterThanOrEqual(44);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+});
+
 test('keeps the shared footer brand and navigation links touch-sized on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/blog');

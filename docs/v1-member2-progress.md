@@ -3075,3 +3075,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/public-link-crawl.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3187 pnpm exec playwright test tests/e2e/public-link-crawl.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local WEB-15/UI-13 route/link verification only. Hosted CI, staging, manual assistive-technology review, live contact/delivery and production remain open.
+
+## 2026-11-09 checkpoint — WEB-15 mobile 404 recovery-link verification
+
+- Change: Added a mobile HTTP-404 browser check that verifies both recovery links resolve to successful same-origin pages, retain 44px touch targets, avoid document overflow and remain axe-clean.
+- Files: `tests/e2e/public-info-cta-accessibility.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3188 pnpm exec playwright test tests/e2e/public-info-cta-accessibility.spec.ts --workers=1 --reporter=line -g "not-found recovery"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local WEB-15/UI-12 error-route verification only. Hosted CI, staging, manual assistive-technology review and production remain open.
