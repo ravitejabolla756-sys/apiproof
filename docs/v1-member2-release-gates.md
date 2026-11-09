@@ -500,6 +500,10 @@ Invoice ready-state formatting now fails closed for malformed provider projectio
 
 The focused billing, invoice, digest, notification-preference and email-delivery suites pass 19/19 locally. Provider delivery, billing lifecycle, scheduler, retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest NOT-10 accessibility evidence — 2026-11-09
+
+Disabled weekly-digest controls are now programmatically associated with the pending-contract explanation. Local notification recovery/settings checks pass; shared digest scheduling, provider, retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

@@ -146,7 +146,7 @@ test.describe('authenticated product surfaces', () => {
     await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
     await page.goto('/dashboard/settings/notifications');
     await expect(page.getByRole('heading', { name: 'Notification preferences' })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); await expect(page.getByLabel('Weekly digest via email')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via slack')).toBeDisabled(); await expect(page.getByText('Digest scheduling is unavailable until its cadence, recipient and scheduler contract is approved.')).toBeVisible();
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); await expect(page.getByLabel('Weekly digest via email')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via slack')).toBeDisabled(); await expect(page.getByLabel('Weekly digest via email')).toHaveAttribute('aria-describedby', 'digest-contract-status'); await expect(page.getByLabel('Weekly digest via slack')).toHaveAttribute('aria-describedby', 'digest-contract-status'); await expect(page.getByText('Digest scheduling is unavailable until its cadence, recipient and scheduler contract is approved.')).toBeVisible();
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations, '/dashboard/settings/notifications').toEqual([]);
   });

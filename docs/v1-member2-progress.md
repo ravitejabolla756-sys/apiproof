@@ -2984,6 +2984,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/digest-notification-contract.test.ts tests/member2-billing-boundaries.test.ts tests/notification-preferences.test.ts tests/email-delivery-state.test.ts tests/email-delivery.test.ts` passed 19/19 across 6 files after the invoice display hardening.
 - Scope: reinforces local BILL-09/NOT-01/NOT-06/NOT-10 contract evidence only. Provider delivery, billing lifecycle, scheduler, retention and Member 1 integration remain open.
 
+## 2026-11-09 checkpoint — NOT-10 digest control descriptions
+
+- Change: Associated disabled weekly-digest email and Slack checkboxes with the existing `DIGEST_CONTRACT_PENDING` status message through `aria-describedby`; cadence, recipient, scheduler and provider behavior remain unchanged.
+- Files: `apps/web/src/app/dashboard/settings/notifications/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Impeccable reported only the unchanged notification-heading palette warning; targeted lint and typecheck passed; rebuilt web build generated 83 pages; notification recovery and authenticated notification-settings browser checks passed 2/2; `git diff --check` passed.
+- Scope: advances local NOT-10/UI-12 screen-reader context only. Shared digest contract, scheduler, delivery provider, retention, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 checkpoint — full local browser regression after link hardening
 
 - Change: Revalidated the complete local browser matrix after the shared external-link and pull-request link hardening; no source or contract rollback was required.

@@ -1560,6 +1560,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invoice, digest, billing-boundary, notification-preference and email-delivery contract suites passed 19/19 across 6 files after the BILL-09 display hardening.
 - NOT_RUN: Provider delivery, billing lifecycle, scheduler, retention, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — NOT-10 digest control descriptions
+
+- PASS: Disabled weekly-digest controls now reference the visible pending-contract explanation with `aria-describedby`; notification recovery and authenticated settings browser checks passed 2/2, with lint, typecheck and build passing.
+- NOT_RUN: Shared digest cadence/scheduler/provider/retention contract, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — full local browser regression after link hardening
 
 - PASS: The complete rebuilt-bundle Playwright suite passed 172/172 with one worker, covering route accessibility, authenticated organization/settings flows, billing boundaries, notification states, public pages, status communications and dashboard recovery journeys.
