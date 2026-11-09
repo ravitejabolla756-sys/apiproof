@@ -46,21 +46,21 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <><a href="#main-content" className="skip-link">Skip to main content</a><main id="main-content" tabIndex={-1} className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center px-4 font-sans outline-none">
+    <><a href="#main-content" className="skip-link">Skip to main content</a><main id="main-content" tabIndex={-1} className="flex min-h-screen min-w-0 flex-col items-center justify-center bg-[#F5F5F7] px-4 font-sans outline-none">
       <Link href="/" className="inline-flex min-h-11 items-center gap-3 mb-10">
         <ApiProofLogo alt="" className="h-8 w-auto shrink-0" variant="dark" />
         <span className="text-2xl font-bold tracking-tight text-[#0F172A]">MY OWL</span>
       </Link>
-      <section className="w-full max-w-md rounded-2xl border border-[#E8E8E5] bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-[#0F172A]">Reset your password</h1>
-        <p className="mt-2 text-sm text-slate-600">Enter your account email and we’ll send a single-use reset link if an account exists.</p>
+      <section className="w-full min-w-0 max-w-md rounded-2xl border border-[#E8E8E5] bg-white p-8 shadow-sm">
+        <h1 className="break-words text-xl font-semibold text-[#0F172A]">Reset your password</h1>
+        <p className="mt-2 break-words text-sm text-slate-600">Enter your account email and we’ll send a single-use reset link if an account exists.</p>
         <form onSubmit={submit} aria-busy={loading} className="mt-6 space-y-5">
           <div>
             <label htmlFor="reset-email" className="mb-2 block font-mono text-xs font-medium uppercase tracking-wider text-slate-600">Email</label>
           <input id="reset-email" type="email" required maxLength={255} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-h-11 w-full rounded-xl border border-[#E8E8E5] bg-[#F5F5F7] px-4 py-3 text-base text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#0F172A]/10" />
           </div>
-          {message && <p ref={feedbackRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{message}</p>}
-          {error && <p ref={feedbackRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{error}</p>}
+          {message && <p ref={feedbackRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="break-words rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{message}</p>}
+          {error && <p ref={feedbackRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:ring-offset-2">{error}</p>}
           <button type="submit" disabled={loading} className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#0F172A] py-3.5 font-mono text-xs font-medium uppercase tracking-wider text-white disabled:opacity-60">
             <span role={loading ? 'status' : undefined} aria-live={loading ? 'polite' : undefined} aria-atomic={loading ? 'true' : undefined} aria-busy={loading ? 'true' : undefined}>{loading ? 'Sending…' : 'Send reset link'}</span>
           </button>

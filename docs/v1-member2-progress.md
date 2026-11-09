@@ -4142,3 +4142,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The login shell now establishes shrink/wrap boundaries for the auth card, error copy and footer note while preserving provider redirects, mode switching and credential submission behavior.
 - Scope: Advances UI-12/UI-13/WEB-15 authentication-entry QA only; authentication/session integration, provider delivery, hosted CI and production remain external gates.
 - Evidence: Rebuilt-bundle login coverage passed **1/1** on isolated port 3145 at 320px, including 44px mode/recovery controls, overflow containment and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — password and email recovery narrow containment
+
+- Change: Forgot-password, reset-password and email-verification surfaces now establish shrink/wrap boundaries for recovery copy, missing-token errors and headings while preserving existing token handling, anti-enumeration and delivery contracts.
+- Scope: Advances AUTH-08/UI-12/UI-13/WEB-15 authentication-entry QA only; password-reset and verification provider delivery, session integration, hosted CI and production remain external gates.
+- Evidence: Rebuilt-bundle auth recovery coverage passed **1/1** on isolated port 3146 across all three routes at 320px, including missing-token recovery, 44px sign-in controls, overflow containment and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
