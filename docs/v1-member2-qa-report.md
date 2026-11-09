@@ -2152,3 +2152,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Repository list/detail scan actions validate the successful findings-count projection before showing completion feedback; focused contract coverage passed **2/2** and isolated repository recovery/scan-action browser coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Founder authorization, provider execution, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — GitHub status coercion guard
+
+- PASS: Cross-tab GitHub status resolution preserves known state for malformed successful payloads; focused sync-contract coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Provider authorization, hosted CI, staging, manual assistive-technology review and production remain open.

@@ -29,5 +29,7 @@ describe('GitHub connection cross-tab refresh protocol', () => {
     expect(resolveGitHubConnectionStatus(true, { ok: true, connected: false })).toBe(false);
     expect(resolveGitHubConnectionStatus(true, { ok: false })).toBe(true);
     expect(resolveGitHubConnectionStatus(true, null)).toBe(true);
+    expect(resolveGitHubConnectionStatus(true, { ok: true, connected: 'yes' })).toBe(true);
+    expect(resolveGitHubConnectionStatus(null, { ok: true, connected: null })).toBe(null);
   });
 });

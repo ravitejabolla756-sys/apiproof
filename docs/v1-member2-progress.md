@@ -3697,3 +3697,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/repository-scan-contract.ts`, `apps/web/src/app/dashboard/repositories/page.tsx`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/repository-scan-contract.test.ts`.
 - Evidence: Focused repository-scan contract coverage passed **2/2** and isolated repository recovery/scan-action browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 scan-action resilience only; scan authorization, billing limits and execution remain server-owned.
+
+## 2026-11-09 checkpoint — GitHub status coercion guard
+
+- Change: Shared cross-tab GitHub status resolution now preserves the last known state when a successful response omits or corrupts the boolean connection field instead of coercing malformed data to `false`.
+- Files: `apps/web/src/lib/github-connection-sync.ts`, `tests/github-connection-sync.test.ts`.
+- Evidence: GitHub connection-sync coverage passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 connection-state resilience only; authoritative installation state remains server-owned.
