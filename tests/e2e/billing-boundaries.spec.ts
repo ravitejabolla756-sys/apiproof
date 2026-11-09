@@ -48,3 +48,14 @@ test('keeps the invoice history boundary responsive across product breakpoints',
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, `${width}px invoice history`).toEqual([]);
   }
 });
+
+test('preserves keyboard skip-link focus on the invoice boundary', async ({ page }) => {
+  await signIn(page);
+  await page.goto('/dashboard/settings', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'Invoice history' })).toBeVisible({ timeout: 30_000 });
+  const skipLink = page.locator('.skip-link').first();
+  await skipLink.focus();
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main-content')).toBeFocused();
+});

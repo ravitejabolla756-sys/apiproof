@@ -2428,3 +2428,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The truthful public status surface now has dedicated keyboard skip-link coverage; status, support-touch-target and skip-link tests passed **3/3** against the rebuilt 83-page production bundle on isolated port 3156.
 - PASS: Targeted ESLint and `git diff --check` passed.
 - NOT_RUN: Approved monitoring source/freshness policy, hosted CI, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — invoice boundary skip-link regression
+
+- PASS: The beta-unavailable invoice-history boundary preserves keyboard skip-link navigation; billing boundary coverage passed **3/3** against the rebuilt 83-page production bundle on isolated port 3157.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- NOT_RUN: Provider invoice source/authorization, retention/legal approval, hosted CI, manual assistive-technology review, integrated staging and production remain open.
