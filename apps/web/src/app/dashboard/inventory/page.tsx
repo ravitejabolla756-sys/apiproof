@@ -110,22 +110,24 @@ export default function ApiInventoryPage() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="p-6 rounded-[24px] bg-white border border-[#E8E8E5] space-y-4 shadow-xs"
+              className="min-w-0 p-6 rounded-[24px] bg-white border border-[#E8E8E5] space-y-4 shadow-xs"
             >
-              <div className="flex items-center justify-between">
-                <ProviderBadge name={item.name} status={item.status} />
-                <span className="text-[10px] text-[#686868] uppercase font-semibold tracking-wider">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0 max-w-full">
+                  <ProviderBadge name={item.name} status={item.status} />
+                </div>
+                <span className="min-w-0 max-w-full break-words text-right text-[10px] text-[#686868] uppercase font-semibold tracking-wider">
                   {item.category}
                 </span>
               </div>
 
-              <p className="text-xs text-[#686868] leading-relaxed">
+              <p className="break-words text-xs text-[#686868] leading-relaxed">
                 {item.description}
               </p>
 
-              <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Provider capabilities">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5" role="group" aria-label="Provider capabilities">
                 {(item.capabilities ?? (item.capability ? [item.capability] : [])).map((capability) => (
-                  <span key={capability} className="rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2 py-0.5 text-[10px] font-medium text-[#686868]">
+                  <span key={capability} className="max-w-full break-words rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2 py-0.5 text-[10px] font-medium text-[#686868]">
                     {capability}
                   </span>
                 ))}
@@ -146,18 +148,18 @@ export default function ApiInventoryPage() {
                   {item.rules.map((rule) => (
                     <div
                       key={rule.id}
-                      className="p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] text-xs space-y-1"
+                      className="min-w-0 p-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] text-xs space-y-1"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[11px] font-semibold text-[#111111]">
+                      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                        <span className="min-w-0 break-all font-mono text-[11px] font-semibold text-[#111111]">
                           {rule.id}
                         </span>
-                        <span className="text-[10px] uppercase font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        <span className="shrink-0 text-[10px] uppercase font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                           {rule.severity}
                         </span>
                       </div>
-                      <div className="font-medium text-[#111111]">{rule.title}</div>
-                      <p className="text-[11px] text-[#686868] leading-normal">
+                      <div className="break-words font-medium text-[#111111]">{rule.title}</div>
+                      <p className="break-words text-[11px] text-[#686868] leading-normal">
                         {rule.description}
                       </p>
                     </div>

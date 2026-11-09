@@ -3986,3 +3986,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/repositories/page.tsx`, `tests/e2e/repository-filter-states.spec.ts`.
 - Scope: Advances UI-12/UI-13 repository responsiveness only; repository authorization, provider identity and scan contracts remain server-owned.
 - Evidence: Seeded repository route coverage passed **5/5**; rebuilt-bundle repository filter/expanded-state coverage passed **2/2** on isolated port 3117, including the 320px long-metadata case and axe checks, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — inventory narrow metadata containment
+
+- Change: Provider inventory cards now establish shrink/wrap boundaries for long provider names, categories, capabilities, rule identifiers, titles and descriptions; the provider contract and registry behavior are unchanged.
+- Scope: Advances UI-12/UI-13 inventory responsiveness only; provider authorization, registry provenance and scan contracts remain server-owned.
+- Evidence: Inventory contract coverage passed **2/2**; rebuilt-bundle inventory filter/loading/long-metadata coverage passed **3/3** on isolated port 3118, including the 320px axe case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
