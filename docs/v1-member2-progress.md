@@ -4028,3 +4028,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The dashboard compatibility map now establishes shrink/wrap boundaries for repository selectors, repository identity, branch names, provider integrations, findings and proof metadata while preserving the intentional code/data presentation.
 - Scope: Advances UI-12/UI-13 compatibility-map resilience only; map authorization, scan provenance and compatibility evidence remain server-owned.
 - Evidence: Compatibility-map contract tests passed **3/3**; rebuilt-bundle dashboard compatibility-map coverage passed **1/1** on isolated port 3124, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — provider-rule review narrow metadata containment
+
+- Change: Provider-rule review cards now establish shrink/wrap boundaries for provider IDs, titles, descriptions, review blockers, source actions and detector guidance while preserving intentional JSON payload scrolling and review policy.
+- Scope: Advances UI-12/UI-13 provider-rule review resilience only; evidence provenance, approval, audit and rescan contracts remain server-owned.
+- Evidence: Provider-rule contract tests passed **4/4**; rebuilt-bundle provider-rule review coverage passed **1/1** on isolated port 3126, including the 320px axe/overflow case and keyboard-focusable payload preview, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings. The initial axe run exposed and the follow-up fixed the pre-existing scrollable-payload focus defect.
