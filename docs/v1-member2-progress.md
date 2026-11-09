@@ -3662,3 +3662,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/overview-contract.ts`, `apps/web/src/app/dashboard/page.tsx`, `tests/overview-contract.test.ts`.
 - Evidence: Focused overview contract coverage passed **2/2**; dashboard overview loading/empty-state browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 dashboard resilience only. Server authorization, tenant isolation and overview data ownership remain unchanged.
+
+## 2026-11-09 checkpoint — repository detail projection guard
+
+- Change: Added a typed repository-detail envelope adapter and aligned scan-history rendering with the API's `files_analyzed` field; malformed detail responses now use the existing recovery state.
+- Files: `apps/web/src/lib/repository-detail-contract.ts`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/repository-detail-contract.test.ts`.
+- Evidence: Focused repository-detail contract coverage passed **2/2** and repository recovery/loading browser coverage passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 detail-state resilience and corrects a local scan-history field mismatch; repository authorization and scan mutation contracts remain unchanged.

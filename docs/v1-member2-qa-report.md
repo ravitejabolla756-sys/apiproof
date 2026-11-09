@@ -2127,3 +2127,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Dashboard overview now rejects missing collections and unsafe counters before rendering; focused envelope coverage passed **2/2** and dashboard loading/empty-state browser coverage passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Server authorization, tenant isolation, overview data ownership, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — repository detail projection guard
+
+- PASS: Repository detail validates the repository, scan and finding collections before rendering and displays the API-owned `files_analyzed` value; focused contract coverage passed **2/2** and repository recovery/loading browser coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Provider-backed scan verification, hosted CI, staging, manual assistive-technology review and production remain open.

@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { formatDisplayDateTime } from "@/lib/date-display-contract";
+import { parseRepositoryDetailResponse, type RepositoryDetailResponse } from "@/lib/repository-detail-contract";
 import {
   GitBranch,
   AlertTriangle,
@@ -18,43 +19,9 @@ import {
   FileCode,
 } from "lucide-react";
 
-interface RepositoryDetail {
-  id: string;
-  owner: string;
-  name: string;
-  full_name: string;
-  github_repository_id: string;
-  default_branch: string;
-  status: string;
-  last_scan_at: string | null;
-  created_at: string;
-}
-
-interface ScanRecord {
-  id: string;
-  sha: string;
-  status: string;
-  total_files: number;
-  analyzed_files: number;
-  findings_count: number;
-  started_at: string;
-  completed_at: string | null;
-}
-
-interface FindingRecord {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  status: string;
-  created_at: string;
-}
+type RepositoryDetail = RepositoryDetailResponse['repository'];
+type ScanRecord = RepositoryDetailResponse['scans'][number];
+type FindingRecord = RepositoryDetailResponse['findings'][number];
 
 export default function RepositoryDetailPage({
   params,
@@ -74,11 +41,15 @@ export default function RepositoryDetailPage({
     setLoading(true);
     try {
       const res = await fetch(`/api/repositories/${id}`);
-      const json = await res.json() as { repository?: RepositoryDetail; scans?: ScanRecord[]; findings?: FindingRecord[]; error?: string };
-      if (!res.ok || !json.repository) throw new Error(json.error || (res.ok ? "Repository not found or access denied." : "Unable to load repository details."));
-      setRepo(json.repository);
-      setScans(json.scans || []);
-      setFindings(json.findings || []);
+      const json = await res.json() as unknown;
+      const parsed = parseRepositoryDetailResponse(json);
+      if (!res.ok || !parsed) {
+        const error = json && typeof json === 'object' && 'error' in json && typeof json.error === 'string' ? json.error : undefined;
+        throw new Error(error || (res.ok ? "Repository not found or access denied." : "Unable to load repository details."));
+      }
+      setRepo(parsed.repository);
+      setScans(parsed.scans);
+      setFindings(parsed.findings);
       setError(null);
     } catch (err) {
       console.error("Failed to load repository detail:", err);
@@ -427,7 +398,7 @@ export default function RepositoryDetailPage({
                       </span>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      {s.analyzed_files} / {s.total_files}
+                      {s.files_analyzed}
                     </td>
                     <td className="py-2.5 px-3 font-mono font-semibold">
                       {s.findings_count}
