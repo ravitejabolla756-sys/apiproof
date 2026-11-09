@@ -613,3 +613,7 @@ The public status page has focused mobile/axe evidence for its truthful no-monit
 ## Latest pull-request navigation safety evidence — 2026-11-09
 
 All identified dashboard pull-request navigation surfaces now suppress malformed or credential-bearing URLs while preserving safe HTTPS links. Local contract, lint, typecheck, build and 17-test browser coverage pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 dashboard trend evidence — 2026-11-09
+
+Zero-valued findings trend data now renders finite `0%` segments instead of `NaN%` CSS widths. The rebuilt-bundle dashboard browser regression passed **18/18**, including the new zero-trend case, existing trend accessibility coverage, loading states and recoverable error states. Hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

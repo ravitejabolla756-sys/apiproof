@@ -3251,3 +3251,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 ## 2026-11-09 checkpoint — ORG-02 rebuilt-bundle settings regression
 
 - Evidence: The combined rebuilt-bundle workspace settings, member/invitation collection and audit suite passed **15/15**. PostgreSQL/RBAC, Member 1 role/revocation integration, approved email delivery, hosted CI and staging remain open.
+
+## 2026-11-09 checkpoint — UI-12 dashboard zero-trend resilience
+
+- Change: Findings trend segment widths now guard zero-total data against `0 / 0` CSS calculations while preserving accessible zero-valued trend bars.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `tests/e2e/dashboard-trend-zero-state.spec.ts`.
+- Evidence: Added a rebuilt-bundle browser regression for zero-valued findings trends; hosted CI, manual assistive-technology review and production remain open.

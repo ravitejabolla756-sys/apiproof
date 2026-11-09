@@ -283,9 +283,9 @@ export default function DashboardOverviewPage() {
                     aria-label={`${item.total} findings on ${item.day}: ${item.critical} critical, ${item.high} high, ${item.warning} warning`}
                   >
                     <div className="flex h-full min-w-1 overflow-hidden rounded-full" style={{ width: `${Math.max((item.total / max) * 100, 2)}%` }}>
-                      <span className="bg-rose-500" style={{ width: `${(item.critical / item.total) * 100}%` }} />
-                      <span className="bg-amber-500" style={{ width: `${(item.high / item.total) * 100}%` }} />
-                      <span className="bg-sky-500" style={{ width: `${(item.warning / item.total) * 100}%` }} />
+                      <span className="bg-rose-500" style={{ width: `${(item.critical / Math.max(item.total, 1)) * 100}%` }} />
+                      <span className="bg-amber-500" style={{ width: `${(item.high / Math.max(item.total, 1)) * 100}%` }} />
+                      <span className="bg-sky-500" style={{ width: `${(item.warning / Math.max(item.total, 1)) * 100}%` }} />
                     </div>
                   </div>
                   <span className="w-6 text-right font-semibold text-[#111111]">{item.total}</span>

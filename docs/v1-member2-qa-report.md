@@ -1783,6 +1783,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Combined workspace settings, collection, and organization-audit browser coverage passes 15/15 against the rebuilt bundle.
 - NOT_RUN: PostgreSQL/RBAC, Member 1 integration, approved email delivery, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — dashboard zero-trend resilience
+
+- PASS: Zero-valued findings trend data now renders finite 0% segments instead of `NaN%` CSS widths.
+- NOT_RUN: Hosted CI, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
