@@ -681,3 +681,7 @@ The future invoice projection table now has an explicit descriptive caption for 
 ## Latest WEB-15 contact-form evidence — 2026-11-09
 
 The public non-sending contact form now has native names for its name, email, inquiry type and message controls, with focused browser coverage preserving truthful no-delivery copy. Contact destination, spam controls, owner routing, hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest ORG-02/UI-13 workspace-switch evidence — 2026-11-09
+
+The workspace selector now has focused browser coverage for rejected context switches and retry busy semantics. PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

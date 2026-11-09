@@ -1868,6 +1868,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The non-sending contact form now exposes stable native names for all four labeled controls; the focused public-site contact journey verifies those names and preserves the no-message-sent state.
 - NOT_RUN: Approved contact destination, delivery/spam controls, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — workspace-switch recovery coverage
+
+- PASS: The browser contract now covers a rejected workspace switch, focused recovery alert, preserved retry target and busy/disabled retry semantics; no backend or session behavior was changed.
+- NOT_RUN: PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

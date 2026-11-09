@@ -3350,3 +3350,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added stable native `name` attributes to the non-sending public contact form’s name, email, inquiry type and message controls, preserving the explicit beta boundary while improving browser/form semantics for a future approved intake destination.
 - Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Focused rebuilt-bundle public-site contact coverage passed; targeted ESLint, repository typecheck, detector and `git diff --check` remain required before commit. Contact delivery, owner routing, spam controls and production remain unapproved.
+
+## 2026-11-09 checkpoint — ORG-02/UI-13 workspace-switch recovery coverage
+
+- Change: Added a hermetic browser regression for a rejected workspace-context switch, verifying that the selected retry target is preserved, the alert receives focus, and the retry control exposes disabled/busy semantics while the second request is pending.
+- Files: `tests/e2e/workspace-context-contract.spec.ts`.
+- Evidence: Focused rebuilt-bundle workspace-context coverage passed **2/2**, including malformed projection fail-closed behavior and rejected-switch retry busy/focus semantics; no backend authorization, session revocation or workspace contract was changed.
