@@ -2386,3 +2386,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Forgot-password, reset-password and email-verification surfaces establish narrow-width shrink/wrap boundaries for recovery copy, missing-token errors and headings without changing token handling, anti-enumeration or delivery contracts. Rebuilt-bundle Playwright/axe coverage passed **1/1** at 320px on isolated port 3146 across all three routes, including missing-token recovery and 44px sign-in controls.
 - PASS: Targeted ESLint, web typecheck and `git diff --check` passed; the fresh web production build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning. The Impeccable detector passed with no findings.
 - NOT_RUN: Password-reset and verification provider delivery, session integration, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
+## 2026-11-10 — projection parser exact-optional hardening
+
+- PASS: Compatibility-proof, findings and migration-workbench parsers now omit absent optional fields rather than constructing `undefined` properties; focused contract coverage passed **6/6** and repository `pnpm typecheck` now passes across all workspace projects and `tsconfig.test.json`.
+- PASS: Repository `pnpm lint`, targeted parser ESLint, `git diff --check`, and the isolated web production build passed; the build generated **83 pages** and retained only the existing non-blocking Next.js ESLint-plugin warning.
+- NOT_RUN: Provider authorization, tenant isolation, hosted CI, integrated staging, manual assistive-technology review and production remain open.

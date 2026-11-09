@@ -70,9 +70,10 @@ export function parseFindingCollection(payload: unknown): FindingProjection[] | 
     findings.push({
       id, provider, change_id: changeId, title, description, severity, confidence, file_path: filePath, line_number: item.line_number,
       symbol, status, created_at: createdAt, repo_name: repoName, repo_full_name: repoFullName,
-      pr_number: prNumber,
-      pr_url: optionalText(item.pr_url), pr_state: item.pr_state === undefined ? undefined : optionalText(item.pr_state),
-      capability: capability === undefined ? undefined : capability === null ? null : capability as FindingProjection['capability'],
+      ...(prNumber === undefined ? {} : { pr_number: prNumber }),
+      pr_url: optionalText(item.pr_url),
+      ...(item.pr_state === undefined ? {} : { pr_state: optionalText(item.pr_state) }),
+      ...(capability === undefined ? {} : { capability: capability === null ? null : capability as NonNullable<FindingProjection['capability']> }),
     });
   }
   return findings;

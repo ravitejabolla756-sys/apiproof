@@ -71,10 +71,10 @@ export function parseMigrationWorkbenchCollection(payload: unknown): MigrationWo
       created_at: typeof item.created_at === 'string' ? item.created_at : '',
       finding_title: findingTitle, symbol, file_path: filePath, line_number: item.line_number,
       change_id: changeId, repo_name: repoName, repo_full_name: repoFullName,
-      pr_number: item.pr_number === undefined ? undefined : item.pr_number === null ? null : item.pr_number,
+      ...(item.pr_number === undefined ? {} : { pr_number: item.pr_number === null ? null : item.pr_number }),
       pr_url: optionalText(item.pr_url), branch_name: optionalText(item.branch_name),
-      lifecycle_state: lifecycleState as MigrationWorkbenchProjection['lifecycle_state'],
-      pr_state: item.pr_state === undefined ? undefined : optionalText(item.pr_state),
+      ...(lifecycleState === undefined ? {} : { lifecycle_state: lifecycleState as NonNullable<MigrationWorkbenchProjection['lifecycle_state']> }),
+      ...(item.pr_state === undefined ? {} : { pr_state: optionalText(item.pr_state) }),
       execution_verified: item.execution_verified === true,
     });
   }

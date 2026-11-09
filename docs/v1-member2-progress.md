@@ -4148,3 +4148,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Forgot-password, reset-password and email-verification surfaces now establish shrink/wrap boundaries for recovery copy, missing-token errors and headings while preserving existing token handling, anti-enumeration and delivery contracts.
 - Scope: Advances AUTH-08/UI-12/UI-13/WEB-15 authentication-entry QA only; password-reset and verification provider delivery, session integration, hosted CI and production remain external gates.
 - Evidence: Rebuilt-bundle auth recovery coverage passed **1/1** on isolated port 3146 across all three routes at 320px, including missing-token recovery, 44px sign-in controls, overflow containment and axe-clean main content, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — projection parser exact-optional hardening
+
+- Change: Compatibility-proof, findings and migration-workbench parsers now omit absent optional fields instead of constructing `undefined` properties, preserving their fail-closed projection semantics while satisfying the repository's strict `exactOptionalPropertyTypes` contract.
+- Scope: Advances UI-12/UI-13 projection safety and repository quality gates only; provider authorization, tenant isolation and backend ownership remain unchanged.
+- Evidence: Repository `pnpm lint` passed; repository `pnpm typecheck` passed across all workspace projects and `tsconfig.test.json`; focused compatibility-proof/findings/migration contract coverage passed **6/6**; the isolated web production build generated **83 pages** with only the existing non-blocking Next.js ESLint-plugin warning; `git diff --check` passed.
