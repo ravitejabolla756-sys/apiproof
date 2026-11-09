@@ -14,7 +14,7 @@ export function DashboardDataError({ message, onRetry, busy = false }: Dashboard
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    errorRef.current?.focus();
+    if (document.activeElement?.id !== 'main-content') errorRef.current?.focus();
   }, [message]);
 
   return (

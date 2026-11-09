@@ -4166,3 +4166,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Provider-rule review error recovery now preserves an explicit skip-link move to `#main-content` instead of stealing focus back to the alert during the initial error transition; ordinary error announcements still focus the assertive recovery surface.
 - Scope: Advances UI-12/UI-13 provider-review keyboard/error-state QA only; provider authorization, evidence provenance, review mutation and backend ownership remain unchanged.
 - Evidence: Rebuilt-bundle focused browser coverage passed **1/1** on isolated port 3151 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed.
+
+## 2026-11-10 checkpoint — shared data-error skip-link focus preservation
+
+- Change: The shared authenticated data-error surface now preserves an explicit skip-link move to `#main-content` instead of stealing focus during the error transition; ordinary data errors still focus their assertive retry surface.
+- Scope: Advances UI-12/UI-13 loading/error-state keyboard QA across the shared dashboard data pages; API authorization, tenant scope and backend contracts remain unchanged.
+- Evidence: Rebuilt-bundle focused browser coverage passed **1/1** on isolated port 3152 after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed.

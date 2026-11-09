@@ -1,0 +1,29 @@
+import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { signIn } from './helpers.js';
+
+test.describe('dashboard data-error recovery focus', () => {
+  test('preserves explicit skip-link focus on a shared data error', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/activity', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Activity is temporarily unavailable.' }),
+      });
+    });
+
+    await page.goto('/dashboard/activity', { waitUntil: 'domcontentloaded' });
+    const alert = page.getByRole('alert').filter({ hasText: 'Activity is temporarily unavailable.' });
+    await expect(alert).toBeVisible({ timeout: 30_000 });
+    expect((await new AxeBuilder({ page }).include('[role="alert"]').analyze()).violations).toEqual([]);
+
+    const skipLink = page.locator('.skip-link').first();
+    await skipLink.focus();
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#main-content')).toBeFocused();
+
+    await page.unroute('**/api/activity');
+  });
+});
