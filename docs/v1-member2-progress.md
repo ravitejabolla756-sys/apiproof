@@ -2972,6 +2972,12 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Focused Vitest passed 4/4; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; compatibility, provider-rule and workbench browser coverage passed 5/5; `git diff --check` passed. Impeccable reported only unchanged dashboard palette warnings.
 - Scope: advances local UI-12/UI-13/WEB-15 source-link safety only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 checkpoint — full local browser regression after link hardening
+
+- Change: Revalidated the complete local browser matrix after the shared external-link and pull-request link hardening; no source or contract rollback was required.
+- Evidence: `CI=true PLAYWRIGHT_PORT=3175 pnpm exec playwright test --workers=1 --reporter=line` passed 172/172 in 3.5 minutes against the rebuilt bundle. Generated `test-results` were moved outside the worktree.
+- Scope: strengthens local UI-12/UI-13/ORG-02/ORG-03/ORG-11/BILL-09/NOT-06/NOT-10/WEB-13/WEB-15 regression evidence only. Hosted CI, staging, PostgreSQL/RBAC, provider/legal approvals, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 checkpoint — dashboard pull-request link consistency
 
 - Change: Applied the existing credential-free HTTPS pull-request URL boundary to the dashboard overview, migrations workbench and finding detail surfaces; unsafe values now fall back to the existing local inspection/status state or an unavailable label.

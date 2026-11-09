@@ -488,6 +488,10 @@ Repository expand/collapse controls now have explicit metadata-panel relationshi
 
 The pull-request queue now suppresses malformed or credential-bearing external URLs and preserves safe absolute HTTPS links. Local contract, lint, typecheck, build and mobile accessibility checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest full local browser evidence — 2026-11-09
+
+The rebuilt-bundle Playwright suite passed 172/172 locally after link hardening. This does not replace hosted CI, integrated staging, PostgreSQL/RBAC, provider/legal approvals, manual assistive-technology review or production evidence. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

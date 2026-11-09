@@ -1550,6 +1550,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Focused contract coverage passed 2/2, targeted lint/typecheck passed, web build generated 83 pages and the mobile workbench accessibility browser test passed 1/1.
 - NOT_RUN: Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — full local browser regression after link hardening
+
+- PASS: The complete rebuilt-bundle Playwright suite passed 172/172 with one worker, covering route accessibility, authenticated organization/settings flows, billing boundaries, notification states, public pages, status communications and dashboard recovery journeys.
+- NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, provider/legal approvals, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — external source-link safety boundary
 
 - PASS: Dashboard provider-change, compatibility, provider-coverage and provider-rule source links now share the credential-free HTTPS boundary. Focused contract coverage passed 4/4; lint, typecheck, build and affected browser coverage passed locally.
