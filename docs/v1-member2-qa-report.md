@@ -2235,3 +2235,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invitation cancellation requires the explicit server success marker before updating local state; invitation contract coverage passed **4/4** and the authenticated create/cancel browser flow passed **1/1**.
 - PASS: Targeted workspace-settings/invitation ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Backend token invalidation/audit transaction, hosted CI, staging and production remain open.
+
+## 2026-11-09 — public status truthfulness verification
+
+- PASS: The public status surface remains explicit about the missing monitor and provides a touch-sized support path without operational claims; status contract coverage passed **1/1** and public status/CTA accessibility coverage passed **7/7**.
+- NOT_RUN: Approved monitoring source/freshness policy, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain open.

@@ -3797,3 +3797,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/workspace-invitation-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/workspace-invitation-contract.test.ts`.
 - Evidence: Invitation contract coverage passed **4/4**; the authenticated create/cancel browser flow passed **1/1**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-03 invalidation UI safety only; the authoritative revocation transaction, token invalidation and audit event remain backend-owned.
+
+## 2026-11-09 checkpoint — public status truthfulness verification
+
+- Evidence: The no-monitor status contract remains explicit and the public status page exposes no invented uptime or incident claims; status contract coverage passed **1/1** and public status/CTA accessibility coverage passed **7/7**.
+- Scope: Confirms WEB-13/UI-12 local behavior only; approved monitoring source, freshness policy, incident rehearsal and hosted/live verification remain external gates.
