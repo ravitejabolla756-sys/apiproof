@@ -128,6 +128,7 @@ test.describe('public beta surfaces', () => {
     await page.getByLabel('Work Email').fill('qa@example.test');
     await page.getByLabel('Inquiry Type').selectOption('support');
     await page.getByLabel('How can we help?').fill('This is a non-destructive local browser check.'); for (const field of [page.getByLabel('Full Name'), page.getByLabel('Work Email'), page.getByLabel('Inquiry Type'), page.getByLabel('How can we help?')]) await expect(field).toHaveCSS('font-size', '16px');
+    await expect(page.getByLabel('Full Name')).toHaveAttribute('name', 'name'); await expect(page.getByLabel('Work Email')).toHaveAttribute('name', 'email'); await expect(page.getByLabel('Inquiry Type')).toHaveAttribute('name', 'inquiryType'); await expect(page.getByLabel('How can we help?')).toHaveAttribute('name', 'message');
     await expect(page.getByLabel('Full Name')).toHaveAttribute('autocomplete', 'name'); await expect(page.getByLabel('Work Email')).toHaveAttribute('autocomplete', 'email');
     const submit = page.getByRole('button', { name: 'Review inquiry state' }); for (const field of [page.getByLabel('Full Name'), page.getByLabel('Work Email'), page.getByLabel('Inquiry Type'), page.getByLabel('How can we help?'), submit]) expect((await field.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     await submit.click();
@@ -496,5 +497,4 @@ test.describe('authenticated product surfaces', () => {
     const notificationRetry = page.getByRole('button', { name: 'Try again' }); await notificationRetry.focus(); await expect(notificationRetry).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByRole('table')).toBeVisible({ timeout: 30_000 }); const preferencesRegion = page.getByRole('region', { name: 'Notification preferences table' }); await preferencesRegion.focus();
     await expect(preferencesRegion).toBeFocused(); expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'notification preferences recovered state').toEqual([]);
-    expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3);
-    await page.unroute('**/api/account/notifications'); }); });
+    expect(requestCount).toBeGreaterThanOrEqual(2); expect(requestCount).toBeLessThanOrEqual(3); await page.unroute('**/api/account/notifications'); }); });

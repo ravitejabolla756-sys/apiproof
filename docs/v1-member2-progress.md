@@ -3344,3 +3344,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The future provider-backed invoice table now exposes a descriptive caption to assistive technology while preserving the existing unavailable beta boundary, safe-link filtering and responsive overflow region.
 - Files: `apps/web/src/components/dashboard/invoice-history-panel.tsx`.
 - Evidence: Targeted ESLint, repository typecheck and `git diff --check` passed; the rebuilt web production build generated **83 pages**; the billing boundary browser check passed **1/1**. Provider authorization/source, retention, sandbox integration and hosted verification remain open.
+
+## 2026-11-09 checkpoint — WEB-15 contact form native semantics
+
+- Change: Added stable native `name` attributes to the non-sending public contact form’s name, email, inquiry type and message controls, preserving the explicit beta boundary while improving browser/form semantics for a future approved intake destination.
+- Files: `apps/web/src/app/contact/page.tsx`, `tests/e2e/public-site.spec.ts`.
+- Evidence: Focused rebuilt-bundle public-site contact coverage passed; targeted ESLint, repository typecheck, detector and `git diff --check` remain required before commit. Contact delivery, owner routing, spam controls and production remain unapproved.

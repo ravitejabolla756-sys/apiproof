@@ -677,3 +677,7 @@ The public security invariant matrix now uses a readable minimum width within it
 ## Latest BILL-09 invoice semantics evidence — 2026-11-09
 
 The future invoice projection table now has an explicit descriptive caption for assistive technology. Billing-boundary browser coverage passed **1/1** and the rebuilt web build generated **83 pages**. Provider authorization/source, retention, sandbox integration, hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest WEB-15 contact-form evidence — 2026-11-09
+
+The public non-sending contact form now has native names for its name, email, inquiry type and message controls, with focused browser coverage preserving truthful no-delivery copy. Contact destination, spam controls, owner routing, hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

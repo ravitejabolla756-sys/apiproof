@@ -1863,6 +1863,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The provider-neutral invoice table projection includes a descriptive screen-reader caption without changing the unavailable beta state; billing boundary coverage passed 1/1 against the rebuilt bundle.
 - NOT_RUN: Provider-backed invoice source/authorization, retention, sandbox integration, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — contact form native semantics
+
+- PASS: The non-sending contact form now exposes stable native names for all four labeled controls; the focused public-site contact journey verifies those names and preserves the no-message-sent state.
+- NOT_RUN: Approved contact destination, delivery/spam controls, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

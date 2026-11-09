@@ -60,6 +60,7 @@ export default function ContactPage() {
                     <label htmlFor="contact-name" className="font-medium text-slate-700">Full Name</label>
                     <input
                       id="contact-name"
+                      name="name"
                       type="text"
                       required
                       autoComplete="name"
@@ -71,6 +72,7 @@ export default function ContactPage() {
                     <label htmlFor="contact-email" className="font-medium text-slate-700">Work Email</label>
                     <input
                       id="contact-email"
+                      name="email"
                       type="email"
                       required
                       autoComplete="email"
@@ -84,6 +86,7 @@ export default function ContactPage() {
                   <label htmlFor="contact-type" className="font-medium text-slate-700">Inquiry Type</label>
                   <select
                     id="contact-type"
+                    name="inquiryType"
                     className="min-h-11 w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-base text-[#000E29] focus:outline-none focus:ring-2 focus:ring-black/10"
                     defaultValue=""
                     required
@@ -101,6 +104,7 @@ export default function ContactPage() {
                   <label htmlFor="contact-message" className="font-medium text-slate-700">How can we help?</label>
                   <textarea
                     id="contact-message"
+                    name="message"
                     rows={4}
                     required
                     placeholder="Tell us about your tech stack, repository setup, or technical question..."
