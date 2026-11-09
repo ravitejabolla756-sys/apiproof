@@ -1967,6 +1967,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Contract plus organization-management coverage passed **23/23**; the rebuilt-bundle organization-audit and public-site suites passed **40/40**. The invited member retained dashboard access and no owner Remove control was rendered.
 - NOT_RUN: Member 1 ORG-10 transaction integration, workspace-scoped session invalidation, idempotency, final-owner concurrency, audit event, PostgreSQL/RBAC, staging and production remain open.
 
+## 2026-11-09 — post-ORG-10-gate repository regression
+
+- PASS: Post-gate seeded Vitest passed **1,421 tests** with **4 skipped** across **173 passing files** and **1 skipped file**; lint and typecheck passed. The current full CI-mode browser matrix passed **189/189** in 3.3 minutes.
+- NOT_RUN: Hosted CI, staging, PostgreSQL/RBAC, provider delivery, legal approval, full manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

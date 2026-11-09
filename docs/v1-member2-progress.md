@@ -3472,3 +3472,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `pnpm exec vitest run tests/workspace-member-revocation-contract.test.ts tests/organization-management.test.ts` passed **23/23**. The rebuilt-bundle `tests/e2e/organization-audit.spec.ts tests/e2e/public-site.spec.ts` suites passed **40/40**; the invited member remained able to load `/dashboard` while the owner UI exposed no Remove control.
 - Scope: Confirms the frontend safety gate and preserves local role/invitation behavior. It does not prove the Member 1 ORG-10 transaction, workspace-scoped session invalidation, idempotency, final-owner concurrency, audit event or PostgreSQL behavior.
+
+## 2026-11-09 checkpoint — post-ORG-10-gate repository regression
+
+- Evidence: After the unsafe-removal gate, repository lint and typecheck passed; seeded Vitest passed **1,421 tests** with **4 skipped** across **173 passing test files** and **1 skipped file** (174 total) in 109.47 seconds. The full CI-mode Playwright matrix passed **189/189** in 3.3 minutes against the current production bundle.
+- Scope: Confirms no regression across public/authenticated accessibility, organization, billing, notification, contact/status and recovery surfaces. It remains isolated local evidence and does not prove hosted CI, staging, PostgreSQL/RBAC, providers, legal approval, manual assistive technology or production.
