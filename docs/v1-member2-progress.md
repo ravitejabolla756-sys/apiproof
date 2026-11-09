@@ -3162,3 +3162,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Billing settings now use the existing fail-closed date-display contract for the provider/API-supplied current-period end timestamp; malformed values display `Unavailable` without changing beta billing behavior.
 - Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-date-display.spec.ts`.
 - Scope: advances local BILL-07/UI-12 resilience only. Provider lifecycle, billing authorization, retention/legal approval and production billing remain open.
+
+## 2026-11-09 checkpoint — UI-13 dashboard overview date regression
+
+- Change: Extended rebuilt-bundle browser coverage across provider changes, findings trend labels, recent fixes, repository scan dates and recent activity times in the dashboard overview. Impossible timestamps are asserted to render `Unavailable` without `Invalid Date`.
+- Files: `tests/e2e/dashboard-date-display.spec.ts`.
+- Evidence: focused dashboard-date Playwright coverage passed 4/4 with axe-clean content; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local UI-12/UI-13 dashboard resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.

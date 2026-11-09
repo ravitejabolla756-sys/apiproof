@@ -1703,6 +1703,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Billing settings render `Unavailable` for an impossible provider period-end timestamp, with no `Invalid Date` and axe-clean settings content. The focused rebuilt-bundle dashboard-date Playwright suite passed 3/3.
 - NOT_RUN: Provider-backed billing lifecycle, authorization, retention/legal approval, hosted CI, PostgreSQL/RBAC, staging and production remain open.
 
+## 2026-11-09 — dashboard overview date regression
+
+- PASS: Rebuilt-bundle browser coverage passed 4/4 for malformed provider, trend, fix, repository and activity timestamps on the dashboard overview; all rendered `Unavailable`, no `Invalid Date` appeared, and axe reported no violations.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

@@ -91,3 +91,32 @@ test('fails closed for malformed billing period timestamps', async ({ page }) =>
   await page.unroute('**/api/billing/subscription');
   await page.unroute('**/api/slack/connection');
 });
+
+test('fails closed for malformed dashboard overview timestamps', async ({ page }) => {
+  await signIn(page);
+  await page.route('**/api/overview', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        workspace: { id: 'workspace-date-boundary', name: 'Fixture workspace', slug: 'fixture', role: 'owner', repositoryCount: 1, scanCount: 1, openFindingCount: 0 },
+        stats: { connectedRepositories: 1, scansCompleted: 1, openFindings: 0, criticalFindings: 0, draftPrsCount: 0, providerRulesPending: 0, providerRulesApproved: 0, rescansPending: 0, rescansProcessing: 0, rescansFailed: 0 },
+        repositories: [{ id: 'repo-overview-date-boundary', name: 'owl', owner: 'fixture', full_name: 'fixture/owl', default_branch: 'main', status: 'healthy', last_scan_at: '2026-02-31T12:00:00.000Z', findings_count: 0 }],
+        criticalFinding: null,
+        recentActivities: [{ id: 'activity-date-boundary', type: 'scan', title: 'Fixture activity', description: 'Fixture activity', created_at: '2026-04-31T12:00:00.000Z', repo_name: 'owl' }],
+        recentProviderChanges: [{ id: 'change-date-boundary', provider_id: 'fixture', title: 'Fixture provider change', description: 'Fixture change', source_url: 'https://example.test/change', published_at: '2026-02-31T12:00:00.000Z', first_seen_at: '2026-02-31T12:00:00.000Z' }],
+        findingsThisWeek: [{ day: '2026-02-31', total: 1, critical: 0, high: 1, warning: 0 }],
+        recentFixes: [{ id: 'fix-date-boundary', status: 'pending', created_at: '2026-04-31T12:00:00.000Z', finding_title: 'Fixture fix', repo_name: 'owl', pr_url: null, pr_state: null }],
+      }),
+    });
+  });
+  await page.route('**/api/compatibility-map', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ repositories: [] }) });
+  });
+  await page.goto('/dashboard');
+  await expect(page.getByText(/Unavailable/)).toHaveCount(5);
+  await expect(page.getByText(/Invalid Date/)).toHaveCount(0);
+  expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+  await page.unroute('**/api/overview');
+  await page.unroute('**/api/compatibility-map');
+});
