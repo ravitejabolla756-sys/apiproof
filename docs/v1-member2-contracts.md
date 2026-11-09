@@ -101,3 +101,9 @@ Review outcome must be recorded in this matrix and the relevant task documents b
 - Member 1 decisions still required before implementation: reconcile migration IDs `024–027` against the target database's applied `(id,name)` history; expose the ORG-10 workspace-scoped revocation endpoint/transaction with idempotency, final-owner protection, audit evidence and preservation of unrelated sessions/memberships; publish the reviewed PR-08 resolution event boundary; and approve the AUTH-05/deletion, billing invoice, notification delivery and digest contracts.
 - Current frontend safety posture: invoice history remains `PROVIDER_NOT_CONFIGURED`, digest controls remain `DIGEST_CONTRACT_PENDING`, account deletion remains `DELETION_CONTRACT_PENDING`, and member removal remains `ORG_10_CONTRACT_PENDING`. No provider response, scheduler, destructive endpoint or migration renumbering was added.
 - Backup posture: `codex/v1-frontend-product` is fast-forward safe and locally audited for backup, but remains unpushed pending explicit authorization. The dirty GSAP dependency changes in `apps/web/package.json` and `pnpm-lock.yaml` are preserved and excluded from committed work.
+
+### ORG-10 frontend compatibility slice — 2026-11-10
+
+- Added a fail-closed parser for Member 1's reviewed completed revocation result: request/event IDs, workspace and subject identity, idempotency key, terminal status, workspace-scoped invalidation, preserved personal sessions/other-workspace memberships, and queued-job membership recheck are all required.
+- The parser is contract-only and is not connected to the removal action. The UI remains `ORG_10_CONTRACT_PENDING` until a reviewed route and transaction are integrated; no session, membership, audit or migration behavior was changed.
+- Evidence: `tests/workspace-member-revocation-contract.test.ts` passes **3/3**, targeted ESLint, repository typecheck and `git diff --check` pass.

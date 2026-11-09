@@ -2498,3 +2498,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Fast-forward ancestry is valid; the outgoing range contains 760 commits and 330 files with no sensitive-path matches, private-key/credential markers, generated artifacts or dependency-manifest paths. Range `git diff --check` passed.
 - NOT_RUN: GitHub push remains intentionally unperformed pending explicit authorization.
+
+## 2026-11-10 — ORG-10 result contract parser
+
+- PASS: The non-activating frontend parser accepts the reviewed completed ORG-10 result and fails closed when idempotency or preserved-session scope is absent; focused coverage passed **3/3**.
+- PASS: Targeted ESLint, repository typecheck and `git diff --check` passed.
+- NOT_RUN: Shared route/transaction integration, PostgreSQL/RBAC, concurrent final-owner verification, migration reconciliation, hosted CI, staging and production remain open.

@@ -4256,3 +4256,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `origin/codex/v1-frontend-product` is an ancestor of `HEAD`; the branch is **760 commits ahead**. The outgoing range contains **330 files**, no sensitive-path matches, no private-key/credential markers, no generated artifact or package-lock paths, and passes `git diff --check`.
 - Decision: The branch is locally ready for an authorized fast-forward GitHub backup. No push was performed; the pre-existing dirty GSAP dependency edits in `apps/web/package.json` and `pnpm-lock.yaml` remain outside the outgoing commit range.
+
+## 2026-11-10 checkpoint — ORG-10 result contract parser
+
+- Change: Added a fail-closed frontend parser for Member 1's reviewed ORG-10 completed result. It requires the terminal status, request/event identity, idempotency key, workspace-scoped invalidation and explicit preservation of personal sessions and other-workspace memberships. The removal UI remains gated and no backend behavior was activated.
+- Evidence: Focused ORG-10 contract coverage passed **3/3**; targeted ESLint, repository typecheck and `git diff --check` passed.
+- Scope: Advances ORG-04/ORG-10 frontend compatibility only; route integration, PostgreSQL transaction proof, concurrent final-owner protection, migration reconciliation and staging remain external.
