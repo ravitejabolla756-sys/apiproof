@@ -3538,7 +3538,7 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 ## 2026-11-09 checkpoint — BILL-07 billing projection validation
 
-- Change: Billing summary parsing now returns a normalized projection, rejects empty text, invalid period dates and unsafe integer metrics, and preserves finite usage-bar behavior for zero limits.
+- Change: Billing summary parsing now returns a normalized projection, rejects empty text and unsafe integer metrics, and preserves malformed period strings for the existing safe date formatter to render as `Unavailable`; finite usage-bar behavior for zero limits is preserved.
 - Files: `apps/web/src/lib/billing-summary-contract.ts`, `tests/billing-summary-contract.test.ts`.
 - Scope: Advances local BILL-07/UI-12 data-boundary safety only. Checkout, portal, provider lifecycle, billing-owner authorization, payment credentials and production billing remain blocked or unavailable.
 
@@ -3606,3 +3606,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/workspace-context-contract.ts`, `tests/workspace-context-contract.test.ts`.
 - Evidence: Focused workspace-context contract coverage passed **12/12**; the workspace-context browser suite passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-02/UI-12 client projection safety only. Server authorization, tenant isolation, PostgreSQL/RLS and Member 1 integration remain external/shared gates.
+
+## 2026-11-09 checkpoint — pull-request projection adapter
+
+- Change: Added a typed pull-request collection adapter that normalizes server-owned text, rejects invalid numbers and duplicate IDs, and makes malformed collections fail closed before rendering.
+- Files: `apps/web/src/lib/pull-request-contract.ts`, `apps/web/src/app/dashboard/pull-requests/page.tsx`, `tests/pull-request-contract.test.ts`.
+- Evidence: Focused pull-request contract coverage now includes collection parsing; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 pull-request response safety only. Workspace authorization, provider URL allowlisting and backend tenant isolation remain authoritative/shared work.

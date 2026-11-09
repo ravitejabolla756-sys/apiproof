@@ -17,13 +17,13 @@ describe('billing summary contract boundary', () => {
     expect(parseBillingSummary({ ...validSummary, plan: { ...validSummary.plan, limits: { ...validSummary.plan.limits, maxRepositories: -1 } } })).toBeNull();
   });
 
-  it('normalizes billing text and rejects invalid period dates', () => {
+  it('normalizes billing text and preserves malformed periods for safe display', () => {
     expect(parseBillingSummary({
       ...validSummary,
       subscription: { ...validSummary.subscription, planId: ' free ', status: ' beta ' },
       plan: { ...validSummary.plan, id: ' free ', name: ' Free ', description: ' Fixture ' },
     })).toEqual(validSummary);
-    expect(parseBillingSummary({ ...validSummary, subscription: { ...validSummary.subscription, currentPeriodEnd: '2026-02-31T00:00:00.000Z' } })).toBeNull();
+    expect(parseBillingSummary({ ...validSummary, subscription: { ...validSummary.subscription, currentPeriodEnd: '2026-02-31T00:00:00.000Z' } })).toMatchObject({ subscription: { currentPeriodEnd: '2026-02-31T00:00:00.000Z' } });
     expect(parseBillingSummary({ ...validSummary, plan: { ...validSummary.plan, name: '   ' } })).toBeNull();
     expect(parseBillingSummary({ ...validSummary, metrics: { ...validSummary.metrics, scans: { current: Number.MAX_SAFE_INTEGER + 1, limit: 10, allowed: true } } })).toBeNull();
   });

@@ -2019,7 +2019,7 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 ## 2026-11-09 — BILL-07 billing projection validation
 
-- PASS: Billing summary contract coverage now verifies normalized text, invalid-date rejection and safe integer bounds; focused billing tests pass **4/4**.
+- PASS: Billing summary contract coverage now verifies normalized text, safe rendering of malformed period strings and safe integer bounds; focused billing tests pass **4/4**.
 - NOT_RUN: Provider lifecycle, checkout/portal authorization, payment credentials, PostgreSQL/RBAC, hosted CI, staging and production remain open.
 
 ## 2026-11-09 — ORG-11 audit projection normalization
@@ -2087,3 +2087,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Workspace context responses normalize IDs/names before rendering and reject blank or duplicate normalized IDs; focused contract coverage passed **12/12** and the workspace-context browser suite passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Server authorization, tenant isolation, PostgreSQL/RLS, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — pull-request projection adapter
+
+- PASS: Pull-request collections are normalized and malformed/duplicate projections fail closed before render; focused pull-request contract coverage includes collection parsing, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Workspace authorization, provider URL allowlisting, backend tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.

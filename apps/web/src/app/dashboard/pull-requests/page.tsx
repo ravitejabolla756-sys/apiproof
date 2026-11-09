@@ -5,26 +5,11 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
-import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
+import { parsePullRequestCollection, toSafePullRequestUrl, type PullRequestProjection } from "@/lib/pull-request-contract";
 import { formatDisplayDateTime } from "@/lib/date-display-contract";
 import { GitPullRequest, ExternalLink, ShieldCheck, Loader2, RefreshCw } from "lucide-react";
 
-interface PullRequestItem {
-  id: string;
-  number: number;
-  title: string;
-  branch_name: string;
-  base_branch: string;
-  url: string;
-  state: string;
-  created_at: string;
-  patch_digest: string;
-  repo_name: string;
-  repo_full_name: string;
-  symbol: string;
-  file_path: string;
-  change_id: string;
-}
+type PullRequestItem = PullRequestProjection;
 
 export default function PullRequestsPage() {
   const [pullRequests, setPullRequests] = useState<PullRequestItem[]>([]);
@@ -35,9 +20,11 @@ export default function PullRequestsPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/pull-requests");
-      const json = await res.json() as { pullRequests?: PullRequestItem[]; error?: string };
-      if (!res.ok) throw new Error(json.error || "Unable to load pull requests.");
-      setPullRequests(json.pullRequests || []);
+      const json = await res.json() as unknown;
+      const parsed = parsePullRequestCollection(json);
+      const error = typeof json === 'object' && json !== null && 'error' in json && typeof json.error === 'string' ? json.error : null;
+      if (!res.ok || !parsed) throw new Error(error || "Unable to load pull requests.");
+      setPullRequests(parsed);
       setError(null);
     } catch (err) {
       console.error("Failed to load pull requests:", err);

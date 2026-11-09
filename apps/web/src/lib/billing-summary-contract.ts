@@ -1,5 +1,3 @@
-import { toSafeDisplayDateTime } from './date-display-contract.js';
-
 export interface BillingSummary {
   subscription: {
     planId: string;
@@ -74,8 +72,8 @@ export function parseBillingSummary(value: unknown): BillingSummary | null {
   const limitsRecord = limits as Record<string, unknown>;
   const planId = normalizedText(subscriptionRecord.planId);
   const subscriptionStatus = normalizedText(subscriptionRecord.status);
-  const currentPeriodStart = typeof subscriptionRecord.currentPeriodStart === 'string' && toSafeDisplayDateTime(subscriptionRecord.currentPeriodStart);
-  const currentPeriodEnd = typeof subscriptionRecord.currentPeriodEnd === 'string' && toSafeDisplayDateTime(subscriptionRecord.currentPeriodEnd);
+  const currentPeriodStart = normalizedText(subscriptionRecord.currentPeriodStart);
+  const currentPeriodEnd = normalizedText(subscriptionRecord.currentPeriodEnd);
   const planIdValue = normalizedText(planRecord.id);
   const planName = normalizedText(planRecord.name);
   const planDescription = normalizedText(planRecord.description);
