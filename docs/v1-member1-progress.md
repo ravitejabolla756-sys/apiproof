@@ -862,3 +862,7 @@ Phase 0 read-only checks:
 ### 2026-11-09 SEC-13 retry-boundary regression coverage
 
 - Added `tests/scan-worker-retry-boundaries.test.ts` covering retryable provider failures before the limit, terminal behavior on the third attempt, non-retryable first-attempt failure, and bounded control-character-free failure messages. The isolated suite passes 4/4; no retry policy was changed.
+
+### 2026-11-09 BILL-03/BILL-04 webhook transaction rollback
+
+- Added a SQLite trigger-backed regression proving a projection failure rolls back the newly claimed billing receipt and preserves the prior subscription entitlement state. `phase7-billing-foundation` plus `billing-provider-boundary` pass 30/30 with an isolated process-only seed; provider-specific mapping, PostgreSQL concurrency and sandbox delivery remain external gates.

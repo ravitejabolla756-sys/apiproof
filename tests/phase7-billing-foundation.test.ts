@@ -463,6 +463,34 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(Number(recordedEvents?.count)).toBe(1);
   });
 
+  it('rolls back the claimed receipt when subscription projection fails', async () => {
+    const user = await createUserAsync('billing-rollback@apiproof.test', 'Pass123!#$', 'Billing Rollback');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_rollback', status = 'active'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+    await db.execute(`
+      CREATE TRIGGER billing_projection_abort
+      BEFORE UPDATE ON workspace_subscriptions
+      BEGIN SELECT RAISE(ABORT, 'projection blocked'); END
+    `);
+
+    const rawPayload = JSON.stringify({
+      id: 'evt_rollback', type: 'customer.subscription.updated', customer_id: 'cus_rollback', status: 'past_due',
+    });
+    const signature = crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(rawPayload).digest('hex');
+    const event = await new MockBillingProvider().verifyAndParseWebhook(rawPayload, signature);
+
+    await expect(processBillingWebhookEvent(event)).rejects.toThrow();
+    await expect(db.queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM billing_webhook_events WHERE id = ?', ['evt_rollback'],
+    )).resolves.toEqual({ count: 0 });
+    await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'active' });
+  });
+
   it('rejects a reused event ID with a different signed payload without changing subscription state', async () => {
     const user = await createUserAsync('billing-reused-event@apiproof.test', 'Pass123!#$', 'Reused Event');
     const workspace = await getDefaultWorkspaceForUser(user.id);
