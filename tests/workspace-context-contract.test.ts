@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseWorkspaceContext } from '../apps/web/src/lib/workspace-context-contract.js';
+import { parseWorkspaceContext, parseWorkspaceSwitchResponse } from '../apps/web/src/lib/workspace-context-contract.js';
 
 const valid = {
   activeWorkspaceId: 'ws_primary',
@@ -7,6 +7,12 @@ const valid = {
 };
 
 describe('workspace context response contract', () => {
+  it('requires the switched workspace projection to match the requested ID', () => {
+    expect(parseWorkspaceSwitchResponse({ workspace: { id: ' ws_secondary ', name: 'Secondary', role: 'member' } }, 'ws_secondary')).toEqual({ workspaceId: 'ws_secondary' });
+    expect(parseWorkspaceSwitchResponse({ workspace: { id: 'ws_other' } }, 'ws_secondary')).toBeNull();
+    expect(parseWorkspaceSwitchResponse({ workspaceId: 'ws_secondary' }, 'ws_secondary')).toBeNull();
+  });
+
   it('accepts an active workspace contained in the server-owned list', () => {
     expect(parseWorkspaceContext(valid)).toEqual(valid);
   });

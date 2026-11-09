@@ -46,7 +46,7 @@ test('recovers from a rejected workspace switch without losing the retry context
     }
     await retryResponse;
     activeWorkspaceId = 'ws_secondary';
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ workspaceId: activeWorkspaceId }) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ workspace: { id: activeWorkspaceId, name: 'Secondary Workspace', role: 'owner' } }) });
   });
 
   await signIn(page);

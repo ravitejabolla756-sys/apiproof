@@ -2299,3 +2299,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Slack authorization URLs are restricted to safe same-origin or credential-free HTTPS navigation, and disconnect requires the explicit disconnected projection. Contract coverage passed **4/4**.
 - PASS: Rebuilt-bundle Slack status/connect/disconnect browser coverage passed **3/3** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Slack provider authorization/delivery verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — workspace-switch response guard
+
+- PASS: Workspace switching now validates the returned workspace projection and fails closed when it is missing or does not match the requested workspace. Contract coverage passed **13/13**.
+- PASS: Rebuilt-bundle workspace context and switch-recovery browser coverage passed **4/4**; a fresh web production build generated **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Backend tenant authorization, workspace revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.

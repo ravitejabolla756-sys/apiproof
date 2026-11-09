@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import { signOutSession } from "@/lib/session-logout";
-import { parseWorkspaceContext } from "@/lib/workspace-context-contract";
+import { parseWorkspaceContext, parseWorkspaceSwitchResponse } from "@/lib/workspace-context-contract";
 import {
   LayoutDashboard,
   GitBranch,
@@ -128,6 +128,8 @@ export function Sidebar() {
         body: JSON.stringify({ workspaceId }),
       });
       if (!response.ok) throw new Error('Workspace could not be changed.');
+      const payload = await response.json() as unknown;
+      if (!parseWorkspaceSwitchResponse(payload, workspaceId)) throw new Error('Workspace could not be changed.');
       window.location.reload();
     } catch {
       setWorkspaceContextError('Workspace could not be changed. Please try again.');

@@ -5,6 +5,13 @@ export type WorkspaceContextProjection = {
   workspaces: WorkspaceContextOption[];
 };
 
+/** Validate the workspace returned after a context switch before reloading. */
+export function parseWorkspaceSwitchResponse(payload: unknown, requestedWorkspaceId: string): { workspaceId: string } | null {
+  if (!isRecord(payload) || !isRecord(payload.workspace) || typeof payload.workspace.id !== 'string') return null;
+  const workspaceId = payload.workspace.id.trim();
+  return workspaceId && workspaceId === requestedWorkspaceId ? { workspaceId } : null;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -3869,3 +3869,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/slack-connection-contract.ts`, `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/slack-connection-contract.test.ts`.
 - Evidence: Slack contract coverage passed **4/4**; rebuilt-bundle Slack status/connect/disconnect browser coverage passed **3/3** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances NOT-03/UI-12 local redirect and action safety only; Slack OAuth authorization, recipient policy, provider delivery and Member 1 event contracts remain unchanged.
+
+## 2026-11-09 checkpoint — workspace-switch response guard
+
+- Change: Workspace context switching now validates the authoritative `{ workspace: { id } }` response and requires it to match the requested workspace before reloading; the browser fixture was aligned with that contract.
+- Files: `apps/web/src/lib/workspace-context-contract.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/workspace-context-contract.test.ts`, `tests/e2e/workspace-context-contract.spec.ts`.
+- Evidence: Workspace contract coverage passed **13/13**; rebuilt-bundle workspace context and switch-recovery coverage passed **4/4**; a fresh web production build generated **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-02/UI-12/UI-13 local response safety only; server authorization, tenant isolation, ORG-10 revocation and PostgreSQL/RBAC remain backend-owned.
