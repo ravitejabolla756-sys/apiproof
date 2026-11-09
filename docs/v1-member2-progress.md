@@ -3407,3 +3407,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Content review: Outgoing paths contain no environment files, private keys, database files, build output, coverage, Playwright artifacts or dependency directories. An added-line credential-pattern scan found no credentials; the only matches were deliberate `do-not-return`/redaction fixture values in the organization audit test. No push or other remote write was performed.
 - Evidence: Against the rebuilt local production bundle, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load was **11–37 ms**, response **2–14 ms**, and encoded HTML **6.1–17.0 KiB** over loopback.
 - Scope: This strengthens local WEB-14/WEB-15 evidence and backup readiness only. It is not Lighthouse/Core Web Vitals, hosted CI, public-network, staging, production, or external provider evidence.
+
+## 2026-11-09 checkpoint — BILL-09 focused verification refresh
+
+- Evidence: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/member2-billing-boundaries.test.ts` passed **9/9** across 2 files; focused ESLint passed with `--max-warnings 0`, and `git diff --check` passed.
+- Scope: The existing provider-neutral invoice adapter and unavailable-state UI remain the safe local boundary. No provider response, invoice source, entitlement, checkout, retention policy or billing credential was added; BILL-09 remains PARTIAL pending the shared billing contract and approval gates.

@@ -1890,6 +1890,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes against the rebuilt local production bundle. Median load was 11–37 ms, response 2–14 ms and encoded HTML 6.1–17.0 KiB over loopback.
 - NOT_RUN: Hosted CI, Lighthouse/Core Web Vitals, public-network performance, staging, manual assistive-technology review, PostgreSQL/RBAC, provider delivery and production verification remain open.
 
+## 2026-11-09 — BILL-09 focused verification refresh
+
+- PASS: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/member2-billing-boundaries.test.ts` passed **9/9** across 2 files; focused ESLint passed with `--max-warnings 0`, and `git diff --check` passed.
+- NOT_RUN: Provider invoice source/schema, billing-owner authorization, tenant isolation, retention/legal approval, sandbox provider verification, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — workspace projection text validation
 
 - PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.
