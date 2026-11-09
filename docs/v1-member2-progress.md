@@ -3110,3 +3110,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/billing-boundaries.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3192 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local BILL-09/UI-12 boundary verification only. Provider invoice source, billing authorization, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — current-tree seeded regression refresh
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --no-file-parallelism --reporter=dot` passed **1,374 tests across 165 passing files**, with 1 skipped file and 4 skipped tests, in 113.59 seconds.
+- Scope: refreshes local regression evidence after the latest UI-12/UI-13, NOT-02, ORG-11, WEB-15 and BILL-09 test additions. Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain open.

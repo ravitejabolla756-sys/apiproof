@@ -544,6 +544,10 @@ Mobile login coverage verifies keyboard focus on both authentication mode tabs a
 
 The beta invoice-history unavailable state verifies no document overflow at 390px alongside truthful unavailable copy, a 44px status surface and axe-clean content. Provider invoice source/authorization, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest seeded regression evidence — 2026-11-09
+
+The current tree passes 1,374 seeded Vitest tests across 165 files, with 1 skipped file and 4 skipped tests. Hosted CI, PostgreSQL/RBAC, external providers, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
