@@ -1,6 +1,6 @@
 # MY OWL V1 — Member 2 Release Gates
 
-Last updated: 2026-11-08. This is a checklist, not launch approval.
+Last updated: 2026-11-09. This is a checklist, not launch approval.
 
 | Gate | Status | Required evidence or unblock |
 |---|---|---|
@@ -42,7 +42,7 @@ Latest UI-12 workspace evidence: rebuilt current-worktree bundle generated 83 pa
 
 Latest UI-13 evidence: the complete current-worktree production-bundle browser matrix passed 164/164 in 4.5 minutes on isolated port 3101, including enterprise intake, public 404 axe/contrast and invoice-unavailable boundary assertions, with artifacts retained at `/tmp/myowl-v1-ui13-enterprise-matrix-KLl2Ar`. Hosted CI, integrated staging, PostgreSQL/RBAC, full manual screen-reader review and production remain open.
 
-Latest BILL-09 evidence: the billing settings invoice-history boundary is axe-clean, its unavailable status region is at least 44px high, and no invoice link or button is exposed; the focused billing-boundary journey passes 1/1. Provider-backed invoice schema/API, sandbox data and legal retention approval remain open.
+Latest BILL-09 evidence: the billing settings invoice-history panel now uses a typed provider-neutral adapter with loading, retryable error, unavailable, empty and ready states; its default `PROVIDER_NOT_CONFIGURED` result remains axe-clean, at least 44px high and exposes no invoice link or button. Focused contract tests pass 5/5, the billing-boundary journey passes 1/1, typecheck/build pass and the build generates 83 pages. Provider-backed invoice schema/API, billing-owner authorization, hosted URL policy, sandbox data and legal retention approval remain open.
 
 Latest contract-handoff evidence: `docs/v1-member2-contracts.md` now contains a review matrix for BILL-09, NOT-10, BILL-11, WEB-13, notification delivery, AUTH-09 and ORG-04. It records the current local boundary and the exact provider, legal, PostgreSQL or Member 1 approval required before activation; no approval is implied.
 

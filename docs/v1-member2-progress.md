@@ -1,6 +1,6 @@
 # MY OWL V1 — Member 2 Progress
 
-Last updated: 2026-11-08
+Last updated: 2026-11-09
 Workstream: `codex/v1-frontend-product`
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 Current branch HEAD: see `git log -1` (`codex/v1-frontend-product`)
@@ -2838,3 +2838,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: rebuilt web production build passed with 83 generated pages; repository typecheck passed; Impeccable detector returned no findings; organization-audit plus workspace-switch recovery passed 14/14, including held workspace-list and workspace-switch retries and invitation/member recovery.
 - Scope: local UI-12/ORG-02 recovery evidence only; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC, Member 1 revocation integration and production remain open. No backend/shared contract, provider activation, production or remote Git operation was performed.
+
+## 2026-11-09 checkpoint — BILL-09 contract-driven invoice history boundary
+
+- Change: Replaced the settings page's hardcoded invoice placeholder with a provider-neutral `InvoiceHistoryAdapter` and accessible panel supporting loading, retryable error, unavailable, empty and ready/table states. The default adapter remains explicitly unavailable in the free beta, so no provider response, paid entitlement, invoice URL or billing policy is fabricated.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/components/dashboard/invoice-history-panel.tsx`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/invoice-history-contract.test.ts`.
+- Evidence: focused contract tests pass 5/5; repository typecheck and web production build pass with 83 generated pages; billing-boundary browser coverage passes 1/1; targeted lint, `git diff --check` and Impeccable detector pass.
+- Scope: advances local BILL-09/UI-12 implementation while keeping provider projection, billing-owner authorization, hosted URL lifetime/allowlist, retention/legal approval and Member 1 integration open. BILL-09 remains PARTIAL and release recommendation remains NO-GO.

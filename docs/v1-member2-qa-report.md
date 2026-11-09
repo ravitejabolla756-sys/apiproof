@@ -1433,3 +1433,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - `CI=true PLAYWRIGHT_PORT=3142 pnpm exec playwright test tests/e2e/organization-audit.spec.ts tests/e2e/workspace-switch-recovery.spec.ts --workers=1 --reporter=line`: PASS, 14/14.
 - The suite covers workspace-list retry persistence/busy semantics, context-switch retry persistence/busy semantics, stale-context recovery, last-owner protections, organization collection recovery, invitation recovery, audit recovery and axe checks.
 - Hosted CI, integrated staging, manual screen-reader, PostgreSQL/RBAC, provider approval and production checks remain NOT_RUN.
+
+## 2026-11-09 — BILL-09 contract-driven invoice history boundary
+
+- PASS: Added a typed provider-neutral `InvoiceHistoryAdapter` and settings panel with explicit loading, retryable error, unavailable, empty and ready states. The default adapter returns `PROVIDER_NOT_CONFIGURED`; no provider call, paid entitlement, invoice URL or payment state is invented.
+- PASS: `pnpm exec vitest run tests/invoice-history-contract.test.ts tests/member2-billing-boundaries.test.ts --reporter=dot` — 5 tests passed across 2 files.
+- PASS: `pnpm typecheck`; `pnpm --filter @apiproof/web build` generated 83 pages; `CI=true PLAYWRIGHT_PORT=3143 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1.
+- PASS: Targeted ESLint, `git diff --check` and Impeccable detector returned no findings.
+- NOT_RUN: Provider-backed invoice projection, billing-owner authorization, URL allowlist/lifetime, retention/legal approval, hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.

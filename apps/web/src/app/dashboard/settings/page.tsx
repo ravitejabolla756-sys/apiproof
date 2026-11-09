@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Receipt, Sparkles, Check } from "lucide-react";
+import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
+import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 import Link from "next/link";
 
 interface GitHubInstallationInfo {
@@ -283,15 +284,7 @@ export default function SettingsPage() {
             ) : null}
           </div>
 
-          <section aria-labelledby="invoice-history-heading" className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-3 shadow-xs">
-            <div className="flex items-center gap-2">
-              <Receipt aria-hidden="true" className="w-4 h-4 text-purple-700" />
-              <h3 id="invoice-history-heading" className="text-base font-semibold text-[#111111]">Invoice history</h3>
-            </div>
-            <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
-              Invoice history is unavailable in the free beta. No provider-backed invoices or paid entitlements are represented here.
-            </p>
-          </section>
+          <InvoiceHistoryPanel />
 
           {/* GITHUB APP SETTINGS */}
           <SlackConnectionCard />
