@@ -199,6 +199,8 @@ test.describe('workspace audit trail', () => {
     await expect(page.getByText('Invitation history is temporarily unavailable.')).toHaveCount(0);
     await expect(page.getByText('Recovered Member')).toBeVisible();
     await expect(page.getByText('recovered-invite@example.test')).toBeVisible();
+    await expect(page.getByRole('list', { name: 'Workspace members' }).locator(':scope > li')).toHaveCount(1);
+    await expect(page.getByRole('list', { name: 'Recent invitations' }).locator(':scope > li')).toHaveCount(1);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'organization recovered states').toEqual([]);
     expect(memberRequests).toBeGreaterThanOrEqual(2);
     expect(invitationRequests).toBeGreaterThanOrEqual(2);

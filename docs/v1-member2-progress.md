@@ -2879,3 +2879,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Audit: Fetched Member 1 commit `4138c9a8ef42725769971332d8a4e168ea1b5c0e` into `origin/member1-handoff` without checkout or merge; verified exact migration names for IDs 024–027 and inspected the durable workspace-member revocation contract.
 - Findings: all four migration IDs collide by name; the current migrator skips applied IDs without name validation. Member 1's revocation transaction locks the workspace membership set, protects the final owner, uses idempotency and durable `workspace.member_revocation.v1` audit evidence, and preserves personal sessions and other memberships.
 - Backup audit: branch is fast-forward compatible with `origin/codex/v1-frontend-product` at 536 outgoing commits, with no credential/generated-file path matches in the outgoing file list; backup is conditional because the pre-existing package and lockfile edits remain uncommitted. No push or integration mutation was performed.
+
+## 2026-11-09 checkpoint — ORG-02/ORG-03/ORG-11 collection semantics
+
+- Change: Workspace Settings now exposes member, recent-invitation and administrative-audit collections as named semantic lists with direct list items; visual layout and server-authoritative organization contracts are unchanged.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: targeted ESLint, repository typecheck and `git diff --check` passed; rebuilt web production bundle generated 83 pages; focused organization collection recovery coverage passed 1/1 with axe-clean recovered states. Impeccable reports only five incumbent purple-heading warnings on unchanged workspace headings.
+- Scope: advances local UI-12/ORG-02/ORG-03/ORG-11 semantics only. Member 1 revocation integration, PostgreSQL/RBAC, retention, hosted CI, staging and production remain open.

@@ -54,6 +54,8 @@ Latest contract-handoff evidence: `docs/v1-member2-contracts.md` now contains a 
 
 Latest Member 1 handoff evidence: commit `4138c9a8ef42725769971332d8a4e168ea1b5c0e` was fetched read-only into `origin/member1-handoff`; migration IDs 024–027 were compared by name and are hard collisions, while the workspace-scoped revocation transaction contract was inspected. Integration remains NOT_INTEGRATED pending a shared migration namespace/upgrade plan and ORG-04 endpoint adoption.
 
+Latest organization semantics evidence: Workspace Settings member, invitation and audit collections now expose named semantic lists; the rebuilt web bundle generated 83 pages and focused organization collection recovery passed 1/1 with axe-clean recovered states. Impeccable's five warnings remain incumbent unchanged purple headings. Member 1 revocation integration, PostgreSQL/RBAC, retention, hosted CI, staging and production remain open.
+
 Latest SEC-18 evidence: the incident-response draft now records the highest-applicable-severity decision sequence and explicit readiness prerequisites for named owners, alert routing, status source, provider response, PostgreSQL/restore evidence and tabletop sign-off. All unavailable or unperformed operational evidence remains labeled `NOT_AVAILABLE` or `NOT_RUN`; owner/Member 1 review and the tabletop remain open.
 
 Latest public performance evidence: the current production bundle passed the 9-route loopback probe over three samples with median load 10–39 ms, response 2–5 ms and encoded HTML 6.1–17.0 KiB. This is not Lighthouse/Core Web Vitals or deployment evidence; hosted CI, staging and production remain open.

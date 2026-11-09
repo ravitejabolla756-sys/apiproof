@@ -1457,6 +1457,13 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: `pnpm typecheck`; targeted ESLint; `git diff --check`; Impeccable detector `[]`; `pnpm --filter @apiproof/web build` generated 83 pages; `CI=true PLAYWRIGHT_PORT=3146 pnpm exec playwright test tests/e2e/billing-boundaries.spec.ts --workers=1 --reporter=line` passed 1/1.
 - NOT_RUN: Provider URL allowlist/authorization, tenant isolation, retention/legal approval, sandbox provider fixtures, hosted CI, integrated staging, PostgreSQL/RBAC, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — ORG-02/ORG-03/ORG-11 collection semantics
+
+- PASS: Workspace Settings member, recent-invitation and administrative-audit collections now use named semantic lists with direct list items while preserving existing server-authoritative data and recovery behavior.
+- PASS: Targeted ESLint and `git diff --check`; `pnpm typecheck`; `pnpm --filter @apiproof/web build` generated 83 pages; `CI=true PLAYWRIGHT_PORT=3152 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --grep "distinguishes unavailable members" --reporter=line` passed 1/1; recovered state remained axe-clean.
+- ADVISORY: Impeccable reports five incumbent purple-heading warnings on unchanged workspace headings; no new changed-state finding was reported.
+- NOT_RUN: Member 1 revocation integration, PostgreSQL/RBAC, retention review, hosted CI, integrated staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 proof-terminal contrast
 
 - PASS: Raised small secondary labels in the dark proof terminal from `text-zinc-500` to `text-zinc-400` to meet the small-text contrast floor while preserving the incumbent visual system and copy.
