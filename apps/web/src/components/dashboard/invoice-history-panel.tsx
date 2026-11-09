@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Receipt } from 'lucide-react';
-import { formatInvoiceAmount, formatInvoiceDate, toSafeInvoiceDateTime, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter, type InvoiceHistoryAdapter, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
+import { formatInvoiceAmount, formatInvoiceDate, parseInvoiceHistoryResult, toSafeInvoiceDateTime, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter, type InvoiceHistoryAdapter, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
 
 export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter }: { adapter?: InvoiceHistoryAdapter }) {
   const [result, setResult] = useState<InvoiceHistoryResult | null>(null);
@@ -14,7 +14,9 @@ export function InvoiceHistoryPanel({ adapter = unavailableInvoiceHistoryAdapter
     setLoading(true);
     setError(null);
     try {
-      setResult(await adapter.load());
+      const parsed = parseInvoiceHistoryResult(await adapter.load());
+      if (!parsed) throw new Error('Invoice history response is temporarily unavailable.');
+      setResult(parsed);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Invoice history is temporarily unavailable.');
     } finally {

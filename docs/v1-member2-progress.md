@@ -3755,3 +3755,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/landing/navbar.tsx`.
 - Evidence: Mobile navbar accessibility and public icon-semantics coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 and WEB-15 interaction reliability only; navigation destinations, authentication and public content contracts remain unchanged.
+
+## 2026-11-09 checkpoint — invoice projection runtime guard
+
+- Change: `InvoiceHistoryPanel` now parses every adapter response at runtime and routes malformed projections to the existing retryable error state instead of trusting the compile-time interface.
+- Files: `apps/web/src/components/dashboard/invoice-history-panel.tsx`.
+- Evidence: Invoice contract coverage passed **6/6**; billing boundary browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances BILL-09 local projection safety only; provider authorization, tenant isolation, billing-owner permissions, retention and sandbox delivery remain external contracts.

@@ -2199,3 +2199,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The public mobile menu toggle waits for client hydration, preserving menu opening and icon semantics under an early mobile interaction; navbar accessibility and public icon-semantics coverage passed **2/2**.
 - PASS: Targeted navbar ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Hosted CI, integrated staging, manual screen-reader/assistive-technology review and production remain open.
+
+## 2026-11-09 — invoice projection runtime guard
+
+- PASS: Invoice history validates adapter output at runtime before rendering; malformed responses use the retryable error boundary while the provider-unavailable state remains truthful. Invoice contract tests passed **6/6** and billing-boundary browser coverage passed **2/2**.
+- PASS: Targeted invoice-panel ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Approved provider source, invoice authorization/tenant isolation, billing-owner permissions, retention policy, sandbox integration and production billing remain open.
