@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
+import { formatInvoiceAmount, toSafeInvoiceUrl, unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
 
 describe('invoice history adapter boundary', () => {
   it('keeps invoice history explicitly unavailable until a provider projection is configured', async () => {
@@ -16,5 +16,11 @@ describe('invoice history adapter boundary', () => {
     expect(toSafeInvoiceUrl('javascript:alert(1)')).toBeNull();
     expect(toSafeInvoiceUrl('https://user:secret@billing.example.test/invoices/in_123')).toBeNull();
     expect(toSafeInvoiceUrl('/invoices/in_123')).toBeNull();
+  });
+
+  it('fails closed for malformed amount or currency projections', () => {
+    expect(formatInvoiceAmount({ totalMinor: 1250, currency: ' usd ' })).toMatch(/12\.50/);
+    expect(formatInvoiceAmount({ totalMinor: Number.NaN, currency: 'USD' })).toBe('Unavailable');
+    expect(formatInvoiceAmount({ totalMinor: 1250, currency: 'US' })).toBe('Unavailable');
   });
 });

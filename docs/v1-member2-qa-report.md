@@ -1550,6 +1550,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Focused contract coverage passed 2/2, targeted lint/typecheck passed, web build generated 83 pages and the mobile workbench accessibility browser test passed 1/1.
 - NOT_RUN: Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — BILL-09 invoice projection display hardening
+
+- PASS: Invalid invoice currency and amount projections now render `Unavailable` rather than throwing. Focused contract coverage passed 3/3; lint, typecheck, build and billing/notification browser coverage passed locally.
+- NOT_RUN: Provider invoice source, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — full local browser regression after link hardening
 
 - PASS: The complete rebuilt-bundle Playwright suite passed 172/172 with one worker, covering route accessibility, authenticated organization/settings flows, billing boundaries, notification states, public pages, status communications and dashboard recovery journeys.

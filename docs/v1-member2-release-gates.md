@@ -492,6 +492,10 @@ The pull-request queue now suppresses malformed or credential-bearing external U
 
 The rebuilt-bundle Playwright suite passed 172/172 locally after link hardening. This does not replace hosted CI, integrated staging, PostgreSQL/RBAC, provider/legal approvals, manual assistive-technology review or production evidence. Release recommendation stays NO-GO.
 
+## Latest BILL-09 display resilience evidence — 2026-11-09
+
+Invoice ready-state formatting now fails closed for malformed provider projections, with local contract, lint, typecheck, build and billing-boundary checks passing. Provider authorization/source/retention approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

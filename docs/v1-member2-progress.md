@@ -2972,6 +2972,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Focused Vitest passed 4/4; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; compatibility, provider-rule and workbench browser coverage passed 5/5; `git diff --check` passed. Impeccable reported only unchanged dashboard palette warnings.
 - Scope: advances local UI-12/UI-13/WEB-15 source-link safety only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 checkpoint — BILL-09 invoice projection display hardening
+
+- Change: Added a fail-closed invoice amount formatter that rejects malformed currencies and non-finite minor-unit values instead of throwing during ready-state rendering; provider schema, authorization and invoice sourcing remain unchanged.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/components/dashboard/invoice-history-panel.tsx`, `tests/invoice-history-contract.test.ts`.
+- Evidence: Impeccable detector returned `[]`; focused invoice contract tests passed 3/3; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; billing-boundary and authenticated notification-settings browser checks passed 2/2; `git diff --check` passed.
+- Scope: advances local BILL-09/UI-12 resilience only. Provider invoice projection, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.
+
 ## 2026-11-09 checkpoint — full local browser regression after link hardening
 
 - Change: Revalidated the complete local browser matrix after the shared external-link and pull-request link hardening; no source or contract rollback was required.

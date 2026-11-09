@@ -16,6 +16,19 @@ export interface InvoiceHistoryAdapter {
   load: () => Promise<InvoiceHistoryResult>;
 }
 
+export function formatInvoiceAmount(invoice: Pick<InvoiceHistoryRecord, 'totalMinor' | 'currency'>): string {
+  const currency = invoice.currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(currency) || !Number.isFinite(invoice.totalMinor)) return 'Unavailable';
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+    }).format(invoice.totalMinor / 100);
+  } catch {
+    return 'Unavailable';
+  }
+}
+
 export function toSafeInvoiceUrl(value: string | null | undefined): string | null {
   if (!value) return null;
   try {
