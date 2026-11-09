@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Loader2, MessageSquare, Unplug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface SlackStatus { connected: boolean; teamName?: string }
+import { parseSlackConnectionStatus, type SlackConnectionProjection } from '@/lib/slack-connection-contract';
 
 export function SlackConnectionCard() {
-  const [status, setStatus] = useState<SlackStatus | null>(null);
+  const [status, setStatus] = useState<SlackConnectionProjection | null>(null);
   const [busy, setBusy] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +25,13 @@ export function SlackConnectionCard() {
     }
     try {
       const response = await fetch('/api/slack/connection', { cache: 'no-store' });
-      const data = await response.json() as SlackStatus & { error?: string };
-      if (!response.ok) throw new Error(data.error || 'Slack status is unavailable.');
+      const rawData = await response.json() as unknown;
+      const data = parseSlackConnectionStatus(rawData);
+      const serverError = rawData && typeof rawData === 'object' && 'error' in rawData && typeof rawData.error === 'string'
+        ? rawData.error
+        : undefined;
+      if (!response.ok) throw new Error(serverError || 'Slack status is unavailable.');
+      if (!data) throw new Error('Slack status is unavailable.');
       setStatus({ connected: data.connected, teamName: data.teamName });
       setError(null);
       setErrorAction(null);
@@ -69,7 +73,7 @@ export function SlackConnectionCard() {
       const response = await fetch('/api/slack/connection', { method: 'DELETE' });
       const data = await response.json() as { error?: string };
       if (!response.ok) throw new Error(data.error || 'Slack could not be disconnected.');
-      setStatus({ connected: false });
+      setStatus({ connected: false, teamName: null });
       setError(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack could not be disconnected.');
@@ -94,7 +98,7 @@ export function SlackConnectionCard() {
       {busy && <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{status?.connected ? 'Disconnecting Slack…' : 'Connecting Slack…'}</p>}
       {status === null ? error ? <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">Slack connection status is unavailable.</div> : <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868] flex items-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />Checking Slack connection…</div> : status.connected ? (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-[#F6F6F4] border border-[#E8E8E5] p-4">
-          <div className="text-xs"><span className="font-semibold text-[#111111]">{status.teamName}</span><span className="block text-[#686868] mt-1">Finding alerts are sent privately to the Slack account that connected this workspace.</span></div>
+          <div className="text-xs"><span className="font-semibold text-[#111111]">{status.teamName ?? 'Connected Slack workspace'}</span><span className="block text-[#686868] mt-1">Finding alerts are sent privately to the Slack account that connected this workspace.</span></div>
           <Button type="button" variant="outline" size="sm" onClick={() => void disconnect()} disabled={busy} aria-busy={busy ? 'true' : undefined} className="gap-1.5">
             {busy ? <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" /> : <Unplug aria-hidden="true" className="h-3.5 w-3.5" />} Disconnect
           </Button>

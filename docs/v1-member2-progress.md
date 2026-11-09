@@ -3813,3 +3813,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: After a fresh web production build generated **83 pages**, `CI=true PLAYWRIGHT_PORT=3133 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --reporter=line --timeout=300000` passed **16/16** in 55.2 seconds. Coverage includes public and authenticated axe audits, skip-link focus transfer, dynamic detail recovery, 390px/320px mobile and tablet containment, and reduced-motion behavior.
 - Scope: Strengthens local UI-12/UI-13 evidence only; manual screen-reader/assistive-technology review, hosted CI, integrated staging and production remain external gates.
+
+## 2026-11-09 checkpoint — Slack connection projection guard
+
+- Change: Added a typed Slack connection-status adapter. Malformed successful status payloads now fail closed into the existing retryable unavailable state, while a connected response without a workspace name uses truthful fallback copy instead of rendering `undefined`.
+- Files: `apps/web/src/lib/slack-connection-contract.ts`, `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/slack-connection-contract.test.ts`.
+- Evidence: Slack contract coverage passed **3/3**; Slack connection recovery/disconnect browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances NOT-03/UI-12 local response safety only; Slack authorization, recipient policy, provider delivery, scheduler and Member 1 event contracts remain unchanged.

@@ -2251,3 +2251,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: A fresh web production build generated **83 pages**, then the route accessibility matrix passed **16/16** in 55.2 seconds. The matrix covered public/authenticated axe checks, keyboard skip-link focus, dynamic detail recovery, mobile/tablet/narrow-mobile overflow containment and reduced-motion behavior.
 - NOT_RUN: Hosted CI, integrated staging, manual screen-reader/assistive-technology review and production remain open.
+
+## 2026-11-09 — Slack connection projection guard
+
+- PASS: Slack connection status now validates the `connected` boolean and optional workspace name before rendering; malformed successful payloads use the existing retryable status error and unnamed connected workspaces use explicit fallback copy. Contract coverage passed **3/3**.
+- PASS: Slack action recovery and disconnect-progress browser coverage passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Slack authorization/provider verification, hosted CI, staging, manual assistive-technology review and production remain open.
