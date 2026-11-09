@@ -3841,3 +3841,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/github-repository-picker-contract.ts`, `apps/web/src/components/dashboard/connect-repo-modal.tsx`, `tests/github-repository-picker-contract.test.ts`, `tests/e2e/connect-repo-recovery.spec.ts`.
 - Evidence: Picker contract coverage passed **2/2**; rebuilt-bundle repository connect/action/loading/recovery/empty-state coverage passed **8/8** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed. The focus-trap fixture now stubs the periodic status endpoint to keep the browser journey deterministic.
 - Scope: Advances UI-12/UI-13 and ORG-02 repository-picker response safety only; GitHub authorization, workspace tenancy and provider contracts remain server-owned.
+
+## 2026-11-09 checkpoint — provider-rule review projection guard
+
+- Change: Added a typed provider-rule response adapter covering candidate identity, source metadata, coverage priorities, review-pack claims/fixtures/templates, optional review proposals and coverage summaries; malformed or duplicate candidates now enter the existing retryable state instead of crashing the review UI.
+- Files: `apps/web/src/lib/provider-rule-contract.ts`, `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/provider-rule-contract.test.ts`.
+- Evidence: Provider-rule contract coverage passed **3/3**; rebuilt-bundle provider-rule loading/action/filter/recovery coverage passed **5/5** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 and provider-rule review resilience only; review authorization, evidence provenance and server-side rule promotion remain authoritative.

@@ -3,50 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Edit3, ExternalLink, Loader2, RefreshCw, X } from "lucide-react";
 import { toSafeExternalUrl } from "@/lib/external-link-contract";
+import { parseProviderRuleResponse, type ProviderRuleCandidate as Candidate, type ProviderRuleResponse } from "@/lib/provider-rule-contract";
 
-type Candidate = {
-  id: string;
-  providerId: string;
-  title: string;
-  description: string;
-  status: string;
-  severity: string;
-  payload: Record<string, unknown> | null;
-  source: { url: string; type: string };
-  createdAt: string;
-  reviewNotes: string | null;
-  coverage: {
-    priority: "P0" | "P1" | "P2";
-    reviewBlockers: string[];
-    evidenceClaims: number;
-    hasExecutableTemplate: boolean;
-    nextAction: "human-review" | "fixture-and-review" | "already-reviewed";
-  } | null;
-  reviewPack: {
-    source: { claims: Array<{ key: string; value: string }>; locator?: string; fingerprint: string };
-    facts: string[];
-    unknowns: string[];
-    fixturePlan: { detectorTokens: string[]; requiredOutcomes: string[] };
-    reviewChecklist: string[];
-    template: { status: string; limitation: string };
-    reviewOnlyTemplateProposal?: {
-      templateId: string;
-      mode: "transform" | "manual-guidance";
-      limitation: string;
-      transformation?: { kind: string };
-      guidance?: { summary: string; steps: string[]; validation: string[] };
-    };
-  } | null;
-};
-
-type CoverageSummary = {
-  candidates: number;
-  pendingCandidates: number;
-  reviewedCandidates: number;
-  reviewedProviders: number;
-  providersMissingReviewedRules: string[];
-  providersWithExecutableTemplates: string[];
-};
+type CoverageSummary = NonNullable<ProviderRuleResponse['coverageSummary']>;
 
 const priorityStyles: Record<"P0" | "P1" | "P2", string> = {
   P0: "bg-rose-50 text-rose-700",
@@ -92,10 +51,13 @@ export function ProviderRuleReview() {
     if (!preserveError) setError(null);
     try {
       const response = await fetch("/api/provider-rules", { cache: "no-store" });
-      const body = await response.json() as { candidates?: Candidate[]; coverageSummary?: CoverageSummary; error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Unable to load provider rules.");
-      setCandidates(body.candidates ?? []);
-      setCoverageSummary(body.coverageSummary ?? null);
+      const rawBody = await response.json() as unknown;
+      const errorMessage = rawBody && typeof rawBody === 'object' && 'error' in rawBody && typeof rawBody.error === 'string' ? rawBody.error : undefined;
+      if (!response.ok) throw new Error(errorMessage ?? "Unable to load provider rules.");
+      const body = parseProviderRuleResponse(rawBody);
+      if (!body) throw new Error("Provider rule data is temporarily unavailable.");
+      setCandidates(body.candidates);
+      setCoverageSummary(body.coverageSummary);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load provider rules.");

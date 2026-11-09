@@ -2275,3 +2275,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The repository picker validates connection and repository projections before rendering, and malformed status refreshes no longer coerce to a disconnected state. Contract coverage passed **2/2**.
 - PASS: Rebuilt-bundle repository connect/action/loading/recovery/empty-state coverage passed **8/8** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed. The focus-trap journey now stubs its periodic status response for deterministic timing.
 - NOT_RUN: GitHub authorization/tenant verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — provider-rule review projection guard
+
+- PASS: Provider-rule review validates candidate, coverage, review-pack and summary projections before rendering; malformed or duplicate candidates use the existing retryable error state. Contract coverage passed **3/3**.
+- PASS: Rebuilt-bundle provider-rule loading/action/filter/recovery coverage passed **5/5** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Review authorization/provenance verification, hosted CI, staging, manual assistive-technology review and production remain open.
