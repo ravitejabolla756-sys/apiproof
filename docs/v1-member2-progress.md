@@ -3523,3 +3523,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Hardened the provider-neutral invoice parser to trim and canonicalize invoice IDs, numbers, statuses, currencies and unavailable messages before rendering, and to reject duplicate IDs after normalization.
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
 - Scope: Advances local BILL-09 adapter safety only. No provider endpoint, invoice source, billing authorization, retention policy or payment behavior was added.
+
+## 2026-11-09 checkpoint — NOT-06 required-notification response guard
+
+- Change: The shared notification preference parser now rejects a server projection that marks a required security/account notification as disabled, preserving the existing non-disablable safety invariant before UI rendering.
+- Files: `apps/web/src/lib/notification-preferences-contract.ts`, `tests/notification-preferences-contract.test.ts`.
+- Scope: Advances local NOT-06/UI-12 fail-closed response validation only. It does not select optional-channel cadence, recipients, scheduler or provider behavior.

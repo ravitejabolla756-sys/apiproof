@@ -26,6 +26,7 @@ export function parseNotificationPreferences(payload: unknown): NotificationPref
     if (!isRecord(item) || typeof item.category !== 'string' || !CATEGORIES.has(item.category)) return null;
     if (item.channel !== 'email' && item.channel !== 'slack') return null;
     if (typeof item.enabled !== 'boolean' || typeof item.required !== 'boolean' || typeof item.deliveryAvailable !== 'boolean') return null;
+    if (item.required && !item.enabled) return null;
     const key = `${item.category}:${item.channel}`;
     if (seen.has(key)) return null;
     seen.add(key);

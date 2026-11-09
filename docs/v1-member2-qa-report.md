@@ -2007,6 +2007,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invoice adapter coverage now verifies canonical text normalization and duplicate-ID rejection after normalization; focused invoice contract tests pass **6/6**.
 - NOT_RUN: Provider source, billing-owner authorization, tenant isolation, hosted-link allowlist, retention, sandbox integration, hosted CI, staging and production remain open.
 
+## 2026-11-09 — NOT-06 required-notification response guard
+
+- PASS: Notification preference contract coverage now rejects disabled required notifications; the focused preference contract suite passes **6/6**.
+- NOT_RUN: Optional-channel event contracts, digest scheduling, provider delivery, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

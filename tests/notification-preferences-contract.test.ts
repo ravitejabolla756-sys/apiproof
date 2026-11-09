@@ -18,6 +18,7 @@ describe('notification preference response contract', () => {
     ['unknown category', { ...validPreference, category: 'marketing' }],
     ['unknown channel', { ...validPreference, channel: 'sms' }],
     ['non-boolean enabled flag', { ...validPreference, enabled: 'false' }],
+    ['disabled required notification', { ...validPreference, required: true, enabled: false }],
     ['duplicate preference', validPreference],
   ])('rejects %s', (_label, item) => {
     const payload = item === validPreference ? { preferences: [validPreference, item] } : { preferences: [item] };
