@@ -3918,3 +3918,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/overview-contract.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/overview-contract.test.ts`.
 - Evidence: Overview/sidebar contract coverage passed **3/3**; rebuilt-bundle workspace context and switch-recovery coverage passed **4/4** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/ORG-02 local dashboard projection safety only; the overview API's authorization, tenant scope and server-owned counters remain backend-owned.
+
+## 2026-11-09 checkpoint — GitHub popup URL guard
+
+- Change: The repository-connection GitHub popup helper now validates the provider URL as credential-free HTTPS before navigation and closes the reserved tab on malformed or unsafe responses.
+- Files: `apps/web/src/lib/github-oauth-popup.ts`, `tests/github-oauth-popup.test.ts`.
+- Evidence: GitHub popup contract coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed. Rebuilt-bundle repository recovery coverage passed **3/4**, and the isolated focus-trap test passed **1/1** on rerun; the remaining full-file focus assertion is timing-flaky and is tracked separately from this URL guard.
+- Scope: Advances UI-12/UI-13 repository connection navigation safety only; GitHub OAuth authorization, installation ownership and provider configuration remain server/provider-owned.

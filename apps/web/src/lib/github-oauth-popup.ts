@@ -1,3 +1,5 @@
+import { toSafeExternalUrl } from './external-link-contract.js';
+
 export interface GitHubAuthorizationPopup {
   opener: unknown;
   location: { replace(url: string): void };
@@ -19,7 +21,8 @@ export async function openGitHubAuthorizationPopup(
   popup.opener = null;
 
   try {
-    const url = await loadAuthorizationUrl();
+    const url = toSafeExternalUrl(await loadAuthorizationUrl());
+    if (!url) throw new Error('GITHUB_AUTHORIZATION_URL_INVALID');
     popup.location.replace(url);
   } catch (error) {
     popup.close();

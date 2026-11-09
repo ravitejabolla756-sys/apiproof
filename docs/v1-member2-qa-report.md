@@ -2339,3 +2339,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Sidebar overview data now validates its consumed count and identity fields before rendering; unsafe counts are ignored and malformed identity envelopes fail closed. Contract coverage passed **3/3**.
 - PASS: Rebuilt-bundle workspace context and switch-recovery coverage passed **4/4** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Backend overview authorization/tenant verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — GitHub popup URL guard
+
+- PASS: Repository-connection GitHub popup navigation now rejects unsafe or credential-bearing URLs and closes the reserved tab instead of navigating. Contract coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
+- PASS: Rebuilt-bundle repository recovery coverage passed **3/4**; the isolated focus-trap test passed **1/1** on rerun. The full-file focus assertion remains timing-flaky and is not attributed to the popup URL guard.
+- NOT_RUN: GitHub OAuth/provider verification, hosted CI, staging, manual assistive-technology review and production remain open.

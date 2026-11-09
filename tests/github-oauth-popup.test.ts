@@ -48,4 +48,11 @@ describe('GitHub OAuth popup launch', () => {
     )).rejects.toThrow('install URL unavailable');
     expect(popup.close).toHaveBeenCalledOnce();
   });
+
+  it('rejects unsafe authorization URLs before navigating the popup', async () => {
+    const popup = fakePopup();
+    await expect(openGitHubAuthorizationPopup(async () => 'javascript:alert(1)', () => popup)).rejects.toThrow('GITHUB_AUTHORIZATION_URL_INVALID');
+    expect(popup.location.replace).not.toHaveBeenCalled();
+    expect(popup.close).toHaveBeenCalledOnce();
+  });
 });
