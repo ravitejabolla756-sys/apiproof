@@ -305,7 +305,7 @@ test.describe('workspace audit trail', () => {
   });
 
   test('loads the next audit page through the cursor contract', async ({ page }) => {
-    await signIn(page);
+    await page.setViewportSize({ width: 390, height: 844 }); await signIn(page);
     let releaseNextAudit: (() => void) | undefined;
     const nextAuditResponse = new Promise<void>((resolve) => { releaseNextAudit = resolve; });
 
@@ -337,7 +337,7 @@ test.describe('workspace audit trail', () => {
 
     await page.goto('/dashboard/settings/workspace');
     await expect(page.getByText('workspace.updated')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('button', { name: 'Load more audit events' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Load more audit events' })).toBeVisible(); expect((await page.getByRole('button', { name: 'Load more audit events' }).boundingBox())?.height).toBeGreaterThanOrEqual(44); expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'initial audit page').toEqual([]);
 
     await page.getByRole('button', { name: 'Load more audit events' }).click();

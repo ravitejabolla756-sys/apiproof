@@ -516,6 +516,10 @@ The complete public-site specification passes 26/26 locally, including public fo
 
 The manual-copy invitation create/cancel journey passes at 390px with no document overflow and 44px invite/cancel controls. Approved transactional email, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest ORG-11 mobile audit evidence — 2026-11-09
+
+The organization audit cursor-pagination journey passes at 390px with no document overflow and a 44px load-more control. PostgreSQL/RBAC, retention, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.

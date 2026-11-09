@@ -3061,3 +3061,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/public-site.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3184 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 --reporter=line -g "creates and cancels a manual workspace invitation"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local UI-12/UI-13/ORG-03 evidence only. Approved transactional email, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 mobile audit pagination coverage
+
+- Change: Extended the organization audit cursor-pagination journey to run at 390px and verify no document-level horizontal overflow plus a 44px `Load more audit events` control. The cursor and tenant-boundary contract remain unchanged.
+- Files: `tests/e2e/organization-audit.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3186 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line -g "loads the next audit page"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local UI-12/UI-13/ORG-11 evidence only. PostgreSQL/RBAC, retention, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain open.

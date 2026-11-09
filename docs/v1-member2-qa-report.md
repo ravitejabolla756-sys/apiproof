@@ -1567,6 +1567,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Manual workspace-invitation creation/cancellation now has a 390px browser assertion for no document overflow and 44px invite/cancel controls; the focused Playwright journey passed 1/1 with targeted ESLint, test TypeScript and `git diff --check` passing.
 - NOT_RUN: Approved transactional email, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — UI-12/UI-13 mobile audit pagination coverage
+
+- PASS: Organization audit cursor pagination now has a 390px browser assertion for no document overflow and a 44px `Load more audit events` control; the focused Playwright journey passed 1/1 with targeted ESLint, test TypeScript and `git diff --check` passing.
+- NOT_RUN: PostgreSQL/RBAC, audit retention, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.
