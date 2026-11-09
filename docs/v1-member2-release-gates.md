@@ -685,3 +685,7 @@ The public non-sending contact form now has native names for its name, email, in
 ## Latest ORG-02/UI-13 workspace-switch evidence — 2026-11-09
 
 The workspace selector now has focused browser coverage for rejected context switches and retry busy semantics. PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest BILL-09 projection validation evidence — 2026-11-09
+
+The invoice adapter now rejects whitespace-only identity, status and unavailable-state message fields before rendering. Focused contract coverage passed **5/5**; provider authorization/source, tenant isolation, retention, sandbox integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

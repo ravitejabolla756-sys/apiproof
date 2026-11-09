@@ -3356,3 +3356,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added a hermetic browser regression for a rejected workspace-context switch, verifying that the selected retry target is preserved, the alert receives focus, and the retry control exposes disabled/busy semantics while the second request is pending.
 - Files: `tests/e2e/workspace-context-contract.spec.ts`.
 - Evidence: Focused rebuilt-bundle workspace-context coverage passed **2/2**, including malformed projection fail-closed behavior and rejected-switch retry busy/focus semantics; no backend authorization, session revocation or workspace contract was changed.
+
+## 2026-11-09 checkpoint — BILL-09 invoice projection text validation
+
+- Change: Tightened the provider-neutral invoice parser to reject whitespace-only invoice IDs, numbers, statuses and unavailable-state messages before they reach the UI; valid provider data and the unavailable beta boundary remain unchanged.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
+- Evidence: Focused invoice contract coverage passed **5/5**; provider authorization/source, tenant isolation, retention, sandbox integration and hosted verification remain open.

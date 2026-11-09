@@ -22,11 +22,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isNonEmptyText(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 /** Validate a future server-owned invoice projection before it reaches the UI. */
 export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult | null {
   if (!isRecord(value) || (value.status !== 'unavailable' && value.status !== 'ready')) return null;
   if (value.status === 'unavailable') {
-    return value.code === 'PROVIDER_NOT_CONFIGURED' && typeof value.message === 'string' && value.message.length > 0
+    return value.code === 'PROVIDER_NOT_CONFIGURED' && isNonEmptyText(value.message)
       ? { status: 'unavailable', code: value.code, message: value.message }
       : null;
   }
@@ -36,10 +40,10 @@ export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult 
   const seen = new Set<string>();
   for (const item of value.invoices) {
     if (!isRecord(item)
-      || typeof item.id !== 'string' || item.id.length === 0
-      || typeof item.number !== 'string' || item.number.length === 0
+      || !isNonEmptyText(item.id)
+      || !isNonEmptyText(item.number)
       || typeof item.issuedAt !== 'string' || !toSafeInvoiceDateTime(item.issuedAt)
-      || typeof item.status !== 'string' || item.status.length === 0
+      || !isNonEmptyText(item.status)
       || typeof item.totalMinor !== 'number' || !Number.isSafeInteger(item.totalMinor) || item.totalMinor < 0
       || typeof item.currency !== 'string' || !/^[A-Za-z]{3}$/.test(item.currency.trim())
       || (item.hostedUrl !== undefined && item.hostedUrl !== null && typeof item.hostedUrl !== 'string')

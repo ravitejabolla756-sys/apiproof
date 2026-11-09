@@ -40,5 +40,9 @@ describe('invoice history adapter boundary', () => {
     expect(parseInvoiceHistoryResult({ ...valid, invoices: [{ ...valid.invoices[0], totalMinor: -1 }] })).toBeNull();
     expect(parseInvoiceHistoryResult({ ...valid, invoices: [valid.invoices[0], valid.invoices[0]] })).toBeNull();
     expect(parseInvoiceHistoryResult({ status: 'ready', invoices: [{ ...valid.invoices[0], issuedAt: 'not-a-date' }] })).toBeNull();
+    expect(parseInvoiceHistoryResult({ ...valid, invoices: [{ ...valid.invoices[0], id: '   ' }] })).toBeNull();
+    expect(parseInvoiceHistoryResult({ ...valid, invoices: [{ ...valid.invoices[0], number: '\t' }] })).toBeNull();
+    expect(parseInvoiceHistoryResult({ ...valid, invoices: [{ ...valid.invoices[0], status: '  ' }] })).toBeNull();
+    expect(parseInvoiceHistoryResult({ status: 'unavailable', code: 'PROVIDER_NOT_CONFIGURED', message: '  ' })).toBeNull();
   });
 });

@@ -1873,6 +1873,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The browser contract now covers a rejected workspace switch, focused recovery alert, preserved retry target and busy/disabled retry semantics; no backend or session behavior was changed.
 - NOT_RUN: PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — invoice projection text validation
+
+- PASS: Invoice projection parsing rejects whitespace-only record identity/status fields and unavailable messages; focused contract coverage passed 5/5.
+- NOT_RUN: Provider source/authorization, tenant isolation, retention, sandbox integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
