@@ -5,6 +5,7 @@ import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
+import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -578,10 +579,10 @@ export default function FindingDetailPage({
                   Target Branch: <code className="font-mono bg-white px-1 rounded border border-[#C6E1FA]">{migration.branch_name || migration.target_branch}</code>
                 </p>
                 <div className="pt-2">
-                  <a href={migration.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-4 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20">
+                  {toSafePullRequestUrl(migration.pr_url) ? <a href={toSafePullRequestUrl(migration.pr_url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-4 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20">
                     <span>View on GitHub</span>
                     <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />
-                  </a>
+                  </a> : <span className="text-xs text-[#686868]">External link unavailable</span>}
                 </div>
               </div>
             )}

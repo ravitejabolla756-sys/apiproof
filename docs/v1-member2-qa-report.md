@@ -1550,6 +1550,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Focused contract coverage passed 2/2, targeted lint/typecheck passed, web build generated 83 pages and the mobile workbench accessibility browser test passed 1/1.
 - NOT_RUN: Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — dashboard pull-request link consistency
+
+- PASS: Overview, migrations and finding-detail pull-request links now share the credential-free HTTPS boundary. Focused contract tests passed 2/2; lint, typecheck and the 83-page web build passed; dashboard data-state and workbench accessibility browser coverage passed 17/17.
+- NOT_RUN: Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

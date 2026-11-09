@@ -491,3 +491,7 @@ The pull-request queue now suppresses malformed or credential-bearing external U
 ## Latest WEB-13 status evidence — 2026-11-09
 
 The public status page has focused mobile/axe evidence for its truthful no-monitor state and support path. An approved monitoring source, incident rehearsal, hosted CI, integrated staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest pull-request navigation safety evidence — 2026-11-09
+
+All identified dashboard pull-request navigation surfaces now suppress malformed or credential-bearing URLs while preserving safe HTTPS links. Local contract, lint, typecheck, build and 17-test browser coverage pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

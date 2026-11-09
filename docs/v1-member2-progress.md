@@ -2965,6 +2965,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned `[]`; focused Vitest passed 2/2; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3171 pnpm exec playwright test tests/e2e/workbench-action-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1.
 - Scope: advances local UI-12/UI-13 pull-request safety and accessibility evidence only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 checkpoint — dashboard pull-request link consistency
+
+- Change: Applied the existing credential-free HTTPS pull-request URL boundary to the dashboard overview, migrations workbench and finding detail surfaces; unsafe values now fall back to the existing local inspection/status state or an unavailable label.
+- Files: `apps/web/src/app/dashboard/page.tsx`, `apps/web/src/app/dashboard/migrations/page.tsx`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`.
+- Evidence: Focused pull-request contract tests passed 2/2; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3173 pnpm exec playwright test tests/e2e/workbench-action-accessibility.spec.ts tests/e2e/dashboard-data-states.spec.ts --workers=1 --reporter=line` passed 17/17; `git diff --check` passed.
+- Scope: advances local UI-12/UI-13/NOT-05 pull-request navigation safety only. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 checkpoint — WEB-13 no-monitor status browser evidence
 
 - Change: Added a mobile browser regression that verifies the public status page explicitly states that no live monitor is connected, keeps the support path available, preserves touch sizing and remains axe-clean.

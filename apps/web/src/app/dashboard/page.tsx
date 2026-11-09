@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
 import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2, ShieldCheck, ScanLine, ExternalLink } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
+import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 
 interface OverviewData {
   workspace?: {
@@ -315,8 +316,8 @@ export default function DashboardOverviewPage() {
                   <p className="truncate text-xs font-medium text-[#111111]">{fix.finding_title}</p>
                   <p className="mt-1 truncate text-[10px] text-[#686868]">{fix.repo_name} · {new Date(fix.created_at).toLocaleDateString()}</p>
                 </div>
-                {fix.pr_url ? (
-                  <a href={fix.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 shrink-0 items-center text-[10px] font-medium text-purple-700 hover:underline">Draft PR</a>
+                {toSafePullRequestUrl(fix.pr_url) ? (
+                  <a href={toSafePullRequestUrl(fix.pr_url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 shrink-0 items-center text-[10px] font-medium text-purple-700 hover:underline">Draft PR</a>
                 ) : (
                   <span className="shrink-0 text-[10px] font-medium text-[#686868]">{fix.status.replaceAll("_", " ")}</span>
                 )}

@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
+import { toSafePullRequestUrl } from "@/lib/pull-request-contract";
 import { FileCheck2, CheckCircle2, GitPullRequest, Loader2, RefreshCw, ExternalLink } from "lucide-react";
 
 interface MigrationItem {
@@ -182,8 +183,8 @@ export default function MigrationsWorkbenchPage() {
                   </div>
 
                   <div className="pt-2 border-t border-[#D1EBE0] flex items-center justify-between">
-                    {mig.pr_url ? (
-                      <a href={mig.pr_url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
+                    {toSafePullRequestUrl(mig.pr_url) ? (
+                      <a href={toSafePullRequestUrl(mig.pr_url) ?? undefined} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#111111] px-3.5 py-2 text-xs font-sans font-medium text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.99]">
                         <GitPullRequest aria-hidden="true" className="w-3.5 h-3.5" />
                         <span>Inspect Pull Request #{mig.pr_number}</span>
                       </a>
