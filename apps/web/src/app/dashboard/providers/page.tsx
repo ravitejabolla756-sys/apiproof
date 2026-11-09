@@ -99,21 +99,21 @@ export default function ProvidersPage() {
               ['Verified migration templates', data.summary.verifiedMigrationTemplates, `${data.summary.providersWithVerifiedMigrationTemplates} providers have verified executable templates`],
               ['Review-only proposals', data.summary.reviewOnlyTemplateProposals, `${data.summary.providersWithReviewOnlyTemplateProposals} providers have bounded proposals awaiting human promotion`],
             ].map(([label, value, detail]) => (
-              <div key={String(label)} className="rounded-2xl border border-[#E8E8E5] bg-white p-5">
+              <div key={String(label)} className="min-w-0 rounded-2xl border border-[#E8E8E5] bg-white p-5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#686868]">{label}</p>
                 <p className="mt-2 text-3xl font-semibold text-[#111111]">{value}</p>
-                <p className="mt-1 text-[11px] text-[#686868]">{detail}</p>
+                <p className="mt-1 break-words text-[11px] text-[#686868]">{detail}</p>
               </div>
             ))}
           </section>
 
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950">
+          <section className="min-w-0 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950">
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">Remediation policy</p>
             <p className="mt-2 text-sm font-semibold">Guarded human review</p>
             <p className="mt-1 text-[11px] leading-relaxed">MY OWL can prepare a migration suggestion or draft change when the provider has a deterministic template, but it does not silently modify repositories or auto-merge fixes.</p>
           </section>
 
-          <section className="rounded-2xl border border-purple-200 bg-purple-50/50 p-5" aria-label="Review queue priority summary">
+          <section className="min-w-0 rounded-2xl border border-purple-200 bg-purple-50/50 p-5" aria-label="Review queue priority summary">
             <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-purple-800">Review queue priority</p><Link href="/dashboard/rules/pending" className="inline-flex min-h-11 items-center rounded-lg border border-purple-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-purple-800 hover:bg-purple-100">Open review queue</Link></div>
             <div className="mt-3 flex flex-wrap gap-3 text-[11px]">
               <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-800">P0 · {data.summary.reviewQueue.P0} ready for fixture review</span>
@@ -122,10 +122,10 @@ export default function ProvidersPage() {
             </div>
           </section>
 
-          {data.summary.migrationTemplatePromotionQueue.length > 0 && <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5" aria-label="Migration template promotion queue">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-900">Migration template promotion queue</p><p className="mt-1 text-[11px] text-amber-950">These providers have review artifacts but no verified executable template yet.</p></div><CoverageBadge tone="amber">{data.summary.migrationTemplatePromotionQueue.length} providers</CoverageBadge></div>
+          {data.summary.migrationTemplatePromotionQueue.length > 0 && <section className="min-w-0 rounded-2xl border border-amber-200 bg-amber-50/60 p-5" aria-label="Migration template promotion queue">
+            <div className="flex flex-wrap items-center justify-between gap-3"><div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-900">Migration template promotion queue</p><p className="mt-1 break-words text-[11px] text-amber-950">These providers have review artifacts but no verified executable template yet.</p></div><CoverageBadge tone="amber">{data.summary.migrationTemplatePromotionQueue.length} providers</CoverageBadge></div>
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              {data.summary.migrationTemplatePromotionQueue.map((item) => <div key={item.providerId} className="rounded-xl border border-amber-200 bg-white p-3"><div className="flex items-center justify-between gap-2"><span className="font-semibold text-[#111111]">{item.providerId}</span><span className="text-[10px] text-[#686868]">{item.candidateIds.length} candidate{item.candidateIds.length === 1 ? '' : 's'}</span></div><p className="mt-1 font-mono text-[10px] leading-relaxed text-[#686868]">{item.candidateIds.join(', ')}</p><p className="mt-2 text-[10px] leading-relaxed text-amber-950">{item.nextStep}</p></div>)}
+              {data.summary.migrationTemplatePromotionQueue.map((item) => <div key={item.providerId} className="min-w-0 rounded-xl border border-amber-200 bg-white p-3"><div className="flex min-w-0 flex-wrap items-center justify-between gap-2"><span className="min-w-0 break-all font-semibold text-[#111111]">{item.providerId}</span><span className="shrink-0 text-[10px] text-[#686868]">{item.candidateIds.length} candidate{item.candidateIds.length === 1 ? '' : 's'}</span></div><p className="mt-1 break-all font-mono text-[10px] leading-relaxed text-[#686868]">{item.candidateIds.join(', ')}</p><p className="mt-2 break-words text-[10px] leading-relaxed text-amber-950">{item.nextStep}</p></div>)}
             </div>
           </section>}
 

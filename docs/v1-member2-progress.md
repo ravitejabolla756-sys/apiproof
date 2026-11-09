@@ -3998,3 +3998,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Migration workbench cards now establish shrink/wrap boundaries for long change IDs, finding titles, paths, repository names, digests and verification metadata while preserving intentional patch-diff horizontal scrolling.
 - Scope: Advances UI-12/UI-13 migration workbench resilience only; migration planning, verification, provider evidence and database migration contracts remain server-owned.
 - Evidence: Migration workbench contract coverage passed **2/2**; rebuilt-bundle workbench action/long-metadata coverage passed **3/3** on isolated port 3119, including the 320px axe case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
+
+## 2026-11-10 checkpoint — provider review queue narrow metadata containment
+
+- Change: Provider coverage summary and migration-template promotion cards now establish shrink/wrap boundaries for long provider IDs, candidate IDs, remediation guidance and limitation text without changing review or auto-fix policy.
+- Scope: Advances UI-12/UI-13 provider coverage resilience only; provider source health, evidence provenance and migration promotion remain server-owned.
+- Evidence: Provider coverage contract tests passed **2/2**; rebuilt-bundle provider review queue coverage passed **1/1** on isolated port 3120, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.
