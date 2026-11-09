@@ -281,7 +281,7 @@ export function Sidebar() {
             onChange={handleWorkspaceChange}
             disabled={workspaceSwitching || workspaces.length < 2}
             aria-busy={!workspaceLoadComplete || workspaceSwitching ? 'true' : undefined}
-            className="min-h-11 w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-[11px] text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
+            className="min-h-11 w-full rounded-lg border border-[#E8E8E5] bg-white px-2 py-1.5 text-base text-[#111111] outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:cursor-default disabled:bg-[#F6F6F4]"
           >
             {workspaces.length === 0 && <option value="">{workspaceLoadError ? 'Workspace list unavailable' : workspaceLoadComplete ? 'No workspaces available' : 'Loading workspace…'}</option>}
             {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}

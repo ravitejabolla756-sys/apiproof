@@ -19,6 +19,7 @@ test('recovers a failed workspace context switch', async ({ page }) => {
   await page.goto('/dashboard');
   const selector = page.getByLabel('Active workspace');
   await expect(selector).toHaveValue('ws_primary', { timeout: 30_000 });
+  await expect(selector).toHaveCSS('font-size', '16px');
   expect((await selector.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await selector.selectOption('ws_secondary');
   const alert = page.getByRole('alert').filter({ hasText: 'Workspace could not be changed.' });

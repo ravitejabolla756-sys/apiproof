@@ -455,3 +455,7 @@ Findings, inventory, repository, command-palette and repository-picker search in
 ## Latest backup-readiness evidence — 2026-11-09
 
 The local branch is fast-forward compatible with its remote tracking branch at 540 outgoing commits and 0 behind. The bounded content review found no sensitive paths, credential-shaped secrets, destructive production commands or generated artifacts; CI literals are test-only fixtures. Backup is not yet ready for a clean push because the required dirty dependency files and this checkpoint's implementation/test files remain uncommitted. No push was performed.
+
+## Latest UI-12/ORG-02 select-control evidence — 2026-11-09
+
+The active-workspace selector now uses the 16px mobile-safe text floor; the rebuilt web bundle and organization/workspace-switch browser coverage pass locally. Member 1 ORG-10 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

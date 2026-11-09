@@ -2908,3 +2908,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned `[]`; targeted ESLint, repository typecheck and web build passed with 83 generated pages; the initial focused browser run passed 21/22 and exposed only an ambiguous notification status locator, then the corrected rerun passed 5/5.
 - Backup audit: after `git fetch origin --prune`, the branch is `codex/v1-frontend-product` at `343ea5d`, 540 commits ahead and 0 behind `origin/codex/v1-frontend-product`; upstream is an ancestor, so the range is fast-forward compatible. No sensitive-path, credential-pattern, destructive-command or generated-file match was found in the outgoing range. The working tree still contains the preserved uncommitted `apps/web/package.json` and `pnpm-lock.yaml` plus this checkpoint's UI/test files. No push was performed.
 - Scope: advances local UI-12/UI-13 responsive evidence only. Hosted CI, integrated staging, manual assistive-technology review, PostgreSQL/RBAC, Member 1 revocation integration, provider/legal approval and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/ORG-02 select-control text sizing
+
+- Change: Raised the active-workspace selector to the 16px `text-base` floor to prevent mobile focus zoom while preserving workspace-scoped switching, loading and retry behavior.
+- Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`.
+- Evidence: Impeccable detector returned `[]`; targeted ESLint, repository typecheck and the rebuilt web bundle passed with 83 generated pages; organization-audit plus workspace-switch recovery passed 14/14.
+- Scope: advances local UI-12/ORG-02 responsive evidence only. Member 1 ORG-10 revocation integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.

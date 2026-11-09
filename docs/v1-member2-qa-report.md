@@ -19,6 +19,12 @@
 - ADVISORY: The outgoing workflow contains test-only CI values (`APIPROOF_SECRET`, `APIPROOF_LOCAL_SEED_PASSWORD`) and E2E database mode/path; these are non-production fixtures, not credentials. The range includes only application/docs/tests/workflow content and no dependency diff.
 - BLOCKED_FOR_BACKUP: A clean backup commit is not yet prepared because the required uncommitted dependency changes remain, and the current UI/test implementation is also uncommitted. Fast-forward ancestry is safe; push remains unauthorized.
 
+## 2026-11-09 — UI-12/ORG-02 select-control text sizing
+
+- PASS: The active-workspace selector now computes to 16px text while preserving its existing touch target and server-authoritative workspace-switch behavior.
+- PASS: Impeccable detector `[]`; targeted ESLint; `pnpm typecheck`; web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3163 pnpm exec playwright test tests/e2e/workspace-switch-recovery.spec.ts tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line` passed 14/14.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, PostgreSQL/RBAC and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.
