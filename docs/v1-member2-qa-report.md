@@ -2434,3 +2434,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The beta-unavailable invoice-history boundary preserves keyboard skip-link navigation; billing boundary coverage passed **3/3** against the rebuilt 83-page production bundle on isolated port 3157.
 - PASS: Targeted ESLint and `git diff --check` passed.
 - NOT_RUN: Provider invoice source/authorization, retention/legal approval, hosted CI, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — digest boundary skip-link regression
+
+- PASS: Notification settings keep both weekly-digest controls disabled while `DIGEST_CONTRACT_PENDING`, retain the truthful unavailable message, pass axe, and preserve keyboard skip-link focus; rebuilt-bundle coverage passed **1/1** on isolated port 3158 after a fresh 83-page production build.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- NOT_RUN: Digest cadence/recipient/scheduler/worker/retention approval, hosted CI, manual assistive-technology review, integrated staging and production remain open.

@@ -4196,3 +4196,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added a BILL-09/UI-13 browser regression proving the beta-unavailable invoice-history boundary does not interfere with keyboard skip-link navigation.
 - Scope: Advances local invoice UI and accessibility evidence only; provider invoice schema/source, billing authorization, retention and legal policy remain external.
 - Evidence: Rebuilt-bundle billing boundary coverage passed **3/3** on isolated port 3157 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.
+
+## 2026-11-10 checkpoint — digest boundary skip-link regression
+
+- Change: Added focused NOT-10/UI-13 browser coverage proving the unapproved digest contract remains visibly unavailable, both weekly-digest controls stay disabled, the settings surface is axe-clean, and skip-link focus reaches `#main-content`.
+- Scope: Advances local digest-preference UI evidence only; cadence, recipients, timezone, scheduler, worker, retention and delivery policy remain unimplemented pending approval.
+- Evidence: Rebuilt-bundle notification coverage passed **1/1** on isolated port 3158 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.
