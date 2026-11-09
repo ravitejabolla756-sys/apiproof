@@ -25,6 +25,13 @@
 - PASS: Impeccable detector `[]`; targeted ESLint; `pnpm typecheck`; web build generated 83 pages; `CI=true PLAYWRIGHT_PORT=3163 pnpm exec playwright test tests/e2e/workspace-switch-recovery.spec.ts tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line` passed 14/14.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, PostgreSQL/RBAC and production remain open.
 
+## 2026-11-09 — UI-12/ORG-02 owner-role select text sizing
+
+- PASS: Owner-only member-role selectors now compute to 16px text while retaining their existing 44px target and role-change behavior.
+- PASS: Targeted ESLint, `pnpm typecheck`, rebuilt web bundle (83 pages), and `CI=true PLAYWRIGHT_PORT=3164 pnpm exec playwright test tests/e2e/workspace-switch-recovery.spec.ts tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line` passed; browser coverage was 14/14.
+- ADVISORY: Impeccable reports only the five incumbent purple-heading warnings on unchanged workspace headings.
+- NOT_RUN: Member 1 revocation integration, PostgreSQL/RBAC, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

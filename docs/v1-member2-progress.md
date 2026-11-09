@@ -2915,3 +2915,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/components/dashboard/sidebar.tsx`, `tests/e2e/workspace-switch-recovery.spec.ts`.
 - Evidence: Impeccable detector returned `[]`; targeted ESLint, repository typecheck and the rebuilt web bundle passed with 83 generated pages; organization-audit plus workspace-switch recovery passed 14/14.
 - Scope: advances local UI-12/ORG-02 responsive evidence only. Member 1 ORG-10 revocation integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/ORG-02 owner-role select text sizing
+
+- Change: Raised the owner-only workspace role selector to the same 16px mobile-safe text floor as the active-workspace selector; role authorization, final-owner protection and Member 1 revocation boundaries are unchanged.
+- Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
+- Evidence: Targeted ESLint and repository typecheck passed; the rebuilt web bundle generated 83 pages; organization-audit plus workspace-switch recovery passed 14/14. Impeccable reported only the five previously documented incumbent purple-heading warnings.
+- Scope: advances local UI-12/ORG-02 responsive evidence only. Member 1 ORG-10 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.

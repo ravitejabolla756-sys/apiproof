@@ -459,3 +459,7 @@ The local branch is fast-forward compatible with its remote tracking branch at 5
 ## Latest UI-12/ORG-02 select-control evidence — 2026-11-09
 
 The active-workspace selector now uses the 16px mobile-safe text floor; the rebuilt web bundle and organization/workspace-switch browser coverage pass locally. Member 1 ORG-10 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12/ORG-02 owner-role selector evidence — 2026-11-09
+
+The owner-only role selector now uses the 16px mobile-safe text floor; local typecheck, build and organization/workspace-switch browser coverage pass. Member 1 ORG-10 integration, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
