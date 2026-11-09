@@ -2077,3 +2077,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: The invitation page renders directly into the missing-token alert and exposes no acceptance button without a token; focused auth-entry browser coverage includes this state, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Backend token validation/invalidation, delivery, authorization, idempotency, audit persistence, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — accepted-invitation response adapter
+
+- PASS: Accepted-invitation responses are normalized and malformed workspace projections fail closed; focused contract and auth-entry coverage include the malformed-success state, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Server authorization/token invalidation, delivery, idempotency, audit persistence, hosted CI, staging, manual assistive-technology review and production remain open.

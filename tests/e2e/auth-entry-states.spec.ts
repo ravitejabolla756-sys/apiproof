@@ -62,4 +62,18 @@ test.describe('public auth-entry state announcements', () => {
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
     await page.unroute('**/api/workspace/invitations/accept');
   });
+
+  test('fails closed when invitation acceptance returns a malformed success payload', async ({ page }) => {
+    await page.route('**/api/workspace/invitations/accept', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ workspace: { name: 42 } }) });
+    });
+    await page.goto('/invite/accept?token=malformed-response-token');
+    await page.getByRole('button', { name: 'Accept invitation' }).click();
+    const alert = page.getByRole('alert').filter({ hasText: 'Unable to accept this invitation.' });
+    await expect(alert).toBeVisible();
+    await expect(alert).toBeFocused();
+    await expect(page.getByRole('link', { name: 'Sign in with the invited account' })).toBeVisible();
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+    await page.unroute('**/api/workspace/invitations/accept');
+  });
 });

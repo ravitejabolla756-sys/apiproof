@@ -3592,3 +3592,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/invite/accept/page.tsx`, `tests/e2e/auth-entry-states.spec.ts`.
 - Evidence: The focused auth-entry browser suite now covers missing-token, API-rejection and network-failure states; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-03/UI-12 initial-render safety only. Backend token validation, invalidation, authorization and delivery remain unchanged.
+
+## 2026-11-09 checkpoint — accepted-invitation response adapter
+
+- Change: Added a typed adapter for the accepted-invitation response. The page now trims and validates the server-owned workspace name and fails closed on malformed success payloads.
+- Files: `apps/web/src/lib/workspace-invitation-contract.ts`, `apps/web/src/app/invite/accept/page.tsx`, `tests/workspace-invitation-contract.test.ts`, `tests/e2e/auth-entry-states.spec.ts`.
+- Evidence: Focused contract coverage and auth-entry browser coverage include malformed payload recovery; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-03/UI-12 response-shape safety only. Server authorization, token invalidation, idempotency, delivery and audit contracts remain authoritative backend/shared work.

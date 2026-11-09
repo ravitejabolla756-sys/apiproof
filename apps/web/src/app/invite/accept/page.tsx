@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { parseAcceptedInvitationResponse } from '@/lib/workspace-invitation-contract';
 
 function AcceptInvitationForm() {
   const params = useSearchParams();
@@ -18,9 +19,11 @@ function AcceptInvitationForm() {
     setState('loading');
     try {
       const response = await fetch('/api/workspace/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
-      const data = await response.json() as { workspace?: { name: string }; error?: string };
-      if (!response.ok || !data.workspace) { setMessage(data.error || 'Unable to accept this invitation.'); setState('error'); return; }
-      setMessage(`You joined ${data.workspace.name}.`); setState('success');
+      const data = await response.json() as unknown;
+      const projection = parseAcceptedInvitationResponse(data);
+      const error = typeof data === 'object' && data !== null && 'error' in data && typeof data.error === 'string' ? data.error : null;
+      if (!response.ok || !projection) { setMessage(error || 'Unable to accept this invitation.'); setState('error'); return; }
+      setMessage(`You joined ${projection.workspaceName}.`); setState('success');
     } catch {
       setMessage('Unable to reach the invitation service. Try again later or sign in with the invited account.');
       setState('error');
