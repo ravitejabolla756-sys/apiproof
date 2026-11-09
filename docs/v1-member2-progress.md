@@ -3445,3 +3445,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/organization-audit.spec.ts`.
 - Evidence: After rebuilding the production bundle, the focused workspace form journey passed **1/1**; targeted ESLint, Impeccable detector, web typecheck, web build and `git diff --check` passed.
 - Scope: Advances local ORG-02/UI-12 semantics only. Role/RBAC, PostgreSQL, ORG-10 revocation and hosted/manual verification remain open.
+
+## 2026-11-09 checkpoint — repository-wide regression refresh
+
+- Evidence: `pnpm lint` passed with zero warnings; `pnpm typecheck` passed across all workspace projects and the test TypeScript project; `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,420 tests** with **4 skipped** across **172 passing test files**, **1 skipped file**, and **173 total files** in 108.23 seconds. `git diff --check` also passed.
+- Scope: Refreshes local regression evidence after the ORG-02 form, WEB-15 contact and NOT-10 coverage slices. Hosted CI, PostgreSQL/RBAC, provider delivery, manual assistive-technology review, staging and production remain open.
