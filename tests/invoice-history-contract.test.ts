@@ -45,4 +45,28 @@ describe('invoice history adapter boundary', () => {
     expect(parseInvoiceHistoryResult({ ...valid, invoices: [{ ...valid.invoices[0], status: '  ' }] })).toBeNull();
     expect(parseInvoiceHistoryResult({ status: 'unavailable', code: 'PROVIDER_NOT_CONFIGURED', message: '  ' })).toBeNull();
   });
+
+  it('normalizes server-owned display text and catches duplicate IDs after normalization', () => {
+    const result = parseInvoiceHistoryResult({
+      status: 'ready',
+      invoices: [{
+        id: ' inv_1 ', number: ' INV-001 ', issuedAt: '2026-11-09T00:00:00.000Z', status: ' paid ',
+        totalMinor: 1250, currency: ' usd ', hostedUrl: null,
+      }],
+    });
+    expect(result).toEqual({
+      status: 'ready',
+      invoices: [{
+        id: 'inv_1', number: 'INV-001', issuedAt: '2026-11-09T00:00:00.000Z', status: 'paid',
+        totalMinor: 1250, currency: 'USD', hostedUrl: null,
+      }],
+    });
+    expect(parseInvoiceHistoryResult({
+      status: 'ready',
+      invoices: [
+        { id: 'inv_1', number: 'INV-001', issuedAt: '2026-11-09T00:00:00.000Z', status: 'paid', totalMinor: 1, currency: 'USD' },
+        { id: ' inv_1 ', number: 'INV-002', issuedAt: '2026-11-09T00:00:00.000Z', status: 'paid', totalMinor: 2, currency: 'USD' },
+      ],
+    })).toBeNull();
+  });
 });

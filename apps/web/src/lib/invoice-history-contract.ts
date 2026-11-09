@@ -22,16 +22,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isNonEmptyText(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
+function normalizedText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
 }
 
 /** Validate a future server-owned invoice projection before it reaches the UI. */
 export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult | null {
   if (!isRecord(value) || (value.status !== 'unavailable' && value.status !== 'ready')) return null;
   if (value.status === 'unavailable') {
-    return value.code === 'PROVIDER_NOT_CONFIGURED' && isNonEmptyText(value.message)
-      ? { status: 'unavailable', code: value.code, message: value.message }
+    const message = normalizedText(value.message);
+    return value.code === 'PROVIDER_NOT_CONFIGURED' && message
+      ? { status: 'unavailable', code: value.code, message }
       : null;
   }
   if (!Array.isArray(value.invoices)) return null;
@@ -39,23 +42,27 @@ export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult 
   const invoices: InvoiceHistoryRecord[] = [];
   const seen = new Set<string>();
   for (const item of value.invoices) {
+    const id = isRecord(item) ? normalizedText(item.id) : null;
+    const number = isRecord(item) ? normalizedText(item.number) : null;
+    const status = isRecord(item) ? normalizedText(item.status) : null;
+    const currency = isRecord(item) && typeof item.currency === 'string' ? item.currency.trim().toUpperCase() : null;
     if (!isRecord(item)
-      || !isNonEmptyText(item.id)
-      || !isNonEmptyText(item.number)
+      || !id
+      || !number
       || typeof item.issuedAt !== 'string' || !toSafeInvoiceDateTime(item.issuedAt)
-      || !isNonEmptyText(item.status)
+      || !status
       || typeof item.totalMinor !== 'number' || !Number.isSafeInteger(item.totalMinor) || item.totalMinor < 0
-      || typeof item.currency !== 'string' || !/^[A-Za-z]{3}$/.test(item.currency.trim())
+      || !currency || !/^[A-Z]{3}$/.test(currency)
       || (item.hostedUrl !== undefined && item.hostedUrl !== null && typeof item.hostedUrl !== 'string')
-      || seen.has(item.id)) return null;
-    seen.add(item.id);
+      || seen.has(id)) return null;
+    seen.add(id);
     invoices.push({
-      id: item.id,
-      number: item.number,
+      id,
+      number,
       issuedAt: item.issuedAt,
-      status: item.status,
+      status,
       totalMinor: item.totalMinor,
-      currency: item.currency,
+      currency,
       ...(item.hostedUrl === undefined ? {} : { hostedUrl: item.hostedUrl as string | null }),
     });
   }

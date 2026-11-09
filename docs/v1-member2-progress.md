@@ -3517,3 +3517,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added a 320px public-route matrix that checks every audited public route for contained layout and axe-clean main content, complementing the existing 390px mobile and 768px tablet coverage.
 - Files: `tests/e2e/accessibility-routes.spec.ts`.
 - Scope: Advances local UI-12/UI-13/WEB-15 responsive and accessibility evidence only. Manual assistive-technology review, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — BILL-09 invoice projection text normalization
+
+- Change: Hardened the provider-neutral invoice parser to trim and canonicalize invoice IDs, numbers, statuses, currencies and unavailable messages before rendering, and to reject duplicate IDs after normalization.
+- Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
+- Scope: Advances local BILL-09 adapter safety only. No provider endpoint, invoice source, billing authorization, retention policy or payment behavior was added.
