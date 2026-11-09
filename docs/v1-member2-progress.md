@@ -3467,3 +3467,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/workspace-member-revocation-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/workspace-member-revocation-contract.test.ts`, `tests/e2e/organization-audit.spec.ts`, `tests/e2e/public-site.spec.ts`, `docs/v1-member2-contracts.md`.
 - Evidence: Contract coverage passed **1/1**; rebuilt-bundle affected organization/member journeys passed **2/2**; targeted ESLint, web typecheck, web build, detector and `git diff --check` passed.
 - Scope: This is a safety gate, not ORG-10 completion. The authoritative backend transaction, idempotency, final-owner concurrency, audit event and PostgreSQL proof remain Member 1/integration dependencies.
+
+## 2026-11-09 checkpoint — ORG-10 gate regression verification
+
+- Evidence: `pnpm exec vitest run tests/workspace-member-revocation-contract.test.ts tests/organization-management.test.ts` passed **23/23**. The rebuilt-bundle `tests/e2e/organization-audit.spec.ts tests/e2e/public-site.spec.ts` suites passed **40/40**; the invited member remained able to load `/dashboard` while the owner UI exposed no Remove control.
+- Scope: Confirms the frontend safety gate and preserves local role/invitation behavior. It does not prove the Member 1 ORG-10 transaction, workspace-scoped session invalidation, idempotency, final-owner concurrency, audit event or PostgreSQL behavior.

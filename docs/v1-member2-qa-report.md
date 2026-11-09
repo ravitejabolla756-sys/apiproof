@@ -1962,6 +1962,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Targeted ESLint, web typecheck, web build, detector and `git diff --check` passed.
 - NOT_RUN: Member 1 ORG-10 endpoint/transaction integration, idempotency, final-owner concurrency, audit event, PostgreSQL/RBAC and staged/production verification remain open.
 
+## 2026-11-09 — ORG-10 gate regression verification
+
+- PASS: Contract plus organization-management coverage passed **23/23**; the rebuilt-bundle organization-audit and public-site suites passed **40/40**. The invited member retained dashboard access and no owner Remove control was rendered.
+- NOT_RUN: Member 1 ORG-10 transaction integration, workspace-scoped session invalidation, idempotency, final-owner concurrency, audit event, PostgreSQL/RBAC, staging and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.
