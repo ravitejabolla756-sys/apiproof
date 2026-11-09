@@ -3221,3 +3221,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 ## 2026-11-09 checkpoint — UI-12/UI-13 rebuilt-bundle full browser regression
 
 - Evidence: The complete current-tree CI-mode Playwright matrix passed **182/182** in 3.5 minutes with one worker. This includes the malformed notification/workspace projection regressions, authentication, organization, billing, public-site, recovery, keyboard, responsive and axe coverage. Hosted CI, integrated staging, PostgreSQL/RBAC, provider approval, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — ORG-11 audit projection validation
+
+- Change: Workspace administration now validates audit-event identity, labels, actor, timestamps, metadata and cursors before rendering or appending administrative history. Malformed responses fail closed into the existing audit recovery state; authorization, tenant filtering and retention remain backend-owned.
+- Files: `apps/web/src/lib/organization-audit-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/organization-audit-contract.test.ts`.
+- Evidence: Focused contract coverage added for valid, malformed, duplicate and cursor projections. PostgreSQL/RBAC and Member 1 review remain open.
+
+## 2026-11-09 checkpoint — ORG-11 rebuilt-bundle audit regression
+
+- Evidence: The rebuilt-bundle organization-audit suite passed **13/13**, covering stale workspace recovery, owner/member boundaries, invitation and audit recovery, cursor pagination, malformed timestamps and axe-clean states. PostgreSQL/RBAC tenant isolation, retention review, Member 1 revocation integration, hosted CI and staging remain open.

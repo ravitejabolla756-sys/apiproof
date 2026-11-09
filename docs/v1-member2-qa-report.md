@@ -1753,6 +1753,16 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The complete current-tree CI-mode Playwright matrix passed 182/182 in 3.5 minutes with one worker, including the new notification and workspace projection boundaries.
 - NOT_RUN: Hosted GitHub Actions, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — audit projection validation
+
+- PASS: Administrative audit responses are validated before rendering; malformed event records, metadata, duplicate IDs or cursors fail closed without exposing a partial trail.
+- TEST: Focused audit projection contract coverage was added. PostgreSQL/RBAC tenant isolation, retention review, hosted CI and staging remain open.
+
+## 2026-11-09 — rebuilt-bundle organization audit regression
+
+- PASS: The organization-audit browser suite passes 13/13 against the rebuilt bundle, including authorization boundaries, recovery states, pagination and malformed timestamp handling.
+- NOT_RUN: PostgreSQL/RBAC, retention approval, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

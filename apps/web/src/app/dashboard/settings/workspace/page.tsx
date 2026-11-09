@@ -5,11 +5,12 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, Clipboard, Loader2, ShieldCheck, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDisplayDate, formatDisplayDateTime, toSafeDisplayDateTime } from '../../../../lib/date-display-contract.js';
+import { parseAuditPage, type AuditEventProjection } from '../../../../lib/organization-audit-contract.js';
 
 interface Workspace { id: string; name: string; slug: string; role: 'owner' | 'member'; }
 interface Member { id: string; userId: string; email: string; name: string; role: 'owner' | 'member'; createdAt: string; }
 interface Invitation { id: string; email: string; role: 'member'; expiresAt: string; acceptedAt: string | null; revokedAt: string | null; createdAt: string; }
-interface AuditEvent { id: string; action: string; targetType: string; metadata: Record<string, unknown>; actorEmail: string | null; createdAt: string; }
+type AuditEvent = AuditEventProjection;
 
 async function readJson<T>(response: Response): Promise<T & { error?: string }> {
   return response.json() as Promise<T & { error?: string }>;
@@ -65,7 +66,8 @@ export default function WorkspaceSettingsPage() {
         fetch('/api/workspace/invitations'),
         fetch('/api/workspace/audit'),
       ]);
-      const [settings, memberData, invitationData, auditData] = await Promise.all(responses.map((response) => response.json()));
+      const [settings, memberData, invitationData, rawAuditData] = await Promise.all(responses.map((response) => response.json()));
+      const auditData = parseAuditPage(rawAuditData);
       if (!responses[0]!.ok || !settings.workspace) throw new Error(settings.error || 'Unable to load workspace settings.');
       setWorkspace(settings.workspace);
       setName(settings.workspace.name);
@@ -74,9 +76,9 @@ export default function WorkspaceSettingsPage() {
       setInvitations(responses[2]!.ok ? invitationData.invitations || [] : []);
       setMembersError(responses[1]!.ok ? null : memberData.error || 'Unable to load workspace members.');
       setInvitationsError(responses[2]!.ok ? null : invitationData.error || 'Unable to load workspace invitations.');
-      setAudit(responses[3]!.ok ? auditData.events || [] : []);
-      setAuditCursor(responses[3]!.ok ? auditData.nextCursor || null : null);
-      setAuditError(responses[3]!.ok ? null : auditData.error || 'Unable to load administrative audit events.');
+      setAudit(responses[3]!.ok && auditData ? auditData.events : []);
+      setAuditCursor(responses[3]!.ok && auditData ? auditData.nextCursor : null);
+      setAuditError(responses[3]!.ok && auditData ? null : (responses[3]!.ok ? 'Unable to load administrative audit events.' : rawAuditData.error || 'Unable to load administrative audit events.'));
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load workspace settings.');
     } finally {
@@ -93,10 +95,11 @@ export default function WorkspaceSettingsPage() {
     setAuditError(null);
     try {
       const response = await fetch(`/api/workspace/audit?cursor=${encodeURIComponent(auditCursor)}`);
-      const data = await readJson<{ events?: AuditEvent[]; nextCursor?: string | null }>(response);
-      if (!response.ok || !data.events) throw new Error(data.error || 'Unable to load more audit events.');
-      setAudit((current) => [...current, ...data.events!]);
-      setAuditCursor(data.nextCursor || null);
+      const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
+      const data = parseAuditPage(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load more audit events.');
+      setAudit((current) => [...current, ...data.events]);
+      setAuditCursor(data.nextCursor);
     } catch (loadError) {
       setAuditError(loadError instanceof Error ? loadError.message : 'Unable to load more audit events.');
     } finally {
@@ -109,10 +112,11 @@ export default function WorkspaceSettingsPage() {
     setRetryingAudit(true);
     try {
       const response = await fetch('/api/workspace/audit');
-      const data = await readJson<{ events?: AuditEvent[]; nextCursor?: string | null }>(response);
-      if (!response.ok || !data.events) throw new Error(data.error || 'Unable to load administrative audit events.');
+      const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
+      const data = parseAuditPage(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load administrative audit events.');
       setAudit(data.events);
-      setAuditCursor(data.nextCursor || null);
+      setAuditCursor(data.nextCursor);
       setAuditError(null);
     } catch (loadError) {
       setAuditError(loadError instanceof Error ? loadError.message : 'Unable to load administrative audit events.');
