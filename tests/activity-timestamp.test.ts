@@ -106,6 +106,10 @@ describe('Activity Page Timestamp Formatting — formatActivityTimestamp', () =>
     expect(formatActivityTimestamp('Invalid Date')).toBe('Unknown time');
   });
 
+  it('returns "Unknown time" for an impossible calendar date instead of accepting date normalization', () => {
+    expect(formatActivityTimestamp('2026-02-31T00:00:00.000Z')).toBe('Unknown time');
+  });
+
   it('safely handles missing fields on ActivityItem without throwing or returning "Invalid Date"', () => {
     const itemWithoutTime: ActivityItem = {
       id: 'act_003',

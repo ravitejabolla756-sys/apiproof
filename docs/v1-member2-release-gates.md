@@ -556,6 +556,10 @@ Workspace invitation and audit timestamps now fail closed for malformed projecti
 
 Malformed invitation and audit timestamps render `Unavailable` rather than `Invalid Date` in a 390px axe-clean workspace journey; the focused browser test passes 1/1. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest activity date-safety evidence — 2026-11-09
+
+Activity formatting rejects impossible calendar dates while preserving valid and numeric timestamps; the seeded activity suite passes 20/20 and typecheck/lint pass. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.

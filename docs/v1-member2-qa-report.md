@@ -1618,6 +1618,12 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Malformed invitation and audit timestamps render `Unavailable` rather than `Invalid Date`; the focused workspace browser test passed 1/1 with no-overflow and axe assertions, and targeted ESLint, test TypeScript and `git diff --check` passed.
 - NOT_RUN: PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — UI-12 activity impossible-date hardening
+
+- PASS: Activity formatting rejects impossible calendar dates while preserving valid ISO, numeric epoch and existing missing/invalid fallbacks; the seeded activity suite passed 20/20 with targeted ESLint, full typecheck and `git diff --check` passing.
+- ADVISORY: The first unseeded invocation stopped at shared SQLite fixture initialization because `APIPROOF_LOCAL_SEED_PASSWORD` was unset; the seeded invocation passed.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

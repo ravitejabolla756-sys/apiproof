@@ -18,8 +18,18 @@ export function formatActivityTimestamp(rawTimestamp?: string | number | null): 
   if (rawTimestamp === null || rawTimestamp === undefined || rawTimestamp === '') {
     return 'Unknown time';
   }
+  if (typeof rawTimestamp === 'string') {
+    const calendar = /^(\d{4})-(\d{2})-(\d{2})(?:T|$)/.exec(rawTimestamp);
+    if (calendar) {
+      const year = Number(calendar[1]);
+      const month = Number(calendar[2]);
+      const day = Number(calendar[3]);
+      const daysInMonth = month >= 1 && month <= 12 ? new Date(Date.UTC(year, month, 0)).getUTCDate() : 0;
+      if (day < 1 || day > daysInMonth) return 'Unknown time';
+    }
+  }
   const date = new Date(rawTimestamp);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return 'Unknown time';
   }
   return date.toLocaleString();

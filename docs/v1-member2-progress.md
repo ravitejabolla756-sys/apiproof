@@ -3129,3 +3129,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/organization-audit.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3194 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line -g "malformed invitation"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: strengthens local ORG-03/ORG-11/UI-12 contract resilience only. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12 activity impossible-date hardening
+
+- Change: Activity timestamp formatting now rejects impossible calendar dates before JavaScript normalization and continues to render the existing `Unknown time` fallback; numeric epoch timestamps and valid ISO values remain unchanged.
+- Files: `apps/web/src/lib/activity-utils.ts`, `tests/activity-timestamp.test.ts`.
+- Evidence: seeded `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run tests/activity-timestamp.test.ts --reporter=dot` passed 20/20; targeted ESLint, full repository typecheck and `git diff --check` passed. An initial unseeded invocation failed only at shared SQLite fixture setup because `APIPROOF_LOCAL_SEED_PASSWORD` was unset.
+- Scope: advances local UI-12/activity resilience only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
