@@ -9,7 +9,7 @@ import { mergeAuditEvents, parseAuditPage, type AuditEventProjection } from '../
 import { parseInvitationCollection, parseMemberCollection, type InvitationProjection, type MemberProjection } from '../../../../lib/organization-collection-contract.js';
 import { parseWorkspaceSettings, type WorkspaceSettingsProjection } from '../../../../lib/organization-settings-contract.js';
 import { toSafeInvitationUrl } from '../../../../lib/external-link-contract.js';
-import { parseCreatedInvitationResponse } from '../../../../lib/workspace-invitation-contract.js';
+import { parseCreatedInvitationResponse, parseRevokedInvitationResponse } from '../../../../lib/workspace-invitation-contract.js';
 import { workspaceMemberRevocationAvailability } from '../../../../lib/workspace-member-revocation-contract.js';
 
 type Workspace = WorkspaceSettingsProjection;
@@ -233,8 +233,9 @@ export default function WorkspaceSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invitationId: invitation.id }),
       });
-      const data = await readJson<{ error?: string }>(response);
-      if (!response.ok) throw new Error(data.error || 'Unable to cancel invitation.');
+      const rawData = await readJson<{ error?: string; success?: unknown }>(response);
+      const data = parseRevokedInvitationResponse(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to cancel invitation.');
       setInvitations((current) => current.map((item) => item.id === invitation.id
         ? { ...item, revokedAt: new Date().toISOString() }
         : item));

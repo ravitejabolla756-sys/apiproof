@@ -23,3 +23,8 @@ export function parseCreatedInvitationResponse(value: unknown): CreatedInvitatio
   const inviteUrl = value.inviteUrl.trim();
   return inviteUrl ? { inviteUrl } : null;
 }
+
+/** Require the explicit server success marker before reflecting cancellation locally. */
+export function parseRevokedInvitationResponse(value: unknown): { success: true } | null {
+  return isRecord(value) && value.success === true ? { success: true } : null;
+}

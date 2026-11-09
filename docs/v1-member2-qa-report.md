@@ -2229,3 +2229,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invitation creation validates the response shape before applying same-origin and token-route checks; invitation contract coverage passed **3/3**, and invitation-action/organization-collection browser coverage passed **2/2**.
 - PASS: Targeted workspace-settings/invitation ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Backend invitation authorization/invalidation, approved delivery channel, hosted CI, staging and production remain open.
+
+## 2026-11-09 — invitation revocation response guard
+
+- PASS: Invitation cancellation requires the explicit server success marker before updating local state; invitation contract coverage passed **4/4** and the authenticated create/cancel browser flow passed **1/1**.
+- PASS: Targeted workspace-settings/invitation ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Backend token invalidation/audit transaction, hosted CI, staging and production remain open.

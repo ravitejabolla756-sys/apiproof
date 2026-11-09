@@ -3790,3 +3790,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/workspace-invitation-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/workspace-invitation-contract.test.ts`.
 - Evidence: Invitation contract coverage passed **3/3**; invitation action and organization collection browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-03 local response safety only; invitation invalidation, authorization, delivery channel and persistence remain backend-owned.
+
+## 2026-11-09 checkpoint — invitation revocation response guard
+
+- Change: Invitation cancellation now requires the backend's explicit `{ success: true }` projection before reflecting revoked state locally; arbitrary successful HTTP responses no longer synthesize cancellation.
+- Files: `apps/web/src/lib/workspace-invitation-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/workspace-invitation-contract.test.ts`.
+- Evidence: Invitation contract coverage passed **4/4**; the authenticated create/cancel browser flow passed **1/1**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-03 invalidation UI safety only; the authoritative revocation transaction, token invalidation and audit event remain backend-owned.

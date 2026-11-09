@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseAcceptedInvitationResponse, parseCreatedInvitationResponse } from '../apps/web/src/lib/workspace-invitation-contract.js';
+import { parseAcceptedInvitationResponse, parseCreatedInvitationResponse, parseRevokedInvitationResponse } from '../apps/web/src/lib/workspace-invitation-contract.js';
 
 describe('accepted invitation response contract', () => {
   it('normalizes a valid workspace projection', () => {
@@ -16,5 +16,11 @@ describe('accepted invitation response contract', () => {
     expect(parseCreatedInvitationResponse({ inviteUrl: '  /invite/accept?token=abc  ' })).toEqual({ inviteUrl: '/invite/accept?token=abc' });
     expect(parseCreatedInvitationResponse({ inviteUrl: '   ' })).toBeNull();
     expect(parseCreatedInvitationResponse({ inviteUrl: 42 })).toBeNull();
+  });
+
+  it('requires the explicit revocation success marker', () => {
+    expect(parseRevokedInvitationResponse({ success: true })).toEqual({ success: true });
+    expect(parseRevokedInvitationResponse({ success: false })).toBeNull();
+    expect(parseRevokedInvitationResponse({})).toBeNull();
   });
 });
