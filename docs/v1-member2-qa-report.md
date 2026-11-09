@@ -1562,6 +1562,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The complete `tests/e2e/public-site.spec.ts` suite passed 26/26 with one worker, covering public pages, metadata, forms, account/workspace/notification settings, invitation/member flows, authenticated route states and keyboard/dialog behavior.
 - NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — UI-12/UI-13 mobile invitation workflow coverage
+
+- PASS: Manual workspace-invitation creation/cancellation now has a 390px browser assertion for no document overflow and 44px invite/cancel controls; the focused Playwright journey passed 1/1 with targeted ESLint, test TypeScript and `git diff --check` passing.
+- NOT_RUN: Approved transactional email, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

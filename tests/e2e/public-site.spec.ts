@@ -275,13 +275,13 @@ test.describe('authenticated product surfaces', () => {
     await page.unroute('**/api/workspace/context');
   });
   test('creates and cancels a manual workspace invitation without sending email', async ({ page }) => {
-    await signIn(page);
+    await page.setViewportSize({ width: 390, height: 844 }); await signIn(page);
     await page.goto('/dashboard/settings/workspace');
     const inviteEmail = `browser-invite-${Date.now()}@example.test`;
-    await page.getByLabel('Invite email').fill(inviteEmail); await expect(page.getByLabel('Invite email')).toHaveAttribute('autocomplete', 'email');
+    await page.getByLabel('Invite email').fill(inviteEmail); await expect(page.getByLabel('Invite email')).toHaveAttribute('autocomplete', 'email'); expect((await page.getByLabel('Invite email').boundingBox())?.height).toBeGreaterThanOrEqual(44); expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     await page.getByRole('button', { name: 'Create invite link' }).click();
     await expect(page.getByText('Invitation created. Copy the link and send it through an approved channel.')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(inviteEmail)).toBeVisible();
+    await expect(page.getByText(inviteEmail)).toBeVisible(); expect((await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).boundingBox())?.height).toBeGreaterThanOrEqual(44);
     page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('button', { name: `Cancel invitation for ${inviteEmail}` }).click();
     await expect(page.getByText('Invitation cancelled.')).toBeVisible({ timeout: 30_000 });

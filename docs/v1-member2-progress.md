@@ -3054,3 +3054,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3183 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 --reporter=line` passed **26/26**. This includes public navigation/metadata/forms, account and workspace settings, invitations/member management, notification save/loading/error states, dashboard route coverage and keyboard/dialog behavior.
 - Scope: refreshes local UI-12/UI-13/ORG-02/ORG-03/NOT-10/WEB-15 evidence. Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 mobile invitation workflow coverage
+
+- Change: Extended the manual workspace-invitation browser journey to run at 390px and verify no document-level horizontal overflow plus 44px invite and cancellation controls. Invitation delivery remains explicitly manual-copy-only.
+- Files: `tests/e2e/public-site.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3184 pnpm exec playwright test tests/e2e/public-site.spec.ts --workers=1 --reporter=line -g "creates and cancels a manual workspace invitation"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local UI-12/UI-13/ORG-03 evidence only. Approved transactional email, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.

@@ -512,6 +512,10 @@ The 390px notification-settings journey verifies focusable overflow handling, no
 
 The complete public-site specification passes 26/26 locally, including public forms/metadata, authenticated organization and notification journeys, invitation/member management, recovery states and keyboard/dialog behavior. Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest ORG-03 mobile invitation evidence — 2026-11-09
+
+The manual-copy invitation create/cancel journey passes at 390px with no document overflow and 44px invite/cancel controls. Approved transactional email, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
