@@ -1557,6 +1557,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Targeted ESLint, test TypeScript, `git diff --check` and related digest/invoice/notification Vitest coverage passed 9/9.
 - NOT_RUN: Manual assistive-technology review, hosted CI, staging, provider delivery, digest scheduling and production remain open.
 
+## 2026-11-09 — public-site regression after mobile notification coverage
+
+- PASS: The complete `tests/e2e/public-site.spec.ts` suite passed 26/26 with one worker, covering public pages, metadata, forms, account/workspace/notification settings, invitation/member flows, authenticated route states and keyboard/dialog behavior.
+- NOT_RUN: Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

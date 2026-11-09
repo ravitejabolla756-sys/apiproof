@@ -508,6 +508,10 @@ Invoice issue-date validation now rejects impossible calendar dates before platf
 
 The 390px notification-settings journey verifies focusable overflow handling, no document overflow, 44px unavailable digest controls and axe-clean content; the focused browser test passes 1/1 and related local contract tests pass 9/9. Manual assistive-technology review, hosted CI, staging, provider delivery, digest scheduling and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest public-site regression evidence — 2026-11-09
+
+The complete public-site specification passes 26/26 locally, including public forms/metadata, authenticated organization and notification journeys, invitation/member management, recovery states and keyboard/dialog behavior. Hosted CI, integrated staging, PostgreSQL/RBAC, provider delivery, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
