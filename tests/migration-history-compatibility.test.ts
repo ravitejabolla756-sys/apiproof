@@ -58,6 +58,39 @@ describe('migration history compatibility preparation', () => {
     expect(() => assertMigrationHistorySafe({ applied: [{ id: '024', name: 'unreviewed_name' }], existingObjects: [] })).toThrow('MIGRATION_HISTORY_REQUIRES_REVIEW');
   });
 
+  it('fails closed for an unrecognized migration ID', () => {
+    const assessment = assessMigrationHistory({
+      applied: [{ id: '999', name: 'unreviewed_migration' }],
+      existingObjects: [],
+    });
+    expect(assessment.directUpgrade).toBe('blocked');
+    expect(assessment.issues.map((issue) => issue.code)).toContain('UNKNOWN_MIGRATION');
+    expect(() => assertMigrationHistorySafe({
+      applied: [{ id: '999', name: 'unreviewed_migration' }],
+      existingObjects: [],
+    })).toThrow('MIGRATION_HISTORY_REQUIRES_REVIEW');
+  });
+
+  it('fails closed for duplicate applied IDs', () => {
+    const assessment = assessMigrationHistory({
+      applied: [
+        { id: '024', name: 'email_verification_tokens_and_user_state' },
+        { id: '024', name: 'email_verification_tokens_and_user_state' },
+      ],
+      existingObjects: member1Objects,
+    });
+    expect(assessment.directUpgrade).toBe('blocked');
+    expect(assessment.issues.map((issue) => issue.code)).toContain('DUPLICATE_APPLIED_ID');
+  });
+
+  it('is deterministic and non-mutating when assessed repeatedly', () => {
+    const snapshot = { applied: rows(MEMBER1_MIGRATION_DEFINITIONS), existingObjects: member1Objects };
+    const first = assessMigrationHistory(snapshot);
+    const second = assessMigrationHistory(snapshot);
+    expect(second).toEqual(first);
+    expect(snapshot.applied).toEqual(rows(MEMBER1_MIGRATION_DEFINITIONS));
+  });
+
   it('detects a ledger row whose recorded schema is incomplete', () => {
     const assessment = assessMigrationHistory({
       applied: rows(MEMBER1_MIGRATION_DEFINITIONS),
