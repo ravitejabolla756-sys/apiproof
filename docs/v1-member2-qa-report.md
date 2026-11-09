@@ -1743,6 +1743,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: A malformed server preference projection now produces the existing recovery alert, no preference table, and no axe violations in the authenticated browser surface.
 - NOT_RUN: Provider-controlled delivery, digest scheduling, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — malformed workspace projection browser regression
+
+- PASS: An active workspace ID outside the server-owned workspace list now produces the existing workspace recovery alert, disables the selector, and remains axe-clean.
+- NOT_RUN: PostgreSQL/RBAC tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

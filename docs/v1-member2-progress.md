@@ -3211,3 +3211,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added a rebuilt-bundle browser regression proving malformed notification preference responses render the existing recovery alert, do not expose controls, and remain axe-clean.
 - Files: `tests/e2e/notification-preference-contract.spec.ts`.
 - Evidence: The browser negative path is isolated from provider delivery and digest scheduling; external provider and hosted verification remain open.
+
+## 2026-11-09 checkpoint — ORG-02/UI-12 workspace projection validation
+
+- Change: The dashboard workspace selector now validates workspace IDs/names, rejects duplicates and requires the active workspace ID to belong to the server-owned list. Inconsistent projections fail closed into the existing unavailable/retry state; stale-cookie recovery and tenant authorization remain server-owned.
+- Files: `apps/web/src/lib/workspace-context-contract.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/workspace-context-contract.test.ts`, `tests/e2e/workspace-context-contract.spec.ts`.
+- Evidence: Added focused unit and axe-clean browser negative-path coverage. PostgreSQL/RBAC and integrated Member 1 authorization evidence remain open.

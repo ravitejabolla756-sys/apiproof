@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import { signOutSession } from "@/lib/session-logout";
+import { parseWorkspaceContext } from "@/lib/workspace-context-contract";
 import {
   LayoutDashboard,
   GitBranch,
@@ -78,9 +79,10 @@ export function Sidebar() {
         const response = await fetch('/api/workspaces', { cache: 'no-store' });
         if (!response.ok) throw new Error('Workspace list unavailable.');
         if (!active) return;
-        const data = await response.json();
-        if (Array.isArray(data.workspaces)) setWorkspaces(data.workspaces);
-        if (typeof data.activeWorkspaceId === 'string') setActiveWorkspaceId(data.activeWorkspaceId);
+        const data = parseWorkspaceContext(await response.json());
+        if (!data) throw new Error('Workspace list unavailable.');
+        setWorkspaces(data.workspaces);
+        setActiveWorkspaceId(data.activeWorkspaceId ?? '');
         setWorkspaceLoadError(false);
         setWorkspaceLoadComplete(true);
       } catch {
