@@ -1982,6 +1982,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The no-monitor status state is now supplied by a typed `STATUS_SOURCE_NOT_CONFIGURED` contract. Contract coverage passed **1/1** and rebuilt-bundle status browser coverage passed **2/2**; detector, targeted ESLint, web typecheck, web build and `git diff --check` passed.
 - NOT_RUN: Approved monitor/source identity, freshness policy, incident drill, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — BILL-11 typed intake boundary
+
+- PASS: The non-sending public contact state is now supplied by a typed `NO_APPROVED_DESTINATION` contract. Contract coverage passed **1/1** and rebuilt-bundle enterprise/contact coverage passed **2/2**; detector, targeted ESLint, web typecheck, web build and `git diff --check` passed.
+- NOT_RUN: Approved destination, privacy/retention policy, delivery/spam controls, SLA, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

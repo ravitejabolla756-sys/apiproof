@@ -3491,3 +3491,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/status-communications-contract.ts`, `apps/web/src/app/status/page.tsx`, `tests/status-communications-contract.test.ts`.
 - Evidence: Status contract coverage passed **1/1**; rebuilt-bundle status browser coverage passed **2/2**; targeted detector, ESLint, web typecheck, web build and `git diff --check` passed.
 - Scope: Advances local WEB-13/UI-12 truthfulness only. No monitor, incident data, uptime claim, source integration or production behavior was added.
+
+## 2026-11-09 checkpoint — BILL-11 typed intake boundary
+
+- Change: Extracted the public contact form’s no-destination state into a typed `EnterpriseIntakeAvailability` contract with `NO_APPROVED_DESTINATION`; the form remains explicitly non-sending and continues to warn users before sharing sensitive details.
+- Files: `apps/web/src/lib/enterprise-intake-contract.ts`, `apps/web/src/app/contact/page.tsx`, `tests/enterprise-intake-contract.test.ts`.
+- Evidence: Intake contract coverage passed **1/1**; rebuilt-bundle enterprise/contact browser coverage passed **2/2**; targeted detector, ESLint, web typecheck, web build and `git diff --check` passed.
+- Scope: Advances local BILL-11/WEB-15 truthfulness only. No destination, delivery service, SLA, privacy policy, spam control or retention behavior was added.

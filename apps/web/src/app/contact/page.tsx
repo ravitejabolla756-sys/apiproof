@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
 import { CheckCircle2, ArrowRight, ShieldCheck, Server, FileCode, HelpCircle } from "lucide-react";
+import { enterpriseIntakeAvailability } from "@/lib/enterprise-intake-contract";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -48,9 +49,9 @@ export default function ContactPage() {
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
                   <CheckCircle2 aria-hidden="true" className="w-7 h-7" />
                 </div>
-                <h2 className="font-serif text-2xl text-[#000E29]">No message was sent</h2>
+                <h2 className="font-serif text-2xl text-[#000E29]">{enterpriseIntakeAvailability.heading}</h2>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                  Contact intake is not connected to a delivery service in this beta. Please use an owner-provided support channel before sharing sensitive details.
+                  {enterpriseIntakeAvailability.message}
                 </p>
               </div>
             ) : (

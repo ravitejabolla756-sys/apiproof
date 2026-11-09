@@ -59,3 +59,5 @@ Required behavior:
 - accessible keyboard, mobile, error and success-state coverage.
 
 Until these decisions and tests exist, BILL-11 remains partial and the public form must remain explicitly non-sending.
+
+The current frontend represents that boundary as `enterpriseIntakeAvailability` with code `NO_APPROVED_DESTINATION`; it is a local unavailable projection only and does not authorize a client-side destination or delivery attempt.
