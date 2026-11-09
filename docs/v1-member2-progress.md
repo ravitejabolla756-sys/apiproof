@@ -3911,3 +3911,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/migration-action-contract.ts`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/migration-action-contract.test.ts`, `tests/e2e/dashboard-data-states.spec.ts`.
 - Evidence: Migration action contract coverage passed **3/3**; rebuilt-bundle dashboard data-state coverage passed **16/16** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 migration-workbench response safety only; verification execution, GitHub authorization, Draft PR creation and server-side safety invariants remain backend/provider-owned.
+
+## 2026-11-09 checkpoint — sidebar overview projection guard
+
+- Change: The persistent sidebar now consumes a minimal validated overview projection for its open-findings badge, workspace name and account email; unsafe counts or malformed identity fields are ignored instead of being rendered.
+- Files: `apps/web/src/lib/overview-contract.ts`, `apps/web/src/components/dashboard/sidebar.tsx`, `tests/overview-contract.test.ts`.
+- Evidence: Overview/sidebar contract coverage passed **3/3**; rebuilt-bundle workspace context and switch-recovery coverage passed **4/4** after a fresh web production build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/ORG-02 local dashboard projection safety only; the overview API's authorization, tenant scope and server-owned counters remain backend-owned.

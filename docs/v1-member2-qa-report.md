@@ -2333,3 +2333,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Finding workbench migration-plan, proposal and verification-polling responses now require reviewed envelopes; malformed successful responses fail closed. The provider-rule sample-test fixture now includes its documented success marker. Contract coverage passed **3/3**.
 - PASS: Rebuilt-bundle dashboard data-state coverage passed **16/16** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Verification worker/GitHub provider integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — sidebar overview projection guard
+
+- PASS: Sidebar overview data now validates its consumed count and identity fields before rendering; unsafe counts are ignored and malformed identity envelopes fail closed. Contract coverage passed **3/3**.
+- PASS: Rebuilt-bundle workspace context and switch-recovery coverage passed **4/4** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Backend overview authorization/tenant verification, hosted CI, staging, manual assistive-technology review and production remain open.

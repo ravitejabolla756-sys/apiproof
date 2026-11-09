@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import { parseLogoutResponse, signOutSession } from "@/lib/session-logout";
 import { parseWorkspaceContext, parseWorkspaceSwitchResponse } from "@/lib/workspace-context-contract";
+import { parseOverviewSidebarProjection } from "@/lib/overview-contract";
 import {
   LayoutDashboard,
   GitBranch,
@@ -53,16 +54,11 @@ export function Sidebar() {
       try {
         const res = await fetch('/api/overview');
         if (res.ok) {
-          const data = await res.json();
-          if (typeof data.stats?.openFindings === 'number') {
-            setOpenFindingsCount(data.stats.openFindings);
-          }
-          if (data.workspace?.name) {
-            setWorkspaceName(data.workspace.name);
-          }
-          if (data.user?.email) {
-            setUserEmail(data.user.email);
-          }
+          const data = parseOverviewSidebarProjection(await res.json());
+          if (!data) return;
+          if (data.openFindingsCount !== null) setOpenFindingsCount(data.openFindingsCount);
+          if (data.workspaceName) setWorkspaceName(data.workspaceName);
+          if (data.userEmail) setUserEmail(data.userEmail);
         }
       } catch {
         // Ignore background stat fetch errors
