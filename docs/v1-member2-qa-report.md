@@ -2452,3 +2452,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Account settings keeps deletion disabled/non-submitting, exposes the deletion explanation, passes axe, and preserves keyboard skip-link focus; rebuilt-bundle coverage passed **1/1** on isolated port 3160 after a fresh 83-page production build.
 - PASS: Targeted ESLint and `git diff --check` passed.
 - NOT_RUN: Deletion authorization/retention/legal contract, hosted CI, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — seeded repository regression refresh
+
+- PASS: Seeded Vitest regression passed **1,504 tests** across **200 passing files**, with **4 skipped tests** and **1 skipped file**, in **112.02 seconds** using `--no-file-parallelism`.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider delivery, legal approval, manual assistive-technology review, integrated staging and production remain open.

@@ -4214,3 +4214,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added focused AUTH-08/AUTH-09/UI-13 browser coverage proving account deletion remains disabled and non-submitting while preserving keyboard skip-link focus on account settings.
 - Scope: Advances local account safety and accessibility evidence only; deletion authorization, retention, durable erasure and legal policy remain blocked pending contract approval.
 - Evidence: Rebuilt-bundle account coverage passed **1/1** on isolated port 3160 after a fresh production build generating **83 pages**; targeted ESLint and `git diff --check` passed.
+
+## 2026-11-10 checkpoint — seeded repository regression refresh
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm test -- --no-file-parallelism` passed **1,504 tests** across **200 passing files**, with **4 skipped tests** and **1 skipped file**, in **112.02 seconds**.
+- Scope: Refreshes current local regression evidence for the Member 2 UI, billing, notification, organization and contract-boundary slices; hosted CI, PostgreSQL/RBAC, providers, legal approval, manual assistive-technology review, staging and production remain external gates.
