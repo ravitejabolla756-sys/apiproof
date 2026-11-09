@@ -3400,3 +3400,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Extended the digest boundary regression through both `GET` and `PATCH /api/account/notifications`, proving a client opt-in attempt receives the server-owned disabled/unavailable projection while scheduling remains pending.
 - Files: `tests/notification-preferences.test.ts`.
 - Evidence: Notification preference coverage passed **5/5**; no scheduler, worker, provider or migration behavior was added.
+
+## 2026-11-09 checkpoint — outgoing-range security and public performance review
+
+- Evidence: The current branch is `619` commits ahead of `origin/codex/v1-frontend-product` and `0` behind; the remote tip is an ancestor of `HEAD`, so the branch is fast-forward-safe for a future authorized backup. The worktree remains intentionally dirty only in `apps/web/package.json` and `pnpm-lock.yaml`.
+- Content review: Outgoing paths contain no environment files, private keys, database files, build output, coverage, Playwright artifacts or dependency directories. An added-line credential-pattern scan found no credentials; the only matches were deliberate `do-not-return`/redaction fixture values in the organization audit test. No push or other remote write was performed.
+- Evidence: Against the rebuilt local production bundle, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load was **11–37 ms**, response **2–14 ms**, and encoded HTML **6.1–17.0 KiB** over loopback.
+- Scope: This strengthens local WEB-14/WEB-15 evidence and backup readiness only. It is not Lighthouse/Core Web Vitals, hosted CI, public-network, staging, production, or external provider evidence.

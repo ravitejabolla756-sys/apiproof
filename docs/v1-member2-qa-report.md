@@ -1883,6 +1883,13 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The notification HTTP GET boundary returns stored weekly-digest opt-ins as disabled/unavailable while the scheduler contract is pending; notification preference coverage passed 5/5.
 - NOT_RUN: Scheduler ownership, cadence, recipient/timezone/retention approval and provider delivery remain open.
 
+## 2026-11-09 — outgoing-range security and public performance review
+
+- PASS: `git rev-list --count origin/codex/v1-frontend-product..HEAD` reported 619 outgoing commits and `HEAD..origin/codex/v1-frontend-product` reported 0; `git merge-base --is-ancestor origin/codex/v1-frontend-product HEAD` confirmed fast-forward safety. The worktree contains only the pre-existing dependency edits in `apps/web/package.json` and `pnpm-lock.yaml`.
+- PASS: Content-level outgoing-range review found no credential-like additions, private keys, environment files, database files, generated build/test artifacts or dependency directories. The two credential-pattern matches were intentional redaction-fixture strings in `tests/organization-management.test.ts`; no secret was added. No push, merge, rebase or remote write was performed.
+- PASS: `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes against the rebuilt local production bundle. Median load was 11–37 ms, response 2–14 ms and encoded HTML 6.1–17.0 KiB over loopback.
+- NOT_RUN: Hosted CI, Lighthouse/Core Web Vitals, public-network performance, staging, manual assistive-technology review, PostgreSQL/RBAC, provider delivery and production verification remain open.
+
 ## 2026-11-09 — workspace projection text validation
 
 - PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.
