@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, FolderGit2, Boxes, AlertTriangle, FileCheck2, GitPullRequest, Settings, ShieldCheck, X, ChevronRight } from 'lucide-react';
+import { parseCommandPaletteResponse } from '@/lib/command-palette-contract';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -65,8 +66,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       ]);
       if (!repoRes.ok || !invRes.ok) throw new Error('Search data is temporarily unavailable.');
       const [repoJson, invJson] = await Promise.all([repoRes.json(), invRes.json()]);
-      setRepositories(repoJson.repositories || []);
-      setInventory(invJson.providers || []);
+      const parsed = parseCommandPaletteResponse({ repositories: repoJson.repositories, providers: invJson.providers });
+      if (!parsed) throw new Error('Search data is temporarily unavailable.');
+      setRepositories(parsed.repositories);
+      setInventory(parsed.providers);
       setError(null);
     } catch (cause) {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Search data is temporarily unavailable.');

@@ -2257,3 +2257,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Slack connection status now validates the `connected` boolean and optional workspace name before rendering; malformed successful payloads use the existing retryable status error and unnamed connected workspaces use explicit fallback copy. Contract coverage passed **3/3**.
 - PASS: Slack action recovery and disconnect-progress browser coverage passed **2/2**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Slack authorization/provider verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — command-palette projection guard
+
+- PASS: Command-palette search validates the minimal repository and inventory projections, rejecting malformed, negative-count and duplicate records into the existing retryable error state. Contract coverage passed **3/3**.
+- PASS: Rebuilt-bundle command-palette recovery coverage passed **1/1** after a fresh web build generating **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Backend tenant/authorization verification, hosted CI, staging, manual assistive-technology review and production remain open.

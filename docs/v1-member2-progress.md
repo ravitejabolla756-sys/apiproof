@@ -3820,3 +3820,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/slack-connection-contract.ts`, `apps/web/src/components/dashboard/slack-connection-card.tsx`, `tests/slack-connection-contract.test.ts`.
 - Evidence: Slack contract coverage passed **3/3**; Slack connection recovery/disconnect browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances NOT-03/UI-12 local response safety only; Slack authorization, recipient policy, provider delivery, scheduler and Member 1 event contracts remain unchanged.
+
+## 2026-11-09 checkpoint — command-palette projection guard
+
+- Change: Added a minimal typed adapter for the command palette's repository and inventory search projections; incomplete, negative-count or duplicate records now enter the existing retryable search error instead of being rendered or filtered unchecked.
+- Files: `apps/web/src/lib/command-palette-contract.ts`, `apps/web/src/components/dashboard/command-palette.tsx`, `tests/command-palette-contract.test.ts`.
+- Evidence: Command-palette contract coverage passed **3/3**; rebuilt-bundle command-palette recovery coverage passed **1/1** after a fresh web build with **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 local search resilience only; repository/inventory authorization and tenant-scoped server projections remain authoritative.
