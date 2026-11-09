@@ -673,3 +673,7 @@ The worker-facing preference helper is covered for both weekly-digest channels a
 ## Latest UI-12/WEB-15 security matrix evidence — 2026-11-09
 
 The public security invariant matrix now uses a readable minimum width within its existing focusable overflow region. The rebuilt-bundle table/accessibility checks passed **2/2**, including mobile containment with no document-level horizontal overflow. Hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest BILL-09 invoice semantics evidence — 2026-11-09
+
+The future invoice projection table now has an explicit descriptive caption for assistive technology. Billing-boundary browser coverage passed **1/1** and the rebuilt web build generated **83 pages**. Provider authorization/source, retention, sandbox integration, hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

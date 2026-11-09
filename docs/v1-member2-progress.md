@@ -3338,3 +3338,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: The public security invariant matrix now keeps a readable minimum table width inside its existing keyboard-focusable horizontal scroll region, preventing cramped columns on narrow screens without introducing document-level overflow.
 - Files: `apps/web/src/app/security/page.tsx`, `tests/e2e/accessibility-routes.spec.ts`.
 - Evidence: Targeted ESLint and `git diff --check` passed; the rebuilt web production build generated **83 pages**; focused rebuilt-bundle accessibility coverage passed **2/2** for table semantics and contained mobile overflow. Hosted CI, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — BILL-09 invoice table semantics
+
+- Change: The future provider-backed invoice table now exposes a descriptive caption to assistive technology while preserving the existing unavailable beta boundary, safe-link filtering and responsive overflow region.
+- Files: `apps/web/src/components/dashboard/invoice-history-panel.tsx`.
+- Evidence: Targeted ESLint, repository typecheck and `git diff --check` passed; the rebuilt web production build generated **83 pages**; the billing boundary browser check passed **1/1**. Provider authorization/source, retention, sandbox integration and hosted verification remain open.
