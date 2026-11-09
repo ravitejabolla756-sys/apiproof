@@ -2464,3 +2464,10 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PARTIAL: The full current-worktree Playwright matrix reached **237/239**. The dialog focus assertion passed in isolation but was intermittent in the matrix; the password/session scenario was blocked by the local auth signup rate limiter returning **429** after repeated seeded runs. No production or backend behavior was changed.
 - PASS: Targeted ESLint and `git diff --check` passed; the fresh isolated web build generated **83 pages**.
 - NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider authorization, rate-limit reset/state, manual assistive-technology review, integrated staging and production remain open.
+
+## 2026-11-10 — isolated browser signup clients
+
+- PASS: Disposable account creation now receives a distinct documentation-only `x-forwarded-for` value in the E2E helper, so the real signup rate limiter remains enabled without cross-test runner contention.
+- PASS: The complete current-worktree production-bundle Playwright matrix passed **239/239 in 3.9 minutes** on isolated port 3168; the password/session journey passed **1/1** independently, and the fresh build generated **83 pages**.
+- PASS: Targeted ESLint and `git diff --check` passed.
+- NOT_RUN: Hosted CI, PostgreSQL/RBAC, provider delivery, legal approval, manual assistive-technology review, integrated staging and production remain open.

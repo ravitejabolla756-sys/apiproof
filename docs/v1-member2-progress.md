@@ -4225,3 +4225,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Updated the provider-coverage recovery fixture with the strict summary fields required by the current fail-closed parser, including review-only proposals, guarded human review policy, review queue counts and promotion queue data. No runtime provider behavior or backend contract was changed.
 - Evidence: Targeted rebuilt-bundle recovery and repository-dialog coverage passed **6/6** on isolated port 3163; the focused connect-dialog suite passed **4/4** on isolated port 3166. The full 239-test matrix reached **237/239**: one dialog focus assertion was intermittent and passed in isolation, while the seeded password/session scenario received a local **429** after repeated suite runs. This is recorded as local test-environment contention, not a cleared hosted or backend gate.
 - Scope: Advances UI-13 provider recovery regression evidence only; provider authorization, hosted CI, rate-limit reset/state, staging and production remain external gates.
+
+## 2026-11-10 checkpoint — isolated browser signup clients
+
+- Change: The E2E `createLocalAccount` helper now assigns a distinct documentation-only client IP before disposable signup journeys, matching the existing sign-in and invitation helpers. This preserves the real rate limiter while preventing one serial browser matrix from exhausting a shared runner address.
+- Evidence: A fresh 83-page production bundle passed the full current-worktree Playwright matrix **239/239 in 3.9 minutes** on isolated port 3168. The previously rate-limited password/session journey passed **1/1** independently; targeted ESLint and `git diff --check` passed.
+- Scope: Advances UI-13 browser-harness stability and local AUTH-08 regression evidence only; hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain external gates.

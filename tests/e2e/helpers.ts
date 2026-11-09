@@ -25,6 +25,9 @@ export async function signInWithCredentials(page: Page, email: string, password:
 }
 
 export async function createLocalAccount(page: Page, email: string, password: string) {
+  // Keep disposable signup journeys isolated from the production rate limiter,
+  // matching the browser-client boundary used by sign-in and invitations.
+  await page.setExtraHTTPHeaders({ 'x-forwarded-for': nextBrowserClientIp() });
   await page.goto('/login');
   const signupResult = await page.evaluate(async ({ signupEmail, signupPassword }) => {
     const response = await fetch('/api/auth', {
