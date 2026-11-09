@@ -3484,3 +3484,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/account/page.tsx`, `tests/e2e/public-site.spec.ts`.
 - Evidence: Rebuilt-bundle account/workspace/notification settings journey passed **1/1**; targeted ESLint, web typecheck, web build and `git diff --check` passed.
 - Scope: This makes the AUTH-09 block explicit without creating a destructive route, claiming a retention policy or changing sessions. Legal/owner approval and Member 1 deletion contracts remain required.
+
+## 2026-11-09 checkpoint — WEB-13 typed status-source boundary
+
+- Change: Extracted the public no-monitor message into a typed `StatusSourceAvailability` contract with `STATUS_SOURCE_NOT_CONFIGURED`; the status page remains explicitly unavailable until an approved, server-validated source and freshness policy exist.
+- Files: `apps/web/src/lib/status-communications-contract.ts`, `apps/web/src/app/status/page.tsx`, `tests/status-communications-contract.test.ts`.
+- Evidence: Status contract coverage passed **1/1**; rebuilt-bundle status browser coverage passed **2/2**; targeted detector, ESLint, web typecheck, web build and `git diff --check` passed.
+- Scope: Advances local WEB-13/UI-12 truthfulness only. No monitor, incident data, uptime claim, source integration or production behavior was added.

@@ -1977,6 +1977,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Account settings now exposes a disabled, described “Account deletion unavailable” control and explicitly states that no deletion request can be submitted. The rebuilt-bundle account/settings journey passed **1/1**; targeted ESLint, web typecheck, web build and `git diff --check` passed.
 - NOT_RUN: Legal retention/deletion approval, Member 1 deletion contract, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — WEB-13 typed status-source boundary
+
+- PASS: The no-monitor status state is now supplied by a typed `STATUS_SOURCE_NOT_CONFIGURED` contract. Contract coverage passed **1/1** and rebuilt-bundle status browser coverage passed **2/2**; detector, targeted ESLint, web typecheck, web build and `git diff --check` passed.
+- NOT_RUN: Approved monitor/source identity, freshness policy, incident drill, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — SEC-18 local tabletop rehearsal
 
 - PASS: A redacted local rehearsal record now walks the cross-account invitation scenario and preserves the correct response boundary: treat mismatch as at least SEV-1, retain only local redacted evidence, keep live member removal behind ORG-10, and withhold public incident claims. Organization-management coverage passed 22/22.

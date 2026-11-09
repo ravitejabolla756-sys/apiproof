@@ -44,3 +44,5 @@ The status page should expose the current state in a semantic status region, ide
 - an incident drill with timestamps, escalation decision, public wording approval and rollback to the no-monitor fallback.
 
 Until these decisions and tests exist, WEB-13 remains partial and the current no-monitor page is the only truthful public status representation.
+
+The current frontend represents that boundary as `statusSourceAvailability` with code `STATUS_SOURCE_NOT_CONFIGURED`; it is a local unavailable projection only and must not be replaced by client-controlled monitor data.
