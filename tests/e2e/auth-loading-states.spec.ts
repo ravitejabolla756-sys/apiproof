@@ -119,7 +119,7 @@ test.describe('authentication loading announcements', () => {
   test('marks email verification progress as busy', async ({ page }) => {
     let releaseVerification: (() => void) | undefined;
     const verificationPending = new Promise<void>((resolve) => { releaseVerification = resolve; });
-    await page.route('**/api/auth', async (route) => { await verificationPending; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Email address verified successfully.' }) }); });
+    await page.route('**/api/auth', async (route) => { await verificationPending; await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'Email address verified successfully.' }) }); });
     await page.goto('/verify-email#token=test-token');
     const verificationStatus = page.getByRole('status').filter({ hasText: 'Checking your verification link…' });
     await expect(verificationStatus).toBeVisible();

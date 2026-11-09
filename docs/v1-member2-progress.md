@@ -3883,3 +3883,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/password-reset-contract.ts`, `apps/web/src/app/forgot-password/page.tsx`, `apps/web/src/app/reset-password/page.tsx`, `tests/password-reset-contract.test.ts`, `tests/e2e/auth-loading-states.spec.ts`.
 - Evidence: Password-reset contract coverage passed **2/2**; rebuilt-bundle authentication loading/recovery coverage passed **5/5**; a fresh web production build generated **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances AUTH-08/UI-12 local response safety only; password-reset token issuance, delivery, session invalidation, retention and backend authorization remain server-owned.
+
+## 2026-11-09 checkpoint — email-verification response guard
+
+- Change: The AUTH-05 verification page now requires the backend's explicit `{ success: true, message }` projection before clearing the URL fragment and showing success; malformed successful responses fail closed to the existing invalid-or-expired state.
+- Files: `apps/web/src/lib/email-verification-contract.ts`, `apps/web/src/app/verify-email/page.tsx`, `tests/email-verification-contract.test.ts`, `tests/e2e/auth-entry-states.spec.ts`, `tests/e2e/auth-loading-states.spec.ts`.
+- Evidence: Email-verification and password-reset contract coverage passed **4/4**; the rebuilt-bundle combined auth-entry/loading suite passed **11/11**; a fresh web production build generated **83 pages**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances AUTH-05/UI-12 local response safety only; verification token issuance, resend behavior, email provider delivery and Member 1 backend integration remain external.

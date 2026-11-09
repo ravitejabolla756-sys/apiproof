@@ -13,6 +13,18 @@ test.describe('public auth-entry state announcements', () => {
     expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
   });
 
+  test('fails closed when email verification returns a malformed success payload', async ({ page }) => {
+    await page.route('**/api/auth', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Looks successful but is missing the success marker.' }) });
+    });
+    await page.goto('/verify-email#token=malformed-response-token');
+    const alert = page.getByRole('alert').filter({ hasText: 'This verification link is invalid or expired.' });
+    await expect(alert).toBeVisible();
+    await expect(alert).toBeFocused();
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
+    await page.unroute('**/api/auth');
+  });
+
   test('does not expose invitation acceptance without a token', async ({ page }) => {
     await page.goto('/invite/accept');
     await expect(page.getByRole('alert').filter({ hasText: 'This invitation link is missing its token.' })).toBeVisible();

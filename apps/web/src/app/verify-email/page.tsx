@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parseEmailVerificationError, parseEmailVerificationSuccess } from '@/lib/email-verification-contract';
 
 type ViewState = 'loading' | 'success' | 'error';
 
@@ -31,10 +32,12 @@ export default function VerifyEmailPage() {
       signal: controller.signal,
     })
       .then(async (response) => {
-        const data = await response.json() as { message?: string; error?: string };
-        if (!response.ok) throw new Error(data.error || 'This verification link is invalid or expired.');
+        const data = await response.json() as unknown;
+        if (!response.ok) throw new Error(parseEmailVerificationError(data, 'This verification link is invalid or expired.'));
+        const success = parseEmailVerificationSuccess(data);
+        if (!success) throw new Error('This verification link is invalid or expired.');
         setState('success');
-        setMessage(data.message || 'Email address verified successfully.');
+        setMessage(success.message);
         window.history.replaceState({}, document.title, window.location.pathname);
       })
       .catch((error: unknown) => {

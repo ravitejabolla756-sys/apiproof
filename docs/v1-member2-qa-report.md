@@ -2311,3 +2311,9 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Forgot-password and reset-password success states now require an explicit success marker and non-empty message; malformed error payloads use safe fallback copy. Contract coverage passed **2/2**.
 - PASS: Rebuilt-bundle authentication loading and recovery coverage passed **5/5** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
 - NOT_RUN: Password-reset delivery/provider verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — email-verification response guard
+
+- PASS: Email verification now requires an explicit success marker and non-empty message before reporting success or removing the URL fragment; malformed success responses use the existing invalid-or-expired recovery state. Combined email-verification/password-reset contract coverage passed **4/4**.
+- PASS: Rebuilt-bundle auth-entry and authentication-loading coverage passed **11/11** after a fresh web production build generating **83 pages**. Targeted ESLint, web typecheck and `git diff --check` passed.
+- NOT_RUN: Verification token issuance/resend, email-provider delivery, Member 1 integration, hosted CI, staging, manual assistive-technology review and production remain open.
