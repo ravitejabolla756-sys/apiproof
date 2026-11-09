@@ -4052,3 +4052,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Notification settings now establish shrink/wrap boundaries for heading, status and recovery copy, preserve a keyboard-focusable preference table region, and keep digest controls touch-sized without changing the unavailable digest contract or save filtering.
 - Scope: Advances UI-12/UI-13/NOT-10 responsive resilience only; cadence, recipients, scheduler, delivery providers and notification policy remain server/owner contracts.
 - Evidence: Digest and notification contract tests passed **9/9**; rebuilt-bundle responsive coverage passed **1/1** on isolated port 3130, including the 320px axe/overflow case and 44px digest-control wrappers, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck and diff check passed. The first browser attempt exposed a forced table-width overflow; removing that constraint produced the passing result. The Impeccable detector reported only the unchanged incumbent purple heading token.
+
+## 2026-11-10 checkpoint — public contact narrow metadata containment
+
+- Change: The public contact experience now establishes shrink boundaries for the responsive grid, form card, support topics, headings and status copy while preserving the truthful owner-provided intake boundary and existing form behavior.
+- Scope: Advances WEB-15/UI-12 responsive QA only; contact delivery, enterprise intake ownership and production routing remain unimplemented by design.
+- Evidence: Rebuilt-bundle responsive coverage passed **1/1** on isolated port 3131, including the 320px axe/overflow case and 44px form controls, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

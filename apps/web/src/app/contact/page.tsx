@@ -29,33 +29,33 @@ export default function ContactPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 space-y-16 outline-none">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 space-y-16 outline-none">
 
         {/* TOP SECTION: HEADING + FORM */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
           {/* Left Column */}
-          <div className="lg:col-span-5 space-y-4 pt-4">
+          <div className="min-w-0 lg:col-span-5 space-y-4 pt-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-200 text-xs font-mono font-medium">
               <span>TALK WITH OUR ENGINEERS</span>
             </div>
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-normal text-[#000E29] leading-[1.1]">
+            <h1 className="break-words font-serif text-4xl sm:text-5xl md:text-6xl font-normal text-[#000E29] leading-[1.1]">
               Connect with the MY OWL Team
             </h1>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-md">
+            <p className="break-words text-sm sm:text-base text-slate-600 leading-relaxed max-w-md">
               Questions about the beta workflow, repository permissions, or planned enterprise evaluation? We&apos;ll show you what is available today and what still needs review.
             </p>
           </div>
 
           {/* Right Column: Form Card */}
-          <div className="lg:col-span-7 bg-[#EFF1F5] rounded-[32px] p-8 md:p-10 border border-black/[0.04] shadow-xs">
+          <div className="min-w-0 lg:col-span-7 bg-[#EFF1F5] rounded-[32px] p-8 md:p-10 border border-black/[0.04] shadow-xs">
             {submitted ? (
               <div ref={statusRef} role="status" aria-live="polite" aria-atomic="true" tabIndex={-1} className="py-16 text-center space-y-4 outline-none focus-visible:ring-2 focus-visible:ring-[#000E29] focus-visible:ring-offset-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
                   <CheckCircle2 aria-hidden="true" className="w-7 h-7" />
                 </div>
-                <h2 className="font-serif text-2xl text-[#000E29]">{enterpriseIntakeAvailability.heading}</h2>
-                <p className="text-xs text-slate-600 max-w-sm mx-auto">
+                <h2 className="break-words font-serif text-2xl text-[#000E29]">{enterpriseIntakeAvailability.heading}</h2>
+                <p className="break-words text-xs text-slate-600 max-w-sm mx-auto">
                   {enterpriseIntakeAvailability.message}
                 </p>
               </div>
@@ -138,46 +138,46 @@ export default function ContactPage() {
         {/* 4 SUPPORT TOPIC CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-8">
 
-          <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
+          <div className="min-w-0 rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <Server aria-hidden="true" className="w-4 h-4" />
               </div>
-              <h2 className="font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h2>
-              <p className="text-xs text-slate-600">Questions about private runners, GitHub Enterprise Server, or future deployment options.</p>
+              <h2 className="break-words font-serif text-lg text-[#000E29] font-medium">Enterprise Deployment</h2>
+              <p className="break-words text-xs text-slate-600">Questions about private runners, GitHub Enterprise Server, or future deployment options.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-600 font-mono">Owner-provided contact only</span>
           </div>
 
-          <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
+          <div className="min-w-0 rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <ShieldCheck aria-hidden="true" className="w-4 h-4" />
               </div>
-              <h2 className="font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h2>
-              <p className="text-xs text-slate-600">Read-only inspection and evidence boundaries documented for beta review.</p>
+              <h2 className="break-words font-serif text-lg text-[#000E29] font-medium">Security &amp; AST Isolation</h2>
+              <p className="break-words text-xs text-slate-600">Read-only inspection and evidence boundaries documented for beta review.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-600 font-mono">See the security page</span>
           </div>
 
-          <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
+          <div className="min-w-0 rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <FileCode aria-hidden="true" className="w-4 h-4" />
               </div>
-              <h2 className="font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h2>
-              <p className="text-xs text-slate-600">Discuss future rule coverage for private internal services and SDKs.</p>
+              <h2 className="break-words font-serif text-lg text-[#000E29] font-medium">Custom API Rules</h2>
+              <p className="break-words text-xs text-slate-600">Discuss future rule coverage for private internal services and SDKs.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-600 font-mono">Planned evaluation</span>
           </div>
 
-          <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
+          <div className="min-w-0 rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="w-8 h-8 rounded-full bg-white border border-black/[0.08] flex items-center justify-center text-slate-900">
                 <HelpCircle aria-hidden="true" className="w-4 h-4" />
               </div>
-              <h2 className="font-serif text-lg text-[#000E29] font-medium">Technical Support</h2>
-              <p className="text-xs text-slate-600">Review the beta documentation for GitHub permissions and scan boundaries.</p>
+              <h2 className="break-words font-serif text-lg text-[#000E29] font-medium">Technical Support</h2>
+              <p className="break-words text-xs text-slate-600">Review the beta documentation for GitHub permissions and scan boundaries.</p>
             </div>
               <span className="text-[11px] font-semibold text-slate-600 font-mono">No staffed inbox is connected</span>
           </div>
@@ -190,10 +190,10 @@ export default function ContactPage() {
       <section className="relative w-full py-28 px-4 sm:px-6 overflow-hidden bg-[linear-gradient(0deg,#001033_0%,#0050F8_55%,#5FBDF7_85%,#FAFAFA_100%)] text-white text-center">
         <div className="absolute inset-0 bg-star-pattern opacity-60 pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto space-y-6 flex flex-col items-center">
-          <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
+          <h2 className="break-words font-serif text-4xl sm:text-5xl font-normal leading-tight">
             Protect your repositories from breaking API changes.
           </h2>
-          <p className="text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
+          <p className="break-words text-sm sm:text-base text-slate-200 max-w-lg leading-relaxed">
             Connect GitHub in seconds. Read-only AST observation, deterministic migration planning, and safe draft PRs.
           </p>
           <div className="pt-2">
