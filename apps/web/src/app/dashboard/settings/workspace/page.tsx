@@ -9,6 +9,7 @@ import { mergeAuditEvents, parseAuditPage, type AuditEventProjection } from '../
 import { parseInvitationCollection, parseMemberCollection, type InvitationProjection, type MemberProjection } from '../../../../lib/organization-collection-contract.js';
 import { parseWorkspaceSettings, type WorkspaceSettingsProjection } from '../../../../lib/organization-settings-contract.js';
 import { toSafeInvitationUrl } from '../../../../lib/external-link-contract.js';
+import { parseCreatedInvitationResponse } from '../../../../lib/workspace-invitation-contract.js';
 import { workspaceMemberRevocationAvailability } from '../../../../lib/workspace-member-revocation-contract.js';
 
 type Workspace = WorkspaceSettingsProjection;
@@ -185,9 +186,10 @@ export default function WorkspaceSettingsPage() {
     setInviting(true); setActionStatus('Creating invitation link…'); setError(null); setMessage(null); setInviteUrl(null);
     try {
       const response = await fetch('/api/workspace/invitations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: inviteEmail, role: 'member' }) });
-      const data = await readJson<{ inviteUrl?: string }>(response);
-      const safeInviteUrl = toSafeInvitationUrl(typeof data.inviteUrl === 'string' ? data.inviteUrl : null, window.location.origin);
-      if (!response.ok || !safeInviteUrl) throw new Error(data.error || 'Unable to create invitation.');
+      const rawData = await readJson<{ inviteUrl?: unknown }>(response);
+      const data = parseCreatedInvitationResponse(rawData);
+      const safeInviteUrl = toSafeInvitationUrl(data?.inviteUrl ?? null, window.location.origin);
+      if (!response.ok || !safeInviteUrl) throw new Error(rawData.error || 'Unable to create invitation.');
       setInviteEmail(''); setInviteUrl(safeInviteUrl); setMessage('Invitation created. Copy the link and send it through an approved channel.'); await load();
     } catch (inviteError) {
       setError(inviteError instanceof Error ? inviteError.message : 'Unable to create invitation.');

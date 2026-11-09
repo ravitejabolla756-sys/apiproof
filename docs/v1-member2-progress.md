@@ -3783,3 +3783,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/e2e/member-role-action-loading.spec.ts`.
 - Evidence: Member-role browser coverage passed **2/2**, organization-management service coverage passed **22/22**, targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances ORG-04 local response safety only; authorization, final-owner protection, workspace-scoped revocation and session preservation remain backend-owned.
+
+## 2026-11-09 checkpoint — invitation creation response guard
+
+- Change: Invitation creation now validates and normalizes the server-owned `inviteUrl` projection before same-origin/manual-copy URL validation; malformed responses cannot produce a copyable link.
+- Files: `apps/web/src/lib/workspace-invitation-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/workspace-invitation-contract.test.ts`.
+- Evidence: Invitation contract coverage passed **3/3**; invitation action and organization collection browser coverage passed **2/2**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances ORG-03 local response safety only; invitation invalidation, authorization, delivery channel and persistence remain backend-owned.

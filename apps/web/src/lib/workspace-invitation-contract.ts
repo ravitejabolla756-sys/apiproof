@@ -2,6 +2,10 @@ export type AcceptedInvitationProjection = {
   workspaceName: string;
 };
 
+export type CreatedInvitationProjection = {
+  inviteUrl: string;
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -11,4 +15,11 @@ export function parseAcceptedInvitationResponse(value: unknown): AcceptedInvitat
   if (!isRecord(value) || !isRecord(value.workspace) || typeof value.workspace.name !== 'string') return null;
   const workspaceName = value.workspace.name.trim();
   return workspaceName ? { workspaceName } : null;
+}
+
+/** Parse the minimal server-owned projection returned after creating an invite. */
+export function parseCreatedInvitationResponse(value: unknown): CreatedInvitationProjection | null {
+  if (!isRecord(value) || typeof value.inviteUrl !== 'string') return null;
+  const inviteUrl = value.inviteUrl.trim();
+  return inviteUrl ? { inviteUrl } : null;
 }
