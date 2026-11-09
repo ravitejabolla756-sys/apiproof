@@ -3565,3 +3565,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Extracted the disabled billing-portal state into a typed `BILLING_PORTAL_CONTRACT_PENDING` boundary and associated the owner/provider explanation with the control; no redirect or provider session is created.
 - Files: `apps/web/src/lib/billing-portal-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/billing-portal-contract.test.ts`.
 - Scope: Advances local BILL-08/UI-12 truthfulness and semantics only. Provider session creation, owner authorization, return-URL allowlisting, hosted CI, staging and production remain open.
+
+## 2026-11-09 checkpoint — BILL-07 typed checkout boundary
+
+- Change: Extracted the pricing page’s paid-plan display-only labels and no-checkout message into a typed `BILLING_CHECKOUT_CONTRACT_PENDING` boundary; the cards remain non-interactive.
+- Files: `apps/web/src/lib/billing-checkout-contract.ts`, `apps/web/src/app/pricing/page.tsx`, `tests/billing-checkout-contract.test.ts`.
+- Scope: Advances local BILL-07/WEB-15 truthfulness only. Provider lifecycle, entitlement, checkout authorization, payment credentials, hosted CI, staging and production remain open.

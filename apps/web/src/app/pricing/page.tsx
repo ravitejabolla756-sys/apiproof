@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { LandingFooter } from "@/components/landing/footer";
 import { LandingNavbar } from "@/components/landing/navbar";
+import { billingCheckoutAvailability } from "@/lib/billing-checkout-contract";
 
 const betaFeatures = [
   "Connect 1 GitHub repository",
@@ -75,7 +76,7 @@ export default function PricingPage() {
             Start safely. Scale when you&apos;re ready.
           </h1>
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-slate-600">
-            Use MY OWL&apos;s read-only compatibility analysis during the free beta. Paid plans are visible while they roll out, but cannot be purchased yet.
+            Use MY OWL&apos;s read-only compatibility analysis during the free beta. {billingCheckoutAvailability.message}
           </p>
         </header>
 
@@ -103,7 +104,7 @@ export default function PricingPage() {
                 <div><span className="font-serif text-5xl">₹5,000</span><span className="ml-2 text-sm text-slate-500">/month</span></div>
                 <FeatureList features={developerFeatures} />
               </div>
-              <ComingSoonButton label="Rolling out — no checkout" />
+              <ComingSoonButton label={billingCheckoutAvailability.developerLabel} />
             </article>
 
             <article className="flex h-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
@@ -115,7 +116,7 @@ export default function PricingPage() {
                 <div><span className="font-serif text-5xl">₹15,000</span><span className="ml-2 text-sm text-slate-500">/month</span></div>
                 <FeatureList features={startupFeatures} />
               </div>
-              <ComingSoonButton label="Coming soon — no checkout" />
+              <ComingSoonButton label={billingCheckoutAvailability.startupLabel} />
             </article>
 
             <article className="flex h-full flex-col justify-between rounded-[32px] border border-slate-200 bg-white p-7 md:p-8">
