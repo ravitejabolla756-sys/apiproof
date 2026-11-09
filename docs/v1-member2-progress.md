@@ -4040,3 +4040,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Repository detail hero, scan status, finding cards and finding metadata now establish shrink/wrap boundaries for long repository identity, branch, GitHub ID, paths, symbols and descriptions while preserving the intentional scan-history table scroll region.
 - Scope: Advances UI-12/UI-13 repository-detail resilience only; repository authorization, scan identity and provider contracts remain server-owned.
 - Evidence: Repository detail contract tests passed **2/2**; rebuilt-bundle populated repository-detail coverage passed **1/1** on isolated port 3127, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings. The first browser attempt was a fixture-shape failure and passed after adding the required documented scan/finding fields.
+
+## 2026-11-10 checkpoint — finding detail narrow metadata containment
+
+- Change: Finding detail hero, repository identity, evidence labels and surrounding metadata now establish shrink/wrap boundaries for long provider IDs, titles, descriptions, paths, symbols and branch names while preserving keyboard-focusable code snippet scrolling.
+- Scope: Advances UI-12/UI-13 finding-detail resilience only; finding authorization, provider evidence and migration contracts remain server-owned.
+- Evidence: Finding-detail contract tests passed **2/2**; rebuilt-bundle responsive coverage passed **1/1** on isolated port 3128, including the 320px axe/overflow case, after a fresh production build generating **83 pages**; targeted ESLint, web typecheck, diff check and the Impeccable detector passed with no findings.

@@ -236,7 +236,7 @@ export default function FindingDetailPage({
   const currentStep = migration?.pr_number ? 3 : migration ? 2 : 1;
 
   return (
-    <div className="space-y-6 max-w-[1440px] font-sans text-xs">
+    <div className="min-w-0 space-y-6 max-w-[1440px] font-sans text-xs">
       {/* BACK NAVIGATION */}
       <div>
         <Link
@@ -249,23 +249,23 @@ export default function FindingDetailPage({
       </div>
 
       {/* LIGHT CANVAS HEADER BAND */}
-      <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-900 border border-purple-200 text-xs font-semibold uppercase">
+      <div className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex min-w-0 flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0 space-y-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <span className="max-w-full break-all px-3 py-1 rounded-full bg-purple-50 text-purple-900 border border-purple-200 text-xs font-semibold uppercase">
                 {finding.provider}
               </span>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111111]">
+              <h1 className="break-words text-2xl font-bold tracking-tight text-[#111111]">
                 {finding.title}
               </h1>
             </div>
-            <p className="text-xs text-[#686868] max-w-2xl leading-relaxed">
+            <p className="break-words text-xs text-[#686868] max-w-2xl leading-relaxed">
               {finding.description}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
             <StatusPill status="affected" label={finding.severity.toUpperCase()} />
             {migration && (
               <StatusPill
@@ -298,7 +298,7 @@ export default function FindingDetailPage({
         )}
 
         <div className={`p-4 rounded-2xl border ${finding.capability?.migrationAvailable ? 'bg-emerald-50 border-emerald-200' : 'bg-[#F6F6F4] border-[#E8E8E5]'}`}>
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wider text-[#686868]">Migration capability</div>
               <div className="mt-1 font-semibold text-[#111111]">
@@ -460,23 +460,23 @@ export default function FindingDetailPage({
       </div>
 
       {/* WORKBENCH SPLIT: LEFT CODE DIFF (65%) / RIGHT EVIDENCE & ACTIONS (35%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid min-w-0 grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT 65%: CODE VIEW / DIFF PANEL */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E8E8E5]">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#111111]">
+        <div className="min-w-0 lg:col-span-8 space-y-6">
+          <div className="min-w-0 rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E8E8E5]">
+              <div className="flex min-w-0 items-start gap-2 text-xs font-semibold text-[#111111]">
                 <FileCode aria-hidden="true" className="w-4 h-4 text-purple-700" />
-                <span>
+                <span className="break-all">
                   `Repository Source Evidence — ${finding.file_path}`
                 </span>
               </div>
-              <span className="text-[11px] font-mono text-[#686868]">{finding.repo_name}</span>
+              <span className="break-words text-[11px] font-mono text-[#686868]">{finding.repo_name}</span>
             </div>
 
             {migration?.patch_diff ? (
               <div className="space-y-3">
-                <div className="text-xs text-[#686868]">
+                <div className="break-words text-xs text-[#686868]">
                   This patch record is retained for audit context. New patches are generated only for reviewed, digest-bound templates after exact-baseline verification.
                 </div>
                 <pre tabIndex={0} aria-label="Migration patch diff" className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
@@ -485,7 +485,7 @@ export default function FindingDetailPage({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="text-xs text-[#686868]">
+                <div className="break-words text-xs text-[#686868]">
                   Call site captured during static AST traversal at line {finding.line_number}:
                 </div>
                 <pre tabIndex={0} aria-label="Finding source snippet" className="rounded-2xl bg-zinc-950 p-5 font-mono text-xs text-zinc-100 overflow-x-auto whitespace-pre leading-relaxed border border-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2">
@@ -497,7 +497,7 @@ export default function FindingDetailPage({
         </div>
 
         {/* RIGHT 35%: ACTIONS, EVIDENCE & PR */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="min-w-0 lg:col-span-4 space-y-6">
           {/* ACTION PANEL */}
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
             <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
