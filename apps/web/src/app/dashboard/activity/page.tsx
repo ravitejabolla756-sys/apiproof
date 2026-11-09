@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Activity, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
-import { formatActivityTimestamp, getActivityTypeLabel, type ActivityItem } from "@/lib/activity-utils";
+import { formatActivityTimestamp, getActivityTypeLabel, parseActivityCollection, type ActivityItem } from "@/lib/activity-utils";
 
 export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -15,9 +15,11 @@ export default function ActivityPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/activity");
-      const json = await res.json() as { activities?: ActivityItem[]; error?: string };
-      if (!res.ok) throw new Error(json.error || "Unable to load activity.");
-      setActivities(json.activities || []);
+      const json = await res.json() as unknown;
+      const parsed = parseActivityCollection(json);
+      const error = typeof json === 'object' && json !== null && 'error' in json && typeof json.error === 'string' ? json.error : null;
+      if (!res.ok || !parsed) throw new Error(error || "Unable to load activity.");
+      setActivities(parsed);
       setError(null);
     } catch (err) {
       console.error("Failed to load activity:", err);

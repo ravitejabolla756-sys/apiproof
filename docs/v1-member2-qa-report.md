@@ -2097,3 +2097,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Provider coverage now fails closed on malformed nested summary/provider/source-health data; focused contract coverage includes valid and malformed projections and the provider coverage refresh/accessibility suite passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Provider source truth, scheduling, authorization, production monitoring, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — activity projection adapter
+
+- PASS: Activity responses now normalize required event fields and fail closed on malformed/duplicate records; activity contract/timestamp coverage passed **22/22** and the activity/provider recovery and accessibility suites passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Workspace authorization, tenant isolation, hosted CI, staging, manual assistive-technology review and production remain open.

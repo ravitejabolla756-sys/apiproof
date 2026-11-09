@@ -19,7 +19,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { formatActivityTimestamp, getActivityTypeLabel, type ActivityItem } from '../apps/web/src/lib/activity-utils.js';
+import { formatActivityTimestamp, getActivityTypeLabel, parseActivityCollection, type ActivityItem } from '../apps/web/src/lib/activity-utils.js';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
@@ -28,6 +28,16 @@ import { GET as activityGet } from '../apps/web/src/app/api/activity/route.js';
 const TEST_DB_PATH = path.resolve('.tmp/test-activity-api.db');
 
 describe('Activity Page Timestamp Formatting — formatActivityTimestamp', () => {
+  it('normalizes a valid activity collection', () => {
+    expect(parseActivityCollection({ activities: [{ id: ' activity-1 ', type: ' scan ', title: ' Scan complete ', description: ' Finished ', created_at: null }] })).toEqual([{ id: 'activity-1', type: 'scan', title: 'Scan complete', description: 'Finished', created_at: null, timestamp: null, repo_name: null, repo_full_name: null, repository: null }]);
+  });
+
+  it('rejects malformed and duplicate activity records', () => {
+    const item = { id: 'activity-1', type: 'scan', title: 'Scan', description: 'Done' };
+    expect(parseActivityCollection({ activities: [{ ...item, description: '   ' }] })).toBeNull();
+    expect(parseActivityCollection({ activities: [item, item] })).toBeNull();
+  });
+
   it('does not label a legacy migration-plan event as verified', () => {
     expect(getActivityTypeLabel('migration_verified', 'Migration Plan Generated')).toBe('migration planned');
   });

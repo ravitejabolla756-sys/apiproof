@@ -3620,3 +3620,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/provider-coverage-contract.ts`, `apps/web/src/app/dashboard/providers/page.tsx`, `tests/provider-coverage-contract.test.ts`.
 - Evidence: Focused contract coverage includes canonical and malformed nested projections; the provider coverage refresh/accessibility suite passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12 provider-coverage resilience only. Provider source truth, scheduling, authorization and production monitoring remain unchanged.
+
+## 2026-11-09 checkpoint — activity projection adapter
+
+- Change: Added a typed activity collection parser that normalizes required event text, preserves optional repository/timestamp fields for existing safe formatters, and rejects malformed or duplicate records before render.
+- Files: `apps/web/src/lib/activity-utils.ts`, `apps/web/src/app/dashboard/activity/page.tsx`, `tests/activity-timestamp.test.ts`.
+- Evidence: Activity contract/timestamp coverage passed **22/22**, including valid, malformed and duplicate projections; the activity/provider recovery and accessibility suites passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 activity resilience only. Workspace authorization, tenant isolation and server audit ownership remain unchanged.

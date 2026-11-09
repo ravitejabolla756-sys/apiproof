@@ -10,6 +10,48 @@ export interface ActivityItem {
   repository?: string | null;
 }
 
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function text(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized || null;
+}
+
+function optionalText(value: unknown): string | null {
+  return value === null || value === undefined ? null : text(value);
+}
+
+/** Validate the server-owned activity collection before rendering workspace events. */
+export function parseActivityCollection(payload: unknown): ActivityItem[] | null {
+  if (!record(payload) || !Array.isArray(payload.activities)) return null;
+  const seen = new Set<string>();
+  const activities: ActivityItem[] = [];
+  for (const item of payload.activities) {
+    if (!record(item)) return null;
+    const id = text(item.id);
+    const type = text(item.type);
+    const title = text(item.title);
+    const description = text(item.description);
+    if (!id || !type || !title || !description || seen.has(id)) return null;
+    seen.add(id);
+    activities.push({
+      id,
+      type,
+      title,
+      description,
+      created_at: optionalText(item.created_at),
+      timestamp: optionalText(item.timestamp),
+      repo_name: optionalText(item.repo_name),
+      repo_full_name: optionalText(item.repo_full_name),
+      repository: optionalText(item.repository),
+    });
+  }
+  return activities;
+}
+
 /**
  * Formats raw activity timestamps into human-readable local date/time strings.
  * Safely falls back to "Unknown time" for missing, empty, or unparseable timestamps.
