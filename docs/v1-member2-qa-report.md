@@ -1555,6 +1555,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Invalid invoice currency and amount projections now render `Unavailable` rather than throwing. Focused contract coverage passed 3/3; lint, typecheck, build and billing/notification browser coverage passed locally.
 - NOT_RUN: Provider invoice source, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — WEB-15 current-bundle performance probe
+
+- PASS: The rebuilt current web bundle served all 9 representative public routes successfully across 3 loopback samples; median load was 11–34 ms, response 2–6 ms and encoded HTML 6.1–17.0 KiB.
+- NOT_RUN: Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology review and production remain open; the expected deferred production-database warning was observed locally.
+
 ## 2026-11-09 — BILL-09 invoice date display hardening
 
 - PASS: Malformed invoice issue timestamps now render `Unavailable` without an invalid time value. Focused invoice coverage passed 4/4; lint, typecheck, build and billing-boundary browser coverage passed locally.

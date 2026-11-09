@@ -2979,6 +2979,11 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Evidence: Impeccable detector returned `[]`; focused invoice contract tests passed 3/3; targeted web lint and typecheck passed; rebuilt web build generated 83 pages; billing-boundary and authenticated notification-settings browser checks passed 2/2; `git diff --check` passed.
 - Scope: advances local BILL-09/UI-12 resilience only. Provider invoice projection, billing-owner authorization, tenant isolation, retention/legal approval, hosted CI, staging and production remain open.
 
+## 2026-11-09 checkpoint — WEB-15 current-bundle performance probe
+
+- Evidence: After the current production build, `PERFORMANCE_BASE_URL=http://127.0.0.1:3201 PERFORMANCE_SAMPLES=3 pnpm website:performance` passed all 9 representative public routes. Median load times were 11–34 ms, response times 2–6 ms and encoded HTML sizes 6.1–17.0 KiB over loopback.
+- Scope: refreshes local WEB-14/WEB-15 performance evidence only. This is not Lighthouse/Core Web Vitals, public-network, hosted deployment, staging or production evidence; the expected deferred production-database warning was observed locally.
+
 ## 2026-11-09 checkpoint — BILL-09 invoice date display hardening
 
 - Change: Added fail-closed invoice date helpers so malformed issue timestamps render `Unavailable` and do not populate an invalid `<time>` value; provider sourcing and retention behavior remain unchanged.

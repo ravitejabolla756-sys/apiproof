@@ -500,6 +500,10 @@ Invoice ready-state formatting now fails closed for malformed provider projectio
 
 Invoice issue-date rendering now fails closed for malformed timestamps, with focused contract, build and billing-boundary checks passing. Provider authorization/source/retention approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest WEB-15 performance evidence — 2026-11-09
+
+The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
+
 ## Latest billing/notification contract evidence — 2026-11-09
 
 The focused billing, invoice, digest, notification-preference and email-delivery suites pass 19/19 locally. Provider delivery, billing lifecycle, scheduler, retention, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
