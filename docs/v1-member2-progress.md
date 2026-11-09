@@ -3547,3 +3547,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Audit-event parsing now normalizes event identity/display text and opaque cursors, rejects empty cursors, and detects duplicate event IDs after normalization; malformed timestamps remain representable so the UI can show a safe `Unavailable` state.
 - Files: `apps/web/src/lib/organization-audit-contract.ts`, `tests/organization-audit-contract.test.ts`.
 - Scope: Advances local ORG-11/UI-12 response safety only. Server-side audit authorization, retention, PostgreSQL/RBAC and Member 1 integration remain open.
+
+## 2026-11-09 checkpoint — UI-12 narrow authenticated-route containment
+
+- Change: Added a 320px authenticated-route matrix covering dashboard, settings, organization, billing, findings, repositories and recovery routes for document containment and axe-clean main content.
+- Files: `tests/e2e/accessibility-routes.spec.ts`.
+- Scope: Advances local UI-12/UI-13 responsive evidence only. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
