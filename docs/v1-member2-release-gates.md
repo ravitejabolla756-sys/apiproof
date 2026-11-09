@@ -471,3 +471,7 @@ The 768px route audit now verifies both axe results and no document-level horizo
 ## Latest UI-12 reduced-motion evidence — 2026-11-09
 
 The authenticated dashboard shell now has direct reduced-motion browser evidence for suppressed animation, transition and scroll behavior. Local coverage passes; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 provider-review form evidence — 2026-11-09
+
+Provider-review editable textareas now use the 16px mobile-safe text floor while preserving the review-only/provider approval boundary. Local typecheck, build and focused browser coverage pass; provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

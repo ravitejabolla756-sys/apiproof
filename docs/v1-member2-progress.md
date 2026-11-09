@@ -2936,3 +2936,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/accessibility-routes.spec.ts`.
 - Evidence: Targeted ESLint, repository typecheck and `CI=true PLAYWRIGHT_PORT=3166 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --grep "reduced motion" --reporter=line` passed; focused coverage was 1/1.
 - Scope: advances local UI-12/UI-13 reduced-motion evidence only. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
+
+## 2026-11-09 checkpoint — UI-12 provider-review textarea text sizing
+
+- Change: Raised all editable provider-rule review textareas (description, patterns, replacement guidance, migration template, audit note, sample code, review evidence and review notes) to the 16px `text-base` floor while preserving monospace styling where used and leaving review/provider contracts unchanged.
+- Files: `apps/web/src/components/dashboard/provider-rule-review.tsx`, `tests/e2e/provider-rule-action-loading.spec.ts`.
+- Evidence: Impeccable detector returned `[]`; targeted ESLint, repository typecheck and rebuilt web build passed with 83 pages; provider-rule action/filter browser coverage passed 2/2, including a computed 16px sample-code assertion.
+- Scope: advances local UI-12/provider-review responsive evidence only. Provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain open.

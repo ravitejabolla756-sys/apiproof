@@ -32,7 +32,9 @@ test('marks provider-rule sample testing busy while the request is pending', asy
   });
   await page.goto('/dashboard/rules/pending', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Action loading candidate' })).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('textbox', { name: 'Sample code for Action loading candidate' }).fill('fixture.call()');
+  const sampleCode = page.getByRole('textbox', { name: 'Sample code for Action loading candidate' });
+  await expect(sampleCode).toHaveCSS('font-size', '16px');
+  await sampleCode.fill('fixture.call()');
   const testSample = page.getByRole('button', { name: 'Test sample' });
   await testSample.click();
   await expect(testSample).toHaveAttribute('aria-busy', 'true');
