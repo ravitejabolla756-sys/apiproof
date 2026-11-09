@@ -17,7 +17,7 @@ export function ProofTerminal() {
           </div>
           <div>
             <h3 className="text-sm font-bold text-zinc-100">Live Change Intelligence Terminal</h3>
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-[11px] text-zinc-400">
               Deterministic AST tracing from vendor changelog to verified GitHub Draft PR
             </p>
           </div>
@@ -35,7 +35,7 @@ export function ProofTerminal() {
             <span className="text-amber-400 font-bold uppercase tracking-wider">
               1. Vendor Intelligence
             </span>
-            <span className="text-zinc-500">Stripe API</span>
+            <span className="text-zinc-400">Stripe API</span>
           </div>
 
           <div className="p-3 rounded bg-zinc-950 border border-zinc-800/80 space-y-1.5 text-xs">
@@ -47,7 +47,7 @@ export function ProofTerminal() {
               Top-level <code className="text-amber-300">coupon</code> parameter removed from{" "}
               <code className="text-zinc-300">subscriptions.create()</code>.
             </p>
-            <div className="text-[10px] text-zinc-500 font-mono pt-1">
+            <div className="text-[10px] text-zinc-400 font-mono pt-1">
               Target Version: <span className="text-zinc-300">v17.0.0+</span>
             </div>
           </div>
@@ -59,22 +59,22 @@ export function ProofTerminal() {
             <span className="text-sky-400 font-bold uppercase tracking-wider">
               2. AST Impact Traversal
             </span>
-            <span className="text-zinc-500">apiproof-github-fixture</span>
+            <span className="text-zinc-400">apiproof-github-fixture</span>
           </div>
 
           <div className="p-3 rounded bg-zinc-950 border border-zinc-800/80 space-y-2 text-xs text-zinc-300">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500">SDK Import</span>
+              <span className="text-zinc-400">SDK Import</span>
               <span className="font-mono text-zinc-200">stripe</span>
             </div>
             <div className="flex items-center justify-center text-zinc-600">↓</div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500">Invoked Symbol</span>
+              <span className="text-zinc-400">Invoked Symbol</span>
               <span className="font-mono text-amber-300">subscriptions.create</span>
             </div>
             <div className="flex items-center justify-center text-zinc-600">↓</div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500">Source File</span>
+              <span className="text-zinc-400">Source File</span>
               <span className="font-mono text-emerald-400 flex items-center gap-1">
                 <FileCode2 className="w-3 h-3" /> src/billing.ts
               </span>
@@ -88,7 +88,7 @@ export function ProofTerminal() {
             <span className="text-emerald-400 font-bold uppercase tracking-wider">
               3. Verified Result
             </span>
-            <span className="text-zinc-500">Draft PR #1</span>
+            <span className="text-zinc-400">Draft PR #1</span>
           </div>
 
           <div className="p-3 rounded bg-zinc-950 border border-zinc-800/80 space-y-2 text-xs">

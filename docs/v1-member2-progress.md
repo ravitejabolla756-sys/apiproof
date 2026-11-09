@@ -2859,3 +2859,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `apps/web/src/components/dashboard/invoice-history-panel.tsx`, `tests/invoice-history-contract.test.ts`.
 - Evidence: focused invoice/digest/billing tests pass 7/7; repository typecheck, targeted ESLint, `git diff --check`, Impeccable detector and web production build pass; billing-boundary browser coverage passes 1/1 with 83 generated pages.
 - Scope: advances local BILL-09 URL-safety and accessibility behavior without selecting a provider allowlist or inventing invoice data. Provider authorization, tenant isolation, retention/legal approval, sandbox fixtures and Member 1 integration remain open.
+
+## 2026-11-09 checkpoint — UI-12/WEB-15 proof-terminal contrast
+
+- Change: Raised the proof-terminal's small secondary labels from `zinc-500` to the existing `zinc-400` secondary tone on the dark terminal surface, improving small-text contrast without changing content or layout.
+- File: `apps/web/src/components/landing/proof-terminal.tsx`.
+- Evidence: Impeccable detector returned no findings; targeted ESLint and `git diff --check` passed; public axe and contrast audits passed 4/4; repository typecheck passed; web production build generated 83 pages.
+- Scope: advances local UI-12/WEB-15 contrast evidence only. Manual assistive-technology review, hosted CI, integrated staging, Core Web Vitals and production remain open.
