@@ -3231,3 +3231,13 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 ## 2026-11-09 checkpoint — ORG-11 rebuilt-bundle audit regression
 
 - Evidence: The rebuilt-bundle organization-audit suite passed **13/13**, covering stale workspace recovery, owner/member boundaries, invitation and audit recovery, cursor pagination, malformed timestamps and axe-clean states. PostgreSQL/RBAC tenant isolation, retention review, Member 1 revocation integration, hosted CI and staging remain open.
+
+## 2026-11-09 checkpoint — ORG-03/ORG-04 collection projection validation
+
+- Change: Workspace administration now validates member and invitation collection shapes, roles, identifiers, timestamps and duplicate IDs before rendering or exposing action controls. Malformed collections fail closed into their existing retry states; invitation token, delivery and member revocation contracts remain unchanged.
+- Files: `apps/web/src/lib/organization-collection-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/organization-collection-contract.test.ts`, `tests/e2e/organization-collection-contract.spec.ts`.
+- Evidence: Focused unit and axe-clean browser negative-path coverage added. Approved email delivery, PostgreSQL/RBAC and Member 1 ORG-10 integration remain open.
+
+## 2026-11-09 checkpoint — ORG-03/ORG-04 rebuilt-bundle collection regression
+
+- Evidence: The combined rebuilt-bundle organization collection/audit suite passed **14/14**, including malformed member/invitation recovery, owner/member boundaries, invitation recovery, audit pagination and stale-context behavior. Approved email delivery, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI and staging remain open.

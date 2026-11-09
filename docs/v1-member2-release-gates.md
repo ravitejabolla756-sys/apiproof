@@ -594,6 +594,10 @@ The complete current-tree CI-mode Playwright matrix passes 182/182 in 3.5 minute
 
 The rebuilt-bundle organization-audit suite passes 13/13, including stale context, owner/member authorization boundaries, invitation and audit recovery, cursor pagination and malformed timestamp states. PostgreSQL/RBAC tenant isolation, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest ORG-03/ORG-04 collection evidence — 2026-11-09
+
+The combined rebuilt-bundle member/invitation and organization-audit suites pass 14/14. Malformed collections fail closed without exposing partial member or invitation controls. Approved email delivery, PostgreSQL/RBAC, Member 1 ORG-10 integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest external source-link safety evidence — 2026-11-09
 
 Backend-provided source links across the dashboard now suppress malformed or credential-bearing destinations while preserving safe HTTPS links. Local contract, lint, typecheck, build and affected browser checks pass. Provider host allowlisting, backend authorization/tenant isolation, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

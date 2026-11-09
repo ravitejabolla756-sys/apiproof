@@ -6,10 +6,11 @@ import { ArrowLeft, Clipboard, Loader2, ShieldCheck, UserPlus, Users } from 'luc
 import { Button } from '@/components/ui/button';
 import { formatDisplayDate, formatDisplayDateTime, toSafeDisplayDateTime } from '../../../../lib/date-display-contract.js';
 import { parseAuditPage, type AuditEventProjection } from '../../../../lib/organization-audit-contract.js';
+import { parseInvitationCollection, parseMemberCollection, type InvitationProjection, type MemberProjection } from '../../../../lib/organization-collection-contract.js';
 
 interface Workspace { id: string; name: string; slug: string; role: 'owner' | 'member'; }
-interface Member { id: string; userId: string; email: string; name: string; role: 'owner' | 'member'; createdAt: string; }
-interface Invitation { id: string; email: string; role: 'member'; expiresAt: string; acceptedAt: string | null; revokedAt: string | null; createdAt: string; }
+type Member = MemberProjection;
+type Invitation = InvitationProjection;
 type AuditEvent = AuditEventProjection;
 
 async function readJson<T>(response: Response): Promise<T & { error?: string }> {
@@ -66,16 +67,18 @@ export default function WorkspaceSettingsPage() {
         fetch('/api/workspace/invitations'),
         fetch('/api/workspace/audit'),
       ]);
-      const [settings, memberData, invitationData, rawAuditData] = await Promise.all(responses.map((response) => response.json()));
+      const [settings, rawMemberData, rawInvitationData, rawAuditData] = await Promise.all(responses.map((response) => response.json()));
+      const memberData = parseMemberCollection(rawMemberData);
+      const invitationData = parseInvitationCollection(rawInvitationData);
       const auditData = parseAuditPage(rawAuditData);
       if (!responses[0]!.ok || !settings.workspace) throw new Error(settings.error || 'Unable to load workspace settings.');
       setWorkspace(settings.workspace);
       setName(settings.workspace.name);
       setSlug(settings.workspace.slug);
-      setMembers(responses[1]!.ok ? memberData.members || [] : []);
-      setInvitations(responses[2]!.ok ? invitationData.invitations || [] : []);
-      setMembersError(responses[1]!.ok ? null : memberData.error || 'Unable to load workspace members.');
-      setInvitationsError(responses[2]!.ok ? null : invitationData.error || 'Unable to load workspace invitations.');
+      setMembers(responses[1]!.ok && memberData ? memberData : []);
+      setInvitations(responses[2]!.ok && invitationData ? invitationData : []);
+      setMembersError(responses[1]!.ok && memberData ? null : (responses[1]!.ok ? 'Unable to load workspace members.' : rawMemberData.error || 'Unable to load workspace members.'));
+      setInvitationsError(responses[2]!.ok && invitationData ? null : (responses[2]!.ok ? 'Unable to load workspace invitations.' : rawInvitationData.error || 'Unable to load workspace invitations.'));
       setAudit(responses[3]!.ok && auditData ? auditData.events : []);
       setAuditCursor(responses[3]!.ok && auditData ? auditData.nextCursor : null);
       setAuditError(responses[3]!.ok && auditData ? null : (responses[3]!.ok ? 'Unable to load administrative audit events.' : rawAuditData.error || 'Unable to load administrative audit events.'));
@@ -129,9 +132,10 @@ export default function WorkspaceSettingsPage() {
     setRetryingMembers(true);
     try {
       const response = await fetch('/api/workspace/members');
-      const data = await readJson<{ members?: Member[] }>(response);
-      if (!response.ok || !data.members) throw new Error(data.error || 'Unable to load workspace members.');
-      setMembers(data.members);
+      const rawData = await readJson<{ members?: unknown }>(response);
+      const data = parseMemberCollection(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load workspace members.');
+      setMembers(data);
       setMembersError(null);
     } catch (loadError) {
       setMembersError(loadError instanceof Error ? loadError.message : 'Unable to load workspace members.');
@@ -144,9 +148,10 @@ export default function WorkspaceSettingsPage() {
     setRetryingInvitations(true);
     try {
       const response = await fetch('/api/workspace/invitations');
-      const data = await readJson<{ invitations?: Invitation[] }>(response);
-      if (!response.ok || !data.invitations) throw new Error(data.error || 'Unable to load workspace invitations.');
-      setInvitations(data.invitations);
+      const rawData = await readJson<{ invitations?: unknown }>(response);
+      const data = parseInvitationCollection(rawData);
+      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load workspace invitations.');
+      setInvitations(data);
       setInvitationsError(null);
     } catch (loadError) {
       setInvitationsError(loadError instanceof Error ? loadError.message : 'Unable to load workspace invitations.');

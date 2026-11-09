@@ -1763,6 +1763,16 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The organization-audit browser suite passes 13/13 against the rebuilt bundle, including authorization boundaries, recovery states, pagination and malformed timestamp handling.
 - NOT_RUN: PostgreSQL/RBAC, retention approval, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — organization collection projection validation
+
+- PASS: Malformed member and invitation collections now produce separate recovery alerts, expose no partial collection or action controls, and remain axe-clean.
+- NOT_RUN: Approved email delivery, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — rebuilt-bundle organization collection regression
+
+- PASS: Combined member/invitation and organization-audit browser coverage passes 14/14 against the rebuilt bundle.
+- NOT_RUN: Approved email delivery, PostgreSQL/RBAC, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.
