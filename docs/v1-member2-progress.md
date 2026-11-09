@@ -3082,3 +3082,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/public-info-cta-accessibility.spec.ts`.
 - Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3188 pnpm exec playwright test tests/e2e/public-info-cta-accessibility.spec.ts --workers=1 --reporter=line -g "not-found recovery"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local WEB-15/UI-12 error-route verification only. Hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — UI-12/UI-13 auth recovery mobile focus coverage
+
+- Change: Extended the password-recovery mobile journey to verify no document-level horizontal overflow and keyboard focus on the Send reset link and Reset password actions after their touch-size and axe checks. Authentication endpoints and token behavior remain unchanged.
+- Files: `tests/e2e/auth-recovery-accessibility.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3189 pnpm exec playwright test tests/e2e/auth-recovery-accessibility.spec.ts --workers=1 --reporter=line` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: advances local UI-12/UI-13/AUTH-08 recovery evidence only. Hosted CI, staging, manual assistive-technology review, provider delivery and production remain open.

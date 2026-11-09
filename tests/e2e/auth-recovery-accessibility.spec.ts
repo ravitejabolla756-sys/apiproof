@@ -13,6 +13,8 @@ test('keeps password recovery actions touch-sized and accessible on mobile', asy
   const forgotBack = page.getByRole('link', { name: 'Back to sign in' });
   expect((await requestReset.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await forgotBack.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  await requestReset.focus(); await expect(requestReset).toBeFocused();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 
   await page.goto('/reset-password#token=test-token');
@@ -25,5 +27,7 @@ test('keeps password recovery actions touch-sized and accessible on mobile', asy
   await expect(resetPassword).toBeVisible();
   expect((await resetPassword.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   expect((await resetBack.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  await resetPassword.focus(); await expect(resetPassword).toBeFocused();
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations).toEqual([]);
 });

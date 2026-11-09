@@ -528,6 +528,10 @@ The same-origin public link crawl now covers verification, login, forgot-passwor
 
 The mobile HTTP-404 journey validates successful same-origin recovery links, 44px targets, no document overflow and axe-clean content. Hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest UI-12 auth recovery evidence — 2026-11-09
+
+Password-recovery mobile coverage verifies no document overflow and keyboard focus on the Send reset link and Reset password actions, with the focused browser test passing 1/1. Hosted CI, staging, manual assistive-technology review, provider delivery and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
