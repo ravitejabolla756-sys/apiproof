@@ -1853,6 +1853,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The worker preference helper returns false for both weekly-digest channels while the contract is pending; notification service coverage passed 5/5.
 - NOT_RUN: Scheduler ownership, approved cadence/recipient/retention and provider delivery remain open.
 
+## 2026-11-09 — security matrix mobile containment
+
+- PASS: The public security comparison preserves a 720px readable table inside a keyboard-focusable horizontal overflow region; the document remains within the 390px viewport. Rebuilt-bundle accessibility coverage passed 2/2.
+- NOT_RUN: Manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

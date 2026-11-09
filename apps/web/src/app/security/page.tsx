@@ -201,7 +201,7 @@ export default function SecurityPage() {
             tabIndex={0}
             className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#004EE8] focus-visible:ring-offset-2"
           >
-            <table className="w-full text-left text-xs border-collapse font-sans">
+            <table className="w-full min-w-[720px] text-left text-xs border-collapse font-sans">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase">
                   <th scope="col" className="py-3 px-3">Operation / Capability</th>

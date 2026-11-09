@@ -669,3 +669,7 @@ Server preference reads force weekly-digest values disabled while scheduling con
 ## Latest NOT-10 worker-gate evidence — 2026-11-09
 
 The worker-facing preference helper is covered for both weekly-digest channels and returns false while scheduling contracts are pending. Notification service coverage passed **5/5**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest UI-12/WEB-15 security matrix evidence — 2026-11-09
+
+The public security invariant matrix now uses a readable minimum width within its existing focusable overflow region. The rebuilt-bundle table/accessibility checks passed **2/2**, including mobile containment with no document-level horizontal overflow. Hosted CI, manual assistive-technology review, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

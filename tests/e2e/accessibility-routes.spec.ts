@@ -41,6 +41,22 @@ test.describe('route accessibility audit', () => {
     }
   });
 
+  test('keeps the security comparison readable with contained mobile overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/security', { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    const region = page.getByRole('region', { name: 'Security boundary comparison' });
+    const table = region.locator('table');
+    await expect(table).toHaveClass(/min-w-\[720px\]/);
+    const metrics = await region.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      documentScrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    }));
+    expect(metrics.scrollWidth).toBeGreaterThan(metrics.clientWidth);
+    expect(metrics.documentScrollWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
+  });
+
   test('keeps the not-found page accessible', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const response = await page.goto('/route-that-does-not-exist', { waitUntil: 'domcontentloaded', timeout: 60_000 });

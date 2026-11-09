@@ -3332,3 +3332,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Change: Extended the digest safety regression to cover the worker-facing `isNotificationPreferenceEnabled` helper for both email and Slack, not only the settings projection.
 - Evidence: Notification service coverage passed **5/5**, including both worker-facing digest checks; no scheduler or provider behavior was introduced.
+
+## 2026-11-09 checkpoint — UI-12/WEB-15 security matrix mobile containment
+
+- Change: The public security invariant matrix now keeps a readable minimum table width inside its existing keyboard-focusable horizontal scroll region, preventing cramped columns on narrow screens without introducing document-level overflow.
+- Files: `apps/web/src/app/security/page.tsx`, `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: Targeted ESLint and `git diff --check` passed; the rebuilt web production build generated **83 pages**; focused rebuilt-bundle accessibility coverage passed **2/2** for table semantics and contained mobile overflow. Hosted CI, manual assistive-technology review, staging and production remain open.
