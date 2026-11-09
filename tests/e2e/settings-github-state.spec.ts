@@ -32,6 +32,7 @@ test('announces the disconnected GitHub integration state', async ({ page }) => 
     await expect(progress).toHaveAttribute('aria-valuemin', '0');
     await expect(progress).toHaveAttribute('aria-valuemax', max);
     await expect(progress).toHaveAttribute('aria-valuenow', '0');
+    await expect(progress.locator(':scope > div')).toHaveCSS('width', '0px');
   }
   expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'GitHub disconnected settings state').toEqual([]);
   await page.unroute('**/api/github/repositories');

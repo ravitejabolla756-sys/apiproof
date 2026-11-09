@@ -1798,6 +1798,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: Future invoice-history ready projections reject malformed dates, negative/unsafe amounts, invalid currencies and duplicate IDs; invoice contract coverage passed 5/5 and the production build generated 83 pages.
 - NOT_RUN: Approved provider source, billing-owner authorization, tenant isolation, retention policy, sandbox integration, hosted CI, staging and production remain open.
 
+## 2026-11-09 — billing usage-bar browser assertion
+
+- PASS: The disconnected billing journey verifies zero-valued usage bars render `0px` fills, including the zero-limit draft-PR metric; rebuilt-bundle browser coverage passed 1/1.
+- NOT_RUN: Hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

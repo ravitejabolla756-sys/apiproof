@@ -625,3 +625,7 @@ Zero-limit beta billing metrics now render finite progress-bar widths. Billing c
 ## Latest BILL-09 invoice projection evidence — 2026-11-09
 
 The provider-neutral invoice adapter now has a fail-closed parser for future server-owned ready projections. Invoice contract coverage passed **5/5** and the rebuilt web build generated **83 pages**. Provider source/authorization, retention, sandbox integration, hosted CI, staging and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest UI-13 billing usage-bar evidence — 2026-11-09
+
+The disconnected billing browser journey verifies zero-valued progress-bar fills, including the zero-limit draft-PR metric, and passes **1/1** against the rebuilt bundle. Hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.

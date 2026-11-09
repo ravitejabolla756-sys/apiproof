@@ -3269,3 +3269,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added validation for future server-owned invoice-history projections, rejecting malformed dates, negative or unsafe amounts, invalid currencies, duplicate IDs and malformed records before rendering; the provider-neutral unavailable boundary remains unchanged.
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
 - Evidence: Invoice contract coverage passed **5/5**; targeted ESLint, test TypeScript and diff checks passed; the rebuilt web production build generated **83 pages**. Provider schema, authorization, retention, sandbox and hosted verification remain open.
+
+## 2026-11-09 checkpoint — UI-13 billing usage-bar browser assertion
+
+- Change: Extended the disconnected-billing browser journey to assert that all zero-valued usage bars, including the zero-limit draft-PR metric, compute a `0px` fill width rather than an invalid CSS value.
+- Files: `tests/e2e/settings-github-state.spec.ts`.
+- Evidence: Rebuilt-bundle CI-mode browser coverage passed **1/1**; targeted ESLint and diff checks passed. Hosted CI, staging and production remain open.
