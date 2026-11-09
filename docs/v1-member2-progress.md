@@ -3939,3 +3939,8 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/invoice-history-contract.ts`, `tests/invoice-history-contract.test.ts`.
 - Evidence: Focused invoice contract coverage passed **7/7**; provider authorization, billing-owner capability, URL allowlisting, retention and legal approval remain external contracts.
 - Scope: Advances BILL-09 local projection safety only; no provider endpoint, payment flow or billing credential was introduced.
+
+## 2026-11-10 checkpoint — seeded full regression after invoice hardening
+
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password pnpm exec vitest run --reporter=dot` passed **200 test files, 1 skipped; 1,503 tests, 4 skipped** in 111.8 seconds. The unseeded invocation was also checked and failed only because the repository requires the explicit local seed variable (`MISSING_LOCAL_SEED_PASSWORD`), not because of a product assertion.
+- Scope: Local regression evidence for the current branch; hosted CI, PostgreSQL/RBAC, staging, provider delivery, legal review, manual assistive-technology review and production remain external gates.
