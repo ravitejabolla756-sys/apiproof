@@ -3122,3 +3122,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/date-display-contract.ts`, `apps/web/src/app/dashboard/settings/workspace/page.tsx`, `tests/date-display-contract.test.ts`.
 - Evidence: date-display/invoice focused Vitest coverage passed 6/6; targeted ESLint, full repository typecheck, `git diff --check` and Impeccable detection passed (only five unchanged incumbent palette warnings); `CI=true PLAYWRIGHT_PORT=3193 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line` passed 12/12; rebuilt web bundle generated 83 pages.
 - Scope: advances local ORG-03/ORG-11/UI-12 resilience only. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 checkpoint — ORG-03/ORG-11 malformed-date browser regression
+
+- Change: Added a browser negative-path fixture for malformed invitation-expiry and audit-event timestamps, verifying the workspace UI renders `Unavailable`, never `Invalid Date`, remains overflow-free at 390px and stays axe-clean.
+- Files: `tests/e2e/organization-audit.spec.ts`.
+- Evidence: `APIPROOF_LOCAL_SEED_PASSWORD=local-test-seed-password CI=true PLAYWRIGHT_PORT=3194 pnpm exec playwright test tests/e2e/organization-audit.spec.ts --workers=1 --reporter=line -g "malformed invitation"` passed 1/1; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Scope: strengthens local ORG-03/ORG-11/UI-12 contract resilience only. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.

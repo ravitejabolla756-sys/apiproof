@@ -349,4 +349,23 @@ test.describe('workspace audit trail', () => {
 
     await page.unroute('**/api/workspace/audit**');
   });
+
+  test('fails closed for malformed invitation and audit timestamps', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.route('**/api/workspace/invitations', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitations: [{ id: 'invalid-invitation-date', email: 'invalid-date@example.test', role: 'member', expiresAt: '2026-02-31T00:00:00.000Z', acceptedAt: null, revokedAt: null, createdAt: '2026-11-09T00:00:00.000Z' }] }) });
+    });
+    await page.route('**/api/workspace/audit**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ events: [{ id: 'invalid-audit-date', action: 'workspace.updated', actorEmail: 'owner@example.test', targetType: 'workspace', createdAt: 'not-a-date' }], nextCursor: null }) });
+    });
+    await signIn(page);
+    await page.goto('/dashboard/settings/workspace');
+    await expect(page.getByRole('list', { name: 'Recent invitations' }).getByText('Unavailable', { exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('list', { name: 'Administrative events' }).getByText('Unavailable', { exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Invalid Date', { exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('#main-content').analyze()).violations, 'malformed workspace dates').toEqual([]);
+    await page.unroute('**/api/workspace/invitations');
+    await page.unroute('**/api/workspace/audit**');
+  });
 });

@@ -1613,6 +1613,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - ADVISORY: Impeccable reported only five unchanged workspace-heading purple-palette warnings.
 - NOT_RUN: PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
 
+## 2026-11-09 — ORG-03/ORG-11 malformed-date browser regression
+
+- PASS: Malformed invitation and audit timestamps render `Unavailable` rather than `Invalid Date`; the focused workspace browser test passed 1/1 with no-overflow and axe assertions, and targeted ESLint, test TypeScript and `git diff --check` passed.
+- NOT_RUN: PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — WEB-13 no-monitor status browser evidence
 
 - PASS: Mobile browser coverage verifies the status page's truthful no-monitor message, contact-support link, touch target and axe-clean main content; the focused run passed 2/2 including the existing updates-list regression.

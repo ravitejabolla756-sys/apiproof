@@ -552,6 +552,10 @@ The current tree passes 1,374 seeded Vitest tests across 165 files, with 1 skipp
 
 Workspace invitation and audit timestamps now fail closed for malformed projections; focused date coverage passes 6/6, organization browser coverage passes 12/12, typecheck/lint/build pass and the build generates 83 pages. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
 
+## Latest workspace malformed-date browser evidence — 2026-11-09
+
+Malformed invitation and audit timestamps render `Unavailable` rather than `Invalid Date` in a 390px axe-clean workspace journey; the focused browser test passes 1/1. PostgreSQL/RBAC, retention, Member 1 revocation integration, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
 ## Latest WEB-15 performance evidence — 2026-11-09
 
 The current production bundle passes the 9-route loopback performance probe. This does not replace Lighthouse/Core Web Vitals, public-network, hosted deployment, staging, manual assistive-technology or production evidence. Release recommendation stays NO-GO.
