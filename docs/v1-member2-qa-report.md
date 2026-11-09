@@ -56,6 +56,12 @@
 - PASS: Detector `[]`; targeted ESLint; `pnpm typecheck`; rebuilt web bundle generated 83 pages; provider-rule action/filter browser coverage passed 2/2.
 - NOT_RUN: Provider approval, PostgreSQL/RBAC, manual assistive-technology review, hosted CI, staging and production remain open.
 
+## 2026-11-09 — UI-12/UI-13 repository expansion semantics
+
+- PASS: Repository expansion controls now expose an `aria-controls` relationship and the expanded metadata panel is a labeled region; the regression covers the seeded auto-expanded first row and explicit collapse/toggle behavior.
+- PASS: Impeccable detector `[]`; targeted ESLint; repository typecheck; web build generated 83 pages; repository filter/expansion browser coverage passed 1/1.
+- NOT_RUN: PostgreSQL/RBAC, GitHub/provider approval, manual assistive-technology review, hosted CI, staging and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

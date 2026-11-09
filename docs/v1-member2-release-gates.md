@@ -479,3 +479,7 @@ Provider-review editable textareas now use the 16px mobile-safe text floor while
 ## Latest UI-12 provider-review input evidence — 2026-11-09
 
 The provider-rule title input now also uses the 16px mobile-safe text floor, completing the local provider-review form-control pass. Provider approval, PostgreSQL/RBAC, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12/UI-13 repository expansion evidence — 2026-11-09
+
+Repository expand/collapse controls now have explicit metadata-panel relationships and a named expanded region, with local browser coverage passing. PostgreSQL/RBAC, GitHub/provider approval, hosted CI, staging, manual assistive-technology review and production remain NOT_RUN. Release recommendation stays NO-GO.

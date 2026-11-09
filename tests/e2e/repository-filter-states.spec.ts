@@ -24,6 +24,11 @@ test('distinguishes filtered repository emptiness and clears filters', async ({ 
 
   await page.goto('/dashboard/repositories', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('link', { name: 'owl-platform' })).toBeVisible();
+  const expandRepository = page.getByRole('button', { name: /^(Expand|Collapse) owl-platform$/ });
+  if (await expandRepository.getAttribute('aria-expanded') !== 'true') await expandRepository.click();
+  await expect(expandRepository).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('region', { name: 'Details for owl-platform' })).toBeVisible();
+  await expandRepository.click();
 
   const search = page.getByRole('textbox', { name: 'Search repositories' });
   await expect(search).toHaveCSS('font-size', '16px');

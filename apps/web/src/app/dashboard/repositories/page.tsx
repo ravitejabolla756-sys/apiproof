@@ -253,6 +253,7 @@ export default function RepositoriesTablePage() {
                               onClick={() => setExpandedRepo(isExpanded ? null : repo.id)}
                               aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${repo.name}`}
                               aria-expanded={isExpanded}
+                              aria-controls={"repository-details-" + repo.id}
                               className="min-h-11 min-w-11 rounded-lg p-1 text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
                             >
                               {isExpanded ? (
@@ -337,7 +338,7 @@ export default function RepositoriesTablePage() {
 
                         {/* Expanded Row Detail Drawer */}
                         {isExpanded && (
-                          <div className="bg-[#F6F6F4] p-5 border-t border-[#E8E8E5] space-y-4 text-xs">
+                          <div id={"repository-details-" + repo.id} role="region" aria-label={"Details for " + repo.name} className="bg-[#F6F6F4] p-5 border-t border-[#E8E8E5] space-y-4 text-xs">
                             <div className="text-xs font-semibold text-[#111111] flex items-center justify-between">
                               <span>Repository metadata: {repo.full_name}</span>
                               <span className="font-mono text-[11px] text-[#686868]">ID: {repo.id}</span>
