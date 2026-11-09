@@ -2132,3 +2132,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Repository detail validates the repository, scan and finding collections before rendering and displays the API-owned `files_analyzed` value; focused contract coverage passed **2/2** and repository recovery/loading browser coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Provider-backed scan verification, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — inventory projection guard
+
+- PASS: Inventory validates provider identities and nested rules before filtering; focused contract coverage passed **2/2** and inventory/filter/recovery browser coverage passed **4/4**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: Provider registry backend authorization, hosted CI, staging, manual assistive-technology review and production remain open.

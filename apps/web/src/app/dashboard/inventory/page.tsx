@@ -5,25 +5,9 @@ import { ProviderBadge } from "@/components/ui/status-pill";
 import { Search, Boxes, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardDataError } from "@/components/dashboard/data-state";
+import { parseInventoryResponse, type ProviderInventoryProjection } from "@/lib/inventory-contract";
 
-interface InventoryRule {
-  id: string;
-  title: string;
-  severity: string;
-  description: string;
-}
-
-interface ProviderInventoryItem {
-  id: string;
-  name: string;
-  category: string;
-  status: "reviewed" | "detected";
-  rulesCount: number;
-  description: string;
-  rules: InventoryRule[];
-  capability?: "discovery" | "compatibility";
-  capabilities?: string[];
-}
+type ProviderInventoryItem = ProviderInventoryProjection;
 
 export default function ApiInventoryPage() {
   const [providers, setProviders] = useState<ProviderInventoryItem[]>([]);
@@ -35,9 +19,13 @@ export default function ApiInventoryPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/inventory");
-      const json = await res.json() as { providers?: ProviderInventoryItem[]; error?: string };
-      if (!res.ok) throw new Error(json.error || "Unable to load API inventory.");
-      setProviders(json.providers || []);
+      const json = await res.json() as unknown;
+      const parsed = parseInventoryResponse(json);
+      if (!res.ok || !parsed) {
+        const error = json && typeof json === 'object' && 'error' in json && typeof json.error === 'string' ? json.error : undefined;
+        throw new Error(error || "Unable to load API inventory.");
+      }
+      setProviders(parsed);
       setError(null);
     } catch (err) {
       console.error("Failed to load API inventory:", err);

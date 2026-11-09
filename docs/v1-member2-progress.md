@@ -3669,3 +3669,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/repository-detail-contract.ts`, `apps/web/src/app/dashboard/repositories/[id]/page.tsx`, `tests/repository-detail-contract.test.ts`.
 - Evidence: Focused repository-detail contract coverage passed **2/2** and repository recovery/loading browser coverage passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 detail-state resilience and corrects a local scan-history field mismatch; repository authorization and scan mutation contracts remain unchanged.
+
+## 2026-11-09 checkpoint — inventory projection guard
+
+- Change: Added a typed provider-inventory adapter with duplicate-ID and nested-rule validation; malformed responses now use the existing inventory recovery state instead of crashing filter rendering.
+- Files: `apps/web/src/lib/inventory-contract.ts`, `apps/web/src/app/dashboard/inventory/page.tsx`, `tests/inventory-contract.test.ts`.
+- Evidence: Focused inventory contract coverage passed **2/2** and inventory/filter/recovery browser coverage passed **4/4**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 inventory resilience only; provider registry ownership and compatibility authorization remain server-owned.
