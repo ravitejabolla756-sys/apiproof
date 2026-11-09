@@ -229,3 +229,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - SEC-13 injected alert delivery: PASS locally, `sec13-worker-observability` covers actionable delivery, non-actionable suppression and contained sink failure. This is a destination-neutral local contract; monitoring provider, alert routing, retry/escalation policy, PostgreSQL and staging rehearsal remain open.
 
 - AUTH-10 malformed session boundary: PASS locally, `auth-session` plus `auth-hardening` 27/27; malformed, whitespace-bearing and oversized session identifiers are rejected before database lookup. Central verified-user enforcement, PostgreSQL concurrency and live browser/provider evidence remain open.
+
+- ORG-05 unknown-role capability boundary: PASS locally, `workspace-policy` regression covers runtime unknown-role read and assertion denial without role-map exceptions. No role grants changed; PostgreSQL/RLS, Member 2 capability approval and integration evidence remain open.

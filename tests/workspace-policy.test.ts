@@ -14,6 +14,8 @@ describe('workspace role capability policy', () => {
     expect(normalizeWorkspaceRole('admin')).toBe('admin');
     expect(normalizeWorkspaceRole('member')).toBe('member');
     expect(() => normalizeWorkspaceRole('superuser')).toThrow('WORKSPACE_ROLE_INVALID');
+    expect(workspaceRoleCan('superuser', 'workspace:read')).toBe(false);
+    expect(() => assertWorkspaceCapability('superuser', 'workspace:read')).toThrow('WORKSPACE_CAPABILITY_DENIED');
   });
 
   it('keeps owner capabilities complete and reserves destructive billing/workspace actions', () => {

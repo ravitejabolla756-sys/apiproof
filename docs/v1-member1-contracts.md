@@ -192,6 +192,8 @@ The following tests are implementation-ready but remain contract-gated; they int
 - 2026-11-09 SEC-13: Health alerts are delivered only through an injected destination-neutral sink after threshold evaluation. Delivery returns `not_needed`, `sent`, or `failed`; sink failure must not alter the worker job result. Provider, destination, credential, escalation and retry policy remain external decisions.
 
 - 2026-11-09 AUTH-10: Session validation accepts only bounded opaque identifiers matching the server-issued `ses_` format; malformed, whitespace-bearing or oversized cookie values fail closed before adapter lookup. This input boundary does not define the separate verified-user enforcement policy.
+
+- 2026-11-09 ORG-05: Runtime workspace capability checks must treat unknown persisted role values as denied, without throwing a role-map lookup error or granting fallback access. The approved role vocabulary remains unchanged.
 - 2026-11-08 SEC-11: Structured logger context keys such as `googleOAuthClientSecret` are redacted by normalized credential-key matching. No undocumented standalone Google OAuth client-secret prefix is assumed; key-based local tests do not prove arbitrary unlabelled credential detection.
 - Internal cron handlers require `Authorization: Bearer <CRON_SECRET>`. The four cron routes share byte-length-safe timing-resistant validation; missing/malformed credentials return a generic 401 before work or status data is accessed. Current local integration tests cover this contract, but do not verify deployment proxy/header behavior or configured live credentials.
 - Bearer scheme comparison is case-insensitive; the credential value is still compared as UTF-8 bytes with a byte-length guard and timing-safe equality.

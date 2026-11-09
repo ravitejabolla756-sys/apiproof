@@ -898,3 +898,8 @@ Phase 0 read-only checks:
 - `auth-session` plus `auth-hardening` pass 27/27; web typecheck, targeted ESLint and `git diff --check` pass. This does not close the central verified-user policy, PostgreSQL concurrency or live browser/provider gates.
 
 - Task-accounting reconciliation: AUTH-10 is now `DONE_VERIFIED_LOCAL` based on the complete local regression evidence above. Local completion is 8/27; production-verified remains 0. The central verified-user policy, PostgreSQL concurrency and live browser/provider gates remain external.
+
+### 2026-11-09 ORG-05 unknown-role capability hardening
+
+- Central workspace capability checks now fail closed for runtime role values outside the approved `owner`/`admin`/`member` vocabulary instead of indexing the role map unsafely. Regression coverage verifies both read denial and capability assertion denial for an unknown role.
+- This preserves the existing role matrix and does not grant new permissions; PostgreSQL/RLS, Member 2 contract and organization integration evidence remain external.
