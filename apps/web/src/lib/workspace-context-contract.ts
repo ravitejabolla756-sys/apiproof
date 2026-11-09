@@ -9,6 +9,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isNonEmptyText(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 /** Validate the server-owned workspace selector projection before rendering it. */
 export function parseWorkspaceContext(payload: unknown): WorkspaceContextProjection | null {
   if (!isRecord(payload) || !Array.isArray(payload.workspaces)) return null;
@@ -17,7 +21,7 @@ export function parseWorkspaceContext(payload: unknown): WorkspaceContextProject
   const seen = new Set<string>();
   const workspaces: WorkspaceContextOption[] = [];
   for (const item of payload.workspaces) {
-    if (!isRecord(item) || typeof item.id !== 'string' || item.id.length === 0 || typeof item.name !== 'string' || item.name.length === 0) return null;
+    if (!isRecord(item) || !isNonEmptyText(item.id) || !isNonEmptyText(item.name)) return null;
     if (seen.has(item.id)) return null;
     seen.add(item.id);
     workspaces.push({ id: item.id, name: item.name });

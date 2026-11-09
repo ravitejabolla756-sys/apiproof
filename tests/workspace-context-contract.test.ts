@@ -18,6 +18,8 @@ describe('workspace context response contract', () => {
   it.each([
     ['missing list', { activeWorkspaceId: null }],
     ['malformed option', { ...valid, workspaces: [{ id: 'ws_primary', name: 4 }] }],
+    ['whitespace option id', { ...valid, workspaces: [{ id: '   ', name: 'Primary Workspace' }] }],
+    ['whitespace option name', { ...valid, workspaces: [{ id: 'ws_primary', name: '\t' }] }],
     ['duplicate option', { ...valid, workspaces: [valid.workspaces[0], valid.workspaces[0]] }],
     ['active ID outside list', { ...valid, activeWorkspaceId: 'ws_other' }],
     ['active ID with empty list', { activeWorkspaceId: 'ws_primary', workspaces: [] }],

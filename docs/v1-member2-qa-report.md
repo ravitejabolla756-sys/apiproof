@@ -1883,6 +1883,11 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The notification HTTP GET boundary returns stored weekly-digest opt-ins as disabled/unavailable while the scheduler contract is pending; notification preference coverage passed 5/5.
 - NOT_RUN: Scheduler ownership, cadence, recipient/timezone/retention approval and provider delivery remain open.
 
+## 2026-11-09 — workspace projection text validation
+
+- PASS: Workspace selector projection parsing rejects whitespace-only workspace IDs and names before rendering.
+- NOT_RUN: PostgreSQL/RBAC, Member 1 role/revocation integration, hosted CI, staging, manual assistive-technology review and production remain open.
+
 ## 2026-11-09 — UI-12/WEB-15 updates timeline semantics
 
 - PASS: The updates timeline now exposes an ordered `Product updates` list with four direct update items and stable title keys; visual layout and copy are preserved.

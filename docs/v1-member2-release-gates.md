@@ -693,3 +693,7 @@ The invoice adapter now rejects whitespace-only identity, status and unavailable
 ## Latest NOT-10 HTTP gate evidence — 2026-11-09
 
 The notification GET route is covered against stored weekly-digest opt-ins and returns them disabled/unavailable while scheduling contracts remain pending. Notification preference coverage passed **5/5**; scheduler/provider approval, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
+
+## Latest ORG-02 projection validation evidence — 2026-11-09
+
+The workspace selector parser now rejects whitespace-only IDs and names before rendering. PostgreSQL/RBAC, Member 1 role/revocation integration, hosted CI, staging, manual assistive-technology review and production remain **NOT_RUN**; release recommendation remains **NO-GO**.
