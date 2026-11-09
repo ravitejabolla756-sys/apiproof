@@ -467,3 +467,7 @@ The owner-only role selector now uses the 16px mobile-safe text floor; local typ
 ## Latest UI-12/UI-13 tablet evidence — 2026-11-09
 
 The 768px route audit now verifies both axe results and no document-level horizontal overflow across all audited public and authenticated routes. Local coverage passes; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.
+
+## Latest UI-12 reduced-motion evidence — 2026-11-09
+
+The authenticated dashboard shell now has direct reduced-motion browser evidence for suppressed animation, transition and scroll behavior. Local coverage passes; manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain NOT_RUN. Release recommendation stays NO-GO.

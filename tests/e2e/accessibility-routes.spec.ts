@@ -239,6 +239,29 @@ test.describe('route accessibility audit', () => {
     }
   });
 
+  test('honors reduced motion inside the authenticated dashboard shell', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await signIn(page);
+    await page.goto('/dashboard');
+    const motion = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.className = 'animate-pulse transition-all';
+      document.body.appendChild(probe);
+      const style = window.getComputedStyle(probe);
+      const toMilliseconds = (value: string) => value.endsWith('ms') ? Number.parseFloat(value) : Number.parseFloat(value) * 1000;
+      const result = {
+        animationDurationMs: toMilliseconds(style.animationDuration),
+        transitionDurationMs: toMilliseconds(style.transitionDuration),
+        scrollBehavior: style.scrollBehavior,
+      };
+      probe.remove();
+      return result;
+    });
+    expect(motion.animationDurationMs).toBeLessThanOrEqual(0.01);
+    expect(motion.transitionDurationMs).toBeLessThanOrEqual(0.01);
+    expect(motion.scrollBehavior).toBe('auto');
+  });
+
   test('keeps authenticated routes within the mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await signIn(page);

@@ -38,6 +38,12 @@
 - PASS: Targeted ESLint, `pnpm typecheck`, and `CI=true PLAYWRIGHT_PORT=3165 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --grep "tablet width" --reporter=line` passed; tablet coverage was 1/1.
 - NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, PostgreSQL/RBAC and production remain open.
 
+## 2026-11-09 — UI-12 authenticated reduced-motion regression
+
+- PASS: Under reduced motion, the authenticated dashboard shell reports animation and transition durations at or below 0.01ms and automatic scroll behavior, matching the public motion contract.
+- PASS: Targeted ESLint, `pnpm typecheck`, and focused Playwright coverage passed 1/1.
+- NOT_RUN: Manual assistive-technology review, hosted CI, integrated staging, PostgreSQL/RBAC and production remain open.
+
 ## 2026-11-08 checkpoint — UI-12 public decorative icon semantics
 
 - PASS: Decorative homepage trust/pricing/CTA, pipeline and mobile-navigation icons are excluded from the accessibility tree.

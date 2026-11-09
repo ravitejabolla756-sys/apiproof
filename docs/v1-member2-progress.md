@@ -2929,3 +2929,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `tests/e2e/accessibility-routes.spec.ts`.
 - Evidence: Targeted ESLint and repository typecheck passed; the rebuilt current web bundle's tablet route audit passed 1/1, covering all audited public and authenticated routes with axe and overflow assertions.
 - Scope: advances local UI-12/UI-13 responsive verification only. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
+
+## 2026-11-09 checkpoint — UI-12 authenticated reduced-motion regression
+
+- Change: Extended the existing reduced-motion contract test into the authenticated dashboard shell, verifying that animation duration, transition duration and scroll behavior remain suppressed under `prefers-reduced-motion: reduce`.
+- Files: `tests/e2e/accessibility-routes.spec.ts`.
+- Evidence: Targeted ESLint, repository typecheck and `CI=true PLAYWRIGHT_PORT=3166 pnpm exec playwright test tests/e2e/accessibility-routes.spec.ts --workers=1 --grep "reduced motion" --reporter=line` passed; focused coverage was 1/1.
+- Scope: advances local UI-12/UI-13 reduced-motion evidence only. Manual assistive-technology review, hosted CI, staging, PostgreSQL/RBAC and production remain open.
