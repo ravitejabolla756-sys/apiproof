@@ -5,6 +5,7 @@ import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, Cred
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
+import { formatDisplayDate } from "@/lib/date-display-contract";
 import Link from "next/link";
 
 interface GitHubInstallationInfo {
@@ -254,7 +255,7 @@ export default function SettingsPage() {
                   <p className="text-[11px] text-[#686868]">
                     Current billing period resets on{' '}
                     <span className="font-mono font-medium text-[#111111]">
-                      {new Date(billing.subscription.currentPeriodEnd).toLocaleDateString()}
+                      {formatDisplayDate(billing.subscription.currentPeriodEnd)}
                     </span>.
                   </p>
                   <div className="flex items-center gap-2">

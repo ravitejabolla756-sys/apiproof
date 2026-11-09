@@ -3154,5 +3154,11 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 
 - Change: Added a browser regression that fixtures impossible repository, pull-request and scan-completion timestamps and verifies `Unavailable`, no `Invalid Date`, and axe-clean dashboard content. The test is run against a rebuilt production bundle so it cannot silently exercise stale output.
 - Files: `tests/e2e/dashboard-date-display.spec.ts`.
-- Evidence: rebuilt web bundle generated 83 pages; the focused Playwright suite passed 2/2; targeted ESLint, test TypeScript and `git diff --check` passed.
+- Evidence: rebuilt web bundle generated 83 pages; the focused Playwright suite passed 3/3; targeted ESLint, test TypeScript and `git diff --check` passed.
 - Scope: advances local UI-12/UI-13 timestamp-boundary evidence only. Hosted CI, PostgreSQL/RBAC, manual assistive-technology review, staging and production remain open.
+
+## 2026-11-09 checkpoint — BILL-07/UI-12 billing-period date boundary
+
+- Change: Billing settings now use the existing fail-closed date-display contract for the provider/API-supplied current-period end timestamp; malformed values display `Unavailable` without changing beta billing behavior.
+- Files: `apps/web/src/app/dashboard/settings/page.tsx`, `tests/e2e/dashboard-date-display.spec.ts`.
+- Scope: advances local BILL-07/UI-12 resilience only. Provider lifecycle, billing authorization, retention/legal approval and production billing remain open.
