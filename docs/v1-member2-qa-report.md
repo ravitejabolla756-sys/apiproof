@@ -2142,3 +2142,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 
 - PASS: Finding detail validates populated and explicit not-found envelopes before dereferencing workbench fields; focused contract coverage passed **2/2** and finding-detail/workbench loading browser coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
 - NOT_RUN: Finding/migration authorization, hosted CI, staging, manual assistive-technology review and production remain open.
+
+## 2026-11-09 — GitHub settings status guard
+
+- PASS: Workspace settings validates disconnected/connected GitHub status and installation metadata before rendering; focused contract coverage passed **2/2** and settings/GitHub recovery browser coverage passed **3/3**, with targeted ESLint, web typecheck and `git diff --check` passing.
+- NOT_RUN: GitHub provider authorization, hosted CI, staging, manual assistive-technology review and production remain open.

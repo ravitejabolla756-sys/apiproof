@@ -3683,3 +3683,10 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Files: `apps/web/src/lib/finding-detail-contract.ts`, `apps/web/src/app/dashboard/findings/[id]/page.tsx`, `tests/finding-detail-contract.test.ts`.
 - Evidence: Focused finding-detail contract coverage passed **2/2** and finding-detail/workbench loading browser coverage passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
 - Scope: Advances UI-12/UI-13 finding-detail resilience only; finding authorization and migration mutation contracts remain server-owned.
+
+## 2026-11-09 checkpoint — GitHub settings status guard
+
+- Change: Added a typed GitHub installation-status adapter for workspace settings and hardened installation-action error parsing; incomplete connection metadata now uses the existing retryable settings state.
+- Files: `apps/web/src/lib/github-installation-contract.ts`, `apps/web/src/app/dashboard/settings/page.tsx`, `tests/github-installation-contract.test.ts`.
+- Evidence: Focused GitHub installation contract coverage passed **2/2** and settings/GitHub recovery browser coverage passed **3/3**; targeted ESLint, web typecheck and `git diff --check` passed.
+- Scope: Advances UI-12/UI-13 settings resilience only; GitHub installation authorization and provider lifecycle remain server-owned.

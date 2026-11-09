@@ -9,6 +9,7 @@ import { formatDisplayDate } from "@/lib/date-display-contract";
 import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
 import { billingPortalAvailability } from "@/lib/billing-portal-contract";
 import { toSafeNavigationUrl } from "@/lib/external-link-contract";
+import { parseGitHubInstallationResponse } from "@/lib/github-installation-contract";
 import Link from "next/link";
 
 interface GitHubInstallationInfo {
@@ -45,7 +46,8 @@ export default function SettingsPage() {
       if (!repoRes.ok || !billingRes.ok) throw new Error('Workspace settings data is temporarily unavailable.');
 
       if (repoRes.ok) {
-        const repoData = await repoRes.json();
+        const repoData = parseGitHubInstallationResponse(await repoRes.json());
+        if (!repoData) throw new Error('GitHub connection status is temporarily unavailable.');
         if (repoData.connected && repoData.installation) {
           setInstallation(repoData.installation);
         } else {
@@ -80,10 +82,11 @@ export default function SettingsPage() {
     setErrorAction(null);
     try {
       const res = await fetch('/api/github/install');
-      const data = await res.json();
-      const installUrl = toSafeNavigationUrl(typeof data.url === 'string' ? data.url : null);
+      const data = await res.json() as unknown;
+      const installUrl = toSafeNavigationUrl(data && typeof data === 'object' && 'url' in data && typeof data.url === 'string' ? data.url : null);
       if (!res.ok || !installUrl) {
-        throw new Error(data.error || "Failed to generate installation URL");
+        const error = data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : undefined;
+        throw new Error(error || "Failed to generate installation URL");
       }
       window.location.href = installUrl;
     } catch (err: unknown) {
