@@ -11,6 +11,7 @@ import { githubLoginMigrations } from './github-login-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 import { validateMigrationHistory } from './migration-compatibility.js';
+import { memberRevocationMigrations } from './member-revocation-migration.js';
 
 export const migrations: Migration[] = [
   {
@@ -481,6 +482,7 @@ export const migrations: Migration[] = [
   ...providerChangeMonitorMigrations,
   ...googleOAuthMigrations,
   ...githubLoginMigrations,
+  ...memberRevocationMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {

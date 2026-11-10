@@ -19,7 +19,9 @@ Member 2 exports `removeOrganizationMember(userId, workspaceId, targetUserId)`, 
 
 ## Contract status
 
-The typed contract and executable shape tests in this branch are proposals. The `it.todo` cases remain pending until the source branches are integrated into this worktree. The tests intentionally do not fake a successful organization implementation.
+The Member 1 revocation service, workspace policy, and durable revocation migration definition are now integrated into this worktree. The typed API contract remains a proposal until Member 2 approves it. Invitation invalidation, queued-job revalidation, stale-context route coverage, and PostgreSQL concurrency remain pending because Member 2's organization service and migration registry are not integrated.
+
+The integrated migration definition still uses Member 1's source ID `027`. It must not be combined with Member 2's conflicting `027` until the approved migration-history decision is complete.
 
 ## Safe integration sequence
 
