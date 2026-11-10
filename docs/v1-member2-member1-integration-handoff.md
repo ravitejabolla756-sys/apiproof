@@ -2,9 +2,9 @@
 
 Status: ready for Member 1 review; no shared backend behavior is integrated by this document.
 
-Repository branch: `codex/v1-frontend-product`  
-Member 2 HEAD at handoff: `809d4df`  
-Member 1 reference reviewed read-only: `4138c9a8` (`codex/v1-backend-security`)  
+Repository branch: `codex/v1-frontend-product`
+Member 2 HEAD at handoff: `809d4df`
+Member 1 reference reviewed read-only: `4138c9a8` (`codex/v1-backend-security`)
 Worktree: `/Users/sandstone/Documents/myowl/MY-OWL-V1`
 
 ## Current Member 2 state
