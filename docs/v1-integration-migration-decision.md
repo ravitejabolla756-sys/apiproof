@@ -61,6 +61,8 @@ Recovery requires preserving the database and ledger, capturing the read-only ev
 
 The guard must not be enabled until tests cover fresh, both legacy, mixed, duplicate, unknown, incomplete, partial-schema, unexpected-schema, repeat-run, SQLite, PostgreSQL, lock contention, rollback, and no-DDL-on-failure behavior.
 
+The integration branch now covers the runner's identity preflight, SQLite no-pending-DDL behavior, unchanged ledger/schema state after rejection, repeat execution after repair, and PostgreSQL mock ordering for advisory lock, preflight, and rollback. The PostgreSQL cases are adapter-mock evidence only; they do not prove live PostgreSQL locking, RLS, grants, or engine behavior. Schema fingerprints and partially applied DDL still require approved isolated database evidence.
+
 ## Integration sequence
 
 1. Obtain isolated database evidence.
