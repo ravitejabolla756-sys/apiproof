@@ -79,4 +79,51 @@ describe('migration compatibility preflight', () => {
       'INCOMPLETE_APPLIED_RECORD:024:name',
     ]);
   });
+
+  it('fails closed when a partially applied schema is missing an expected object', () => {
+    const result = validateMigrationHistory({
+      available: collisions,
+      applied: applied(collisions),
+      schema: { engine: 'sqlite', expectedObjects: ['email_verification_tokens', 'finding_lifecycle_events'], observedObjects: ['email_verification_tokens'] },
+    });
+    expect(result.compatible).toBe(false);
+    expect(result.errors).toContain('MISSING_SCHEMA_OBJECT:sqlite:finding_lifecycle_events');
+  });
+
+  it('fails closed for unexpected schema objects', () => {
+    const result = validateMigrationHistory({
+      available: collisions,
+      applied: applied(collisions),
+      schema: { engine: 'postgres', expectedObjects: ['workspace_security_audit_events'], observedObjects: ['workspace_security_audit_events', 'unknown_table'] },
+    });
+    expect(result.errors).toEqual(['UNEXPECTED_SCHEMA_OBJECT:postgres:unknown_table']);
+  });
+
+  it('models a PostgreSQL legacy history independently from SQLite', () => {
+    const result = validateMigrationHistory({
+      available: collisions,
+      applied: applied(collisions),
+      schema: { engine: 'postgres', expectedObjects: ['workspace_security_audit_events'], observedObjects: ['workspace_security_audit_events'] },
+    });
+    expect(result.compatible).toBe(true);
+  });
+
+  it('fails closed for a missing ledger record even when schema objects exist', () => {
+    const result = validateMigrationHistory({
+      available: collisions,
+      applied: applied(collisions).slice(0, 3),
+      schema: { engine: 'sqlite', expectedObjects: ['workspace_security_audit_events'], observedObjects: ['workspace_security_audit_events'] },
+    });
+    expect(result.compatible).toBe(true);
+    expect(result.pending).toEqual([collisions[3]]);
+  });
+
+  it('does not mutate inputs and remains idempotent across repeated validation', () => {
+    const input = { available: collisions, applied: applied(collisions) };
+    const before = JSON.stringify(input);
+    const first = validateMigrationHistory(input);
+    const second = validateMigrationHistory(input);
+    expect(first).toEqual(second);
+    expect(JSON.stringify(input)).toBe(before);
+  });
 });

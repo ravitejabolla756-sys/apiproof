@@ -15,6 +15,13 @@ export interface MigrationIdentity {
 export interface MigrationCompatibilityInput {
   available: readonly MigrationIdentity[];
   applied: readonly MigrationRecord[];
+  schema?: SchemaEvidence;
+}
+
+export interface SchemaEvidence {
+  engine: 'sqlite' | 'postgres';
+  expectedObjects: readonly string[];
+  observedObjects: readonly string[];
 }
 
 export interface MigrationCompatibilityResult {
@@ -58,6 +65,17 @@ export function validateMigrationHistory(input: MigrationCompatibilityInput): Mi
     }
     if (!record.appliedAt) errors.push(`INCOMPLETE_APPLIED_RECORD:${record.id}:appliedAt`);
     if (!record.name) errors.push(`INCOMPLETE_APPLIED_RECORD:${record.id}:name`);
+  }
+
+  if (input.schema) {
+    const expected = new Set(input.schema.expectedObjects);
+    const observed = new Set(input.schema.observedObjects);
+    for (const object of expected) {
+      if (!observed.has(object)) errors.push(`MISSING_SCHEMA_OBJECT:${input.schema.engine}:${object}`);
+    }
+    for (const object of observed) {
+      if (!expected.has(object)) errors.push(`UNEXPECTED_SCHEMA_OBJECT:${input.schema.engine}:${object}`);
+    }
   }
 
   const pending = input.available.filter((migration) => !appliedById.has(migration.id));
