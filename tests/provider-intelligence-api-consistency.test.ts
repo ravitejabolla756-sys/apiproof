@@ -112,5 +112,15 @@ describe('provider-intelligence API consistency and tenant boundaries', () => {
     expect((await ownMap.json() as { repositories: Array<{ id: string }> }).repositories.map((repo) => repo.id)).toEqual(['repo_tenant_a']);
     expect((await otherMap.json() as { repositories: Array<{ id: string }> }).repositories.map((repo) => repo.id)).toEqual(['repo_tenant_b']);
     expect((await getMap(new Request('http://localhost/api/compatibility-map'))).status).toBe(401);
+
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspaceA.id, first.user.id],
+    );
+    const unknownRoleProof = await getProof(new Request('http://localhost', {
+      headers: { cookie: `apiproof_session=${first.session.id}` },
+    }), { params: Promise.resolve({ id: 'repo_tenant_a', scanId: SCAN_ID + '_repo_tenant_a' }) });
+    expect(unknownRoleProof.status).toBe(404);
+    expect(JSON.stringify(await unknownRoleProof.json())).not.toContain('repo_tenant_a');
   });
 });

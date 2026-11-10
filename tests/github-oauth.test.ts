@@ -26,6 +26,8 @@ const dbPath = path.join(os.tmpdir(), `apiproof-github-oauth-${process.pid}.db`)
 const clientId = 'github-login-client-id';
 const clientSecret = 'server-only-github-login-client-secret';
 const testVerifier = 'v'.repeat(43);
+const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED', 'GITHUB_LOGIN_CLIENT_ID', 'GITHUB_LOGIN_CLIENT_SECRET', 'GITHUB_LOGIN_REDIRECT_URI'];
+const savedEnvironment = new Map<string, string | undefined>();
 
 function mockGitHubFetch(options: { tokenError?: boolean; unverifiedEmail?: boolean } = {}): void {
   vi.stubGlobal('fetch', vi.fn(async (input: string | URL, init?: RequestInit) => {
@@ -52,6 +54,7 @@ async function seedState(returnTo = '/dashboard'): Promise<ReturnType<typeof cre
 }
 
 beforeEach(() => {
+  for (const key of environmentKeys) savedEnvironment.set(key, process.env[key]);
   process.env.NODE_ENV = 'test';
   process.env.APIPROOF_DB_PATH = dbPath;
   process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
@@ -66,11 +69,12 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   await closeDatabase();
   if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-  delete process.env.APIPROOF_DB_PATH;
-  delete process.env.APIPROOF_SKIP_DEFAULT_SEED;
-  delete process.env.GITHUB_LOGIN_CLIENT_ID;
-  delete process.env.GITHUB_LOGIN_CLIENT_SECRET;
-  delete process.env.GITHUB_LOGIN_REDIRECT_URI;
+  for (const key of environmentKeys) {
+    const saved = savedEnvironment.get(key);
+    if (saved === undefined) delete process.env[key];
+    else process.env[key] = saved;
+    savedEnvironment.delete(key);
+  }
 });
 
 describe('GitHub Login OAuth', () => {
@@ -93,8 +97,9 @@ describe('GitHub Login OAuth', () => {
     expect(response.status).toBe(307);
     expect(new URL(response.headers.get('location') || '').pathname).toBe('/dashboard');
     expect(response.headers.get('set-cookie')).toContain('apiproof_session=ses_');
-    const user = await getDatabase().queryOne<{ id: string; email: string }>('SELECT id, email FROM users WHERE email = ?', ['octo@example.com']);
+    const user = await getDatabase().queryOne<{ id: string; email: string; email_verified_at: string | null }>('SELECT id, email, email_verified_at FROM users WHERE email = ?', ['octo@example.com']);
     expect(user?.id).toMatch(/^usr_/);
+    expect(user?.email_verified_at).toBeTruthy();
     expect(await getDatabase().queryOne('SELECT github_subject FROM github_oauth_accounts WHERE user_id = ?', [user?.id])).toMatchObject({ github_subject: '123456' });
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM workspace_members WHERE user_id = ?', [user?.id])).toHaveLength(1);
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM sessions WHERE user_id = ?', [user?.id])).toHaveLength(1);
@@ -123,6 +128,54 @@ describe('GitHub Login OAuth', () => {
     process.env.NODE_ENV = 'production';
     expect(getGitHubLoginStateCookieOptions()).toMatchObject({ httpOnly: true, secure: true, sameSite: 'lax', path: '/api/auth/github' });
     process.env.NODE_ENV = 'test';
+  });
+
+  it('fails closed when the persisted OAuth state expiry is malformed', async () => {
+    const state = await seedState();
+    const stateHash = crypto.createHash('sha256').update(state.state).digest('hex');
+    await getDatabase().execute('UPDATE github_login_oauth_states SET expires_at = ? WHERE state_hash = ?', ['not-a-timestamp', stateHash]);
+
+    await expect(consumeGitHubLoginOAuthState(state.state, state.state)).resolves.toMatchObject({ valid: false, code: 'OAUTH_STATE_EXPIRED' });
+    expect(await getDatabase().queryOne<{ consumed_at: string | null }>('SELECT consumed_at FROM github_login_oauth_states WHERE state_hash = ?', [stateHash])).toMatchObject({ consumed_at: null });
+  });
+
+  it('prunes expired transient states when persisting a new login attempt', async () => {
+    const expired = await seedState();
+    const expiredHash = crypto.createHash('sha256').update(expired.state).digest('hex');
+    await getDatabase().execute('UPDATE github_login_oauth_states SET expires_at = ? WHERE state_hash = ?', [new Date(Date.now() - 1_000).toISOString(), expiredHash]);
+    const active = await seedState();
+    const activeHash = crypto.createHash('sha256').update(active.state).digest('hex');
+
+    await expect(getDatabase().queryOne('SELECT state_hash FROM github_login_oauth_states WHERE state_hash = ?', [expiredHash])).resolves.toBeUndefined();
+    await expect(getDatabase().queryOne('SELECT state_hash FROM github_login_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
+  });
+
+  it('limits expired-state pruning to one bounded batch per login attempt', async () => {
+    const expiredCount = 1_001;
+    const expiredAt = new Date(Date.now() - 60_000).toISOString();
+    const createdAt = new Date(Date.now() - 120_000).toISOString();
+    const values = Array.from({ length: expiredCount }, (_, index) => [
+      `expired-test-state-${String(index).padStart(4, '0')}`,
+      testVerifier,
+      '/dashboard',
+      expiredAt,
+      null,
+      createdAt,
+    ]);
+    const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+    await getDatabase().execute(
+      `INSERT INTO github_login_oauth_states (state_hash, code_verifier, return_to, expires_at, consumed_at, created_at) VALUES ${placeholders}`,
+      values.flat(),
+    );
+
+    const active = await seedState();
+    const activeHash = crypto.createHash('sha256').update(active.state).digest('hex');
+
+    await expect(getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM github_login_oauth_states WHERE expires_at <= ?',
+      [new Date().toISOString()],
+    )).resolves.toMatchObject({ count: 1 });
+    await expect(getDatabase().queryOne('SELECT state_hash FROM github_login_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
   });
 
   it('rejects existing email accounts instead of automatically linking them', async () => {

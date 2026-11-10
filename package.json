@@ -4,6 +4,13 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "overrides": {
+      "brace-expansion": "5.0.12",
+      "postcss": "8.5.28",
+      "source-map-js": "1.2.2"
+    }
+  },
   "engines": {
     "node": ">=22.14.0",
     "pnpm": ">=10 <11"
@@ -21,6 +28,7 @@
     "release:manifest": "tsx --conditions=apiproof-source apps/web/scripts/release-manifest.ts",
     "provider:review-report": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-report.ts",
     "provider:review-pack": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-pack.ts",
+    "scanner:accuracy": "tsx --conditions=apiproof-source evaluation/scanner-accuracy-cli.ts",
     "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts all",
     "providers:validate:multi": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts multi",
     "provider:seed-review-queue": "tsx --conditions=apiproof-source apps/web/scripts/seed-provider-review-queue.ts",
@@ -34,6 +42,7 @@
     "@apiproof/providers": "workspace:*",
     "@apiproof/shared": "workspace:*",
     "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "15.5.29",
     "@types/node": "^22.18.0",
     "@types/semver": "^7.7.1",
     "eslint": "^10.10.0",

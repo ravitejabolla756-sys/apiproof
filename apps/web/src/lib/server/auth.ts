@@ -19,6 +19,17 @@ export const AUTH_COOKIE_NAME = 'apiproof_session';
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 export const SESSION_TTL_SECONDS = Math.floor(SESSION_TTL_MS / 1000); // 2,592,000 seconds
 
+// Session identifiers are opaque server-generated values. Reject malformed or
+// unbounded cookie input before it reaches a database adapter.
+export function isValidSessionId(sessionId: unknown): sessionId is string {
+  return typeof sessionId === 'string' && /^ses_[A-Za-z0-9_-]{1,128}$/.test(sessionId);
+}
+
+function isSessionExpired(expiresAt: string): boolean {
+  const expiryTime = Date.parse(expiresAt);
+  return !Number.isFinite(expiryTime) || expiryTime <= Date.now();
+}
+
 export interface AuthCookieOptions {
   httpOnly: boolean;
   secure: boolean;
@@ -30,13 +41,20 @@ export interface AuthCookieOptions {
 
 export function getAuthCookieOptions(expiresAt?: string | Date): AuthCookieOptions {
   const isProduction = process.env.NODE_ENV === 'production';
-  const expiresDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + SESSION_TTL_MS);
+  const now = Date.now();
+  const requestedExpiry = expiresAt === undefined
+    ? now + SESSION_TTL_MS
+    : expiresAt instanceof Date ? expiresAt.getTime() : Date.parse(expiresAt);
+  const expiryTime = Number.isFinite(requestedExpiry)
+    ? Math.min(requestedExpiry, now + SESSION_TTL_MS)
+    : 0;
+  const expiresDate = new Date(expiryTime);
   return {
     httpOnly: true,
     secure: isProduction,
     sameSite: 'lax',
     path: '/',
-    maxAge: SESSION_TTL_SECONDS,
+    maxAge: Math.max(0, Math.floor((expiryTime - now) / 1000)),
     expires: expiresDate,
   };
 }
@@ -275,6 +293,7 @@ export async function createUserWithSession(
 }
 
 export async function validateSessionAsync(sessionId: string): Promise<{ user: User; session: Session } | null> {
+  if (!isValidSessionId(sessionId)) return null;
   const db = getDatabase();
   const row = await db.queryOne<{
     session_id: string;
@@ -294,7 +313,7 @@ export async function validateSessionAsync(sessionId: string): Promise<{ user: U
   `, [sessionId]);
 
   if (!row) return null;
-  if (new Date(row.expires_at) < new Date()) {
+  if (isSessionExpired(row.expires_at)) {
     await deleteSessionAsync(sessionId);
     return null;
   }
@@ -318,6 +337,7 @@ export async function validateSessionAsync(sessionId: string): Promise<{ user: U
 export function validateSession(sessionId: string): { user: User; session: Session } | null;
 export function validateSession(sessionId: string): Promise<{ user: User; session: Session } | null>;
 export function validateSession(sessionId: string): { user: User; session: Session } | null | Promise<{ user: User; session: Session } | null> {
+  if (!isValidSessionId(sessionId)) return null;
   const db = getDatabase();
   if (db.engine === 'sqlite') {
     const row = (db as SqliteDatabaseAdapter).queryOneSync<{
@@ -338,7 +358,7 @@ export function validateSession(sessionId: string): { user: User; session: Sessi
     `, [sessionId]);
 
     if (!row) return null;
-    if (new Date(row.expires_at) < new Date()) {
+    if (isSessionExpired(row.expires_at)) {
       deleteSession(sessionId);
       return null;
     }

@@ -29,6 +29,23 @@ describe('GET /api/repositories', () => {
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
 
+  it('fails closed with a generic denial for an unknown persisted workspace role', async () => {
+    const user = await createUserWithSession('unknown-role@example.test', 'Strong-password-1!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(user.user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.user.id],
+    );
+
+    const response = await GET(new Request('http://localhost/api/repositories', {
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }));
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+  });
+
   it('returns only the authenticated user default workspace repositories and no global GitHub metadata', async () => {
     const ownerA = await createUserWithSession('workspace-a@example.test', 'Strong-password-1!', 'Workspace A');
     const ownerB = await createUserWithSession('workspace-b@example.test', 'Strong-password-1!', 'Workspace B');
@@ -77,7 +94,7 @@ describe('GET /api/repositories', () => {
     expect(JSON.stringify(body)).not.toContain('20002');
     expect(body).not.toHaveProperty('githubAppConnection');
 
-    const { GET: getRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+    const { GET: getRepository, DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
     const foreignRepositoryResponse = await getRepository(
       new Request('http://localhost/api/repositories/repo_b', {
         headers: { cookie: `apiproof_session=${ownerA.session.id}` },
@@ -85,6 +102,20 @@ describe('GET /api/repositories', () => {
       { params: Promise.resolve({ id: 'repo_b' }) },
     );
     expect(foreignRepositoryResponse.status).toBe(404);
+
+    const foreignRepositoryDelete = await deleteRepository(
+      new Request('http://localhost/api/repositories/repo_b', {
+        method: 'DELETE',
+        headers: { cookie: `apiproof_session=${ownerA.session.id}` },
+      }),
+      { params: Promise.resolve({ id: 'repo_b' }) },
+    );
+    expect(foreignRepositoryDelete.status).toBe(404);
+    const foreignRepository = await db.queryOne<{ id: string }>(
+      'SELECT id FROM repositories WHERE id = ? AND workspace_id = ?',
+      ['repo_b', workspaceB.id],
+    );
+    expect(foreignRepository?.id).toBe('repo_b');
   });
 
   it('rejects the legacy owner/name connection payload without creating a synthetic repository', async () => {
@@ -101,6 +132,111 @@ describe('GET /api/repositories', () => {
     expect((await response.json() as { code?: string }).code).toBe('AUTHORITATIVE_REPOSITORY_ID_REQUIRED');
     const after = await getDatabase().queryOne<{ count: number }>('SELECT COUNT(*) as count FROM repositories');
     expect(after?.count).toBe(before?.count ?? 0);
+  });
+
+  it('denies repository creation in a workspace where the authenticated user is not a member', async () => {
+    const actor = await createUserWithSession('repo-actor@example.test', 'Strong-password-1!', 'Repository Actor');
+    const otherUser = await createUserWithSession('repo-other@example.test', 'Strong-password-1!', 'Other Workspace');
+    const foreignWorkspace = await getDefaultWorkspaceForUser(otherUser.user.id);
+
+    const response = await POST(new Request('http://localhost/api/repositories', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${actor.session.id}`,
+      },
+      body: JSON.stringify({ githubRepositoryId: '12345', workspaceId: foreignWorkspace.id }),
+    }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    const repositoryCount = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ?',
+      [foreignWorkspace.id],
+    );
+    expect(Number(repositoryCount?.count)).toBe(0);
+  });
+
+  it('denies repository connection for an unknown persisted role before provider work or mutation', async () => {
+    const user = await createUserWithSession('repo-unknown-role@example.test', 'Strong-password-1!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(user.user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.user.id],
+    );
+    const before = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ?', [workspace.id],
+    );
+
+    const response = await POST(new Request('http://localhost/api/repositories', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        cookie: `apiproof_session=${user.session.id}`,
+      },
+      body: JSON.stringify({ githubRepositoryId: '987654321', workspaceId: workspace.id }),
+    }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    const after = await getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ?', [workspace.id],
+    );
+    expect(Number(after?.count)).toBe(Number(before?.count ?? 0));
+  });
+
+  it('rejects cross-site repository deletion before removing the repository', async () => {
+    const owner = await createUserWithSession('repo-delete-csrf@example.test', 'Strong-password-1!', 'Delete CSRF');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const now = new Date().toISOString();
+    await getDatabase().execute(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+      VALUES ('repo_csrf_delete', ?, ?, 'csrf-org', 'csrf-repo', 'csrf-org/csrf-repo', 'csrf-1', 'main', 'connected', 'connected', 'active', ?)
+    `, [workspace.id, owner.user.id, now]);
+    const { DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+
+    const response = await deleteRepository(new Request('https://apiproof.test/api/repositories/repo_csrf_delete', {
+      method: 'DELETE',
+      headers: {
+        cookie: `apiproof_session=${owner.session.id}`,
+        origin: 'https://attacker.example',
+        'sec-fetch-site': 'cross-site',
+      },
+    }), { params: Promise.resolve({ id: 'repo_csrf_delete' }) });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'CSRF_REJECTED' });
+    expect(await getDatabase().queryOne('SELECT id FROM repositories WHERE id = ?', ['repo_csrf_delete'])).toMatchObject({ id: 'repo_csrf_delete' });
+  });
+
+  it('fails closed when an unknown persisted workspace role attempts repository deletion', async () => {
+    const user = await createUserWithSession('repo-delete-role@example.test', 'Strong-password-1!', 'Delete Role');
+    const workspace = await getDefaultWorkspaceForUser(user.user.id);
+    const now = new Date().toISOString();
+    await getDatabase().execute(`
+      UPDATE workspace_members SET role = 'future_role' WHERE workspace_id = ? AND user_id = ?
+    `, [workspace.id, user.user.id]);
+    await getDatabase().execute(`
+      INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+      VALUES ('repo_unknown_role_delete', ?, ?, 'role-org', 'role-repo', 'role-org/role-repo', 'role-1', 'main', 'connected', 'connected', 'active', ?)
+    `, [workspace.id, user.user.id, now]);
+    const { GET: getRepository, DELETE: deleteRepository } = await import('../apps/web/src/app/api/repositories/[id]/route.js');
+
+    const detailResponse = await getRepository(new Request('http://localhost/api/repositories/repo_unknown_role_delete', {
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }), { params: Promise.resolve({ id: 'repo_unknown_role_delete' }) });
+    expect(detailResponse.status).toBe(404);
+    expect(JSON.stringify(await detailResponse.json())).not.toContain('role-org/role-repo');
+
+    const response = await deleteRepository(new Request('http://localhost/api/repositories/repo_unknown_role_delete', {
+      method: 'DELETE',
+      headers: { cookie: `apiproof_session=${user.session.id}` },
+    }), { params: Promise.resolve({ id: 'repo_unknown_role_delete' }) });
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ code: 'NOT_FOUND' });
+    expect(await getDatabase().queryOne('SELECT id FROM repositories WHERE id = ?', ['repo_unknown_role_delete']))
+      .toMatchObject({ id: 'repo_unknown_role_delete' });
   });
 
   it('does not promote an unscoped legacy repository into production workspace access', async () => {

@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { consumeSlackOAuthState, exchangeSlackOAuthCode, saveSlackConnection } from '@/lib/server/slack-oauth.js';
+import { requireWorkspaceMember } from '@/lib/server/workspace-service.js';
 
 function redirect(req: Request, result: 'connected' | 'error') {
   const response = NextResponse.redirect(new URL(`/dashboard/settings?slack=${result}`, req.url));
@@ -17,6 +18,11 @@ export async function GET(req: Request) {
   const state = url.searchParams.get('state') ?? '';
   const ownedState = await consumeSlackOAuthState(state, user.id);
   if (!ownedState) return redirect(req, 'error');
+  try {
+    await requireWorkspaceMember(user.id, ownedState.workspaceId);
+  } catch {
+    return redirect(req, 'error');
+  }
   if (url.searchParams.has('error')) return redirect(req, 'error');
   const code = url.searchParams.get('code');
   if (!code) return redirect(req, 'error');

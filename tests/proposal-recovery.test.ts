@@ -277,7 +277,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}` },
+          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}`, origin: 'http://localhost:3000', host: 'localhost:3000' },
           body: JSON.stringify({ migrationId: migration.id }),
         });
         const response = await proposeRoutePost(request);
@@ -308,7 +308,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}` },
+          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}`, origin: 'http://localhost:3000', host: 'localhost:3000' },
           body: JSON.stringify({ migrationId: migration.id }),
         });
         const response = await proposeRoutePost(request);
@@ -357,6 +357,22 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
         expect(db.prepare('SELECT status FROM migration_verification_jobs WHERE migration_id = ?').get(migration.id)).toEqual({ status: 'failed' });
         expect(db.prepare('SELECT status FROM migrations WHERE id = ?').get(migration.id)).toEqual({ status: 'verification_failed' });
         expect(db.prepare('SELECT COUNT(*) AS c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+      } finally {
+        run.mockRestore();
+      }
+    });
+
+    it('does not persist raw exception text in failed verification jobs', async () => {
+      const { user, migration } = await setupFixture();
+      await markWorkerReady();
+      await enqueueMigrationProposal(migration.id, user.id);
+      const run = vi.spyOn(FakeSandbox.prototype, 'run').mockRejectedValue(new Error('Authorization: Bearer ghp_private_example_secret'));
+      try {
+        await expect(processOneMigrationVerificationJob('test-docker-worker')).resolves.toBe(true);
+        const job = db.prepare('SELECT status, error_category, error_message FROM migration_verification_jobs WHERE migration_id = ?')
+          .get(migration.id) as { status: string; error_category: string; error_message: string };
+        expect(job).toMatchObject({ status: 'failed', error_category: 'VERIFICATION_JOB_FAILED', error_message: 'Verification worker operation failed.' });
+        expect(job.error_message).not.toContain('ghp_private_example_secret');
       } finally {
         run.mockRestore();
       }

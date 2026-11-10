@@ -1,21 +1,15 @@
-import { timingSafeEqual } from 'node:crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { isAuthorizedCronRequest } from '../../../../../lib/server/cron-authorization.js';
 import { getDatabase } from '../../../../../lib/server/db/index.js';
 import { getProviderSourceHealth } from '../../../../../lib/server/provider-source-health.js';
 import { workerRuntimeIdentity } from '../../../../../lib/server/provider-intelligence-feature.js';
 import { getRuntimeConfiguration } from '../../../../../lib/server/runtime-configuration.js';
 import { getScanWorkerMetrics } from '../../../../../lib/server/scan-worker.js';
+import { getWorkerHeartbeats } from '../../../../../lib/server/worker-observability.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET?.trim();
-  const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/, '');
-  if (!secret || !provided || provided.length !== secret.length) return false;
-  return timingSafeEqual(Buffer.from(provided, 'utf8'), Buffer.from(secret, 'utf8'));
-}
 
 type CountRow = { count: number | string };
 
@@ -27,11 +21,12 @@ async function countWhere(table: string, where: string): Promise<number> {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorizedCronRequest(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const [sourceHealth, worker, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
+    const [sourceHealth, worker, heartbeats, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
       getProviderSourceHealth(),
       getScanWorkerMetrics(),
+      getWorkerHeartbeats(),
       countWhere('provider_rule_candidates', "status = 'approved'"),
       countWhere('provider_rule_candidates', "status = 'needs_review'"),
       countWhere('provider_rescan_jobs', "status IN ('pending', 'processing', 'queued')"),
@@ -52,6 +47,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         pendingScanRequests,
         worker,
       },
+      heartbeats,
       generatedAt: new Date().toISOString(),
     });
   } catch {

@@ -15,9 +15,11 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { isAuthorizedCronRequest } from '../../../../lib/server/cron-authorization.js';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
 import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
+import { tryFinishWorkerRun, tryStartWorkerRun } from '../../../../lib/server/worker-observability.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,47 +28,12 @@ export const dynamic = 'force-dynamic';
 // Authorization helper
 // ---------------------------------------------------------------------------
 
-async function isAuthorized(request: NextRequest): Promise<boolean> {
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || cronSecret.trim().length === 0) {
-    // No secret configured → always reject to prevent accidental open access
-    return false;
-  }
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return false;
-  }
-
-  if (!authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  const providedSecret = authHeader.slice('Bearer '.length);
-
-  // Timing-safe comparison to prevent timing attacks
-  if (providedSecret.length !== cronSecret.length) {
-    return false;
-  }
-
-  try {
-    const { timingSafeEqual } = await import('node:crypto');
-    return timingSafeEqual(
-      Buffer.from(providedSecret, 'utf8'),
-      Buffer.from(cronSecret, 'utf8')
-    );
-  } catch {
-    return false;
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 
 async function runWorker(request: NextRequest): Promise<NextResponse> {
-  if (!(await isAuthorized(request))) {
+  if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -74,6 +41,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
   let timeoutMs: number | undefined;
   let metricsOnly = false;
   let repositoryId: string | undefined;
+  let heartbeatId: string | undefined;
 
   try {
     const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown; repositoryId?: unknown };
@@ -98,7 +66,11 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ ok: false, error: 'REPOSITORY_SCOPE_REQUIRED', code: 'REPOSITORY_SCOPE_REQUIRED' }, { status: 400 });
     }
 
+    heartbeatId = await tryStartWorkerRun('scan-worker');
     const result = await processPendingGitHubScans({ batchSize, timeoutMs, repositoryId });
+    await tryFinishWorkerRun('scan-worker', heartbeatId,
+      result.timedOut || result.jobsFailed > 0 ? 'degraded' : 'succeeded',
+      result.timedOut || result.jobsFailed > 0 ? 'SCAN_WORKER_DEGRADED' : null);
     const metrics = await getScanWorkerMetrics();
 
     return NextResponse.json({
@@ -112,6 +84,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       results: result.results,
     });
   } catch (error) {
+    await tryFinishWorkerRun('scan-worker', heartbeatId, 'failed', 'SCAN_WORKER_FAILED');
     console.error('[scan-worker-route] Unhandled error', { code: safeFailureCode(error, 'SCAN_WORKER_FAILED') });
     return NextResponse.json({ ok: false, error: 'SCAN_WORKER_FAILED' }, { status: 500 });
   }

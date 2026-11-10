@@ -27,9 +27,12 @@ import {
   recordWorkspaceUsage,
   processBillingWebhookEvent,
 } from '../apps/web/src/lib/server/billing/service.js';
-import { MockBillingProvider } from '../apps/web/src/lib/server/billing/provider.js';
+import { BillingWebhookInputError, MockBillingProvider } from '../apps/web/src/lib/server/billing/provider.js';
 import { PLANS } from '../apps/web/src/lib/server/billing/plans.js';
 import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout/route.js';
+import { POST as createBillingPortal } from '../apps/web/src/app/api/billing/portal/route.js';
+import { GET as getBillingSubscription } from '../apps/web/src/app/api/billing/subscription/route.js';
+import { POST as receiveBillingWebhook } from '../apps/web/src/app/api/webhooks/billing/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-phase7-billing.db');
 
@@ -77,6 +80,23 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(summaryB.metrics.scans.current).toBe(0);
   });
 
+  it('increments a workspace usage bucket atomically under concurrent writes', async () => {
+    const user = await createUserAsync('billing-concurrent-usage@apiproof.test', 'Pass123!#$', 'Concurrent Usage');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const increments = 40;
+
+    await Promise.all(Array.from({ length: increments }, () => recordWorkspaceUsage(workspace.id, 'scans')));
+
+    const summary = await getWorkspaceUsageSummary(workspace.id);
+    expect(summary.metrics.scans.current).toBe(increments);
+    const rows = await getDatabase().query<{ metric: string; count: number }>(
+      'SELECT metric, count FROM workspace_usage WHERE workspace_id = ? AND metric = ?',
+      [workspace.id, 'scans'],
+    );
+    expect(rows).toHaveLength(1);
+    expect(Number(rows[0]?.count)).toBe(increments);
+  });
+
   // -------------------------------------------------------------------------
   // TEST 2: Usage Counting & Scoping
   // -------------------------------------------------------------------------
@@ -92,6 +112,41 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(check.current).toBe(0);
     expect(check.limit).toBe(2); // Free includes a small guarded Draft PR allowance
     expect(check.allowed).toBe(true);
+  });
+
+  it('applies the existing subscription-status contract consistently to every billable metric', async () => {
+    const user = await createUserAsync('billing-status-policy@apiproof.test', 'Pass123!#$', 'Billing Status');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+
+    const metrics = ['repositories', 'scans', 'draft_prs'] as const;
+    const deniedStatuses = [
+      ['incomplete', 'SUBSCRIPTION_INACTIVE'],
+      ['unexpected_status', 'SUBSCRIPTION_INACTIVE'],
+      ['past_due', 'PAYMENT_PAST_DUE'],
+      ['unpaid', 'PAYMENT_PAST_DUE'],
+      ['canceled', 'SUBSCRIPTION_CANCELED'],
+    ] as const;
+
+    for (const [status, reasonCode] of deniedStatuses) {
+      await db.execute('UPDATE workspace_subscriptions SET status = ? WHERE workspace_id = ?', [status, workspace.id]);
+      for (const metric of metrics) {
+        await expect(checkWorkspaceLimit(workspace.id, metric)).resolves.toMatchObject({
+          allowed: false,
+          limit: 0,
+          current: 0,
+          reason: expect.stringContaining(reasonCode),
+        });
+      }
+    }
+
+    for (const status of ['active', 'trialing']) {
+      await db.execute('UPDATE workspace_subscriptions SET status = ? WHERE workspace_id = ?', [status, workspace.id]);
+      for (const metric of metrics) {
+        await expect(checkWorkspaceLimit(workspace.id, metric)).resolves.toMatchObject({ allowed: true });
+      }
+    }
   });
 
   // -------------------------------------------------------------------------
@@ -199,6 +254,71 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(await enterpriseResponse.json()).toMatchObject({ error: expect.stringContaining('purchasable') });
   });
 
+  it('rejects cross-site billing checkout and portal requests before authentication or provider work', async () => {
+    const checkoutResponse = await createCheckout(new Request('https://apiproof.test/api/billing/checkout', {
+      method: 'POST',
+      headers: { origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site', 'content-type': 'application/json' },
+      body: JSON.stringify({ planId: 'pro' }),
+    }));
+    const portalResponse = await createBillingPortal(new Request('https://apiproof.test/api/billing/portal', {
+      method: 'POST',
+      headers: { origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site' },
+    }));
+
+    for (const response of [checkoutResponse, portalResponse]) {
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ code: 'CSRF_REJECTED' });
+    }
+  });
+
+  it('denies billing reads and mutations for an unknown persisted workspace role', async () => {
+    const user = await createUserAsync('billing-unknown-role@apiproof.test', 'Pass123!#$', 'Unknown Billing Role');
+    const session = createSession(user.id);
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, user.id],
+    );
+    const cookie = `apiproof_session=${session.id}`;
+
+    const subscriptionResponse = await getBillingSubscription(new Request('http://localhost/api/billing/subscription', {
+      headers: { cookie },
+    }));
+    const portalResponse = await createBillingPortal(new Request('http://localhost/api/billing/portal', {
+      method: 'POST',
+      headers: { cookie },
+    }));
+    const checkoutResponse = await createCheckout(new Request('http://localhost/api/billing/checkout', {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json' },
+      body: JSON.stringify({ planId: 'pro' }),
+    }));
+
+    for (const response of [subscriptionResponse, portalResponse, checkoutResponse]) {
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+    }
+  });
+
+  it('fails closed with a safe response when the billing portal has no production provider', async () => {
+    const user = await createUserAsync('billing-portal-unavailable@apiproof.test', 'Pass123!#$', 'Portal User');
+    const session = createSession(user.id);
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    try {
+      const response = await createBillingPortal(new Request('https://localhost/api/billing/portal', {
+        method: 'POST',
+        headers: { cookie: `apiproof_session=${session.id}`, origin: 'https://localhost', host: 'localhost' },
+      }));
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ error: 'Billing portal is unavailable' });
+    } finally {
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+    }
+  });
+
   // -------------------------------------------------------------------------
   // TEST 5: Failed Payments (past_due)
   // -------------------------------------------------------------------------
@@ -274,6 +394,39 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(check.reason).toContain('SUBSCRIPTION_CANCELED');
   });
 
+  it('does not let stale subscription events mutate or resurrect a terminal subscription', async () => {
+    const user = await createUserAsync('stale-subscription@apiproof.test', 'Pass123!#$', 'Stale Subscription');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(ws.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions
+      SET customer_id = 'cus_stale', subscription_id = 'sub_current', plan_id = 'pro', status = 'active'
+      WHERE workspace_id = ?
+    `, [ws.id]);
+
+    await processBillingWebhookEvent({
+      id: 'evt_old_subscription', provider: 'test', eventType: 'customer.subscription.updated',
+      customerId: 'cus_stale', subscriptionId: 'sub_old', status: 'canceled', planId: 'free',
+      rawPayload: '{"id":"evt_old_subscription"}',
+    });
+    await expect(getWorkspaceSubscription(ws.id)).resolves.toMatchObject({ status: 'active', planId: 'pro' });
+
+    await processBillingWebhookEvent({
+      id: 'evt_current_cancel', provider: 'test', eventType: 'customer.subscription.deleted',
+      customerId: 'cus_stale', subscriptionId: 'sub_current', status: 'canceled', planId: 'free',
+      rawPayload: '{"id":"evt_current_cancel"}',
+    });
+    await expect(getWorkspaceSubscription(ws.id)).resolves.toMatchObject({ status: 'canceled', planId: 'free' });
+
+    await processBillingWebhookEvent({
+      id: 'evt_late_active', provider: 'test', eventType: 'customer.subscription.updated',
+      customerId: 'cus_stale', subscriptionId: 'sub_current', status: 'active', planId: 'pro',
+      rawPayload: '{"id":"evt_late_active"}',
+    });
+    await expect(getWorkspaceSubscription(ws.id)).resolves.toMatchObject({ status: 'canceled', planId: 'free' });
+  });
+
   // -------------------------------------------------------------------------
   // TEST 7: Webhook Signature Security
   // -------------------------------------------------------------------------
@@ -310,5 +463,156 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     const res2 = await processBillingWebhookEvent(event);
     expect(res2.success).toBe(true);
     expect(res2.duplicate).toBe(true);
+  });
+
+  it('serializes concurrent duplicate webhook deliveries with one atomic subscription update', async () => {
+    const user = await createUserAsync('billing-concurrent-event@apiproof.test', 'Pass123!#$', 'Concurrent Event');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_concurrent_event' WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    const rawPayload = JSON.stringify({
+      id: 'evt_concurrent_01',
+      type: 'invoice.payment_failed',
+      customer_id: 'cus_concurrent_event',
+      status: 'past_due',
+    });
+    const signature = crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(rawPayload).digest('hex');
+    const event = await new MockBillingProvider().verifyAndParseWebhook(rawPayload, signature);
+
+    const results = await Promise.all([
+      processBillingWebhookEvent(event),
+      processBillingWebhookEvent(event),
+    ]);
+
+    expect(results.map((result) => result.duplicate).sort()).toEqual([false, true]);
+    expect((await getWorkspaceSubscription(workspace.id)).status).toBe('past_due');
+    const recordedEvents = await db.queryOne<{ count: number }>(`
+      SELECT COUNT(*) as count FROM billing_webhook_events WHERE provider = ? AND payload_hash = ?
+    `, [event.provider, crypto.createHash('sha256').update(event.rawPayload).digest('hex')]);
+    expect(Number(recordedEvents?.count)).toBe(1);
+  });
+
+  it('rolls back the claimed receipt when subscription projection fails', async () => {
+    const user = await createUserAsync('billing-rollback@apiproof.test', 'Pass123!#$', 'Billing Rollback');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_rollback', status = 'active'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+    await db.execute(`
+      CREATE TRIGGER billing_projection_abort
+      BEFORE UPDATE ON workspace_subscriptions
+      BEGIN SELECT RAISE(ABORT, 'projection blocked'); END
+    `);
+
+    const rawPayload = JSON.stringify({
+      id: 'evt_rollback', type: 'customer.subscription.updated', customer_id: 'cus_rollback', status: 'past_due',
+    });
+    const signature = crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(rawPayload).digest('hex');
+    const event = await new MockBillingProvider().verifyAndParseWebhook(rawPayload, signature);
+
+    await expect(processBillingWebhookEvent(event)).rejects.toThrow();
+    await expect(db.queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM billing_webhook_events WHERE id = ?', ['evt_rollback'],
+    )).resolves.toEqual({ count: 0 });
+    await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'active' });
+  });
+
+  it('rejects a reused event ID with a different signed payload without changing subscription state', async () => {
+    const user = await createUserAsync('billing-reused-event@apiproof.test', 'Pass123!#$', 'Reused Event');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_reused_event', status = 'active'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    const provider = new MockBillingProvider();
+    const firstPayload = JSON.stringify({
+      id: 'evt_reused_01', type: 'customer.subscription.updated',
+      customer_id: 'cus_reused_event', status: 'active',
+    });
+    const conflictingPayload = JSON.stringify({
+      id: 'evt_reused_01', type: 'customer.subscription.updated',
+      customer_id: 'cus_reused_event', status: 'canceled',
+    });
+    const sign = (payload: string) => crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(payload).digest('hex');
+    await processBillingWebhookEvent(await provider.verifyAndParseWebhook(firstPayload, sign(firstPayload)));
+
+    const response = await receiveBillingWebhook(new Request('http://localhost/api/webhooks/billing', {
+      method: 'POST',
+      headers: { 'x-billing-signature': sign(conflictingPayload) },
+      body: conflictingPayload,
+    }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: 'Billing webhook event identity conflict' });
+    expect((await getWorkspaceSubscription(workspace.id)).status).toBe('active');
+    const recorded = await db.queryOne<{ count: number }>(`
+      SELECT COUNT(*) AS count FROM billing_webhook_events WHERE id = 'evt_reused_01'
+    `);
+    expect(Number(recorded?.count)).toBe(1);
+  });
+
+  it('does not grant entitlements for unknown or incomplete subscription events', async () => {
+    const user = await createUserAsync('billing-unrecognized-event@apiproof.test', 'Pass123!#$', 'Unrecognized Event');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(workspace.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_unrecognized_event', plan_id = 'pro', status = 'past_due'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    const provider = new MockBillingProvider();
+    const signAndProcess = async (payload: Record<string, unknown>) => {
+      const rawPayload = JSON.stringify(payload);
+      const signature = crypto.createHmac('sha256', process.env.BILLING_WEBHOOK_SECRET!).update(rawPayload).digest('hex');
+      const event = await provider.verifyAndParseWebhook(rawPayload, signature);
+      return processBillingWebhookEvent(event);
+    };
+
+    await signAndProcess({
+      id: 'evt_unknown_billing', type: 'customer.tax_id.updated', customer_id: 'cus_unrecognized_event', status: 'active', plan_id: 'team',
+    });
+    await signAndProcess({
+      id: 'evt_incomplete_subscription', type: 'customer.subscription.updated', customer_id: 'cus_unrecognized_event', plan_id: 'team',
+    });
+
+    await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'past_due', planId: 'pro' });
+    await expect(checkWorkspaceLimit(workspace.id, 'scans')).resolves.toMatchObject({ allowed: false });
+  });
+
+  it('rejects invalid normalized adapter output before claiming or projecting an event', async () => {
+    const user = await createUserAsync('billing-normalized-boundary@apiproof.test', 'Pass123!#$', 'Normalized Boundary');
+    const workspace = await getDefaultWorkspaceForUser(user.id);
+    await getWorkspaceSubscription(workspace.id);
+    await getDatabase().execute(`
+      UPDATE workspace_subscriptions SET customer_id = 'cus_normalized_boundary', status = 'past_due'
+      WHERE workspace_id = ?
+    `, [workspace.id]);
+
+    await expect(processBillingWebhookEvent({
+      id: 'evt_normalized_period_invalid',
+      provider: 'mock',
+      eventType: 'customer.subscription.updated',
+      customerId: 'cus_normalized_boundary',
+      status: 'active',
+      planId: 'team',
+      periodStart: '2026-02-01T00:00:00.000Z',
+      periodEnd: '2026-01-01T00:00:00.000Z',
+      rawPayload: '{"id":"evt_normalized_period_invalid"}',
+    })).rejects.toBeInstanceOf(BillingWebhookInputError);
+
+    await expect(getWorkspaceSubscription(workspace.id)).resolves.toMatchObject({ status: 'past_due', planId: 'free' });
+    await expect(getDatabase().queryOne(
+      'SELECT id FROM billing_webhook_events WHERE id = ?', ['evt_normalized_period_invalid'],
+    )).resolves.toBeUndefined();
   });
 });

@@ -9,6 +9,7 @@ import {
   verifyGitHubAppInstallation,
 } from '@/lib/server/github.js';
 import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 export async function GET(req: Request) {
   // 1. Authenticate APIProof session
@@ -66,7 +67,7 @@ export async function GET(req: Request) {
       }, { status: 400 });
     }
     return NextResponse.json({
-      error: `GitHub API error validating installation: ${errorMsg}`,
+      error: 'Unable to validate the GitHub installation right now.',
       code: 'GITHUB_API_ERROR',
     }, { status: 502 });
   }
@@ -176,5 +177,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   return GET(req);
 }

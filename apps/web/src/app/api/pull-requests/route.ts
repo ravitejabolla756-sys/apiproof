@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     JOIN migrations m ON m.id = pr.migration_id
     JOIN findings f ON f.id = m.finding_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE wm.user_id = ? AND wm.role IN ('owner', 'admin', 'member') AND r.lifecycle = 'active'
     ORDER BY pr.created_at DESC
   `, [user.id]);
 

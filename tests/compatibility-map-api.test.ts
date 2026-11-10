@@ -118,6 +118,20 @@ describe('GET /api/compatibility-map', () => {
     expect(JSON.stringify(body)).not.toContain('apiproof-github-fixture');
   });
 
+  it('denies compatibility data for an unknown persisted default-workspace role', async () => {
+    const account = await createUserWithSession('compatibility-unknown-role@example.test', 'Strong-password-1!', 'Unknown Role');
+    const workspace = await getDefaultWorkspaceForUser(account.user.id);
+    await getDatabase().execute(
+      'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?',
+      ['future_role', workspace.id, account.user.id],
+    );
+
+    const response = await getMap(account.session.id);
+    expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(await response.json()).toEqual({ error: 'Workspace access denied.', code: 'FORBIDDEN' });
+  });
+
   it('selects the latest completed scan and never treats a newer failed scan as the compatibility baseline', async () => {
     const user = await createUserWithSession('map-scan@example.com', 'Strong-password-1!', 'Scan User');
     await createRepository(user.user.id, 'repo_map_scans', 'scan-repository');

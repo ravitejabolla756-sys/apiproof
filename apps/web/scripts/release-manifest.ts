@@ -38,6 +38,42 @@ export type ReleaseManifest = {
   releaseEligible: boolean;
 };
 
+export type CiWorkflowContract = {
+  valid: boolean;
+  missing: string[];
+  forbidden: string[];
+};
+
+/**
+ * Validates the repository CI contract without calling GitHub or changing
+ * workflow state. Branch protection and required-check settings still need an
+ * administrator read-back from the hosted repository.
+ */
+export function validateCiWorkflowContract(workflow: string): CiWorkflowContract {
+  const normalized = workflow.replaceAll('\r\n', '\n');
+  const required = [
+    'push:\n    branches: [ main, codex/v1-backend-security ]',
+    'pull_request:\n    branches: [ main ]',
+    'permissions:\n  contents: read',
+    'run: pnpm lint',
+    'run: pnpm typecheck',
+    'run: pnpm providers:validate:all',
+    'run: pnpm providers:validate:multi',
+    'run: pnpm test',
+    'run: pnpm -r build',
+    'run: pnpm release:manifest',
+  ];
+  const forbidden = [
+    'contents: write',
+    'actions: write',
+    'id-token: write',
+    'vercel --prod',
+    'workflow_dispatch:',
+  ].filter((entry) => normalized.includes(entry));
+  const missing = required.filter((entry) => !normalized.includes(entry));
+  return { valid: missing.length === 0 && forbidden.length === 0, missing, forbidden };
+}
+
 function runGit(repositoryRoot: string, args: string[]): string {
   try {
     return execFileSync('git', args, { cwd: repositoryRoot, encoding: 'utf8' }).trim();

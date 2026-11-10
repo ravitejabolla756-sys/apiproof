@@ -7,8 +7,7 @@ import { createUserWithSession, authenticateUser } from '../apps/web/src/lib/ser
 import { completePasswordReset, isValidResetToken, PASSWORD_RESET_TTL_MS, requestPasswordReset } from '../apps/web/src/lib/server/password-reset.js';
 import { buildPasswordResetMessage, isPasswordResetEmailConfigured } from '../apps/web/src/lib/server/password-reset-email.js';
 import { POST as authPost } from '../apps/web/src/app/api/auth/route.js';
-import { resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
-import { checkRateLimit } from '../apps/web/src/lib/server/rate-limit.js';
+import { checkRateLimit, RATE_LIMIT_FALLBACK_MAX_KEYS, resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-password-reset-${process.pid}.db`);
 const savedEnvironment = new Map<string, string | undefined>();
@@ -102,6 +101,24 @@ describe('password recovery', () => {
     expect(await completePasswordReset(token, 'AnotherPassword123!')).toBe(false);
   });
 
+  it('allows exactly one concurrent password reset to consume a single-use token', async () => {
+    const target = await createAccount('reset-race@example.test');
+    let token = '';
+    await requestPasswordReset(target.user.email, async (message) => { token = message.token; });
+
+    const outcomes = await Promise.all([
+      completePasswordReset(token, 'ConcurrentPasswordOne123!'),
+      completePasswordReset(token, 'ConcurrentPasswordTwo123!'),
+    ]);
+
+    expect(outcomes.sort()).toEqual([false, true]);
+    const acceptedPasswords = await Promise.all([
+      authenticateUser(target.user.email, 'ConcurrentPasswordOne123!'),
+      authenticateUser(target.user.email, 'ConcurrentPasswordTwo123!'),
+    ]);
+    expect(acceptedPasswords.filter(Boolean)).toHaveLength(1);
+  });
+
   it('rejects expired and unknown reset tokens', async () => {
     const user = await createAccount('expired@example.test');
     let token = '';
@@ -117,6 +134,71 @@ describe('password recovery', () => {
     await getDatabase().execute('DROP TABLE rate_limits');
     await expect(checkRateLimit('auth:password-reset:test', 3, 60_000, { failClosed: true }))
       .rejects.toThrow('RATE_LIMIT_STORE_UNAVAILABLE');
+  });
+
+  it('bounds in-memory fallback cardinality and continues enforcing existing buckets', async () => {
+    await getDatabase().execute('DROP TABLE rate_limits');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      for (let index = 0; index < RATE_LIMIT_FALLBACK_MAX_KEYS; index += 1) {
+        const result = await checkRateLimit(`fallback-key-${index}`, 3, 60_000);
+        expect(result.allowed).toBe(true);
+      }
+      expect(warn.mock.calls[0]).toEqual(['Rate limiter database unavailable; using bounded in-memory fallback.']);
+
+      await expect(checkRateLimit('fallback-capacity-overflow', 3, 60_000))
+        .rejects.toThrow('RATE_LIMIT_FALLBACK_CAPACITY_EXCEEDED');
+      await expect(checkRateLimit('fallback-key-0', 3, 60_000))
+        .resolves.toMatchObject({ allowed: true, remaining: 1 });
+    } finally {
+      warn.mockRestore();
+    }
+  }, 60_000);
+
+  it('validates quota parameters and denies a zero-capacity fallback quota', async () => {
+    await expect(checkRateLimit('', 1, 1)).rejects.toThrow('RATE_LIMIT_INVALID_KEY');
+    await expect(checkRateLimit('invalid-limit', -1, 1)).rejects.toThrow('RATE_LIMIT_INVALID_LIMIT');
+    await expect(checkRateLimit('invalid-window', 1, 0)).rejects.toThrow('RATE_LIMIT_INVALID_WINDOW');
+
+    await getDatabase().execute('DROP TABLE rate_limits');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      await expect(checkRateLimit('zero-limit', 0, 60_000)).resolves.toMatchObject({
+        allowed: false,
+        remaining: 0,
+      });
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('enforces the persistent quota atomically under concurrent requests', async () => {
+    const results = await Promise.all(Array.from({ length: 40 }, () =>
+      checkRateLimit('auth:concurrent-quota:test', 7, 60_000, { failClosed: true }),
+    ));
+    const row = await getDatabase().queryOne<{ points: number }>(
+      'SELECT points FROM rate_limits WHERE key = ?', ['auth:concurrent-quota:test'],
+    );
+
+    expect(results.filter((result) => result.allowed)).toHaveLength(7);
+    expect(results.filter((result) => !result.allowed)).toHaveLength(33);
+    expect(results.filter((result) => !result.allowed).every((result) => result.remaining === 0)).toBe(true);
+    expect(Number(row?.points)).toBe(8);
+  });
+
+  it('restarts an expired fixed window on the next atomic request', async () => {
+    await getDatabase().execute(
+      'INSERT INTO rate_limits (key, points, reset_at) VALUES (?, ?, ?)',
+      ['auth:expired-window:test', 9, Date.now() - 1],
+    );
+
+    await expect(checkRateLimit('auth:expired-window:test', 3, 60_000, { failClosed: true }))
+      .resolves.toMatchObject({ allowed: true, remaining: 2 });
+    const row = await getDatabase().queryOne<{ points: number; reset_at: number }>(
+      'SELECT points, reset_at FROM rate_limits WHERE key = ?', ['auth:expired-window:test'],
+    );
+    expect(Number(row?.points)).toBe(1);
+    expect(Number(row?.reset_at)).toBeGreaterThan(Date.now());
   });
 
   it('generates a token link in the URL fragment and escapes user-controlled HTML', () => {

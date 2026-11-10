@@ -1,6 +1,7 @@
-import React from "react";
+import Image, { type ImageProps } from "next/image";
 
-export interface LogoProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface LogoProps extends Omit<ImageProps, "src" | "width" | "height" | "alt"> {
+  alt?: string;
   className?: string;
   variant?: "light" | "dark" | "auto";
 }
@@ -29,8 +30,10 @@ export function MyOwlLogo({
   const { style, ...restProps } = props;
 
   return (
-    <img
+    <Image
       src="/LOGO.jpeg"
+      width={1594}
+      height={816}
       alt={alt}
       style={{ maxHeight: "100%", width: "auto", display: "inline-block", ...style }}
       className={`object-contain select-none shrink-0 ${filterClass} ${className}`}

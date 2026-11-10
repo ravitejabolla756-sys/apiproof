@@ -133,6 +133,163 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(formatted).toContain('[REDACTED]');
   });
 
+  it('redacts provider credential formats and secret-bearing fields while preserving diagnostic names', () => {
+    const providerSecrets = [
+      'sk_live_1234567890abcdefghijkl',
+      'whsec_1234567890abcdefghijklmn',
+      'xoxb-123456789012-123456789012-123456789012-abcdefghij',
+      'AKIAIOSFODNN7EXAMPLE',
+      'AIzaSyDUMMYKEY0123456789abcdefghijklmn',
+      'sb_secret_1234567890abcdefghijkl',
+    ];
+    const fields = {
+      apiKey: providerSecrets[0],
+      clientSecret: providerSecrets[1],
+      refresh_token: providerSecrets[2],
+      databaseUrl: 'postgres://user:password@db.example.test/app',
+      connectionString: 'Host=db.example.test;Password=hidden',
+      webhookSignature: providerSecrets[3],
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+    };
+
+    const formatted = formatLogEntry('error', `provider failure ${providerSecrets.join(' ')}`, fields, new Error(providerSecrets[4]!));
+    const parsed = JSON.parse(formatted) as { context: Record<string, unknown>; error: string; message: string };
+
+    for (const secret of providerSecrets) expect(formatted).not.toContain(secret);
+    expect(parsed.context).toMatchObject({
+      apiKey: '[REDACTED]',
+      clientSecret: '[REDACTED]',
+      refresh_token: '[REDACTED]',
+      databaseUrl: '[REDACTED]',
+      connectionString: '[REDACTED]',
+      webhookSignature: '[REDACTED]',
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+    });
+    expect(parsed.error).toContain('[REDACTED]');
+    expect(parsed.message).toContain('[REDACTED]');
+  });
+
+  it('redacts raw GitHub OAuth, user, and refresh token formats', () => {
+    const tokens = [
+      'gho_1234567890abcdefghijklmnopqrstuvwxyz',
+      'ghu_1234567890abcdefghijklmnopqrstuvwxyz',
+      'ghr_1234567890abcdefghijklmnopqrstuvwxyz',
+    ];
+
+    const redacted = redactSecretString(`GitHub response ${tokens.join(' ')}`);
+
+    for (const token of tokens) expect(redacted).not.toContain(token);
+    expect(redacted).toContain('GitHub response');
+    expect(redacted.match(/\[REDACTED\]/g)).toHaveLength(tokens.length);
+  });
+
+  it('redacts credential key variants and safely formats circular log context', () => {
+    const context: Record<string, unknown> = {
+      passwordHash: 'stored-password-hash',
+      privateKeyPem: 'private-key-material',
+      oauthAccessToken: 'oauth-token-material',
+      awsSecretAccessKey: 'aws-access-key-material',
+      serviceRoleKey: 'service-role-key-material',
+      googleOAuthClientSecret: 'google-oauth-client-secret-fixture',
+      secret_value: 'secret-value-material',
+      signingKey: 'signing-key-material',
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+    };
+    context.self = context;
+
+    const parsed = JSON.parse(formatLogEntry('error', 'circular diagnostic context', context)) as {
+      context: Record<string, unknown>;
+    };
+
+    expect(parsed.context).toMatchObject({
+      passwordHash: '[REDACTED]',
+      privateKeyPem: '[REDACTED]',
+      oauthAccessToken: '[REDACTED]',
+      awsSecretAccessKey: '[REDACTED]',
+      serviceRoleKey: '[REDACTED]',
+      googleOAuthClientSecret: '[REDACTED]',
+      secret_value: '[REDACTED]',
+      signingKey: '[REDACTED]',
+      envName: 'BILLING_WEBHOOK_SECRET',
+      secretName: 'OPENAI_API_KEY',
+      self: '[CIRCULAR]',
+    });
+    const serialized = JSON.stringify(parsed);
+    for (const secret of ['stored-password-hash', 'private-key-material', 'oauth-token-material', 'aws-access-key-material', 'service-role-key-material', 'google-oauth-client-secret-fixture', 'secret-value-material', 'signing-key-material']) {
+      expect(serialized).not.toContain(secret);
+    }
+  });
+
+  it('preserves repeated shared objects in arrays while still marking actual array cycles', () => {
+    const shared = { password: 'shared-password-must-not-escape', label: 'same diagnostic' };
+    const cyclic: unknown[] = [];
+    cyclic.push(cyclic);
+
+    const sanitized = redactSensitiveData({ records: [shared, shared], cycle: cyclic }) as {
+      records: Array<{ password: string; label: string }>;
+      cycle: unknown[];
+    };
+
+    expect(sanitized.records).toEqual([
+      { password: '[REDACTED]', label: 'same diagnostic' },
+      { password: '[REDACTED]', label: 'same diagnostic' },
+    ]);
+    expect(sanitized.cycle).toEqual(['[CIRCULAR]']);
+    expect(JSON.stringify(sanitized)).not.toContain('shared-password-must-not-escape');
+  });
+
+  it('redacts secret assignments embedded in diagnostic strings and JSON-like text', () => {
+    const rawSecret = 'this-is-a-credential-value';
+    const text = `AWS_SECRET_ACCESS_KEY=${rawSecret}; "service_role_key": "${rawSecret}"; databaseUrl = 'postgres://user:${rawSecret}@db.example.test/app'`;
+    const sanitized = redactSecretString(text);
+
+    expect(sanitized).not.toContain(rawSecret);
+    expect(sanitized.match(/\[REDACTED\]/g)).toHaveLength(3);
+  });
+
+  it('redacts credentials in connection URLs embedded directly in diagnostics', () => {
+    const rawUser = 'local-build-user';
+    const rawPassword = 'url-password-must-not-escape';
+    const diagnostic = `driver failed for postgres://${rawUser}:${rawPassword}@db.example.test/app and https://${rawUser}:${rawPassword}@api.example.test/v1`;
+    const sanitized = redactSecretString(diagnostic);
+
+    expect(sanitized).not.toContain(rawUser);
+    expect(sanitized).not.toContain(rawPassword);
+    expect(sanitized).toContain('postgres://[REDACTED]@db.example.test/app');
+    expect(sanitized).toContain('https://[REDACTED]@api.example.test/v1');
+  });
+
+  it('preserves known operational error categories while redacting token-like values', () => {
+    const formatted = formatLogEntry('warn', 'Slack delivery failed', {
+      category: 'SLACK_API_TOKEN_REVOKED',
+      providerError: 'token-1234567890',
+    });
+    const parsed = JSON.parse(formatted) as { context: Record<string, string> };
+
+    expect(parsed.context.category).toBe('SLACK_API_TOKEN_REVOKED');
+    expect(parsed.context.providerError).toBe('[REDACTED]');
+  });
+
+  it('bounds oversized messages, errors, and structured context', () => {
+    const oversized = 'x'.repeat(20_000);
+    const parsed = JSON.parse(formatLogEntry('error', oversized, {
+      diagnostic: oversized,
+    }, new Error(oversized))) as {
+      message: string;
+      error: string;
+      context: Record<string, unknown>;
+    };
+
+    expect(parsed.message).toHaveLength(4_000);
+    expect(parsed.message.endsWith('[TRUNCATED]')).toBe(true);
+    expect(parsed.error).toHaveLength(4_000);
+    expect(parsed.error.endsWith('[TRUNCATED]')).toBe(true);
+    expect(parsed.context).toEqual({ logContext: '[TRUNCATED]' });
+  });
+
   // -------------------------------------------------------------------------
   // TEST 4: Health check route
   // -------------------------------------------------------------------------
@@ -190,6 +347,41 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     expect(metrics.failedJobs).toBe(0);
     expect(metrics.totalScanRequests).toBe(4);
     expect(metrics.lastProcessedAt).toBe(now);
+  });
+
+  it('TEST 5b: Worker metrics expose bounded queue age, retry, and stalled-job indicators', async () => {
+    const db = getDatabase();
+    const now = new Date('2026-11-07T12:00:00.000Z');
+    const old = '2026-11-07T11:45:00.000Z';
+    const staleLease = '2026-11-07T11:59:00.000Z';
+
+    await db.execute(`
+      INSERT INTO workspaces (id, name, slug, created_at, updated_at)
+      VALUES ('ws_metrics_2', 'Metrics Workspace', 'metrics-ws-2', ?, ?)
+    `, [old, old]);
+    await db.execute(`
+      INSERT INTO repositories (id, workspace_id, owner, name, full_name, github_repository_id, default_branch, created_at)
+      VALUES ('repo_metrics_2', 'ws_metrics_2', 'test-org', 'metrics-repo', 'test-org/metrics-repo', '12346', 'main', ?)
+    `, [old]);
+    await db.execute(`
+      INSERT INTO github_scan_requests (id, workspace_id, repository_id, commit_sha, ref, status, attempt_count, lease_expires_at, created_at)
+      VALUES
+        ('sr_metrics_pending', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_1', 'main', 'pending', 1, NULL, ?),
+        ('sr_metrics_stalled', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_2', 'main', 'processing', 3, ?, ?),
+        ('sr_metrics_legacy_stalled', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_3', 'main', 'processing', 0, NULL, ?),
+        ('sr_metrics_legacy_active', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_4', 'main', 'processing', 0, NULL, ?),
+        ('sr_metrics_exhausted', 'ws_metrics_2', 'repo_metrics_2', 'sha_metrics_5', 'main', 'failed', 3, NULL, ?)
+    `, [old, staleLease, old, old, '2026-11-07T11:58:00.000Z', old]);
+
+    const metrics = await getScanWorkerMetrics(now);
+    const indexes = await db.query<{ name: string }>('PRAGMA index_list(github_scan_requests)');
+
+    expect(metrics.oldestPendingAt).toBe(old);
+    expect(metrics.oldestPendingAgeMs).toBe(15 * 60 * 1000);
+    expect(metrics.retryingJobs).toBe(2);
+    expect(metrics.stalledProcessingJobs).toBe(2);
+    expect(metrics.retryExhaustedJobs).toBe(2);
+    expect(indexes.some((index) => index.name === 'idx_scan_requests_health')).toBe(true);
   });
 
   // -------------------------------------------------------------------------

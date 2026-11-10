@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
-import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service';
+import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service.js';
 import { processRepositoryRescans } from '@/lib/server/repository-rescan-worker.js';
+import { mapProviderRuleReviewError } from '@/lib/server/provider-rule-api-errors.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
 
@@ -41,12 +42,11 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     }
     return NextResponse.json({ ok: true, decision, ...(result ?? {}), ...(rescan ? { rescan } : {}) });
   } catch (error) {
-    if (error instanceof Error && error.message.includes('access denied')) {
+    if (isWorkspaceAuthorizationError(error)) {
       return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403 });
     }
-    const code = error instanceof Error && /^[A-Z0-9_:-]+$/.test(error.message) ? error.message : 'INTERNAL_ERROR';
-    const status = code.includes('NOT_FOUND') ? 404 : code.includes('REVIEWABLE') || code.includes('STRUCTURED') || code.includes('EVIDENCE') ? 409 : 500;
-    return NextResponse.json({ error: 'Provider rule review failed.', code }, { status });
+    const mapped = mapProviderRuleReviewError(error);
+    return NextResponse.json({ error: 'Provider rule review failed.', code: mapped.code }, { status: mapped.status });
   }
 }
 

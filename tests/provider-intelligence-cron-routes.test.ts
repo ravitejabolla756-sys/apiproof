@@ -8,6 +8,7 @@ import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { GET as providerChangelogGet, POST as providerChangelogPost } from '../apps/web/src/app/api/internal/provider-changelog/route.js';
 import { GET as scheduledRescanGet } from '../apps/web/src/app/api/internal/scheduled-rescan/route.js';
+import { GET as scanWorkerGet } from '../apps/web/src/app/api/internal/scan-worker/route.js';
 import { GET as providerIntelligenceStatusGet } from '../apps/web/src/app/api/internal/provider-intelligence/status/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-provider-intelligence-cron-routes.db');
@@ -73,12 +74,67 @@ describe('provider intelligence cron route contracts', () => {
         jobsFailed: 0,
       },
     });
+    const heartbeat = await getDatabase().queryOne<{ status: string }>(
+      "SELECT status FROM worker_run_heartbeats WHERE component = 'nightly-rescan-scheduler'",
+    );
+    expect(heartbeat?.status).toBe('succeeded');
+  });
+
+  it('rejects unauthenticated operational status requests without exposing health data', async () => {
+    const previousSecret = process.env.CRON_SECRET;
+    try {
+      const requests = [
+        new NextRequest('http://localhost/api/internal/provider-intelligence/status'),
+        new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
+          headers: { authorization: `Basic ${CRON_SECRET}` },
+        }),
+        new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
+          headers: { authorization: 'Bearer wrong-secret' },
+        }),
+      ];
+
+      for (const request of requests) {
+        const response = await providerIntelligenceStatusGet(request);
+        expect(response.status).toBe(401);
+        expect(await response.json()).toEqual({ error: 'Unauthorized' });
+      }
+
+      delete process.env.CRON_SECRET;
+      const response = await providerIntelligenceStatusGet(new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
+        headers: { authorization: `Bearer ${CRON_SECRET}` },
+      }));
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
+    } finally {
+      if (previousSecret === undefined) delete process.env.CRON_SECRET;
+      else process.env.CRON_SECRET = previousSecret;
+    }
+  });
+
+  it('rejects same-character-count Unicode bearer values without throwing across cron routes', async () => {
+    const malformedSecret = `${'x'.repeat(CRON_SECRET.length - 1)}é`;
+    expect(malformedSecret.length).toBe(CRON_SECRET.length);
+    expect(Buffer.byteLength(malformedSecret, 'utf8')).not.toBe(Buffer.byteLength(CRON_SECRET, 'utf8'));
+
+    const routes = [
+      (request: NextRequest) => providerChangelogGet(request),
+      (request: NextRequest) => scheduledRescanGet(request),
+      (request: NextRequest) => scanWorkerGet(request),
+      (request: NextRequest) => providerIntelligenceStatusGet(request),
+    ];
+    for (const get of routes) {
+      const response = await get(new NextRequest('http://localhost/api/internal/test', {
+        headers: { authorization: `Bearer ${malformedSecret}` },
+      }));
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
+    }
   });
 
   it('exposes protected rollout, source, and queue readiness without source contents', async () => {
     process.env.PROVIDER_INTELLIGENCE_V1_ENABLED = 'true';
     const response = await providerIntelligenceStatusGet(new NextRequest('http://localhost/api/internal/provider-intelligence/status', {
-      headers: { authorization: `Bearer ${CRON_SECRET}` },
+      headers: { authorization: `bearer ${CRON_SECRET}` },
     }));
 
     expect(response.status).toBe(200);
@@ -88,6 +144,7 @@ describe('provider intelligence cron route contracts', () => {
       runtime: { productizationV1Enabled: boolean; providerRegistryDigest: string };
       sources: Array<{ providerId: string; status: string; parserStatus: string }>;
       queues: { approvedCandidates: number; reviewCandidates: number; pendingRescans: number; pendingProviderRescans: number; pendingRepositoryRescans: number; pendingScanRequests: number };
+      heartbeats: Array<{ component: string; status: string; freshness: string }>;
     };
     expect(body.ok).toBe(true);
     expect(body.configuration).toMatchObject({ readyForLiveBeta: false, liveGithubWriteEnabled: false });
@@ -96,6 +153,8 @@ describe('provider intelligence cron route contracts', () => {
     expect(body.sources).toHaveLength(19);
     expect(body.sources.every((source) => source.status === 'never-run' && source.parserStatus === 'not-run')).toBe(true);
     expect(body.queues).toMatchObject({ approvedCandidates: 0, reviewCandidates: 0, pendingRescans: 0, pendingProviderRescans: 0, pendingRepositoryRescans: 0, pendingScanRequests: 0 });
+    expect(body.heartbeats).toHaveLength(3);
+    expect(body.heartbeats.every((heartbeat) => heartbeat.freshness === 'unknown')).toBe(true);
     expect(JSON.stringify(body)).not.toContain('source body');
   });
 

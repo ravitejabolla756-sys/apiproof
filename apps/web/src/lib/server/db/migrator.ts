@@ -8,6 +8,12 @@ import { slackMigrations } from './slack-migration.js';
 import { slackReliabilityMigrations } from './slack-reliability-migration.js';
 import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
+import { emailVerificationMigrations } from './email-verification-migration.js';
+import { findingLifecycleMigrations } from './finding-lifecycle-migration.js';
+import { findingResolutionMigrations } from './finding-resolution-migration.js';
+import { memberRevocationMigrations } from './member-revocation-migration.js';
+import { workerObservabilityMigrations } from './worker-observability-migration.js';
+import { scanWorkerHealthMigrations } from './scan-worker-health-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
 
@@ -480,6 +486,12 @@ export const migrations: Migration[] = [
   ...providerChangeMonitorMigrations,
   ...googleOAuthMigrations,
   ...githubLoginMigrations,
+  ...emailVerificationMigrations,
+  ...findingLifecycleMigrations,
+  ...findingResolutionMigrations,
+  ...memberRevocationMigrations,
+  ...scanWorkerHealthMigrations,
+  ...workerObservabilityMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {

@@ -28,6 +28,14 @@ export interface LogEntry {
   error?: string;
 }
 
+// Keep operational logs bounded even when an upstream provider or worker
+// returns an unexpectedly large diagnostic payload. These limits are local
+// safety bounds; they do not replace retention or sink-level policies.
+const MAX_LOG_MESSAGE_CHARS = 4_000;
+const MAX_LOG_ERROR_CHARS = 4_000;
+const MAX_LOG_CONTEXT_CHARS = 16_000;
+const LOG_TRUNCATION_MARKER = '[TRUNCATED]';
+
 // Sensitive key patterns to redact automatically
 const SENSITIVE_KEYS = new Set([
   'token',
@@ -40,33 +48,72 @@ const SENSITIVE_KEYS = new Set([
   'webhooksecret',
   'githubwebhooksecret',
   'authsecret',
+  'apikey',
+  'clientsecret',
+  'refreshtoken',
+  'idtoken',
+  'bearertoken',
+  'sessionid',
+  'oauthcode',
+  'authorizationcode',
+  'signature',
+  'webhooksignature',
+  'credential',
+  'credentials',
+  'connectionstring',
+  'databaseurl',
+  'dburl',
+  'dsn',
   'cookie',
   'session',
   'password',
   'secret',
+  'signingkey',
+  'encryptionkey',
+  'accesskey',
+  'servicerolekey',
 ]);
+
+// Credential-bearing key names often include a provider prefix or a storage
+// suffix (for example `oauthAccessToken`, `passwordHash`, or `privateKeyPem`).
+// Diagnostic labels such as `secretName` intentionally remain visible.
+const SENSITIVE_KEY_PATTERN = /^(?:[a-z0-9]+)*(?:token|secret|password|privatekey|apikey|accesskey|servicerolekey|authorization|credential|signature|signingkey|encryptionkey)(?:value|raw|text|contents?|pem|hash|ciphertext|encoded)?$/;
 
 // Sensitive regex patterns (GitHub tokens, Bearer headers, RSA private keys)
 const SECRET_REGEX_PATTERNS = [
+  /((?<![a-z0-9_])"?[a-z0-9_]*(?:api[_-]?key|access[_-]?key|service[_-]?role[_-]?key|signing[_-]?key|encryption[_-]?key|secret|token|password|client[_-]?secret|private[_-]?key|authorization|cookie|credential|connection[_-]?string|database[_-]?url)"?\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;&}]+)/gi,
+  /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{8,}\b/g,
+  /\bwhsec_[A-Za-z0-9_-]{8,}\b/g,
+  /\bxox(?:b|p|s|a)-[A-Za-z0-9-]{10,}\b/g,
+  /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g,
+  /\bAIza[A-Za-z0-9_-]{30,}\b/g,
+  /\bsb_secret_[A-Za-z0-9_-]{10,}\b/g,
   /\b(sk-ant-[A-Za-z0-9_-]{8,})\b/g,
   /\b(sk-[A-Za-z0-9_-]{8,})\b/g,
   /\b(ghs_[A-Za-z0-9_]{20,})\b/g,
   /\b(ghp_[A-Za-z0-9_]{20,})\b/g,
+  /\b(gho_[A-Za-z0-9_]{20,})\b/g,
+  /\b(ghu_[A-Za-z0-9_]{20,})\b/g,
+  /\b(ghr_[A-Za-z0-9_]{20,})\b/g,
   /\b(github_pat_[A-Za-z0-9_]{20,})\b/g,
   /Bearer\s+[A-Za-z0-9._~+/-]+=*/gi,
   /\b[A-Za-z0-9]+-(?:secret|token|password|private[_-]?key)-[A-Za-z0-9_-]+\b/gi,
-  /(?:secret|token|password|private[_-]?key)[-_][A-Za-z0-9_-]{4,}/gi,
+  /(?:secret|token|password|private[_-]?key)[-_](?!revoked\b|expired\b|invalid\b|missing[_-]scope\b|user[_-]not[_-]found\b)[A-Za-z0-9_-]{4,}/gi,
   /\b(?:openai|anthropic|twilio|supabase|github)(?:[-_](?:fixture|test))?[-_](?:value|secret|token|password)[-_][A-Za-z0-9_-]+\b/gi,
   /RAW_SOURCE_MUST_[A-Z0-9_]+/g,
   /-----BEGIN [A-Z ]+ PRIVATE KEY-----[\s\S]*?-----END [A-Z ]+ PRIVATE KEY-----/g,
 ];
+
+// URLs can be copied directly into an exception message without a sensitive
+// field name (for example, a database driver's connection error).
+const URL_CREDENTIALS_REGEX = /\b([a-z][a-z0-9+.-]*:\/\/)[^/\s@]+:[^/\s@]*@/gi;
 
 /**
  * Redacts secrets from string values using pattern matching.
  */
 export function redactSecretString(str: string): string {
   if (!str || typeof str !== 'string') return str;
-  let sanitized = str;
+  let sanitized = str.replace(URL_CREDENTIALS_REGEX, '$1[REDACTED]@');
   for (const pattern of SECRET_REGEX_PATTERNS) {
     sanitized = sanitized.replace(pattern, '[REDACTED]');
   }
@@ -77,29 +124,47 @@ export function redactSecretString(str: string): string {
  * Deeply redacts sensitive keys and values from objects.
  */
 export function redactSensitiveData<T>(val: T): T {
+  return redactSensitiveValue(val, new WeakSet<object>()) as T;
+}
+
+function redactSensitiveValue(val: unknown, ancestors: WeakSet<object>): unknown {
   if (val === null || val === undefined) return val;
 
   if (typeof val === 'string') {
-    return redactSecretString(val) as T;
-  }
-
-  if (Array.isArray(val)) {
-    return val.map((item) => redactSensitiveData(item)) as T;
+    return redactSecretString(val);
   }
 
   if (typeof val === 'object') {
-    const obj = val as Record<string, unknown>;
-    const clean: Record<string, unknown> = {};
-
-    for (const [key, value] of Object.entries(obj)) {
-      const lowerKey = key.toLowerCase();
-      if (SENSITIVE_KEYS.has(lowerKey) || SENSITIVE_KEYS.has(lowerKey.replace(/[^a-z]/g, ''))) {
-        clean[key] = '[REDACTED]';
-      } else {
-        clean[key] = redactSensitiveData(value);
+    if (ancestors.has(val)) return '[CIRCULAR]';
+    ancestors.add(val);
+    if (Array.isArray(val)) {
+      try {
+        return val.map((item) => redactSensitiveValue(item, ancestors));
+      } finally {
+        ancestors.delete(val);
       }
     }
-    return clean as T;
+    try {
+      const obj = val as Record<string, unknown>;
+      const clean: Record<string, unknown> = {};
+
+      for (const [key, value] of Object.entries(obj)) {
+        const lowerKey = key.toLowerCase();
+        const normalizedKey = lowerKey.replace(/[^a-z0-9]/g, '');
+        if (
+          SENSITIVE_KEYS.has(lowerKey)
+          || SENSITIVE_KEYS.has(normalizedKey)
+          || SENSITIVE_KEY_PATTERN.test(normalizedKey)
+        ) {
+          clean[key] = '[REDACTED]';
+        } else {
+          clean[key] = redactSensitiveValue(value, ancestors);
+        }
+      }
+      return clean;
+    } finally {
+      ancestors.delete(val);
+    }
   }
 
   return val;
@@ -114,27 +179,41 @@ export function formatLogEntry(
   context?: LogContext,
   error?: unknown
 ): string {
-  const sanitizedMsg = redactSecretString(message);
+  const sanitizedMsg = boundLogText(redactSecretString(message), MAX_LOG_MESSAGE_CHARS);
   const sanitizedContext = context ? redactSensitiveData(context) : undefined;
   let errorMsg: string | undefined;
 
   if (error) {
     if (error instanceof Error) {
-      errorMsg = redactSecretString(error.message);
+      errorMsg = boundLogText(redactSecretString(error.message), MAX_LOG_ERROR_CHARS);
     } else {
-      errorMsg = redactSecretString(String(error));
+      errorMsg = boundLogText(redactSecretString(String(error)), MAX_LOG_ERROR_CHARS);
     }
   }
+
+  const contextForEntry = sanitizedContext && Object.keys(sanitizedContext).length > 0
+    ? boundLogContext(sanitizedContext)
+    : undefined;
 
   const entry: LogEntry = {
     timestamp: new Date().toISOString(),
     level,
     message: sanitizedMsg,
-    ...(sanitizedContext && Object.keys(sanitizedContext).length > 0 ? { context: sanitizedContext } : {}),
+    ...(contextForEntry ? { context: contextForEntry } : {}),
     ...(errorMsg ? { error: errorMsg } : {}),
   };
 
   return JSON.stringify(entry);
+}
+
+function boundLogText(value: string, maxChars: number): string {
+  if (value.length <= maxChars) return value;
+  return `${value.slice(0, maxChars - LOG_TRUNCATION_MARKER.length)}${LOG_TRUNCATION_MARKER}`;
+}
+
+function boundLogContext(context: Record<string, unknown>): Record<string, unknown> {
+  if (JSON.stringify(context).length <= MAX_LOG_CONTEXT_CHARS) return context;
+  return { logContext: LOG_TRUNCATION_MARKER };
 }
 
 export const logger = {

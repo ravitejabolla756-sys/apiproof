@@ -9,6 +9,7 @@ import { enqueueMigrationProposal } from './proposal-verification-jobs.js';
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { isRetryableSlackFailure, slackErrorCategory, slackRetryAt } from './slack-retry.js';
 import { logger } from './logger.js';
+import { assertCurrentWorkspaceMembership } from './workspace-service.js';
 
 const INTERACTION_LEASE_MS = 2 * 60_000;
 const MAX_ATTEMPTS = 3;
@@ -169,6 +170,7 @@ export async function processOneSlackInteractionJob(workerId: string, dockerRead
   heartbeat.unref?.();
   try {
     const db = getDatabase();
+    await assertCurrentWorkspaceMembership(job.user_id, job.workspace_id);
     const { connection: identity } = await requireSlackFindingAuthorization(job);
     if (identity.connected_by !== job.user_id || identity.team_id !== job.team_id || identity.installer_slack_user_id !== job.slack_user_id) {
       throw new Error('SLACK_ACTION_CONNECTION_MISMATCH');

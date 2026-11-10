@@ -6,6 +6,7 @@ import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   getDefaultWorkspaceForUser,
+  isWorkspaceAuthorizationError,
   requireWorkspaceMember,
   getWorkspaceGitHubInstallation,
 } from '@/lib/server/workspace-service.js';
@@ -24,7 +25,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  let workspace: Awaited<ReturnType<typeof getDefaultWorkspaceForUser>>;
+  try {
+    workspace = await getDefaultWorkspaceForUser(user.id);
+  } catch (error: unknown) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403, headers: privateNoStoreHeaders });
+    }
+    throw error;
+  }
   const db = getDatabase();
   const repos = await db.query(`
     SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
@@ -203,9 +212,12 @@ export async function POST(req: Request) {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to connect repository.';
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403 });
+    }
     if (message.includes('idx_repositories_active_github_identity') || message.includes('unique constraint') || message.includes('duplicate key')) {
       return NextResponse.json({ error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED' }, { status: 409 });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to connect repository.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

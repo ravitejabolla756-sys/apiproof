@@ -18,11 +18,13 @@ import {
   validateLoginInput,
   validatePasswordResetRequestInput,
   validatePasswordResetCompletionInput,
+  validateEmailVerificationInput,
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
 import { requestPasswordReset, completePasswordReset } from '@/lib/server/password-reset.js';
 import { isPasswordResetEmailConfigured } from '@/lib/server/password-reset-email.js';
+import { requestEmailVerification, verifyEmail } from '@/lib/server/email-verification.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -87,6 +89,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
     }
 
+    if (action === 'verify_email') {
+      const validation = validateEmailVerificationInput(body);
+      if (!validation.valid || !validation.data) return badRequestResponse(validation.error || 'Invalid request.');
+      const rateCheck = await checkRateLimit(`auth:email-verification:verify:${clientIp}`, 10, 15 * 60 * 1000, { failClosed: true });
+      if (!rateCheck.allowed) return rateLimitResponse(rateCheck.resetInMs);
+
+      const result = await verifyEmail(validation.data.token);
+      if (result === 'invalid') {
+        return NextResponse.json({ error: 'This verification link is invalid or expired.', code: 'INVALID_EMAIL_VERIFICATION_TOKEN' }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, alreadyVerified: result === 'already_verified', message: 'Email address verified successfully.' });
+    }
+
     if (action === 'logout') {
       const sessionId = extractSessionId(req);
       if (sessionId) {
@@ -96,6 +111,25 @@ export async function POST(req: Request) {
       const clearOptions = getClearAuthCookieOptions();
       res.cookies.set(AUTH_COOKIE_NAME, '', clearOptions);
       return res;
+    }
+
+    if (action === 'resend_email_verification') {
+      const currentUser = await getCurrentUser(req);
+      if (!currentUser) return NextResponse.json({ error: 'Authentication required.', code: 'UNAUTHORIZED' }, { status: 401 });
+
+      const [ipLimit, userLimit] = await Promise.all([
+        checkRateLimit(`auth:email-verification:resend:ip:${clientIp}`, 10, 15 * 60 * 1000, { failClosed: true }),
+        checkRateLimit(`auth:email-verification:resend:user:${currentUser.id}`, 3, 60 * 60 * 1000, { failClosed: true }),
+      ]);
+      if (!ipLimit.allowed || !userLimit.allowed) {
+        return rateLimitResponse(Math.max(ipLimit.resetInMs, userLimit.resetInMs));
+      }
+
+      const result = await requestEmailVerification(currentUser.id);
+      if (result === 'unavailable') {
+        return NextResponse.json({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
+      }
+      return NextResponse.json({ success: true, alreadyVerified: result === 'already_verified', message: 'If your account still needs verification, instructions have been sent.' }, { status: 202 });
     }
 
     if (action === 'signup') {
@@ -145,7 +179,8 @@ export async function POST(req: Request) {
       const { email, password } = validation.data;
 
       // Rate limit: 10 login attempts per 5 minutes per IP + email
-      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${email}`, 10, 5 * 60 * 1000);
+      const emailKey = crypto.createHash('sha256').update(email, 'utf8').digest('hex');
+      const rateCheck = await checkRateLimit(`auth:login:${clientIp}:${emailKey}`, 10, 5 * 60 * 1000);
       if (!rateCheck.allowed) {
         return rateLimitResponse(rateCheck.resetInMs);
       }
@@ -165,7 +200,7 @@ export async function POST(req: Request) {
       return res;
     }
 
-    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset.', code: 'INVALID_ACTION' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset, verify_email, resend_email_verification.', code: 'INVALID_ACTION' }, { status: 400 });
   } catch {
     return NextResponse.json({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }

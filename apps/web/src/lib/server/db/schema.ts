@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  email_verified_at TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -171,6 +172,7 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   base_branch TEXT NOT NULL,
   url TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'draft',
+  merge_sha TEXT,
   created_at TEXT NOT NULL,
   UNIQUE (migration_id)
 );
@@ -251,6 +253,7 @@ CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_delive
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_claim ON github_scan_requests(status, lease_expires_at, created_at);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_health ON github_scan_requests(status, lease_expires_at, created_at, attempt_count);
 CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;
@@ -261,6 +264,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  email_verified_at TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -444,6 +448,7 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   base_branch TEXT NOT NULL,
   url TEXT NOT NULL,
   state TEXT NOT NULL DEFAULT 'draft',
+  merge_sha TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (migration_id) REFERENCES migrations(id) ON DELETE CASCADE,
   FOREIGN KEY (repository_id) REFERENCES repositories(id) ON DELETE CASCADE,
@@ -530,6 +535,7 @@ CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON github_webhook_delive
 CREATE INDEX IF NOT EXISTS idx_scan_requests_repo ON github_scan_requests(repository_id);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_status ON github_scan_requests(status);
 CREATE INDEX IF NOT EXISTS idx_scan_requests_claim ON github_scan_requests(status, lease_expires_at, created_at);
+CREATE INDEX IF NOT EXISTS idx_scan_requests_health ON github_scan_requests(status, lease_expires_at, created_at, attempt_count);
 CREATE INDEX IF NOT EXISTS idx_workspace_subscriptions_customer ON workspace_subscriptions(customer_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_usage_period ON workspace_usage(workspace_id, period_start);
 `;

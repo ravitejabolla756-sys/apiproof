@@ -9,6 +9,7 @@ import { processOneSlackNotificationDelivery } from './slack-notifications.js';
 import { processOneSlackProviderChangeDelivery } from './slack-provider-change-notifications.js';
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { processRepositoryRescans } from './repository-rescan-worker.js';
+import { assertCurrentWorkspaceMembership } from './workspace-service.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -85,14 +86,14 @@ async function runClaimedJob(job: VerificationJob, workerId: string): Promise<vo
     if (!current || !current.finding_id || current.workspace_id !== job.workspace_id || current.repository_id !== job.repository_id || current.finding_repository_id !== job.repository_id || current.scan_status !== 'completed' || currentBaseline !== job.baseline_sha || current.scan_sha !== job.baseline_sha) {
       throw new Error('VERIFICATION_JOB_IDENTITY_MISMATCH');
     }
+    await assertCurrentWorkspaceMembership(job.requested_by, job.workspace_id);
     const result = await createGitHubProposal(job.migration_id, job.requested_by);
     await db.execute(`UPDATE migration_verification_jobs SET status = 'completed', result_json = ?, error_category = NULL,
       error_message = NULL, claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
     [JSON.stringify(result), now, job.id, workerId]);
   } catch (error) {
     const category = failureCategory(error);
-    const rawMessage = error instanceof Error ? error.message : String(error);
-    const message = rawMessage.replace(/[\r\n\t]+/g, ' ').slice(0, 500);
+    const message = 'Verification worker operation failed.';
     const isUnavailable = category === 'EXECUTION_UNAVAILABLE';
     const canRetry = RETRYABLE.has(category) && job.attempt_count < 3;
     if (isUnavailable) {

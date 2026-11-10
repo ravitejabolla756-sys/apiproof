@@ -85,6 +85,15 @@ export function validatePasswordResetCompletionInput(body: unknown): ValidationR
   return { valid: true, data: { token, password } };
 }
 
+export function validateEmailVerificationInput(body: unknown): ValidationResult<{ token: string }> {
+  if (!body || typeof body !== 'object') return { valid: false, error: 'Request body must be a JSON object.' };
+  const token = (body as Record<string, unknown>).token;
+  if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    return { valid: false, error: 'A valid email verification token is required.' };
+  }
+  return { valid: true, data: { token } };
+}
+
 export function validateRepositoryConnectInput(body: unknown): ValidationResult<{
   owner?: string;
   name?: string;
@@ -161,6 +170,24 @@ export function validateSafeId(id: unknown, fieldName = 'ID'): ValidationResult<
 /**
  * Validates Origin and Sec-Fetch-Site to protect mutating API routes from cross-site requests.
  */
+function getExpectedRequestOrigin(req: Request, host: string): string | undefined {
+  const forwardedProtocolHeader = req.headers.get('x-forwarded-proto');
+  // Origin validation must use one unambiguous proxy value. Trusting the first
+  // item in a forwarded chain can let an untrusted hop influence the scheme.
+  if (forwardedProtocolHeader?.includes(',')) return undefined;
+  const forwardedProtocol = forwardedProtocolHeader?.trim().toLowerCase();
+  const protocol = forwardedProtocol || new URL(req.url).protocol.slice(0, -1).toLowerCase();
+  if (protocol !== 'http' && protocol !== 'https') return undefined;
+
+  try {
+    const expected = new URL(`${protocol}://${host}`);
+    if (expected.username || expected.password || expected.pathname !== '/') return undefined;
+    return expected.origin;
+  } catch {
+    return undefined;
+  }
+}
+
 export function assertCsrfProtection(req: Request): { valid: boolean; error?: string } {
   const isTest = process.env.NODE_ENV === 'test';
 
@@ -172,26 +199,54 @@ export function assertCsrfProtection(req: Request): { valid: boolean; error?: st
   const origin = req.headers.get('origin');
   const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
 
-  if (origin && host) {
+  if (origin) {
+    if (!host) {
+      return { valid: false, error: 'Forbidden: Request host is unavailable.' };
+    }
     try {
-      const originHost = new URL(origin).host;
-      if (originHost !== host) {
-        return { valid: false, error: 'Forbidden: Origin header does not match host.' };
+      const originUrl = new URL(origin);
+      // Origin is serialized as an origin only, never as a URL with path,
+      // credentials, query, or fragment. Do not normalize malformed values
+      // into an accepted same-origin value.
+      if (
+        originUrl.username
+        || originUrl.password
+        || originUrl.pathname !== '/'
+        || originUrl.search
+        || originUrl.hash
+        || originUrl.origin !== origin
+      ) {
+        return { valid: false, error: 'Forbidden: Invalid Origin header.' };
+      }
+      const expectedOrigin = getExpectedRequestOrigin(req, host);
+      if (!expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Request origin is unavailable.' };
+      }
+      if (originUrl.origin !== expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Origin header does not match request origin.' };
       }
     } catch {
       return { valid: false, error: 'Forbidden: Invalid Origin header.' };
     }
-  } else if (!origin && !isTest) {
+  } else if (!isTest) {
     const referer = req.headers.get('referer');
-    if (referer && host) {
-      try {
-        const refererHost = new URL(referer).host;
-        if (refererHost !== host) {
-          return { valid: false, error: 'Forbidden: Referer header does not match host.' };
-        }
-      } catch {
-        return { valid: false, error: 'Forbidden: Invalid Referer header.' };
+    if (!referer) {
+      return { valid: false, error: 'Forbidden: Origin or Referer header is required.' };
+    }
+    if (!host) {
+      return { valid: false, error: 'Forbidden: Request host is unavailable.' };
+    }
+    try {
+      const refererUrl = new URL(referer);
+      const expectedOrigin = getExpectedRequestOrigin(req, host);
+      if (!expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Request origin is unavailable.' };
       }
+      if (refererUrl.origin !== expectedOrigin) {
+        return { valid: false, error: 'Forbidden: Referer header does not match request origin.' };
+      }
+    } catch {
+      return { valid: false, error: 'Forbidden: Invalid Referer header.' };
     }
   }
 

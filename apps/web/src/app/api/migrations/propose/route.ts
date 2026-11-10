@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { enqueueMigrationProposal, getMigrationProposalJobStatus } from '@/lib/server/proposal-verification-jobs.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
+import { isWorkspaceAuthorizationError } from '@/lib/server/workspace-service.js';
 import {
   assertCsrfProtection,
   validateSafeId,
@@ -18,9 +19,8 @@ export async function GET(req: Request) {
   try {
     const job = await getMigrationProposalJobStatus(validation.data, user.id);
     return NextResponse.json({ job }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Verification status unavailable.';
-    return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  } catch {
+    return NextResponse.json({ error: 'Verification status unavailable.', code: 'NOT_FOUND' }, { status: 404, headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
   }
 }
 
@@ -64,12 +64,15 @@ export async function POST(req: Request) {
     const proposal = await createGitHubProposal(idValidation.data, user.id);
     return NextResponse.json({ success: true, proposal });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Proposal generation failed.';
+    const message = error instanceof Error ? error.message : '';
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
+    }
     if (message.includes('PLAN_LIMIT_EXCEEDED')) {
-      return NextResponse.json({ error: message, code: 'PLAN_LIMIT_EXCEEDED', metric: 'draft_prs' }, { status: 402 });
+      return NextResponse.json({ error: 'The current plan does not allow another draft pull request.', code: 'PLAN_LIMIT_EXCEEDED', metric: 'draft_prs' }, { status: 402 });
     }
     if (message.includes('not found') || message.includes('access denied')) {
-      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+      return NextResponse.json({ error: 'Resource not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
     }
     if (message.includes('GITHUB_REPOSITORY_EMPTY') || message.includes('GITHUB_DEFAULT_BRANCH_NOT_FOUND')) {
       return NextResponse.json({
@@ -84,18 +87,18 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
     if (message.includes('REPOSITORY_HEAD_DIVERGED')) {
-      return NextResponse.json({ error: message, code: 'REPOSITORY_HEAD_DIVERGED' }, { status: 409 });
+      return NextResponse.json({ error: 'The repository changed after the latest scan. Run a fresh scan before proposing a migration.', code: 'REPOSITORY_HEAD_DIVERGED' }, { status: 409 });
     }
     if (message.includes('BASELINE_SHA_REPOSITORY_MISMATCH')) {
-      return NextResponse.json({ error: message, code: 'BASELINE_SHA_REPOSITORY_MISMATCH' }, { status: 400 });
+      return NextResponse.json({ error: 'The migration baseline does not match the target repository.', code: 'BASELINE_SHA_REPOSITORY_MISMATCH' }, { status: 400 });
     }
     if (message.includes('BASELINE_SHA_INVALID')) {
-      return NextResponse.json({ error: message, code: 'BASELINE_SHA_INVALID' }, { status: 400 });
+      return NextResponse.json({ error: 'The migration baseline is invalid. Run a fresh scan before proposing a migration.', code: 'BASELINE_SHA_INVALID' }, { status: 400 });
     }
     if (message.includes('VERIFICATION_EXECUTION_UNAVAILABLE')) {
       return NextResponse.json({ error: 'Secure verification execution is not currently available. No Draft PR was created.', code: 'VERIFICATION_EXECUTION_UNAVAILABLE' }, { status: 503 });
     }
-    console.error('Proposal generation failed:', error);
-    return NextResponse.json({ error: message, code: 'PROPOSAL_FAILED' }, { status: 500 });
+    console.error('Proposal generation failed.');
+    return NextResponse.json({ error: 'Proposal generation failed.', code: 'PROPOSAL_FAILED' }, { status: 500 });
   }
 }

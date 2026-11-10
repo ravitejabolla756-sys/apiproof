@@ -26,6 +26,8 @@ import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace
 import { GET as activityGet } from '../apps/web/src/app/api/activity/route.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-activity-api.db');
+const ENVIRONMENT_KEYS = ['APIPROOF_DB_PATH', 'APIPROOF_SECRET'] as const;
+let originalEnvironment: Partial<Record<(typeof ENVIRONMENT_KEYS)[number], string>>;
 
 describe('Activity Page Timestamp Formatting — formatActivityTimestamp', () => {
   it('does not label a legacy migration-plan event as verified', () => {
@@ -123,6 +125,7 @@ describe('Activity Page Timestamp Formatting — formatActivityTimestamp', () =>
 
 describe('Activity API Route Authorization & Tenant Isolation (GET /api/activity)', () => {
   beforeEach(() => {
+    originalEnvironment = Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, process.env[key]]));
     process.env.APIPROOF_SECRET = 'test-secret-at-least-32-chars-long!';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
 
@@ -138,6 +141,11 @@ describe('Activity API Route Authorization & Tenant Isolation (GET /api/activity
     } catch { /* ignore */ }
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
+    }
+    for (const key of ENVIRONMENT_KEYS) {
+      const value = originalEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 

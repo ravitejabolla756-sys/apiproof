@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { getDatabase } from '../db/index.js';
 import { getPlanDefinition, type PlanDefinition } from './plans.js';
-import type { BillingWebhookEvent } from './provider.ts';
+import { assertNormalizedBillingWebhookEvent, type BillingWebhookEvent } from './provider.js';
 
 export interface WorkspaceSubscription {
   workspaceId: string;
@@ -201,6 +201,16 @@ export async function checkWorkspaceLimit(
     };
   }
 
+  if (sub.status !== 'active' && sub.status !== 'trialing') {
+    return {
+      allowed: false,
+      metric,
+      limit: 0,
+      current: 0,
+      reason: 'SUBSCRIPTION_INACTIVE: Workspace subscription is not active.',
+    };
+  }
+
   const metricKey = metric === 'repositories' ? 'repositories' : metric === 'scans' ? 'scans' : 'draftPrs';
   const target = summary.metrics[metricKey];
 
@@ -230,75 +240,108 @@ export async function recordWorkspaceUsage(
   const db = getDatabase();
   const sub = await getWorkspaceSubscription(workspaceId);
   const now = new Date().toISOString();
+  const id = `use_${crypto.randomBytes(12).toString('hex')}`;
 
-  // Upsert usage record
-  const existing = await db.queryOne<{ id: string; count: number }>(`
-    SELECT id, count FROM workspace_usage
-    WHERE workspace_id = ? AND metric = ? AND period_start = ?
-  `, [workspaceId, metric, sub.currentPeriodStart]);
-
-  if (existing) {
-    await db.execute(`
-      UPDATE workspace_usage SET count = count + 1, updated_at = ? WHERE id = ?
-    `, [now, existing.id]);
-  } else {
-    const id = `use_${crypto.randomBytes(12).toString('hex')}`;
-    await db.execute(`
-      INSERT INTO workspace_usage (id, workspace_id, metric, period_start, period_end, count, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 1, ?, ?)
-    `, [id, workspaceId, metric, sub.currentPeriodStart, sub.currentPeriodEnd, now, now]);
-  }
+  // A single statement makes concurrent usage increments atomic on SQLite and
+  // PostgreSQL. The unique period key is present in both supported schemas.
+  await db.execute(`
+    INSERT INTO workspace_usage (id, workspace_id, metric, period_start, period_end, count, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+    ON CONFLICT (workspace_id, metric, period_start) DO UPDATE
+    SET count = workspace_usage.count + 1,
+        updated_at = excluded.updated_at
+  `, [id, workspaceId, metric, sub.currentPeriodStart, sub.currentPeriodEnd, now, now]);
 }
 
 export async function processBillingWebhookEvent(event: BillingWebhookEvent): Promise<{ success: boolean; duplicate: boolean }> {
+  assertNormalizedBillingWebhookEvent(event);
   const db = getDatabase();
   const payloadHash = crypto.createHash('sha256').update(event.rawPayload).digest('hex');
   const now = new Date().toISOString();
 
-  // Replay check
-  const existingEvent = await db.queryOne<{ id: string }>(`
-    SELECT id FROM billing_webhook_events WHERE provider = ? AND payload_hash = ?
-  `, [event.provider, payloadHash]);
+  return db.transaction(async (tx) => {
+    // Claim the normalized payload and apply its subscription effect atomically.
+    // The unique constraint makes concurrent redeliveries converge without a
+    // read-then-insert race on both SQLite and PostgreSQL.
+    const inserted = await tx.execute(`
+      INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT DO NOTHING
+    `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
 
-  if (existingEvent) {
-    return { success: true, duplicate: true };
-  }
-
-  // Record webhook delivery idempotently
-  await db.execute(`
-    INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
-
-  // Update subscription state based on event
-  if (event.customerId) {
-    const sub = await db.queryOne<{ workspace_id: string }>(`
-      SELECT workspace_id FROM workspace_subscriptions WHERE customer_id = ?
-    `, [event.customerId]);
-
-    if (sub) {
-      let newStatus = event.status || 'active';
-      let planId = event.planId;
-
-      if (event.eventType === 'customer.subscription.deleted') {
-        newStatus = 'canceled';
-        planId = 'free';
-      } else if (event.eventType === 'invoice.payment_failed') {
-        newStatus = 'past_due';
+    if (inserted.changes !== 1) {
+      const existing = await tx.queryOne<{ provider: string; event_type: string; payload_hash: string }>(`
+        SELECT provider, event_type, payload_hash
+        FROM billing_webhook_events
+        WHERE id = ?
+      `, [event.id]);
+      if (existing && (existing.provider !== event.provider
+        || existing.event_type !== event.eventType
+        || existing.payload_hash !== payloadHash)) {
+        throw new BillingWebhookIdentityConflictError();
       }
-
-      await db.execute(`
-        UPDATE workspace_subscriptions
-        SET status = ?,
-            plan_id = COALESCE(?, plan_id),
-            subscription_id = COALESCE(?, subscription_id),
-            current_period_start = COALESCE(?, current_period_start),
-            current_period_end = COALESCE(?, current_period_end),
-            updated_at = ?
-        WHERE workspace_id = ?
-      `, [newStatus, planId || null, event.subscriptionId || null, event.periodStart || null, event.periodEnd || null, now, sub.workspace_id]);
+      return { success: true, duplicate: true };
     }
-  }
 
-  return { success: true, duplicate: false };
+    if (event.customerId) {
+      const sub = await tx.queryOne<{ workspace_id: string; subscription_id: string | null; status: WorkspaceSubscription['status'] }>(`
+        SELECT workspace_id, subscription_id, status FROM workspace_subscriptions WHERE customer_id = ?
+      `, [event.customerId]);
+
+      if (sub) {
+        let newStatus: string | undefined;
+        let planId: string | undefined;
+
+        if (event.eventType === 'customer.subscription.updated') {
+          // An incomplete subscription snapshot must never grant entitlements
+          // through a default status. Only an explicit normalized state is usable.
+          if (event.status) {
+            newStatus = event.status;
+            planId = event.planId;
+          }
+        } else if (event.eventType === 'customer.subscription.deleted') {
+          newStatus = 'canceled';
+          planId = 'free';
+        } else if (event.eventType === 'invoice.payment_failed') {
+          newStatus = 'past_due';
+        }
+
+        // Do not let a late event from an older subscription mutate the
+        // customer-owned workspace record. A canceled subscription is also
+        // terminal for that subscription identity; a new subscription must
+        // use a distinct provider subscription ID.
+        if (event.subscriptionId && sub.subscription_id && event.subscriptionId !== sub.subscription_id) {
+          newStatus = undefined;
+          planId = undefined;
+        } else if (sub.status === 'canceled' && newStatus !== 'canceled') {
+          newStatus = undefined;
+          planId = undefined;
+        }
+
+        // Unknown, stale, or terminally rejected provider events are durably
+        // claimed for idempotency but do not affect subscription state.
+        if (newStatus !== undefined) {
+          await tx.execute(`
+            UPDATE workspace_subscriptions
+            SET status = ?,
+                plan_id = COALESCE(?, plan_id),
+                subscription_id = COALESCE(?, subscription_id),
+                current_period_start = COALESCE(?, current_period_start),
+                current_period_end = COALESCE(?, current_period_end),
+                updated_at = ?
+            WHERE workspace_id = ?
+          `, [newStatus, planId || null, event.subscriptionId || null, event.periodStart || null, event.periodEnd || null, now, sub.workspace_id]);
+        }
+      }
+    }
+
+    return { success: true, duplicate: false };
+  });
+}
+
+export class BillingWebhookIdentityConflictError extends Error {
+  constructor() {
+    super('BILLING_WEBHOOK_EVENT_ID_CONFLICT');
+    this.name = 'BillingWebhookIdentityConflictError';
+  }
 }

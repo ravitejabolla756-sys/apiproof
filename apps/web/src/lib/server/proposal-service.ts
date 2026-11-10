@@ -16,6 +16,7 @@ import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './worksp
 import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
 import { validatePersistedMigrationEvidence, verifyMigrationForProposal } from './migration-verification.js';
 import { describeMigrationProof } from './migration-proof.js';
+import { transitionFinding } from './finding-lifecycle.js';
 
 export interface ProposalResult {
   pullRequestId: string;
@@ -402,6 +403,15 @@ async function persistPullRequestRecord(
 
       await tx.execute('UPDATE migrations SET status = ? WHERE id = ?', ['pr_created', params.migrationId]);
       await tx.execute('UPDATE findings SET status = ? WHERE id = ?', ['pr_created', params.findingId]);
+      await transitionFinding(tx, {
+        findingId: params.findingId,
+        workspaceId: params.workspaceId,
+        toState: 'fixed_pending_verification',
+        reason: 'draft_pull_request_created',
+        idempotencyKey: `finding:${params.findingId}:migration:${params.migrationId}:pr-created`,
+        actorUserId: params.userId,
+        evidence: { pullRequestId },
+      });
       await tx.execute('UPDATE repositories SET status = ? WHERE id = ?', ['migration_ready', params.repositoryId]);
 
       await tx.execute(`

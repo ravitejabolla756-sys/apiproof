@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceMember } from '@/lib/server/workspace-service.js';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceMember } from '@/lib/server/workspace-service.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -10,7 +10,15 @@ const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  let workspace: Awaited<ReturnType<typeof getDefaultWorkspaceForUser>>;
+  try {
+    workspace = await getDefaultWorkspaceForUser(user.id);
+  } catch (error: unknown) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers: privateHeaders });
+    }
+    throw error;
+  }
   const row = await getDatabase().queryOne<{ team_name: string; connected_at: string }>(`
     SELECT team_name, connected_at FROM slack_connections WHERE workspace_id = ? AND status = 'active'
   `, [workspace.id]);
@@ -22,8 +30,23 @@ export async function DELETE(req: Request) {
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
-  const workspace = await getDefaultWorkspaceForUser(user.id);
-  await requireWorkspaceMember(user.id, workspace.id);
+  let workspace: Awaited<ReturnType<typeof getDefaultWorkspaceForUser>>;
+  try {
+    workspace = await getDefaultWorkspaceForUser(user.id);
+  } catch (error: unknown) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers: privateHeaders });
+    }
+    throw error;
+  }
+  try {
+    await requireWorkspaceMember(user.id, workspace.id);
+  } catch (error: unknown) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers: privateHeaders });
+    }
+    throw error;
+  }
   const now = new Date().toISOString();
   const db = getDatabase();
   const result = await db.execute(`UPDATE slack_connections SET status = 'revoked', token_ciphertext = '', token_iv = '', token_auth_tag = '', updated_at = ?

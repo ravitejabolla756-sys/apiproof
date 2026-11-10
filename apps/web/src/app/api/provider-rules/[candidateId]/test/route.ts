@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
-import { collectProviderRuleTestTokens, findProviderRuleTestMatches } from '@/lib/server/provider-rule-test';
+import { collectProviderRuleTestTokens, findProviderRuleTestMatches } from '@/lib/server/provider-rule-test.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
 
@@ -35,7 +35,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
     const matches = findProviderRuleTestMatches(code, tokens);
     return NextResponse.json({ ok: true, providerId: candidate.provider_id, filePath: typeof body.filePath === 'string' ? body.filePath : 'sample.ts', matches, testedTokens: tokens });
   } catch (error) {
-    if (error instanceof Error && error.message.includes('access denied')) return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403 });
+    if (isWorkspaceAuthorizationError(error)) return NextResponse.json({ error: 'Forbidden', code: 'WORKSPACE_OWNER_REQUIRED' }, { status: 403 });
     return NextResponse.json({ error: 'Unable to test provider rule.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }

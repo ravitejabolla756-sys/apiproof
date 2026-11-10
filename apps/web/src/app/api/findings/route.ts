@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
-import { resolveFindingCapability } from '@/lib/server/finding-capability';
+import { resolveFindingCapability } from '@/lib/server/finding-capability.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     JOIN scans s ON s.id = f.scan_id AND s.status = 'completed'
     JOIN repositories r ON r.id = f.repository_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE wm.user_id = ? AND wm.role IN ('owner', 'admin', 'member') AND r.lifecycle = 'active'
   `;
   const params: unknown[] = [user.id];
 

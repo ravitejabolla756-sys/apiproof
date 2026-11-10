@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { createSessionAsync, hashPassword, type Session, type User } from './auth.js';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { pruneExpiredOAuthStates } from './oauth-state-storage.js';
 import { createWorkspaceForUser } from './workspace-service.js';
 
 const GITHUB_TOKEN_ENDPOINT = 'https://github.com/login/oauth/access_token';
@@ -98,6 +99,7 @@ export function getGitHubLoginStateCookieOptions(expiresAt?: Date): {
 
 export async function persistGitHubLoginOAuthState(state: GitHubLoginOAuthState, returnTo?: string): Promise<void> {
   const now = new Date();
+  await pruneExpiredOAuthStates('github_login_oauth_states', now);
   await getDatabase().execute(`
     INSERT INTO github_login_oauth_states (state_hash, code_verifier, return_to, expires_at, created_at)
     VALUES (?, ?, ?, ?, ?)
@@ -119,7 +121,8 @@ export async function consumeGitHubLoginOAuthState(
     `, [stateHash]);
     if (!row) return { valid: false, code: 'OAUTH_STATE_UNKNOWN' };
     if (row.consumed_at) return { valid: false, code: 'OAUTH_STATE_REPLAYED' };
-    if (new Date(row.expires_at).getTime() <= Date.now()) return { valid: false, code: 'OAUTH_STATE_EXPIRED' };
+    const expiresAt = Date.parse(row.expires_at);
+    if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) return { valid: false, code: 'OAUTH_STATE_EXPIRED' };
 
     const consumedAt = new Date().toISOString();
     const result = await tx.execute(`
@@ -188,6 +191,7 @@ export async function authenticateGitHubLogin(
       const row = await tx.queryOne<{ id: string; email: string; name: string; created_at: string }>('SELECT id, email, name, created_at FROM users WHERE id = ?', [existingIdentity.user_id]);
       if (!row) throw new Error('GITHUB_OAUTH_ACCOUNT_INVALID');
       await tx.execute('UPDATE github_oauth_accounts SET github_login = ?, github_email = ?, github_name = ?, updated_at = ? WHERE github_subject = ?', [identity.login, identity.email, identity.name, new Date().toISOString(), identity.subject]);
+      await tx.execute('UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?', [new Date().toISOString(), existingIdentity.user_id]);
       return { kind: 'authenticated', user: mapUser(row) };
     }
 
@@ -199,7 +203,7 @@ export async function authenticateGitHubLogin(
     const now = new Date().toISOString();
     const userId = `usr_${crypto.randomBytes(12).toString('hex')}`;
     const oauthId = `gho_${crypto.randomBytes(12).toString('hex')}`;
-    await tx.execute('INSERT INTO users (id, email, password_hash, name, created_at) VALUES (?, ?, ?, ?, ?)', [userId, identity.email, hashPassword(crypto.randomBytes(48).toString('hex')), identity.name, now]);
+    await tx.execute('INSERT INTO users (id, email, password_hash, name, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?)', [userId, identity.email, hashPassword(crypto.randomBytes(48).toString('hex')), identity.name, now, now]);
     await createWorkspaceForUser(userId, `${identity.name}'s Workspace`, undefined, tx);
     await tx.execute('INSERT INTO github_oauth_accounts (id, user_id, github_subject, github_login, github_email, github_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [oauthId, userId, identity.subject, identity.login, identity.email, identity.name, now, now]);
     return { kind: 'created', user: { id: userId, email: identity.email, name: identity.name, createdAt: now } };

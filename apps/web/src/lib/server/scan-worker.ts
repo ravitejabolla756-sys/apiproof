@@ -15,6 +15,8 @@
 
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
+import { upsertFindingForScan } from './finding-scan-persistence.js';
+import { persistMergedFindingResolutionEvidence } from './finding-resolution-verification.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { fetchRemoteRepositoryFiles, createWorkspaceGitHubSourceControlProvider } from './github.js';
@@ -34,6 +36,8 @@ import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { extractSourceSnippet } from './scan-snippet.js';
 import { assertFounderRepositoryScope, assertFounderScanProtectionConfigured, getConfiguredFounderUserId } from './founder-scan-authorization.js';
 import { buildWorkerScope } from './scan-worker-scope.js';
+export { getScanWorkerMetrics } from './scan-worker-metrics.js';
+export type { ScanWorkerMetrics } from './scan-worker-metrics.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
@@ -57,53 +61,6 @@ export interface ScanWorkerResult {
   jobsSkipped: number;
   results: ScanWorkerJobResult[];
   timedOut: boolean;
-}
-
-export interface ScanWorkerMetrics {
-  pendingJobs: number;
-  processingJobs: number;
-  completedJobs: number;
-  failedJobs: number;
-  totalScanRequests: number;
-  lastProcessedAt: string | null;
-}
-
-/**
- * Returns operational aggregate queue metrics for monitoring and worker health.
- * Aggregates counters safely without exposing workspace-specific data across tenants.
- */
-export async function getScanWorkerMetrics(): Promise<ScanWorkerMetrics> {
-  const db = getDatabase();
-  const counts = await db.query<{ status: string; count: number | string }>(`
-    SELECT status, COUNT(*) as count FROM github_scan_requests GROUP BY status
-  `);
-
-  const map: Record<string, number> = {
-    pending: 0,
-    processing: 0,
-    completed: 0,
-    failed: 0,
-  };
-
-  let total = 0;
-  for (const row of counts) {
-    const c = Number(row.count);
-    map[row.status] = c;
-    total += c;
-  }
-
-  const lastJob = await db.queryOne<{ created_at: string }>(`
-    SELECT created_at FROM github_scan_requests WHERE status IN ('completed', 'failed') ORDER BY created_at DESC LIMIT 1
-  `);
-
-  return {
-    pendingJobs: map.pending ?? 0,
-    processingJobs: map.processing ?? 0,
-    completedJobs: map.completed ?? 0,
-    failedJobs: map.failed ?? 0,
-    totalScanRequests: total,
-    lastProcessedAt: lastJob?.created_at ?? null,
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -310,8 +267,8 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 
   // 3. Reuse the durable scan row created by the webhook when possible.
   // This prevents retries/reconciliation from producing duplicate scan records.
-  const existingScan = await db.queryOne<{ id: string; status: string }>(`
-    SELECT id, status FROM scans
+  const existingScan = await db.queryOne<{ id: string; status: string; triggered_by: string | null }>(`
+    SELECT id, status, triggered_by FROM scans
     WHERE repository_id = ? AND sha = ?
     ORDER BY started_at ASC LIMIT 1
   `, [repo.id, job.commit_sha]);
@@ -459,60 +416,15 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
     const persistedScanResult = productization ? { schemaVersion: 2, productization: boundedProductizationProjection(productization) } : scanResultWithDiscovery(summarizeScanCompatibility(compatibilityResults), discoveredProviders, compatibilityResults.flatMap((result) => (result as unknown as { usageIR?: NormalizedUsageIR[] }).usageIR ?? []));
     await db.transaction(async (tx) => {
       const activeFindingIds: string[] = [];
+      const activeChangeIds = new Set<string>();
+      const findingPreviousStates = new Map<string, string | null>();
 
       for (const f of collectedFindings) {
-        const existing = await tx.queryOne<{ id: string; status: string }>(`
-          SELECT id, status FROM findings
-          WHERE repository_id = ? AND change_id = ? AND file_path = ? AND symbol = ?
-        `, [repo.id, f.changeId, f.filePath, f.symbol]);
-
-        if (existing) {
-          await tx.execute(`
-            UPDATE findings
-            SET scan_id = ?,
-                line_number = ?,
-                confidence = ?,
-                reason = ?,
-                reason_codes = ?,
-                evidence = ?,
-                source_snippet = ?,
-                source_digest = ?
-            WHERE id = ?
-          `, [scanId, f.lineNumber, f.confidence, f.reason, JSON.stringify(f.reasonCodes), JSON.stringify(f.evidence), f.sourceSnippet, f.sourceDigest, existing.id]);
-          activeFindingIds.push(existing.id);
-        } else {
-          await tx.execute(`
-            INSERT INTO findings (
-              id, scan_id, repository_id, usage_id, change_id, provider, title, description,
-              severity, confidence, file_path, line_number, symbol, status, reason, reason_codes,
-              evidence, source_snippet, source_digest, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?)
-          `, [
-            f.id, scanId, repo.id, f.id, f.changeId, f.provider, f.title, f.description,
-            f.severity, f.confidence, f.filePath, f.lineNumber, f.symbol, f.reason,
-            JSON.stringify(f.reasonCodes), JSON.stringify(f.evidence), f.sourceSnippet, f.sourceDigest, now,
-          ]);
-          activeFindingIds.push(f.id); newlyCreatedFindingIds.push(f.id);
-        }
-      }
-
-      // Findings are a current-snapshot view. A finding that was not observed
-      // in this complete baseline is resolved, while historical migration/PR
-      // statuses remain immutable for auditability.
-      if (activeFindingIds.length > 0) {
-        const placeholders = activeFindingIds.map(() => '?').join(', ');
-        await tx.execute(`
-          UPDATE findings
-          SET status = 'resolved'
-          WHERE repository_id = ?
-            AND status IN ('open', 'affected')
-            AND id NOT IN (${placeholders})
-        `, [repo.id, ...activeFindingIds]);
-      } else {
-        await tx.execute(`
-          UPDATE findings SET status = 'resolved'
-          WHERE repository_id = ? AND status IN ('open', 'affected')
-        `, [repo.id]);
+        const persisted = await upsertFindingForScan(tx, { finding: f, scanId, repositoryId: repo.id, workspaceId: repo.workspace_id, now });
+        activeFindingIds.push(persisted.id);
+        activeChangeIds.add(f.changeId);
+        findingPreviousStates.set(persisted.id, persisted.previousState);
+        if (persisted.isNew) newlyCreatedFindingIds.push(persisted.id);
       }
 
       await tx.execute(`
@@ -527,6 +439,16 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
         JSON.stringify(persistedScanResult), completedAt, scanId]);
+
+      await persistMergedFindingResolutionEvidence(tx, {
+        workspaceId: repo.workspace_id,
+        repositoryId: repo.id,
+        scanId,
+        mergeSha: headSha,
+        activeFindingIds,
+        activeChangeIds,
+        findingPreviousStates,
+      });
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?

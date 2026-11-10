@@ -1,11 +1,16 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type { DatabaseAdapter } from './types.js';
 
 type SqliteParam = null | number | bigint | string | Uint8Array;
+const sqliteTransactionContext = new AsyncLocalStorage<SqliteDatabaseAdapter>();
 
 export class SqliteDatabaseAdapter implements DatabaseAdapter {
   readonly engine = 'sqlite' as const;
   private db: DatabaseSync;
+  private transactionDepth = 0;
+  private savepointSequence = 0;
+  private transactionTail: Promise<void> = Promise.resolve();
 
   constructor(db: DatabaseSync) {
     this.db = db;
@@ -43,14 +48,46 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
   }
 
   async transaction<T>(fn: (tx: DatabaseAdapter) => Promise<T>): Promise<T> {
-    this.db.exec('BEGIN TRANSACTION;');
+    const isNested = sqliteTransactionContext.getStore() === this;
+    if (!isNested) {
+      const previous = this.transactionTail;
+      let release!: () => void;
+      this.transactionTail = new Promise<void>((resolve) => { release = resolve; });
+      await previous;
+      try {
+        return await sqliteTransactionContext.run(this, () => this.runTransaction(fn, false));
+      } finally {
+        release();
+      }
+    }
+    return this.runTransaction(fn, true);
+  }
+
+  private async runTransaction<T>(fn: (tx: DatabaseAdapter) => Promise<T>, isNested: boolean): Promise<T> {
+    const savepoint = `sp_sqlite_${++this.savepointSequence}`;
+    if (isNested) {
+      this.db.exec(`SAVEPOINT ${savepoint};`);
+    } else {
+      this.db.exec('BEGIN TRANSACTION;');
+    }
+    this.transactionDepth += 1;
     try {
       const result = await fn(this);
-      this.db.exec('COMMIT;');
+      this.transactionDepth -= 1;
+      if (isNested) {
+        this.db.exec(`RELEASE SAVEPOINT ${savepoint};`);
+      } else {
+        this.db.exec('COMMIT;');
+      }
       return result;
     } catch (error) {
+      this.transactionDepth -= 1;
       try {
-        this.db.exec('ROLLBACK;');
+        if (isNested) {
+          this.db.exec(`ROLLBACK TO SAVEPOINT ${savepoint}; RELEASE SAVEPOINT ${savepoint};`);
+        } else {
+          this.db.exec('ROLLBACK;');
+        }
       } catch {
         // ignore rollback errors if transaction already rolled back
       }

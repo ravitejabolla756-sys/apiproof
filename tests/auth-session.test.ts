@@ -35,16 +35,24 @@ import { middleware } from '../apps/web/src/middleware.js';
 import {
   AUTH_COOKIE_NAME,
   SESSION_TTL_SECONDS,
+  createSession,
+  createSessionAsync,
+  createUserWithSession,
+  isValidSessionId,
   validateSession,
+  validateSessionAsync,
   getAuthCookieOptions,
   getClearAuthCookieOptions,
 } from '../apps/web/src/lib/server/auth.js';
 import { resetRateLimits } from '../apps/web/src/lib/server/rate-limit.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-auth-session.db');
+const ENVIRONMENT_KEYS = ['APIPROOF_DB_PATH', 'APIPROOF_SECRET'] as const;
+let originalEnvironment: Partial<Record<(typeof ENVIRONMENT_KEYS)[number], string>>;
 
 describe('Production Authentication & Session Persistence', () => {
   beforeEach(() => {
+    originalEnvironment = Object.fromEntries(ENVIRONMENT_KEYS.map((key) => [key, process.env[key]]));
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SECRET = 'auth-test-secret-at-least-32-chars-long!';
     resetRateLimits();
@@ -59,6 +67,11 @@ describe('Production Authentication & Session Persistence', () => {
     try { closeDatabase(); } catch { /* ignore */ }
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
+    }
+    for (const key of ENVIRONMENT_KEYS) {
+      const value = originalEnvironment[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 
@@ -123,7 +136,9 @@ describe('Production Authentication & Session Persistence', () => {
       expect(cookieHeader).toContain('Path=/');
       expect(cookieHeader).toContain('HttpOnly');
       expect(cookieHeader?.toLowerCase()).toContain('samesite=lax');
-      expect(cookieHeader).toContain(`Max-Age=${SESSION_TTL_SECONDS}`);
+      const cookieMaxAge = Number(cookieHeader?.match(/Max-Age=(\d+)/)?.[1]);
+      expect(cookieMaxAge).toBeGreaterThan(0);
+      expect(cookieMaxAge).toBeLessThanOrEqual(SESSION_TTL_SECONDS);
 
       // Verify session exists in database
       const sessions = await db.query<{ id: string; user_id: string; expires_at: string }>(
@@ -140,7 +155,8 @@ describe('Production Authentication & Session Persistence', () => {
       expect(opts.httpOnly).toBe(true);
       expect(opts.path).toBe('/');
       expect(opts.sameSite).toBe('lax');
-      expect(opts.maxAge).toBe(SESSION_TTL_SECONDS);
+      expect(opts.maxAge).toBeGreaterThan(0);
+      expect(opts.maxAge).toBeLessThanOrEqual(SESSION_TTL_SECONDS);
       expect(opts.expires).toBeInstanceOf(Date);
     });
 
@@ -180,7 +196,9 @@ describe('Production Authentication & Session Persistence', () => {
       expect(cookieHeader).toContain(`${AUTH_COOKIE_NAME}=ses_`);
       expect(cookieHeader).toContain('Path=/');
       expect(cookieHeader).toContain('HttpOnly');
-      expect(cookieHeader).toContain(`Max-Age=${SESSION_TTL_SECONDS}`);
+      const cookieMaxAge = Number(cookieHeader?.match(/Max-Age=(\d+)/)?.[1]);
+      expect(cookieMaxAge).toBeGreaterThan(0);
+      expect(cookieMaxAge).toBeLessThanOrEqual(SESSION_TTL_SECONDS);
 
       // Two sessions should exist in DB (1 from signup, 1 from login)
       const sessions = await db.query(
@@ -223,6 +241,22 @@ describe('Production Authentication & Session Persistence', () => {
       expect(throttledRes.status).toBe(429);
       const data = (await throttledRes.json()) as { code: string };
       expect(data.code).toBe('RATE_LIMIT_EXCEEDED');
+    });
+
+    it('stores only a digest of the normalized login email in the rate-limit key', async () => {
+      for (const email of ['Privacy@example.com', 'privacy@example.com']) {
+        const response = await authPost(createRequest('https://apiproof.test/api/auth', {
+          body: { action: 'login', email, password: 'WrongPassword!' },
+        }));
+        expect(response.status).toBe(401);
+      }
+
+      const rows = await getDatabase().query<{ key: string; points: number }>(
+        "SELECT key, points FROM rate_limits WHERE key LIKE 'auth:login:%'",
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0]?.key).not.toContain('privacy@example.com');
+      expect(rows[0]?.points).toBe(2);
     });
   });
 
@@ -309,6 +343,31 @@ describe('Production Authentication & Session Persistence', () => {
       const authRes = await authGet(authReq);
       expect(authRes.status).toBe(401);
     });
+
+    it('rejects and purges malformed expiry timestamps in both validation paths', async () => {
+      const { user } = await createUserWithSession('malformed-expiry@example.com', 'Password123!', 'Malformed Expiry');
+      const syncSession = await createSession(user.id);
+      const asyncSession = await createSessionAsync(user.id);
+      const db = getDatabase();
+      await db.execute("UPDATE sessions SET expires_at = 'not-a-timestamp' WHERE id IN (?, ?)", [syncSession.id, asyncSession.id]);
+
+      expect(await validateSession(syncSession.id)).toBeNull();
+      expect(await validateSessionAsync(asyncSession.id)).toBeNull();
+      expect(await db.queryOne('SELECT id FROM sessions WHERE id IN (?, ?)', [syncSession.id, asyncSession.id])).toBeUndefined();
+    });
+
+    it('rejects and purges sessions expiring at the current instant in both validation paths', async () => {
+      const { user } = await createUserWithSession('boundary-expiry@example.com', 'Password123!', 'Boundary Expiry');
+      const syncSession = await createSession(user.id);
+      const asyncSession = await createSessionAsync(user.id);
+      const db = getDatabase();
+      const expiryAtNow = new Date().toISOString();
+      await db.execute('UPDATE sessions SET expires_at = ? WHERE id IN (?, ?)', [expiryAtNow, syncSession.id, asyncSession.id]);
+
+      expect(await validateSession(syncSession.id)).toBeNull();
+      expect(await validateSessionAsync(asyncSession.id)).toBeNull();
+      expect(await db.queryOne('SELECT id FROM sessions WHERE id IN (?, ?)', [syncSession.id, asyncSession.id])).toBeUndefined();
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -373,6 +432,15 @@ describe('Production Authentication & Session Persistence', () => {
   // E. LOGOUT FLOW
   // ---------------------------------------------------------------------------
   describe('E. Logout Flow', () => {
+    it('rejects malformed or oversized session identifiers before database lookup', async () => {
+      expect(isValidSessionId('ses_valid_session_id')).toBe(true);
+      expect(isValidSessionId('invalid-session')).toBe(false);
+      expect(isValidSessionId(`ses_${'a'.repeat(129)}`)).toBe(false);
+      expect(isValidSessionId('ses_bad value')).toBe(false);
+      expect(validateSession('invalid-session')).toBeNull();
+      await expect(validateSessionAsync(`ses_${'a'.repeat(129)}`)).resolves.toBeNull();
+    });
+
     it('invalidates the session in DB, returns cleared cookie, and rejects subsequent calls', async () => {
       const db = getDatabase();
 

@@ -28,6 +28,8 @@ const dbPath = path.join(os.tmpdir(), `apiproof-google-oauth-${process.pid}.db`)
 const clientId = 'google-client-id.apps.googleusercontent.com';
 const clientSecret = 'server-only-google-client-secret';
 const testVerifier = 'v'.repeat(43);
+const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_SKIP_DEFAULT_SEED', 'GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REDIRECT_URI'];
+const savedEnvironment = new Map<string, string | undefined>();
 const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const publicJwk = publicKey.export({ format: 'jwk' }) as { kty: string; n: string; e: string };
 
@@ -72,6 +74,7 @@ async function seedState(returnTo = '/dashboard'): Promise<ReturnType<typeof cre
 }
 
 beforeEach(() => {
+  for (const key of environmentKeys) savedEnvironment.set(key, process.env[key]);
   process.env.NODE_ENV = 'test';
   process.env.APIPROOF_DB_PATH = dbPath;
   process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
@@ -88,11 +91,12 @@ afterEach(async () => {
   resetGoogleJwksCacheForTest();
   await closeDatabase();
   if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-  delete process.env.APIPROOF_DB_PATH;
-  delete process.env.APIPROOF_SKIP_DEFAULT_SEED;
-  delete process.env.GOOGLE_OAUTH_CLIENT_ID;
-  delete process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-  delete process.env.GOOGLE_OAUTH_REDIRECT_URI;
+  for (const key of environmentKeys) {
+    const saved = savedEnvironment.get(key);
+    if (saved === undefined) delete process.env[key];
+    else process.env[key] = saved;
+    savedEnvironment.delete(key);
+  }
 });
 
 describe('Google OAuth 2.0 sign-in', () => {
@@ -117,8 +121,9 @@ describe('Google OAuth 2.0 sign-in', () => {
     expect(response.status).toBe(307);
     expect(new URL(response.headers.get('location') || '').pathname).toBe('/dashboard');
     expect(response.headers.get('set-cookie')).toContain('apiproof_session=ses_');
-    const user = await getDatabase().queryOne<{ id: string; email: string }>('SELECT id, email FROM users WHERE email = ?', ['google-user@example.com']);
+    const user = await getDatabase().queryOne<{ id: string; email: string; email_verified_at: string | null }>('SELECT id, email, email_verified_at FROM users WHERE email = ?', ['google-user@example.com']);
     expect(user?.id).toMatch(/^usr_/);
+    expect(user?.email_verified_at).toBeTruthy();
     expect(await getDatabase().queryOne('SELECT google_subject FROM google_oauth_accounts WHERE user_id = ?', [user?.id])).toMatchObject({ google_subject: 'google-subject-123' });
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM workspace_members WHERE user_id = ?', [user?.id])).toHaveLength(1);
     expect(await getDatabase().query<{ user_id: string }>('SELECT user_id FROM sessions WHERE user_id = ?', [user?.id])).toHaveLength(1);
@@ -148,6 +153,55 @@ describe('Google OAuth 2.0 sign-in', () => {
     const cookie = getGoogleOAuthStateCookieOptions();
     expect(cookie).toMatchObject({ httpOnly: true, secure: true, sameSite: 'lax', path: '/api/auth/google' });
     process.env.NODE_ENV = 'test';
+  });
+
+  it('fails closed when the persisted OAuth state expiry is malformed', async () => {
+    const state = await seedState();
+    const stateHash = crypto.createHash('sha256').update(state.state).digest('hex');
+    await getDatabase().execute('UPDATE google_oauth_states SET expires_at = ? WHERE state_hash = ?', ['not-a-timestamp', stateHash]);
+
+    await expect(consumeGoogleOAuthState(state.state, state.state)).resolves.toMatchObject({ valid: false, code: 'OAUTH_STATE_EXPIRED' });
+    expect(await getDatabase().queryOne<{ consumed_at: string | null }>('SELECT consumed_at FROM google_oauth_states WHERE state_hash = ?', [stateHash])).toMatchObject({ consumed_at: null });
+  });
+
+  it('prunes expired transient states when persisting a new login attempt', async () => {
+    const expired = await seedState();
+    const expiredHash = crypto.createHash('sha256').update(expired.state).digest('hex');
+    await getDatabase().execute('UPDATE google_oauth_states SET expires_at = ? WHERE state_hash = ?', [new Date(Date.now() - 1_000).toISOString(), expiredHash]);
+    const active = await seedState();
+    const activeHash = crypto.createHash('sha256').update(active.state).digest('hex');
+
+    await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [expiredHash])).resolves.toBeUndefined();
+    await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
+  });
+
+  it('limits expired-state pruning to one bounded batch per login attempt', async () => {
+    const expiredCount = 1_001;
+    const expiredAt = new Date(Date.now() - 60_000).toISOString();
+    const createdAt = new Date(Date.now() - 120_000).toISOString();
+    const values = Array.from({ length: expiredCount }, (_, index) => [
+      `expired-test-state-${String(index).padStart(4, '0')}`,
+      testVerifier,
+      'expected-nonce',
+      '/dashboard',
+      expiredAt,
+      null,
+      createdAt,
+    ]);
+    const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?)').join(', ');
+    await getDatabase().execute(
+      `INSERT INTO google_oauth_states (state_hash, code_verifier, nonce, return_to, expires_at, consumed_at, created_at) VALUES ${placeholders}`,
+      values.flat(),
+    );
+
+    const active = await seedState();
+    const activeHash = crypto.createHash('sha256').update(active.state).digest('hex');
+
+    await expect(getDatabase().queryOne<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM google_oauth_states WHERE expires_at <= ?',
+      [new Date().toISOString()],
+    )).resolves.toMatchObject({ count: 1 });
+    await expect(getDatabase().queryOne('SELECT state_hash FROM google_oauth_states WHERE state_hash = ?', [activeHash])).resolves.toMatchObject({ state_hash: activeHash });
   });
 
   it('rejects invalid claims and signatures before account creation', async () => {

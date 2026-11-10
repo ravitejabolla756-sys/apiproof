@@ -4,6 +4,7 @@ import type { PlanningInput } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
 import { loadProviderRegistry } from './registry-utils.js';
 import { requireFindingAccess } from './workspace-service.js';
+import { transitionFinding } from './finding-lifecycle.js';
 
 export interface MigrationPlanRecord {
   id: string;
@@ -165,6 +166,15 @@ export async function generateMigrationForFinding(findingId: string, userId: str
       SET status = 'migration_planned'
       WHERE id = ?
     `, [finding.id]);
+    await transitionFinding(tx, {
+      findingId: finding.id,
+      workspaceId: repo.workspace_id,
+      toState: 'remediating',
+      reason: 'migration_plan_created',
+      idempotencyKey: `finding:${finding.id}:migration:${migrationId}:planned`,
+      actorUserId: userId,
+      ...(baselineSha ? { evidence: { baselineSha } } : {}),
+    });
 
     await tx.execute(`
       INSERT INTO activity_events (id, user_id, repository_id, type, title, description, created_at)
