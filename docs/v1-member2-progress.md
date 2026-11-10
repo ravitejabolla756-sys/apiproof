@@ -4262,3 +4262,9 @@ Latest local evidence supersedes the historical counts embedded in the inventory
 - Change: Added a fail-closed frontend parser for Member 1's reviewed ORG-10 completed result. It requires the terminal status, request/event identity, idempotency key, workspace-scoped invalidation and explicit preservation of personal sessions and other-workspace memberships. The removal UI remains gated and no backend behavior was activated.
 - Evidence: Focused ORG-10 contract coverage passed **3/3**; targeted ESLint, repository typecheck and `git diff --check` passed.
 - Scope: Advances ORG-04/ORG-10 frontend compatibility only; route integration, PostgreSQL transaction proof, concurrent final-owner protection, migration reconciliation and staging remain external.
+
+## 2026-11-10 checkpoint — Member 1 integration handoff artifact
+
+- Change: Added `docs/v1-member2-member1-integration-handoff.md`, consolidating the exact existing API boundaries, ORG-10 requirements, PostgreSQL/RBAC evidence, migration `024–027` reconciliation, billing/invoice, notification/digest, deletion/legal and staging/hosted verification requirements.
+- Decision: No independent frontend work remained that could safely change behavior without inventing a shared contract. All fail-closed guards and completed features remain preserved.
+- Scope: Handoff documentation only; no Member 1 branch, migration, provider, production resource or payment state was modified.

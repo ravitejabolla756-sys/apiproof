@@ -2504,3 +2504,8 @@ Slack connection action failures now focus the retryable alert while preserving 
 - PASS: The non-activating frontend parser accepts the reviewed completed ORG-10 result and fails closed when idempotency or preserved-session scope is absent; focused coverage passed **3/3**.
 - PASS: Targeted ESLint, repository typecheck and `git diff --check` passed.
 - NOT_RUN: Shared route/transaction integration, PostgreSQL/RBAC, concurrent final-owner verification, migration reconciliation, hosted CI, staging and production remain open.
+
+## 2026-11-10 — Member 1 integration handoff artifact
+
+- PASS: Added the dedicated Member 1 handoff document with endpoint/request/response boundaries, ORG-10, PostgreSQL/RBAC, migration, billing, notification, digest, deletion/legal and integration-test requirements.
+- NOT_RUN: Shared contract approval, PostgreSQL/provider sandbox, hosted CI, staging, legal and production verification remain external.
