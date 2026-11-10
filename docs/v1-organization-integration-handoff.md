@@ -23,6 +23,8 @@ The Member 1 revocation service, workspace policy, and durable revocation migrat
 
 The integrated migration definition still uses Member 1's source ID `027`. It must not be combined with Member 2's conflicting `027` until the approved migration-history decision is complete.
 
+Phase 8B is currently blocked from route activation because Member 2's organization tables are supplied by conflicting migration `024`. The exact blocker and safe sequence are recorded in `docs/v1-organization-invitation-integration-blocker.md`.
+
 ## Safe integration sequence
 
 1. Approve the shared request, response, error, event and audit contracts.
