@@ -10,6 +10,7 @@ import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
+import { validateMigrationHistory } from './migration-compatibility.js';
 
 export const migrations: Migration[] = [
   {
@@ -492,7 +493,16 @@ async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationReco
     )
   `);
 
-  const appliedRows = await db.query<{ id: string }>('SELECT id FROM _apiproof_migrations');
+  const appliedRows = await db.query<{ id: string; name: string; applied_at: string }>(
+    'SELECT id, name, applied_at FROM _apiproof_migrations ORDER BY id, applied_at'
+  );
+  const compatibility = validateMigrationHistory({
+    available: migrations,
+    applied: appliedRows.map((row) => ({ id: row.id, name: row.name, appliedAt: row.applied_at })),
+  });
+  if (!compatibility.compatible) {
+    throw new Error(`MIGRATION_HISTORY_INCOMPATIBLE:${compatibility.errors.join('|')}`);
+  }
   const appliedSet = new Set(appliedRows.map((r) => r.id));
 
   const newlyApplied: MigrationRecord[] = [];

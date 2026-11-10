@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validateMigrationHistory, type MigrationIdentity } from '../apps/web/src/lib/server/db/migration-compatibility.js';
+import { runMigrations } from '../apps/web/src/lib/server/db/migrator.js';
+import type { DatabaseAdapter } from '../apps/web/src/lib/server/db/types.js';
 
 const collisions: readonly MigrationIdentity[] = [
   { id: '024', name: 'email_verification' },
@@ -125,5 +127,26 @@ describe('migration compatibility preflight', () => {
     const second = validateMigrationHistory(input);
     expect(first).toEqual(second);
     expect(JSON.stringify(input)).toBe(before);
+  });
+
+  it('blocks the real runner before migration DDL on an ID/name conflict', async () => {
+    const executed: string[] = [];
+    const db: DatabaseAdapter = {
+      engine: 'sqlite',
+      async query<T = unknown>(sql: string): Promise<T[]> {
+        if (sql.includes('_apiproof_migrations')) {
+          return [{ id: '001', name: 'wrong_name', applied_at: '2026-11-11T00:00:00.000Z' }] as T[];
+        }
+        return [];
+      },
+      async queryOne<T = unknown>(): Promise<T | undefined> { return undefined; },
+      async execute(sql: string): Promise<{ changes: number }> { executed.push(sql); return { changes: 0 }; },
+      async transaction<T>(fn: (tx: DatabaseAdapter) => Promise<T>): Promise<T> { return fn(this); },
+      async close(): Promise<void> {},
+    };
+
+    await expect(runMigrations(db)).rejects.toThrow('MIGRATION_HISTORY_INCOMPATIBLE');
+    expect(executed).toHaveLength(1);
+    expect(executed[0]).toContain('CREATE TABLE IF NOT EXISTS _apiproof_migrations');
   });
 });

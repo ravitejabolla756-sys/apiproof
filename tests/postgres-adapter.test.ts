@@ -282,14 +282,14 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
 
   describe('5. Deterministic Migration Runner', () => {
     it('executes migrations idempotently without re-running applied migrations', async () => {
-      const appliedSet = new Set<string>();
+      const appliedSet = new Map<string, { name: string; applied_at: string }>();
       const executedStatements: string[] = [];
 
       const mockDb: DatabaseAdapter = {
         engine: 'postgres',
         async query<T = unknown>(sql: string): Promise<T[]> {
           if (sql.includes('_apiproof_migrations')) {
-            return Array.from(appliedSet).map((id) => ({ id })) as unknown as T[];
+            return Array.from(appliedSet, ([id, record]) => ({ id, ...record })) as unknown as T[];
           }
           return [];
         },
@@ -299,7 +299,7 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
         async execute(sql: string, params: unknown[] = []): Promise<{ changes: number }> {
           executedStatements.push(sql);
           if (sql.includes('INSERT INTO _apiproof_migrations')) {
-            appliedSet.add(params[0] as string);
+            appliedSet.set(params[0] as string, { name: params[1] as string, applied_at: params[2] as string });
           }
           return { changes: 1 };
         },

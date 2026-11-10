@@ -108,7 +108,7 @@ describe('Phase 2 — Multi-Tenant Database Schema, Constraints & Upgrade Behavi
         applied_at TEXT NOT NULL
       );
       INSERT INTO _apiproof_migrations VALUES ('001', 'initial_schema', '2026-09-01T00:00:00.000Z');
-      INSERT INTO _apiproof_migrations VALUES ('002', 'postgres_compatibility_and_indexes', '2026-09-01T00:00:00.000Z');
+      INSERT INTO _apiproof_migrations VALUES ('002', 'phase1_integrity_constraints_and_rate_limits', '2026-09-01T00:00:00.000Z');
     `);
 
     // Seed 2 existing users with repositories
