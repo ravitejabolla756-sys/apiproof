@@ -233,3 +233,5 @@ Last updated: 2026-11-08. This is a checklist, not a production approval.
 - ORG-05 unknown-role capability boundary: PASS locally, `workspace-policy` regression covers runtime unknown-role read and assertion denial without role-map exceptions. No role grants changed; PostgreSQL/RLS, Member 2 capability approval and integration evidence remain open.
 
 - SEC-15 CI workflow contract: PASS locally, `release-manifest` 2/2 validates branch triggers, read-only permissions, required gates and forbidden write/deploy/manual-dispatch entries. GitHub administrator read-back of branch protection and required-check enforcement remains open.
+
+- BILL-10 stale-subscription protection: PASS locally, billing foundation regression covers mismatched subscription identity and same-identity post-cancellation resurrection. Provider ordering/reconciliation, grace/suspension policy and PostgreSQL evidence remain open.

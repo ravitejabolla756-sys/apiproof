@@ -394,6 +394,39 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
     expect(check.reason).toContain('SUBSCRIPTION_CANCELED');
   });
 
+  it('does not let stale subscription events mutate or resurrect a terminal subscription', async () => {
+    const user = await createUserAsync('stale-subscription@apiproof.test', 'Pass123!#$', 'Stale Subscription');
+    const ws = await getDefaultWorkspaceForUser(user.id);
+    const db = getDatabase();
+    await getWorkspaceSubscription(ws.id);
+    await db.execute(`
+      UPDATE workspace_subscriptions
+      SET customer_id = 'cus_stale', subscription_id = 'sub_current', plan_id = 'pro', status = 'active'
+      WHERE workspace_id = ?
+    `, [ws.id]);
+
+    await processBillingWebhookEvent({
+      id: 'evt_old_subscription', provider: 'test', eventType: 'customer.subscription.updated',
+      customerId: 'cus_stale', subscriptionId: 'sub_old', status: 'canceled', planId: 'free',
+      rawPayload: '{"id":"evt_old_subscription"}',
+    });
+    await expect(getWorkspaceSubscription(ws.id)).resolves.toMatchObject({ status: 'active', planId: 'pro' });
+
+    await processBillingWebhookEvent({
+      id: 'evt_current_cancel', provider: 'test', eventType: 'customer.subscription.deleted',
+      customerId: 'cus_stale', subscriptionId: 'sub_current', status: 'canceled', planId: 'free',
+      rawPayload: '{"id":"evt_current_cancel"}',
+    });
+    await expect(getWorkspaceSubscription(ws.id)).resolves.toMatchObject({ status: 'canceled', planId: 'free' });
+
+    await processBillingWebhookEvent({
+      id: 'evt_late_active', provider: 'test', eventType: 'customer.subscription.updated',
+      customerId: 'cus_stale', subscriptionId: 'sub_current', status: 'active', planId: 'pro',
+      rawPayload: '{"id":"evt_late_active"}',
+    });
+    await expect(getWorkspaceSubscription(ws.id)).resolves.toMatchObject({ status: 'canceled', planId: 'free' });
+  });
+
   // -------------------------------------------------------------------------
   // TEST 7: Webhook Signature Security
   // -------------------------------------------------------------------------

@@ -284,8 +284,8 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
     }
 
     if (event.customerId) {
-      const sub = await tx.queryOne<{ workspace_id: string }>(`
-        SELECT workspace_id FROM workspace_subscriptions WHERE customer_id = ?
+      const sub = await tx.queryOne<{ workspace_id: string; subscription_id: string | null; status: WorkspaceSubscription['status'] }>(`
+        SELECT workspace_id, subscription_id, status FROM workspace_subscriptions WHERE customer_id = ?
       `, [event.customerId]);
 
       if (sub) {
@@ -306,8 +306,20 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
           newStatus = 'past_due';
         }
 
-        // Unknown provider events are durably claimed for idempotency but do
-        // not affect subscription state or workspace entitlements.
+        // Do not let a late event from an older subscription mutate the
+        // customer-owned workspace record. A canceled subscription is also
+        // terminal for that subscription identity; a new subscription must
+        // use a distinct provider subscription ID.
+        if (event.subscriptionId && sub.subscription_id && event.subscriptionId !== sub.subscription_id) {
+          newStatus = undefined;
+          planId = undefined;
+        } else if (sub.status === 'canceled' && newStatus !== 'canceled') {
+          newStatus = undefined;
+          planId = undefined;
+        }
+
+        // Unknown, stale, or terminally rejected provider events are durably
+        // claimed for idempotency but do not affect subscription state.
         if (newStatus !== undefined) {
           await tx.execute(`
             UPDATE workspace_subscriptions

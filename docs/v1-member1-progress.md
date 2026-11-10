@@ -912,3 +912,8 @@ Phase 0 read-only checks:
 - `release-manifest` passes 2/2 for the current workflow and an unsafe fixture; hosted GitHub branch protection, required-check enforcement, review rules and bypass permissions remain administrator-only evidence.
 
 - Task-accounting reconciliation: SEC-15 is now `DONE_VERIFIED_LOCAL` based on the local workflow contract and negative-fixture evidence. Local completion is 10/27; production-verified remains 0. Hosted GitHub branch protection and required-check enforcement remain external.
+
+### 2026-11-09 BILL-10 stale subscription protection
+
+- Billing projection now ignores events carrying a different subscription identity for the same customer and does not resurrect a canceled subscription with a later event for that same identity. Events remain durably claimed for idempotency.
+- Added a provider-neutral regression covering stale cancellation, current-subscription cancellation, and late active-state resurrection. Provider event ordering/reconciliation and approved grace-period policy remain external.

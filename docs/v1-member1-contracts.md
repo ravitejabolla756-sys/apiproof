@@ -196,6 +196,8 @@ The following tests are implementation-ready but remain contract-gated; they int
 - 2026-11-09 ORG-05: Runtime workspace capability checks must treat unknown persisted role values as denied, without throwing a role-map lookup error or granting fallback access. The approved role vocabulary remains unchanged.
 
 - 2026-11-09 SEC-15: The local CI contract must trigger on `main` and `codex/v1-backend-security`, validate pull requests targeting `main`, use read-only contents permission, run the required quality gates, and contain no write/deploy/manual-dispatch permission. Hosted branch protection remains a separate read-only administrator check.
+
+- 2026-11-09 BILL-10: Billing projection must bind events to the current provider subscription identity when one is known and must treat cancellation as terminal for that identity. Stale or resurrection attempts are idempotently claimed but cannot change entitlements.
 - 2026-11-08 SEC-11: Structured logger context keys such as `googleOAuthClientSecret` are redacted by normalized credential-key matching. No undocumented standalone Google OAuth client-secret prefix is assumed; key-based local tests do not prove arbitrary unlabelled credential detection.
 - Internal cron handlers require `Authorization: Bearer <CRON_SECRET>`. The four cron routes share byte-length-safe timing-resistant validation; missing/malformed credentials return a generic 401 before work or status data is accessed. Current local integration tests cover this contract, but do not verify deployment proxy/header behavior or configured live credentials.
 - Bearer scheme comparison is case-insensitive; the credential value is still compared as UTF-8 bytes with a byte-length guard and timing-safe equality.
