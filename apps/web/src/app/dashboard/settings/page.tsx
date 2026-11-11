@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
+import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 
 interface GitHubInstallationInfo {
   id: string;
@@ -265,6 +266,8 @@ export default function SettingsPage() {
               </div>
             ) : null}
           </div>
+
+          <InvoiceHistoryPanel />
 
           {/* GITHUB APP SETTINGS */}
           <SlackConnectionCard />

@@ -58,3 +58,9 @@ Notification and billing contract tests exercise parser/availability boundaries 
 The integration branch now exposes `GET /api/billing/invoices`. It derives the authenticated user from the session, resolves the requested workspace through `requireWorkspaceMember`, enforces the `billing:manage` capability, and returns the existing provider-unavailable invoice result because `BillingProvider` has no approved invoice retrieval operation. It does not accept a client-supplied customer ID, fabricate records, call an external provider, or expose internal errors.
 
 The route is an authorized unavailable path, not provider-backed invoice functionality. Provider-backed invoices, real download links, payment lifecycle events, and full frontend end-to-end consumption remain pending.
+
+## Phase 9D invoice UI integration
+
+`InvoiceHistoryPanel` now uses `invoiceHistoryApiAdapter` by default and calls the authorized `/api/billing/invoices` route from the settings page. The existing loading, retry/error, provider-unavailable, empty, and populated states remain explicit; hosted invoice links continue to pass through the credential-free HTTPS safety checks in the shared contract.
+
+The `BillingProvider` interface was intentionally not expanded in this slice. No approved provider adapter currently exposes invoice retrieval, so the UI is connected to the real authorization boundary and correctly displays provider-unavailable status without fabricating invoices. Provider capability design, credentials, payment activation, live invoice data, and browser-level end-to-end verification remain pending.
