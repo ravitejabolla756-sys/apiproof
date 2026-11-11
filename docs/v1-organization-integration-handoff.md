@@ -78,3 +78,9 @@ OAuth-provider discovery was intentionally not copied because the current integr
 ## Phase 12 Playwright harness
 
 The integration branch now contains a bounded Playwright configuration, local development-server setup, disposable SQLite environment variables, and focused account/invoice specs. The harness does not run migrations, connect to PostgreSQL, use production URLs, or require provider credentials. The unauthenticated account-page redirect passed. Authenticated browser journeys did not complete because the local account/session request remained in the page's loading state, and the 320px account page test detected horizontal overflow; these are unresolved browser failures, not passing evidence. Generated traces are excluded from Git.
+
+## Phase 13 browser-flow diagnosis
+
+The original authenticated fixture race was isolated: the first dashboard navigation could issue `/api/auth` before the login response cookie was available to that navigation, receive `401`, and leave the client layout in `Checking your session…`. The fixture now reloads after the login redirect, verifies `/api/auth` returns `200`, and waits for the checking state to disappear. Direct browser-context checks confirmed `/api/auth` and `/api/account` return `200` with the disposable SQLite session.
+
+The remaining full browser run is not complete evidence: the local Next development server intermittently exceeds the bounded navigation timeout during account-route compilation, and the existing 320px account layout still reports document overflow. No global overflow suppression or authentication bypass was introduced.
