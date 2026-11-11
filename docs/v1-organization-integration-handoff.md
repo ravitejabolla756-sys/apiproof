@@ -64,3 +64,7 @@ The route is an authorized unavailable path, not provider-backed invoice functio
 `InvoiceHistoryPanel` now uses `invoiceHistoryApiAdapter` by default and calls the authorized `/api/billing/invoices` route from the settings page. The existing loading, retry/error, provider-unavailable, empty, and populated states remain explicit; hosted invoice links continue to pass through the credential-free HTTPS safety checks in the shared contract.
 
 The `BillingProvider` interface was intentionally not expanded in this slice. No approved provider adapter currently exposes invoice retrieval, so the UI is connected to the real authorization boundary and correctly displays provider-unavailable status without fabricating invoices. Provider capability design, credentials, payment activation, live invoice data, and browser-level end-to-end verification remain pending.
+
+## Phase 10 functional invoice-route verification
+
+The invoice route now has executable coverage through the real `GET /api/billing/invoices` handler using disposable SQLite sessions and workspace fixtures. The tests verify unauthenticated rejection, billing-capability enforcement, cross-workspace denial, and the explicit provider-unavailable response. Provider-backed invoice projection and provider-exception mapping remain pending until an approved adapter exists; no provider response is fabricated by the application or tests.

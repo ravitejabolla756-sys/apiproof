@@ -5,6 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach } from 'vitest';
 import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { createSession } from '../apps/web/src/lib/server/auth.js';
+import { GET as getInvoiceHistory } from '../apps/web/src/app/api/billing/invoices/route.js';
 import { getAuthorizedWorkspaceInvoiceHistory } from '../apps/web/src/lib/server/billing/invoice-history.js';
 import { unavailableInvoiceHistoryAdapter } from '../apps/web/src/lib/invoice-history-contract.js';
 
@@ -59,9 +61,40 @@ describe('invoice history backend boundary', () => {
     await expect(getAuthorizedWorkspaceInvoiceHistory('usr_billing_owner', 'ws_other')).rejects.toThrow(/access denied/);
   });
 
-  it.todo('rejects unauthenticated route requests');
-  it.todo('rejects cross-tenant workspace invoice requests');
-  it.todo('rejects members without billing capability');
+  it('rejects unauthenticated route requests', async () => {
+    authorizedFixture();
+    const response = await getInvoiceHistory(new Request('https://apiproof.test/api/billing/invoices?workspaceId=ws_billing'));
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+  });
+
+  it('enforces billing permission and workspace scope through the route', async () => {
+    authorizedFixture();
+    const memberSession = createSession('usr_billing_member');
+    const memberResponse = await getInvoiceHistory(new Request('https://apiproof.test/api/billing/invoices?workspaceId=ws_billing', {
+      headers: { cookie: `apiproof_session=${memberSession.id}` },
+    }));
+    expect(memberResponse.status).toBe(403);
+    await expect(memberResponse.json()).resolves.toEqual({ error: 'Billing access denied.', code: 'WORKSPACE_CAPABILITY_DENIED' });
+
+    const ownerSession = createSession('usr_billing_owner');
+    const crossWorkspaceResponse = await getInvoiceHistory(new Request('https://apiproof.test/api/billing/invoices?workspaceId=ws_other', {
+      headers: { cookie: `apiproof_session=${ownerSession.id}` },
+    }));
+    expect(crossWorkspaceResponse.status).toBe(404);
+    await expect(crossWorkspaceResponse.json()).resolves.toEqual({ error: 'Workspace not found or access denied.', code: 'WORKSPACE_ACCESS_DENIED' });
+  });
+
+  it('returns the explicit provider-unavailable state through the authorized route', async () => {
+    authorizedFixture();
+    const ownerSession = createSession('usr_billing_owner');
+    const response = await getInvoiceHistory(new Request('https://apiproof.test/api/billing/invoices?workspaceId=ws_billing', {
+      headers: { cookie: `apiproof_session=${ownerSession.id}` },
+    }));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ status: 'unavailable', code: 'PROVIDER_NOT_CONFIGURED' });
+  });
+
   it.todo('returns validated provider invoices after an approved adapter is integrated');
   it.todo('maps provider failures without exposing credentials or internal exceptions');
 });
