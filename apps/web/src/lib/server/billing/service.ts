@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { getDatabase } from '../db/index.js';
 import { getPlanDefinition, type PlanDefinition } from './plans.js';
-import type { BillingWebhookEvent } from './provider.ts';
+import { reconcileBillingEvent, type BillingWebhookEvent } from './provider.js';
 
 export interface WorkspaceSubscription {
   workspaceId: string;
@@ -272,31 +272,29 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
 
   // Update subscription state based on event
   if (event.customerId) {
-    const sub = await db.queryOne<{ workspace_id: string }>(`
-      SELECT workspace_id FROM workspace_subscriptions WHERE customer_id = ?
+    const sub = await db.queryOne<{
+      workspace_id: string;
+      status: WorkspaceSubscription['status'];
+      plan_id: string;
+      current_period_end: string;
+    }>(`
+      SELECT workspace_id, status, plan_id, current_period_end FROM workspace_subscriptions WHERE customer_id = ?
     `, [event.customerId]);
 
     if (sub) {
-      let newStatus = event.status || 'active';
-      let planId = event.planId;
-
-      if (event.eventType === 'customer.subscription.deleted') {
-        newStatus = 'canceled';
-        planId = 'free';
-      } else if (event.eventType === 'invoice.payment_failed') {
-        newStatus = 'past_due';
+      const decision = reconcileBillingEvent(event, { status: sub.status, planId: sub.plan_id, currentPeriodEnd: sub.current_period_end });
+      if (decision.action === 'apply') {
+        await db.execute(`
+          UPDATE workspace_subscriptions
+          SET status = ?,
+              plan_id = COALESCE(?, plan_id),
+              subscription_id = COALESCE(?, subscription_id),
+              current_period_start = COALESCE(?, current_period_start),
+              current_period_end = COALESCE(?, current_period_end),
+              updated_at = ?
+          WHERE workspace_id = ?
+        `, [decision.status, decision.planId || null, decision.subscriptionId || null, decision.periodStart || null, decision.periodEnd || null, now, sub.workspace_id]);
       }
-
-      await db.execute(`
-        UPDATE workspace_subscriptions
-        SET status = ?,
-            plan_id = COALESCE(?, plan_id),
-            subscription_id = COALESCE(?, subscription_id),
-            current_period_start = COALESCE(?, current_period_start),
-            current_period_end = COALESCE(?, current_period_end),
-            updated_at = ?
-        WHERE workspace_id = ?
-      `, [newStatus, planId || null, event.subscriptionId || null, event.periodStart || null, event.periodEnd || null, now, sub.workspace_id]);
     }
   }
 

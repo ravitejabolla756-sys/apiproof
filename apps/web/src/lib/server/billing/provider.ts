@@ -13,6 +13,54 @@ export interface BillingWebhookEvent {
   rawPayload: string;
 }
 
+export type BillingSubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'unpaid';
+
+export interface BillingSubscriptionSnapshot {
+  status: BillingSubscriptionStatus;
+  planId: string;
+  currentPeriodEnd: string;
+}
+
+export type BillingLifecycleDecision =
+  | { action: 'apply'; status: BillingSubscriptionStatus; planId?: string; subscriptionId?: string; periodStart?: string; periodEnd?: string }
+  | { action: 'ignore'; reason: 'UNSUPPORTED_BILLING_EVENT' | 'REFUND_POLICY_PENDING' | 'GRACE_POLICY_PENDING' | 'OUT_OF_ORDER_PERIOD' | 'INVALID_BILLING_STATUS' };
+
+const BILLING_STATUSES = new Set<BillingSubscriptionStatus>(['active', 'past_due', 'canceled', 'trialing', 'incomplete', 'unpaid']);
+
+/**
+ * Provider-neutral lifecycle mapping. Only event meanings already documented
+ * by the integration contract are applied; provider-specific refund/grace and
+ * ordering semantics remain explicitly unavailable until approved.
+ */
+export function reconcileBillingEvent(
+  event: BillingWebhookEvent,
+  current?: BillingSubscriptionSnapshot,
+): BillingLifecycleDecision {
+  if (event.eventType === 'charge.refunded' || event.eventType === 'invoice.refunded') return { action: 'ignore', reason: 'REFUND_POLICY_PENDING' };
+  if (event.eventType === 'customer.subscription.paused' || event.eventType === 'invoice.payment_action_required') return { action: 'ignore', reason: 'GRACE_POLICY_PENDING' };
+
+  let status: BillingSubscriptionStatus | undefined;
+  let planId = event.planId;
+  if (event.eventType === 'customer.subscription.deleted') {
+    status = 'canceled';
+    planId = 'free';
+  } else if (event.eventType === 'invoice.payment_failed') {
+    status = 'past_due';
+  } else if (event.eventType === 'invoice.payment_succeeded') {
+    status = 'active';
+  } else if (event.eventType === 'customer.subscription.created' || event.eventType === 'customer.subscription.updated') {
+    if (!event.status || !BILLING_STATUSES.has(event.status as BillingSubscriptionStatus)) return { action: 'ignore', reason: 'INVALID_BILLING_STATUS' };
+    status = event.status as BillingSubscriptionStatus;
+  } else {
+    return { action: 'ignore', reason: 'UNSUPPORTED_BILLING_EVENT' };
+  }
+
+  if (current && event.periodEnd && Date.parse(event.periodEnd) < Date.parse(current.currentPeriodEnd) && event.eventType !== 'customer.subscription.deleted') {
+    return { action: 'ignore', reason: 'OUT_OF_ORDER_PERIOD' };
+  }
+  return { action: 'apply', status, ...(planId ? { planId } : {}), ...(event.subscriptionId ? { subscriptionId: event.subscriptionId } : {}), ...(event.periodStart ? { periodStart: event.periodStart } : {}), ...(event.periodEnd ? { periodEnd: event.periodEnd } : {}) };
+}
+
 export interface BillingProvider {
   name: string;
   createCustomer(workspaceId: string, email: string, name: string): Promise<{ customerId: string }>;
