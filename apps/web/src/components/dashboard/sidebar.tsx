@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  UserRound,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -76,6 +77,7 @@ export function Sidebar() {
   const secondaryNav = [
     { name: "Activity", href: "/dashboard/activity", icon: Activity },
     { name: "Settings", href: "/dashboard/settings", icon: Sliders },
+    { name: "Account", href: "/dashboard/settings/account", icon: UserRound },
   ];
 
   async function handleLogout() {

@@ -205,3 +205,19 @@ export function badRequestResponse(error: string): Response {
 export function forbiddenCsrfResponse(error = 'Forbidden: Cross-site request rejected.'): Response {
   return Response.json({ error, code: 'CSRF_REJECTED' }, { status: 403 });
 }
+
+export function validateAccountDisplayNameInput(body: unknown): ValidationResult<{ name: string }> {
+  if (!body || typeof body !== 'object' || typeof (body as Record<string, unknown>).name !== 'string') {
+    return { valid: false, error: 'Name is required (1-100 characters).' };
+  }
+  const name = (body as { name: string }).name.trim();
+  return name.length > 0 && name.length <= 100 ? { valid: true, data: { name } } : { valid: false, error: 'Name is required (1-100 characters).' };
+}
+
+export function validatePasswordChangeInput(body: unknown): ValidationResult<{ currentPassword: string; newPassword: string }> {
+  if (!body || typeof body !== 'object') return { valid: false, error: 'Request body must be a JSON object.' };
+  const value = body as Record<string, unknown>;
+  if (typeof value.currentPassword !== 'string' || typeof value.newPassword !== 'string') return { valid: false, error: 'Current and new passwords are required.' };
+  if (value.newPassword.length < 8 || value.newPassword.length > 128) return { valid: false, error: 'Password must be 8-128 characters long.' };
+  return { valid: true, data: { currentPassword: value.currentPassword, newPassword: value.newPassword } };
+}

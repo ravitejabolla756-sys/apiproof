@@ -68,3 +68,9 @@ The `BillingProvider` interface was intentionally not expanded in this slice. No
 ## Phase 10 functional invoice-route verification
 
 The invoice route now has executable coverage through the real `GET /api/billing/invoices` handler using disposable SQLite sessions and workspace fixtures. The tests verify unauthenticated rejection, billing-capability enforcement, cross-workspace denial, and the explicit provider-unavailable response. Provider-backed invoice projection and provider-exception mapping remain pending until an approved adapter exists; no provider response is fabricated by the application or tests.
+
+## Phase 11 account settings integration
+
+The integration branch now includes the schema-safe portion of Member 2's account settings flow: authenticated profile retrieval, display-name updates protected by CSRF validation, password changes that preserve the current session while invalidating other sessions, and an account settings page linked from the dashboard navigation. Account deletion remains visibly unavailable pending the approved retention and deletion contract.
+
+OAuth-provider discovery was intentionally not copied because the current integration schema does not contain the Member 2 Google/GitHub account tables and their migration history conflicts remain unresolved. The integrated projection therefore reports the existing local-password account model only; OAuth account support requires the approved migration compatibility decision.
