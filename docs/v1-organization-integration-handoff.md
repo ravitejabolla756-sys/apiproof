@@ -34,3 +34,9 @@ Phase 8B is currently blocked from route activation because Member 2's organizat
 5. Run the organization, authorization, session, invitation-race, worker, typecheck, lint and browser contract matrix.
 
 No migration IDs, databases, source branches, production resources, payment providers or external services were changed by this handoff.
+
+## Phase 9 schema-independent integrations
+
+The integration branch now includes Member 2's pure response contracts for billing checkout, billing portal, billing summaries, authentication responses, notification preferences, and digest availability. These contracts are schema-independent and explicitly keep unavailable billing/digest capabilities fail-closed. No billing provider, invoice history, notification migration, scheduled job, or external delivery service was activated.
+
+Organization and invitation routes remain blocked by the unresolved `024` schema identity collision. Member 2's invoice-history contract was not copied because it depends on a date-display module that is part of the broader frontend integration and has not been reviewed in this branch.
