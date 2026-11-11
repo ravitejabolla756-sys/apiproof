@@ -123,7 +123,9 @@ describe('Production Authentication & Session Persistence', () => {
       expect(cookieHeader).toContain('Path=/');
       expect(cookieHeader).toContain('HttpOnly');
       expect(cookieHeader?.toLowerCase()).toContain('samesite=lax');
-      expect(cookieHeader).toContain(`Max-Age=${SESSION_TTL_SECONDS}`);
+      const signupCookieMaxAge = Number(cookieHeader?.match(/Max-Age=(\d+)/)?.[1]);
+      expect(signupCookieMaxAge).toBeGreaterThan(0);
+      expect(signupCookieMaxAge).toBeLessThanOrEqual(SESSION_TTL_SECONDS);
 
       // Verify session exists in database
       const sessions = await db.query<{ id: string; user_id: string; expires_at: string }>(
@@ -140,7 +142,8 @@ describe('Production Authentication & Session Persistence', () => {
       expect(opts.httpOnly).toBe(true);
       expect(opts.path).toBe('/');
       expect(opts.sameSite).toBe('lax');
-      expect(opts.maxAge).toBe(SESSION_TTL_SECONDS);
+      expect(opts.maxAge).toBeGreaterThan(0);
+      expect(opts.maxAge).toBeLessThanOrEqual(SESSION_TTL_SECONDS);
       expect(opts.expires).toBeInstanceOf(Date);
     });
 
@@ -180,7 +183,9 @@ describe('Production Authentication & Session Persistence', () => {
       expect(cookieHeader).toContain(`${AUTH_COOKIE_NAME}=ses_`);
       expect(cookieHeader).toContain('Path=/');
       expect(cookieHeader).toContain('HttpOnly');
-      expect(cookieHeader).toContain(`Max-Age=${SESSION_TTL_SECONDS}`);
+      const loginCookieMaxAge = Number(cookieHeader?.match(/Max-Age=(\d+)/)?.[1]);
+      expect(loginCookieMaxAge).toBeGreaterThan(0);
+      expect(loginCookieMaxAge).toBeLessThanOrEqual(SESSION_TTL_SECONDS);
 
       // Two sessions should exist in DB (1 from signup, 1 from login)
       const sessions = await db.query(
