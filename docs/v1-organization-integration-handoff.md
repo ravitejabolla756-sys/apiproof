@@ -40,3 +40,15 @@ No migration IDs, databases, source branches, production resources, payment prov
 The integration branch now includes Member 2's pure response contracts for billing checkout, billing portal, billing summaries, authentication responses, notification preferences, and digest availability. These contracts are schema-independent and explicitly keep unavailable billing/digest capabilities fail-closed. No billing provider, invoice history, notification migration, scheduled job, or external delivery service was activated.
 
 Organization and invitation routes remain blocked by the unresolved `024` schema identity collision. Member 2's invoice-history contract was not copied because it depends on a date-display module that is part of the broader frontend integration and has not been reviewed in this branch.
+
+## Phase 9B invoice and API compatibility
+
+The reviewed schema-independent invoice slice is now integrated:
+
+- `apps/web/src/lib/date-display-contract.ts`
+- `apps/web/src/lib/invoice-history-contract.ts`
+- `tests/invoice-history-contract.test.ts`
+
+It validates server-owned invoice projections, rejects malformed dates and amounts, permits only credential-free HTTPS hosted URLs, and returns an explicit provider-unavailable state. It does not fabricate invoices, activate a provider, or create a route. The backend billing routes remain the authoritative source for subscription state; invoice history remains disconnected until an approved provider-backed adapter exists.
+
+Notification and billing contract tests exercise parser/availability boundaries only. They do not establish workspace authorization, provider lifecycle, payment success, email delivery, digest scheduling, or end-to-end browser behavior.
