@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
-import { getWorkspaceSubscription } from '@/lib/server/billing/service';
-import { getBillingProvider } from '@/lib/server/billing/provider';
+import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from '@/lib/server/workspace-service';
 
 export async function POST(req: Request) {
   const user = await getCurrentUser(req);
@@ -11,21 +9,13 @@ export async function POST(req: Request) {
   }
 
   const workspace = await getDefaultWorkspaceForUser(user.id);
-  const sub = await getWorkspaceSubscription(workspace.id);
-  const provider = getBillingProvider();
-
-  let customerId = sub.customerId;
-  if (!customerId) {
-    const res = await provider.createCustomer(workspace.id, user.email, user.name);
-    customerId = res.customerId;
+  try {
+    await requireWorkspaceCapability(user.id, workspace.id, 'billing:manage');
+  } catch (error) {
+    if (error instanceof Error && error.message === 'WORKSPACE_CAPABILITY_DENIED') {
+      return NextResponse.json({ error: 'Billing access denied.', code: error.message }, { status: 403 });
+    }
+    throw error;
   }
-
-  const origin = req.headers.get('origin') || 'http://localhost:3000';
-  const returnUrl = `${origin}/dashboard/settings`;
-
-  const portal = await provider.createPortalSession(customerId, returnUrl);
-
-  return NextResponse.json({
-    portalUrl: portal.portalUrl,
-  });
+  return NextResponse.json({ error: 'Billing portal is unavailable in this beta.', code: 'BILLING_PORTAL_CONTRACT_PENDING' }, { status: 403 });
 }

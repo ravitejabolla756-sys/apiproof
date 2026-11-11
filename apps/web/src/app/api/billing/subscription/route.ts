@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
+import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from '@/lib/server/workspace-service';
 import { getWorkspaceUsageSummary } from '@/lib/server/billing/service';
 import { PLANS } from '@/lib/server/billing/plans';
 
@@ -11,6 +11,14 @@ export async function GET(req: Request) {
   }
 
   const workspace = await getDefaultWorkspaceForUser(user.id);
+  try {
+    await requireWorkspaceCapability(user.id, workspace.id, 'billing:manage');
+  } catch (error) {
+    if (error instanceof Error && error.message === 'WORKSPACE_CAPABILITY_DENIED') {
+      return NextResponse.json({ error: 'Billing access denied.', code: error.message }, { status: 403 });
+    }
+    throw error;
+  }
   const summary = await getWorkspaceUsageSummary(workspace.id);
 
   return NextResponse.json({
