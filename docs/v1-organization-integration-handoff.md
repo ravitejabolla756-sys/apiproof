@@ -52,3 +52,9 @@ The reviewed schema-independent invoice slice is now integrated:
 It validates server-owned invoice projections, rejects malformed dates and amounts, permits only credential-free HTTPS hosted URLs, and returns an explicit provider-unavailable state. It does not fabricate invoices, activate a provider, or create a route. The backend billing routes remain the authoritative source for subscription state; invoice history remains disconnected until an approved provider-backed adapter exists.
 
 Notification and billing contract tests exercise parser/availability boundaries only. They do not establish workspace authorization, provider lifecycle, payment success, email delivery, digest scheduling, or end-to-end browser behavior.
+
+## Phase 9C invoice API boundary
+
+The integration branch now exposes `GET /api/billing/invoices`. It derives the authenticated user from the session, resolves the requested workspace through `requireWorkspaceMember`, enforces the `billing:manage` capability, and returns the existing provider-unavailable invoice result because `BillingProvider` has no approved invoice retrieval operation. It does not accept a client-supplied customer ID, fabricate records, call an external provider, or expose internal errors.
+
+The route is an authorized unavailable path, not provider-backed invoice functionality. Provider-backed invoices, real download links, payment lifecycle events, and full frontend end-to-end consumption remain pending.
