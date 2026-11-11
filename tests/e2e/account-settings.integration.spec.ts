@@ -22,5 +22,8 @@ test('account settings remains usable at mobile width', async ({ page }) => {
   await signIn(page);
   await page.goto('/dashboard/settings/account', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => {
+    const browser = globalThis as unknown as { document: { documentElement: { scrollWidth: number } }; innerWidth: number };
+    return browser.document.documentElement.scrollWidth <= browser.innerWidth + 1;
+  })).toBe(true);
 });

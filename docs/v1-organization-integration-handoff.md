@@ -84,3 +84,9 @@ The integration branch now contains a bounded Playwright configuration, local de
 The original authenticated fixture race was isolated: the first dashboard navigation could issue `/api/auth` before the login response cookie was available to that navigation, receive `401`, and leave the client layout in `Checking your session…`. The fixture now reloads after the login redirect, verifies `/api/auth` returns `200`, and waits for the checking state to disappear. Direct browser-context checks confirmed `/api/auth` and `/api/account` return `200` with the disposable SQLite session.
 
 The remaining full browser run is not complete evidence: the local Next development server intermittently exceeds the bounded navigation timeout during account-route compilation, and the existing 320px account layout still reports document overflow. No global overflow suppression or authentication bypass was introduced.
+
+## Phase 14 browser reliability and responsive fixes
+
+The focused browser harness now prewarms `/login`, `/dashboard/settings/account`, and `/dashboard/settings` after the local server is ready. Each run uses a unique disposable SQLite database and removes its database/WAL files during teardown, preventing prior profile mutations from contaminating later runs. Assertions use a bounded 30-second expectation timeout; no sleeps or authentication bypasses are used.
+
+The 320px overflow was traced to the dashboard header action group: the search shortcut and GitHub control extended the header to 471px. Mobile padding/gaps were reduced, breadcrumbs can shrink, and the keyboard hint is hidden below the small breakpoint. The repeated focused suite now passes account navigation/profile update/unauthenticated redirect/mobile layout and invoice unavailable/unauthorized cases.
