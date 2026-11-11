@@ -74,3 +74,7 @@ The invoice route now has executable coverage through the real `GET /api/billing
 The integration branch now includes the schema-safe portion of Member 2's account settings flow: authenticated profile retrieval, display-name updates protected by CSRF validation, password changes that preserve the current session while invalidating other sessions, and an account settings page linked from the dashboard navigation. Account deletion remains visibly unavailable pending the approved retention and deletion contract.
 
 OAuth-provider discovery was intentionally not copied because the current integration schema does not contain the Member 2 Google/GitHub account tables and their migration history conflicts remain unresolved. The integrated projection therefore reports the existing local-password account model only; OAuth account support requires the approved migration compatibility decision.
+
+## Phase 12 Playwright harness
+
+The integration branch now contains a bounded Playwright configuration, local development-server setup, disposable SQLite environment variables, and focused account/invoice specs. The harness does not run migrations, connect to PostgreSQL, use production URLs, or require provider credentials. The unauthenticated account-page redirect passed. Authenticated browser journeys did not complete because the local account/session request remained in the page's loading state, and the 320px account page test detected horizontal overflow; these are unresolved browser failures, not passing evidence. Generated traces are excluded from Git.
