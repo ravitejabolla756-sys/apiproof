@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
 import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
 import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
@@ -11,8 +11,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const defaultWorkspace = await getDefaultWorkspaceForUser(user.id);
-  const workspace = await requireWorkspaceCapability(user.id, defaultWorkspace.id, 'billing:manage');
+  let workspace: Awaited<ReturnType<typeof requireWorkspaceCapability>>;
+  try {
+    const defaultWorkspace = await getDefaultWorkspaceForUser(user.id);
+    workspace = await requireWorkspaceCapability(user.id, defaultWorkspace.id, 'billing:manage');
+  } catch (error) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Billing access denied.', code: 'WORKSPACE_BILLING_ACCESS_DENIED' }, { status: 403 });
+    }
+    throw error;
+  }
   const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
   const planId = body.planId;
 

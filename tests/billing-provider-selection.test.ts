@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createSession, createUserAsync } from '../apps/web/src/lib/server/auth.js';
 import { POST as checkoutPost } from '../apps/web/src/app/api/billing/checkout/route.js';
 import { POST as portalPost } from '../apps/web/src/app/api/billing/portal/route.js';
@@ -40,5 +40,32 @@ describe('BILL-02 provider-neutral billing gates', () => {
     expect((await checkout.json() as { error: string }).error).toContain('BILLING_NOT_AVAILABLE');
     expect(portal.status).toBe(403);
     expect(await portal.json()).toEqual({ error: 'Billing portal is unavailable in this beta.', code: billingPortalAvailability.code });
+  });
+
+  it('returns a safe authorization denial for a non-billing workspace member', async () => {
+    await createUserAsync('bill02-owner-member@example.test', 'OriginalPassword123!', 'Billing Owner');
+    const member = await createUserAsync('bill02-member@example.test', 'OriginalPassword123!', 'Billing Member');
+    const memberSession = createSession(member.id);
+    const workspace = await getDatabase().queryOne<{ id: string }>(
+      'SELECT id FROM workspaces WHERE slug LIKE ?', [`bill02-owner-member-%`],
+    );
+    expect(workspace).toBeTruthy();
+    const memberWorkspace = await getDatabase().queryOne<{ id: string }>(
+      'SELECT id FROM workspaces WHERE slug LIKE ?', [`bill02-member-%`],
+    );
+    await getDatabase().execute('DELETE FROM workspaces WHERE id = ?', [memberWorkspace?.id]);
+    await getDatabase().execute(
+      'INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)',
+      ['bill02_member_membership', workspace!.id, member.id, 'member', new Date().toISOString()],
+    );
+
+    const response = await checkoutPost(new Request('http://localhost/api/billing/checkout', {
+      method: 'POST',
+      headers: { cookie: `apiproof_session=${memberSession.id}` },
+      body: JSON.stringify({ planId: 'pro' }),
+    }));
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Billing access denied.', code: 'WORKSPACE_BILLING_ACCESS_DENIED' });
   });
 });
