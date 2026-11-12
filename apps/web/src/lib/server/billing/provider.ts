@@ -123,18 +123,25 @@ export class MockBillingProvider implements BillingProvider {
     const id = typeof record.id === 'string' ? record.id.trim() : '';
     const eventType = typeof record.type === 'string' ? record.type.trim() : typeof record.event_type === 'string' ? record.event_type.trim() : '';
     if (!id || !eventType) throw new Error('MALFORMED_BILLING_EVENT');
-    return {
+    const event: BillingWebhookEvent = {
       id,
       provider: 'mock',
       eventType,
-      customerId: typeof object?.customer === 'string' ? object.customer : typeof record.customer_id === 'string' ? record.customer_id : undefined,
-      subscriptionId: typeof object?.id === 'string' ? object.id : typeof record.subscription_id === 'string' ? record.subscription_id : undefined,
-      status: typeof object?.status === 'string' ? object.status : typeof record.status === 'string' ? record.status : undefined,
-      planId: typeof firstPrice?.nickname === 'string' ? firstPrice.nickname : typeof record.plan_id === 'string' ? record.plan_id : undefined,
-      periodStart: typeof object?.current_period_start === 'number' ? new Date(object.current_period_start * 1000).toISOString() : typeof record.period_start === 'string' ? record.period_start : undefined,
-      periodEnd: typeof object?.current_period_end === 'number' ? new Date(object.current_period_end * 1000).toISOString() : typeof record.period_end === 'string' ? record.period_end : undefined,
       rawPayload: rawBody,
     };
+    const customerId = typeof object?.customer === 'string' ? object.customer : typeof record.customer_id === 'string' ? record.customer_id : undefined;
+    const subscriptionId = typeof object?.id === 'string' ? object.id : typeof record.subscription_id === 'string' ? record.subscription_id : undefined;
+    const status = typeof object?.status === 'string' ? object.status : typeof record.status === 'string' ? record.status : undefined;
+    const planId = typeof firstPrice?.nickname === 'string' ? firstPrice.nickname : typeof record.plan_id === 'string' ? record.plan_id : undefined;
+    const periodStart = typeof object?.current_period_start === 'number' ? new Date(object.current_period_start * 1000).toISOString() : typeof record.period_start === 'string' ? record.period_start : undefined;
+    const periodEnd = typeof object?.current_period_end === 'number' ? new Date(object.current_period_end * 1000).toISOString() : typeof record.period_end === 'string' ? record.period_end : undefined;
+    if (customerId) event.customerId = customerId;
+    if (subscriptionId) event.subscriptionId = subscriptionId;
+    if (status) event.status = status;
+    if (planId) event.planId = planId;
+    if (periodStart) event.periodStart = periodStart;
+    if (periodEnd) event.periodEnd = periodEnd;
+    return event;
   }
 }
 

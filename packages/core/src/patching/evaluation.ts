@@ -11,6 +11,8 @@ import { applyCandidate } from './applicator.js';
 import { syntaxValid } from './transforms.js';
 import { sha256, assertPlainPath } from './policy.js';
 
+const normalizeText = (value: string): string => value.replace(/\r\n?/g, '\n');
+
 export interface PatchCase { id: string; repository: string; changeId: string; mode: string; expectedStatus: CandidatePatch['status']; expectedFiles: string[]; mustContain: string[]; mustRemove: string[]; mustNotTouch: string[]; explanation: string }
 export async function patchCases(): Promise<PatchCase[]> {
   const file = path.join(patchCorpusRoot, 'labels/cases.json'); await assertPlainPath(file);
@@ -46,7 +48,7 @@ export async function evaluatePatchCase(label: PatchCase, registry: RegistryChan
   for (const [file, source] of Object.entries(workspace.snapshot)) {
     texts[file] = await readFile(path.join(workspace.directory, file), 'utf8');
     if (sha256(texts[file]!) !== sha256(source)) changed.push(file);
-    if (sha256(await readFile(path.join(workspace.originalDirectory, file))) !== sha256(source)) originalsUnchanged = false;
+    if (sha256(normalizeText(await readFile(path.join(workspace.originalDirectory, file), 'utf8'))) !== sha256(source)) originalsUnchanged = false;
   }
   changed.push(...(await workspaceFileNames(workspace)).filter((file) => !(file in workspace.snapshot)));
   const supported = label.expectedStatus === 'PATCH_READY_FOR_VALIDATION';

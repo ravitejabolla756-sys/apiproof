@@ -13,7 +13,7 @@ describe('BILL-04 provider-neutral subscription lifecycle', () => {
     ['invoice.payment_failed', 'past_due'],
     ['customer.subscription.deleted', 'canceled'],
   ])('maps documented %s to %s', (eventType, status) => {
-    const decision = reconcileBillingEvent(event(eventType, { status: eventType === 'invoice.payment_succeeded' ? undefined : status, planId: 'pro', subscriptionId: 'sub_1' }));
+    const decision = reconcileBillingEvent(event(eventType, { ...(eventType === 'invoice.payment_succeeded' ? {} : { status }), planId: 'pro', subscriptionId: 'sub_1' }));
     expect(decision).toMatchObject({ action: 'apply', status });
   });
 

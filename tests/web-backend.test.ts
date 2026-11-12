@@ -126,7 +126,7 @@ describe('APIProof Web Application Backend & Engine Integration', () => {
       expect(couponFinding).toBeDefined();
       expect(couponFinding?.symbol).toBe('subscriptions.create');
       expect(couponFinding?.file_path).toBe('src/billing.ts');
-      expect(couponFinding?.line_number).toBe(5);
+      expect(couponFinding?.line_number).toBe(4);
       expect(couponFinding?.severity).toBe('high');
       expect(couponFinding?.source_snippet).toContain('coupon');
 

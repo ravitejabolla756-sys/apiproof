@@ -13,6 +13,10 @@ export function isInside(root: string, candidate: string): boolean {
   return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
 }
 
+function normalizeText(value: string): string {
+  return value.replace(/\r\n?/g, '\n');
+}
+
 /** One bounded snapshot. Never loads tsconfig plugins, resolves dependencies, or invokes project scripts. */
 export class RepositorySnapshot {
   readonly diagnostics: Diagnostic[] = [];
@@ -31,8 +35,9 @@ export class RepositorySnapshot {
       const norm = portable(relativePath);
       if (norm === 'package.json' || norm.endsWith('/package.json')) snapshot.manifests.push(norm);
       if (sourceExtension.test(norm)) {
-        snapshot.sources.set(norm, content);
-        snapshot.hashes.set(norm, createHash('sha256').update(content).digest('hex'));
+        const normalized = normalizeText(content);
+        snapshot.sources.set(norm, normalized);
+        snapshot.hashes.set(norm, createHash('sha256').update(normalized).digest('hex'));
       }
     }
     if (!snapshot.manifests.includes('package.json')) {
@@ -92,9 +97,10 @@ export class RepositorySnapshot {
           return undefined;
         }
         this.bytes += length;
-        const content = buffer.subarray(0, length);
-        this.hashes.set(relative, createHash('sha256').update(content).digest('hex'));
-        return new TextDecoder('utf-8', { fatal: true }).decode(content);
+        const content = new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length));
+        const normalized = normalizeText(content);
+        this.hashes.set(relative, createHash('sha256').update(normalized).digest('hex'));
+        return normalized;
       } finally { await handle.close(); }
     } catch {
       this.warn('UNREADABLE_FILE', 'File could not be read as UTF-8.', relative);

@@ -181,12 +181,12 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     if (uncertain.some((usage) => dimensions.has('resource') && !usage.resource)) reasonCodes.push('RESOURCE_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('api_version') && !usage.apiVersion)) reasonCodes.push('API_VERSION_UNRESOLVED');
     if (uncertain.some((usage) => usage.parameter && change.parameterConditions?.some((condition) => condition.parameter === usage.parameter))) reasonCodes.push('PARAMETER_VALUE_UNRESOLVED');
-    if (matched.length === 0 && uncertain.length === 0) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');
+    if (matched.length === 0 && (!input.completeEvidence || uncertain.length === 0)) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');
   }
   if (reasonCodes.length === 0) reasonCodes.push('INSUFFICIENT_STATIC_EVIDENCE');
   const versionSource = input.versionSource ?? (input.resolvedVersion ? 'lockfile' : input.declaredVersion ? 'package-json' : 'unknown');
   const versionConfidence = input.versionConfidence ?? (input.resolvedVersion ? 'exact' : input.declaredVersion ? 'declared-only' : 'unknown');
-  const primaryUsage = matched[0] ?? uncertain[0];
+  const primaryUsage = reasonCodes.includes('NO_AFFIRMATIVE_USAGE_MATCH') ? undefined : matched[0] ?? uncertain[0];
   const primaryCondition = primaryUsage?.parameter ? change.parameterConditions?.find((condition) => condition.parameter === primaryUsage.parameter) : undefined;
   const usageAssessment = status === 'AFFECTED' ? 'matched' : status === 'NOT_AFFECTED' && matched.length === 0 ? 'not-used' : status === 'NOT_AFFECTED' ? 'not-applicable' : matched.length > 0 || uncertain.length > 0 ? 'uncertain' : 'not-applicable';
   const migrationAvailable = status === 'AFFECTED' && hasExecutableMigrationTemplate(change.changeId);

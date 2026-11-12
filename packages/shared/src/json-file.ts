@@ -28,7 +28,9 @@ export async function readTextFile(file: string, boundary?: string, limit = 262_
         length += read.bytesRead;
       }
       if (length > limit) throw new Error();
-      return new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length));
+      // Canonicalize text before hashing/parsing so identical repository files
+      // produce identical evidence on Windows (CRLF) and Linux (LF).
+      return new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length)).replace(/\r\n?/g, '\n');
     } finally { await handle.close(); }
   } catch { throw new AnalysisError('INVALID_INPUT_FILE', 'Input is unreadable, outside its boundary, or exceeds its byte limit.'); }
 }
