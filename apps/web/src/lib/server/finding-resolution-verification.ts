@@ -5,6 +5,36 @@ import { transitionFinding } from './finding-lifecycle.js';
 export const FINDING_RESOLUTION_CLASSIFICATIONS = ['resolved', 'unresolved', 'regressed', 'ambiguous', 'inconclusive'] as const;
 export type FindingResolutionClassification = typeof FINDING_RESOLUTION_CLASSIFICATIONS[number];
 
+export function hasExactCompletedScanEvidence(params: {
+  scanStatus: string | null | undefined;
+  scanSha: string | null | undefined;
+  expectedMergeSha: string;
+  scanRepositoryId: string | null | undefined;
+  expectedRepositoryId: string;
+}): boolean {
+  return params.scanStatus === 'completed'
+    && params.scanSha === params.expectedMergeSha
+    && params.scanRepositoryId === params.expectedRepositoryId;
+}
+
+export function classifyMergedFindingWithScanEvidence(params: {
+  scanStatus: string | null | undefined;
+  scanSha: string | null | undefined;
+  expectedMergeSha: string;
+  scanRepositoryId: string | null | undefined;
+  expectedRepositoryId: string;
+  findingPresent: boolean;
+  previousState: string | null | undefined;
+  conflictingActiveChange: boolean;
+}): FindingResolutionClassification {
+  return classifyMergedFinding({
+    scanCompleted: hasExactCompletedScanEvidence(params),
+    findingPresent: params.findingPresent,
+    previousState: params.previousState,
+    conflictingActiveChange: params.conflictingActiveChange,
+  });
+}
+
 export function classifyMergedFinding(params: {
   scanCompleted: boolean;
   findingPresent: boolean;
@@ -66,6 +96,20 @@ export async function persistMergedFindingResolutionEvidence(
     findingPreviousStates: Map<string, string | null>;
   },
 ): Promise<void> {
+  const scan = await db.queryOne<{ status: string; sha: string; repository_id: string }>(
+    'SELECT status, sha, repository_id FROM scans WHERE id = ?',
+    [params.scanId],
+  );
+  if (!hasExactCompletedScanEvidence({
+    scanStatus: scan?.status,
+    scanSha: scan?.sha,
+    expectedMergeSha: params.mergeSha,
+    scanRepositoryId: scan?.repository_id,
+    expectedRepositoryId: params.repositoryId,
+  })) {
+    throw new Error('FINDING_RESOLUTION_SCAN_INVALID: completed scan must match the merged repository and commit');
+  }
+
   const rows = await db.query<{
     migration_id: string;
     finding_id: string;
@@ -115,7 +159,7 @@ export async function persistMergedFindingResolutionEvidence(
     const conflictingActiveChange = protectedFindingIds.has(row.finding_id);
     const previousState = params.findingPreviousStates.get(row.finding_id) ?? row.lifecycle_state;
     const classification = classifyMergedFinding({
-      scanCompleted: row.baseline_sha !== params.mergeSha,
+      scanCompleted: true,
       findingPresent,
       previousState,
       conflictingActiveChange,

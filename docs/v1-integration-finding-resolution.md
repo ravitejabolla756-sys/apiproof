@@ -3,7 +3,9 @@
 The integration branch contains the source-grounded resolution classifier and
 the lifecycle transition service. Local tests now cover completed-scan
 absence, persistent findings, regressions, conflicting active changes, stale
-or incomplete scans, and out-of-order evidence.
+or incomplete scans, out-of-order evidence, and an exact scan-evidence guard
+that requires completed status, repository identity, and merged commit SHA
+agreement before resolution can be persisted.
 
 The post-merge worker write path remains disabled. Its source implementation
 depends on all of the following migration-backed objects:
