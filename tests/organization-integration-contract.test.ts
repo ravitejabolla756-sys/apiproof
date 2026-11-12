@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertMemberRevocationResponse,
+  mapMemberRevocationError,
   MEMBER_REMOVED_AUDIT_ACTION,
   MEMBER_REVOCATION_EVENT,
   normalizeMemberRevocationRequest,
@@ -36,6 +37,18 @@ describe('organization integration contract', () => {
       success: true,
       revocation: { requestId: 'mrr_1', eventId: '', status: 'completed', workspaceId: 'ws_1', subjectUserId: 'usr_2', subjectMembershipId: 'wsm_2', idempotencyKey: 'key_1' },
     })).toThrow('INVALID_MEMBER_REVOCATION_RESPONSE');
+  });
+
+  it('maps backend failures to stable, non-sensitive route responses', () => {
+    expect(mapMemberRevocationError(new Error('WORKSPACE_MEMBER_NOT_FOUND'))).toEqual({
+      error: 'Workspace access denied.', code: 'WORKSPACE_ACCESS_DENIED',
+    });
+    expect(mapMemberRevocationError(new Error('FINAL_OWNER_PROTECTED'))).toEqual({
+      error: 'The final workspace owner cannot be removed.', code: 'FINAL_OWNER_PROTECTED',
+    });
+    expect(mapMemberRevocationError(new Error('database password leaked'))).toEqual({
+      error: 'Unable to revoke workspace membership.', code: 'INTERNAL_ERROR',
+    });
   });
 
   it.todo('owner removes an authorized member through the integrated route');

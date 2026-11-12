@@ -27,11 +27,32 @@ export type MemberRevocationErrorCode =
   | 'WORKSPACE_CAPABILITY_DENIED'
   | 'FINAL_OWNER_PROTECTED'
   | 'SELF_REVOCATION_REQUIRES_SEPARATE_FLOW'
-  | 'REVOCATION_IDEMPOTENCY_CONFLICT';
+  | 'REVOCATION_IDEMPOTENCY_CONFLICT'
+  | 'INTERNAL_ERROR';
 
 export interface MemberRevocationApiError {
   error: string;
   code: MemberRevocationErrorCode;
+}
+
+/** Maps server-side revocation failures to the stable DELETE route contract. */
+export function mapMemberRevocationError(error: unknown): MemberRevocationApiError {
+  const code = error instanceof Error ? error.message : '';
+  switch (code) {
+    case 'WORKSPACE_ACCESS_DENIED':
+    case 'WORKSPACE_MEMBER_NOT_FOUND':
+      return { error: 'Workspace access denied.', code: 'WORKSPACE_ACCESS_DENIED' };
+    case 'WORKSPACE_CAPABILITY_DENIED':
+      return { error: 'Workspace member-management access denied.', code };
+    case 'FINAL_OWNER_PROTECTED':
+      return { error: 'The final workspace owner cannot be removed.', code };
+    case 'SELF_REVOCATION_REQUIRES_SEPARATE_FLOW':
+      return { error: 'Leaving a workspace uses a separate workflow.', code };
+    case 'REVOCATION_IDEMPOTENCY_CONFLICT':
+      return { error: 'The idempotency key was already used for another request.', code };
+    default:
+      return { error: 'Unable to revoke workspace membership.', code: 'INTERNAL_ERROR' };
+  }
 }
 
 export function normalizeMemberRevocationRequest(input: MemberRevocationApiRequest): MemberRevocationApiRequest {
