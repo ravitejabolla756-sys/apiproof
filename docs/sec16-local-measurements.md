@@ -137,3 +137,11 @@ Command: `pnpm exec vitest run tests/sec16-load-resilience.test.ts --no-file-par
 | Scan-worker queue metrics | 4.798 | 0.552 | 0.866 | 1.381 | 5,001.56 | 4 |
 
 The run rejected production and configured remote-database environments, used no HTTP client or socket, and generated no external network traffic. These are host-specific local observations only; they are not SLOs, hosted capacity evidence, autoscaling evidence, PostgreSQL evidence, or failure-recovery certification.
+
+## 2026-11-12 error-rate and rate-limit accounting
+
+The harness now reports `errorRate` as `failed / started` and includes a
+deterministic `INJECTED_RATE_LIMITED` scenario. The regression confirms that 4
+of 12 bounded local operations are classified as rate-limited, with an error
+rate of `1/3`, without contacting an HTTP service. This is failure-injection
+evidence only; it is not a hosted 429 or capacity claim.

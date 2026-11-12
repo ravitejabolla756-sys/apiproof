@@ -21,6 +21,7 @@ export interface LoadReport {
   notStarted: number;
   succeeded: number;
   failed: number;
+  errorRate: number;
   durationMs: number;
   throughputPerSecond: number;
   maxInFlight: number;
@@ -44,6 +45,7 @@ const SAFE_ERROR_CODES = new Set([
   'API_HEALTH_FAILED',
   'DATABASE_LOCAL_FAILED',
   'INJECTED_API_FAILURE',
+  'INJECTED_RATE_LIMITED',
   'INJECTED_RETRY_EXHAUSTION',
   'INJECTED_TRANSIENT_FAILURE',
   'OPERATION_ABORTED',
@@ -184,6 +186,7 @@ export async function runLocalLoadScenario(options: LocalLoadScenario): Promise<
     notStarted: options.iterations - started,
     succeeded,
     failed,
+    errorRate: started === 0 ? 0 : failed / started,
     durationMs,
     throughputPerSecond: durationMs === 0 ? 0 : (started / durationMs) * 1_000,
     maxInFlight,

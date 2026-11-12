@@ -27,6 +27,7 @@ function expectHealthyReport(report: LoadReport, expectedIterations: number, con
   expect(report.notStarted).toBe(0);
   expect(report.succeeded).toBe(expectedIterations);
   expect(report.failed).toBe(0);
+  expect(report.errorRate).toBe(0);
   expect(report.maxInFlight).toBeLessThanOrEqual(concurrency);
   expect(report.throughputPerSecond).toBeGreaterThan(0);
   expect(report.latencyMs.p95).toBeGreaterThanOrEqual(report.latencyMs.p50);
@@ -278,10 +279,32 @@ describe('SEC-16 — deterministic local load and resilience harness', () => {
     expect(report.iterations).toBe(8);
     expect(report.succeeded).toBe(4);
     expect(report.failed).toBe(4);
+    expect(report.errorRate).toBe(0.5);
     expect(report.maxInFlight).toBeLessThanOrEqual(2);
     expect(report.errors).toEqual({ INJECTED_API_FAILURE: 2, OPERATION_FAILED: 2 });
     expect(JSON.stringify(report)).not.toContain('secret-must-not-escape');
     expect(JSON.stringify(report)).not.toContain('ABCD1234MUSTNOTESCAPE');
+  });
+
+  it('records a bounded rate-limit failure ratio without contacting a service', async () => {
+    const report = await runLocalLoadScenario({
+      name: 'injected-rate-limit',
+      iterations: 12,
+      concurrency: 3,
+      operation: (iteration) => {
+        if (iteration % 3 === 0) throw new Error('INJECTED_RATE_LIMITED');
+      },
+    });
+
+    expect(report).toMatchObject({
+      iterations: 12,
+      started: 12,
+      succeeded: 8,
+      failed: 4,
+      errorRate: 1 / 3,
+      maxInFlight: 3,
+      errors: { INJECTED_RATE_LIMITED: 4 },
+    });
   });
 
   it('signals cooperative cancellation when an operation exceeds its deadline', async () => {
