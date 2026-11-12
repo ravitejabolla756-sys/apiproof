@@ -15,8 +15,12 @@ export interface DotnetProviderDescriptor extends ProviderDescriptor {
 
 const packageNames = (provider: DotnetProviderDescriptor): string[] => [...new Set([provider.packageName, ...(provider.packageNames ?? [])])];
 const namespaceNames = (provider: DotnetProviderDescriptor): string[] => [...new Set([provider.packageName, ...(provider.namespaceNames ?? [])])];
-const matchesPackage = (value: string, provider: DotnetProviderDescriptor): boolean => packageNames(provider).some((name) => value === name || value.startsWith(`${name}.`));
+const matchesPackage = (value: string, provider: DotnetProviderDescriptor): boolean => packageNames(provider).some((name) => value.toLowerCase() === name.toLowerCase());
 const exactVersion = (value: string | undefined): string | null => value && semver.valid(value) ? value : null;
+
+function xmlAttributes(attributes: string): Map<string, string> {
+  return new Map([...attributes.matchAll(/\b([A-Za-z][A-Za-z0-9_.:-]*)\s*=\s*["']([^"']*)["']/g)].map((match) => [match[1]!.toLowerCase(), match[2]!]))
+}
 
 function filesFrom(input: string | Map<string, string> | Record<string, string>): ReadonlyMap<string, string> {
   if (typeof input === 'string') throw new Error('DOTNET_ANALYZER_REQUIRES_SNAPSHOT_OR_MEMORY_FILES');
@@ -27,8 +31,19 @@ function dependencies(files: ReadonlyMap<string, string>, provider: DotnetProvid
   const found = new Map<string, { manifest: string; range: string }>();
   for (const [file, content] of files) {
     if (!/\.(?:csproj|props|config)$/i.test(file)) continue;
-    for (const match of content.matchAll(/<Package(?:Reference|Version)\s+Include\s*=\s*["']([^"']+)["'][^>]*Version\s*=\s*["']([^"']+)["']/gi)) {
-      if (match[1] && matchesPackage(match[1], provider) && match[2]) found.set(match[1], { manifest: file, range: match[2] });
+    for (const match of content.matchAll(/<Package(?:Reference|Version)\b([^>]*)>/gi)) {
+      const attributes = xmlAttributes(match[1] ?? '');
+      const packageName = attributes.get('include');
+      const range = attributes.get('version');
+      if (packageName && matchesPackage(packageName, provider) && range) found.set(packageName, { manifest: file, range });
+    }
+    if (file.split('/').at(-1)?.toLowerCase() === 'packages.config') {
+      for (const match of content.matchAll(/<package\b([^>]*)>/gi)) {
+        const attributes = xmlAttributes(match[1] ?? '');
+        const packageName = attributes.get('id');
+        const range = attributes.get('version');
+        if (packageName && matchesPackage(packageName, provider) && range) found.set(packageName, { manifest: file, range });
+      }
     }
   }
   return [...found].sort(([a], [b]) => a.localeCompare(b, 'en')).map(([packageName, item]) => {

@@ -18,4 +18,15 @@ describe('C#/.NET normalized discovery foundation', () => {
     expect(result.providerUsed).toBe(false);
     expect(result.usages).toHaveLength(0);
   });
+
+  it('reads legacy packages.config dependencies without treating unrelated packages as provider evidence', async () => {
+    const result = await new CSharpRepositoryAnalyzer().analyze({
+      'packages.config': '<packages><package version="13.0.2" id="Octokit" targetFramework="net8.0" /><package id="Octokit.Extensions" version="1.0.0" /></packages>',
+      'Client.cs': 'using Octokit; class Client { void Run() { var client = new GitHubClient(); } }',
+    }, provider);
+
+    expect(result.dependencies).toHaveLength(1);
+    expect(result.dependencies[0]).toMatchObject({ manifest: 'packages.config', packageName: 'Octokit', versionResolution: { version: '13.0.2', source: 'declared-exact' } });
+    expect(result.providerUsed).toBe(true);
+  });
 });
