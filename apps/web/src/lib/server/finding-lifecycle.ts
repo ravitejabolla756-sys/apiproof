@@ -23,7 +23,7 @@ const ALLOWED_TRANSITIONS: Record<FindingLifecycleState, readonly FindingLifecyc
   resolved_legacy: ['reopened', 'verified_resolved'],
 };
 
-const LEGACY_STATUS_BY_STATE: Record<FindingLifecycleState, string> = {
+export const LEGACY_STATUS_BY_STATE: Record<FindingLifecycleState, string> = {
   open: 'open',
   acknowledged: 'open',
   remediating: 'migration_planned',
@@ -69,6 +69,36 @@ function requireTransition(from: FindingLifecycleState, to: FindingLifecycleStat
   if (!ALLOWED_TRANSITIONS[from].includes(to)) {
     throw new Error(`FINDING_LIFECYCLE_TRANSITION_REJECTED: ${from} -> ${to}`);
   }
+}
+
+export interface FindingTransitionEvaluationInput {
+  currentState: string;
+  targetState: string;
+  findingWorkspaceId: string;
+  requestedWorkspaceId: string;
+  hasResolutionEvidence?: boolean;
+}
+
+/**
+ * Pure lifecycle policy boundary. Persistence callers must still perform the
+ * conditional update and record the idempotency event in one transaction.
+ */
+export function evaluateFindingTransition(input: FindingTransitionEvaluationInput): {
+  changed: boolean;
+  state: FindingLifecycleState;
+  legacyStatus: string;
+} {
+  assertState(input.currentState);
+  assertState(input.targetState);
+  if (input.findingWorkspaceId !== input.requestedWorkspaceId) throw new Error('FINDING_WORKSPACE_MISMATCH');
+  const currentState = input.currentState;
+  const targetState = input.targetState;
+  if (currentState === targetState) return { changed: false, state: currentState, legacyStatus: LEGACY_STATUS_BY_STATE[currentState] };
+  requireTransition(currentState, targetState);
+  if (targetState === 'verified_resolved' && input.hasResolutionEvidence !== true) {
+    throw new Error('FINDING_RESOLUTION_EVIDENCE_REQUIRED: completed scan evidence is required');
+  }
+  return { changed: true, state: targetState, legacyStatus: LEGACY_STATUS_BY_STATE[targetState] };
 }
 
 function requireResolutionEvidence(db: DatabaseAdapter, findingId: string, evidence: FindingLifecycleTransition['evidence']): Promise<void> {
@@ -130,12 +160,18 @@ export async function transitionFinding(db: DatabaseAdapter, transition: Finding
       return { changed: false, state: current };
     }
     if (current === transition.toState) return { changed: false, state: current };
-    requireTransition(current, transition.toState);
+    const decision = evaluateFindingTransition({
+      currentState: current,
+      targetState: transition.toState,
+      findingWorkspaceId: finding.workspace_id,
+      requestedWorkspaceId: transition.workspaceId,
+      hasResolutionEvidence: transition.toState !== 'verified_resolved' || Boolean(transition.evidence?.scanId),
+    });
     if (transition.toState === 'verified_resolved') await requireResolutionEvidence(tx, transition.findingId, transition.evidence);
 
     const updated = await tx.execute(
       'UPDATE findings SET lifecycle_state = ?, status = ? WHERE id = ? AND lifecycle_state = ?',
-      [transition.toState, LEGACY_STATUS_BY_STATE[transition.toState], transition.findingId, current],
+      [decision.state, decision.legacyStatus, transition.findingId, current],
     );
     if (updated.changes !== 1) {
       const latest = await getFinding(tx, transition.findingId);

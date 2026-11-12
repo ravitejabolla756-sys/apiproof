@@ -37,7 +37,10 @@ the same repository. Resolution classification is `resolved`, `unresolved`,
 `regressed`, `ambiguous`, or `inconclusive`; none grants merge or deployment
 authority.
 
-The current tests prove only the vocabulary and pure classification behavior.
-Database transition, tenant authorization, duplicate-event, concurrent-update,
-and exact-commit persistence tests remain blocked until the 025/026 schema and
-ledger are approved.
+The current tests prove the vocabulary, pure classification behavior, and the
+schema-independent transition policy (state graph, legacy-status mapping,
+workspace matching, and resolution-evidence requirement). Database transition,
+tenant authorization, duplicate-event, concurrent-update, and exact-commit
+persistence tests remain blocked until the 025/026 schema and ledger are
+approved. The real persistence service is intentionally not registered with
+the migrator or called by a route in this phase.
