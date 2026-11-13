@@ -164,10 +164,10 @@ export default function SettingsPage() {
           {/* BILLING & PLAN OVERVIEW */}
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+              <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-purple-700" />
                 Subscription & Usage Quotas
-              </h3>
+              </h2>
               {billing && (
                 <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-semibold uppercase tracking-wider">
                   {billing.plan.name} Plan ({billing.subscription.status})
@@ -280,10 +280,10 @@ export default function SettingsPage() {
           <SlackConnectionCard />
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+              <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
                 <Github className="w-4 h-4 text-[#111111]" />
                 GitHub App Integration
-              </h3>
+              </h2>
               {installation && (
                 <span className="px-2.5 py-1 rounded-full bg-[#EEF7F2] text-emerald-800 border border-[#D1EBE0] text-[11px] font-medium flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -341,7 +341,7 @@ export default function SettingsPage() {
             )}
 
             <div className="pt-2 border-t border-[#E8E8E5] space-y-4">
-              <h4 className="font-semibold text-xs text-[#111111]">Safety Policies</h4>
+              <h3 className="font-semibold text-xs text-[#111111]">Safety Policies</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
                   <div>
@@ -366,7 +366,7 @@ export default function SettingsPage() {
         {/* WORKSPACE PROFILE */}
         <div className="lg:col-span-4 space-y-6">
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <h3 className="text-base font-semibold text-[#111111]">Workspace Profile</h3>
+            <h2 className="text-base font-semibold text-[#111111]">Workspace Profile</h2>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
                 <span className="text-[#686868]">Workspace:</span>

@@ -177,7 +177,7 @@ export default function RepositoriesTablePage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4 w-10" />
+                <th scope="col" className="py-3 px-4 w-10"><span className="sr-only">Expand repository</span></th>
                 <th className="py-3 px-4">Repository</th>
                 <th className="py-3 px-4">Branch</th>
                 <th className="py-3 px-4 text-center">Scans</th>
