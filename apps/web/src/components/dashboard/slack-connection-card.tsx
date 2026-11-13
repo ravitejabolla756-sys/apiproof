@@ -3,21 +3,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, MessageSquare, Unplug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { readSlackErrorCode, slackConnectionErrorMessage } from '@/lib/slack-connection-error-contract';
-
-interface SlackStatus { connected: boolean; teamName?: string }
+import { parseSlackConnectResponse, parseSlackStatusResponse, readSlackErrorCode, slackConnectionErrorMessage, type SlackConnectionStatus } from '@/lib/slack-connection-error-contract';
 
 export function SlackConnectionCard() {
-  const [status, setStatus] = useState<SlackStatus | null>(null);
+  const [status, setStatus] = useState<SlackConnectionStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadStatus = useCallback(async () => {
     try {
       const response = await fetch('/api/slack/connection', { cache: 'no-store' });
-      const data = await response.json() as SlackStatus & { code?: unknown };
-      if (!response.ok) throw new Error(slackConnectionErrorMessage(response.status, readSlackErrorCode(data), 'Slack status is unavailable.'));
-      setStatus({ connected: data.connected, teamName: data.teamName });
+      const body = await response.json();
+      const data = parseSlackStatusResponse(body);
+      if (!response.ok || !data) throw new Error(slackConnectionErrorMessage(response.status, readSlackErrorCode(body), 'Slack status is unavailable.'));
+      setStatus(data);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack status is unavailable.');
     }
@@ -30,8 +29,9 @@ export function SlackConnectionCard() {
     setError(null);
     try {
       const response = await fetch('/api/slack/connect', { method: 'POST' });
-      const data = await response.json() as { url?: string; code?: unknown };
-      if (!response.ok || !data.url) throw new Error(slackConnectionErrorMessage(response.status, readSlackErrorCode(data), 'Slack connection could not be started.'));
+      const body = await response.json();
+      const data = parseSlackConnectResponse(body);
+      if (!response.ok || !data) throw new Error(slackConnectionErrorMessage(response.status, readSlackErrorCode(body), 'Slack connection could not be started.'));
       window.location.assign(data.url);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack connection could not be started.');
@@ -44,9 +44,10 @@ export function SlackConnectionCard() {
     setError(null);
     try {
       const response = await fetch('/api/slack/connection', { method: 'DELETE' });
-      const data: unknown = await response.json();
-      if (!response.ok) throw new Error(slackConnectionErrorMessage(response.status, readSlackErrorCode(data), 'Slack could not be disconnected.'));
-      setStatus({ connected: false });
+      const body = await response.json();
+      const data = parseSlackStatusResponse(body);
+      if (!response.ok || !data || data.connected) throw new Error(slackConnectionErrorMessage(response.status, readSlackErrorCode(body), 'Slack could not be disconnected.'));
+      setStatus(data);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Slack could not be disconnected.');
     } finally {
