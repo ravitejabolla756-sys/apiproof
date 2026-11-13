@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from '@/lib/server/workspace-service.js';
+import { requireWorkspaceCapability } from '@/lib/server/workspace-service.js';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -10,7 +11,7 @@ const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const row = await getDatabase().queryOne<{ team_name: string; connected_at: string }>(`
     SELECT team_name, connected_at FROM slack_connections WHERE workspace_id = ? AND status = 'active'
   `, [workspace.id]);
@@ -22,7 +23,7 @@ export async function DELETE(req: Request) {
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   await requireWorkspaceCapability(user.id, workspace.id, 'integration:manage');
   const now = new Date().toISOString();
   const db = getDatabase();

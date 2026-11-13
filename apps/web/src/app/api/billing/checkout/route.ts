@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
-import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
+import { isWorkspaceAuthorizationError, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
+import { resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
 import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
 import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
@@ -20,8 +21,8 @@ export async function POST(req: Request) {
 
   let workspace: Awaited<ReturnType<typeof requireWorkspaceCapability>>;
   try {
-    const defaultWorkspace = await getDefaultWorkspaceForUser(user.id);
-    workspace = await requireWorkspaceCapability(user.id, defaultWorkspace.id, 'billing:manage');
+    const requestedWorkspace = await resolveWorkspaceForRequest(req, user.id);
+    workspace = await requireWorkspaceCapability(user.id, requestedWorkspace.id, 'billing:manage');
   } catch (error) {
     if (isWorkspaceAuthorizationError(error)) {
       return NextResponse.json({ error: 'Billing access denied.', code: 'WORKSPACE_BILLING_ACCESS_DENIED' }, { status: 403 });
