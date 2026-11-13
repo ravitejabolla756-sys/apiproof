@@ -21,6 +21,7 @@ import {
   ChevronRight,
   LogOut,
   UserRound,
+  Bell,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -76,6 +77,7 @@ export function Sidebar() {
 
   const secondaryNav = [
     { name: "Activity", href: "/dashboard/activity", icon: Activity },
+    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
     { name: "Settings", href: "/dashboard/settings", icon: Sliders },
     { name: "Account", href: "/dashboard/settings/account", icon: UserRound },
   ];

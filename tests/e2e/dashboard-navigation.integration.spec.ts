@@ -31,3 +31,14 @@ test('workspace-scoped API rejects an inaccessible workspace without hanging', a
   expect(response.status()).toBe(404);
   await expect(response.json()).resolves.toMatchObject({ code: 'WORKSPACE_ACCESS_DENIED' });
 });
+
+test('authenticated notifications page presents the schema-unavailable state', async ({ page }) => {
+  await signIn(page);
+  const feedResponse = page.waitForResponse((response) => {
+    return response.url().includes('/api/account/notifications/feed') && response.request().method() === 'GET';
+  });
+  await page.goto('/dashboard/notifications', { waitUntil: 'domcontentloaded' });
+  expect((await feedResponse).status()).toBe(503);
+  await expect(page.getByRole('heading', { name: 'Notifications are not available yet' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Review notification preferences' })).toBeVisible();
+});
