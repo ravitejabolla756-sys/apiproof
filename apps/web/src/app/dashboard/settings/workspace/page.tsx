@@ -11,6 +11,7 @@ import { parseWorkspaceSettings, type WorkspaceSettingsProjection } from '../../
 import { toSafeInvitationUrl } from '../../../../lib/external-link-contract.js';
 import { parseCreatedInvitationResponse, parseRevokedInvitationResponse } from '../../../../lib/workspace-invitation-contract.js';
 import { workspaceMemberRevocationAvailability } from '../../../../lib/workspace-member-revocation-contract.js';
+import { workspaceSettingsErrorMessage } from '../../../../lib/workspace-settings-error-contract.js';
 
 type Workspace = WorkspaceSettingsProjection;
 type Member = MemberProjection;
@@ -78,17 +79,17 @@ export default function WorkspaceSettingsPage() {
       const invitationData = parseInvitationCollection(rawInvitationData);
       const auditData = parseAuditPage(rawAuditData);
       const workspaceData = parseWorkspaceSettings(settings);
-      if (!responses[0]!.ok || !workspaceData) throw new Error(settings.error || 'Unable to load workspace settings.');
+      if (!responses[0]!.ok || !workspaceData) throw new Error(workspaceSettingsErrorMessage(responses[0]!.status, settings, 'Unable to load workspace settings.'));
       setWorkspace(workspaceData);
       setName(workspaceData.name);
       setSlug(workspaceData.slug);
       setMembers(responses[1]!.ok && memberData ? memberData : []);
       setInvitations(responses[2]!.ok && invitationData ? invitationData : []);
-      setMembersError(responses[1]!.ok && memberData ? null : (responses[1]!.ok ? 'Unable to load workspace members.' : rawMemberData.error || 'Unable to load workspace members.'));
-      setInvitationsError(responses[2]!.ok && invitationData ? null : (responses[2]!.ok ? 'Unable to load workspace invitations.' : rawInvitationData.error || 'Unable to load workspace invitations.'));
+      setMembersError(responses[1]!.ok && memberData ? null : workspaceSettingsErrorMessage(responses[1]!.status, rawMemberData, 'Unable to load workspace members.'));
+      setInvitationsError(responses[2]!.ok && invitationData ? null : workspaceSettingsErrorMessage(responses[2]!.status, rawInvitationData, 'Unable to load workspace invitations.'));
       setAudit(responses[3]!.ok && auditData ? auditData.events : []);
       setAuditCursor(responses[3]!.ok && auditData ? auditData.nextCursor : null);
-      setAuditError(responses[3]!.ok && auditData ? null : (responses[3]!.ok ? 'Unable to load administrative audit events.' : rawAuditData.error || 'Unable to load administrative audit events.'));
+      setAuditError(responses[3]!.ok && auditData ? null : workspaceSettingsErrorMessage(responses[3]!.status, rawAuditData, 'Unable to load administrative audit events.'));
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load workspace settings.');
     } finally {
@@ -107,7 +108,7 @@ export default function WorkspaceSettingsPage() {
       const response = await fetch(`/api/workspace/audit?cursor=${encodeURIComponent(auditCursor)}`);
       const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
       const data = parseAuditPage(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load more audit events.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load more audit events.'));
       const mergedAudit = mergeAuditEvents(audit, data.events);
       if (!mergedAudit) throw new Error('Unable to load more audit events.');
       setAudit(mergedAudit);
@@ -126,7 +127,7 @@ export default function WorkspaceSettingsPage() {
       const response = await fetch('/api/workspace/audit');
       const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
       const data = parseAuditPage(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load administrative audit events.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load administrative audit events.'));
       setAudit(data.events);
       setAuditCursor(data.nextCursor);
       setAuditError(null);
@@ -143,7 +144,7 @@ export default function WorkspaceSettingsPage() {
       const response = await fetch('/api/workspace/members');
       const rawData = await readJson<{ members?: unknown }>(response);
       const data = parseMemberCollection(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load workspace members.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load workspace members.'));
       setMembers(data);
       setMembersError(null);
     } catch (loadError) {
@@ -159,7 +160,7 @@ export default function WorkspaceSettingsPage() {
       const response = await fetch('/api/workspace/invitations');
       const rawData = await readJson<{ invitations?: unknown }>(response);
       const data = parseInvitationCollection(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to load workspace invitations.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load workspace invitations.'));
       setInvitations(data);
       setInvitationsError(null);
     } catch (loadError) {
@@ -176,7 +177,7 @@ export default function WorkspaceSettingsPage() {
       const response = await fetch('/api/workspace/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, slug }) });
       const rawData = await readJson<{ workspace?: unknown }>(response);
       const data = parseWorkspaceSettings(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to save workspace settings.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to save workspace settings.'));
       setWorkspace(data); setMessage('Workspace settings updated.');
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save workspace settings.');
@@ -191,7 +192,7 @@ export default function WorkspaceSettingsPage() {
       const rawData = await readJson<{ inviteUrl?: unknown }>(response);
       const data = parseCreatedInvitationResponse(rawData);
       const safeInviteUrl = toSafeInvitationUrl(data?.inviteUrl ?? null, window.location.origin);
-      if (!response.ok || !safeInviteUrl) throw new Error(rawData.error || 'Unable to create invitation.');
+      if (!response.ok || !safeInviteUrl) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to create invitation.'));
       setInviteEmail(''); setInviteUrl(safeInviteUrl); setMessage('Invitation created. Copy the link and send it through an approved channel.'); await load();
     } catch (inviteError) {
       setError(inviteError instanceof Error ? inviteError.message : 'Unable to create invitation.');
@@ -205,7 +206,7 @@ export default function WorkspaceSettingsPage() {
       const response = await fetch('/api/workspace/members', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, role }) });
       const rawData = await readJson<{ members?: unknown }>(response);
       const data = parseMemberCollection(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to update member role.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to update member role.'));
       setMembers(data); setMessage('Member role updated.');
     } catch (roleError) {
       setError(roleError instanceof Error ? roleError.message : 'Unable to update member role.');
@@ -226,7 +227,7 @@ export default function WorkspaceSettingsPage() {
         body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, idempotencyKey: key }),
       });
       const rawData = await readJson<{ success?: unknown; error?: string }>(response);
-      if (!response.ok || rawData.success !== true) throw new Error(rawData.error || 'Unable to remove workspace member.');
+      if (!response.ok || rawData.success !== true) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to remove workspace member.'));
       delete revocationKeysRef.current[member.userId];
       setMembers((current) => current.filter((item) => item.userId !== member.userId));
       setMessage(`${member.email} was removed from this workspace.`);
@@ -261,7 +262,7 @@ export default function WorkspaceSettingsPage() {
       });
       const rawData = await readJson<{ error?: string; success?: unknown }>(response);
       const data = parseRevokedInvitationResponse(rawData);
-      if (!response.ok || !data) throw new Error(rawData.error || 'Unable to cancel invitation.');
+      if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to cancel invitation.'));
       setInvitations((current) => current.map((item) => item.id === invitation.id
         ? { ...item, revokedAt: new Date().toISOString() }
         : item));
