@@ -254,49 +254,45 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
   const db = getDatabase();
   const payloadHash = crypto.createHash('sha256').update(event.rawPayload).digest('hex');
   const now = new Date().toISOString();
+  return db.transaction(async (tx) => {
+    // Insert first inside the same transaction as the subscription update. A
+    // unique provider/hash conflict is the authoritative duplicate decision,
+    // which remains safe when two deliveries arrive concurrently.
+    const inserted = await tx.execute(`
+      INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT (provider, payload_hash) DO NOTHING
+    `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
+    if (inserted.changes !== 1) return { success: true, duplicate: true };
 
-  // Replay check
-  const existingEvent = await db.queryOne<{ id: string }>(`
-    SELECT id FROM billing_webhook_events WHERE provider = ? AND payload_hash = ?
-  `, [event.provider, payloadHash]);
+    if (event.customerId) {
+      const sub = await tx.queryOne<{
+        workspace_id: string;
+        status: WorkspaceSubscription['status'];
+        plan_id: string;
+        current_period_end: string;
+      }>(`
+        SELECT workspace_id, status, plan_id, current_period_end
+        FROM workspace_subscriptions WHERE customer_id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}
+      `, [event.customerId]);
 
-  if (existingEvent) {
-    return { success: true, duplicate: true };
-  }
-
-  // Record webhook delivery idempotently
-  await db.execute(`
-    INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
-
-  // Update subscription state based on event
-  if (event.customerId) {
-    const sub = await db.queryOne<{
-      workspace_id: string;
-      status: WorkspaceSubscription['status'];
-      plan_id: string;
-      current_period_end: string;
-    }>(`
-      SELECT workspace_id, status, plan_id, current_period_end FROM workspace_subscriptions WHERE customer_id = ?
-    `, [event.customerId]);
-
-    if (sub) {
-      const decision = reconcileBillingEvent(event, { status: sub.status, planId: sub.plan_id, currentPeriodEnd: sub.current_period_end });
-      if (decision.action === 'apply') {
-        await db.execute(`
-          UPDATE workspace_subscriptions
-          SET status = ?,
-              plan_id = COALESCE(?, plan_id),
-              subscription_id = COALESCE(?, subscription_id),
-              current_period_start = COALESCE(?, current_period_start),
-              current_period_end = COALESCE(?, current_period_end),
-              updated_at = ?
-          WHERE workspace_id = ?
-        `, [decision.status, decision.planId || null, decision.subscriptionId || null, decision.periodStart || null, decision.periodEnd || null, now, sub.workspace_id]);
+      if (sub) {
+        const decision = reconcileBillingEvent(event, { status: sub.status, planId: sub.plan_id, currentPeriodEnd: sub.current_period_end });
+        if (decision.action === 'apply') {
+          await tx.execute(`
+            UPDATE workspace_subscriptions
+            SET status = ?,
+                plan_id = COALESCE(?, plan_id),
+                subscription_id = COALESCE(?, subscription_id),
+                current_period_start = COALESCE(?, current_period_start),
+                current_period_end = COALESCE(?, current_period_end),
+                updated_at = ?
+            WHERE workspace_id = ?
+          `, [decision.status, decision.planId || null, decision.subscriptionId || null, decision.periodStart || null, decision.periodEnd || null, now, sub.workspace_id]);
+        }
       }
     }
-  }
 
-  return { success: true, duplicate: false };
+    return { success: true, duplicate: false };
+  });
 }
