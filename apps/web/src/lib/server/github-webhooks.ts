@@ -1,11 +1,25 @@
 import crypto from 'node:crypto';
-import { getDatabase } from './db/index.js';
+import { getDatabase, type DatabaseAdapter } from './db/index.js';
 import {
   getGitHubInstallationByInstallationId,
   updateGitHubInstallationStatus,
 } from './workspace-service.js';
 import { getConfiguredFounderUserId, isLiveScanProtectionEnabled } from './founder-scan-authorization.js';
 import { enqueueMergedPullRequestScan } from './github-merge-scan.js';
+
+export const GITHUB_WEBHOOK_MAX_ATTEMPTS = 3;
+export const GITHUB_WEBHOOK_LEASE_MS = 5 * 60_000;
+
+async function ensureWebhookDeliverySchema(db: DatabaseAdapter): Promise<void> {
+  if (db.engine === 'postgres') {
+    await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0');
+    return;
+  }
+  const columns = await db.query<{ name: string }>('PRAGMA table_info(github_webhook_deliveries)');
+  if (!columns.some((column) => column.name === 'attempt_count')) {
+    await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0');
+  }
+}
 
 export interface WebhookResult {
   received: boolean;
@@ -75,17 +89,25 @@ export async function claimWebhookDelivery(
   receivedAt: string
 ): Promise<boolean> {
   const db = getDatabase();
+  await ensureWebhookDeliverySchema(db);
+  const receivedMs = Date.parse(receivedAt);
+  const leaseCutoff = Number.isFinite(receivedMs)
+    ? new Date(receivedMs - GITHUB_WEBHOOK_LEASE_MS).toISOString()
+    : new Date(Date.now() - GITHUB_WEBHOOK_LEASE_MS).toISOString();
   const result = await db.execute(`
-    INSERT INTO github_webhook_deliveries (id, event, status, received_at, processed_at)
-    VALUES (?, ?, 'processing', ?, ?)
+    INSERT INTO github_webhook_deliveries (id, event, status, received_at, processed_at, attempt_count)
+    VALUES (?, ?, 'processing', ?, ?, 1)
     ON CONFLICT (id) DO UPDATE SET
       event = excluded.event,
       status = 'processing',
       received_at = excluded.received_at,
       processed_at = excluded.processed_at,
+      attempt_count = github_webhook_deliveries.attempt_count + 1,
       error_message = NULL
-    WHERE github_webhook_deliveries.status = 'failed'
-  `, [deliveryId, event, receivedAt, receivedAt]);
+    WHERE (github_webhook_deliveries.status = 'failed'
+      OR (github_webhook_deliveries.status = 'processing' AND github_webhook_deliveries.processed_at <= ?))
+      AND github_webhook_deliveries.attempt_count < ?
+  `, [deliveryId, event, receivedAt, receivedAt, leaseCutoff, GITHUB_WEBHOOK_MAX_ATTEMPTS]);
   return result.changes === 1;
 }
 
@@ -100,6 +122,7 @@ export async function recordWebhookDelivery(
   errorMessage?: string
 ): Promise<void> {
   const db = getDatabase();
+  await ensureWebhookDeliverySchema(db);
   const processedAt = new Date().toISOString();
 
   await db.execute(`

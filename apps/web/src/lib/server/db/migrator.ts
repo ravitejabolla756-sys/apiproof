@@ -271,9 +271,19 @@ export const migrations: Migration[] = [
           status TEXT NOT NULL,
           received_at TEXT NOT NULL,
           processed_at TEXT NOT NULL,
-          error_message TEXT
+          error_message TEXT,
+          attempt_count INTEGER NOT NULL DEFAULT 0
         )
       `);
+
+      if (db.engine === 'postgres') {
+        await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0');
+      } else {
+        const webhookColumns = await db.query<{ name: string }>('PRAGMA table_info(github_webhook_deliveries)');
+        if (!webhookColumns.some((column) => column.name === 'attempt_count')) {
+          await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0');
+        }
+      }
 
       // 3. Create github_scan_requests
 
