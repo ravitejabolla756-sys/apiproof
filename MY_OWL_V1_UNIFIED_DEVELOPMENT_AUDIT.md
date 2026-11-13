@@ -299,7 +299,7 @@ Inventory counts at the SCAN-12 milestone: Member 1 **8 locally verified, 9 part
 - Final ORG-05/dependent authorization suite: **6 files, 40 executable tests passed, 2 existing todo**.
 - Workspace typecheck: **passed**; targeted ESLint: **passed**; `git diff --check`: **passed**.
 - ORG-05 is now `INTEGRATED_VERIFIED_LOCAL`; PostgreSQL RLS/grants, real concurrency and Member 2 invitation/audit schema compatibility remain pending.
-- Implementation/test commit: pending the focused local commit for this milestone.
+- Implementation/test commit: `11b5db75` (`test: complete ORG-05 local authorization matrix`).
 - Updated counts: Member 1 **10 locally verified, 7 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **11/53**; production verified **0**.
 
 ## Recommended first implementation task
