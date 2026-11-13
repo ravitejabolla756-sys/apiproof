@@ -28,7 +28,8 @@ export async function POST(req: Request) {
     if (isWorkspaceAuthorizationError(error)) {
       return NextResponse.json({ error: 'Billing access denied.', code: 'WORKSPACE_BILLING_ACCESS_DENIED' }, { status: 403, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    throw error;
+    console.error('Billing workspace resolution failed:', { code: 'BILLING_WORKSPACE_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Billing workspace access is temporarily unavailable.', code: 'BILLING_WORKSPACE_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
   const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
   const planId = body.planId;
@@ -49,8 +50,15 @@ export async function POST(req: Request) {
     );
   }
 
-  const sub = await getWorkspaceSubscription(workspace.id);
-  const provider = getBillingProvider();
+  let sub: Awaited<ReturnType<typeof getWorkspaceSubscription>>;
+  let provider: ReturnType<typeof getBillingProvider>;
+  try {
+    sub = await getWorkspaceSubscription(workspace.id);
+    provider = getBillingProvider();
+  } catch {
+    console.error('Billing configuration lookup failed:', { code: 'BILLING_CONFIGURATION_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Billing configuration is temporarily unavailable.', code: 'BILLING_CONFIGURATION_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+  }
   let returnUrl: string;
   try {
     const configuredUrl = validateEnvConfig().config.appUrl;
@@ -74,6 +82,7 @@ export async function POST(req: Request) {
     if (error instanceof BillingProviderUnavailableError || (error instanceof Error && error.message.startsWith('BILLING_PROVIDER_UNAVAILABLE'))) {
       return NextResponse.json({ error: 'Billing is unavailable until an approved provider is configured.', code: 'BILLING_PROVIDER_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    throw error;
+    console.error('Billing checkout failed:', { code: 'BILLING_CHECKOUT_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Checkout is temporarily unavailable.', code: 'BILLING_CHECKOUT_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
