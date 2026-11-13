@@ -349,12 +349,12 @@ export default function SettingsPage() {
               <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
                 <span className="text-[#686868]">Subscription:</span>
                 <span className="font-semibold text-emerald-700 capitalize">
-                  {billing?.subscription.status || 'Active'}
+                  {billing?.subscription.status || 'Unavailable'}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
                 <span className="text-[#686868]">Provider Boundary:</span>
-                <span className="font-mono text-[#111111]">Mock / Stripe (Configurable)</span>
+                <span className="font-mono text-[#111111]">Disabled during beta</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span className="text-[#686868]">AST Engine Version:</span>
