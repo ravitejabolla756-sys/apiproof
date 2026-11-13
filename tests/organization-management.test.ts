@@ -109,6 +109,17 @@ describe('workspace administration', () => {
     expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
   });
 
+  it('rejects cross-workspace audit reads at the HTTP boundary', async () => {
+    const owner = await createUserWithSession('audit-route-owner@example.test', 'OwnerPassword123!', 'Audit Route Owner');
+    const otherOwner = await createUserWithSession('audit-route-other@example.test', 'OtherPassword123!', 'Audit Route Other');
+    const otherWorkspace = await getDefaultWorkspaceForUser(otherOwner.user.id);
+    const response = await auditRoute(new Request(`https://apiproof.test/api/workspace/audit?workspaceId=${otherWorkspace.id}`, {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ code: 'WORKSPACE_ACCESS_DENIED' });
+  });
+
   it('keeps workspace administration reads private and non-cacheable', async () => {
     const owner = await createUserWithSession('admin-cache@example.test', 'OwnerPassword123!', 'Admin Cache');
     const request = () => new Request('https://apiproof.test/api/workspace/settings', { headers: { cookie: `apiproof_session=${owner.session.id}` } });
