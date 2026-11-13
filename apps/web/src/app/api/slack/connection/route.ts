@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceMember } from '@/lib/server/workspace-service.js';
+import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from '@/lib/server/workspace-service.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -23,7 +23,7 @@ export async function DELETE(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
   const workspace = await getDefaultWorkspaceForUser(user.id);
-  await requireWorkspaceMember(user.id, workspace.id);
+  await requireWorkspaceCapability(user.id, workspace.id, 'integration:manage');
   const now = new Date().toISOString();
   const db = getDatabase();
   const result = await db.execute(`UPDATE slack_connections SET status = 'revoked', token_ciphertext = '', token_iv = '', token_auth_tag = '', updated_at = ?

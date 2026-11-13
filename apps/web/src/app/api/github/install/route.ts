@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getGitHubAppInstallUrl } from '@/lib/server/github';
 import {
   getDefaultWorkspaceForUser,
-  requireWorkspaceMember,
+  requireWorkspaceCapability,
 } from '@/lib/server/workspace-service';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 import { evaluateVerifiedUserPolicy, loadVerifiedUserPolicy, verifiedUserFailure } from '@/lib/server/verified-user-policy.js';
@@ -27,13 +27,14 @@ export async function GET(req: Request) {
   let workspaceId: string;
   if (requestedWorkspaceId) {
     try {
-      const ws = await requireWorkspaceMember(user.id, requestedWorkspaceId);
+      const ws = await requireWorkspaceCapability(user.id, requestedWorkspaceId, 'integration:manage');
       workspaceId = ws.id;
     } catch {
       return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'FORBIDDEN' }, { status: 403 });
     }
   } else {
     const defaultWs = await getDefaultWorkspaceForUser(user.id);
+    await requireWorkspaceCapability(user.id, defaultWs.id, 'integration:manage');
     workspaceId = defaultWs.id;
   }
 

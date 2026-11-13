@@ -6,7 +6,7 @@ import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
   getDefaultWorkspaceForUser,
-  requireWorkspaceMember,
+  requireWorkspaceCapability,
   getWorkspaceGitHubInstallation,
 } from '@/lib/server/workspace-service.js';
 import {
@@ -71,10 +71,11 @@ export async function POST(req: Request) {
     // Resolve target workspace: if provided, verify membership; else use default
     let workspaceId: string;
     if (body.workspaceId && typeof body.workspaceId === 'string') {
-      const ws = await requireWorkspaceMember(user.id, body.workspaceId);
+      const ws = await requireWorkspaceCapability(user.id, body.workspaceId, 'repository:write');
       workspaceId = ws.id;
     } else {
       const defaultWs = await getDefaultWorkspaceForUser(user.id);
+      await requireWorkspaceCapability(user.id, defaultWs.id, 'repository:write');
       workspaceId = defaultWs.id;
     }
 
