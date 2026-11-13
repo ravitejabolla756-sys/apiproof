@@ -30,7 +30,11 @@ const SECRET_OR_PII_KEY = /(?:authorization|cookie|email|ip|name|password|secret
 const MAX_ATTRIBUTE_LENGTH = 160;
 
 function safeString(value: string): string {
-  return value.length > MAX_ATTRIBUTE_LENGTH ? `${value.slice(0, MAX_ATTRIBUTE_LENGTH)}…` : value;
+  const redacted = value.replace(
+    /((?:authorization|cookie|password|secret|token|api[_-]?key)\s*[=:]\s*)([^\s&#,;]+)/gi,
+    '$1[REDACTED]',
+  );
+  return redacted.length > MAX_ATTRIBUTE_LENGTH ? `${redacted.slice(0, MAX_ATTRIBUTE_LENGTH)}…` : redacted;
 }
 
 /** Keep telemetry bounded and free of credentials, tenant identifiers, and PII. */

@@ -10,19 +10,21 @@ describe('SEC-11 local observability contract', () => {
   it('redacts PII, credentials, unknown fields, and bounds strings', () => {
     const attributes = redactTelemetryAttributes({
       code: 'WORKER_FAILED',
-      route: '/api/internal/scan-worker',
+      route: '/api/internal/scan-worker?token=route-secret',
       status: 500,
       workspace_id: 'workspace-secret',
       email: 'person@example.test',
       authorization: 'Bearer secret',
-      reason: 'x'.repeat(300),
+      reason: `token=route-secret ${'x'.repeat(300)}`,
     });
 
-    expect(attributes).toMatchObject({ code: 'WORKER_FAILED', route: '/api/internal/scan-worker', status: 500 });
+    expect(attributes).toMatchObject({ code: 'WORKER_FAILED', route: '/api/internal/scan-worker?token=[REDACTED]', status: 500 });
+    expect(String(attributes.route)).not.toContain('route-secret');
     expect(attributes).not.toHaveProperty('workspace_id');
     expect(attributes).not.toHaveProperty('email');
     expect(attributes).not.toHaveProperty('authorization');
     expect(String(attributes.reason).length).toBeLessThanOrEqual(161);
+    expect(String(attributes.reason)).not.toContain('route-secret');
   });
 
   it('records only bounded local counters and sanitized observations', () => {

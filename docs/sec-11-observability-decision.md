@@ -4,7 +4,7 @@
 
 The integration branch now contains a provider-neutral telemetry boundary with four bounded metric names: request failures, scan queue lag, billing errors, and worker failures. `LocalTelemetry` is a disposable in-memory collector for tests and local diagnostics. `getTelemetrySink()` returns a no-op sink unless a caller explicitly supplies a sink; no vendor SDK, network exporter, dashboard, or production hook is enabled.
 
-Telemetry attributes are allowlisted and redact credential/PII-like keys, including authorization, cookies, email, IP, user, workspace, tenant, token, secret, URL, and credential fields. String values are bounded. The local collector does not persist data across processes.
+Telemetry attributes are allowlisted and redact credential/PII-like keys, including authorization, cookies, email, IP, user, workspace, tenant, token, secret, URL, and credential fields. String values are bounded, and token/password/secret-style key-value content is redacted even when it appears inside an otherwise allowed route or reason value. The local collector does not persist data across processes.
 
 Existing route errors remain code-oriented and sanitized. This module does not replace existing authorization, migration, health, queue, or billing behavior and does not claim hosted monitoring coverage.
 
