@@ -4,7 +4,8 @@ import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { buildCompatibilityProofSnapshot } from '@apiproof/shared';
 import { getCurrentUser } from '../../../lib/server/auth.js';
 import { getDatabase } from '../../../lib/server/db/index.js';
-import { resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
+import { OrganizationServiceError } from '../../../lib/server/organization-service.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
 import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
 import { parseBoundedProductizationProjection } from '../../../lib/server/productization-persistence.js';
@@ -42,14 +43,22 @@ interface FindingRow {
   pull_request_created_at: string | null;
 }
 
-const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
+const privateNoStore = PRIVATE_NO_STORE_HEADERS;
 
 /** Compatibility snapshot for only the authenticated user's active workspace. */
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateNoStore });
 
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
+  let workspace: Awaited<ReturnType<typeof resolveWorkspaceForRequest>>;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    if (error instanceof OrganizationServiceError || (error instanceof Error && error.message.includes('access denied'))) {
+      return organizationErrorResponse(error);
+    }
+    return NextResponse.json({ error: 'Compatibility data is temporarily unavailable.', code: 'COMPATIBILITY_WORKSPACE_UNAVAILABLE' }, { status: 503, headers: privateNoStore });
+  }
   const db = getDatabase();
   const repositories = await db.query<RepositoryRow>(`
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch,
