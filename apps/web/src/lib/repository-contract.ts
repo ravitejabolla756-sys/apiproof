@@ -10,6 +10,12 @@ export interface RepositoryDetail {
   created_at: string;
 }
 
+export interface RepositoryListRecord extends RepositoryDetail {
+  findings_count: number;
+  scans_count: number;
+  last_scan_sha: string | null;
+}
+
 export interface ScanRecord {
   id: string;
   sha: string;
@@ -74,6 +80,18 @@ function parseRepository(value: unknown): RepositoryDetail | undefined {
     : undefined;
 }
 
+function parseRepositoryListRecord(value: unknown): RepositoryListRecord | undefined {
+  const repository = parseRepository(value);
+  const row = record(value);
+  if (!repository || !row) return undefined;
+  const findingsCount = nonNegativeInteger(row.findings_count);
+  const scansCount = nonNegativeInteger(row.scans_count);
+  const lastScanSha = nullableText(row.last_scan_sha, 256);
+  return findingsCount !== undefined && scansCount !== undefined && lastScanSha !== undefined
+    ? { ...repository, findings_count: findingsCount, scans_count: scansCount, last_scan_sha: lastScanSha }
+    : undefined;
+}
+
 function parseScan(value: unknown): ScanRecord | undefined {
   const row = record(value);
   if (!row) return undefined;
@@ -120,6 +138,13 @@ export function parseRepositoryDetailResponse(value: unknown): { repository: Rep
   return repository && scans.every((scan): scan is ScanRecord => Boolean(scan)) && findings.every((finding): finding is FindingRecord => Boolean(finding))
     ? { repository, scans, findings }
     : undefined;
+}
+
+export function parseRepositoryListResponse(value: unknown): RepositoryListRecord[] | undefined {
+  const payload = record(value);
+  if (!payload || !Array.isArray(payload.repositories) || payload.repositories.length > 2048) return undefined;
+  const repositories = payload.repositories.map(parseRepositoryListRecord);
+  return repositories.every((repository): repository is RepositoryListRecord => Boolean(repository)) ? repositories : undefined;
 }
 
 export function parseScanActionResponse(value: unknown): number | undefined {

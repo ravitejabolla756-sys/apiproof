@@ -16,24 +16,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
-
-interface RepositoryRecord {
-  id: string;
-  owner: string;
-  name: string;
-  full_name: string;
-  github_repository_id: string;
-  default_branch: string;
-  status: string;
-  last_scan_at: string | null;
-  created_at: string;
-  findings_count: number;
-  scans_count: number;
-  last_scan_sha: string | null;
-}
+import { parseRepositoryListResponse, parseScanActionResponse, type RepositoryListRecord } from "@/lib/repository-contract";
 
 export default function RepositoriesTablePage() {
-  const [repositories, setRepositories] = useState<RepositoryRecord[]>([]);
+  const [repositories, setRepositories] = useState<RepositoryListRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scanningRepoId, setScanningRepoId] = useState<string | null>(null);
@@ -50,9 +36,8 @@ export default function RepositoriesTablePage() {
     try {
       const res = await fetch("/api/repositories");
       if (!res.ok) throw new Error("Repository list is temporarily unavailable.");
-      const json = await res.json() as { repositories?: unknown };
-      if (!Array.isArray(json.repositories)) throw new Error("Repository list returned an invalid response.");
-      const nextRepositories = json.repositories as RepositoryRecord[];
+      const nextRepositories = parseRepositoryListResponse(await res.json());
+      if (!nextRepositories) throw new Error("Repository list returned an invalid response.");
       setRepositories(nextRepositories);
       const firstRepository = nextRepositories[0];
       if (firstRepository && !expandedRepo) {
@@ -80,15 +65,16 @@ export default function RepositoriesTablePage() {
       const res = await fetch(`/api/repositories/${repoId}/scan`, {
         method: "POST",
       });
-      const data = await res.json();
+      const findingsCount = parseScanActionResponse(await res.json());
 
       if (!res.ok) {
-        throw new Error(data.error || "Scan execution failed.");
+        throw new Error("Scan execution failed.");
       }
+      if (findingsCount === undefined) throw new Error("Scan returned an invalid response.");
 
       setScanMessage({
         id: repoId,
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: `Scan complete: ${findingsCount} findings recorded.`,
       });
       await loadRepositories();
     } catch (err: unknown) {
