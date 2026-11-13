@@ -23,7 +23,7 @@ import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@ap
 import type { ApiProvider } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
-import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
+import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, SCAN_WORKER_MAX_ATTEMPTS, withSqliteClaimLock } from './scan-worker-state.js';
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
@@ -123,7 +123,9 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
       const recoveryScope = buildWorkerScope('postgres', options, getConfiguredFounderUserId(), 3);
       await tx.execute(`
         UPDATE github_scan_requests
-        SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
+        SET status = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+            last_error_category = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'WORKER_LEASE_EXPIRED' ELSE last_error_category END,
+            claimed_at = NULL, lease_expires_at = NULL
         WHERE status = 'processing' AND (
           (lease_expires_at IS NOT NULL AND lease_expires_at < $1) OR
           (lease_expires_at IS NULL AND created_at < $2)
@@ -165,7 +167,9 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
     // Recover only expired leases. created_at is not a valid worker lease.
     await tx.execute(`
       UPDATE github_scan_requests
-      SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
+      SET status = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+          last_error_category = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'WORKER_LEASE_EXPIRED' ELSE last_error_category END,
+          claimed_at = NULL, lease_expires_at = NULL
       WHERE status = 'processing' AND (
           (lease_expires_at IS NOT NULL AND lease_expires_at < ?) OR
           (lease_expires_at IS NULL AND created_at < ?)
