@@ -63,7 +63,7 @@ Status describes the combined integration branch unless explicitly stated otherw
 | SEC-09 | INTEGRATED_VERIFIED_LOCAL | Dependency policy/audit tooling and locked dependency checks. | Integration contains dependency policy; local focused dependency test passed. | Current registry advisory refresh and hosted CI execution. | Run the current advisory scan with approved network access and record findings. |
 | SEC-15 | INTEGRATED_PARTIAL | Hardened workflow and workflow-contract tests. | Workflow files are currently dirty in integration; local contract evidence exists. | GitHub-hosted run, permissions, branch protection and fork-secret review. | Review the dirty workflow diff, validate YAML, then run hosted CI after approval. |
 | SEC-16 | INTEGRATED_VERIFIED_LOCAL | Bounded load/resilience harness and deterministic failure scenarios. | Commit `0fef5899`; focused suite included 13/13 files with 100 passed tests and 18 todo. | Staging capacity, autoscaling and recovery evidence. | Execute an owner-approved staging rehearsal with bounded workload. |
-| SCAN-12 | INTEGRATED_PARTIAL | Multi-language scanner/detector work and C# package fix `6383601c`. | Scanner code is present, but no fresh dedicated scanner-only run was completed in this audit. | Full fixture matrix, path-safety proof and schema-backed persistence. | Run scanner positive/negative/path-safety suites and record evidence. |
+| SCAN-12 | INTEGRATED_VERIFIED_LOCAL | Multi-language scanner/detector work and C# package fix `6383601c`. | Focused scanner/language/reliability suites passed 24/24 plus repository-identity safety 5/5. | Live repository breadth, schema-backed persistence and production-scale evidence. | Preserve local gate and obtain approved disposable-PostgreSQL/live-repository evidence. |
 | PROV-05 | INTEGRATED_VERIFIED_LOCAL | Provider identifiers, conservative compatibility and source-provenance rules. | Commit `c818d793`; local provider-focused evidence exists. | Fresh live provider sources and stale-source acceptance. | Run current compatibility/provenance suite and arrange approved refresh. |
 | IMP-09 | INTEGRATED_VERIFIED_LOCAL | Finding lifecycle and resolution guards. | Commit `d295787e`; finding lifecycle tests passed in focused suite. | Real schema-compatible persistence and independent scan evidence. | Validate on an approved disposable PostgreSQL schema. |
 | PR-07 | INTEGRATED_VERIFIED_LOCAL | Signed webhook verification, deduplication and event classification. | Commit `2d5f1d41`; webhook tests passed locally. | GitHub App permissions, live signed delivery and hosted callback evidence. | Obtain an isolated GitHub App sandbox and run signed delivery acceptance. |
@@ -273,6 +273,15 @@ Verified and committed the reviewed CI slice:
 The complete current local Playwright directory subsequently passed **9/9**: three account-settings tests, four dashboard navigation/authorization tests, and two invoice-history tests. The run used one worker, local development server, disposable SQLite and a test-only seed password. Next.js again rewrote `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; those generated changes were restored and remain uncommitted nowhere in the final status.
 
 The declared production dependency audit `pnpm audit:prod` completed successfully with **No known vulnerabilities found**. This is current lockfile/registry evidence, not proof of hosted CI or dependency policy enforcement.
+
+## 2026-11-13 milestone — SCAN-12 local acceptance
+
+- `tests/scanner-accuracy-benchmark.test.ts`, `tests/multi-language-analyzer.test.ts`, `tests/multi-language-compatibility-proof.test.ts`, `tests/language-detection.test.ts`, `tests/language-intelligence-foundation.test.ts`, `tests/normalized-scan-ir.test.ts`, `tests/scan-discovery-evidence.test.ts`, and `tests/task3-scan-reliability.test.ts`: **8 files, 24 tests passed**.
+- `tests/task7-repository-identity.test.ts`: **5 tests passed** with `APIPROOF_LOCAL_SEED_PASSWORD=scan-local-test-only`.
+- The first combined invocation was incomplete because the required local seed password was absent; it was not counted as a pass. The isolated rerun completed successfully.
+- SCAN-12 is now `INTEGRATED_VERIFIED_LOCAL`; it remains unverified for live repositories, production-scale workloads and schema-backed persistence.
+
+Current inventory counts after this milestone: Member 1 **8 locally verified, 9 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **9/53**; production verified **0**.
 
 ## Recommended first implementation task
 
