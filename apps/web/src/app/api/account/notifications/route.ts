@@ -10,6 +10,7 @@ import {
 } from '@/lib/server/notification-preferences-service.js';
 import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 function unavailableResponse() {
   return NextResponse.json(
@@ -34,6 +35,8 @@ export async function PATCH(req: Request) {
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'authenticated_account');
+  if (verificationFailure) return verificationFailure;
   try {
     const body = await req.json() as { updates?: unknown };
     if (!Array.isArray(body.updates) || body.updates.some((item) => !item || typeof item !== 'object' || typeof (item as Record<string, unknown>).category !== 'string' || typeof (item as Record<string, unknown>).channel !== 'string' || typeof (item as Record<string, unknown>).enabled !== 'boolean')) {
