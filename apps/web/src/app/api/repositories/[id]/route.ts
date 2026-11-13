@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -53,6 +54,8 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   let repo;
   try {

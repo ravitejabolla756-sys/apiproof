@@ -12,6 +12,7 @@ import {
 import { checkWorkspaceLimit, recordWorkspaceUsage } from '@/lib/server/billing/service';
 import { assertFounderScanAuthorization, FounderScanAuthorizationError } from '@/lib/server/founder-scan-authorization';
 import { safeFailureCode } from '@/lib/server/productization-persistence';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const csrf = assertCsrfProtection(req);
@@ -29,6 +30,8 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   try {
     assertFounderScanAuthorization(user.id);
