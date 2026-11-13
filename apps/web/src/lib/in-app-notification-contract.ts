@@ -10,6 +10,12 @@ export type InAppNotification = {
   href: string | null;
 };
 
+export type InAppNotificationFeed = {
+  notifications: InAppNotification[];
+  status: 'projection' | 'unavailable';
+  readState: 'available' | 'unavailable';
+};
+
 export const inAppNotificationAvailability = {
   status: 'unavailable' as const,
   code: 'IN_APP_NOTIFICATIONS_SCHEMA_PENDING' as const,
@@ -58,4 +64,16 @@ export function parseInAppNotifications(payload: unknown): InAppNotification[] |
     });
   }
   return notifications;
+}
+
+/**
+ * Parse the complete server-owned feed envelope without implying that a
+ * projection has durable read-state support.
+ */
+export function parseInAppNotificationFeed(payload: unknown): InAppNotificationFeed | null {
+  const notifications = parseInAppNotifications(payload);
+  if (!notifications || !isRecord(payload)) return null;
+  const status = payload.status === 'unavailable' ? 'unavailable' : 'projection';
+  const readState = payload.readState === 'available' ? 'available' : 'unavailable';
+  return { notifications, status, readState };
 }
