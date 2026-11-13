@@ -277,21 +277,27 @@ export async function acceptWorkspaceInvitation(userId: string, token: string): 
   const db = getDatabase();
   const user = await db.queryOne<{ email: string }>('SELECT email FROM users WHERE id = ?', [userId]);
   if (!user) throw new OrganizationServiceError('Invitation recipient account was not found.', 'INVITATION_NOT_FOUND');
-  const invitation = await db.queryOne<{ id: string; workspace_id: string; email: string; role: WorkspaceRole; expires_at: string; accepted_at: string | null; revoked_at: string | null }>(
-    'SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at FROM workspace_invitations WHERE token_hash = ?', [hashToken(token)],
-  );
-  if (!invitation) throw new OrganizationServiceError('Invitation not found.', 'INVITATION_NOT_FOUND');
-  if (invitation.accepted_at || invitation.revoked_at) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
-  if (Date.parse(invitation.expires_at) <= Date.now()) throw new OrganizationServiceError('Invitation has expired.', 'INVITATION_EXPIRED');
-  if (cleanEmail(user.email) !== cleanEmail(invitation.email)) throw new OrganizationServiceError('Sign in with the invited email address to accept this invitation.', 'INVITATION_EMAIL_MISMATCH');
+  const tokenHash = hashToken(token);
+  let acceptedWorkspaceId: string;
   try {
-    await db.transaction(async (tx) => {
+    acceptedWorkspaceId = await db.transaction(async (tx) => {
+      const invitation = await tx.queryOne<{ id: string; workspace_id: string; email: string; role: WorkspaceRole; expires_at: string; accepted_at: string | null; revoked_at: string | null }>(
+        `SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at
+         FROM workspace_invitations WHERE token_hash = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
+        [tokenHash],
+      );
+      if (!invitation) throw new OrganizationServiceError('Invitation not found.', 'INVITATION_NOT_FOUND');
+      if (invitation.accepted_at || invitation.revoked_at) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
+      if (Date.parse(invitation.expires_at) <= Date.now()) throw new OrganizationServiceError('Invitation has expired.', 'INVITATION_EXPIRED');
+      if (cleanEmail(user.email) !== cleanEmail(invitation.email)) throw new OrganizationServiceError('Sign in with the invited email address to accept this invitation.', 'INVITATION_EMAIL_MISMATCH');
+
       const existingMember = await tx.queryOne('SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?', [invitation.workspace_id, userId]);
       if (existingMember) throw new OrganizationServiceError('That account is already a workspace member.', 'ALREADY_A_MEMBER');
       const update = await tx.execute('UPDATE workspace_invitations SET accepted_at = ? WHERE id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitation.id]);
       if (update.changes !== 1) throw new OrganizationServiceError('Invitation has already been used or revoked.', 'INVITATION_ALREADY_USED');
       await tx.execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', [id('wsm'), invitation.workspace_id, userId, invitation.role, new Date().toISOString()]);
       await recordAudit(tx, invitation.workspace_id, userId, 'invitation.accepted', 'invitation', invitation.id);
+      return invitation.workspace_id;
     });
   } catch (error) {
     if (String(error).toLowerCase().includes('unique') && String(error).toLowerCase().includes('workspace_members')) {
@@ -299,7 +305,7 @@ export async function acceptWorkspaceInvitation(userId: string, token: string): 
     }
     throw error;
   }
-  return requireWorkspaceMember(userId, invitation.workspace_id);
+  return requireWorkspaceMember(userId, acceptedWorkspaceId);
 }
 
 export async function listWorkspaceAuditEvents(userId: string, workspaceId: string): Promise<WorkspaceAuditEvent[]> {
