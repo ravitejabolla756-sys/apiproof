@@ -40,8 +40,34 @@ export interface GitHubLoginResult {
 
 interface GitHubTokenResponse { access_token?: string; error?: string }
 interface GitHubUserResponse { id?: number; login?: string; name?: string | null; email?: string | null }
-interface GitHubEmailResponse { email?: string; primary?: boolean; verified?: boolean }
+interface GitHubEmailResponse { email: string; primary: boolean; verified: boolean }
 interface GitHubStateRow { return_to: string; code_verifier: string; expires_at: string; consumed_at: string | null }
+
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseGitHubTokenResponse(value: unknown): GitHubTokenResponse {
+  if (!record(value)) return {};
+  return {
+    ...(typeof value.access_token === 'string' && value.access_token.length <= 16_384 ? { access_token: value.access_token } : {}),
+    ...(typeof value.error === 'string' && value.error.length <= 256 ? { error: value.error } : {}),
+  };
+}
+
+function parseGitHubUserResponse(value: unknown): GitHubUserResponse | null {
+  if (!record(value) || !Number.isSafeInteger(value.id) || typeof value.login !== 'string' || value.login.length === 0 || value.login.length > 255) return null;
+  return { id: Number(value.id), login: value.login, name: value.name === null || typeof value.name === 'string' ? value.name : undefined, email: value.email === null || typeof value.email === 'string' ? value.email : undefined };
+}
+
+function parseGitHubEmailResponse(value: unknown): GitHubEmailResponse[] | null {
+  if (!Array.isArray(value) || value.length > 256) return null;
+  const emails = value.map((entry) => {
+    if (!record(entry) || typeof entry.email !== 'string' || entry.email.length === 0 || entry.email.length > 512 || typeof entry.primary !== 'boolean' || typeof entry.verified !== 'boolean') return null;
+    return { email: entry.email, primary: entry.primary, verified: entry.verified };
+  });
+  return emails.every((entry): entry is GitHubEmailResponse => entry !== null) ? emails : null;
+}
 
 function hashOpaqueValue(value: string): string {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -139,12 +165,12 @@ async function exchangeGitHubAuthorizationCode(config: GitHubLoginOAuthConfig, c
     body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, code, code_verifier: codeVerifier, redirect_uri: config.redirectUri }),
     signal: AbortSignal.timeout(10_000),
   });
-  const payload = await response.json().catch(() => ({})) as GitHubTokenResponse;
+  const payload = parseGitHubTokenResponse(await response.json().catch(() => null));
   if (!response.ok || !payload.access_token) throw new Error(payload.error === 'access_denied' ? 'GITHUB_OAUTH_DENIED' : 'GITHUB_OAUTH_TOKEN_EXCHANGE_FAILED');
   return payload.access_token;
 }
 
-async function githubApi<T>(endpoint: string, accessToken: string): Promise<T> {
+async function githubApi(endpoint: string, accessToken: string): Promise<unknown> {
   const response = await fetch(endpoint, {
     headers: {
       Accept: 'application/vnd.github+json',
@@ -154,14 +180,16 @@ async function githubApi<T>(endpoint: string, accessToken: string): Promise<T> {
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) throw new Error('GITHUB_OAUTH_PROFILE_FETCH_FAILED');
-  return await response.json() as T;
+  return await response.json();
 }
 
 async function fetchGitHubIdentity(accessToken: string): Promise<GitHubLoginIdentity> {
-  const profile = await githubApi<GitHubUserResponse>(GITHUB_USER_ENDPOINT, accessToken);
+  const profile = parseGitHubUserResponse(await githubApi(GITHUB_USER_ENDPOINT, accessToken));
+  if (!profile) throw new Error('GITHUB_OAUTH_PROFILE_INVALID');
   if (!Number.isSafeInteger(profile.id) || profile.id! <= 0 || !profile.login || profile.login.length > 255) throw new Error('GITHUB_OAUTH_PROFILE_INVALID');
 
-  const emails = await githubApi<GitHubEmailResponse[]>(GITHUB_EMAILS_ENDPOINT, accessToken);
+  const emails = parseGitHubEmailResponse(await githubApi(GITHUB_EMAILS_ENDPOINT, accessToken));
+  if (!emails) throw new Error('GITHUB_OAUTH_EMAIL_INVALID');
   const verifiedEmail = emails.find((entry) => entry.primary && entry.verified)?.email
     || emails.find((entry) => entry.verified)?.email;
   if (!verifiedEmail || !/^\S+@\S+$/.test(verifiedEmail)) throw new Error('GITHUB_OAUTH_EMAIL_UNVERIFIED');
