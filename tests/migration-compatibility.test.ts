@@ -66,6 +66,21 @@ describe('migration compatibility preflight', () => {
     ]);
   });
 
+  it('fails closed for malformed registry identities and whitespace ledger timestamps', () => {
+    const result = validateMigrationHistory({
+      available: [{ id: ' ', name: '' }],
+      applied: [{ id: ' ', name: ' ', appliedAt: '   ' }],
+    });
+    expect(result.compatible).toBe(false);
+    expect(result.errors).toEqual([
+      'INVALID_AVAILABLE_ID',
+      'INVALID_AVAILABLE_NAME: ',
+      'MIGRATION_ID_NAME_CONFLICT: : :',
+      'INCOMPLETE_APPLIED_RECORD: :appliedAt',
+      'INCOMPLETE_APPLIED_RECORD: :name',
+    ]);
+  });
+
   it('fails closed for incomplete records and is deterministic on repeat execution', () => {
     const input = {
       available: collisions,

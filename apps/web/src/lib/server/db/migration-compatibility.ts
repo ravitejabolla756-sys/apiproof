@@ -43,6 +43,8 @@ export function validateMigrationHistory(input: MigrationCompatibilityInput): Mi
   const appliedById = new Map<string, MigrationRecord>();
 
   for (const migration of input.available) {
+    if (!migration.id.trim()) errors.push('INVALID_AVAILABLE_ID');
+    if (!migration.name.trim()) errors.push(`INVALID_AVAILABLE_NAME:${migration.id}`);
     if (availableById.has(migration.id)) {
       errors.push(`DUPLICATE_AVAILABLE_ID:${migration.id}`);
       continue;
@@ -63,8 +65,8 @@ export function validateMigrationHistory(input: MigrationCompatibilityInput): Mi
     } else if (expected.name !== record.name) {
       errors.push(`MIGRATION_ID_NAME_CONFLICT:${record.id}:${record.name}:${expected.name}`);
     }
-    if (!record.appliedAt) errors.push(`INCOMPLETE_APPLIED_RECORD:${record.id}:appliedAt`);
-    if (!record.name) errors.push(`INCOMPLETE_APPLIED_RECORD:${record.id}:name`);
+    if (!record.appliedAt?.trim()) errors.push(`INCOMPLETE_APPLIED_RECORD:${record.id}:appliedAt`);
+    if (!record.name?.trim()) errors.push(`INCOMPLETE_APPLIED_RECORD:${record.id}:name`);
   }
 
   if (input.schema) {
