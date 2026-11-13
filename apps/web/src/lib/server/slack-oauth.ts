@@ -6,6 +6,35 @@ import { encryptSlackToken, getSlackOAuthConfig, hashSlackOpaqueValue } from './
 const OAUTH_STATE_TTL_MS = 15 * 60_000;
 const REQUIRED_BOT_SCOPES = new Set(['chat:write', 'im:write']);
 
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseSlackOAuthResponse(value: unknown): {
+  ok: boolean; error?: string; access_token?: string; token_type?: string; scope?: string;
+  expires_in?: number; refresh_token?: string; team?: { id?: string; name?: string }; authed_user?: { id?: string };
+} | null {
+  if (!record(value) || typeof value.ok !== 'boolean') return null;
+  const team = value.team === undefined ? undefined : record(value.team) ? {
+    ...(typeof value.team.id === 'string' ? { id: value.team.id } : {}),
+    ...(typeof value.team.name === 'string' ? { name: value.team.name } : {}),
+  } : null;
+  const authedUser = value.authed_user === undefined ? undefined : record(value.authed_user) ? {
+    ...(typeof value.authed_user.id === 'string' ? { id: value.authed_user.id } : {}),
+  } : null;
+  if (team === null || authedUser === null) return null;
+  return {
+    ok: value.ok,
+    ...(typeof value.error === 'string' && value.error.length <= 256 ? { error: value.error } : {}),
+    ...(typeof value.access_token === 'string' ? { access_token: value.access_token } : {}),
+    ...(typeof value.token_type === 'string' ? { token_type: value.token_type } : {}),
+    ...(typeof value.scope === 'string' ? { scope: value.scope } : {}),
+    ...(Number.isSafeInteger(value.expires_in) ? { expires_in: Number(value.expires_in) } : {}),
+    ...(typeof value.refresh_token === 'string' ? { refresh_token: value.refresh_token } : {}),
+    ...(team ? { team } : {}), ...(authedUser ? { authed_user: authedUser } : {}),
+  };
+}
+
 export async function createSlackAuthorizationUrl(userId: string, workspaceId: string): Promise<string> {
   const config = getSlackOAuthConfig();
   // Validate encryption configuration before redirecting the user into an OAuth flow.
@@ -57,12 +86,8 @@ export async function exchangeSlackOAuthCode(code: string): Promise<SlackOAuthCo
     body: new URLSearchParams({ code, redirect_uri: config.redirectUri }), signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) throw new Error(`SLACK_OAUTH_HTTP_${response.status}`);
-  const result = await response.json() as {
-    ok?: boolean; error?: string; access_token?: string; token_type?: string; scope?: string;
-    expires_in?: number; refresh_token?: string;
-    team?: { id?: string; name?: string };
-    authed_user?: { id?: string };
-  };
+  const result = parseSlackOAuthResponse(await response.json().catch(() => null));
+  if (!result) throw new Error('SLACK_OAUTH_RESPONSE_INVALID');
   if (!result.ok) throw new Error(`SLACK_OAUTH_${(result.error ?? 'FAILED').replace(/[^A-Za-z0-9_]/g, '').slice(0, 80)}`);
   const scopes = new Set((result.scope ?? '').split(',').map((scope) => scope.trim()).filter(Boolean));
   if ([...REQUIRED_BOT_SCOPES].some((scope) => !scopes.has(scope))) throw new Error('SLACK_REQUIRED_BOT_SCOPES_MISSING');
