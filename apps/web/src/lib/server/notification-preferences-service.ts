@@ -20,6 +20,15 @@ export class NotificationPreferencesUnavailableError extends Error {
   }
 }
 
+export class NotificationChannelUnavailableError extends Error {
+  readonly code = 'NOTIFICATION_CHANNEL_UNAVAILABLE';
+
+  constructor(message = 'Weekly digest preferences are unavailable until an approved digest schedule and delivery channel are configured.') {
+    super(message);
+    this.name = 'NotificationChannelUnavailableError';
+  }
+}
+
 const DEFAULTS: Array<{ category: NotificationCategory; channel: NotificationChannel; enabled: boolean; required: boolean; deliveryAvailable: boolean }> = [
   { category: 'security', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
   { category: 'account', channel: 'email', enabled: true, required: true, deliveryAvailable: false },
@@ -39,6 +48,7 @@ const VALID_CATEGORIES = new Set<NotificationCategory>(DEFAULTS.map((item) => it
 const VALID_CHANNELS = new Set<NotificationChannel>(DEFAULTS.map((item) => item.channel));
 const VALID_PREFERENCE_KEYS = new Set(DEFAULTS.map((item) => `${item.category}:${item.channel}`));
 const DIGEST_SCHEDULING_AVAILABLE = false;
+const MAX_PREFERENCE_UPDATES = 32;
 
 async function requirePreferencesTable(database: DatabaseAdapter): Promise<void> {
   try {
@@ -81,12 +91,14 @@ export async function updateNotificationPreferences(
   updates: Array<{ category: NotificationCategory; channel: NotificationChannel; enabled: boolean }>,
   database: DatabaseAdapter = getDatabase(),
 ): Promise<NotificationPreference[]> {
+  if (updates.length > MAX_PREFERENCE_UPDATES) throw new Error('Too many notification preference updates.');
   for (const update of updates) {
     if (!VALID_CATEGORIES.has(update.category) || !VALID_CHANNELS.has(update.channel) || !VALID_PREFERENCE_KEYS.has(`${update.category}:${update.channel}`)) {
       throw new Error('Invalid notification preference category or channel.');
     }
     const required = DEFAULTS.find((item) => item.category === update.category && item.channel === update.channel)?.required;
     if (required && !update.enabled) throw new Error('Security and account-recovery notifications cannot be disabled.');
+    if (update.category === 'weekly_digest' && !DIGEST_SCHEDULING_AVAILABLE) throw new NotificationChannelUnavailableError();
   }
   await requirePreferencesTable(database);
   const now = new Date().toISOString();

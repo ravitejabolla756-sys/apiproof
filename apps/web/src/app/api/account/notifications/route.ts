@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import {
   getNotificationPreferences,
+  NotificationChannelUnavailableError,
   NotificationPreferencesUnavailableError,
   updateNotificationPreferences,
   type NotificationCategory,
@@ -43,6 +44,9 @@ export async function PATCH(req: Request) {
   } catch (error) {
     if (error instanceof SyntaxError) return badRequestResponse('Request body must be valid JSON.');
     if (error instanceof NotificationPreferencesUnavailableError) return unavailableResponse();
+    if (error instanceof NotificationChannelUnavailableError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+    }
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to update notification preferences.', code: 'INVALID_NOTIFICATION_PREFERENCES' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
