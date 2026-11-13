@@ -214,6 +214,19 @@ export async function checkWorkspaceLimit(
     };
   }
 
+  // Unknown/incomplete subscription states must never fall through as an
+  // entitlement grant. The billing policy remains provider-neutral and
+  // fail-closed until an owner-approved lifecycle policy is active.
+  if (!target.allowed) {
+    return {
+      allowed: false,
+      metric,
+      limit: target.limit,
+      current: target.current,
+      reason: 'BILLING_POLICY_UNAVAILABLE: Workspace entitlements are unavailable until subscription state is reconciled.',
+    };
+  }
+
   return {
     allowed: true,
     metric,
