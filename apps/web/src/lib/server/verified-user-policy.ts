@@ -81,12 +81,13 @@ export async function loadVerifiedUserPolicy(userId: string, action: VerifiedUse
   };
 }
 
-export function verifiedUserFailure(decision: VerifiedUserDecision): { status: 403 | 503; code: 'EMAIL_VERIFICATION_REQUIRED' | 'VERIFICATION_STATE_UNAVAILABLE'; error: string } | null {
+export function verifiedUserFailure(decision: VerifiedUserDecision, action: VerifiedUserAction = 'provider_link'): { status: 403 | 503; code: 'EMAIL_VERIFICATION_REQUIRED' | 'VERIFICATION_STATE_UNAVAILABLE'; error: string } | null {
   if (decision === 'verification_unavailable') {
     return { status: 503, code: 'VERIFICATION_STATE_UNAVAILABLE', error: 'Account verification is temporarily unavailable.' };
   }
   if (decision === 'require_verification') {
-    return { status: 403, code: 'EMAIL_VERIFICATION_REQUIRED', error: 'Verify your email before connecting a provider.' };
+    const actionText = action === 'workspace' ? 'before modifying workspace data' : action === 'authenticated_account' ? 'before modifying account data' : 'before connecting a provider';
+    return { status: 403, code: 'EMAIL_VERIFICATION_REQUIRED', error: `Verify your email ${actionText}.` };
   }
   return null;
 }

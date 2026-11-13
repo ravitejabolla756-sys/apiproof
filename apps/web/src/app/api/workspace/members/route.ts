@@ -9,6 +9,7 @@ import {
   type MemberRevocationApiRequest,
 } from '@/lib/server/organization-integration-contract.js';
 import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse, validateSafeId } from '@/lib/server/validation.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 const noStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -28,6 +29,8 @@ export async function PATCH(request: Request): Promise<Response> {
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
   try {
     const body = await request.json() as { workspaceId?: unknown; userId?: unknown; role?: unknown };
     const workspaceValidation = validateSafeId(body.workspaceId, 'workspaceId');
@@ -59,6 +62,8 @@ export async function DELETE(request: Request): Promise<Response> {
 
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: noStore });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   let body: MemberRevocationApiRequest;
   try {

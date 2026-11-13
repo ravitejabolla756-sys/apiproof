@@ -5,6 +5,7 @@ import { getWorkspaceSubscription } from '../../../../lib/server/billing/service
 import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '../../../../lib/server/validation.js';
+import { verifiedUserRouteFailure } from '../../../../lib/server/verified-user-route.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -14,6 +15,8 @@ export async function POST(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   let workspace: Awaited<ReturnType<typeof requireWorkspaceCapability>>;
   try {

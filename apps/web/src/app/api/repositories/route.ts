@@ -16,6 +16,7 @@ import {
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
 import { checkWorkspaceLimit } from '@/lib/server/billing/service.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function GET(req: Request) {
   const privateNoStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -23,7 +24,6 @@ export async function GET(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
-
   const workspace = await getDefaultWorkspaceForUser(user.id);
   const db = getDatabase();
   const repos = await db.query(`
@@ -52,6 +52,8 @@ export async function POST(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   // Rate limit: 20 repo connections per 10 minutes per user
   const rateCheck = await checkRateLimit(`repo:connect:${user.id}`, 20, 10 * 60 * 1000);
