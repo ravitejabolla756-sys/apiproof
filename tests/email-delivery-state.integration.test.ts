@@ -55,6 +55,21 @@ describe('tracked email delivery', () => {
     expect(emailDeliveryErrorCategory(new Error('secret smtp response'))).toBe('EMAIL_PROVIDER_FAILED');
   });
 
+  it('does not claim an exhausted delivery and requeues only due retry records', async () => {
+    const account = await createUserWithSession('exhausted@example.test', 'OriginalPassword123!', 'Exhausted User');
+    const now = '2026-11-07T00:00:00.000Z';
+    await getDatabase().execute(
+      `INSERT INTO email_deliveries (id, event_key, template_key, template_version, recipient_user_id, status, attempt_count, next_attempt_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'failed', 5, ?, ?, ?)`,
+      ['eml_exhausted', 'account:exhausted:1', 'account.password_reset', 'v1', account.user.id, now, now, now],
+    );
+    const send = vi.fn(async () => undefined);
+    await expect(sendTrackedEmail({ eventKey: 'account:exhausted:1', templateKey: 'account.password_reset', templateVersion: 'v1', recipientUserId: account.user.id }, send)).rejects.toThrow('EMAIL_DELIVERY_NOT_CLAIMED');
+    expect(send).not.toHaveBeenCalled();
+    await expect(requeueRetryableEmailDeliveries(now)).resolves.toBe(0);
+    expect(await getEmailDelivery('account:exhausted:1')).toMatchObject({ status: 'failed', attempt_count: 5 });
+  });
+
   it('fails closed when the approved email ledger migration is unavailable', async () => {
     const account = await createUserWithSession('unavailable@example.test', 'OriginalPassword123!', 'Unavailable User');
     await getDatabase().execute('DROP TABLE email_deliveries');
