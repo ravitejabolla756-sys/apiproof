@@ -7,6 +7,16 @@ import { ApiProofLogo } from '@/components/ui/logo';
 
 type AuthMode = 'login' | 'signup';
 
+function safeNextPath(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/dashboard';
+  try {
+    const parsed = new URL(value, window.location.origin);
+    return parsed.origin === window.location.origin ? `${parsed.pathname}${parsed.search}${parsed.hash}` : '/dashboard';
+  } catch {
+    return '/dashboard';
+  }
+}
+
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -27,6 +37,10 @@ export default function LoginPage() {
       })
       .catch(() => {});
   }, []);
+
+  function nextPath(): string {
+    return safeNextPath(new URLSearchParams(window.location.search).get('next'));
+  }
 
   useEffect(() => {
     const googleError = new URLSearchParams(window.location.search).get('google');
@@ -88,7 +102,7 @@ export default function LoginPage() {
 
       // Success: remain in loading state to prevent further clicks,
       // and perform full navigation so the session cookie is transmitted cleanly.
-      window.location.href = '/dashboard';
+      window.location.href = nextPath();
     } catch {
       setError('Network error. Please try again.');
       setLoading(false);
@@ -140,7 +154,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={loading}
-            onClick={() => { window.location.href = '/api/auth/google/start?next=/dashboard'; }}
+            onClick={() => { window.location.href = `/api/auth/google/start?next=${encodeURIComponent(nextPath())}`; }}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#D8DCE5] bg-white py-3.5 text-sm font-semibold text-[#0F172A] transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
@@ -154,7 +168,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={loading}
-            onClick={() => { window.location.href = '/api/auth/github/start?next=/dashboard'; }}
+            onClick={() => { window.location.href = `/api/auth/github/start?next=${encodeURIComponent(nextPath())}`; }}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#D8DCE5] bg-[#0F172A] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
