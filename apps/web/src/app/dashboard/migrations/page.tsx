@@ -6,33 +6,10 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { FileCheck2, CheckCircle2, GitPullRequest, Loader2, RefreshCw, ExternalLink } from "lucide-react";
-
-interface MigrationItem {
-  id: string;
-  finding_id: string;
-  repository_id: string;
-  plan_id: string;
-  status: string;
-  patch_diff: string;
-  patch_digest: string;
-  created_at: string;
-  finding_title: string;
-  symbol: string;
-  file_path: string;
-  line_number: number;
-  change_id: string;
-  repo_name: string;
-  repo_full_name: string;
-  pr_number?: number | null;
-  pr_url?: string | null;
-  branch_name?: string | null;
-  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
-  pr_state?: string | null;
-  execution_verified?: boolean;
-}
+import { parseMigrationListResponse, type MigrationListItem } from "@/lib/migration-list-contract";
 
 export default function MigrationsWorkbenchPage() {
-  const [migrations, setMigrations] = useState<MigrationItem[]>([]);
+  const [migrations, setMigrations] = useState<MigrationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
@@ -43,9 +20,9 @@ export default function MigrationsWorkbenchPage() {
     try {
       const res = await fetch("/api/migrations");
       if (!res.ok) throw new Error("Migration review records are temporarily unavailable.");
-      const json = await res.json() as { migrations?: unknown };
-      if (!Array.isArray(json.migrations)) throw new Error("Migration review returned an invalid response.");
-      setMigrations(json.migrations as MigrationItem[]);
+      const parsed = parseMigrationListResponse(await res.json());
+      if (!parsed) throw new Error("Migration review returned an invalid response.");
+      setMigrations(parsed);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Migration review records are temporarily unavailable.");
     } finally {
