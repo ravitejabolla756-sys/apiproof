@@ -134,6 +134,23 @@ describe('workspace administration', () => {
     }
   });
 
+  it('returns a structured unavailable response when optional organization tables are absent', async () => {
+    const owner = await createUserWithSession('schema-unavailable@example.test', 'OwnerPassword123!', 'Schema Unavailable');
+    await getDatabase().execute('DROP TABLE workspace_invitations');
+    const invitations = await invitationsGet(new Request('https://apiproof.test/api/workspace/invitations', {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(invitations.status).toBe(503);
+    expect(await invitations.json()).toMatchObject({ code: 'ORGANIZATION_SCHEMA_UNAVAILABLE' });
+
+    await getDatabase().execute('DROP TABLE workspace_audit_events');
+    const audit = await auditRoute(new Request('https://apiproof.test/api/workspace/audit', {
+      headers: { cookie: `apiproof_session=${owner.session.id}` },
+    }));
+    expect(audit.status).toBe(503);
+    expect(await audit.json()).toMatchObject({ code: 'ORGANIZATION_SCHEMA_UNAVAILABLE' });
+  });
+
   it('creates a single-use expiring invitation and accepts it only for the invited email', async () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const invited = await createUserWithSession('member@example.test', 'MemberPassword123!', 'Member');

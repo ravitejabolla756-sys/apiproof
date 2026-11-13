@@ -40,7 +40,7 @@ export async function resolveWorkspaceForRequest(req: Request, userId: string, r
 
 export function organizationErrorResponse(error: unknown): Response {
   if (error instanceof OrganizationServiceError) {
-    const status = error.code.endsWith('NOT_FOUND') ? 404 : 400;
+    const status = error.code === 'ORGANIZATION_SCHEMA_UNAVAILABLE' ? 503 : error.code.endsWith('NOT_FOUND') ? 404 : 400;
     return NextResponse.json({ error: error.message, code: error.code }, { status, headers: PRIVATE_NO_STORE_HEADERS });
   }
   if (error instanceof Error && error.message.includes('access denied')) {

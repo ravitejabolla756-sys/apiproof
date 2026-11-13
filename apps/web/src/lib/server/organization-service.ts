@@ -54,7 +54,8 @@ export class OrganizationServiceError extends Error {
       | 'INVITATION_ALREADY_USED'
       | 'LAST_OWNER_REQUIRED'
       | 'ALREADY_A_MEMBER'
-      | 'INVALID_AUDIT_CURSOR',
+      | 'INVALID_AUDIT_CURSOR'
+      | 'ORGANIZATION_SCHEMA_UNAVAILABLE',
   ) {
     super(message);
     this.name = 'OrganizationServiceError';
@@ -124,6 +125,17 @@ function hashToken(token: string): string {
 
 function cleanEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+function throwOrganizationSchemaUnavailable(error: unknown): never {
+  const message = String(error).toLowerCase();
+  if (message.includes('no such table') || message.includes('does not exist')) {
+    throw new OrganizationServiceError(
+      'Organization administration is unavailable until the approved organization schema is installed.',
+      'ORGANIZATION_SCHEMA_UNAVAILABLE',
+    );
+  }
+  throw error;
 }
 
 function mapMember(row: { id: string; user_id: string; email: string; name: string; role: WorkspaceRole; created_at: string }): OrganizationMember {
@@ -214,10 +226,15 @@ export async function removeOrganizationMember(userId: string, workspaceId: stri
 
 export async function listWorkspaceInvitations(userId: string, workspaceId: string): Promise<WorkspaceInvitation[]> {
   await requireWorkspaceOwner(userId, workspaceId);
-  const rows = await getDatabase().query<WorkspaceInvitation & { workspace_id: string; expires_at: string; accepted_at: string | null; revoked_at: string | null; created_at: string }>(
-    `SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at, created_at
-     FROM workspace_invitations WHERE workspace_id = ? ORDER BY created_at DESC LIMIT 100`, [workspaceId],
-  );
+  let rows: Array<WorkspaceInvitation & { workspace_id: string; expires_at: string; accepted_at: string | null; revoked_at: string | null; created_at: string }>;
+  try {
+    rows = await getDatabase().query<WorkspaceInvitation & { workspace_id: string; expires_at: string; accepted_at: string | null; revoked_at: string | null; created_at: string }>(
+      `SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at, created_at
+       FROM workspace_invitations WHERE workspace_id = ? ORDER BY created_at DESC LIMIT 100`, [workspaceId],
+    );
+  } catch (error) {
+    throwOrganizationSchemaUnavailable(error);
+  }
   return rows.map((row) => ({ id: row.id, workspaceId: row.workspace_id, email: row.email, role: row.role, expiresAt: row.expires_at, acceptedAt: row.accepted_at, revokedAt: row.revoked_at, createdAt: row.created_at }));
 }
 
@@ -299,11 +316,16 @@ export async function listWorkspaceAuditPage(userId: string, workspaceId: string
   const parameters = decoded
     ? [workspaceId, decoded.createdAt, decoded.createdAt, decoded.id, pageSize + 1]
     : [workspaceId, pageSize + 1];
-  const rows = await getDatabase().query<{ id: string; action: string; target_type: string; target_id: string | null; metadata_json: string; actor_email: string | null; created_at: string }>(
-    `SELECT a.id, a.action, a.target_type, a.target_id, a.metadata_json, u.email as actor_email, a.created_at
-     FROM workspace_audit_events a LEFT JOIN users u ON u.id = a.actor_user_id
-     WHERE a.workspace_id = ? ${conditions} ORDER BY a.created_at DESC, a.id DESC LIMIT ?`, parameters,
-  );
+  let rows: Array<{ id: string; action: string; target_type: string; target_id: string | null; metadata_json: string; actor_email: string | null; created_at: string }>;
+  try {
+    rows = await getDatabase().query<{ id: string; action: string; target_type: string; target_id: string | null; metadata_json: string; actor_email: string | null; created_at: string }>(
+      `SELECT a.id, a.action, a.target_type, a.target_id, a.metadata_json, u.email as actor_email, a.created_at
+       FROM workspace_audit_events a LEFT JOIN users u ON u.id = a.actor_user_id
+       WHERE a.workspace_id = ? ${conditions} ORDER BY a.created_at DESC, a.id DESC LIMIT ?`, parameters,
+    );
+  } catch (error) {
+    throwOrganizationSchemaUnavailable(error);
+  }
   const hasMore = rows.length > pageSize;
   const pageRows = hasMore ? rows.slice(0, pageSize) : rows;
   const events = pageRows.map((row) => ({ id: row.id, action: row.action, targetType: row.target_type, targetId: row.target_id, metadata: parseAuditMetadata(row.metadata_json), actorEmail: row.actor_email, createdAt: row.created_at }));
