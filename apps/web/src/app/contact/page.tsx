@@ -63,9 +63,9 @@ export default function ContactPage() {
           {/* Right Column: Form Card */}
           <div className="lg:col-span-7 bg-[#EFF1F5] rounded-[32px] p-8 md:p-10 border border-black/[0.04] shadow-xs">
             {submitted ? (
-              <div className="py-16 text-center space-y-4">
+              <div role="status" aria-live="polite" aria-atomic="true" className="py-16 text-center space-y-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
-                  <CheckCircle2 className="w-7 h-7" />
+                  <CheckCircle2 aria-hidden="true" className="w-7 h-7" />
                 </div>
                 <h3 className="font-serif text-2xl text-[#000E29]">Message Received</h3>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
@@ -129,7 +129,7 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {error && <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">{error}</div>}
+                {error && <div role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">{error}</div>}
                 <button
                   type="submit"
                   disabled={submitting}
