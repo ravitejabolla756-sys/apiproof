@@ -3,6 +3,8 @@ export type AccountProfileProjection = {
   name: string;
   authProviders: string[];
   hasLocalPassword: boolean;
+  emailVerifiedAt: string | null;
+  emailVerificationState: 'verified' | 'unverified' | 'unavailable';
 };
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -17,11 +19,21 @@ export function parseAccountProfileResponse(value: unknown): AccountProfileProje
   if (!record(value) || !record(value.account) || !text(value.account.email) || !text(value.account.name)
     || !Array.isArray(value.account.authProviders) || !value.account.authProviders.every(text)
     || typeof value.account.hasLocalPassword !== 'boolean') return null;
+  const emailVerifiedAt = value.account.emailVerifiedAt === null || typeof value.account.emailVerifiedAt === 'string'
+    ? value.account.emailVerifiedAt
+    : null;
+  const emailVerificationState = value.account.emailVerificationState === 'verified'
+    || value.account.emailVerificationState === 'unverified'
+    || value.account.emailVerificationState === 'unavailable'
+    ? value.account.emailVerificationState
+    : 'unavailable';
   return {
     email: value.account.email,
     name: value.account.name,
     authProviders: value.account.authProviders,
     hasLocalPassword: value.account.hasLocalPassword,
+    emailVerifiedAt,
+    emailVerificationState,
   };
 }
 
