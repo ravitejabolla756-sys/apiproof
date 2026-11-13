@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProviderBadge } from "@/components/ui/status-pill";
 import { Search, Boxes, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,25 +27,32 @@ interface ProviderInventoryItem {
 export default function ApiInventoryPage() {
   const [providers, setProviders] = useState<ProviderInventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadInventory() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/inventory");
-      if (res.ok) {
-        const json = await res.json();
-        setProviders(json.providers || []);
-      }
-    } catch (err) {
-      console.error("Failed to load API inventory:", err);
+      if (!res.ok) throw new Error("API provider registry is temporarily unavailable.");
+      const json = await res.json() as { providers?: unknown };
+      if (!Array.isArray(json.providers)) throw new Error("API provider registry returned an invalid response.");
+      setProviders(json.providers as ProviderInventoryItem[]);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "API provider registry is temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadInventory();
+    void loadInventory();
   }, []);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const items = providers.filter(
     (item) =>
@@ -69,7 +76,10 @@ export default function ApiInventoryPage() {
         </div>
 
         <Button
+          type="button"
           onClick={loadInventory}
+          disabled={loading}
+          aria-busy={loading ? "true" : undefined}
           variant="outline"
           size="sm"
           icon={<RefreshCw className="w-3.5 h-3.5" />}
@@ -81,9 +91,10 @@ export default function ApiInventoryPage() {
 
       {/* SEARCH */}
       <div className="relative w-full sm:w-80">
-        <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+        <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
         <input
           type="text"
+          aria-label="Filter provider integrations"
           placeholder="Filter provider integrations..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -92,13 +103,15 @@ export default function ApiInventoryPage() {
       </div>
 
       {loading ? (
-        <div className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <div role="status" aria-live="polite" aria-busy="true" className="py-20 text-center text-[#686868]">
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading API provider registry...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items.map((item) => (
+        <>
+          {error && <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{error} Use Refresh to try again.</div>}
+          {!error && items.length === 0 ? <p role="status" aria-live="polite" className="py-20 text-center text-[#686868]">No provider integrations match this filter.</p> : <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {items.map((item) => (
             <div
               key={item.id}
               className="p-6 rounded-[24px] bg-white border border-[#E8E8E5] space-y-4 shadow-xs"
@@ -125,7 +138,7 @@ export default function ApiInventoryPage() {
               <div className="pt-3 border-t border-[#E8E8E5] space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[#686868] font-medium flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-purple-700" />
+                    <ShieldCheck aria-hidden="true" className="w-3.5 h-3.5 text-purple-700" />
                     Active Rule Coverage
                   </span>
                   <span className="font-semibold text-[#111111] bg-purple-50 text-purple-800 px-2.5 py-0.5 rounded-full text-[11px] border border-purple-200">
@@ -156,8 +169,9 @@ export default function ApiInventoryPage() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>}
+        </>
       )}
     </div>
   );
