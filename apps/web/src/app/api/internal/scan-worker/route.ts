@@ -16,6 +16,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
+import { classifyScanWorkerHealth } from '../../../../lib/server/scan-worker-metrics.js';
 import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
 
@@ -88,7 +89,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
   try {
     if (metricsOnly) {
       const metrics = await getScanWorkerMetrics();
-      return NextResponse.json({ ok: true, metrics });
+      return NextResponse.json({ ok: true, health: classifyScanWorkerHealth(metrics), metrics });
     }
 
     // A live/manual worker call must be narrowed to one repository. This also
@@ -103,6 +104,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       ok: true,
+      health: classifyScanWorkerHealth(metrics),
       jobsClaimed: result.jobsClaimed,
       jobsCompleted: result.jobsCompleted,
       jobsFailed: result.jobsFailed,

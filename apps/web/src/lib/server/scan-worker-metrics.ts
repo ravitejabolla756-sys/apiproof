@@ -11,6 +11,16 @@ export interface ScanWorkerMetrics {
   lastProcessedAt: string | null;
 }
 
+export type ScanWorkerHealth = 'healthy' | 'degraded';
+
+/**
+ * Classify only the condition this local queue contract can prove.
+ * Hosted alert thresholds and recovery SLOs remain external decisions.
+ */
+export function classifyScanWorkerHealth(metrics: ScanWorkerMetrics): ScanWorkerHealth {
+  return metrics.stalledJobs > 0 ? 'degraded' : 'healthy';
+}
+
 /** Returns aggregate queue health without exposing workspace-specific data. */
 export async function getScanWorkerMetrics(): Promise<ScanWorkerMetrics> {
   const db = getDatabase();
