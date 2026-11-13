@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
@@ -141,6 +142,12 @@ export default function SettingsPage() {
         <p className="text-xs text-[#686868]">
           Manage workspace subscriptions, usage quotas, safety policies, and GitHub App integrations.
         </p>
+        <Link
+          href="/dashboard/settings/workspace"
+          className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-[#E8E8E5] bg-white px-3 text-xs font-medium text-[#111111] hover:bg-[#F6F6F4]"
+        >
+          Manage members, invitations, and audit history
+        </Link>
       </div>
 
       {error && (
