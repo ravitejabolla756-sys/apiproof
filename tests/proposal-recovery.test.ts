@@ -506,6 +506,22 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       }
     });
 
+    it('rejects a user-authorized queued job after workspace membership is revoked', async () => {
+      const { user, ws, migration } = await setupFixture();
+      await markWorkerReady();
+      await enqueueMigrationProposal(migration.id, user.id);
+      db.prepare('DELETE FROM workspace_members WHERE workspace_id = ? AND user_id = ?').run(ws.id, user.id);
+      const sandboxRun = vi.spyOn(FakeSandbox.prototype, 'run');
+      try {
+        await expect(processOneMigrationVerificationJob('test-docker-worker')).resolves.toBe(true);
+        expect(db.prepare('SELECT status, error_category FROM migration_verification_jobs WHERE migration_id = ?').get(migration.id)).toEqual({ status: 'failed', error_category: 'WORKSPACE_MEMBER_REVOKED' });
+        expect(db.prepare('SELECT COUNT(*) AS c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+        expect(sandboxRun).not.toHaveBeenCalled();
+      } finally {
+        sandboxRun.mockRestore();
+      }
+    });
+
     it('does not allow another workspace to enqueue or inspect a job', async () => {
       const { migration } = await setupFixture();
       const other = createUser('other_worker_tenant@example.com', 'Pass12345!', 'Other Tenant');

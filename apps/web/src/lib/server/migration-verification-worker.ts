@@ -85,6 +85,11 @@ async function runClaimedJob(job: VerificationJob, workerId: string): Promise<vo
     if (!current || !current.finding_id || current.workspace_id !== job.workspace_id || current.repository_id !== job.repository_id || current.finding_repository_id !== job.repository_id || current.scan_status !== 'completed' || currentBaseline !== job.baseline_sha || current.scan_sha !== job.baseline_sha) {
       throw new Error('VERIFICATION_JOB_IDENTITY_MISMATCH');
     }
+    const requesterMembership = await db.queryOne<{ id: string }>(
+      'SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?',
+      [job.workspace_id, job.requested_by],
+    );
+    if (!requesterMembership) throw new Error('WORKSPACE_MEMBER_REVOKED');
     const result = await createGitHubProposal(job.migration_id, job.requested_by);
     await db.execute(`UPDATE migration_verification_jobs SET status = 'completed', result_json = ?, error_category = NULL,
       error_message = NULL, claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,

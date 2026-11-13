@@ -19,7 +19,7 @@ Member 2 exports `removeOrganizationMember(userId, workspaceId, targetUserId)`, 
 
 ## Contract status
 
-The Member 1 revocation service, workspace policy, durable revocation migration definition, and a schema-compatible `DELETE /api/workspace/members` route boundary are now integrated into this worktree. The route derives the actor from the authenticated session, enforces CSRF/origin protection, requires a client idempotency key, and delegates to the authoritative revocation service. Invitation invalidation, queued-job revalidation, stale-context route coverage, and PostgreSQL concurrency remain pending because Member 2's organization service and migration registry are not integrated.
+The Member 1 revocation service, workspace policy, durable revocation migration definition, schema-compatible `DELETE /api/workspace/members` route boundary, and migration-verification worker membership revalidation are now integrated into this worktree. The route derives the actor from the authenticated session, enforces CSRF/origin protection, requires a client idempotency key, and delegates to the authoritative revocation service. Invitation invalidation, organization-owned worker coverage, stale-context route coverage, and PostgreSQL concurrency remain pending because Member 2's organization service and migration registry are not integrated.
 
 The integrated migration definition still uses Member 1's source ID `027`. It must not be combined with Member 2's conflicting `027` until the approved migration-history decision is complete.
 
@@ -31,7 +31,8 @@ The route's membership-removal slice is locally executable, but Phase 8B invitat
 2. Integrate Member 1 revocation service and migration dependencies in an isolated merge commit.
 3. Adapt Member 2 organization routes/services to call the revocation boundary.
 4. Add invitation invalidation and audit projection inside the same transaction.
-5. Run the organization, authorization, session, invitation-race, worker, typecheck, lint and browser contract matrix.
+5. Extend membership revalidation to any additional user-authorized queue types introduced by the integrated organization services.
+6. Run the organization, authorization, session, invitation-race, worker, typecheck, lint and browser contract matrix.
 
 No migration IDs, databases, source branches, production resources, payment providers or external services were changed by this handoff.
 
