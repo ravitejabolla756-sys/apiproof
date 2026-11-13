@@ -44,6 +44,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
             <span className="text-zinc-300">/</span>
             <Link
               href={crumb.href}
+              aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
               className={`transition-colors ${
                 i === breadcrumbs.length - 1 ? 'min-w-0 truncate text-[#111111] font-semibold' : 'min-w-0 truncate text-[#686868] hover:text-[#111111]'
               }`}
@@ -58,12 +59,13 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
       <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2">
         {/* Command Search Trigger */}
         <button
+          type="button"
           onClick={onOpenCommandPalette}
           aria-label="Search dashboard"
           title="Search dashboard"
           className="flex min-h-10 items-center gap-2 rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] px-2.5 py-1.5 text-xs text-[#686868] shadow-2xs transition-colors hover:bg-zinc-200/60 sm:gap-3 sm:px-3.5"
         >
-          <Search className="h-3.5 w-3.5 text-zinc-500" />
+          <Search aria-hidden="true" className="h-3.5 w-3.5 text-zinc-500" />
           <span className="hidden sm:inline">Search repos, findings, SDKs...</span>
           <kbd className="hidden sm:inline bg-white text-zinc-600 border border-[#E8E8E5] rounded px-1.5 py-0.5 text-[10px] font-mono ml-1 shadow-2xs">
             ⌘K
@@ -74,14 +76,16 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
         {githubConnected ? (
           /* Connected state — still clickable to manage/reconnect */
           <button
+            type="button"
             id="github-connected-btn"
             onClick={onOpenConnectModal}
+            aria-label="GitHub connected; manage repositories"
             title="GitHub connected — click to manage repositories"
             className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-xs font-medium text-emerald-800 shadow-2xs transition-colors hover:bg-emerald-100 sm:px-3.5"
           >
-            <Github className="h-3.5 w-3.5 text-emerald-700" />
+            <Github aria-hidden="true" className="h-3.5 w-3.5 text-emerald-700" />
             <span className="hidden sm:inline">GitHub Connected</span>
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+            <CheckCircle2 aria-hidden="true" className="h-3 w-3 text-emerald-600" />
           </button>
         ) : (
           /* Not connected (or still loading — show connect button while unknown) */
