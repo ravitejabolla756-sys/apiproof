@@ -20,6 +20,8 @@ export default function AccountSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
+  const [reviewingDeletion, setReviewingDeletion] = useState(false);
+  const [deletionReview, setDeletionReview] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,6 +81,26 @@ export default function AccountSettingsPage() {
     finally { setResendingVerification(false); }
   }
 
+  async function reviewDeletionReadiness() {
+    setReviewingDeletion(true); setDeletionReview(null); setError(null);
+    try {
+      const response = await fetch('/api/account/deletion/plan', {
+        method: 'POST',
+        headers: { 'Idempotency-Key': `deletion-review-${Date.now().toString(36)}` },
+      });
+      const payload = await response.json() as { blockers?: unknown; error?: unknown };
+      if (response.ok) {
+        setDeletionReview('Deletion planning is available for owner review, but execution remains disabled.');
+      } else if (Array.isArray(payload.blockers)) {
+        setDeletionReview(`Deletion remains unavailable: ${payload.blockers.join(', ')}.`);
+      } else {
+        throw new Error(typeof payload.error === 'string' ? payload.error : 'Deletion readiness is unavailable.');
+      }
+    } catch (reviewError) {
+      setDeletionReview(reviewError instanceof Error ? reviewError.message : 'Deletion readiness is unavailable.');
+    } finally { setReviewingDeletion(false); }
+  }
+
   return <div className="min-w-0 max-w-4xl space-y-6">
     <div className="border-b border-[#E8E8E5] pb-6"><Link href="/dashboard/settings" className="mb-3 inline-flex min-h-11 items-center gap-2 text-xs text-[#686868]"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Workspace settings</Link><h1 className="flex items-center gap-2 text-3xl font-medium"><UserRound className="h-6 w-6 text-purple-700" aria-hidden="true" />Account settings</h1><p className="mt-2 text-xs text-[#686868]">Manage your personal profile and sign-in credentials.</p></div>
     {message && <div role="status" aria-live="polite" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">{message}</div>}
@@ -89,7 +111,7 @@ export default function AccountSettingsPage() {
         <section className="rounded-2xl border border-[#E8E8E5] bg-white p-6" aria-labelledby="security-heading"><h2 id="security-heading" className="mb-5 flex items-center gap-2 text-base font-semibold"><KeyRound className="h-4 w-4 text-purple-700" aria-hidden="true" />Password</h2><form onSubmit={changePassword} className="space-y-4"><input aria-label="Current password" type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} autoComplete="current-password" required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] px-3 text-base" /><input aria-label="New password" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={8} maxLength={128} autoComplete="new-password" required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] px-3 text-base" /><input aria-label="Confirm new password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={8} maxLength={128} autoComplete="new-password" required className="min-h-11 w-full rounded-lg border border-[#D9D9D4] px-3 text-base" /><Button type="submit" disabled={saving} className="min-h-11">{saving ? 'Updating…' : 'Update password'}</Button></form></section>
       </div>
       <section className={`rounded-2xl border p-6 ${account.emailVerificationState === 'verified' ? 'border-emerald-200 bg-emerald-50' : account.emailVerificationState === 'unavailable' ? 'border-[#E8E8E5] bg-white' : 'border-amber-200 bg-amber-50'}`} aria-labelledby="verification-heading"><h2 id="verification-heading" className="text-base font-semibold">Email verification</h2>{account.emailVerificationState === 'verified' ? <p className="mt-2 text-xs text-emerald-800">Your account email is verified.</p> : account.emailVerificationState === 'unavailable' ? <p className="mt-2 text-xs text-[#686868]">Verification status is unavailable until the approved email-verification schema is installed.</p> : <div className="mt-2 flex flex-wrap items-center gap-3"><p className="text-xs text-amber-900">Verify your email before using protected workspace actions.</p><Button type="button" onClick={() => void resendVerification()} disabled={resendingVerification} aria-busy={resendingVerification ? 'true' : undefined} className="min-h-11">{resendingVerification ? 'Requesting…' : 'Resend verification email'}</Button></div>}</section>
-      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6" aria-labelledby="account-deletion-heading"><h2 id="account-deletion-heading" className="text-base font-semibold text-amber-950">{accountDeletionAvailability.heading}</h2><p className="mt-2 text-xs text-amber-900">{accountDeletionAvailability.message}</p><Button type="button" disabled className="mt-4 min-h-11">{accountDeletionAvailability.actionLabel}</Button></section>
+      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6" aria-labelledby="account-deletion-heading"><h2 id="account-deletion-heading" className="text-base font-semibold text-amber-950">{accountDeletionAvailability.heading}</h2><p className="mt-2 text-xs text-amber-900">{accountDeletionAvailability.message}</p><Button type="button" onClick={() => void reviewDeletionReadiness()} disabled={reviewingDeletion} aria-busy={reviewingDeletion ? 'true' : undefined} className="mt-4 min-h-11">{reviewingDeletion ? 'Reviewing…' : 'Review deletion requirements'}</Button>{deletionReview && <p role="status" aria-live="polite" className="mt-3 break-words text-xs text-amber-950">{deletionReview}</p>}</section>
     </>}
   </div>;
 }
