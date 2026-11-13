@@ -256,7 +256,7 @@ export async function authenticateGoogleOAuth(config: GoogleOAuthConfig, code: s
 
     // A matching email is not proof that the caller owns the existing account.
     // Explicit account linking must happen later from an authenticated session.
-    const existingEmail = await tx.queryOne<{ id: string }>('SELECT id FROM users WHERE email = ?', [identity.email]);
+    const existingEmail = await tx.queryOne<{ id: string }>('SELECT id FROM users WHERE lower(email) = lower(?)', [identity.email]);
     if (existingEmail) return { kind: 'account_exists' };
 
     const now = new Date().toISOString();
