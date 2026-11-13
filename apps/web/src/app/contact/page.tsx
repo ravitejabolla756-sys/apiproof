@@ -8,10 +8,34 @@ import { CheckCircle2, ArrowRight, ShieldCheck, Server, FileCode, HelpCircle } f
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setError(null);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.get('name'),
+          email: formData.get('email'),
+          inquiryType: formData.get('inquiryType'),
+          message: formData.get('message'),
+        }),
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || 'Contact delivery is temporarily unavailable.');
+      setSubmitted(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Contact delivery is temporarily unavailable.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -52,8 +76,10 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-5 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="font-medium text-slate-700">Full Name</label>
+                    <label htmlFor="contact-name" className="font-medium text-slate-700">Full Name</label>
                     <input
+                      id="contact-name"
+                      name="name"
                       type="text"
                       required
                       placeholder="Alex Rivera"
@@ -61,8 +87,10 @@ export default function ContactPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="font-medium text-slate-700">Work Email</label>
+                    <label htmlFor="contact-email" className="font-medium text-slate-700">Work Email</label>
                     <input
+                      id="contact-email"
+                      name="email"
                       type="email"
                       required
                       placeholder="alex@company.com"
@@ -75,6 +103,7 @@ export default function ContactPage() {
                   <label htmlFor="inquiry-type" className="font-medium text-slate-700">Inquiry Type</label>
                   <select
                     id="inquiry-type"
+                    name="inquiryType"
                     className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] focus:outline-none focus:ring-2 focus:ring-black/10"
                     defaultValue=""
                     required
@@ -89,8 +118,10 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="font-medium text-slate-700">How can we help?</label>
+                  <label htmlFor="contact-message" className="font-medium text-slate-700">How can we help?</label>
                   <textarea
+                    id="contact-message"
+                    name="message"
                     rows={4}
                     required
                     placeholder="Tell us about your tech stack, repository setup, or technical question..."
@@ -98,11 +129,14 @@ export default function ContactPage() {
                   />
                 </div>
 
+                {error && <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">{error}</div>}
                 <button
                   type="submit"
+                  disabled={submitting}
+                  aria-busy={submitting ? 'true' : undefined}
                   className="px-8 py-3 rounded-full bg-[#000E29] hover:bg-black text-white text-xs font-semibold transition-all shadow-xs"
                 >
-                  Send Inquiry
+                  {submitting ? 'Sending…' : 'Send Inquiry'}
                 </button>
               </form>
             )}
