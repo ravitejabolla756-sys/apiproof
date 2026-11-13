@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
 import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
-
-interface GitHubInstallationInfo {
-  id: string;
-  accountLogin: string;
-  accountType: string;
-}
+import { parseGitHubInstallRedirect, parseGitHubInstallationResponse, type GitHubInstallationInfo } from "@/lib/github-installation-contract";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -34,12 +29,9 @@ export default function SettingsPage() {
       ]);
 
       if (repoRes.ok) {
-        const repoData = await repoRes.json();
-        if (repoData.connected && repoData.installation) {
-          setInstallation(repoData.installation);
-        } else {
-          setInstallation(null);
-        }
+        const installation = parseGitHubInstallationResponse(await repoRes.json());
+        if (installation === undefined) throw new Error("GitHub installation returned an invalid response.");
+        setInstallation(installation);
       }
 
       if (billingRes.ok) {
@@ -53,9 +45,9 @@ export default function SettingsPage() {
           setBillingError(null);
         }
       } else {
-        const billingData = await billingRes.json().catch(() => ({}));
+        await billingRes.json().catch(() => ({}));
         setBilling(null);
-        setBillingError(typeof billingData?.error === 'string' ? billingData.error : 'Billing summary is unavailable for this workspace.');
+        setBillingError('Billing summary is unavailable for this workspace.');
       }
     } catch (loadError) {
       setStatusError(loadError instanceof Error ? loadError.message : "Workspace settings are temporarily unavailable.");
@@ -76,11 +68,11 @@ export default function SettingsPage() {
     setError(null);
     try {
       const res = await fetch('/api/github/install');
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || "Failed to generate installation URL");
+      const installUrl = parseGitHubInstallRedirect(await res.json());
+      if (!res.ok || !installUrl) {
+        throw new Error("GitHub installation is temporarily unavailable.");
       }
-      window.location.href = data.url;
+      window.location.href = installUrl;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initiate GitHub connection.");
       setConnecting(false);
