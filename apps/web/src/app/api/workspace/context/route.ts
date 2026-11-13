@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
-import { organizationErrorResponse, WORKSPACE_CONTEXT_COOKIE } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, WORKSPACE_CONTEXT_COOKIE } from '@/lib/server/organization-route.js';
 import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse, validateSafeId } from '@/lib/server/validation.js';
 import { requireWorkspaceMember } from '@/lib/server/workspace-service.js';
 import { isProductionRuntime } from '@/lib/server/runtime-mode.js';
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
 
   try {
     const body = await req.json() as { workspaceId?: unknown };
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const workspace = await requireWorkspaceMember(user.id, validation.data);
     const response = NextResponse.json(
       { workspace },
-      { headers: { 'Cache-Control': 'private, no-store, max-age=0' } },
+      { headers: PRIVATE_NO_STORE_HEADERS },
     );
     response.cookies.set(WORKSPACE_CONTEXT_COOKIE, workspace.id, {
       httpOnly: true,
