@@ -6,6 +6,7 @@ import {
   requireWorkspaceMember,
 } from '@/lib/server/workspace-service';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { evaluateVerifiedUserPolicy, loadVerifiedUserPolicy, verifiedUserFailure } from '@/lib/server/verified-user-policy.js';
 
 export async function GET(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -15,6 +16,10 @@ export async function GET(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+
+  const verification = evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'provider_link'));
+  const verificationFailure = verifiedUserFailure(verification);
+  if (verificationFailure) return NextResponse.json(verificationFailure, { status: verificationFailure.status });
 
   const urlObj = new URL(req.url);
   const requestedWorkspaceId = urlObj.searchParams.get('workspaceId');

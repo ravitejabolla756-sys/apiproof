@@ -9,6 +9,7 @@ import {
   verifyGitHubAppInstallation,
 } from '@/lib/server/github.js';
 import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
+import { evaluateVerifiedUserPolicy, loadVerifiedUserPolicy, verifiedUserFailure } from '@/lib/server/verified-user-policy.js';
 
 export async function GET(req: Request) {
   // 1. Authenticate APIProof session
@@ -16,6 +17,10 @@ export async function GET(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized: Session required for installation callback.', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+
+  const verification = evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'provider_link'));
+  const verificationFailure = verifiedUserFailure(verification);
+  if (verificationFailure) return NextResponse.json(verificationFailure, { status: verificationFailure.status });
 
   const urlObj = new URL(req.url);
   const installationId = urlObj.searchParams.get('installation_id');
