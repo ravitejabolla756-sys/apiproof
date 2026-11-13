@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -34,24 +34,31 @@ interface MigrationItem {
 export default function MigrationsWorkbenchPage() {
   const [migrations, setMigrations] = useState<MigrationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadMigrations() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/migrations");
-      if (res.ok) {
-        const json = await res.json();
-        setMigrations(json.migrations || []);
-      }
-    } catch (err) {
-      console.error("Failed to load migrations:", err);
+      if (!res.ok) throw new Error("Migration review records are temporarily unavailable.");
+      const json = await res.json() as { migrations?: unknown };
+      if (!Array.isArray(json.migrations)) throw new Error("Migration review returned an invalid response.");
+      setMigrations(json.migrations as MigrationItem[]);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Migration review records are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadMigrations();
+    void loadMigrations();
   }, []);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
@@ -68,7 +75,10 @@ export default function MigrationsWorkbenchPage() {
         </div>
 
         <Button
+          type="button"
           onClick={loadMigrations}
+          disabled={loading}
+          aria-busy={loading ? "true" : undefined}
           variant="outline"
           size="sm"
           icon={<RefreshCw className="w-3.5 h-3.5" />}
@@ -78,10 +88,18 @@ export default function MigrationsWorkbenchPage() {
         </Button>
       </div>
 
+      {error && <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{error} Use Refresh to try again.</div>}
+
       {loading ? (
         <div className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Loading review records...</span>
+        </div>
+      ) : error ? (
+        <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
+          <FileCheck2 aria-hidden="true" className="w-8 h-8 text-emerald-600 mx-auto" />
+          <p className="font-semibold text-base text-[#111111]">Review records cannot be displayed</p>
+          <p className="text-xs text-[#686868]">Reconnect to the workspace and use Refresh to try again.</p>
         </div>
       ) : migrations.length === 0 ? (
         <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-3">
