@@ -3,12 +3,15 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { createSlackAuthorizationUrl } from '@/lib/server/slack-oauth.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'provider_link');
+  if (verificationFailure) return verificationFailure;
   try {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
     const url = await createSlackAuthorizationUrl(user.id, workspace.id);

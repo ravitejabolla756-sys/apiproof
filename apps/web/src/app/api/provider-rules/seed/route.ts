@@ -4,6 +4,7 @@ import { resolveWorkspaceForRequest } from '../../../../lib/server/organization-
 import { seedOfficialProviderReviewQueue } from '../../../../lib/server/provider-review-queue-seed.js';
 import { requireWorkspaceOwner } from '../../../../lib/server/workspace-service.js';
 import { assertCsrfProtection } from '../../../../lib/server/validation.js';
+import { verifiedUserRouteFailure } from '../../../../lib/server/verified-user-route.js';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -13,7 +14,7 @@ const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
  * This endpoint deliberately does not approve rules, enqueue rescans, or write
  * to connected repositories. Every imported candidate remains needs_review.
  */
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: Request): Promise<Response> {
   const csrf = assertCsrfProtection(request);
   if (!csrf.valid) {
     return NextResponse.json(
@@ -24,6 +25,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStore });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   try {
     const workspace = await resolveWorkspaceForRequest(request, user.id);

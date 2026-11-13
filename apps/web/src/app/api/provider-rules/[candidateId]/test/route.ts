@@ -5,14 +5,17 @@ import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
 import { collectProviderRuleTestTokens, findProviderRuleTestMatches } from '@/lib/server/provider-rule-test';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 type RouteContext = { params: Promise<{ candidateId: string }> };
 
-export async function POST(request: Request, context: RouteContext): Promise<NextResponse> {
+export async function POST(request: Request, context: RouteContext): Promise<Response> {
   const csrf = assertCsrfProtection(request);
   if (!csrf.valid) return NextResponse.json({ error: csrf.error ?? 'Forbidden: Cross-site request rejected.', code: 'CSRF_REJECTED' }, { status: 403 });
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
   try {
     const workspace = await resolveWorkspaceForRequest(request, user.id);
     await requireWorkspaceOwner(user.id, workspace.id);
