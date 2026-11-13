@@ -38,5 +38,5 @@ export async function requestTrackedEmailVerification(
       () => transport(buildEmailVerificationMessage(message)),
       database,
     );
-  });
+  }, { allowUnconfiguredTransport: transport !== sendTransactionalEmail });
 }

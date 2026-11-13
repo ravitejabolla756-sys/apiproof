@@ -65,6 +65,7 @@ async function sendDefaultEmail(message: EmailVerificationMessage): Promise<void
 export async function requestEmailVerification(
   userId: string,
   sendEmail: (message: EmailVerificationMessage) => Promise<void> = sendDefaultEmail,
+  options: { allowUnconfiguredTransport?: boolean } = {},
 ): Promise<'sent' | 'already_verified' | 'unavailable'> {
   const db = getDatabase();
   const user = await db.queryOne<{ email: string; name: string; email_verified_at: string | null }>(
@@ -72,7 +73,7 @@ export async function requestEmailVerification(
   );
   if (!user) return 'unavailable';
   if (user.email_verified_at) return 'already_verified';
-  if (!getSmtpConfiguration()) return 'unavailable';
+  if (!options.allowUnconfiguredTransport && !getSmtpConfiguration()) return 'unavailable';
 
   const token = crypto.randomBytes(32).toString('base64url');
   const tokenHash = digestToken(token);
