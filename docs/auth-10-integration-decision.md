@@ -9,7 +9,8 @@ and provider-link actions, and fails closed when the verification state is not
 available. It never trusts a client-supplied verification flag.
 
 The policy is covered by disposable local unit tests, including malformed state,
-unverified users, provider-verified users, and unavailable verification state.
+unverified users, provider-verified users, unavailable verification state, and
+future verification timestamps that must fail closed.
 
 ## Deliberately not activated
 

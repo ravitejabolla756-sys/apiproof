@@ -28,4 +28,9 @@ describe('verified-user policy boundary', () => {
   it('does not let an unapproved client-like value grant access', () => {
     expect(evaluateVerifiedUserPolicy({ action: 'workspace', verificationStateAvailable: true, providerVerified: false, emailVerifiedAt: 'true' })).toBe('require_verification');
   });
+
+  it('rejects a future verification timestamp instead of trusting clock-skewed state', () => {
+    const future = new Date(Date.now() + 60_000).toISOString();
+    expect(evaluateVerifiedUserPolicy({ action: 'workspace', verificationStateAvailable: true, emailVerifiedAt: future })).toBe('require_verification');
+  });
 });

@@ -27,7 +27,9 @@ export interface VerifiedUserPolicyInput {
 const ALWAYS_AVAILABLE_ACTIONS = new Set<VerifiedUserAction>(['onboarding', 'recovery']);
 
 function hasValidVerificationTimestamp(value: string | null | undefined): boolean {
-  return typeof value === 'string' && Number.isFinite(Date.parse(value));
+  if (typeof value !== 'string') return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && timestamp <= Date.now();
 }
 
 /**
