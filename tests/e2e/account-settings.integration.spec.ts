@@ -7,7 +7,8 @@ test('authenticated account settings loads and supports profile update', async (
   await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible();
   await expect(page.getByLabel('Email')).toHaveValue('developer@apiproof.dev');
   const name = page.getByLabel('Display name');
-  await name.fill('Browser Verified User');
+  const updatedName = `${await name.inputValue()} Verified`;
+  await name.fill(updatedName);
   await page.getByRole('button', { name: 'Save profile' }).click();
   await expect(page.getByRole('status')).toContainText('Profile updated.');
 });
