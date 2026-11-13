@@ -57,6 +57,27 @@ export type MigrationDetail = {
   verification_job_status?: string | null;
 };
 
+export type MigrationProposalSummary = {
+  pullRequestId: string;
+  number: number;
+  title: string;
+  url: string;
+  branchName: string;
+  baseBranch: string;
+  state: string;
+  humanReviewRequired: true;
+  autoMergeEnabled: false;
+  patchDigest: string;
+  createdAt: string;
+};
+
+export type MigrationVerificationJob = {
+  jobId: string;
+  status: 'verification_in_progress' | 'completed' | 'execution_unavailable' | 'failed';
+  proposal?: MigrationProposalSummary;
+  errorCode?: string;
+};
+
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -127,6 +148,69 @@ function parseMigration(value: unknown): MigrationDetail | null | undefined {
     ...(optionalText('target_branch') ? { target_branch: optionalText('target_branch') } : {}), ...(optionalText('pr_state') ? { pr_state: optionalText('pr_state') } : {}),
     ...(lifecycle ? { lifecycle_state: lifecycle } : {}), ...(value.verification_job_id !== undefined ? { verification_job_id: jobId! } : {}),
     ...(value.verification_job_status !== undefined ? { verification_job_status: jobStatus! } : {}) };
+}
+
+function parseProposal(value: unknown): MigrationProposalSummary | null {
+  if (!record(value)) return null;
+  const pullRequestId = text(value.pullRequestId);
+  const title = text(value.title);
+  const url = text(value.url);
+  const branchName = text(value.branchName);
+  const baseBranch = text(value.baseBranch);
+  const state = text(value.state);
+  const patchDigest = text(value.patchDigest);
+  const createdAt = text(value.createdAt);
+  if (!pullRequestId || !title || !url?.startsWith('https://') || !branchName || !baseBranch || !state || !patchDigest || !createdAt
+    || !Number.isSafeInteger(value.number) || Number(value.number) < 1
+    || value.humanReviewRequired !== true || value.autoMergeEnabled !== false) return null;
+  return { pullRequestId, number: Number(value.number), title, url, branchName, baseBranch, state,
+    humanReviewRequired: true, autoMergeEnabled: false, patchDigest, createdAt };
+}
+
+function parseVerificationJob(value: unknown): MigrationVerificationJob | null {
+  if (!record(value)) return null;
+  const jobId = text(value.jobId);
+  const status = oneOf(value.status, ['verification_in_progress', 'completed', 'execution_unavailable', 'failed'] as const);
+  const errorCode = value.errorCode === undefined ? undefined : text(value.errorCode) ?? undefined;
+  if (!jobId || !status || (value.errorCode !== undefined && !errorCode)) return null;
+  const proposal = value.proposal === undefined || value.proposal === null ? undefined : parseProposal(value.proposal) ?? undefined;
+  if (value.proposal !== undefined && value.proposal !== null && !proposal) return null;
+  if (status === 'completed' && !proposal) return null;
+  return { jobId, status, ...(proposal ? { proposal } : {}), ...(errorCode ? { errorCode } : {}) };
+}
+
+export function parseMigrationPlanResponse(value: unknown): { migration: MigrationDetail } | null {
+  if (!record(value) || value.success !== true) return null;
+  const migration = parseMigration(value.migration);
+  return migration ? { migration } : null;
+}
+
+export function parseMigrationProposalResponse(value: unknown): { proposal?: MigrationProposalSummary; job?: MigrationVerificationJob } | null {
+  if (!record(value) || value.success !== true) return null;
+  const proposal = value.proposal === undefined ? undefined : parseProposal(value.proposal) ?? undefined;
+  const job = value.job === undefined ? undefined : parseVerificationJob(value.job) ?? undefined;
+  if (value.proposal !== undefined && !proposal || value.job !== undefined && !job || (proposal === undefined && job === undefined) || (proposal !== undefined && job !== undefined)) return null;
+  return { ...(proposal ? { proposal } : {}), ...(job ? { job } : {}) };
+}
+
+export function parseMigrationJobResponse(value: unknown): { job: MigrationVerificationJob } | null {
+  if (!record(value)) return null;
+  const job = parseVerificationJob(value.job);
+  return job ? { job } : null;
+}
+
+export function migrationActionErrorMessage(value: unknown, fallback: string): string {
+  if (!record(value) || typeof value.code !== 'string') return fallback;
+  const messages: Record<string, string> = {
+    NOT_FOUND: 'The migration or repository is no longer available.',
+    PLAN_LIMIT_EXCEEDED: 'The workspace draft-proposal limit is unavailable or has been reached.',
+    PLANNING_UNAVAILABLE: 'Migration planning is temporarily unavailable.',
+    PROPOSAL_UNAVAILABLE: 'Draft proposal generation is temporarily unavailable.',
+    VERIFICATION_EXECUTION_UNAVAILABLE: 'Secure verification is unavailable. No Draft PR was created.',
+    VERIFICATION_JOB_FAILED: 'Secure verification did not complete. No Draft PR was created.',
+    VERIFICATION_RESULT_INVALID: 'Secure verification returned an invalid result. No Draft PR was created.',
+  };
+  return messages[value.code] ?? fallback;
 }
 
 function parseFinding(value: unknown): FindingDetail | null {

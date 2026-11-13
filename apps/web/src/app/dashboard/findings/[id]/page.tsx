@@ -6,7 +6,15 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
 import { Button } from "@/components/ui/button";
-import { parseFindingDetailResponse, type FindingDetail, type MigrationDetail } from "@/lib/finding-detail-contract";
+import {
+  migrationActionErrorMessage,
+  parseFindingDetailResponse,
+  parseMigrationJobResponse,
+  parseMigrationPlanResponse,
+  parseMigrationProposalResponse,
+  type FindingDetail,
+  type MigrationDetail,
+} from "@/lib/finding-detail-contract";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -66,8 +74,8 @@ export default function FindingDetailPage({
       fetchStatus: async () => {
         const response = await fetch(`/api/migrations/propose?migrationId=${encodeURIComponent(migrationId)}`, { cache: 'no-store' });
         if (!response.ok) return null;
-        const payload = await response.json();
-        return payload.job as { status?: string; errorCode?: string; proposal?: { number: number; state: string; branchName: string } } | null;
+        const payload = parseMigrationJobResponse(await response.json());
+        return payload?.job ?? null;
       },
       onStatus: (job) => {
         setMigration((current) => current?.id === migrationId ? { ...current, verification_job_status: job.status } : current);
@@ -97,9 +105,10 @@ export default function FindingDetailPage({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ findingId: finding.id }),
       });
-      const payload = await response.json() as { migration?: MigrationDetail; error?: string };
-      if (!response.ok || !payload.migration) throw new Error(payload.error ?? 'Migration planning failed.');
-      setMigration(payload.migration);
+      const payload = await response.json();
+      const parsed = parseMigrationPlanResponse(payload);
+      if (!response.ok || !parsed) throw new Error(migrationActionErrorMessage(payload, 'Migration planning failed.'));
+      setMigration(parsed.migration);
       setMessage({ text: 'Migration plan created. Review it before requesting a verified Draft PR.' });
     } catch (error) {
       setMessage({ text: error instanceof Error ? error.message : 'Migration planning failed.', error: true });
@@ -118,20 +127,17 @@ export default function FindingDetailPage({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ migrationId: migration.id }),
       });
-      const payload = await response.json() as {
-        proposal?: { number: number; state: string; branchName: string };
-        job?: { id?: string; status?: string };
-        error?: string;
-      };
-      if (!response.ok) throw new Error(payload.error ?? 'Draft PR creation failed.');
-      if (payload.proposal) {
-        setMessage({ text: `${getPullRequestStateLabel(payload.proposal.state)} #${payload.proposal.number} on branch ${payload.proposal.branchName}.` });
+      const payload = await response.json();
+      const parsed = parseMigrationProposalResponse(payload);
+      if (!response.ok || !parsed) throw new Error(migrationActionErrorMessage(payload, 'Draft PR creation failed.'));
+      if (parsed.proposal) {
+        setMessage({ text: `${getPullRequestStateLabel(parsed.proposal.state)} #${parsed.proposal.number} on branch ${parsed.proposal.branchName}.` });
         await loadFinding();
-      } else if (payload.job) {
+      } else if (parsed.job) {
         setMigration((current) => current ? {
           ...current,
-          verification_job_id: payload.job?.id ?? current.verification_job_id,
-          verification_job_status: payload.job?.status ?? 'verification_in_progress',
+          verification_job_id: parsed.job?.jobId ?? current.verification_job_id,
+          verification_job_status: parsed.job?.status ?? 'verification_in_progress',
           lifecycle_state: 'Verification Pending',
         } : current);
         setMessage({ text: 'Secure verification started. No repository change will be created until verification passes.' });
