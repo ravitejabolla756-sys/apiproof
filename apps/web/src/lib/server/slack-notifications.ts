@@ -224,6 +224,7 @@ async function refreshSlackCredential(
 export type SlackMessageConnection = {
   id: string;
   workspace_id: string;
+  connected_by: string;
   team_id: string;
   installer_slack_user_id: string;
   token_ciphertext: string;
