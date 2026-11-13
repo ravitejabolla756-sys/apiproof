@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
   const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
   if (verificationFailure) return verificationFailure;
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
         metric: 'repositories',
         limit: limitCheck.limit,
         current: limitCheck.current,
-      }, { status: 402 });
+      }, { status: 402, headers: PRIVATE_NO_STORE_HEADERS });
     }
 
     let owner: string;
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
           error: 'Workspace does not have a connected GitHub App installation. Please connect GitHub first.',
           code: 'NO_GITHUB_INSTALLATION',
-        }, { status: 400 });
+        }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
       }
 
       // 2. Fetch authoritative repository metadata from GitHub using workspace installation token
@@ -163,7 +163,7 @@ export async function POST(req: Request) {
           code: 'REPOSITORY_ALREADY_CONNECTED',
           ...(sameWorkspace ? { id: activeIdentity.id } : {}),
         },
-        { status: 409 }
+        { status: 409, headers: PRIVATE_NO_STORE_HEADERS }
       );
     }
 
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
     if (existing) {
       return NextResponse.json(
         { error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED', id: existing.id },
-        { status: 409 }
+        { status: 409, headers: PRIVATE_NO_STORE_HEADERS }
       );
     }
 
@@ -210,7 +210,7 @@ export async function POST(req: Request) {
         status: 'connected',
         createdAt: now,
       },
-    });
+    }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to connect repository.';
     if (message.includes('idx_repositories_active_github_identity') || message.includes('unique constraint') || message.includes('duplicate key')) {

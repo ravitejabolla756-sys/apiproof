@@ -6,12 +6,13 @@ import { requireFindingAccess } from '@/lib/server/workspace-service';
 import { getMigrationLifecycleState } from '@/lib/server/migration-lifecycle';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
 import { resolveFindingCapability } from '@/lib/server/finding-capability';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let finding;
@@ -21,7 +22,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     finding = access.finding;
     repository = access.repository;
   } catch {
-    return NextResponse.json({ error: 'Finding not found or access denied.' }, { status: 404 });
+    return NextResponse.json({ error: 'Finding not found or access denied.', code: 'FINDING_NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const db = getDatabase();
@@ -111,5 +112,5 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       branch_name: canonicalBranch,
       plan: planJson,
     } : null,
-  }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  }, { headers: PRIVATE_NO_STORE_HEADERS });
 }

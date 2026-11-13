@@ -3,12 +3,12 @@ import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
 import { resolveFindingCapability } from '@/lib/server/finding-capability.js';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let workspace;
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
   } catch {
     return NextResponse.json(
       { error: 'Findings are temporarily unavailable.' },
-      { status: 503, headers: { 'Cache-Control': 'private, no-store' } },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
 
@@ -93,6 +93,6 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json({ findings: response }, {
-    headers: { 'Cache-Control': 'private, no-store' },
+    headers: PRIVATE_NO_STORE_HEADERS,
   });
 }
