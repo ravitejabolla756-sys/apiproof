@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
+import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
@@ -41,9 +41,9 @@ interface BillingSummary {
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
   const [installation, setInstallation] = useState<GitHubInstallationInfo | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
+  const [billingError, setBillingError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function loadStatus() {
@@ -65,6 +65,11 @@ export default function SettingsPage() {
       if (billingRes.ok) {
         const billingData = await billingRes.json();
         setBilling(billingData);
+        setBillingError(null);
+      } else {
+        const billingData = await billingRes.json().catch(() => ({}));
+        setBilling(null);
+        setBillingError(typeof billingData?.error === 'string' ? billingData.error : 'Billing summary is unavailable for this workspace.');
       }
     } catch (err: unknown) {
       console.error("Failed to load settings data:", err);
@@ -90,44 +95,6 @@ export default function SettingsPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initiate GitHub connection.");
       setConnecting(false);
-    }
-  }
-
-  async function handleCheckout(planId: string) {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error || "Failed to initiate checkout session");
-      }
-      window.location.href = data.checkoutUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate checkout URL.");
-      setUpgrading(false);
-    }
-  }
-
-  async function handlePortal() {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/portal', {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (!res.ok || !data.portalUrl) {
-        throw new Error(data.error || "Failed to generate portal session");
-      }
-      window.location.href = data.portalUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate portal URL.");
-      setUpgrading(false);
     }
   }
 
@@ -247,29 +214,22 @@ export default function SettingsPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     {billing.plan.id === 'free' ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCheckout('pro')}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                        <span>Pro is planned after the invite-only beta</span>
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <span role="status" className="text-[11px] text-[#686868]">Paid plans are unavailable during the invite-only beta.</span>
+                        <Link href="/contact" className="inline-flex min-h-10 items-center rounded-lg border border-[#D9D9D4] bg-white px-3 text-[11px] font-medium text-[#111111] hover:bg-[#F6F6F4]">Contact support</Link>
+                      </div>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handlePortal}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                        <span>Manage Customer Portal</span>
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <span role="status" className="text-[11px] text-[#686868]">Customer portal is unavailable until billing is configured.</span>
+                        <Link href="/contact" className="inline-flex min-h-10 items-center rounded-lg border border-[#D9D9D4] bg-white px-3 text-[11px] font-medium text-[#111111] hover:bg-[#F6F6F4]">Contact support</Link>
+                      </div>
                     )}
                   </div>
                 </div>
+              </div>
+            ) : billingError ? (
+              <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+                {billingError}
               </div>
             ) : null}
           </div>
