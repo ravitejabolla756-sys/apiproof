@@ -27,12 +27,20 @@ import { requestTrackedEmailVerification } from '@/lib/server/email-verification
 import { isValidEmailVerificationToken, verifyEmail } from '@/lib/server/email-verification.js';
 import { EmailDeliveryUnavailableError } from '@/lib/server/email-delivery-state.js';
 
+const AUTH_NO_STORE_HEADERS = { 'Cache-Control': 'private, no-store, max-age=0' };
+
+function authResponse(body: unknown, init: ResponseInit = {}): NextResponse {
+  const headers = new Headers(init.headers);
+  for (const [name, value] of Object.entries(AUTH_NO_STORE_HEADERS)) headers.set(name, value);
+  return NextResponse.json(body, { ...init, headers });
+}
+
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ authenticated: false, user: null, code: 'UNAUTHORIZED' }, { status: 401 });
+    return authResponse({ authenticated: false, user: null, code: 'UNAUTHORIZED' }, { status: 401 });
   }
-  return NextResponse.json({ authenticated: true, user });
+  return authResponse({ authenticated: true, user });
 }
 
 export async function POST(req: Request) {
@@ -50,7 +58,7 @@ export async function POST(req: Request) {
 
     if (action === 'request_password_reset') {
       if (!isPasswordResetEmailConfigured()) {
-        return NextResponse.json(
+        return authResponse(
           { error: 'Password recovery is temporarily unavailable.', code: 'PASSWORD_RESET_UNAVAILABLE' },
           { status: 503 },
         );
@@ -74,7 +82,7 @@ export async function POST(req: Request) {
         // Keep the response indistinguishable for existing and unknown accounts.
         console.error('[password-reset] Email delivery failed.');
       }
-      return NextResponse.json({ success: true, message: 'If an account exists for that email, reset instructions will be sent.' }, { status: 202 });
+      return authResponse({ success: true, message: 'If an account exists for that email, reset instructions will be sent.' }, { status: 202 });
     }
 
     if (action === 'complete_password_reset') {
@@ -85,9 +93,9 @@ export async function POST(req: Request) {
 
       const completed = await completePasswordReset(validation.data.token, validation.data.password);
       if (!completed) {
-        return NextResponse.json({ error: 'This reset link is invalid or expired.', code: 'INVALID_RESET_TOKEN' }, { status: 400 });
+        return authResponse({ error: 'This reset link is invalid or expired.', code: 'INVALID_RESET_TOKEN' }, { status: 400 });
       }
-      return NextResponse.json({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
+      return authResponse({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
     }
 
     if (action === 'logout') {
@@ -95,7 +103,7 @@ export async function POST(req: Request) {
       if (sessionId) {
         await deleteSession(sessionId);
       }
-      const res = NextResponse.json({ success: true, message: 'Logged out successfully.' });
+      const res = authResponse({ success: true, message: 'Logged out successfully.' });
       const clearOptions = getClearAuthCookieOptions();
       res.cookies.set(AUTH_COOKIE_NAME, '', clearOptions);
       return res;
@@ -119,7 +127,7 @@ export async function POST(req: Request) {
       try {
         const { user, session } = await createUserWithSession(email, password, name);
         const cookieOptions = getAuthCookieOptions(session.expiresAt);
-        const res = NextResponse.json({ success: true, user });
+        const res = authResponse({ success: true, user });
         res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
         return res;
       } catch (err: unknown) {
@@ -129,7 +137,7 @@ export async function POST(req: Request) {
           message.includes('unique constraint') ||
           message.includes('duplicate key')
         ) {
-          return NextResponse.json(
+          return authResponse(
             { error: 'User with this email already exists.', code: 'USER_ALREADY_EXISTS' },
             { status: 409 }
           );
@@ -156,7 +164,7 @@ export async function POST(req: Request) {
 
       const user = await authenticateUser(email, password);
       if (!user) {
-        return NextResponse.json(
+        return authResponse(
           { error: 'Invalid email or password.', code: 'INVALID_CREDENTIALS' },
           { status: 401 }
         );
@@ -164,7 +172,7 @@ export async function POST(req: Request) {
 
       const session = await createSession(user.id);
       const cookieOptions = getAuthCookieOptions(session.expiresAt);
-      const res = NextResponse.json({ success: true, user });
+      const res = authResponse({ success: true, user });
       res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
       return res;
     }
@@ -173,30 +181,30 @@ export async function POST(req: Request) {
       const token = body && typeof body.token === 'string' ? body.token : undefined;
       if (!isValidEmailVerificationToken(token)) return badRequestResponse('A valid email verification token is required.');
       const result = await verifyEmail(token);
-      if (result === 'invalid') return NextResponse.json({ error: 'This email verification link is invalid or expired.', code: 'INVALID_EMAIL_VERIFICATION_TOKEN' }, { status: 400 });
-      return NextResponse.json({ success: true, code: result === 'already_verified' ? 'EMAIL_ALREADY_VERIFIED' : 'EMAIL_VERIFIED' });
+      if (result === 'invalid') return authResponse({ error: 'This email verification link is invalid or expired.', code: 'INVALID_EMAIL_VERIFICATION_TOKEN' }, { status: 400 });
+      return authResponse({ success: true, code: result === 'already_verified' ? 'EMAIL_ALREADY_VERIFIED' : 'EMAIL_VERIFIED' });
     }
 
     if (action === 'resend_verification') {
       const user = await getCurrentUser(req);
-      if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+      if (!user) return authResponse({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
       const rateCheck = await checkRateLimit(`auth:resend-verification:${clientIp}:${user.id}`, 3, 15 * 60 * 1000, { failClosed: true });
       if (!rateCheck.allowed) return rateLimitResponse(rateCheck.resetInMs);
       try {
         const result = await requestTrackedEmailVerification(user.id);
-        if (result === 'already_verified') return NextResponse.json({ success: true, code: 'EMAIL_ALREADY_VERIFIED' });
-        if (result === 'unavailable') return NextResponse.json({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
-        return NextResponse.json({ success: true, code: 'EMAIL_VERIFICATION_SENT' }, { status: 202 });
+        if (result === 'already_verified') return authResponse({ success: true, code: 'EMAIL_ALREADY_VERIFIED' });
+        if (result === 'unavailable') return authResponse({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
+        return authResponse({ success: true, code: 'EMAIL_VERIFICATION_SENT' }, { status: 202 });
       } catch (error) {
         if (error instanceof EmailDeliveryUnavailableError || (error instanceof Error && error.message === 'EMAIL_VERIFICATION_EMAIL_NOT_CONFIGURED')) {
-          return NextResponse.json({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
+          return authResponse({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
         }
         throw error;
       }
     }
 
-    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset, verify_email, resend_verification.', code: 'INVALID_ACTION' }, { status: 400 });
+    return authResponse({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset, verify_email, resend_verification.', code: 'INVALID_ACTION' }, { status: 400 });
   } catch {
-    return NextResponse.json({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
+    return authResponse({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 }
