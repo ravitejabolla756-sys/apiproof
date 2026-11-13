@@ -95,7 +95,8 @@ async function claimDelivery(id: string, database: DatabaseAdapter): Promise<Ema
     SET status = 'processing', attempt_count = attempt_count + 1, updated_at = ?, error_category = NULL,
         claimed_by = ?, lease_expires_at = ?
     WHERE id = ? AND status = 'pending' AND attempt_count < ?
-  `, [now, workerId, leaseExpiresAt, id, EMAIL_DELIVERY_MAX_ATTEMPTS]);
+      AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+  `, [now, workerId, leaseExpiresAt, id, EMAIL_DELIVERY_MAX_ATTEMPTS, now]);
   if (claimed.changes !== 1) return undefined;
   return database.queryOne<EmailDeliveryRecord>('SELECT * FROM email_deliveries WHERE id = ?', [id]);
 }
@@ -107,18 +108,29 @@ export async function getEmailDelivery(eventKey: string, database: DatabaseAdapt
 
 export async function requeueRetryableEmailDeliveries(now = new Date().toISOString(), database: DatabaseAdapter = getDatabase()): Promise<number> {
   await requireEmailLedger(database);
-  await database.execute(`
-    UPDATE email_deliveries
-    SET status = 'failed', error_category = 'EMAIL_DELIVERY_UNCERTAIN', next_attempt_at = NULL,
-        claimed_by = NULL, lease_expires_at = NULL, updated_at = ?
-    WHERE status = 'processing' AND lease_expires_at IS NOT NULL AND lease_expires_at <= ?
-  `, [now, now]);
-  const result = await database.execute(`
-    UPDATE email_deliveries
-    SET status = 'pending', updated_at = ?, next_attempt_at = NULL
-    WHERE status = 'failed' AND attempt_count < ? AND next_attempt_at IS NOT NULL AND next_attempt_at <= ?
-  `, [now, EMAIL_DELIVERY_MAX_ATTEMPTS, now]);
-  return result.changes;
+  return database.transaction(async (tx) => {
+    const stale = await tx.query<{ id: string; attempt_count: number }>(`
+      SELECT id, attempt_count FROM email_deliveries
+      WHERE status = 'processing' AND lease_expires_at IS NOT NULL AND lease_expires_at <= ?
+    `, [now]);
+    for (const delivery of stale) {
+      const retryAt = delivery.attempt_count < EMAIL_DELIVERY_MAX_ATTEMPTS
+        ? new Date(Date.parse(now) + emailDeliveryRetryDelayMs(delivery.attempt_count)).toISOString()
+        : null;
+      await tx.execute(`
+        UPDATE email_deliveries
+        SET status = 'failed', error_category = 'EMAIL_DELIVERY_UNCERTAIN', next_attempt_at = ?,
+            claimed_by = NULL, lease_expires_at = NULL, updated_at = ?
+        WHERE id = ? AND status = 'processing' AND lease_expires_at <= ?
+      `, [retryAt, now, delivery.id, now]);
+    }
+    const result = await tx.execute(`
+      UPDATE email_deliveries
+      SET status = 'pending', updated_at = ?, next_attempt_at = NULL
+      WHERE status = 'failed' AND attempt_count < ? AND next_attempt_at IS NOT NULL AND next_attempt_at <= ?
+    `, [now, EMAIL_DELIVERY_MAX_ATTEMPTS, now]);
+    return result.changes;
+  });
 }
 
 export async function sendTrackedEmail(
