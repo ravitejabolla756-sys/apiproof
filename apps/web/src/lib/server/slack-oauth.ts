@@ -1,17 +1,16 @@
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from './workspace-service.js';
+import { requireWorkspaceCapability } from './workspace-service.js';
 import { encryptSlackToken, getSlackOAuthConfig, hashSlackOpaqueValue } from './slack-security.js';
 
 const OAUTH_STATE_TTL_MS = 15 * 60_000;
 const REQUIRED_BOT_SCOPES = new Set(['chat:write', 'im:write']);
 
-export async function createSlackAuthorizationUrl(userId: string): Promise<string> {
+export async function createSlackAuthorizationUrl(userId: string, workspaceId: string): Promise<string> {
   const config = getSlackOAuthConfig();
   // Validate encryption configuration before redirecting the user into an OAuth flow.
   encryptSlackToken('configuration-check');
-  const workspace = await getDefaultWorkspaceForUser(userId);
-  await requireWorkspaceCapability(userId, workspace.id, 'integration:manage');
+  const workspace = await requireWorkspaceCapability(userId, workspaceId, 'integration:manage');
   const state = crypto.randomBytes(32).toString('base64url');
   const now = new Date();
   await getDatabase().execute(`INSERT INTO slack_oauth_states
