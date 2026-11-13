@@ -6,6 +6,7 @@ import { getProviderSourceHealth } from '../../../../../lib/server/provider-sour
 import { workerRuntimeIdentity } from '../../../../../lib/server/provider-intelligence-feature.js';
 import { getRuntimeConfiguration } from '../../../../../lib/server/runtime-configuration.js';
 import { getScanWorkerMetrics } from '../../../../../lib/server/scan-worker.js';
+import { PRIVATE_NO_STORE_HEADERS } from '../../../../../lib/server/organization-route.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,7 +28,7 @@ async function countWhere(table: string, where: string): Promise<number> {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   try {
     const [sourceHealth, worker, approvedCandidates, reviewCandidates, pendingProviderRescans, pendingRepositoryRescans, pendingScanRequests] = await Promise.all([
       getProviderSourceHealth(),
@@ -53,9 +54,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         worker,
       },
       generatedAt: new Date().toISOString(),
-    });
+    }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch {
-    return NextResponse.json({ ok: false, error: 'PROVIDER_INTELLIGENCE_STATUS_FAILED' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Provider intelligence status is temporarily unavailable.', code: 'PROVIDER_INTELLIGENCE_STATUS_FAILED' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
 
@@ -64,5 +65,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(): Promise<NextResponse> {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'GET, POST' } });
+  return NextResponse.json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, { status: 405, headers: { ...PRIVATE_NO_STORE_HEADERS, Allow: 'GET, POST' } });
 }
