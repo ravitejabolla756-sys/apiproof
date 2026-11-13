@@ -29,6 +29,7 @@
     "beta:live-preflight": "tsx --conditions=apiproof-source apps/web/scripts/beta-live-preflight.ts",
     "beta:capture-evidence": "tsx --conditions=apiproof-source apps/web/scripts/beta-capture-evidence.ts",
     "release:manifest": "tsx --conditions=apiproof-source apps/web/scripts/release-manifest.ts",
+    "release:staging:dry-run": "tsx --conditions=apiproof-source apps/web/scripts/sec17-staging-dry-run.ts",
     "provider:review-report": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-report.ts",
     "provider:review-pack": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-pack.ts",
     "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts all",
