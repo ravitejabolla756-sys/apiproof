@@ -12,6 +12,16 @@ export type AuditPageProjection = {
   nextCursor: string | null;
 };
 
+const AUDIT_ACTION_LABELS: Record<string, string> = {
+  'workspace.updated': 'Workspace settings updated',
+  'member.role_updated': 'Member role updated',
+  'member.revoked': 'Workspace member access revoked',
+  'member.pending_invitations_invalidated': 'Pending invitations invalidated',
+  'invitation.created': 'Invitation created',
+  'invitation.revoked': 'Invitation cancelled',
+  'invitation.accepted': 'Invitation accepted',
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -71,4 +81,12 @@ export function mergeAuditEvents(current: AuditEventProjection[], next: AuditEve
     seen.add(event.id);
   }
   return [...current, ...next];
+}
+
+/** Convert internal action codes to stable user-facing labels without exposing raw metadata. */
+export function formatAuditAction(action: string): string {
+  const knownLabel = AUDIT_ACTION_LABELS[action];
+  if (knownLabel) return knownLabel;
+  const fallback = action.replace(/[._-]+/g, ' ').trim();
+  return fallback ? fallback.charAt(0).toUpperCase() + fallback.slice(1) : 'Administrative action';
 }
