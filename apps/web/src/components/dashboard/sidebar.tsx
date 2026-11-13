@@ -6,6 +6,11 @@ import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import { signOutSession } from "@/lib/session-logout";
 import {
+  parseWorkspaceContextSelection,
+  readWorkspaceContextError,
+  workspaceContextErrorMessage,
+} from "@/lib/workspace-context-contract";
+import {
   LayoutDashboard,
   GitBranch,
   Boxes,
@@ -81,12 +86,14 @@ export function Sidebar() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId }),
       });
-      const data = await response.json() as { workspace?: { id?: unknown; name?: unknown }; error?: unknown };
-      if (!response.ok || !data.workspace || typeof data.workspace.id !== 'string' || typeof data.workspace.name !== 'string') {
-        throw new Error(typeof data.error === 'string' ? data.error : 'Workspace could not be selected.');
+      const data: unknown = await response.json();
+      const selection = parseWorkspaceContextSelection(data);
+      if (!response.ok || !selection) {
+        const error = readWorkspaceContextError(data);
+        throw new Error(workspaceContextErrorMessage(response.status, error?.code ?? null));
       }
-      setActiveWorkspaceId(data.workspace.id);
-      setWorkspaceName(data.workspace.name);
+      setActiveWorkspaceId(selection.workspace.id);
+      setWorkspaceName(selection.workspace.name);
       window.location.reload();
     } catch (error) {
       setWorkspaceError(error instanceof Error ? error.message : 'Workspace could not be selected.');
