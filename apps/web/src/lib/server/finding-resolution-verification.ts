@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import type { DatabaseAdapter } from './db/types.js';
-import { transitionFinding } from './finding-lifecycle.js';
+import { transitionFindingInTransaction } from './finding-lifecycle.js';
 
 export const FINDING_RESOLUTION_CLASSIFICATIONS = ['resolved', 'unresolved', 'regressed', 'ambiguous', 'inconclusive'] as const;
 export type FindingResolutionClassification = typeof FINDING_RESOLUTION_CLASSIFICATIONS[number];
@@ -145,7 +145,7 @@ export async function persistMergedFindingResolutionEvidence(
         ${excludedFindingIds.length > 0 ? `AND id NOT IN (${placeholders})` : ''}
     `, [params.repositoryId, ...excludedFindingIds]);
     for (const finding of absentFindings) {
-      await transitionFinding(tx, {
+      await transitionFindingInTransaction(tx, {
         findingId: finding.id,
         workspaceId: params.workspaceId,
         toState: 'verified_resolved',
