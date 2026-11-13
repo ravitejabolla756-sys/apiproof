@@ -149,6 +149,7 @@ export function buildMemberRevocationPlan(
         'email_verification_state',
         'password_reset_state',
         'oauth_state',
+        'pending_invitations_for_removed_email',
       ],
       preserved: ['personal_sessions', 'other_workspace_memberships'],
       queuedJobs: 'recheck_membership_before_execution',
@@ -189,6 +190,7 @@ function resultFromRow(row: RevocationRow): MemberRevocationResult {
         'email_verification_state',
         'password_reset_state',
         'oauth_state',
+        'pending_invitations_for_removed_email',
       ],
       preserved: ['personal_sessions', 'other_workspace_memberships'],
       queuedJobs: 'recheck_membership_before_execution',
@@ -202,6 +204,21 @@ function conflictIfDifferent(existing: RevocationRow, plan: MemberRevocationPlan
     || existing.reason !== (plan.reason ?? null)) {
     throw new Error('REVOCATION_IDEMPOTENCY_CONFLICT');
   }
+}
+
+async function hasTable(tx: DatabaseAdapter, tableName: string): Promise<boolean> {
+  if (tx.engine === 'postgres') {
+    const row = await tx.queryOne<{ exists: boolean | string }>(
+      `SELECT EXISTS (
+         SELECT 1 FROM information_schema.tables
+         WHERE table_schema = 'public' AND table_name = ?
+       ) AS exists`, [tableName],
+    );
+    return row?.exists === true || row?.exists === 'true';
+  }
+  return Boolean(await tx.queryOne<{ name: string }>(
+    'SELECT name FROM sqlite_master WHERE type = \'table\' AND name = ?', [tableName],
+  ));
 }
 
 async function findExisting(tx: DatabaseAdapter, workspaceId: string, idempotencyKey: string): Promise<RevocationRow | undefined> {
@@ -300,6 +317,27 @@ export async function revokeWorkspaceMember(
       WHERE id = ? AND workspace_id = ? AND user_id = ?
     `, [plan.subjectMembershipId, plan.workspaceId, plan.subjectUserId]);
     if (removed.changes !== 1) throw new Error('WORKSPACE_MEMBER_NOT_FOUND');
+
+    const subjectUser = await tx.queryOne<{ email: string }>('SELECT email FROM users WHERE id = ?', [plan.subjectUserId]);
+    if (!subjectUser) throw new Error('WORKSPACE_MEMBER_NOT_FOUND');
+    if (await hasTable(tx, 'workspace_invitations')) {
+      const invitations = await tx.execute(
+        `UPDATE workspace_invitations
+         SET revoked_at = ?
+         WHERE workspace_id = ? AND lower(email) = lower(?)
+           AND accepted_at IS NULL AND revoked_at IS NULL`,
+        [now, plan.workspaceId, subjectUser.email.trim()],
+      );
+      if (invitations.changes > 0 && await hasTable(tx, 'workspace_audit_events')) {
+        await tx.execute(
+          `INSERT INTO workspace_audit_events
+            (id, workspace_id, actor_user_id, action, target_type, target_id, metadata_json, created_at)
+           VALUES (?, ?, ?, 'member.pending_invitations_invalidated', 'member', ?, ?, ?)`,
+          [`wae_${crypto.randomBytes(12).toString('hex')}`, plan.workspaceId, plan.actorUserId, plan.subjectUserId,
+            JSON.stringify({ invalidatedCount: invitations.changes }), now],
+        );
+      }
+    }
 
     const occurredAt = new Date().toISOString();
     await tx.execute(`
