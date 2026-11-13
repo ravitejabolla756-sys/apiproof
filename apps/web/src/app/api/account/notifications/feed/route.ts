@@ -50,11 +50,11 @@ export async function GET(req: Request) {
       href: row.repository_id ? `/dashboard/repositories/${encodeURIComponent(row.repository_id)}` : null,
     }));
     const parsed = parseInAppNotifications({ notifications });
-    if (!parsed) return NextResponse.json({ error: 'Notification projection is unavailable.', code: 'IN_APP_NOTIFICATIONS_PROJECTION_INVALID' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+    if (!parsed) return NextResponse.json({ notifications: [], status: 'unavailable', readState: 'unavailable', error: 'Notification projection is unavailable.', code: 'IN_APP_NOTIFICATIONS_PROJECTION_INVALID' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     return NextResponse.json({ notifications: parsed, status: 'projection', readState: 'unavailable' }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch {
     return NextResponse.json(
-      { error: 'In-app notifications are temporarily unavailable.', code: 'IN_APP_NOTIFICATIONS_SCHEMA_PENDING' },
+      { notifications: [], status: 'unavailable', readState: 'unavailable', error: 'In-app notifications are temporarily unavailable.', code: 'IN_APP_NOTIFICATIONS_SCHEMA_PENDING' },
       { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
