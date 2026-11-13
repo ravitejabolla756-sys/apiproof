@@ -272,6 +272,8 @@ Verified and committed the reviewed CI slice:
 
 The complete current local Playwright directory subsequently passed **9/9**: three account-settings tests, four dashboard navigation/authorization tests, and two invoice-history tests. The run used one worker, local development server, disposable SQLite and a test-only seed password. Next.js again rewrote `apps/web/next-env.d.ts` and `apps/web/tsconfig.json`; those generated changes were restored and remain uncommitted nowhere in the final status.
 
+The declared production dependency audit `pnpm audit:prod` completed successfully with **No known vulnerabilities found**. This is current lockfile/registry evidence, not proof of hosted CI or dependency policy enforcement.
+
 ## Recommended first implementation task
 
 The first next action should be **Member 2 handoff synchronization followed by a read-only migration-history evidence package**. Without the missing source checkpoint and authoritative database history, integrating invitations, notifications, or colliding migrations risks silently omitting functionality or corrupting applied history. In parallel, the next independently executable code task is reproducing the four unresolved browser failures with deterministic server readiness and network diagnostics.
