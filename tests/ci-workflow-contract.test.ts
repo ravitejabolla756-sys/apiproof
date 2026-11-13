@@ -34,4 +34,19 @@ describe('CI workflow contract', () => {
       forbidden: ['contents: write'],
     });
   });
+
+  it('keeps scheduled jobs bounded and outside pull-request secret execution', () => {
+    const workflow = readFileSync(path.resolve(import.meta.dirname, '../.github/workflows/my-owl-scheduler.yml'), 'utf8').replaceAll('\r\n', '\n');
+    expect(workflow).toContain('permissions:\n  contents: read');
+    expect(workflow).toContain('concurrency:\n  group: my-owl-scheduler');
+    expect(workflow).toContain('timeout-minutes: 10');
+    expect(workflow).toContain('timeout-minutes: 20');
+    expect(workflow).toContain('MY_OWL_APP_URL: ${{ vars.MY_OWL_APP_URL }}');
+    expect(workflow).toContain('CRON_SECRET: ${{ secrets.CRON_SECRET }}');
+    expect(workflow).not.toContain('pull_request:');
+    expect(workflow).not.toContain('pull_request_target:');
+    expect(workflow).not.toContain('vercel --prod');
+    expect(workflow).toContain('test -n "$MY_OWL_APP_URL"');
+    expect(workflow).toContain('test -n "$CRON_SECRET"');
+  });
 });
