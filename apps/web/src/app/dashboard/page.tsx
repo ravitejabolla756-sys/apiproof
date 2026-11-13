@@ -7,87 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
 import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2, ShieldCheck, ScanLine, ExternalLink } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
-
-interface OverviewData {
-  workspace?: {
-    id: string;
-    name: string;
-    slug: string;
-    role: string;
-    repositoryCount: number;
-    scanCount: number;
-    openFindingCount: number;
-    hasGitHubInstallation?: boolean;
-    installationStatus?: string;
-    installationAccount?: string | null;
-  };
-  stats: {
-    connectedRepositories: number;
-    scansCompleted: number;
-    openFindings: number;
-    criticalFindings: number;
-    draftPrsCount: number;
-    providerRulesPending: number;
-    providerRulesApproved: number;
-    rescansPending: number;
-    rescansProcessing: number;
-    rescansFailed: number;
-  };
-  repositories: Array<{
-    id: string;
-    name: string;
-    owner: string;
-    full_name: string;
-    default_branch: string;
-    status: string;
-    last_scan_at: string | null;
-    findings_count: number;
-  }>;
-  criticalFinding: {
-    id: string;
-    title: string;
-    description: string;
-    severity: string;
-    symbol: string;
-    file_path: string;
-    status: string;
-    repo_name: string;
-    repo_full_name: string;
-  } | null;
-  recentActivities: Array<{
-    id: string;
-    type: string;
-    title: string;
-    description: string;
-    created_at: string;
-    repo_name: string | null;
-  }>;
-  recentProviderChanges: Array<{
-    id: string;
-    provider_id: string;
-    title: string;
-    description: string;
-    source_url: string;
-    published_at: string | null;
-    first_seen_at: string;
-  }>;
-  findingsThisWeek: Array<{
-    day: string;
-    total: number;
-    critical: number;
-    high: number;
-    warning: number;
-  }>;
-  recentFixes: Array<{
-    id: string;
-    status: string;
-    created_at: string;
-    finding_title: string;
-    repo_name: string;
-    pr_url: string | null;
-    pr_state: string | null;
-  }>;
-}
+import { parseOverviewResponse, type OverviewData } from "@/lib/dashboard-overview-contract";
 
 export default function DashboardOverviewPage() {
   const [data, setData] = useState<OverviewData | null>(null);
@@ -105,11 +25,11 @@ export default function DashboardOverviewPage() {
       if (!res.ok) {
         throw new Error(`Overview request failed (${res.status})`);
       }
-      const json = await res.json() as Partial<OverviewData>;
-      if (!json.stats || !Array.isArray(json.repositories)) {
+      const parsed = parseOverviewResponse(await res.json());
+      if (!parsed) {
         throw new Error("Overview returned an invalid response.");
       }
-      setData(json as OverviewData);
+      setData(parsed);
       setError(null);
       setLastUpdatedAt(new Date());
     } catch (err) {
