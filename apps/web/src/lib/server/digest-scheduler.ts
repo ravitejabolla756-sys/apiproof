@@ -1,7 +1,10 @@
 import type { DatabaseAdapter } from './db/types.js';
 import { getDatabase } from './db/index.js';
+import { queueTrackedEmailDelivery, type EmailDeliveryRecord } from './email-delivery-state.js';
 
 export const DIGEST_CATEGORY = 'weekly_digest';
+export const DIGEST_EMAIL_TEMPLATE_KEY = 'notifications.weekly_digest';
+export const DIGEST_EMAIL_TEMPLATE_VERSION = 'v1';
 
 export interface ApprovedDigestSchedule {
   cadence: 'weekly';
@@ -86,4 +89,33 @@ export async function planDueDigestDispatch(
     category: DIGEST_CATEGORY,
     channel: schedule.channel,
   }));
+}
+
+/**
+ * Converts due email candidates into durable pending ledger records. This is
+ * intentionally a queue-only boundary: no email provider is called here and
+ * the approved delivery worker remains responsible for claiming and sending.
+ * Slack digest delivery is not queued because the existing Slack ledger is
+ * finding-scoped and cannot safely represent a digest without a reviewed
+ * schema contract.
+ */
+export async function queueDueDigestEmailDispatch(
+  now: Date,
+  schedule: ApprovedDigestSchedule,
+  database: DatabaseAdapter = getDatabase(),
+): Promise<EmailDeliveryRecord[]> {
+  if (schedule.channel !== 'email') {
+    throw new DigestSchedulingUnavailableError('Slack digest delivery is unavailable until an approved digest delivery schema is installed.');
+  }
+  const candidates = await planDueDigestDispatch(now, schedule, database);
+  const queued: EmailDeliveryRecord[] = [];
+  for (const candidate of candidates) {
+    queued.push(await queueTrackedEmailDelivery({
+      eventKey: candidate.eventKey,
+      templateKey: DIGEST_EMAIL_TEMPLATE_KEY,
+      templateVersion: DIGEST_EMAIL_TEMPLATE_VERSION,
+      recipientUserId: candidate.userId,
+    }, database));
+  }
+  return queued;
 }

@@ -74,6 +74,18 @@ async function findOrCreateDelivery(input: TrackedEmailRequest, database: Databa
   return row;
 }
 
+/**
+ * Persist an idempotent pending delivery without claiming it or contacting a
+ * provider. Trusted schedulers use this handoff before a separate delivery
+ * worker performs the provider-specific send.
+ */
+export async function queueTrackedEmailDelivery(
+  input: TrackedEmailRequest,
+  database: DatabaseAdapter = getDatabase(),
+): Promise<EmailDeliveryRecord> {
+  return findOrCreateDelivery(input, database);
+}
+
 async function claimDelivery(id: string, database: DatabaseAdapter): Promise<EmailDeliveryRecord | undefined> {
   const now = new Date().toISOString();
   const workerId = `email_${crypto.randomBytes(8).toString('hex')}`;

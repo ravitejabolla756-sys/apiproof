@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { DigestSchedulingUnavailableError, planDueDigestDispatch, readApprovedDigestSchedule } from '../../../../lib/server/digest-scheduler.js';
+import { DigestSchedulingUnavailableError, queueDueDigestEmailDispatch, readApprovedDigestSchedule } from '../../../../lib/server/digest-scheduler.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,16 +14,16 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 /**
- * Plans digest recipients only. Delivery remains a separate approved worker
- * that must claim the existing channel ledgers before sending anything.
+ * Queues digest email intents only. Delivery remains a separate approved
+ * worker that must claim the existing email ledger before sending anything.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!isAuthorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const schedule = readApprovedDigestSchedule();
   if (!schedule) return NextResponse.json({ ok: false, error: 'Digest scheduling is unavailable until an approved schedule is configured.', code: 'DIGEST_SCHEDULING_UNAVAILABLE' }, { status: 503 });
   try {
-    const dispatches = await planDueDigestDispatch(new Date(), schedule);
-    return NextResponse.json({ ok: true, planned: dispatches.length, dispatches }, { status: 200 });
+    const queued = await queueDueDigestEmailDispatch(new Date(), schedule);
+    return NextResponse.json({ ok: true, queued: queued.length }, { status: 200 });
   } catch (error) {
     if (error instanceof DigestSchedulingUnavailableError) {
       return NextResponse.json({ ok: false, error: error.message, code: error.code }, { status: 503 });
