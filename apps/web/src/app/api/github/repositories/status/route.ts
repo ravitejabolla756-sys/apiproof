@@ -24,6 +24,13 @@ export async function GET(req: Request) {
     workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
   }
 
-  const installation = await getWorkspaceGitHubInstallation(workspaceId);
-  return NextResponse.json({ connected: Boolean(installation) }, { headers });
+  try {
+    const installation = await getWorkspaceGitHubInstallation(workspaceId);
+    return NextResponse.json({ connected: Boolean(installation) }, { headers });
+  } catch {
+    return NextResponse.json(
+      { error: 'GitHub connection status is temporarily unavailable.', code: 'GITHUB_STATUS_UNAVAILABLE' },
+      { status: 503, headers },
+    );
+  }
 }
