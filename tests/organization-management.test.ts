@@ -263,6 +263,37 @@ describe('workspace administration', () => {
     expect(await response.json()).toMatchObject({ code: 'INVALID_WORKSPACE_ID' });
   });
 
+  it('lists only server-authorized workspaces and rejects a cross-tenant active context', async () => {
+    const owner = await createUserWithSession('org-list-owner@example.test', 'OwnerPassword123!', 'List Owner');
+    const member = await createUserWithSession('org-list-member@example.test', 'MemberPassword123!', 'List Member');
+    const otherOwner = await createUserWithSession('org-list-other@example.test', 'OtherPassword123!', 'Other Owner');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    const memberDefaultWorkspace = await getDefaultWorkspaceForUser(member.user.id);
+    const otherWorkspace = await getDefaultWorkspaceForUser(otherOwner.user.id);
+    await getDatabase().execute(
+      'INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)',
+      ['wsm_org_list_member', workspace.id, member.user.id, 'member', new Date().toISOString()],
+    );
+
+    const listed = await listWorkspacesRoute(new Request('https://apiproof.test/api/workspaces', {
+      headers: { cookie: `apiproof_session=${member.session.id}` },
+    }));
+    expect(listed.status).toBe(200);
+    const listedBody = await listed.json() as { activeWorkspaceId: string; workspaces: Array<{ id: string; role: string }> };
+    expect(listedBody.activeWorkspaceId).toBe(memberDefaultWorkspace.id);
+    expect(listedBody.workspaces).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: memberDefaultWorkspace.id, role: 'owner' }),
+      expect.objectContaining({ id: workspace.id, role: 'member' }),
+    ]));
+    expect(listedBody.workspaces).toHaveLength(2);
+
+    const crossTenant = await listWorkspacesRoute(new Request(`https://apiproof.test/api/workspaces?workspaceId=${otherWorkspace.id}`, {
+      headers: { cookie: `apiproof_session=${member.session.id}` },
+    }));
+    expect(crossTenant.status).toBe(404);
+    expect(await crossTenant.json()).toMatchObject({ code: 'WORKSPACE_ACCESS_DENIED' });
+  });
+
   it('serializes concurrent default-workspace recovery on the SQLite adapter', async () => {
     const owner = await createUserWithSession('owner-concurrent@example.test', 'OwnerPassword123!', 'Concurrent Owner');
     const workspaces = await Promise.all(Array.from({ length: 5 }, () => getDefaultWorkspaceForUser(owner.user.id)));
