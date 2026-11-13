@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { getDashboardData } from '@/lib/server/dashboard/get-dashboard-data.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     recentProviderChanges: dashboard.recentProviderChanges,
     findingsThisWeek: dashboard.findingsThisWeek,
     recentFixes: dashboard.recentFixes,
-    });
+    }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     return organizationErrorResponse(error);
   }
