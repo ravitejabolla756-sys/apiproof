@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { requireWorkspaceOwner } from '@/lib/server/workspace-service';
 import { assertCsrfProtection } from '@/lib/server/validation';
 import { approveProviderRuleCandidate, rejectProviderRuleCandidate } from '@/lib/server/provider-rule-service';
 import { processRepositoryRescans } from '@/lib/server/repository-rescan-worker.js';
@@ -13,7 +14,7 @@ export async function POST(request: Request, context: RouteContext): Promise<Nex
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   try {
-    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const workspace = await resolveWorkspaceForRequest(request, user.id);
     await requireWorkspaceOwner(user.id, workspace.id);
     const { candidateId } = await context.params;
     const body = await request.json() as { decision?: unknown; notes?: unknown; reviewEvidence?: unknown };
