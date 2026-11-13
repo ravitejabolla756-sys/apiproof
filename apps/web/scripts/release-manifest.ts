@@ -57,6 +57,9 @@ export function validateCiWorkflowContract(workflow: string, branch = 'codex/v1-
     'run: pnpm test',
     'run: pnpm -r build',
     'run: pnpm release:manifest',
+    'uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',
+    'uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47',
+    'uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020',
   ];
   const forbidden = [
     'contents: write',
