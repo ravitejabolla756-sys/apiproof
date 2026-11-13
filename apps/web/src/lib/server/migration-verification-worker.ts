@@ -9,6 +9,7 @@ import { processOneSlackNotificationDelivery } from './slack-notifications.js';
 import { processOneSlackProviderChangeDelivery } from './slack-provider-change-notifications.js';
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { processRepositoryRescans } from './repository-rescan-worker.js';
+import { getTelemetrySink, type TelemetrySink } from './observability.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -124,8 +125,9 @@ export async function processOneMigrationVerificationJob(workerId: string): Prom
   return true;
 }
 
-export async function runVerificationWorker(options: { workerId: string; pollIntervalMs?: number; signal?: AbortSignal }): Promise<void> {
+export async function runVerificationWorker(options: { workerId: string; pollIntervalMs?: number; signal?: AbortSignal; telemetry?: TelemetrySink }): Promise<void> {
   const { workerId, signal } = options;
+  const telemetry = getTelemetrySink(options.telemetry);
   if (!/^[A-Za-z0-9._-]{1,100}$/.test(workerId)) throw new Error('VERIFICATION_WORKER_ID_INVALID');
   const interval = Math.max(1000, options.pollIntervalMs ?? 5000);
   let lastProbeAt = 0;
@@ -174,6 +176,7 @@ export async function runVerificationWorker(options: { workerId: string; pollInt
       if (!processed) await new Promise((resolve) => setTimeout(resolve, interval));
     } catch (error) {
       const category = failureCategory(error);
+      telemetry.increment('worker_failures', 1, { job_type: 'migration_verification', reason: category });
       await publishVerificationWorkerHeartbeat(workerId, false, category).catch(() => undefined);
       logger.error('migration_verification_worker_unavailable', { workerId, category });
       await new Promise((resolve) => setTimeout(resolve, interval));
