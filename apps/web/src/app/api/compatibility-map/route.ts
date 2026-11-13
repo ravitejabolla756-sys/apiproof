@@ -46,7 +46,19 @@ interface FindingRow {
 const privateNoStore = PRIVATE_NO_STORE_HEADERS;
 
 /** Compatibility snapshot for only the authenticated user's active workspace. */
-export async function GET(req: Request) {
+export async function GET(req: Request): Promise<Response> {
+  try {
+    return await loadCompatibilityMap(req);
+  } catch (error) {
+    console.error('Compatibility map request failed:', { code: 'COMPATIBILITY_DATA_UNAVAILABLE', cause: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json(
+      { error: 'Compatibility data is temporarily unavailable.', code: 'COMPATIBILITY_DATA_UNAVAILABLE' },
+      { status: 503, headers: privateNoStore },
+    );
+  }
+}
+
+async function loadCompatibilityMap(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateNoStore });
 
