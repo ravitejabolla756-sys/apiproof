@@ -8,7 +8,19 @@ import { parseBoundedProductizationProjection } from '@/lib/server/productizatio
 import { resolveFindingCapability } from '@/lib/server/finding-capability';
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
-export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, props: { params: Promise<{ id: string }> }): Promise<Response> {
+  try {
+    return await loadFindingDetail(req, props);
+  } catch (error) {
+    console.error('Finding detail request failed:', { code: 'FINDING_DATA_UNAVAILABLE', cause: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json(
+      { error: 'Finding details are temporarily unavailable.', code: 'FINDING_DATA_UNAVAILABLE' },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
+    );
+  }
+}
+
+async function loadFindingDetail(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const user = await getCurrentUser(req);
   if (!user) {
