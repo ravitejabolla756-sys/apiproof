@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Activity, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatActivityTimestamp, getActivityTypeLabel, type ActivityItem } from "@/lib/activity-utils";
+import { formatActivityTimestamp, getActivityTypeLabel, parseActivityResponse, type ActivityItem } from "@/lib/activity-utils";
 
 export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -17,9 +17,9 @@ export default function ActivityPage() {
     try {
       const res = await fetch("/api/activity");
       if (!res.ok) throw new Error("Activity is temporarily unavailable.");
-      const json = await res.json() as { activities?: unknown };
-      if (!Array.isArray(json.activities)) throw new Error("Activity returned an invalid response.");
-      setActivities(json.activities as ActivityItem[]);
+      const parsed = parseActivityResponse(await res.json());
+      if (!parsed) throw new Error("Activity returned an invalid response.");
+      setActivities(parsed);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Activity is temporarily unavailable.");
     } finally {

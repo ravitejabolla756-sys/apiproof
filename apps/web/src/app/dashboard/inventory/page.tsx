@@ -4,25 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ProviderBadge } from "@/components/ui/status-pill";
 import { Search, Boxes, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface InventoryRule {
-  id: string;
-  title: string;
-  severity: string;
-  description: string;
-}
-
-interface ProviderInventoryItem {
-  id: string;
-  name: string;
-  category: string;
-  status: "reviewed" | "detected";
-  rulesCount: number;
-  description: string;
-  rules: InventoryRule[];
-  capability?: "discovery" | "compatibility";
-  capabilities?: string[];
-}
+import { parseInventoryResponse, type ProviderInventoryItem } from "@/lib/inventory-contract";
 
 export default function ApiInventoryPage() {
   const [providers, setProviders] = useState<ProviderInventoryItem[]>([]);
@@ -37,9 +19,9 @@ export default function ApiInventoryPage() {
     try {
       const res = await fetch("/api/inventory");
       if (!res.ok) throw new Error("API provider registry is temporarily unavailable.");
-      const json = await res.json() as { providers?: unknown };
-      if (!Array.isArray(json.providers)) throw new Error("API provider registry returned an invalid response.");
-      setProviders(json.providers as ProviderInventoryItem[]);
+      const parsed = parseInventoryResponse(await res.json());
+      if (!parsed) throw new Error("API provider registry returned an invalid response.");
+      setProviders(parsed);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "API provider registry is temporarily unavailable.");
     } finally {
