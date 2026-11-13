@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   try {
     const db = getDatabase();
     const activities = await db.query(`
-      SELECT
+      SELECT DISTINCT
         a.id,
         a.type,
         a.title,
@@ -30,12 +31,12 @@ export async function GET(req: Request) {
     `, [user.id, user.id]);
 
     return NextResponse.json({ activities }, {
-      headers: { 'Cache-Control': 'private, no-store' },
+      headers: PRIVATE_NO_STORE_HEADERS,
     });
   } catch {
     return NextResponse.json(
-      { error: 'Activity is temporarily unavailable.' },
-      { status: 503, headers: { 'Cache-Control': 'private, no-store' } },
+      { error: 'Activity is temporarily unavailable.', code: 'ACTIVITY_UNAVAILABLE' },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
 }
