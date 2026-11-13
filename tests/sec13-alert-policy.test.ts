@@ -32,4 +32,12 @@ describe('SEC-13 alert and queue-failure policy boundary', () => {
     expect(parseApprovedAlertPolicy({ ...approved, retryAttempts: 1.5 })).toBeNull();
     expect(parseApprovedAlertPolicy({ ...approved, windowMs: 25 * 60 * 60 * 1000 })).toBeNull();
   });
+
+  it('fails closed for corrupt runtime metrics instead of emitting an alert burst', () => {
+    const policy = parseApprovedAlertPolicy(approved);
+    expect(evaluateAlertPolicy({ queueLagMs: Number.POSITIVE_INFINITY, retryAttempts: 3, workerFailures: 5, duplicateJobs: 2 }, policy))
+      .toEqual({ status: 'policy_unavailable', signals: [] });
+    expect(evaluateAlertPolicy({ queueLagMs: 0, retryAttempts: Number.NaN, workerFailures: 5, duplicateJobs: 2 }, policy))
+      .toEqual({ status: 'policy_unavailable', signals: [] });
+  });
 });

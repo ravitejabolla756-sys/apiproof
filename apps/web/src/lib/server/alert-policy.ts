@@ -30,6 +30,10 @@ function positiveBounded(value: unknown, maximum: number): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= maximum;
 }
 
+function validMetric(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 0;
+}
+
 /** Owner-approved thresholds only; absent or malformed input fails closed. */
 export function parseApprovedAlertPolicy(input: unknown): ApprovedAlertPolicy | null {
   if (!input || typeof input !== 'object') return null;
@@ -57,7 +61,7 @@ export function parseApprovedAlertPolicy(input: unknown): ApprovedAlertPolicy | 
 
 /** Pure local evaluation; it emits no network notification or paging action. */
 export function evaluateAlertPolicy(input: AlertPolicyInput, policy?: ApprovedAlertPolicy | null): AlertPolicyEvaluation {
-  if (!policy) return { status: 'policy_unavailable', signals: [] };
+  if (!policy || !Object.values(input).every(validMetric)) return { status: 'policy_unavailable', signals: [] };
   const signals: AlertSignalKind[] = [];
   if (input.queueLagMs >= policy.queueLagMs) signals.push('queue_lag');
   if (input.retryAttempts >= policy.retryAttempts) signals.push('retry_storm');
