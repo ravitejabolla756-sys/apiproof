@@ -32,6 +32,8 @@ export interface EmailDeliveryRecord {
   delivered_at: string | null;
 }
 
+export type TrackedEmailSender = (delivery: EmailDeliveryRecord) => Promise<void>;
+
 export class EmailDeliveryUnavailableError extends Error {
   readonly code = 'EMAIL_DELIVERY_UNAVAILABLE';
 
@@ -101,6 +103,61 @@ async function claimDelivery(id: string, database: DatabaseAdapter): Promise<Ema
   return database.queryOne<EmailDeliveryRecord>('SELECT * FROM email_deliveries WHERE id = ?', [id]);
 }
 
+async function deliverClaimedEmail(
+  claimed: EmailDeliveryRecord,
+  send: TrackedEmailSender,
+  database: DatabaseAdapter,
+): Promise<EmailDeliveryRecord> {
+  try {
+    await send(claimed);
+    const now = new Date().toISOString();
+    await database.execute(`
+      UPDATE email_deliveries
+      SET status = 'delivered', delivered_at = ?, updated_at = ?, next_attempt_at = NULL, claimed_by = NULL, lease_expires_at = NULL
+      WHERE id = ? AND status = 'processing' AND claimed_by = ? AND lease_expires_at > ?
+    `, [now, now, claimed.id, claimed.claimed_by, now]);
+    const completed = await database.queryOne<EmailDeliveryRecord>('SELECT * FROM email_deliveries WHERE id = ?', [claimed.id]);
+    if (!completed || completed.status !== 'delivered') throw new Error('EMAIL_DELIVERY_STATE_UNAVAILABLE');
+    return completed;
+  } catch (error) {
+    const now = new Date().toISOString();
+    const nextAttemptAt = claimed.attempt_count < EMAIL_DELIVERY_MAX_ATTEMPTS
+      ? new Date(Date.now() + emailDeliveryRetryDelayMs(claimed.attempt_count)).toISOString()
+      : null;
+    await database.execute(`
+      UPDATE email_deliveries
+      SET status = 'failed', error_category = ?, next_attempt_at = ?, updated_at = ?, claimed_by = NULL, lease_expires_at = NULL
+      WHERE id = ? AND status = 'processing' AND claimed_by = ?
+    `, [emailDeliveryErrorCategory(error), nextAttemptAt, now, claimed.id, claimed.claimed_by]);
+    throw error;
+  }
+}
+
+/**
+ * Claims and processes one pending delivery for an approved worker. The
+ * sender is injected so this module never selects a provider or performs a
+ * network call. Lease recovery and the existing five-attempt cap remain in
+ * force before a new claim is made.
+ */
+export async function processNextTrackedEmailDelivery(
+  send: TrackedEmailSender,
+  database: DatabaseAdapter = getDatabase(),
+): Promise<EmailDeliveryRecord | undefined> {
+  await requireEmailLedger(database);
+  const now = new Date().toISOString();
+  await requeueRetryableEmailDeliveries(now, database);
+  const candidate = await database.queryOne<EmailDeliveryRecord>(`
+    SELECT * FROM email_deliveries
+    WHERE status = 'pending' AND attempt_count < ?
+      AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
+    ORDER BY created_at, id
+    LIMIT 1
+  `, [EMAIL_DELIVERY_MAX_ATTEMPTS, now]);
+  if (!candidate) return undefined;
+  const claimed = await claimDelivery(candidate.id, database);
+  return claimed ? deliverClaimedEmail(claimed, send, database) : undefined;
+}
+
 export async function getEmailDelivery(eventKey: string, database: DatabaseAdapter = getDatabase()): Promise<EmailDeliveryRecord | undefined> {
   await requireEmailLedger(database);
   return database.queryOne<EmailDeliveryRecord>('SELECT * FROM email_deliveries WHERE event_key = ?', [eventKey]);
@@ -142,27 +199,5 @@ export async function sendTrackedEmail(
   if (delivery.status === 'delivered') return delivery;
   const claimed = await claimDelivery(delivery.id, database);
   if (!claimed) throw new Error('EMAIL_DELIVERY_NOT_CLAIMED');
-  try {
-    await send();
-    const now = new Date().toISOString();
-    await database.execute(`
-      UPDATE email_deliveries
-      SET status = 'delivered', delivered_at = ?, updated_at = ?, next_attempt_at = NULL, claimed_by = NULL, lease_expires_at = NULL
-      WHERE id = ? AND status = 'processing' AND claimed_by = ? AND lease_expires_at > ?
-    `, [now, now, delivery.id, claimed.claimed_by, now]);
-    const completed = await database.queryOne<EmailDeliveryRecord>('SELECT * FROM email_deliveries WHERE id = ?', [delivery.id]);
-    if (!completed || completed.status !== 'delivered') throw new Error('EMAIL_DELIVERY_STATE_UNAVAILABLE');
-    return completed;
-  } catch (error) {
-    const now = new Date().toISOString();
-    const nextAttemptAt = claimed.attempt_count < EMAIL_DELIVERY_MAX_ATTEMPTS
-      ? new Date(Date.now() + emailDeliveryRetryDelayMs(claimed.attempt_count)).toISOString()
-      : null;
-    await database.execute(`
-      UPDATE email_deliveries
-      SET status = 'failed', error_category = ?, next_attempt_at = ?, updated_at = ?, claimed_by = NULL, lease_expires_at = NULL
-      WHERE id = ? AND status = 'processing' AND claimed_by = ?
-    `, [emailDeliveryErrorCategory(error), nextAttemptAt, now, delivery.id, claimed.claimed_by]);
-    throw error;
-  }
+  return deliverClaimedEmail(claimed, async () => send(), database);
 }
