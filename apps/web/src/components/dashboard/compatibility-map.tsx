@@ -74,6 +74,99 @@ interface CompatibilityMapResponse {
   repositories: CompatibilityRepository[];
 }
 
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function text(value: unknown, max = 2048): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 && normalized.length <= max ? normalized : null;
+}
+
+function nullableText(value: unknown, max = 2048): string | null | undefined {
+  return value === null ? null : text(value, max) ?? undefined;
+}
+
+function count(value: unknown): number | null {
+  return Number.isSafeInteger(value) && Number(value) >= 0 ? Number(value) : null;
+}
+
+function stringList(value: unknown, maxItems = 128): string[] | null {
+  if (!Array.isArray(value) || value.length > maxItems) return null;
+  const result = value.map((item) => text(item, 512));
+  return result.every((item): item is string => item !== null) ? result : null;
+}
+
+function parsePullRequest(value: unknown): CompatibilityFinding['pullRequest'] {
+  if (value === null) return null;
+  if (!record(value)) return null;
+  const id = text(value.id, 256); const number = value.number === null ? null : count(value.number);
+  const state = nullableText(value.state, 128); const url = nullableText(value.url, 2048); const createdAt = nullableText(value.createdAt, 128);
+  return id && number !== undefined && state !== undefined && createdAt !== undefined && (url === null || (url !== undefined && /^https:\/\//i.test(url)))
+    ? { id, number, state, url: url ?? null, createdAt } : null;
+}
+
+function parseFinding(value: unknown): CompatibilityFinding | null {
+  if (!record(value)) return null;
+  const id = text(value.id, 256); const provider = text(value.provider, 256); const title = text(value.title, 1024); const status = text(value.status, 128);
+  const filePath = text(value.filePath, 4096); const symbol = text(value.symbol, 1024);
+  let migration: CompatibilityFinding['migration'] = null;
+  if (value.migration !== null) {
+    if (!record(value.migration)) return null;
+    const migrationId = text(value.migration.id, 256); const migrationStatus = nullableText(value.migration.status, 128);
+    if (!migrationId || migrationStatus === undefined) return null;
+    migration = { id: migrationId, status: migrationStatus };
+  }
+  const pullRequest = parsePullRequest(value.pullRequest);
+  return id && provider && title && status && filePath && symbol && (value.pullRequest === null || pullRequest) ? { id, provider, title, status, filePath, symbol, migration, pullRequest } : null;
+}
+
+function parseIntegration(value: unknown): CompatibilityRepository['integrations'][number] | null {
+  if (!record(value)) return null;
+  const provider = text(value.provider, 256); const providerName = nullableText(value.providerName, 512); const usageCount = value.usageCount === null ? null : count(value.usageCount);
+  const mappedSymbolCount = value.mappedSymbolCount === null ? null : count(value.mappedSymbolCount); const reviewedChangeCount = count(value.reviewedChangeCount);
+  const packageName = nullableText(value.packageName, 512); const declaredVersion = nullableText(value.declaredVersion, 256); const resolvedVersion = nullableText(value.resolvedVersion, 256); const versionConfidence = nullableText(value.versionConfidence, 128); const capability = nullableText(value.capability, 256);
+  const capabilities = value.capabilities === undefined ? undefined : stringList(value.capabilities, 64);
+  if (!provider || typeof value.detected !== 'boolean' || usageCount === undefined || mappedSymbolCount === undefined || reviewedChangeCount === null || providerName === undefined || packageName === undefined || declaredVersion === undefined || resolvedVersion === undefined || versionConfidence === undefined || capability === undefined || (value.capabilities !== undefined && !capabilities)) return null;
+  return { provider, providerName: providerName ?? undefined, detected: value.detected, usageCount, mappedSymbolCount, reviewedChangeCount, packageName, declaredVersion, resolvedVersion, versionConfidence, capability, ...(capabilities ? { capabilities } : {}) };
+}
+
+function parseScan(value: unknown): CompatibilityRepository['latestCompletedScan'] {
+  if (value === null) return null;
+  if (!record(value)) return null;
+  const id = text(value.id, 256); const sha = nullableText(value.sha, 128); const baselineSha = nullableText(value.baselineSha, 128); const filesAnalyzed = count(value.filesAnalyzed); const findingsCount = count(value.findingsCount); const completedAt = nullableText(value.completedAt, 128);
+  return id && sha !== undefined && baselineSha !== undefined && filesAnalyzed !== null && findingsCount !== null && completedAt !== undefined ? { id, sha, baselineSha, filesAnalyzed, findingsCount, completedAt } : null;
+}
+
+function parseProofs(value: unknown): CompatibilityRepository['compatibilityProofs'] {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length > 512) return undefined;
+  const proofs = value.map((entry) => {
+    if (!record(entry)) return null;
+    const providerId = text(entry.providerId, 256); const changeId = text(entry.changeId, 256); const status = text(entry.status, 128); const changeTitle = nullableText(entry.changeTitle, 1024); const severity = nullableText(entry.severity, 128);
+    const optional = Object.fromEntries(['exactFile', 'matchedModel', 'matchedResource', 'matchedEndpoint', 'matchedDomain', 'matchedParameter', 'matchedResponseField', 'matchedAuthOrHeader', 'officialSourceUrl', 'removalAt'].map((key) => [key, nullableText(entry[key], 2048)]));
+    const reasonCodes = entry.reasonCodes === undefined ? undefined : stringList(entry.reasonCodes, 64);
+    if (!providerId || !changeId || !status || changeTitle === undefined || severity === undefined || !reasonCodes && entry.reasonCodes !== undefined) return null;
+    return { providerId, changeId, status, ...(changeTitle !== null ? { changeTitle } : {}), ...(severity !== null ? { severity } : {}), ...optional, ...(reasonCodes ? { reasonCodes } : {}) };
+  });
+  return proofs.every(Boolean) ? proofs as CompatibilityRepository['compatibilityProofs'] : undefined;
+}
+
+function parseRepository(value: unknown): CompatibilityRepository | null {
+  if (!record(value) || !Array.isArray(value.integrations) || !Array.isArray(value.findings)) return null;
+  const id = text(value.id, 256); const owner = text(value.owner, 256); const name = text(value.name, 256); const fullName = text(value.fullName, 512); const defaultBranch = text(value.defaultBranch, 256); const latestScanStatus = text(value.latestScanStatus, 128); const latestCompletedScan = parseScan(value.latestCompletedScan);
+  const integrations = value.integrations.map(parseIntegration); const findings = value.findings.map(parseFinding); const proofs = parseProofs(value.compatibilityProofs); const openFindingCount = count(value.openFindingCount);
+  if (!id || !owner || !name || !fullName || !defaultBranch || !latestScanStatus || !latestCompletedScan && value.latestCompletedScan !== null || typeof value.analysisEvidenceAvailable !== 'boolean' || openFindingCount === null || !integrations.every(Boolean) || !findings.every(Boolean) || proofs === undefined && value.compatibilityProofs !== undefined) return null;
+  return { id, owner, name, fullName, defaultBranch, latestScanStatus, latestCompletedScan, analysisEvidenceAvailable: value.analysisEvidenceAvailable, integrations: integrations as CompatibilityRepository['integrations'], openFindingCount, findings: findings as CompatibilityFinding[], ...(proofs ? { compatibilityProofs: proofs } : {}) };
+}
+
+function parseCompatibilityMapResponse(value: unknown): CompatibilityMapResponse | null {
+  if (!record(value) || !Array.isArray(value.repositories) || value.repositories.length > 512) return null;
+  const repositories = value.repositories.map(parseRepository);
+  return repositories.every(Boolean) ? { repositories: repositories as CompatibilityRepository[] } : null;
+}
+
 function proofStatusVariant(status: string): StatusVariant {
   return status === "AFFECTED" ? "affected" : status === "NOT_AFFECTED" ? "healthy" : "warning";
 }
@@ -104,7 +197,8 @@ export function CompatibilityMap({ onConnect }: { onConnect?: () => void }) {
         signal: nextController.signal,
       });
       if (!response.ok) throw new Error(`Compatibility data could not be loaded (${response.status}).`);
-      const payload = await response.json() as CompatibilityMapResponse;
+      const payload = parseCompatibilityMapResponse(await response.json());
+      if (!payload) throw new Error("Compatibility data returned an invalid response.");
       if (id !== requestId.current) return;
       hasRepositories.current = payload.repositories.length > 0;
       setRepositories(payload.repositories);
