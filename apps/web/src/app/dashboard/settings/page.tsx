@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,8 +45,12 @@ export default function SettingsPage() {
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [billingError, setBillingError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const statusErrorRef = useRef<HTMLDivElement>(null);
 
   async function loadStatus() {
+    setLoading(true);
+    setStatusError(null);
     try {
       const [repoRes, billingRes] = await Promise.all([
         fetch('/api/github/repositories'),
@@ -71,16 +75,19 @@ export default function SettingsPage() {
         setBilling(null);
         setBillingError(typeof billingData?.error === 'string' ? billingData.error : 'Billing summary is unavailable for this workspace.');
       }
-    } catch (err: unknown) {
-      console.error("Failed to load settings data:", err);
+    } catch (loadError) {
+      setStatusError(loadError instanceof Error ? loadError.message : "Workspace settings are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadStatus();
+    void loadStatus();
   }, []);
+  useEffect(() => {
+    if (statusError) statusErrorRef.current?.focus();
+  }, [statusError]);
 
   async function handleConnectGitHub() {
     setConnecting(true);
@@ -117,9 +124,16 @@ export default function SettingsPage() {
         </Link>
       </div>
 
+      {statusError && (
+        <div ref={statusErrorRef} role="alert" aria-live="assertive" tabIndex={-1} className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+          <span>{statusError}</span>
+          <Button type="button" size="sm" variant="outline" onClick={() => void loadStatus()} disabled={loading} aria-busy={loading ? "true" : undefined} className="border-rose-300 bg-white text-rose-900">{loading ? "Retrying..." : "Retry"}</Button>
+        </div>
+      )}
+
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+          <AlertCircle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
