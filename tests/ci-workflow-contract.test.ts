@@ -20,6 +20,8 @@ describe('CI workflow contract', () => {
     expect(workflow).not.toMatch(/uses:\s+[^\s]+@(v\d|main|master)(?:\s|$)/m);
     expect(workflow).not.toContain('pull_request_target:');
     expect(workflow).not.toContain('secrets.');
+    expect(workflow).not.toMatch(/-----BEGIN [A-Z0-9 ]+ PRIVATE KEY-----/);
+    expect(workflow).not.toMatch(/GITHUB_APP_PRIVATE_KEY\s*:/);
   });
 
   it('rejects write permissions and missing required checks', () => {

@@ -24,7 +24,6 @@ jobs:
       APIPROOF_SECRET: ci-test-apiproof-secret-minimum-32-chars-long
       GITHUB_APP_ID: "12345"
       GITHUB_APP_SLUG: apiproof-ci
-      GITHUB_APP_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----"
       GITHUB_WEBHOOK_SECRET: ci-test-webhook-secret-32-chars-long!
       CRON_SECRET: ci-test-cron-secret-32-chars-long!
       APIPROOF_LOCAL_SEED_PASSWORD: ci-local-seed-password-only-for-tests
