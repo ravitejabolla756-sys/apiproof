@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingFooter } from "@/components/landing/footer";
 import { CheckCircle2, ArrowRight, ShieldCheck, Server, FileCode, HelpCircle } from "lucide-react";
+import { parseContactError, parseContactSuccess } from "@/lib/contact-response-contract";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -28,8 +29,9 @@ export default function ContactPage() {
           message: formData.get('message'),
         }),
       });
-      const payload = await response.json().catch(() => ({})) as { error?: string };
-      if (!response.ok) throw new Error(payload.error || 'Contact delivery is temporarily unavailable.');
+      const payload: unknown = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(parseContactError(payload, 'Contact delivery is temporarily unavailable.'));
+      if (!parseContactSuccess(payload)) throw new Error('Contact delivery returned an invalid response.');
       setSubmitted(true);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Contact delivery is temporarily unavailable.');
