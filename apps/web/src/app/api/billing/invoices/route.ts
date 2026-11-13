@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     if (error instanceof Error && error.message.includes('access denied')) {
       return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'WORKSPACE_ACCESS_DENIED' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    console.error('Invoice history request failed:', error);
+    console.error('Invoice history request failed:', { code: 'INVOICE_HISTORY_UNAVAILABLE' });
     return NextResponse.json({ error: 'Invoice history is unavailable.', code: 'INVOICE_HISTORY_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }

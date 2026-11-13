@@ -14,6 +14,7 @@ import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export interface ProviderInventoryItem {
   id: string;
@@ -64,16 +65,16 @@ export async function GET(req: Request): Promise<NextResponse> {
     const repositoryId = url?.searchParams.get('repositoryId');
     if (repositoryId) {
       const user = await getCurrentUser(req!);
-      if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
       let access;
-      try { access = await requireRepositoryAccess(repositoryId, user.id); } catch { return NextResponse.json({ error: 'Repository not found' }, { status: 404 }); }
+      try { access = await requireRepositoryAccess(repositoryId, user.id); } catch { return NextResponse.json({ error: 'Repository not found', code: 'REPOSITORY_NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS }); }
       const scanId = url?.searchParams.get('scanId');
       const db = getDatabase();
       const scan = await db.queryOne<{ id: string; sha: string; raw_result: string | null }>(scanId
         ? 'SELECT id, sha, raw_result FROM scans WHERE id = ? AND repository_id = ? AND status = \'completed\''
         : 'SELECT id, sha, raw_result FROM scans WHERE repository_id = ? AND status = \'completed\' ORDER BY COALESCE(completed_at, started_at) DESC, id DESC LIMIT 1', scanId ? [scanId, access.repository.id] : [access.repository.id]);
       const projection = parseBoundedProductizationProjection(scan ? (() => { try { return scan.raw_result ? JSON.parse(scan.raw_result) : null; } catch { return null; } })() : null);
-      return NextResponse.json({ ok: true, repositoryId: access.repository.id, scanId: scan?.id ?? null, baselineSha: scan?.sha ?? null, productization: projection }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+      return NextResponse.json({ ok: true, repositoryId: access.repository.id, scanId: scan?.id ?? null, baselineSha: scan?.sha ?? null, productization: projection }, { headers: PRIVATE_NO_STORE_HEADERS });
     }
 
     return NextResponse.json({
@@ -81,8 +82,8 @@ export async function GET(req: Request): Promise<NextResponse> {
       providers,
       totalRulesCount: providers.reduce((total, provider) => total + provider.rulesCount, 0),
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load inventory';
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  } catch {
+    console.error('Inventory request failed:', { code: 'INVENTORY_UNAVAILABLE' });
+    return NextResponse.json({ ok: false, error: 'Inventory is temporarily unavailable.', code: 'INVENTORY_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }

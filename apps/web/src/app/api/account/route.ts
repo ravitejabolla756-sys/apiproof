@@ -8,7 +8,7 @@ const noStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
 function failure(error: unknown): Response {
   if (error instanceof AccountServiceError) return NextResponse.json({ error: error.message, code: error.code }, { status: 404, headers: noStore });
-  console.error('Account request failed:', error);
+  console.error('Account request failed:', { code: 'ACCOUNT_REQUEST_FAILED' });
   return NextResponse.json({ error: 'Account request could not be completed.', code: 'ACCOUNT_REQUEST_FAILED' }, { status: 500, headers: noStore });
 }
 

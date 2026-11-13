@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof SyntaxError) return badRequestResponse('Request body must be valid JSON.');
     if (error instanceof AccountServiceError) return NextResponse.json({ error: error.message, code: error.code }, { status: 400, headers: noStore });
-    console.error('Password change request failed:', error);
+    console.error('Password change request failed:', { code: 'PASSWORD_CHANGE_FAILED' });
     return NextResponse.json({ error: 'Password change could not be completed.', code: 'PASSWORD_CHANGE_FAILED' }, { status: 500, headers: noStore });
   }
 }

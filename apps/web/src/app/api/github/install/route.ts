@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getGitHubAppInstallUrl } from '@/lib/server/github';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import {
   requireWorkspaceCapability,
 } from '@/lib/server/workspace-service';
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const verification = evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'provider_link'));
@@ -40,10 +40,10 @@ export async function GET(req: Request) {
 
   try {
     const installUrl = await getGitHubAppInstallUrl(user.id, workspaceId);
-    return NextResponse.json({ url: installUrl, workspaceId });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to generate GitHub installation URL.';
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    return NextResponse.json({ url: installUrl, workspaceId }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch {
+    console.error('GitHub installation URL request failed:', { code: 'GITHUB_INSTALL_UNAVAILABLE' });
+    return NextResponse.json({ error: 'GitHub installation is temporarily unavailable.', code: 'GITHUB_INSTALL_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
 
