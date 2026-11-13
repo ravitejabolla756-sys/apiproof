@@ -110,7 +110,7 @@ export default function FindingsListPage() {
       {/* FILTER & SEARCH */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+          <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
             type="text"
             aria-label="Search findings"
@@ -121,8 +121,8 @@ export default function FindingsListPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-3">
+          <div role="group" aria-label="Severity filter" className="flex items-center gap-1.5">
             <span className="text-[#686868]">Severity:</span>
             {["all", "critical", "high"].map((sev) => (
               <button
@@ -142,7 +142,7 @@ export default function FindingsListPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div role="group" aria-label="Provider filter" className="flex items-center gap-1.5">
             <span className="text-[#686868]">Provider:</span>
             {providerOptions.map((prov) => (
               <button
