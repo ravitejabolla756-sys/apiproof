@@ -30,6 +30,13 @@ export function getGitHubAppConfig() {
   return loadGitHubAppConfig();
 }
 
+export function isSafeRepositoryTreePath(filePath: unknown): filePath is string {
+  if (typeof filePath !== 'string' || !filePath || filePath.includes('\\')) return false;
+  if (filePath.startsWith('/') || /^[A-Za-z]:/.test(filePath)) return false;
+  const segments = filePath.split('/');
+  return segments.every((segment) => segment.length > 0 && segment !== '.' && segment !== '..');
+}
+
 /**
  * Generates the official GitHub App installation URL with a cryptographically bound single-use state token.
  */
@@ -293,6 +300,10 @@ export async function fetchRemoteRepositoryFiles(
   const head = await provider.getDefaultBranch();
   const sha = targetSha ?? head.sha;
   const tree = await readWithRetry(() => provider.readTree(sha), `tree@${sha}`);
+
+  if (tree.some((filePath) => !isSafeRepositoryTreePath(filePath))) {
+    throw new Error('GITHUB_TREE_PATH_INVALID: repository tree contains a path outside the repository boundary');
+  }
 
   const filesMap = new Map<string, string>();
   const filesToFetch = tree.filter((file) =>
