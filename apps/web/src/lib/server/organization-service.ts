@@ -281,6 +281,18 @@ export async function acceptWorkspaceInvitation(userId: string, token: string): 
   let acceptedWorkspaceId: string;
   try {
     acceptedWorkspaceId = await db.transaction(async (tx) => {
+      // Revocation locks the workspace membership set before invalidating
+      // invitations. Resolve the workspace first, acquire that same lock
+      // order, then re-read the invitation under lock to prevent re-entry.
+      const invitationReference = await tx.queryOne<{ workspace_id: string }>(
+        'SELECT workspace_id FROM workspace_invitations WHERE token_hash = ?',
+        [tokenHash],
+      );
+      if (!invitationReference) throw new OrganizationServiceError('Invitation not found.', 'INVITATION_NOT_FOUND');
+      await tx.query<{ id: string }>(
+        `SELECT id FROM workspace_members WHERE workspace_id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
+        [invitationReference.workspace_id],
+      );
       const invitation = await tx.queryOne<{ id: string; workspace_id: string; email: string; role: WorkspaceRole; expires_at: string; accepted_at: string | null; revoked_at: string | null }>(
         `SELECT id, workspace_id, email, role, expires_at, accepted_at, revoked_at
          FROM workspace_invitations WHERE token_hash = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
