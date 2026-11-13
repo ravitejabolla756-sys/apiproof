@@ -6,6 +6,7 @@ import { ArrowLeft, Bell, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { digestAvailability } from '@/lib/digest-notification-contract';
 import { parseNotificationPreferences, type NotificationPreference } from '@/lib/notification-preferences-contract';
+import { notificationErrorMessage, readNotificationErrorCode } from '@/lib/notification-error-contract';
 
 const LABELS: Record<string, string> = {
   security: 'Security alerts', account: 'Account and recovery', findings: 'Breaking findings',
@@ -29,9 +30,9 @@ export default function NotificationSettingsPage() {
     if (!preserveFailure) { setInitialLoadFailed(false); setError(null); } else setRetryingInitialLoad(true);
     try {
       const response = await fetch('/api/account/notifications');
-      const data = await response.json() as { error?: string; preferences?: unknown };
+      const data: unknown = await response.json();
       const parsedPreferences = parseNotificationPreferences(data, { requireRequired: true });
-      if (!response.ok || !parsedPreferences) throw new Error(data.error || 'Unable to load notification preferences.');
+      if (!response.ok || !parsedPreferences) throw new Error(notificationErrorMessage(response.status, readNotificationErrorCode(data), 'Unable to load notification preferences.'));
       setPreferences(parsedPreferences); setInitialLoadFailed(false); setError(null);
     } catch (loadError: unknown) {
       setInitialLoadFailed(true); setError(loadError instanceof Error ? loadError.message : 'Unable to load notification preferences.');
@@ -52,9 +53,9 @@ export default function NotificationSettingsPage() {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates: preferences.filter(({ category }) => category !== 'weekly_digest').map(({ category, channel, enabled }) => ({ category, channel, enabled })) }),
       });
-      const data = await response.json() as { error?: string; preferences?: unknown };
+      const data: unknown = await response.json();
       const parsedPreferences = parseNotificationPreferences(data, { requireRequired: true });
-      if (!response.ok || !parsedPreferences) throw new Error(data.error || 'Unable to save notification preferences.');
+      if (!response.ok || !parsedPreferences) throw new Error(notificationErrorMessage(response.status, readNotificationErrorCode(data), 'Unable to save notification preferences.'));
       setPreferences(parsedPreferences); setMessage('Notification preferences saved.');
     } catch (saveError: unknown) { setError(saveError instanceof Error ? saveError.message : 'Unable to save notification preferences.'); }
     finally { setSaving(false); setActionStatus(null); }
