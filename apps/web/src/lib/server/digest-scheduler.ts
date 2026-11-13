@@ -54,7 +54,14 @@ export function isDigestWindow(now: Date, schedule: ApprovedDigestSchedule): boo
 }
 
 function weekKey(now: Date): string {
-  return now.toISOString().slice(0, 10);
+  // Use an ISO week rather than the execution date so a delayed/replayed
+  // scheduler invocation remains idempotent for the same weekly period.
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const isoDay = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - isoDay);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((date.getTime() - yearStart.getTime()) / 86_400_000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
 async function requirePreferenceSchema(database: DatabaseAdapter): Promise<void> {
