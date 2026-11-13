@@ -223,6 +223,39 @@ pre, code, .font-mono {
   );
 }
 
+/* One-shot full-hero intro layer. The original spotlight layer above remains unchanged. */
+.hero-entrance-lines {
+  opacity: 0;
+  visibility: hidden;
+  background-image: repeating-linear-gradient(
+    var(--hero-entrance-lines-angle, 90deg),
+    rgba(255, 255, 255, 0.12) 0px,
+    rgba(255, 255, 255, 0.12) 1px,
+    transparent 1px,
+    transparent 100px
+  );
+}
+
+.hero-entrance-active .hero-entrance-lines {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-entrance-active .hero-spotlight-lines {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-entrance-active .hero-entrance-lines {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .hero-entrance-active .hero-spotlight-lines {
+    visibility: visible;
+  }
+}
+
 .bg-star-pattern {
   background-image:
     radial-gradient(1.5px 1.5px at 40px 60px, rgba(255, 255, 255, 0.85), transparent),
