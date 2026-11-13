@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Receipt } from 'lucide-react';
 import { formatInvoiceAmount, formatInvoiceDate, parseInvoiceHistoryResult, toSafeInvoiceDateTime, toSafeInvoiceUrl, type InvoiceHistoryAdapter, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
 
@@ -55,7 +56,7 @@ export function InvoiceHistoryPanel({ adapter = invoiceHistoryApiAdapter }: { ad
           <button type="button" onClick={() => void load()} disabled={loading} aria-busy={loading ? 'true' : undefined} className="inline-flex min-h-11 items-center rounded-lg border border-rose-300 bg-white px-3 font-medium text-rose-900 disabled:cursor-not-allowed disabled:opacity-70">Retry invoice history</button>
         </div>
       ) : result?.status === 'unavailable' ? (
-        <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">{result.message}</p>
+        <div role="status" aria-live="polite" aria-atomic="true" className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950"><p>{result.message}</p><p className="text-amber-900">No invoice, payment, or entitlement data is being simulated while the provider boundary is unavailable.</p><Link href="/contact" className="inline-flex min-h-10 items-center rounded-lg border border-amber-300 bg-white px-3 font-medium text-amber-950 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2">Contact support</Link></div>
       ) : result?.invoices.length === 0 ? (
         <p role="status" aria-live="polite" aria-atomic="true" className="rounded-xl border border-[#E8E8E5] bg-[#F6F6F4] p-4 text-xs text-[#686868]">No invoices are available for this workspace.</p>
       ) : (
