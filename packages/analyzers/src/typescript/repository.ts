@@ -3,6 +3,7 @@ import { open, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { AnalysisError, EXCLUDED_DIRECTORIES } from '@apiproof/shared';
 import type { Diagnostic } from '@apiproof/shared';
+import { sanitizeMemoryFiles } from '../memory-files.js';
 
 export const LIMITS = { files: 5_000, entries: 50_000, depth: 64, fileBytes: 1_048_576, metadataBytes: 4_194_304, totalBytes: 33_554_432 } as const;
 const sourceExtension = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
@@ -31,7 +32,10 @@ export class RepositorySnapshot {
 
   static fromMemory(root: string, files: Map<string, string>): RepositorySnapshot {
     const snapshot = new RepositorySnapshot(root);
-    for (const [relativePath, content] of files) {
+    const sanitized = sanitizeMemoryFiles(files);
+    snapshot.diagnostics.push(...sanitized.diagnostics);
+    snapshot.skipped += sanitized.diagnostics.length;
+    for (const [relativePath, content] of sanitized.files) {
       const norm = portable(relativePath);
       if (norm === 'package.json' || norm.endsWith('/package.json')) snapshot.manifests.push(norm);
       if (sourceExtension.test(norm)) {

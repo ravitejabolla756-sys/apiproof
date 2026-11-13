@@ -1,16 +1,18 @@
 import { createHash } from 'node:crypto';
+import { sanitizeMemoryFiles, type MemorySnapshotInput } from '../memory-files.js';
 
 export class PythonRepositorySnapshot {
   readonly hashes = new Map<string, string>();
   readonly diagnostics: { code: string; message: string; file?: string }[] = [];
 
-  private constructor(readonly files: ReadonlyMap<string, string>) {
+  private constructor(readonly files: ReadonlyMap<string, string>, diagnostics: readonly { code: string; message: string; file?: string }[] = []) {
+    this.diagnostics.push(...diagnostics);
     for (const [file, content] of files) this.hashes.set(file, createHash('sha256').update(content).digest('hex'));
   }
 
-  static fromMemory(files: ReadonlyMap<string, string> | Record<string, string>): PythonRepositorySnapshot {
-    const values = files instanceof Map ? files : new Map(Object.entries(files));
-    return new PythonRepositorySnapshot(new Map([...values].map(([file, content]) => [file.replaceAll('\\', '/'), content])));
+  static fromMemory(files: MemorySnapshotInput): PythonRepositorySnapshot {
+    const sanitized = sanitizeMemoryFiles(files);
+    return new PythonRepositorySnapshot(sanitized.files, sanitized.diagnostics);
   }
 
   sourceFiles(): readonly [string, string][] {
