@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let workspace;
@@ -32,13 +32,11 @@ export async function GET(req: Request) {
       ORDER BY pr.created_at DESC
     `, [user.id, workspace.id]);
 
-    return NextResponse.json({ pullRequests }, {
-      headers: { 'Cache-Control': 'private, no-store' },
-    });
+    return NextResponse.json({ pullRequests }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch {
     return NextResponse.json(
-      { error: 'Pull requests are temporarily unavailable.' },
-      { status: 503, headers: { 'Cache-Control': 'private, no-store' } },
+      { error: 'Pull requests are temporarily unavailable.', code: 'PULL_REQUESTS_UNAVAILABLE' },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
 }
