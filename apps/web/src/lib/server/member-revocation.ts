@@ -242,6 +242,10 @@ export async function revokeWorkspaceMember(
 ): Promise<MemberRevocationResult> {
   const db = getDatabase();
   return db.transaction(async (tx) => {
+    const revocationTablesAvailable = await hasTable(tx, 'workspace_member_revocation_requests')
+      && await hasTable(tx, 'workspace_security_audit_events');
+    if (!revocationTablesAvailable) throw new Error('REVOCATION_SCHEMA_UNAVAILABLE');
+
     const actor = await tx.queryOne<{ role: string }>(`
       SELECT role FROM workspace_members WHERE workspace_id = ? AND user_id = ?
     `, [request.workspaceId, actorUserId]);

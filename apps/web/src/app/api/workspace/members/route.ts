@@ -50,6 +50,7 @@ function errorResponse(error: unknown): Response {
   const mapped = mapMemberRevocationError(error);
   const status = mapped.code === 'INTERNAL_ERROR'
     ? 500
+    : mapped.code === 'REVOCATION_SCHEMA_UNAVAILABLE' ? 503
     : mapped.code === 'WORKSPACE_ACCESS_DENIED' ? 404
       : mapped.code === 'WORKSPACE_CAPABILITY_DENIED' ? 403
         : 400;

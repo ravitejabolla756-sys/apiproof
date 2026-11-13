@@ -28,6 +28,7 @@ export type MemberRevocationErrorCode =
   | 'FINAL_OWNER_PROTECTED'
   | 'SELF_REVOCATION_REQUIRES_SEPARATE_FLOW'
   | 'REVOCATION_IDEMPOTENCY_CONFLICT'
+  | 'REVOCATION_SCHEMA_UNAVAILABLE'
   | 'INTERNAL_ERROR';
 
 export interface MemberRevocationApiError {
@@ -50,6 +51,8 @@ export function mapMemberRevocationError(error: unknown): MemberRevocationApiErr
       return { error: 'Leaving a workspace uses a separate workflow.', code };
     case 'REVOCATION_IDEMPOTENCY_CONFLICT':
       return { error: 'The idempotency key was already used for another request.', code };
+    case 'REVOCATION_SCHEMA_UNAVAILABLE':
+      return { error: 'Workspace member removal is unavailable until the approved revocation schema is installed.', code };
     default:
       return { error: 'Unable to revoke workspace membership.', code: 'INTERNAL_ERROR' };
   }
