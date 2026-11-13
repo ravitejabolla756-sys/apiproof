@@ -5,23 +5,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { GitPullRequest, ExternalLink, ShieldCheck, Loader2, RefreshCw } from "lucide-react";
-
-interface PullRequestItem {
-  id: string;
-  number: number;
-  title: string;
-  branch_name: string;
-  base_branch: string;
-  url: string;
-  state: string;
-  created_at: string;
-  patch_digest: string;
-  repo_name: string;
-  repo_full_name: string;
-  symbol: string;
-  file_path: string;
-  change_id: string;
-}
+import { parsePullRequestResponse, type PullRequestItem } from "@/lib/pull-request-contract";
 
 export default function PullRequestsPage() {
   const [pullRequests, setPullRequests] = useState<PullRequestItem[]>([]);
@@ -35,9 +19,9 @@ export default function PullRequestsPage() {
     try {
       const res = await fetch("/api/pull-requests");
       if (!res.ok) throw new Error("Pull requests are temporarily unavailable.");
-      const json = await res.json() as { pullRequests?: unknown };
-      if (!Array.isArray(json.pullRequests)) throw new Error("Pull requests returned an invalid response.");
-      setPullRequests(json.pullRequests as PullRequestItem[]);
+      const parsed = parsePullRequestResponse(await res.json());
+      if (!parsed) throw new Error("Pull requests returned an invalid response.");
+      setPullRequests(parsed);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Pull requests are temporarily unavailable.");
     } finally {
