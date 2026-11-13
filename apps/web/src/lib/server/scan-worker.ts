@@ -34,13 +34,19 @@ import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { extractSourceSnippet } from './scan-snippet.js';
 import { assertFounderRepositoryScope, assertFounderScanProtectionConfigured, getConfiguredFounderUserId } from './founder-scan-authorization.js';
 import { buildWorkerScope } from './scan-worker-scope.js';
+import { getTelemetrySink, type TelemetrySink } from './observability.js';
 export { getScanWorkerMetrics } from './scan-worker-metrics.js';
 export type { ScanWorkerMetrics } from './scan-worker-metrics.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
 
-export interface ScanWorkerOptions { batchSize?: number | undefined; timeoutMs?: number | undefined; repositoryId?: string | undefined; }
+export interface ScanWorkerOptions {
+  batchSize?: number | undefined;
+  timeoutMs?: number | undefined;
+  repositoryId?: string | undefined;
+  telemetry?: TelemetrySink | undefined;
+}
 
 export interface ScanWorkerJobResult {
   scanRequestId: string;
@@ -547,6 +553,7 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
 export async function processPendingGitHubScans(options: ScanWorkerOptions = {}): Promise<ScanWorkerResult> {
   logger.info('scan_worker_runtime', workerRuntimeIdentity());
   assertFounderScanProtectionConfigured(); assertFounderRepositoryScope(options.repositoryId);
+  const telemetry = getTelemetrySink(options.telemetry);
   const batchSize = Math.min(options.batchSize ?? 5, 20); // hard cap at 20
   const timeoutMs = Math.min(options.timeoutMs ?? 50_000, 270_000); // hard cap at 270s (Vercel Pro max)
   const deadline = Date.now() + timeoutMs;
@@ -581,6 +588,13 @@ export async function processPendingGitHubScans(options: ScanWorkerOptions = {})
     }
 
     const result = await executeJob(job);
+    const queueLagMs = Date.now() - Date.parse(job.created_at);
+    if (Number.isFinite(queueLagMs) && queueLagMs >= 0) {
+      telemetry.observe('scan_queue_lag', queueLagMs, { job_type: 'repository_scan', lag_ms: queueLagMs });
+    }
+    if (result.status === 'failed') {
+      telemetry.increment('worker_failures', 1, { job_type: 'repository_scan', reason: result.error ?? 'SCAN_FAILED' });
+    }
     results.push(result);
   }
 
