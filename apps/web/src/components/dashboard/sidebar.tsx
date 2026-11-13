@@ -30,6 +30,10 @@ export function Sidebar() {
   const [openFindingsCount, setOpenFindingsCount] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [workspaceName, setWorkspaceName] = useState<string>('');
+  const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string; role: string }>>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
+  const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const logoutPending = useRef(false);
@@ -37,18 +41,28 @@ export function Sidebar() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const res = await fetch('/api/overview');
-        if (res.ok) {
-          const data = await res.json();
-          if (typeof data.stats?.openFindings === 'number') {
-            setOpenFindingsCount(data.stats.openFindings);
+        const [overviewResponse, workspacesResponse] = await Promise.all([
+          fetch('/api/overview', { cache: 'no-store' }),
+          fetch('/api/workspaces', { cache: 'no-store' }),
+        ]);
+        if (overviewResponse.ok) {
+          const data = await overviewResponse.json();
+          if (typeof data.stats?.openFindings === 'number') setOpenFindingsCount(data.stats.openFindings);
+          if (data.workspace?.name) setWorkspaceName(data.workspace.name);
+          if (data.user?.email) setUserEmail(data.user.email);
+        }
+        if (workspacesResponse.ok) {
+          const data = await workspacesResponse.json() as { workspaces?: unknown; activeWorkspaceId?: unknown };
+          if (Array.isArray(data.workspaces)) {
+            const available = data.workspaces.filter((workspace): workspace is { id: string; name: string; role: string } => (
+              typeof workspace === 'object' && workspace !== null
+              && typeof (workspace as { id?: unknown }).id === 'string'
+              && typeof (workspace as { name?: unknown }).name === 'string'
+              && typeof (workspace as { role?: unknown }).role === 'string'
+            ));
+            setWorkspaces(available);
           }
-          if (data.workspace?.name) {
-            setWorkspaceName(data.workspace.name);
-          }
-          if (data.user?.email) {
-            setUserEmail(data.user.email);
-          }
+          if (typeof data.activeWorkspaceId === 'string') setActiveWorkspaceId(data.activeWorkspaceId);
         }
       } catch {
         // Ignore background stat fetch errors
@@ -56,6 +70,29 @@ export function Sidebar() {
     }
     loadStats();
   }, [pathname]);
+
+  async function switchWorkspace(workspaceId: string) {
+    if (!workspaceId || workspaceId === activeWorkspaceId || switchingWorkspace) return;
+    setSwitchingWorkspace(true);
+    setWorkspaceError(null);
+    try {
+      const response = await fetch('/api/workspace/context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const data = await response.json() as { workspace?: { id?: unknown; name?: unknown }; error?: unknown };
+      if (!response.ok || !data.workspace || typeof data.workspace.id !== 'string' || typeof data.workspace.name !== 'string') {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Workspace could not be selected.');
+      }
+      setActiveWorkspaceId(data.workspace.id);
+      setWorkspaceName(data.workspace.name);
+      window.location.reload();
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Workspace could not be selected.');
+      setSwitchingWorkspace(false);
+    }
+  }
 
   const mainNav = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -207,6 +244,22 @@ export function Sidebar() {
               <span className={collapsed ? "md:hidden" : ""}>{isSigningOut ? 'Signing out…' : 'Sign Out'}</span>
             </button>
         </div>
+        {!collapsed && workspaces.length > 1 && (
+          <div className="mt-3 space-y-1">
+            <label htmlFor="workspace-switcher" className="sr-only">Active workspace</label>
+            <select
+              id="workspace-switcher"
+              value={activeWorkspaceId}
+              disabled={switchingWorkspace}
+              aria-busy={switchingWorkspace ? 'true' : undefined}
+              onChange={(event) => void switchWorkspace(event.target.value)}
+              className="min-h-10 w-full min-w-0 rounded-lg border border-[#D9D9D4] bg-white px-2 text-xs text-[#333333] outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]"
+            >
+              {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name} · {workspace.role}</option>)}
+            </select>
+            {workspaceError && <p role="alert" className="break-words text-[11px] text-rose-700">{workspaceError}</p>}
+          </div>
+        )}
         {logoutError && <p role="alert" className="mt-2 text-[11px] text-rose-700">{logoutError}</p>}
       </div>
     </aside>
