@@ -6,10 +6,7 @@ import { ArrowLeft, KeyRound, Loader2, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { accountDeletionAvailability } from '@/lib/account-deletion-contract';
 import { parseAccountProfileResponse, parsePasswordChangeResponse, type AccountProfileProjection } from '@/lib/account-profile-contract';
-
-function errorText(value: unknown): string | null {
-  return value && typeof value === 'object' && 'error' in value && typeof value.error === 'string' ? value.error : null;
-}
+import { accountErrorMessage, readAccountErrorCode } from '@/lib/account-error-contract';
 
 export default function AccountSettingsPage() {
   const [account, setAccount] = useState<AccountProfileProjection | null>(null);
@@ -31,7 +28,7 @@ export default function AccountSettingsPage() {
       const response = await fetch('/api/account');
       const payload: unknown = await response.json();
       const parsed = parseAccountProfileResponse(payload);
-      if (!response.ok || !parsed) throw new Error(errorText(payload) ?? 'Unable to load account settings.');
+      if (!response.ok || !parsed) throw new Error(accountErrorMessage(response.status, readAccountErrorCode(payload), 'Unable to load account settings.'));
       setAccount(parsed); setName(parsed.name);
     } catch (loadError) { setError(loadError instanceof Error ? loadError.message : 'Unable to load account settings.'); }
     finally { setLoading(false); }
@@ -45,7 +42,7 @@ export default function AccountSettingsPage() {
       const response = await fetch('/api/account', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
       const payload: unknown = await response.json();
       const parsed = parseAccountProfileResponse(payload);
-      if (!response.ok || !parsed) throw new Error(errorText(payload) ?? 'Unable to save your name.');
+      if (!response.ok || !parsed) throw new Error(accountErrorMessage(response.status, readAccountErrorCode(payload), 'Unable to save your name.'));
       setAccount(parsed); setName(parsed.name); setMessage('Profile updated.');
     } catch (saveError) { setError(saveError instanceof Error ? saveError.message : 'Unable to save your name.'); }
     finally { setSaving(false); }
@@ -59,7 +56,7 @@ export default function AccountSettingsPage() {
       const response = await fetch('/api/account/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, newPassword }) });
       const payload: unknown = await response.json();
       const parsed = parsePasswordChangeResponse(payload);
-      if (!response.ok || !parsed) throw new Error(errorText(payload) ?? 'Unable to change your password.');
+      if (!response.ok || !parsed) throw new Error(accountErrorMessage(response.status, readAccountErrorCode(payload), 'Unable to change your password.'));
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setMessage(parsed);
     } catch (passwordError) { setError(passwordError instanceof Error ? passwordError.message : 'Unable to change your password.'); }
     finally { setSaving(false); }
@@ -69,9 +66,10 @@ export default function AccountSettingsPage() {
     setResendingVerification(true); setMessage(null); setError(null);
     try {
       const response = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'resend_verification' }) });
-      const payload = await response.json() as { code?: unknown; error?: unknown };
-      if (!response.ok) throw new Error(typeof payload.error === 'string' ? payload.error : 'Email verification is unavailable.');
-      if (payload.code === 'EMAIL_ALREADY_VERIFIED') {
+      const payload: unknown = await response.json();
+      if (!response.ok) throw new Error(accountErrorMessage(response.status, readAccountErrorCode(payload), 'Email verification is unavailable.'));
+      const code = readAccountErrorCode(payload);
+      if (code === 'EMAIL_ALREADY_VERIFIED') {
         setAccount((current) => current ? { ...current, emailVerifiedAt: new Date().toISOString(), emailVerificationState: 'verified' } : current);
         setMessage('Your email is already verified.');
       } else {
@@ -88,13 +86,11 @@ export default function AccountSettingsPage() {
         method: 'POST',
         headers: { 'Idempotency-Key': `deletion-review-${Date.now().toString(36)}` },
       });
-      const payload = await response.json() as { blockers?: unknown; error?: unknown };
+      const payload: unknown = await response.json();
       if (response.ok) {
         setDeletionReview('Deletion planning is available for owner review, but execution remains disabled.');
-      } else if (Array.isArray(payload.blockers)) {
-        setDeletionReview(`Deletion remains unavailable: ${payload.blockers.join(', ')}.`);
       } else {
-        throw new Error(typeof payload.error === 'string' ? payload.error : 'Deletion readiness is unavailable.');
+        throw new Error(accountErrorMessage(response.status, readAccountErrorCode(payload), 'Deletion readiness is unavailable.'));
       }
     } catch (reviewError) {
       setDeletionReview(reviewError instanceof Error ? reviewError.message : 'Deletion readiness is unavailable.');
