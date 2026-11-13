@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -44,6 +45,9 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
 }
 
 export async function DELETE(req: Request, props: { params: Promise<{ id: string }> }) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+
   const { id } = await props.params;
   const user = await getCurrentUser(req);
   if (!user) {

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDefaultWorkspaceForUser, requireWorkspaceCapability } from '@/lib/server/workspace-service';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 
 export async function POST(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

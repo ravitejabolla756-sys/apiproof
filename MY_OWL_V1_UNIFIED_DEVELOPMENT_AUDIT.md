@@ -58,7 +58,7 @@ Status describes the combined integration branch unless explicitly stated otherw
 
 | ID | Status | Existing/source evidence | Integration evidence | Missing acceptance/dependency | Exact next action |
 |---|---|---|---|---|---|
-| SEC-04 | INTEGRATED_PARTIAL | CSRF, origin and rate-limit source/tests exist. | Security middleware and auth regressions are present; current focused set passed. | Full route matrix, hosted proxy behavior and Postgres/session evidence. | Run the complete state-changing route matrix and obtain hosted evidence. |
+| SEC-04 | INTEGRATED_VERIFIED_LOCAL | CSRF, origin and rate-limit source/tests exist. | Added route enforcement for billing checkout/portal, repository deletion and GitHub installation; focused route/auth set passed 50/50. | Hosted proxy behavior, OAuth provider acceptance and PostgreSQL/session evidence. | Preserve local gate and obtain approved hosted/PostgreSQL evidence. |
 | SEC-08 | INTEGRATED_VERIFIED_LOCAL | Security-header implementation and tests. | `tests/security-headers.test.ts`; current build/typecheck passed. | Hosted header and deployment verification. | Verify headers on an approved nonproduction deployment. |
 | SEC-09 | INTEGRATED_VERIFIED_LOCAL | Dependency policy/audit tooling and locked dependency checks. | Integration contains dependency policy; local focused dependency test passed. | Current registry advisory refresh and hosted CI execution. | Run the current advisory scan with approved network access and record findings. |
 | SEC-15 | INTEGRATED_PARTIAL | Hardened workflow and workflow-contract tests. | Workflow files are currently dirty in integration; local contract evidence exists. | GitHub-hosted run, permissions, branch protection and fork-secret review. | Review the dirty workflow diff, validate YAML, then run hosted CI after approval. |
@@ -281,7 +281,16 @@ The declared production dependency audit `pnpm audit:prod` completed successfull
 - The first combined invocation was incomplete because the required local seed password was absent; it was not counted as a pass. The isolated rerun completed successfully.
 - SCAN-12 is now `INTEGRATED_VERIFIED_LOCAL`; it remains unverified for live repositories, production-scale workloads and schema-backed persistence.
 
-Current inventory counts after this milestone: Member 1 **8 locally verified, 9 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **9/53**; production verified **0**.
+Inventory counts at the SCAN-12 milestone: Member 1 **8 locally verified, 9 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **9/53**; production verified **0**.
+
+## 2026-11-13 milestone — SEC-04 route enforcement
+
+- Added `assertCsrfProtection` before authenticated work in billing checkout, billing portal, repository deletion and GitHub installation initiation.
+- Added `tests/sec04-route-csrf.test.ts` covering cross-site billing requests, deletion non-mutation, and installation-state non-creation.
+- Final focused SEC-04 suite: **7 files, 50 tests passed**.
+- Workspace typecheck: **passed**; targeted ESLint and `git diff --check`: **passed**.
+- SEC-04 is now `INTEGRATED_VERIFIED_LOCAL`; it is not production verified until hosted proxy/OAuth and PostgreSQL evidence pass.
+- Updated counts: Member 1 **9 locally verified, 8 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **10/53**; production verified **0**.
 
 ## Recommended first implementation task
 
