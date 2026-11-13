@@ -6,36 +6,12 @@ import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, Cred
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
 import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
+import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
 
 interface GitHubInstallationInfo {
   id: string;
   accountLogin: string;
   accountType: string;
-}
-
-interface BillingSummary {
-  subscription: {
-    planId: string;
-    status: string;
-    currentPeriodStart: string;
-    currentPeriodEnd: string;
-  };
-  plan: {
-    id: string;
-    name: string;
-    description: string;
-    priceMonthly: number | null;
-    limits: {
-      maxRepositories: number | null;
-      maxScansPerMonth: number | null;
-      maxDraftPrsPerMonth: number | null;
-    };
-  };
-  metrics: {
-    repositories: { current: number; limit: number | null; allowed: boolean };
-    scans: { current: number; limit: number | null; allowed: boolean };
-    draftPrs: { current: number; limit: number | null; allowed: boolean };
-  };
 }
 
 export default function SettingsPage() {
@@ -67,9 +43,15 @@ export default function SettingsPage() {
       }
 
       if (billingRes.ok) {
-        const billingData = await billingRes.json();
-        setBilling(billingData);
-        setBillingError(null);
+        const billingData: unknown = await billingRes.json();
+        const parsedBilling = parseBillingSummary(billingData);
+        if (!parsedBilling) {
+          setBilling(null);
+          setBillingError('Billing summary is temporarily unavailable for this workspace.');
+        } else {
+          setBilling(parsedBilling);
+          setBillingError(null);
+        }
       } else {
         const billingData = await billingRes.json().catch(() => ({}));
         setBilling(null);
@@ -176,7 +158,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-purple-700 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.repositories.current / billing.metrics.repositories.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.repositories.current, billing.metrics.repositories.limit)}%`,
                         }}
                       />
                     </div>}
@@ -194,7 +176,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-emerald-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.scans.current / billing.metrics.scans.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.scans.current, billing.metrics.scans.limit)}%`,
                         }}
                       />
                     </div>}
@@ -212,7 +194,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-indigo-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.draftPrs.current / billing.metrics.draftPrs.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.draftPrs.current, billing.metrics.draftPrs.limit)}%`,
                         }}
                       />
                     </div>}
