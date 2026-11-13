@@ -130,4 +130,3 @@ export function parseCompatibilityProofResponse(value: unknown): CompatibilityPr
   }
   return { claimsAvailable: value.claimsAvailable, reason, changes: changes as ReviewedCompatibilityChange[] };
 }
-
