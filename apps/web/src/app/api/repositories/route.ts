@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
 import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
-  getDefaultWorkspaceForUser,
   requireWorkspaceCapability,
   getWorkspaceGitHubInstallation,
 } from '@/lib/server/workspace-service.js';
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  const workspace = await resolveWorkspaceForRequest(req, user.id);
   const db = getDatabase();
   const repos = await db.query(`
     SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
@@ -74,9 +74,9 @@ export async function POST(req: Request) {
       const ws = await requireWorkspaceCapability(user.id, body.workspaceId, 'repository:write');
       workspaceId = ws.id;
     } else {
-      const defaultWs = await getDefaultWorkspaceForUser(user.id);
-      await requireWorkspaceCapability(user.id, defaultWs.id, 'repository:write');
-      workspaceId = defaultWs.id;
+      const activeWorkspace = await resolveWorkspaceForRequest(req, user.id);
+      await requireWorkspaceCapability(user.id, activeWorkspace.id, 'repository:write');
+      workspaceId = activeWorkspace.id;
     }
 
     // Billing plan repository limit check (runs after workspace authorization)
