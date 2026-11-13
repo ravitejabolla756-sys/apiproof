@@ -3,12 +3,12 @@ import { formatCanonicalMigrationBranch } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
 import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle.js';
-import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let workspace;
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   } catch {
     return NextResponse.json(
       { error: 'Migration review records are temporarily unavailable.' },
-      { status: 503, headers: { 'Cache-Control': 'private, no-store' } },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
 
@@ -55,7 +55,5 @@ export async function GET(req: Request) {
       : formatCanonicalMigrationBranch(String(m.change_id), String(m.id)),
   }));
 
-  return NextResponse.json({ migrations: mapped }, {
-    headers: { 'Cache-Control': 'private, no-store' },
-  });
+  return NextResponse.json({ migrations: mapped }, { headers: PRIVATE_NO_STORE_HEADERS });
 }
