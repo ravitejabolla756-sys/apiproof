@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { DELETE } from '../apps/web/src/app/api/workspace/members/route.js';
+import { DELETE, GET } from '../apps/web/src/app/api/workspace/members/route.js';
 import { createSession, createUser } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { memberRevocationMigrations } from '../apps/web/src/lib/server/db/member-revocation-migration.js';
@@ -36,7 +36,8 @@ async function fixture() {
     'INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)',
     ['org10-route-member', ownerMembership.workspace_id, member.id, 'member', new Date().toISOString()],
   );
-  return { raw, workspaceId: ownerMembership.workspace_id, ownerSession, memberId: member.id };
+  const memberSession = createSession(member.id);
+  return { raw, workspaceId: ownerMembership.workspace_id, ownerSession, memberSession, memberId: member.id };
 }
 
 function request(workspaceId: string, sessionId: string, body: Record<string, unknown>): Request {
@@ -54,11 +55,22 @@ function request(workspaceId: string, sessionId: string, body: Record<string, un
 
 describe('DELETE /api/workspace/members', () => {
   it('revokes only the selected membership and returns the approved success shape', async () => {
-    const { raw, workspaceId, ownerSession, memberId } = await fixture();
+    const { raw, workspaceId, ownerSession, memberSession, memberId } = await fixture();
     const response = await DELETE(request(workspaceId, ownerSession.id, { userId: memberId, idempotencyKey: 'route-key' }));
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ success: true, revocation: { workspaceId, subjectUserId: memberId, status: 'completed' } });
     expect(raw.prepare('SELECT COUNT(*) AS count FROM workspace_members WHERE workspace_id = ? AND user_id = ?').get(workspaceId, memberId)).toEqual({ count: 0 });
+
+    const staleContext = await GET(new Request('http://localhost/api/workspace/members', {
+      headers: { cookie: `apiproof_session=${memberSession.id}; apiproof_workspace_id=${workspaceId}` },
+    }));
+    expect(staleContext.status).toBe(200);
+    expect((await staleContext.json() as { workspace: { id: string } }).workspace.id).not.toBe(workspaceId);
+
+    const explicitRevokedWorkspace = await GET(new Request(`http://localhost/api/workspace/members?workspaceId=${workspaceId}`, {
+      headers: { cookie: `apiproof_session=${memberSession.id}` },
+    }));
+    expect(explicitRevokedWorkspace.status).toBe(404);
   });
 
   it('rejects cross-site requests before authentication or mutation', async () => {
