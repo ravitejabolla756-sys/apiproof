@@ -45,7 +45,7 @@ function validInternalHref(value: unknown): value is string | null {
  * read-state changes must be enforced by the server endpoint before parsing.
  */
 export function parseInAppNotifications(payload: unknown): InAppNotification[] | null {
-  if (!isRecord(payload) || !Array.isArray(payload.notifications)) return null;
+  if (!isRecord(payload) || !Array.isArray(payload.notifications) || payload.notifications.length > 2048) return null;
   const seen = new Set<string>();
   const notifications: InAppNotification[] = [];
   for (const item of payload.notifications) {
@@ -73,7 +73,26 @@ export function parseInAppNotifications(payload: unknown): InAppNotification[] |
 export function parseInAppNotificationFeed(payload: unknown): InAppNotificationFeed | null {
   const notifications = parseInAppNotifications(payload);
   if (!notifications || !isRecord(payload)) return null;
-  const status = payload.status === 'unavailable' ? 'unavailable' : 'projection';
-  const readState = payload.readState === 'available' ? 'available' : 'unavailable';
+  if (payload.status !== 'projection' && payload.status !== 'unavailable') return null;
+  if (payload.readState !== 'available' && payload.readState !== 'unavailable') return null;
+  const status = payload.status;
+  const readState = payload.readState;
   return { notifications, status, readState };
+}
+
+export function parseInAppNotificationMessage(value: unknown, fallback: string): string {
+  if (!isRecord(value) || typeof value.message !== 'string') return fallback;
+  const message = value.message.trim();
+  return message && message.length <= 512 ? message : fallback;
+}
+
+export function parseInAppNotificationError(value: unknown, fallback: string): string {
+  if (!isRecord(value) || typeof value.error !== 'string') return fallback;
+  const error = value.error.trim();
+  return error && error.length <= 512 ? error : fallback;
+}
+
+export function parseInAppNotificationCode(value: unknown): string | undefined {
+  if (!isRecord(value) || typeof value.code !== 'string' || !/^[A-Z0-9_:-]{3,96}$/.test(value.code)) return undefined;
+  return value.code;
 }

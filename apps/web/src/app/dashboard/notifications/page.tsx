@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { inAppNotificationAvailability, parseInAppNotificationFeed, type InAppNotification } from '@/lib/in-app-notification-contract';
+import { inAppNotificationAvailability, parseInAppNotificationCode, parseInAppNotificationError, parseInAppNotificationFeed, parseInAppNotificationMessage, type InAppNotification } from '@/lib/in-app-notification-contract';
 
 type FeedState = 'loading' | 'ready' | 'unavailable' | 'error';
 
@@ -22,16 +22,16 @@ export default function NotificationsPage() {
     if (isRetry) setRetrying(true);
     try {
       const response = await fetch('/api/account/notifications/feed', { cache: 'no-store' });
-      const payload = await response.json() as { notifications?: unknown; status?: unknown; code?: unknown; message?: unknown; error?: unknown };
+      const payload: unknown = await response.json();
       const feed = parseInAppNotificationFeed(payload);
-      if (!feed) throw new Error(typeof payload.error === 'string' ? payload.error : 'Unable to load notifications.');
+      if (!feed) throw new Error(parseInAppNotificationError(payload, 'Unable to load notifications.'));
       setNotifications(feed.notifications);
       setReadStateUnavailable(feed.readState !== 'available');
-      if (payload.code === inAppNotificationAvailability.code || payload.status === inAppNotificationAvailability.status) {
+      if (parseInAppNotificationCode(payload) === inAppNotificationAvailability.code || feed.status === inAppNotificationAvailability.status) {
         setState('unavailable');
-        setMessage(typeof payload.message === 'string' ? payload.message : inAppNotificationAvailability.message);
+        setMessage(parseInAppNotificationMessage(payload, inAppNotificationAvailability.message));
       } else if (!response.ok) {
-        throw new Error(typeof payload.error === 'string' ? payload.error : 'Unable to load notifications.');
+        throw new Error(parseInAppNotificationError(payload, 'Unable to load notifications.'));
       } else {
         setState('ready');
       }
