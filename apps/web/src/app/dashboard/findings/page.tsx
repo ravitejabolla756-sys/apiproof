@@ -14,33 +14,10 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-
-interface FindingRecord {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  status: string;
-  created_at: string;
-  repo_name: string;
-  repo_full_name: string;
-  pr_number?: number | null;
-  pr_url?: string | null;
-  pr_state?: string | null;
-  capability?: {
-    migrationAvailable: boolean;
-    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
-  } | null;
-}
+import { parseFindingListResponse, type FindingListItem } from "@/lib/finding-list-contract";
 
 export default function FindingsListPage() {
-  const [findings, setFindings] = useState<FindingRecord[]>([]);
+  const [findings, setFindings] = useState<FindingListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,9 +31,9 @@ export default function FindingsListPage() {
     try {
       const res = await fetch("/api/findings");
       if (!res.ok) throw new Error("Findings are temporarily unavailable.");
-      const json = await res.json() as { findings?: unknown };
-      if (!Array.isArray(json.findings)) throw new Error("Findings returned an invalid response.");
-      setFindings(json.findings as FindingRecord[]);
+      const parsed = parseFindingListResponse(await res.json());
+      if (!parsed) throw new Error("Findings returned an invalid response.");
+      setFindings(parsed);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Findings are temporarily unavailable.");
     } finally {
