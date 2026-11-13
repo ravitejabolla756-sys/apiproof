@@ -27,8 +27,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, queued: queued.length }, { status: 200, headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     if (error instanceof DigestSchedulingUnavailableError) {
-      return NextResponse.json({ ok: false, error: error.message, code: error.code }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+      return NextResponse.json({ ok: false, error: 'Digest scheduling is unavailable until the approved schedule is configured.', code: error.code }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     }
+    console.error('Digest scheduling failed:', { code: 'DIGEST_SCHEDULING_FAILED' });
     return NextResponse.json({ ok: false, error: 'Digest scheduling could not be completed.', code: 'DIGEST_SCHEDULING_FAILED' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }

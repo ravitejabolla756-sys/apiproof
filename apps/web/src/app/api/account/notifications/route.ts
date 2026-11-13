@@ -26,7 +26,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ preferences: await getNotificationPreferences(user.id) }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     if (error instanceof NotificationPreferencesUnavailableError) return unavailableResponse();
-    throw error;
+    console.error('Notification preference read failed:', { code: 'NOTIFICATION_PREFERENCES_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Notification preferences are temporarily unavailable.', code: 'NOTIFICATION_PREFERENCES_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
 
@@ -48,8 +49,9 @@ export async function PATCH(req: Request) {
     if (error instanceof SyntaxError) return badRequestResponse('Request body must be valid JSON.');
     if (error instanceof NotificationPreferencesUnavailableError) return unavailableResponse();
     if (error instanceof NotificationChannelUnavailableError) {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+      return NextResponse.json({ error: 'The requested notification channel is unavailable.', code: error.code }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to update notification preferences.', code: 'INVALID_NOTIFICATION_PREFERENCES' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
+    console.error('Notification preference update failed:', { code: 'NOTIFICATION_PREFERENCES_UPDATE_FAILED' });
+    return NextResponse.json({ error: 'Notification preferences could not be updated.', code: 'NOTIFICATION_PREFERENCES_UPDATE_FAILED' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
