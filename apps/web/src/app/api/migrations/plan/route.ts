@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -19,6 +20,8 @@ export async function POST(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   // Rate limit: 20 migration plans per 5 minutes per user
   const rateCheck = await checkRateLimit(`plan:${user.id}`, 20, 5 * 60 * 1000);

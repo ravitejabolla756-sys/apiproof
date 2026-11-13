@@ -8,6 +8,7 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   // Rate limit: 10 migration proposals per 5 minutes per user
   const rateCheck = await checkRateLimit(`propose:${user.id}`, 10, 5 * 60 * 1000);
