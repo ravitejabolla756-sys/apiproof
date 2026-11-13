@@ -282,6 +282,7 @@ export async function fetchRemoteRepositoryFiles(
 ): Promise<{ files: Map<string, string>; headSha: string; defaultBranch: string }> {
   const MAX_FILES = 2_000;
   const MAX_FILE_BYTES = 2 * 1024 * 1024;
+  const MAX_TOTAL_FILE_BYTES = 64 * 1024 * 1024;
   const readWithRetry = async <T>(operation: () => Promise<T>, label: string): Promise<T> => {
     let lastError: unknown;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -306,6 +307,7 @@ export async function fetchRemoteRepositoryFiles(
   }
 
   const filesMap = new Map<string, string>();
+  let totalBytes = 0;
   const filesToFetch = tree.filter((file) =>
     file === 'package.json' ||
     file === 'pnpm-lock.yaml' ||
@@ -325,10 +327,14 @@ export async function fetchRemoteRepositoryFiles(
     if (byteLength > MAX_FILE_BYTES) {
       throw new Error(`GITHUB_FILE_TOO_LARGE:${filePath}`);
     }
+    if (totalBytes + byteLength > MAX_TOTAL_FILE_BYTES) {
+      throw new Error('GITHUB_SNAPSHOT_TOO_LARGE: repository exceeds the aggregate analyzable byte limit');
+    }
     if (content.includes('\u0000')) {
       throw new Error(`GITHUB_BINARY_FILE_UNSUPPORTED:${filePath}`);
     }
     filesMap.set(filePath, content);
+    totalBytes += byteLength;
   }
 
   return { files: filesMap, headSha: sha, defaultBranch: head.name };
