@@ -28,12 +28,20 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [repositories, setRepositories] = useState<RepositoryItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (!isOpen) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+    setRepositories([]);
+    setInventory([]);
 
     async function loadSearchData() {
       try {
@@ -42,20 +50,23 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           fetch('/api/inventory'),
         ]);
 
-        if (repoRes.ok) {
-          const json = await repoRes.json();
-          setRepositories(json.repositories || []);
-        }
-        if (invRes.ok) {
-          const json = await invRes.json();
-          setInventory(json.providers || []);
-        }
+        if (!repoRes.ok || !invRes.ok) throw new Error('Search data unavailable');
+        const [repoJson, invJson] = await Promise.all([repoRes.json(), invRes.json()]);
+        if (cancelled) return;
+        setRepositories(repoJson.repositories || []);
+        setInventory(invJson.providers || []);
+        setLoadError(null);
       } catch {
-        // Suppress search data load failures
+        if (!cancelled) setLoadError('Workspace search is temporarily unavailable.');
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     loadSearchData();
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -169,6 +180,13 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
         {/* Results List */}
         <div className="max-h-96 overflow-y-auto p-3 space-y-4 text-xs">
+          {isLoading && (
+            <p role="status" className="px-3 py-2 text-[#686868]">Loading workspace search…</p>
+          )}
+          {loadError && (
+            <p role="alert" className="px-3 py-2 rounded-xl bg-red-50 text-red-800">{loadError}</p>
+          )}
+
           {/* Navigation Links */}
           <div>
             <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">
@@ -248,6 +266,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 ))}
               </div>
             </div>
+          )}
+
+          {!isLoading && !loadError && query.trim() && filteredRepos.length === 0 && filteredInventory.length === 0 && (
+            <p role="status" className="px-3 py-2 text-[#686868]">No matching repositories or providers.</p>
           )}
         </div>
 
