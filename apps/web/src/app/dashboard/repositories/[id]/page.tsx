@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { parseRepositoryDetailResponse, parseScanActionResponse, type FindingRecord, type RepositoryDetail, type ScanRecord } from "@/lib/repository-contract";
 import {
   GitBranch,
   AlertTriangle,
@@ -15,44 +16,6 @@ import {
   RefreshCw,
   FileCode,
 } from "lucide-react";
-
-interface RepositoryDetail {
-  id: string;
-  owner: string;
-  name: string;
-  full_name: string;
-  github_repository_id: string;
-  default_branch: string;
-  status: string;
-  last_scan_at: string | null;
-  created_at: string;
-}
-
-interface ScanRecord {
-  id: string;
-  sha: string;
-  status: string;
-  total_files: number;
-  analyzed_files: number;
-  findings_count: number;
-  started_at: string;
-  completed_at: string | null;
-}
-
-interface FindingRecord {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  status: string;
-  created_at: string;
-}
 
 export default function RepositoryDetailPage({
   params,
@@ -74,13 +37,13 @@ export default function RepositoryDetailPage({
     try {
       const res = await fetch(`/api/repositories/${id}`);
       if (!res.ok) throw new Error("Repository details are temporarily unavailable.");
-      const json = await res.json() as { repository?: unknown; scans?: unknown; findings?: unknown };
-      if (!json.repository || typeof json.repository !== "object" || !Array.isArray(json.scans) || !Array.isArray(json.findings)) {
+      const parsed = parseRepositoryDetailResponse(await res.json());
+      if (!parsed) {
         throw new Error("Repository details returned an invalid response.");
       }
-      setRepo(json.repository as RepositoryDetail);
-      setScans(json.scans as ScanRecord[]);
-      setFindings(json.findings as FindingRecord[]);
+      setRepo(parsed.repository);
+      setScans(parsed.scans);
+      setFindings(parsed.findings);
     } catch (loadErrorValue) {
       setLoadError(loadErrorValue instanceof Error ? loadErrorValue.message : "Repository details are temporarily unavailable.");
     } finally {
@@ -104,14 +67,15 @@ export default function RepositoryDetailPage({
       const res = await fetch(`/api/repositories/${repo.id}/scan`, {
         method: "POST",
       });
-      const data = await res.json();
+      const findingsCount = parseScanActionResponse(await res.json());
 
       if (!res.ok) {
-        throw new Error(data.error || "Scan execution failed.");
+        throw new Error("Scan execution failed.");
       }
+      if (findingsCount === undefined) throw new Error("Scan returned an invalid response.");
 
       setMessage({
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: `Scan complete: ${findingsCount} findings recorded.`,
       });
       await loadData();
     } catch (err: unknown) {
@@ -437,7 +401,7 @@ export default function RepositoryDetailPage({
                       </span>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      {s.analyzed_files} / {s.total_files}
+                      {s.files_analyzed}
                     </td>
                     <td className="py-2.5 px-3 font-mono font-semibold">
                       {s.findings_count}
