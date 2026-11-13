@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -64,28 +64,36 @@ export default function RepositoryDetailPage({
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [findings, setFindings] = useState<FindingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const loadErrorRef = useRef<HTMLDivElement>(null);
 
   async function loadData() {
+    setLoadError(null);
     try {
       const res = await fetch(`/api/repositories/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        setRepo(json.repository);
-        setScans(json.scans || []);
-        setFindings(json.findings || []);
+      if (!res.ok) throw new Error("Repository details are temporarily unavailable.");
+      const json = await res.json() as { repository?: unknown; scans?: unknown; findings?: unknown };
+      if (!json.repository || typeof json.repository !== "object" || !Array.isArray(json.scans) || !Array.isArray(json.findings)) {
+        throw new Error("Repository details returned an invalid response.");
       }
-    } catch (err) {
-      console.error("Failed to load repository detail:", err);
+      setRepo(json.repository as RepositoryDetail);
+      setScans(json.scans as ScanRecord[]);
+      setFindings(json.findings as FindingRecord[]);
+    } catch (loadErrorValue) {
+      setLoadError(loadErrorValue instanceof Error ? loadErrorValue.message : "Repository details are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [id]);
+  useEffect(() => {
+    if (loadError) loadErrorRef.current?.focus();
+  }, [loadError]);
 
   async function handleTriggerScan() {
     if (!repo) return;
@@ -116,7 +124,7 @@ export default function RepositoryDetailPage({
   if (loading) {
     return (
       <div className="py-20 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading repository details...</span>
       </div>
     );
@@ -128,9 +136,16 @@ export default function RepositoryDetailPage({
         <Link href="/dashboard/repositories" className="text-zinc-500 hover:text-black flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Repositories
         </Link>
-        <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
-          Repository not found or access denied.
-        </div>
+        {loadError ? (
+          <div ref={loadErrorRef} role="alert" aria-live="assertive" tabIndex={-1} className="p-8 text-center bg-rose-50 border border-rose-200 rounded-[24px] outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+            <p className="text-rose-900">{loadError}</p>
+            <Button type="button" size="sm" variant="outline" onClick={loadData} className="mt-4 border-rose-300 bg-white text-rose-900">Retry</Button>
+          </div>
+        ) : (
+          <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
+            Repository not found or access denied.
+          </div>
+        )}
       </div>
     );
   }
@@ -177,15 +192,18 @@ export default function RepositoryDetailPage({
 
           <div className="flex items-center gap-3">
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={loadData}
+              aria-busy={loading ? "true" : undefined}
               icon={<RefreshCw className="w-3.5 h-3.5" />}
               className="text-xs font-medium"
             >
               Refresh
             </Button>
             <Button
+              type="button"
               size="sm"
               variant="primary"
               disabled={scanning}
@@ -193,9 +211,9 @@ export default function RepositoryDetailPage({
               className="gap-1.5 text-xs font-medium"
             >
               {scanning ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Play className="w-3.5 h-3.5" />
+                <Play aria-hidden="true" className="w-3.5 h-3.5" />
               )}
               <span>{scanning ? "Analyzing AST..." : "Run AST Scan"}</span>
             </Button>
