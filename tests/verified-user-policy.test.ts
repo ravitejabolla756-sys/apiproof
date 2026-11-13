@@ -9,8 +9,10 @@ describe('verified-user policy boundary', () => {
   });
 
   it('fails closed for protected actions when the verification state is unavailable', () => {
-    expect(evaluateVerifiedUserPolicy({ action: 'workspace', verificationStateAvailable: false })).toBe('verification_unavailable');
-    expect(() => assertVerifiedUser({ action: 'workspace', verificationStateAvailable: false })).toThrow('VERIFICATION_STATE_UNAVAILABLE');
+    for (const action of ['authenticated_account', 'workspace', 'provider_link'] as const) {
+      expect(evaluateVerifiedUserPolicy({ action, verificationStateAvailable: false })).toBe('verification_unavailable');
+      expect(() => assertVerifiedUser({ action, verificationStateAvailable: false })).toThrow('VERIFICATION_STATE_UNAVAILABLE');
+    }
   });
 
   it('requires verification for protected actions until the server state is verified', () => {
@@ -27,6 +29,10 @@ describe('verified-user policy boundary', () => {
 
   it('does not let an unapproved client-like value grant access', () => {
     expect(evaluateVerifiedUserPolicy({ action: 'workspace', verificationStateAvailable: true, providerVerified: false, emailVerifiedAt: 'true' })).toBe('require_verification');
+  });
+
+  it('does not let provider verification bypass an unavailable server state', () => {
+    expect(evaluateVerifiedUserPolicy({ action: 'provider_link', verificationStateAvailable: false, providerVerified: true })).toBe('verification_unavailable');
   });
 
   it('rejects a future verification timestamp instead of trusting clock-skewed state', () => {
