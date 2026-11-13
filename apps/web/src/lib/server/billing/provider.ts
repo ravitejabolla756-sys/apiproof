@@ -69,6 +69,36 @@ export interface BillingProvider {
   verifyAndParseWebhook(rawBody: string, signature: string): Promise<BillingWebhookEvent>;
 }
 
+export class BillingProviderUnavailableError extends Error {
+  readonly code = 'BILLING_PROVIDER_UNAVAILABLE';
+
+  constructor() {
+    super('Billing is unavailable until an approved provider adapter is configured.');
+    this.name = 'BillingProviderUnavailableError';
+  }
+}
+
+/** Production-safe fallback. It never simulates checkout, portal, or webhook behavior. */
+export class UnavailableBillingProvider implements BillingProvider {
+  name = 'unavailable';
+
+  async createCustomer(): Promise<{ customerId: string }> {
+    throw new BillingProviderUnavailableError();
+  }
+
+  async createCheckoutSession(): Promise<{ checkoutUrl: string }> {
+    throw new BillingProviderUnavailableError();
+  }
+
+  async createPortalSession(): Promise<{ portalUrl: string }> {
+    throw new BillingProviderUnavailableError();
+  }
+
+  async verifyAndParseWebhook(): Promise<BillingWebhookEvent> {
+    throw new BillingProviderUnavailableError();
+  }
+}
+
 export class MockBillingProvider implements BillingProvider {
   name = 'mock';
 
@@ -145,6 +175,7 @@ export class MockBillingProvider implements BillingProvider {
   }
 }
 
-export function getBillingProvider(): BillingProvider {
-  return new MockBillingProvider();
+export function getBillingProvider(environment: NodeJS.ProcessEnv = process.env): BillingProvider {
+  if (environment.NODE_ENV !== 'production' && environment.BILLING_PROVIDER === 'mock') return new MockBillingProvider();
+  return new UnavailableBillingProvider();
 }

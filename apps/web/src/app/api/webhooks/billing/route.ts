@@ -28,6 +28,9 @@ export async function POST(req: Request) {
     if (message.includes('BILLING_WEBHOOK_UNAVAILABLE')) {
       return NextResponse.json({ error: 'Billing webhook processing is unavailable.', code: 'BILLING_WEBHOOK_UNAVAILABLE' }, { status: 503 });
     }
+    if (message.includes('BILLING_PROVIDER_UNAVAILABLE')) {
+      return NextResponse.json({ error: 'Billing provider is unavailable.', code: 'BILLING_PROVIDER_UNAVAILABLE' }, { status: 503 });
+    }
     if (message.includes('MALFORMED_BILLING_EVENT')) {
       return NextResponse.json({ error: 'Malformed billing event.', code: 'MALFORMED_BILLING_EVENT' }, { status: 400 });
     }
