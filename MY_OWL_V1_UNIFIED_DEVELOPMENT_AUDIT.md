@@ -70,7 +70,7 @@ Status describes the combined integration branch unless explicitly stated otherw
 | PR-08 | INTEGRATED_VERIFIED_LOCAL | Resolution worker/reconciliation guard. | Commit `ad9a6810`; worker/resolution tests passed locally. | PostgreSQL finding schema and queue rehearsal. | Run worker integration tests against approved disposable PostgreSQL. |
 | AUTH-05 | BLOCKED_EXTERNAL | Token lifecycle logic and provider-neutral delivery boundary. | Decision documentation exists; live delivery remains disabled. | Approved email provider, sender verification, credentials, templates, retention and DB proof. | Obtain owner/provider approval, then test a sandbox transport. |
 | AUTH-10 | INTEGRATED_PARTIAL | Verified-user policy boundary in `f0d41031`. | Commit `f0d41031`; policy tests passed and account browser baseline passed. | Complete protected-route rollout, OAuth acceptance and PostgreSQL concurrency. | Inventory every protected route and gate from server-derived state. |
-| ORG-05 | INTEGRATED_PARTIAL | Workspace policy and role matrix. | Commit `e1b787c5`; authorization-focused tests passed. | PostgreSQL RLS/grants and Member 2 invitation/audit schema contracts. | Complete role matrix on disposable PostgreSQL and reconcile contracts. |
+| ORG-05 | INTEGRATED_VERIFIED_LOCAL | Workspace policy and role matrix. | Expanded owner/admin/member, no-membership, cross-tenant, invalid-role and revocation checks; ORG suite passed 40/40 executable tests. | PostgreSQL RLS/grants and Member 2 invitation/audit schema contracts. | Preserve local gate and obtain approved PostgreSQL/Member 2 evidence. |
 | ORG-10 | INTEGRATED_PARTIAL | `buildMemberRevocationPlan`, scoped revocation and error mapper. | Commit `ebb4fac2`; 20 passed and 18 todo in organization contract/revocation coverage. | Member 2 route, invitations, audit persistence and PostgreSQL concurrency. | Integrate only after schema/route compatibility review and test concurrency. |
 | MIG-01 | BLOCKED_EXTERNAL | Draft recommendation/patch safety interfaces and offline policy. | Decision documentation only; no external model enabled. | Model/provider, data handling, budget and owner approval. | Approve provider/policy, then run offline fixtures before any sandbox call. |
 | BILL-02 | INTEGRATED_PARTIAL | Provider-neutral billing/checkout abstraction and Free Beta gate. | Local authorization and checkout blocking are present. | Provider selection, merchant/tax/currency policy and sandbox credentials. | Obtain provider decision and execute adapter sandbox tests. |
@@ -293,6 +293,15 @@ Inventory counts at the SCAN-12 milestone: Member 1 **8 locally verified, 9 part
 - SEC-04 is now `INTEGRATED_VERIFIED_LOCAL`; it is not production verified until hosted proxy/OAuth and PostgreSQL evidence pass.
 - Updated counts: Member 1 **9 locally verified, 8 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **10/53**; production verified **0**.
 
+## 2026-11-13 milestone — ORG-05 local authorization matrix
+
+- Added database-backed regressions for the approved admin capability boundary and no-membership denial in `tests/workspace-policy-integration.test.ts`.
+- Final ORG-05/dependent authorization suite: **6 files, 40 executable tests passed, 2 existing todo**.
+- Workspace typecheck: **passed**; targeted ESLint: **passed**; `git diff --check`: **passed**.
+- ORG-05 is now `INTEGRATED_VERIFIED_LOCAL`; PostgreSQL RLS/grants, real concurrency and Member 2 invitation/audit schema compatibility remain pending.
+- Implementation/test commit: pending the focused local commit for this milestone.
+- Updated counts: Member 1 **10 locally verified, 7 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **11/53**; production verified **0**.
+
 ## Recommended first implementation task
 
-The first next action should be **Member 2 handoff synchronization followed by a read-only migration-history evidence package**. Without the missing source checkpoint and authoritative database history, integrating invitations, notifications, or colliding migrations risks silently omitting functionality or corrupting applied history. In parallel, the next independently executable code task is reproducing the four unresolved browser failures with deterministic server readiness and network diagnostics.
+The first next action should be **ORG-10 integration against the available invitation and audit contracts**, keeping pending-invitation invalidation and PostgreSQL concurrency gated until the schemas are reconciled. Without the missing source checkpoint and authoritative database history, colliding migrations still must not be applied or renumbered.
