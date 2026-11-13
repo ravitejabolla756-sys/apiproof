@@ -28,6 +28,7 @@ const ALLOWED_ATTRIBUTE_KEYS = new Set([
 
 const SECRET_OR_PII_KEY = /(?:authorization|cookie|email|ip|name|password|secret|token|user|workspace|tenant|url|credential|key)/i;
 const MAX_ATTRIBUTE_LENGTH = 160;
+const DEFAULT_MAX_LOCAL_OBSERVATIONS = 2_048;
 
 function safeString(value: string): string {
   const redacted = value.replace(
@@ -66,6 +67,12 @@ export class LocalTelemetry implements TelemetrySink {
   private readonly counters = new Map<ObservabilityMetric, number>();
   private readonly observations: LocalTelemetrySnapshot['observations'] = [];
 
+  constructor(private readonly maxObservations = DEFAULT_MAX_LOCAL_OBSERVATIONS) {
+    if (!Number.isInteger(maxObservations) || maxObservations < 1 || maxObservations > 100_000) {
+      throw new Error('LOCAL_TELEMETRY_CAPACITY_INVALID');
+    }
+  }
+
   increment(metric: ObservabilityMetric, value = 1, attributes: TelemetryAttributes = {}): void {
     if (!Number.isFinite(value) || value < 0) return;
     this.counters.set(metric, (this.counters.get(metric) ?? 0) + value);
@@ -74,6 +81,7 @@ export class LocalTelemetry implements TelemetrySink {
 
   observe(metric: ObservabilityMetric, value: number, attributes: TelemetryAttributes = {}): void {
     if (!Number.isFinite(value) || value < 0) return;
+    if (this.observations.length >= this.maxObservations) return;
     this.observations.push({ metric, value, attributes: redactTelemetryAttributes(attributes) });
   }
 
