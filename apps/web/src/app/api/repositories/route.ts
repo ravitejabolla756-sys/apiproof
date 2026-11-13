@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
-import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { OrganizationServiceError } from '@/lib/server/organization-service.js';
 import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
 import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
@@ -19,16 +20,14 @@ import { checkWorkspaceLimit } from '@/lib/server/billing/service.js';
 import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 export async function GET(req: Request) {
-  const privateNoStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
-  let repos: unknown[];
   try {
+    const workspace = await resolveWorkspaceForRequest(req, user.id);
     const db = getDatabase();
-    repos = await db.query(`
+    const repos = await db.query(`
       SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
              r.status, r.last_scan_at, r.created_at,
              (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count,
@@ -38,16 +37,16 @@ export async function GET(req: Request) {
       WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
       ORDER BY r.created_at DESC
     `, [workspace.id]);
-  } catch {
+    return NextResponse.json({ repositories: repos }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch (error) {
+    if (error instanceof OrganizationServiceError || (error instanceof Error && error.message.includes('access denied'))) {
+      return organizationErrorResponse(error);
+    }
     return NextResponse.json(
       { error: 'Repositories are temporarily unavailable.', code: 'REPOSITORIES_UNAVAILABLE' },
-      { status: 503, headers: { 'Cache-Control': 'private, no-store, max-age=0' } },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
-
-  return NextResponse.json({
-    repositories: repos,
-  }, { headers: privateNoStoreHeaders });
 }
 
 export async function POST(req: Request) {
