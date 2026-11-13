@@ -25,17 +25,25 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStoreHeaders });
   }
   const workspace = await resolveWorkspaceForRequest(req, user.id);
-  const db = getDatabase();
-  const repos = await db.query(`
-    SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
-           r.status, r.last_scan_at, r.created_at,
-           (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count,
-           (SELECT COUNT(*) FROM scans s WHERE s.repository_id = r.id) as scans_count,
-           (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
-    FROM repositories r
-    WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
-    ORDER BY r.created_at DESC
-  `, [workspace.id]);
+  let repos: unknown[];
+  try {
+    const db = getDatabase();
+    repos = await db.query(`
+      SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
+             r.status, r.last_scan_at, r.created_at,
+             (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count,
+             (SELECT COUNT(*) FROM scans s WHERE s.repository_id = r.id) as scans_count,
+             (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
+      FROM repositories r
+      WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
+      ORDER BY r.created_at DESC
+    `, [workspace.id]);
+  } catch {
+    return NextResponse.json(
+      { error: 'Repositories are temporarily unavailable.', code: 'REPOSITORIES_UNAVAILABLE' },
+      { status: 503, headers: { 'Cache-Control': 'private, no-store, max-age=0' } },
+    );
+  }
 
   return NextResponse.json({
     repositories: repos,
