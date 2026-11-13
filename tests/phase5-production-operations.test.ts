@@ -181,11 +181,13 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
         ('sr_3', 'ws_1', 'repo_1', 'sha_3', 'main', 'processing', ?),
         ('sr_4', 'ws_1', 'repo_1', 'sha_4', 'main', 'completed', ?)
     `, [now, now, now, now]);
+    await db.execute('UPDATE github_scan_requests SET lease_expires_at = ? WHERE id = ?', ['2000-01-01T00:00:00.000Z', 'sr_3']);
 
     const metrics = await getScanWorkerMetrics();
 
     expect(metrics.pendingJobs).toBe(2);
     expect(metrics.processingJobs).toBe(1);
+    expect(metrics.stalledJobs).toBe(1);
     expect(metrics.completedJobs).toBe(1);
     expect(metrics.failedJobs).toBe(0);
     expect(metrics.totalScanRequests).toBe(4);
