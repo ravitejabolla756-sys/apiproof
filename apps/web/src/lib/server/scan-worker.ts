@@ -29,6 +29,7 @@ import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { providerIntelligenceV1Enabled, workerRuntimeIdentity } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
+import { transitionFindingInTransaction } from './finding-lifecycle.js';
 import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { extractSourceSnippet } from './scan-snippet.js';
@@ -457,24 +458,14 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         }
       }
 
-      // Findings are a current-snapshot view. A finding that was not observed
-      // in this complete baseline is resolved, while historical migration/PR
-      // statuses remain immutable for auditability.
-      if (activeFindingIds.length > 0) {
-        const placeholders = activeFindingIds.map(() => '?').join(', ');
-        await tx.execute(`
-          UPDATE findings
-          SET status = 'resolved'
-          WHERE repository_id = ?
-            AND status IN ('open', 'affected')
-            AND id NOT IN (${placeholders})
-        `, [repo.id, ...activeFindingIds]);
-      } else {
-        await tx.execute(`
-          UPDATE findings SET status = 'resolved'
-          WHERE repository_id = ? AND status IN ('open', 'affected')
-        `, [repo.id]);
-      }
+      const absentFindingPlaceholders = activeFindingIds.map(() => '?').join(', ');
+      const absentFindings = await tx.query<{ id: string }>(`
+        SELECT id
+        FROM findings
+        WHERE repository_id = ?
+          AND status IN ('open', 'affected')
+          ${activeFindingIds.length > 0 ? `AND id NOT IN (${absentFindingPlaceholders})` : ''}
+      `, [repo.id, ...activeFindingIds]);
 
       await tx.execute(`
         UPDATE scans
@@ -488,6 +479,17 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
         JSON.stringify(persistedScanResult), completedAt, scanId]);
+
+      for (const finding of absentFindings) {
+        await transitionFindingInTransaction(tx, {
+          findingId: finding.id,
+          workspaceId: repo.workspace_id,
+          toState: 'verified_resolved',
+          reason: 'finding_absent_from_completed_scan',
+          idempotencyKey: `finding:${finding.id}:scan:${scanId}:verified-resolved`,
+          evidence: { scanId, baselineSha: headSha },
+        });
+      }
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?

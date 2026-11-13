@@ -137,65 +137,67 @@ export async function recordFindingCreated(db: DatabaseAdapter, params: { findin
   ]);
 }
 
-export async function transitionFinding(db: DatabaseAdapter, transition: FindingLifecycleTransition): Promise<{ changed: boolean; state: FindingLifecycleState }> {
+export async function transitionFindingInTransaction(db: DatabaseAdapter, transition: FindingLifecycleTransition): Promise<{ changed: boolean; state: FindingLifecycleState }> {
   if (!transition.findingId || !transition.workspaceId || !transition.reason.trim() || !transition.idempotencyKey.trim()) {
     throw new Error('FINDING_LIFECYCLE_INPUT_INVALID');
   }
   assertState(transition.toState);
 
-  return db.transaction(async (tx) => {
-    const finding = await getFinding(tx, transition.findingId);
-    if (!finding) throw new Error('FINDING_NOT_FOUND');
-    if (finding.workspace_id !== transition.workspaceId) throw new Error('FINDING_WORKSPACE_MISMATCH');
+  const finding = await getFinding(db, transition.findingId);
+  if (!finding) throw new Error('FINDING_NOT_FOUND');
+  if (finding.workspace_id !== transition.workspaceId) throw new Error('FINDING_WORKSPACE_MISMATCH');
 
-    const current = finding.lifecycle_state ?? 'open';
-    const priorEvent = await tx.queryOne<{ finding_id: string; workspace_id: string; to_state: FindingLifecycleState }>(
-      'SELECT finding_id, workspace_id, to_state FROM finding_lifecycle_events WHERE idempotency_key = ?',
-      [transition.idempotencyKey],
-    );
-    if (priorEvent) {
-      if (priorEvent.finding_id !== transition.findingId || priorEvent.workspace_id !== transition.workspaceId || priorEvent.to_state !== transition.toState) {
-        throw new Error('FINDING_LIFECYCLE_IDEMPOTENCY_CONFLICT');
-      }
-      return { changed: false, state: current };
+  const current = finding.lifecycle_state ?? 'open';
+  const priorEvent = await db.queryOne<{ finding_id: string; workspace_id: string; to_state: FindingLifecycleState }>(
+    'SELECT finding_id, workspace_id, to_state FROM finding_lifecycle_events WHERE idempotency_key = ?',
+    [transition.idempotencyKey],
+  );
+  if (priorEvent) {
+    if (priorEvent.finding_id !== transition.findingId || priorEvent.workspace_id !== transition.workspaceId || priorEvent.to_state !== transition.toState) {
+      throw new Error('FINDING_LIFECYCLE_IDEMPOTENCY_CONFLICT');
     }
-    if (current === transition.toState) return { changed: false, state: current };
-    const decision = evaluateFindingTransition({
-      currentState: current,
-      targetState: transition.toState,
-      findingWorkspaceId: finding.workspace_id,
-      requestedWorkspaceId: transition.workspaceId,
-      hasResolutionEvidence: transition.toState !== 'verified_resolved' || Boolean(transition.evidence?.scanId),
-    });
-    if (transition.toState === 'verified_resolved') await requireResolutionEvidence(tx, transition.findingId, transition.evidence);
-
-    const updated = await tx.execute(
-      'UPDATE findings SET lifecycle_state = ?, status = ? WHERE id = ? AND lifecycle_state = ?',
-      [decision.state, decision.legacyStatus, transition.findingId, current],
-    );
-    if (updated.changes !== 1) {
-      const latest = await getFinding(tx, transition.findingId);
-      if (latest?.lifecycle_state === transition.toState) return { changed: false, state: transition.toState };
-      throw new Error('FINDING_LIFECYCLE_CONFLICT');
-    }
-
-    await tx.execute(`
-      INSERT INTO finding_lifecycle_events (id, finding_id, repository_id, workspace_id, actor_user_id, from_state, to_state, reason, evidence_json, idempotency_key, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT (idempotency_key) DO NOTHING
-    `, [
-      `fle_${crypto.randomBytes(12).toString('hex')}`,
-      transition.findingId,
-      finding.repository_id,
-      transition.workspaceId,
-      transition.actorUserId ?? null,
-      current,
-      transition.toState,
-      transition.reason.trim(),
-      transition.evidence ? JSON.stringify(transition.evidence) : null,
-      transition.idempotencyKey,
-      new Date().toISOString(),
-    ]);
-    return { changed: true, state: transition.toState };
+    return { changed: false, state: current };
+  }
+  if (current === transition.toState) return { changed: false, state: current };
+  const decision = evaluateFindingTransition({
+    currentState: current,
+    targetState: transition.toState,
+    findingWorkspaceId: finding.workspace_id,
+    requestedWorkspaceId: transition.workspaceId,
+    hasResolutionEvidence: transition.toState !== 'verified_resolved' || Boolean(transition.evidence?.scanId),
   });
+  if (transition.toState === 'verified_resolved') await requireResolutionEvidence(db, transition.findingId, transition.evidence);
+
+  const updated = await db.execute(
+    'UPDATE findings SET lifecycle_state = ?, status = ? WHERE id = ? AND COALESCE(lifecycle_state, ?) = ?',
+    [decision.state, decision.legacyStatus, transition.findingId, 'open', current],
+  );
+  if (updated.changes !== 1) {
+    const latest = await getFinding(db, transition.findingId);
+    if (latest?.lifecycle_state === transition.toState) return { changed: false, state: transition.toState };
+    throw new Error('FINDING_LIFECYCLE_CONFLICT');
+  }
+
+  await db.execute(`
+    INSERT INTO finding_lifecycle_events (id, finding_id, repository_id, workspace_id, actor_user_id, from_state, to_state, reason, evidence_json, idempotency_key, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT (idempotency_key) DO NOTHING
+  `, [
+    `fle_${crypto.randomBytes(12).toString('hex')}`,
+    transition.findingId,
+    finding.repository_id,
+    transition.workspaceId,
+    transition.actorUserId ?? null,
+    current,
+    transition.toState,
+    transition.reason.trim(),
+    transition.evidence ? JSON.stringify(transition.evidence) : null,
+    transition.idempotencyKey,
+    new Date().toISOString(),
+  ]);
+  return { changed: true, state: transition.toState };
+}
+
+export async function transitionFinding(db: DatabaseAdapter, transition: FindingLifecycleTransition): Promise<{ changed: boolean; state: FindingLifecycleState }> {
+  return db.transaction((tx) => transitionFindingInTransaction(tx, transition));
 }
