@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parseAuthenticatedSession, parseAuthMutationError, parseAuthMutationSuccess } from '@/lib/auth-response-contract';
 
 type AuthMode = 'login' | 'signup';
 
@@ -30,8 +31,8 @@ export default function LoginPage() {
   useEffect(() => {
     fetch('/api/auth')
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.authenticated) {
+      .then((data: unknown) => {
+        if (parseAuthenticatedSession(data)) {
           window.location.href = '/dashboard';
         }
       })
@@ -91,10 +92,16 @@ export default function LoginPage() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data: unknown = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Authentication failed.');
+        setError(parseAuthMutationError(data, 'Authentication failed.'));
+        setLoading(false);
+        isSubmitting.current = false;
+        return;
+      }
+      if (!parseAuthMutationSuccess(data)) {
+        setError('Authentication returned an invalid response.');
         setLoading(false);
         isSubmitting.current = false;
         return;

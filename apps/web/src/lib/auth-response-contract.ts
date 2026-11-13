@@ -20,3 +20,10 @@ export function parseAuthMutationError(payload: unknown, fallback: string): stri
   return error || fallback;
 }
 
+/** Read a bounded user-facing message from an otherwise successful auth response. */
+export function parseAuthMutationMessage(payload: unknown, fallback: string): string {
+  if (!isRecord(payload) || typeof payload.message !== 'string') return fallback;
+  const message = payload.message.trim();
+  return message && message.length <= 512 ? message : fallback;
+}
+
