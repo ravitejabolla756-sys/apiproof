@@ -71,7 +71,7 @@ Status describes the combined integration branch unless explicitly stated otherw
 | AUTH-05 | BLOCKED_EXTERNAL | Token lifecycle logic and provider-neutral delivery boundary. | Decision documentation exists; live delivery remains disabled. | Approved email provider, sender verification, credentials, templates, retention and DB proof. | Obtain owner/provider approval, then test a sandbox transport. |
 | AUTH-10 | INTEGRATED_PARTIAL | Verified-user policy boundary in `f0d41031`. | Commit `f0d41031`; policy tests passed and account browser baseline passed. | Complete protected-route rollout, OAuth acceptance and PostgreSQL concurrency. | Inventory every protected route and gate from server-derived state. |
 | ORG-05 | INTEGRATED_VERIFIED_LOCAL | Workspace policy and role matrix. | Expanded owner/admin/member, no-membership, cross-tenant, invalid-role and revocation checks; ORG suite passed 40/40 executable tests. | PostgreSQL RLS/grants and Member 2 invitation/audit schema contracts. | Preserve local gate and obtain approved PostgreSQL/Member 2 evidence. |
-| ORG-10 | INTEGRATED_PARTIAL | `buildMemberRevocationPlan`, scoped revocation and error mapper. | Commit `ebb4fac2`; 20 passed and 18 todo in organization contract/revocation coverage. | Member 2 route, invitations, audit persistence and PostgreSQL concurrency. | Integrate only after schema/route compatibility review and test concurrency. |
+| ORG-10 | INTEGRATED_PARTIAL | Scoped revocation service plus schema-compatible `DELETE /api/workspace/members` boundary. | Local route/revocation suite: 4 files, 19 executable tests passed; route enforces session, CSRF, server-derived authorization and required idempotency. | Invitation invalidation/audit projection, PostgreSQL concurrency/RLS and Member 2 schema compatibility. | Reconcile migration `024`, then integrate invitation invalidation atomically and run PostgreSQL concurrency evidence. |
 | MIG-01 | BLOCKED_EXTERNAL | Draft recommendation/patch safety interfaces and offline policy. | Decision documentation only; no external model enabled. | Model/provider, data handling, budget and owner approval. | Approve provider/policy, then run offline fixtures before any sandbox call. |
 | BILL-02 | INTEGRATED_PARTIAL | Provider-neutral billing/checkout abstraction and Free Beta gate. | Local authorization and checkout blocking are present. | Provider selection, merchant/tax/currency policy and sandbox credentials. | Obtain provider decision and execute adapter sandbox tests. |
 | BILL-03 | INTEGRATED_PARTIAL | Fail-closed webhook boundary and duplicate-delivery concepts. | Local billing security regressions exist; no live provider signature contract. | Exact provider algorithm, raw-body contract, secret and sandbox evidence. | Select provider then bind exact signature fixtures. |
@@ -302,6 +302,14 @@ Inventory counts at the SCAN-12 milestone: Member 1 **8 locally verified, 9 part
 - Implementation/test commit: `11b5db75` (`test: complete ORG-05 local authorization matrix`).
 - Updated counts: Member 1 **10 locally verified, 7 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **11/53**; production verified **0**.
 
+## 2026-11-13 milestone — ORG-10 route boundary
+
+- Added the real `DELETE /api/workspace/members` route at `apps/web/src/app/api/workspace/members/route.ts`.
+- The route authenticates from the session, applies CSRF/origin protection, requires an idempotency key, delegates to `revokeWorkspaceMember`, preserves unrelated sessions and workspace memberships, and maps security errors to stable responses.
+- Focused ORG-10 suite: **4 files, 19 executable tests passed, 18 existing TODOs**; workspace typecheck, targeted ESLint and `git diff --check` passed.
+- ORG-10 remains `INTEGRATED_PARTIAL`: pending-invitation invalidation, Member 2 audit projection, migration `024` reconciliation, PostgreSQL concurrency/RLS/grants and queued-worker evidence remain gated.
+- No Member 2 files, migrations, databases, providers or source branches were modified.
+
 ## Recommended first implementation task
 
-The first next action should be **ORG-10 integration against the available invitation and audit contracts**, keeping pending-invitation invalidation and PostgreSQL concurrency gated until the schemas are reconciled. Without the missing source checkpoint and authoritative database history, colliding migrations still must not be applied or renumbered.
+The next action should be **ORG-10 invitation invalidation and audit projection after migration `024` compatibility evidence**, keeping PostgreSQL concurrency and RLS acceptance gated. The route boundary is locally verified, but the full organization workflow must not be activated against an ambiguous schema.

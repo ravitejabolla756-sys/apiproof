@@ -19,11 +19,11 @@ Member 2 exports `removeOrganizationMember(userId, workspaceId, targetUserId)`, 
 
 ## Contract status
 
-The Member 1 revocation service, workspace policy, and durable revocation migration definition are now integrated into this worktree. The typed API contract remains a proposal until Member 2 approves it. Invitation invalidation, queued-job revalidation, stale-context route coverage, and PostgreSQL concurrency remain pending because Member 2's organization service and migration registry are not integrated.
+The Member 1 revocation service, workspace policy, durable revocation migration definition, and a schema-compatible `DELETE /api/workspace/members` route boundary are now integrated into this worktree. The route derives the actor from the authenticated session, enforces CSRF/origin protection, requires a client idempotency key, and delegates to the authoritative revocation service. Invitation invalidation, queued-job revalidation, stale-context route coverage, and PostgreSQL concurrency remain pending because Member 2's organization service and migration registry are not integrated.
 
 The integrated migration definition still uses Member 1's source ID `027`. It must not be combined with Member 2's conflicting `027` until the approved migration-history decision is complete.
 
-Phase 8B is currently blocked from route activation because Member 2's organization tables are supplied by conflicting migration `024`. The exact blocker and safe sequence are recorded in `docs/v1-organization-invitation-integration-blocker.md`.
+The route's membership-removal slice is locally executable, but Phase 8B invitation/audit activation remains blocked because Member 2's organization tables are supplied by conflicting migration `024`. The exact blocker and safe sequence are recorded in `docs/v1-organization-invitation-integration-blocker.md`.
 
 ## Safe integration sequence
 
