@@ -18,20 +18,28 @@ export async function GET(req: Request) {
     return organizationErrorResponse(error);
   }
 
-  const db = getDatabase();
-  const migrations = await db.query(`
-    SELECT m.id, m.finding_id, m.repository_id, m.plan_id, m.status, m.patch_diff, m.patch_digest, m.verification_report, m.created_at,
-           f.title as finding_title, f.symbol, f.file_path, f.line_number, f.change_id,
-           r.name as repo_name, r.full_name as repo_full_name,
-           pr.number as pr_number, pr.url as pr_url, pr.branch_name, pr.state as pr_state
-    FROM migrations m
-    JOIN findings f ON f.id = m.finding_id
-    JOIN repositories r ON r.id = m.repository_id
-    LEFT JOIN pull_requests pr ON pr.migration_id = m.id
-    JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'
-    ORDER BY m.created_at DESC
-  `, [user.id, workspace.id]);
+  let migrations: unknown[];
+  try {
+    const db = getDatabase();
+    migrations = await db.query(`
+      SELECT m.id, m.finding_id, m.repository_id, m.plan_id, m.status, m.patch_diff, m.patch_digest, m.verification_report, m.created_at,
+             f.title as finding_title, f.symbol, f.file_path, f.line_number, f.change_id,
+             r.name as repo_name, r.full_name as repo_full_name,
+             pr.number as pr_number, pr.url as pr_url, pr.branch_name, pr.state as pr_state
+      FROM migrations m
+      JOIN findings f ON f.id = m.finding_id
+      JOIN repositories r ON r.id = m.repository_id
+      LEFT JOIN pull_requests pr ON pr.migration_id = m.id
+      JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
+      WHERE wm.user_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'
+      ORDER BY m.created_at DESC
+    `, [user.id, workspace.id]);
+  } catch {
+    return NextResponse.json(
+      { error: 'Migration review records are temporarily unavailable.' },
+      { status: 503, headers: { 'Cache-Control': 'private, no-store' } },
+    );
+  }
 
   const mapped = (migrations as Array<Record<string, unknown>>).map((m) => ({
     ...m,
@@ -47,5 +55,7 @@ export async function GET(req: Request) {
       : formatCanonicalMigrationBranch(String(m.change_id), String(m.id)),
   }));
 
-  return NextResponse.json({ migrations: mapped });
+  return NextResponse.json({ migrations: mapped }, {
+    headers: { 'Cache-Control': 'private, no-store' },
+  });
 }
