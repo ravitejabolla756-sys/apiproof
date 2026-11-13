@@ -23,9 +23,10 @@ export interface BillingSubscriptionSnapshot {
 
 export type BillingLifecycleDecision =
   | { action: 'apply'; status: BillingSubscriptionStatus; planId?: string; subscriptionId?: string; periodStart?: string; periodEnd?: string }
-  | { action: 'ignore'; reason: 'UNSUPPORTED_BILLING_EVENT' | 'REFUND_POLICY_PENDING' | 'GRACE_POLICY_PENDING' | 'OUT_OF_ORDER_PERIOD' | 'INVALID_BILLING_STATUS' | 'INVALID_BILLING_PERIOD' };
+  | { action: 'ignore'; reason: 'UNSUPPORTED_BILLING_EVENT' | 'REFUND_POLICY_PENDING' | 'GRACE_POLICY_PENDING' | 'OUT_OF_ORDER_PERIOD' | 'INVALID_BILLING_STATUS' | 'INVALID_BILLING_PERIOD' | 'INVALID_BILLING_PLAN' };
 
 const BILLING_STATUSES = new Set<BillingSubscriptionStatus>(['active', 'past_due', 'canceled', 'trialing', 'incomplete', 'unpaid']);
+const BILLING_PLAN_IDS = new Set(['free', 'pro', 'team', 'enterprise']);
 
 function validBillingDate(value: string | undefined): boolean {
   return value === undefined || (Number.isFinite(Date.parse(value)) && value.trim().length <= 128);
@@ -43,6 +44,12 @@ export function reconcileBillingEvent(
   if (!validBillingDate(event.periodStart) || !validBillingDate(event.periodEnd)
     || (current !== undefined && !validBillingDate(current.currentPeriodEnd))) {
     return { action: 'ignore', reason: 'INVALID_BILLING_PERIOD' };
+  }
+  if (event.periodStart && event.periodEnd && Date.parse(event.periodStart) > Date.parse(event.periodEnd)) {
+    return { action: 'ignore', reason: 'INVALID_BILLING_PERIOD' };
+  }
+  if (event.planId !== undefined && !BILLING_PLAN_IDS.has(event.planId)) {
+    return { action: 'ignore', reason: 'INVALID_BILLING_PLAN' };
   }
   if (event.eventType === 'charge.refunded' || event.eventType === 'invoice.refunded') return { action: 'ignore', reason: 'REFUND_POLICY_PENDING' };
   if (event.eventType === 'customer.subscription.paused' || event.eventType === 'invoice.payment_action_required') return { action: 'ignore', reason: 'GRACE_POLICY_PENDING' };
