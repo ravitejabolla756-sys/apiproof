@@ -7,6 +7,7 @@ import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/se
 import { memberRevocationMigrations } from '../apps/web/src/lib/server/db/member-revocation-migration.js';
 import { organizationMigrations } from '../apps/web/src/lib/server/db/organization-migration.js';
 import { revokeWorkspaceMember } from '../apps/web/src/lib/server/member-revocation.js';
+import { assertCurrentWorkspaceMembership } from '../apps/web/src/lib/server/workspace-service.js';
 
 const paths: string[] = [];
 
@@ -106,6 +107,13 @@ describe('ORG-10 integrated revocation backend', () => {
   });
 
   it.todo('invalidates pending invitations transactionally after invitation service integration');
-  it.todo('revalidates queued-job membership before privileged execution after revocation');
+  it('revalidates queued-job membership after revocation before privileged execution', async () => {
+    await fixture();
+    await expect(assertCurrentWorkspaceMembership('usr_member', 'ws_primary')).resolves.toBeUndefined();
+    await revokeWorkspaceMember('usr_owner', {
+      workspaceId: 'ws_primary', userId: 'usr_member', idempotencyKey: 'key-worker-revalidation',
+    });
+    await expect(assertCurrentWorkspaceMembership('usr_member', 'ws_primary')).rejects.toThrow('WORKSPACE_ACCESS_REVOKED');
+  });
   it.todo('rejects stale workspace context after revocation through the integrated route');
 });
