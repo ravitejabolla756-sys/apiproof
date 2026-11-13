@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
@@ -85,19 +85,22 @@ export default function FindingDetailPage({
   const [finding, setFinding] = useState<FindingDetail | null>(null);
   const [migration, setMigration] = useState<MigrationDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'plan' | 'propose' | null>(null);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const loadErrorRef = useRef<HTMLDivElement>(null);
 
   async function loadFinding() {
+    setLoadError(null);
     try {
       const res = await fetch(`/api/findings/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        setFinding(json.finding);
-        setMigration(json.migration);
-      }
-    } catch (err) {
-      console.error("Failed to load finding:", err);
+      if (!res.ok) throw new Error("Finding details are temporarily unavailable.");
+      const json = await res.json() as { finding?: unknown; migration?: MigrationDetail | null };
+      if (!json.finding || typeof json.finding !== "object") throw new Error("Finding details returned an invalid response.");
+      setFinding(json.finding as FindingDetail);
+      setMigration(json.migration ?? null);
+    } catch (loadErrorValue) {
+      setLoadError(loadErrorValue instanceof Error ? loadErrorValue.message : "Finding details are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
@@ -106,6 +109,10 @@ export default function FindingDetailPage({
   useEffect(() => {
     loadFinding();
   }, [id]);
+
+  useEffect(() => {
+    if (loadError) loadErrorRef.current?.focus();
+  }, [loadError]);
 
   useEffect(() => {
     if (!migration?.id || !isVerificationJobActive(migration.verification_job_status)) return;
@@ -195,7 +202,7 @@ export default function FindingDetailPage({
   if (loading) {
     return (
       <div className="py-20 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading AST finding workbench...</span>
       </div>
     );
@@ -207,9 +214,16 @@ export default function FindingDetailPage({
         <Link href="/dashboard/findings" className="text-zinc-500 hover:text-black flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Findings
         </Link>
-        <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
-          Finding not found or access denied.
-        </div>
+        {loadError ? (
+          <div ref={loadErrorRef} role="alert" aria-live="assertive" tabIndex={-1} className="p-8 text-center bg-rose-50 border border-rose-200 rounded-[24px] outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+            <p className="text-rose-900">{loadError}</p>
+            <Button type="button" size="sm" variant="outline" onClick={loadFinding} className="mt-4 border-rose-300 bg-white text-rose-900">Retry</Button>
+          </div>
+        ) : (
+          <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
+            Finding not found or access denied.
+          </div>
+        )}
       </div>
     );
   }
