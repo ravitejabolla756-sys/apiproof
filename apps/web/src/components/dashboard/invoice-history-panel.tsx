@@ -3,17 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Receipt } from 'lucide-react';
-import { formatInvoiceAmount, formatInvoiceDate, parseInvoiceHistoryResult, toSafeInvoiceDateTime, toSafeInvoiceUrl, type InvoiceHistoryAdapter, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
+import { formatInvoiceAmount, formatInvoiceDate, invoiceHistoryErrorMessage, parseInvoiceHistoryResult, readInvoiceErrorCode, toSafeInvoiceDateTime, toSafeInvoiceUrl, type InvoiceHistoryAdapter, type InvoiceHistoryResult } from '@/lib/invoice-history-contract';
 
 export const invoiceHistoryApiAdapter: InvoiceHistoryAdapter = {
   async load() {
     const response = await fetch('/api/billing/invoices', { headers: { Accept: 'application/json' } });
     const payload: unknown = await response.json().catch(() => null);
     if (!response.ok) {
-      const message = payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
-        ? payload.error
-        : 'Invoice history is temporarily unavailable.';
-      throw new Error(message);
+      throw new Error(invoiceHistoryErrorMessage(response.status, readInvoiceErrorCode(payload)));
     }
     return payload as InvoiceHistoryResult;
   },

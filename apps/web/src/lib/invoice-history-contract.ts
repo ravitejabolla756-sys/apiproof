@@ -28,6 +28,21 @@ function normalizedText(value: unknown): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
+export function readInvoiceErrorCode(value: unknown): string | null {
+  if (!isRecord(value) || typeof value.code !== 'string') return null;
+  const code = value.code.trim();
+  return code.length > 0 ? code : null;
+}
+
+export function invoiceHistoryErrorMessage(status: number, code: string | null): string {
+  if (status === 401 || code === 'UNAUTHORIZED') return 'Your session has expired. Please sign in again.';
+  if (status === 403 || status === 404 || code === 'WORKSPACE_ACCESS_DENIED') return 'Invoice history is unavailable for this workspace.';
+  if (status === 503 || code === 'PROVIDER_NOT_CONFIGURED' || code === 'INVOICE_PROVIDER_UNAVAILABLE') {
+    return 'Invoice history is temporarily unavailable.';
+  }
+  return 'Invoice history could not be loaded. Please try again.';
+}
+
 /** Validate a future server-owned invoice projection before it reaches the UI. */
 export function parseInvoiceHistoryResult(value: unknown): InvoiceHistoryResult | null {
   if (!isRecord(value) || (value.status !== 'unavailable' && value.status !== 'ready')) return null;
