@@ -1,14 +1,47 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { revokeWorkspaceMember } from '@/lib/server/member-revocation.js';
+import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest, organizationErrorResponse } from '@/lib/server/organization-route.js';
+import { listOrganizationMembers, updateMemberRole } from '@/lib/server/organization-service.js';
 import {
   mapMemberRevocationError,
   normalizeMemberRevocationRequest,
   type MemberRevocationApiRequest,
 } from '@/lib/server/organization-integration-contract.js';
-import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse, validateSafeId } from '@/lib/server/validation.js';
 
 const noStore = { 'Cache-Control': 'private, no-store, max-age=0' };
+
+export async function GET(request: Request): Promise<Response> {
+  const user = await getCurrentUser(request);
+  if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
+  try {
+    const workspace = await resolveWorkspaceForRequest(request, user.id);
+    return NextResponse.json({ workspace, members: await listOrganizationMembers(user.id, workspace.id) }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch (error) {
+    return organizationErrorResponse(error);
+  }
+}
+
+export async function PATCH(request: Request): Promise<Response> {
+  const csrf = assertCsrfProtection(request);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+  const user = await getCurrentUser(request);
+  if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
+  try {
+    const body = await request.json() as { workspaceId?: unknown; userId?: unknown; role?: unknown };
+    const workspaceValidation = validateSafeId(body.workspaceId, 'workspaceId');
+    const userValidation = validateSafeId(body.userId, 'userId');
+    if (!workspaceValidation.valid || !workspaceValidation.data) return badRequestResponse(workspaceValidation.error || 'A valid workspaceId is required.');
+    if (!userValidation.valid || !userValidation.data) return badRequestResponse(userValidation.error || 'A valid userId is required.');
+    if (body.role !== 'owner' && body.role !== 'member') return badRequestResponse('A valid role is required.');
+    const workspace = await resolveWorkspaceForRequest(request, user.id, workspaceValidation.data);
+    return NextResponse.json({ members: await updateMemberRole(user.id, workspace.id, userValidation.data, body.role) }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch (error) {
+    if (error instanceof SyntaxError) return badRequestResponse('Request body must be valid JSON.');
+    return organizationErrorResponse(error);
+  }
+}
 
 function errorResponse(error: unknown): Response {
   const mapped = mapMemberRevocationError(error);

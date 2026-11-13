@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { organizationErrorResponse, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let workspace;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    return organizationErrorResponse(error);
   }
 
   const db = getDatabase();
@@ -19,9 +27,9 @@ export async function GET(req: Request) {
     JOIN migrations m ON m.id = pr.migration_id
     JOIN findings f ON f.id = m.finding_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE wm.user_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY pr.created_at DESC
-  `, [user.id]);
+  `, [user.id, workspace.id]);
 
   return NextResponse.json({ pullRequests });
 }
