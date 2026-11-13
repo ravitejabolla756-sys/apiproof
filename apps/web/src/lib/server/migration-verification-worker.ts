@@ -91,21 +91,25 @@ async function runClaimedJob(job: VerificationJob, workerId: string): Promise<vo
     );
     if (!requesterMembership) throw new Error('WORKSPACE_MEMBER_REVOKED');
     const result = await createGitHubProposal(job.migration_id, job.requested_by);
-    await db.execute(`UPDATE migration_verification_jobs SET status = 'completed', result_json = ?, error_category = NULL,
-      error_message = NULL, claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
-    [JSON.stringify(result), now, job.id, workerId]);
+    await db.transaction(async (tx) => {
+      await tx.execute(`UPDATE migration_verification_jobs SET status = 'completed', result_json = ?, error_category = NULL,
+        error_message = NULL, claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
+      [JSON.stringify(result), now, job.id, workerId]);
+    });
   } catch (error) {
     const category = failureCategory(error);
     const rawMessage = error instanceof Error ? error.message : String(error);
     const message = rawMessage.replace(/[\r\n\t]+/g, ' ').slice(0, 500);
     const isUnavailable = category === 'EXECUTION_UNAVAILABLE';
     const canRetry = RETRYABLE.has(category) && job.attempt_count < 3;
-    if (isUnavailable) {
-      await db.execute("UPDATE migrations SET status = 'verification_unavailable' WHERE id = ? AND status <> 'pr_created'", [job.migration_id]);
-    }
-    await db.execute(`UPDATE migration_verification_jobs SET status = ?, error_category = ?, error_message = ?,
-      claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
-    [isUnavailable ? 'execution_unavailable' : canRetry ? 'pending' : 'failed', category, message, new Date().toISOString(), job.id, workerId]);
+    await db.transaction(async (tx) => {
+      if (isUnavailable) {
+        await tx.execute("UPDATE migrations SET status = 'verification_unavailable' WHERE id = ? AND status <> 'pr_created'", [job.migration_id]);
+      }
+      await tx.execute(`UPDATE migration_verification_jobs SET status = ?, error_category = ?, error_message = ?,
+        claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
+      [isUnavailable ? 'execution_unavailable' : canRetry ? 'pending' : 'failed', category, message, new Date().toISOString(), job.id, workerId]);
+    });
     logger.error('migration_verification_job_failed', { jobId: job.id, migrationId: job.migration_id, attempt: job.attempt_count, category, status: isUnavailable ? 'execution_unavailable' : canRetry ? 'pending' : 'failed' });
   } finally {
     clearInterval(leaseHeartbeat);
