@@ -23,6 +23,9 @@ import {
 } from '@/lib/server/validation.js';
 import { requestPasswordReset, completePasswordReset } from '@/lib/server/password-reset.js';
 import { isPasswordResetEmailConfigured } from '@/lib/server/password-reset-email.js';
+import { requestTrackedEmailVerification } from '@/lib/server/email-verification-notification.js';
+import { isValidEmailVerificationToken, verifyEmail } from '@/lib/server/email-verification.js';
+import { EmailDeliveryUnavailableError } from '@/lib/server/email-delivery-state.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -166,7 +169,33 @@ export async function POST(req: Request) {
       return res;
     }
 
-    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset.', code: 'INVALID_ACTION' }, { status: 400 });
+    if (action === 'verify_email') {
+      const token = body && typeof body.token === 'string' ? body.token : undefined;
+      if (!isValidEmailVerificationToken(token)) return badRequestResponse('A valid email verification token is required.');
+      const result = await verifyEmail(token);
+      if (result === 'invalid') return NextResponse.json({ error: 'This email verification link is invalid or expired.', code: 'INVALID_EMAIL_VERIFICATION_TOKEN' }, { status: 400 });
+      return NextResponse.json({ success: true, code: result === 'already_verified' ? 'EMAIL_ALREADY_VERIFIED' : 'EMAIL_VERIFIED' });
+    }
+
+    if (action === 'resend_verification') {
+      const user = await getCurrentUser(req);
+      if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+      const rateCheck = await checkRateLimit(`auth:resend-verification:${clientIp}:${user.id}`, 3, 15 * 60 * 1000, { failClosed: true });
+      if (!rateCheck.allowed) return rateLimitResponse(rateCheck.resetInMs);
+      try {
+        const result = await requestTrackedEmailVerification(user.id);
+        if (result === 'already_verified') return NextResponse.json({ success: true, code: 'EMAIL_ALREADY_VERIFIED' });
+        if (result === 'unavailable') return NextResponse.json({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
+        return NextResponse.json({ success: true, code: 'EMAIL_VERIFICATION_SENT' }, { status: 202 });
+      } catch (error) {
+        if (error instanceof EmailDeliveryUnavailableError || (error instanceof Error && error.message === 'EMAIL_VERIFICATION_EMAIL_NOT_CONFIGURED')) {
+          return NextResponse.json({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
+        }
+        throw error;
+      }
+    }
+
+    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset, verify_email, resend_verification.', code: 'INVALID_ACTION' }, { status: 400 });
   } catch {
     return NextResponse.json({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
