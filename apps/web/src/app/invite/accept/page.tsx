@@ -19,7 +19,7 @@ function AcceptInvitationForm() {
     setState('loading');
     try {
       const response = await fetch('/api/workspace/invitations/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
-      const data = await response.json() as unknown;
+      const data = await response.json();
       const projection = parseAcceptedInvitationResponse(data);
       const error = parseInvitationError(data, 'Unable to accept this invitation.');
       if (!response.ok || !projection) { setMessage(error); setState('error'); return; }
