@@ -13,7 +13,7 @@ import {
 import { getSmtpConfiguration } from '../apps/web/src/lib/server/email-delivery.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-email-verification-integration-${process.pid}.db`);
-const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'EMAIL_FROM', 'APIPROOF_APP_URL'];
+const environmentKeys = ['NODE_ENV', 'APIPROOF_DB_PATH', 'APIPROOF_LOCAL_SEED_PASSWORD', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASSWORD', 'EMAIL_FROM', 'APIPROOF_APP_URL'];
 const savedEnvironment = new Map<string, string | undefined>();
 
 describe('AUTH-05 email verification integration slice', () => {
@@ -24,6 +24,7 @@ describe('AUTH-05 email verification integration slice', () => {
     }
     process.env.NODE_ENV = 'test';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
+    process.env.APIPROOF_LOCAL_SEED_PASSWORD = 'Auth05FixtureSeedPassword123!';
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
     initDatabase(TEST_DB_PATH);
     await emailVerificationMigrations[0]!.up(getDatabase());

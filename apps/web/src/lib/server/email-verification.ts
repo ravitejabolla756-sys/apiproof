@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { getDatabase } from './db/index.js';
+import { EmailDeliveryUnavailableError } from './email-delivery-state.js';
 import { getSmtpConfiguration, sendTransactionalEmail } from './email-delivery.js';
 
 export const EMAIL_VERIFICATION_DEFAULT_TTL_MS = 60 * 60 * 1000;
@@ -98,9 +99,10 @@ export async function requestEmailVerification(
 
   try {
     await sendEmail({ email: reservation.user.email, name: reservation.user.name, token });
-  } catch {
+  } catch (error) {
     await db.execute('DELETE FROM email_verification_tokens WHERE id = ? AND token_hash = ?', [id, tokenHash]);
-    throw new Error('EMAIL_VERIFICATION_DELIVERY_FAILED');
+    if (error instanceof EmailDeliveryUnavailableError) throw error;
+    throw new Error('EMAIL_VERIFICATION_DELIVERY_FAILED', { cause: error });
   }
   return 'sent';
 }
