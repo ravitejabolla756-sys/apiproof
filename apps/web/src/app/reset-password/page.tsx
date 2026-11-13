@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parseAuthMutationError, parseAuthMutationMessage, parseAuthMutationSuccess } from '@/lib/auth-response-contract';
 
 export default function ResetPasswordPage() {
   const [token, setToken] = useState('');
@@ -28,10 +29,11 @@ export default function ResetPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'complete_password_reset', token, password }),
       });
-      const data = await response.json();
-      if (!response.ok) setError(data.error || 'Unable to reset password.');
+      const data: unknown = await response.json();
+      if (!response.ok) setError(parseAuthMutationError(data, 'Unable to reset password.'));
+      else if (!parseAuthMutationSuccess(data)) setError('Password reset returned an invalid response.');
       else {
-        setMessage(data.message);
+        setMessage(parseAuthMutationMessage(data, 'Password reset successfully. Sign in with your new password.'));
         setToken('');
         setPassword('');
       }

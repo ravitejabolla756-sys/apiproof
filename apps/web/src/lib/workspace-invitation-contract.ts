@@ -28,3 +28,9 @@ export function parseCreatedInvitationResponse(value: unknown): CreatedInvitatio
 export function parseRevokedInvitationResponse(value: unknown): { success: true } | null {
   return isRecord(value) && value.success === true ? { success: true } : null;
 }
+
+export function parseInvitationError(value: unknown, fallback: string): string {
+  if (!isRecord(value) || typeof value.error !== 'string') return fallback;
+  const error = value.error.trim();
+  return error && error.length <= 512 ? error : fallback;
+}
