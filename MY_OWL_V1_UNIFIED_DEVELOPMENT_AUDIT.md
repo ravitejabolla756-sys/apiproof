@@ -289,6 +289,7 @@ Inventory counts at the SCAN-12 milestone: Member 1 **8 locally verified, 9 part
 - Added `tests/sec04-route-csrf.test.ts` covering cross-site billing requests, deletion non-mutation, and installation-state non-creation.
 - Final focused SEC-04 suite: **7 files, 50 tests passed**.
 - Workspace typecheck: **passed**; targeted ESLint and `git diff --check`: **passed**.
+- Implementation commit: `5ba69083` (`security: enforce csrf on remaining mutation routes`).
 - SEC-04 is now `INTEGRATED_VERIFIED_LOCAL`; it is not production verified until hosted proxy/OAuth and PostgreSQL evidence pass.
 - Updated counts: Member 1 **9 locally verified, 8 partial, 9 externally blocked, 1 not implemented**; Member 2 **1 locally verified, 12 partial, 11 source-only, 2 externally blocked**; combined local verified **10/53**; production verified **0**.
 
