@@ -21,7 +21,9 @@ export default function VerifyEmailPage() {
   const statusRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get('token') ?? '';
+    const queryToken = new URLSearchParams(window.location.search).get('token');
+    const hashToken = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('token');
+    const token = queryToken ?? hashToken ?? '';
     window.history.replaceState(null, '', '/verify-email');
 
     if (!TOKEN_PATTERN.test(token)) {
