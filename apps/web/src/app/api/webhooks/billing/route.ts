@@ -34,6 +34,12 @@ export async function POST(req: Request) {
     if (message.includes('MALFORMED_BILLING_EVENT')) {
       return NextResponse.json({ error: 'Malformed billing event.', code: 'MALFORMED_BILLING_EVENT' }, { status: 400 });
     }
+    if (message.includes('INVALID_BILLING_EVENT_IDENTITY')) {
+      return NextResponse.json({ error: 'Billing event identity is invalid.', code: 'INVALID_BILLING_EVENT_IDENTITY' }, { status: 400 });
+    }
+    if (message.includes('BILLING_WEBHOOK_ID_CONFLICT')) {
+      return NextResponse.json({ error: 'Billing event identity conflicts with a previous delivery.', code: 'BILLING_WEBHOOK_ID_CONFLICT' }, { status: 409 });
+    }
     console.error('Billing webhook processing failed.', { code: 'BILLING_WEBHOOK_PROCESSING_FAILED' });
     return NextResponse.json({ error: 'Webhook processing failed.', code: 'BILLING_WEBHOOK_PROCESSING_FAILED' }, { status: 400 });
   }

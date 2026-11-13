@@ -273,6 +273,9 @@ export async function recordWorkspaceUsage(
 }
 
 export async function processBillingWebhookEvent(event: BillingWebhookEvent): Promise<{ success: boolean; duplicate: boolean }> {
+  if (!event.id.trim() || !event.provider.trim() || !event.eventType.trim() || !event.rawPayload) {
+    throw new Error('INVALID_BILLING_EVENT_IDENTITY');
+  }
   const db = getDatabase();
   const payloadHash = crypto.createHash('sha256').update(event.rawPayload).digest('hex');
   const now = new Date().toISOString();
@@ -283,9 +286,17 @@ export async function processBillingWebhookEvent(event: BillingWebhookEvent): Pr
     const inserted = await tx.execute(`
       INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT (provider, payload_hash) DO NOTHING
+      ON CONFLICT DO NOTHING
     `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
-    if (inserted.changes !== 1) return { success: true, duplicate: true };
+    if (inserted.changes !== 1) {
+      const existing = await tx.queryOne<{ provider: string; payload_hash: string }>(`
+        SELECT provider, payload_hash FROM billing_webhook_events
+        WHERE id = ? OR (provider = ? AND payload_hash = ?)
+        LIMIT 1
+      `, [event.id, event.provider, payloadHash]);
+      if (existing?.provider === event.provider && existing.payload_hash === payloadHash) return { success: true, duplicate: true };
+      throw new Error('BILLING_WEBHOOK_ID_CONFLICT');
+    }
 
     if (event.customerId) {
       const sub = await tx.queryOne<{
