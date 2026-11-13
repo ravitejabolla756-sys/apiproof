@@ -25,8 +25,6 @@ export async function GET(req: Request) {
   const repositoryId = searchParams.get('repositoryId');
   const search = searchParams.get('search');
 
-  const db = getDatabase();
-
   let query = `
     SELECT f.id, f.scan_id, f.repository_id, f.change_id, f.provider, f.title, f.description,
            f.severity, f.confidence, f.file_path, f.line_number, f.symbol, f.status, f.created_at,
@@ -66,7 +64,16 @@ export async function GET(req: Request) {
 
   query += ' ORDER BY CASE f.severity WHEN \'critical\' THEN 1 WHEN \'high\' THEN 2 ELSE 3 END, f.created_at DESC';
 
-  const findings = await db.query<Record<string, unknown>>(query, params);
+  let findings: Record<string, unknown>[];
+  try {
+    const db = getDatabase();
+    findings = await db.query<Record<string, unknown>>(query, params);
+  } catch {
+    return NextResponse.json(
+      { error: 'Findings are temporarily unavailable.' },
+      { status: 503, headers: { 'Cache-Control': 'private, no-store' } },
+    );
+  }
 
   const response = findings.map((finding) => {
     const raw = typeof finding.scan_raw_result === 'string'
@@ -85,5 +92,7 @@ export async function GET(req: Request) {
     return { ...publicFinding, capability };
   });
 
-  return NextResponse.json({ findings: response });
+  return NextResponse.json({ findings: response }, {
+    headers: { 'Cache-Control': 'private, no-store' },
+  });
 }
