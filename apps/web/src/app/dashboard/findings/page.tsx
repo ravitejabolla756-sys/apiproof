@@ -113,6 +113,7 @@ export default function FindingsListPage() {
           <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
             type="text"
+            aria-label="Search findings"
             placeholder="Search symbol, file, or rule..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -126,6 +127,9 @@ export default function FindingsListPage() {
             {["all", "critical", "high"].map((sev) => (
               <button
                 key={sev}
+                type="button"
+                aria-pressed={severityFilter === sev}
+                aria-label={`Filter findings by ${sev} severity`}
                 onClick={() => setSeverityFilter(sev)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   severityFilter === sev
@@ -143,6 +147,9 @@ export default function FindingsListPage() {
             {providerOptions.map((prov) => (
               <button
                 key={prov}
+                type="button"
+                aria-pressed={providerFilter === prov}
+                aria-label={`Filter findings by ${prov} provider`}
                 onClick={() => setProviderFilter(prov)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   providerFilter === prov
