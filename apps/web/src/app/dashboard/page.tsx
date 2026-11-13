@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,7 @@ export default function DashboardOverviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const loadOverview = useCallback(async () => {
     setRefreshing(true);
@@ -104,8 +105,11 @@ export default function DashboardOverviewPage() {
       if (!res.ok) {
         throw new Error(`Overview request failed (${res.status})`);
       }
-      const json = await res.json() as OverviewData;
-      setData(json);
+      const json = await res.json() as Partial<OverviewData>;
+      if (!json.stats || !Array.isArray(json.repositories)) {
+        throw new Error("Overview returned an invalid response.");
+      }
+      setData(json as OverviewData);
       setError(null);
       setLastUpdatedAt(new Date());
     } catch (err) {
@@ -122,6 +126,9 @@ export default function DashboardOverviewPage() {
     const interval = window.setInterval(loadOverview, 30_000);
     return () => window.clearInterval(interval);
   }, [loadOverview]);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const stats = data?.stats ?? {
     connectedRepositories: 0,
@@ -139,7 +146,7 @@ export default function DashboardOverviewPage() {
   if (loading) {
     return (
       <div className="py-24 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>
 
@@ -155,9 +162,9 @@ export default function DashboardOverviewPage() {
       />
 
       {error && (
-        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+        <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between">
           <span>{error}</span>
-          <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} className="border-rose-300 bg-white text-rose-900">
+          <Button type="button" size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} className="border-rose-300 bg-white text-rose-900">
             {refreshing ? "Retrying..." : "Retry"}
           </Button>
         </div>
@@ -180,6 +187,7 @@ export default function DashboardOverviewPage() {
 
           <div className="flex items-center gap-3">
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={loadOverview}
@@ -201,6 +209,7 @@ export default function DashboardOverviewPage() {
               </Link>
             ) : (
               <Button
+                type="button"
                 size="sm"
                 onClick={() => setIsConnectOpen(true)}
                 icon={<Plus className="w-3.5 h-3.5" />}
