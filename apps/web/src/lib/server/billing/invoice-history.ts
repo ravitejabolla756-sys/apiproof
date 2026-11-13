@@ -1,6 +1,6 @@
 import { unavailableInvoiceHistoryAdapter, type InvoiceHistoryResult } from '../../invoice-history-contract.js';
 import { assertWorkspaceCapability } from '../workspace-policy.js';
-import { getDefaultWorkspaceForUser, requireWorkspaceMember } from '../workspace-service.js';
+import { requireWorkspaceMember } from '../workspace-service.js';
 
 /**
  * Backend-owned invoice boundary. Provider retrieval is intentionally not
@@ -9,11 +9,10 @@ import { getDefaultWorkspaceForUser, requireWorkspaceMember } from '../workspace
  */
 export async function getAuthorizedWorkspaceInvoiceHistory(
   userId: string,
-  requestedWorkspaceId?: string,
+  requestedWorkspaceId: string,
 ): Promise<InvoiceHistoryResult> {
-  const workspace = requestedWorkspaceId
-    ? await requireWorkspaceMember(userId, requestedWorkspaceId)
-    : await getDefaultWorkspaceForUser(userId);
+  if (!requestedWorkspaceId.trim()) throw new Error('WORKSPACE_ID_REQUIRED');
+  const workspace = await requireWorkspaceMember(userId, requestedWorkspaceId);
   assertWorkspaceCapability(workspace.role, 'billing:manage');
   return unavailableInvoiceHistoryAdapter.load();
 }
