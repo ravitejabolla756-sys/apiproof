@@ -112,6 +112,15 @@ export async function getWorkspaceSubscription(workspaceId: string): Promise<Wor
   };
 }
 
+/** Persist a provider customer identity once, without replacing a concurrent value. */
+export async function persistWorkspaceCustomerId(workspaceId: string, customerId: string): Promise<void> {
+  const db = getDatabase();
+  await db.execute(
+    'UPDATE workspace_subscriptions SET customer_id = ?, updated_at = ? WHERE workspace_id = ? AND customer_id IS NULL',
+    [customerId, new Date().toISOString(), workspaceId],
+  );
+}
+
 export async function getWorkspaceUsageSummary(workspaceId: string): Promise<WorkspaceUsageSummary> {
   const db = getDatabase();
   const subscription = await getWorkspaceSubscription(workspaceId);

@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/server/auth.js';
 import { isWorkspaceAuthorizationError, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
 import { resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
-import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
-import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
+import { getWorkspaceSubscription, persistWorkspaceCustomerId } from '../../../../lib/server/billing/service.js';
+import { BillingProviderUnavailableError, getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '../../../../lib/server/validation.js';
 import { verifiedUserRouteFailure } from '../../../../lib/server/verified-user-route.js';
+import { validateEnvConfig } from '../../../../lib/server/env-config.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -50,20 +51,29 @@ export async function POST(req: Request) {
 
   const sub = await getWorkspaceSubscription(workspace.id);
   const provider = getBillingProvider();
-
-  let customerId = sub.customerId;
-  if (!customerId) {
-    const res = await provider.createCustomer(workspace.id, user.email, user.name);
-    customerId = res.customerId;
+  let returnUrl: string;
+  try {
+    const configuredUrl = validateEnvConfig().config.appUrl;
+    returnUrl = `${new URL(configuredUrl).origin}/dashboard/settings`;
+  } catch {
+    return NextResponse.json({ error: 'Billing return URL is unavailable.', code: 'BILLING_RETURN_URL_UNAVAILABLE' }, { status: 503 });
   }
 
-  const origin = req.headers.get('origin') || 'http://localhost:3000';
-  const returnUrl = `${origin}/dashboard/settings`;
+  try {
+    let customerId = sub.customerId;
+    if (!customerId) {
+      const res = await provider.createCustomer(workspace.id, user.email, user.name);
+      customerId = res.customerId;
+      await persistWorkspaceCustomerId(workspace.id, customerId);
+    }
 
-  const checkout = await provider.createCheckoutSession(workspace.id, customerId, planId, returnUrl);
+    const checkout = await provider.createCheckoutSession(workspace.id, customerId, planId, returnUrl);
 
-  return NextResponse.json({
-    checkoutUrl: checkout.checkoutUrl,
-    planId,
-  });
+    return NextResponse.json({ checkoutUrl: checkout.checkoutUrl, planId });
+  } catch (error) {
+    if (error instanceof BillingProviderUnavailableError || (error instanceof Error && error.message.startsWith('BILLING_PROVIDER_UNAVAILABLE'))) {
+      return NextResponse.json({ error: 'Billing is unavailable until an approved provider is configured.', code: 'BILLING_PROVIDER_UNAVAILABLE' }, { status: 503 });
+    }
+    throw error;
+  }
 }
