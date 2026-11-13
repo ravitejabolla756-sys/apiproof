@@ -68,7 +68,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] antialiased">
       <LandingNavbar />
-      <main className="mx-auto max-w-7xl space-y-14 px-4 pb-24 pt-36 sm:px-6 lg:px-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-14 px-4 pb-24 pt-36 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl space-y-5 text-center">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-800">
             <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />

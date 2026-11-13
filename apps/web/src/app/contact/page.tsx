@@ -18,7 +18,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-20 space-y-16">
 
         {/* TOP SECTION: HEADING + FORM */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -72,8 +72,9 @@ export default function ContactPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="font-medium text-slate-700">Inquiry Type</label>
+                  <label htmlFor="inquiry-type" className="font-medium text-slate-700">Inquiry Type</label>
                   <select
+                    id="inquiry-type"
                     className="w-full px-4 py-3 rounded-xl bg-white border border-black/[0.08] text-[#000E29] focus:outline-none focus:ring-2 focus:ring-black/10"
                     defaultValue=""
                     required
@@ -110,6 +111,7 @@ export default function ContactPage() {
         </div>
 
         {/* 4 SUPPORT TOPIC CARDS */}
+        <h2 className="sr-only">Support topics</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-8">
 
           <div className="rounded-[28px] bg-[#EFF1F5] p-6 border border-black/[0.04] space-y-4 flex flex-col justify-between">

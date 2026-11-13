@@ -136,7 +136,7 @@ export default function DocsPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
 
         {/* HEADER */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -170,6 +170,7 @@ export default function DocsPage() {
 
         {/* DOCUMENTATION CATEGORIES & TOPICS */}
         <div className="space-y-12">
+          <h2 className="sr-only">Documentation topics</h2>
           {docCategories.map((category) => (
             <section
               key={category.id}
@@ -202,7 +203,7 @@ export default function DocsPage() {
                       </p>
                     </div>
 
-                    <div className="pt-2 text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                    <div className="pt-2 text-[11px] font-mono text-slate-600 flex items-center justify-between">
                       <span>docs/{category.id}</span>
                       <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#004EE8] transition-transform group-hover:translate-x-0.5" />
                     </div>
