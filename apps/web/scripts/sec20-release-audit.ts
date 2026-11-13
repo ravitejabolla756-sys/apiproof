@@ -27,7 +27,9 @@ export function buildReleaseAudit(repositoryRootPath = repositoryRoot): ReleaseA
   const tasks: ReleaseAuditTask[] = [];
   const rowPattern = /^\|\s*([A-Z]+-\d+)\s*\|\s*([^|]+)\|/gm;
   for (const match of inventory.matchAll(rowPattern)) {
-    tasks.push({ id: match[1], status: match[2].trim() });
+    const id = match[1];
+    const status = match[2];
+    if (id && status) tasks.push({ id, status: status.trim() });
   }
 
   const unresolved = tasks.filter((task) => !acceptedStatuses.has(task.status));
