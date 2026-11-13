@@ -1,6 +1,6 @@
 export type WorkspaceMemberRevocationAvailability = {
-  status: 'unavailable';
-  code: 'ORG_10_CONTRACT_PENDING';
+  status: 'available';
+  code: 'ORG_10_WORKSPACE_SCOPED';
   message: string;
 };
 
@@ -42,7 +42,7 @@ function stringArray(value: unknown): string[] | null {
   return values.every((item): item is string => item !== null) ? values : null;
 }
 
-/** Parse the reviewed Member 1 ORG-10 result without activating the removal UI. */
+/** Parse the reviewed Member 1 ORG-10 result for server-side consumers. */
 export function parseWorkspaceMemberRevocationResult(value: unknown): WorkspaceMemberRevocationResult | null {
   if (!isRecord(value) || value.status !== 'completed') return null;
   const requestId = nonEmptyText(value.requestId);
@@ -80,12 +80,12 @@ export function parseWorkspaceMemberRevocationResult(value: unknown): WorkspaceM
 }
 
 /**
- * Member removal stays unavailable until the authoritative ORG-10 transaction
- * is integrated. The current local endpoint invalidates every session for the
- * target user, which is not a safe workspace-scoped revocation contract.
+ * The integrated endpoint is workspace-scoped. The server remains the source
+ * of truth for authorization, final-owner protection and idempotency; this
+ * projection only explains the safety boundary to the settings UI.
  */
 export const workspaceMemberRevocationAvailability: WorkspaceMemberRevocationAvailability = {
-  status: 'unavailable',
-  code: 'ORG_10_CONTRACT_PENDING',
-  message: 'Member removal is unavailable until workspace-scoped revocation is connected. Personal sessions and access to other workspaces must be preserved.',
+  status: 'available',
+  code: 'ORG_10_WORKSPACE_SCOPED',
+  message: 'Removing a member revokes access only to this workspace. Personal sessions and access to other workspaces are preserved.',
 };

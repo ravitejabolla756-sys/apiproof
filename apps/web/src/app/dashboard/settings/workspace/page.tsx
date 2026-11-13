@@ -42,6 +42,7 @@ export default function WorkspaceSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [revokingInvitationId, setRevokingInvitationId] = useState<string | null>(null);
+  const [revokingMemberId, setRevokingMemberId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
@@ -50,6 +51,7 @@ export default function WorkspaceSettingsPage() {
   const membersErrorRef = useRef<HTMLDivElement>(null);
   const invitationsErrorRef = useRef<HTMLDivElement>(null);
   const auditErrorRef = useRef<HTMLDivElement>(null);
+  const revocationKeysRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     if ((message || error) && !document.activeElement?.matches('#main-content, .skip-link')) feedbackRef.current?.focus();
@@ -212,6 +214,30 @@ export default function WorkspaceSettingsPage() {
     }
   }
 
+  async function removeMember(member: Member) {
+    if (!workspace || memberAction !== null || revokingMemberId !== null) return;
+    if (!window.confirm(`Remove ${member.email} from ${workspace.name}? Their access to this workspace will be revoked, while personal sessions and other workspaces are preserved.`)) return;
+    const key = revocationKeysRef.current[member.userId] ?? (revocationKeysRef.current[member.userId] = `workspace-member-remove:${workspace.id}:${member.userId}:${crypto.randomUUID()}`);
+    setRevokingMemberId(member.id); setActionStatus(`Removing ${member.email}…`); setError(null); setMessage(null);
+    try {
+      const response = await fetch('/api/workspace/members', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, idempotencyKey: key }),
+      });
+      const rawData = await readJson<{ success?: unknown; error?: string }>(response);
+      if (!response.ok || rawData.success !== true) throw new Error(rawData.error || 'Unable to remove workspace member.');
+      delete revocationKeysRef.current[member.userId];
+      setMembers((current) => current.filter((item) => item.userId !== member.userId));
+      setMessage(`${member.email} was removed from this workspace.`);
+      await load();
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : 'Unable to remove workspace member.');
+    } finally {
+      setRevokingMemberId(null); setActionStatus(null);
+    }
+  }
+
   async function copyInvite() {
     if (!inviteUrl) return;
     setError(null);
@@ -277,7 +303,7 @@ export default function WorkspaceSettingsPage() {
       <section className="min-w-0 rounded-2xl border border-[#E8E8E5] bg-white p-6 shadow-xs" aria-labelledby="members-heading">
         <div className="mb-5 flex min-w-0 items-start gap-3"><Users className="mt-0.5 h-5 w-5 shrink-0 text-purple-700" aria-hidden="true" /><div className="min-w-0"><h2 id="members-heading" className="break-words text-base font-semibold text-[#111111]">Members</h2><p className="mt-1 break-words text-xs text-[#686868]">Owners can grant access or update roles. At least one owner is always required.</p>{workspace?.role === 'owner' && <p role="note" className="mt-2 break-words text-xs text-amber-800">{workspaceMemberRevocationAvailability.message}</p>}</div></div>
       {membersError ? <div ref={membersErrorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{membersError}</span><Button type="button" variant="outline" size="sm" disabled={retryingMembers} aria-busy={retryingMembers ? 'true' : undefined} onClick={() => void retryMembers()} className="border-rose-300 text-rose-900 hover:bg-rose-100">Retry members</Button></div> : members.length === 0 ? <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-[#686868]">No workspace members found.</p> : <ul aria-label="Workspace members" className="divide-y divide-[#E8E8E5]">
-          {members.map((member) => <li key={member.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="truncate text-sm font-medium text-[#111111]">{member.name}</p><p className="truncate text-xs text-[#686868]">{member.email}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2.5 py-1 text-[11px] font-medium capitalize text-[#686868]">{member.role}</span>{workspace?.role === 'owner' && <select aria-label={`Role for ${member.email}`} value={member.role} disabled={memberAction !== null} aria-busy={memberAction === member.id ? 'true' : undefined} onChange={(event) => void changeRole(member, event.target.value as 'owner' | 'member')} className="min-h-11 rounded-lg border border-[#D9D9D4] bg-white px-2 text-base"><option value="member">Member</option><option value="owner">Owner</option></select>}</div></li>)}
+          {members.map((member) => <li key={member.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="truncate text-sm font-medium text-[#111111]">{member.name}</p><p className="truncate text-xs text-[#686868]">{member.email}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full border border-[#E8E8E5] bg-[#F6F6F4] px-2.5 py-1 text-[11px] font-medium capitalize text-[#686868]">{member.role}</span>{workspace?.role === 'owner' && <select aria-label={`Role for ${member.email}`} value={member.role} disabled={memberAction !== null || revokingMemberId !== null} aria-busy={memberAction === member.id ? 'true' : undefined} onChange={(event) => void changeRole(member, event.target.value as 'owner' | 'member')} className="min-h-11 rounded-lg border border-[#D9D9D4] bg-white px-2 text-base"><option value="member">Member</option><option value="owner">Owner</option></select>}{workspace?.role === 'owner' && <Button type="button" variant="outline" size="sm" disabled={memberAction !== null || revokingMemberId !== null} aria-busy={revokingMemberId === member.id ? 'true' : undefined} onClick={() => void removeMember(member)} aria-label={`Remove ${member.email} from this workspace`} className="min-h-11 border-rose-300 text-rose-900 hover:bg-rose-50">{revokingMemberId === member.id ? 'Removing…' : 'Remove'}</Button>}</div></li>)}
         </ul>}
       </section>
 
