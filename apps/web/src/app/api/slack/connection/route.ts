@@ -34,16 +34,26 @@ export async function DELETE(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
   const verificationFailure = await verifiedUserRouteFailure(user.id, 'provider_link');
   if (verificationFailure) return verificationFailure;
-  const workspace = await resolveWorkspaceForRequest(req, user.id);
-  await requireWorkspaceCapability(user.id, workspace.id, 'integration:manage');
-  const now = new Date().toISOString();
-  const db = getDatabase();
-  const result = await db.execute(`UPDATE slack_connections SET status = 'revoked', token_ciphertext = '', token_iv = '', token_auth_tag = '', updated_at = ?
-    WHERE workspace_id = ? AND status = 'active'`, [now, workspace.id]);
-  if (result.changes) {
-    await db.execute(`INSERT INTO activity_events (id, user_id, type, title, description, created_at)
-      VALUES (?, ?, 'slack_disconnected', 'Slack Disconnected', 'Disconnected Slack notifications from the authenticated workspace.', ?)`,
-    [`act_${crypto.randomBytes(10).toString('hex')}`, user.id, now]);
+  try {
+    const workspace = await resolveWorkspaceForRequest(req, user.id);
+    await requireWorkspaceCapability(user.id, workspace.id, 'integration:manage');
+    const now = new Date().toISOString();
+    const db = getDatabase();
+    const result = await db.execute(`UPDATE slack_connections SET status = 'revoked', token_ciphertext = '', token_iv = '', token_auth_tag = '', updated_at = ?
+      WHERE workspace_id = ? AND status = 'active'`, [now, workspace.id]);
+    if (result.changes) {
+      await db.execute(`INSERT INTO activity_events (id, user_id, type, title, description, created_at)
+        VALUES (?, ?, 'slack_disconnected', 'Slack Disconnected', 'Disconnected Slack notifications from the authenticated workspace.', ?)`,
+      [`act_${crypto.randomBytes(10).toString('hex')}`, user.id, now]);
+    }
+    return NextResponse.json({ connected: false }, { headers: privateHeaders });
+  } catch (error) {
+    if (error instanceof OrganizationServiceError || (error instanceof Error && error.message.includes('access denied'))) {
+      return organizationErrorResponse(error);
+    }
+    if (error instanceof Error && error.message === 'WORKSPACE_CAPABILITY_DENIED') {
+      return NextResponse.json({ error: 'Slack management access denied.', code: error.message }, { status: 403, headers: privateHeaders });
+    }
+    return NextResponse.json({ error: 'Slack connection could not be updated.', code: 'SLACK_CONNECTION_UNAVAILABLE' }, { status: 503, headers: privateHeaders });
   }
-  return NextResponse.json({ connected: false }, { headers: privateHeaders });
 }
