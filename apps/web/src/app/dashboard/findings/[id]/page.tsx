@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
 import { Button } from "@/components/ui/button";
+import { parseFindingDetailResponse, type FindingDetail, type MigrationDetail } from "@/lib/finding-detail-contract";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -18,63 +19,6 @@ import {
   Sparkles,
   AlertTriangle,
 } from "lucide-react";
-
-interface FindingDetail {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  reason: string;
-  source_snippet: string | null;
-  status: string;
-  created_at: string;
-  repo_name: string;
-  repo_full_name: string;
-  repo_owner: string;
-  default_branch: string;
-  evidence: Array<{ id: string; kind: string; label: string }>;
-  reasonCodes: string[];
-  capability?: {
-    source: 'productization';
-    baselineSha: string | null;
-    scanId: string | null;
-    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
-    migrationAvailable: boolean;
-    verificationAvailable: boolean;
-    evidenceCoverage: 'complete' | 'partial' | 'insufficient' | null;
-    reviewStatus: 'draft' | 'reviewed' | 'verified' | null;
-    remediation: {
-      mode: 'transform' | 'manual-guidance';
-      templateId: string;
-      limitation: string;
-      summary: string;
-      steps: string[];
-      validation: string[];
-    } | null;
-  } | null;
-}
-
-interface MigrationDetail {
-  id: string;
-  plan_id: string;
-  status: string;
-  patch_diff: string;
-  patch_digest: string;
-  pr_number?: number;
-  pr_url?: string;
-  branch_name?: string;
-  target_branch?: string;
-  pr_state?: string;
-  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Verification Unavailable' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
-  verification_job_id?: string | null;
-  verification_job_status?: string | null;
-}
 
 export default function FindingDetailPage({
   params,
@@ -95,10 +39,10 @@ export default function FindingDetailPage({
     try {
       const res = await fetch(`/api/findings/${id}`);
       if (!res.ok) throw new Error("Finding details are temporarily unavailable.");
-      const json = await res.json() as { finding?: unknown; migration?: MigrationDetail | null };
-      if (!json.finding || typeof json.finding !== "object") throw new Error("Finding details returned an invalid response.");
-      setFinding(json.finding as FindingDetail);
-      setMigration(json.migration ?? null);
+      const parsed = parseFindingDetailResponse(await res.json());
+      if (!parsed) throw new Error("Finding details returned an invalid response.");
+      setFinding(parsed.finding);
+      setMigration(parsed.migration);
     } catch (loadErrorValue) {
       setLoadError(loadErrorValue instanceof Error ? loadErrorValue.message : "Finding details are temporarily unavailable.");
     } finally {
