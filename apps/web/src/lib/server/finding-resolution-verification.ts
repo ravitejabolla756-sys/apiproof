@@ -96,92 +96,94 @@ export async function persistMergedFindingResolutionEvidence(
     findingPreviousStates: Map<string, string | null>;
   },
 ): Promise<void> {
-  const scan = await db.queryOne<{ status: string; sha: string; repository_id: string }>(
-    'SELECT status, sha, repository_id FROM scans WHERE id = ?',
-    [params.scanId],
-  );
-  if (!hasExactCompletedScanEvidence({
-    scanStatus: scan?.status,
-    scanSha: scan?.sha,
-    expectedMergeSha: params.mergeSha,
-    scanRepositoryId: scan?.repository_id,
-    expectedRepositoryId: params.repositoryId,
-  })) {
-    throw new Error('FINDING_RESOLUTION_SCAN_INVALID: completed scan must match the merged repository and commit');
-  }
+  await db.transaction(async (tx) => {
+    const scan = await tx.queryOne<{ status: string; sha: string; repository_id: string }>(
+      'SELECT status, sha, repository_id FROM scans WHERE id = ?',
+      [params.scanId],
+    );
+    if (!hasExactCompletedScanEvidence({
+      scanStatus: scan?.status,
+      scanSha: scan?.sha,
+      expectedMergeSha: params.mergeSha,
+      scanRepositoryId: scan?.repository_id,
+      expectedRepositoryId: params.repositoryId,
+    })) {
+      throw new Error('FINDING_RESOLUTION_SCAN_INVALID: completed scan must match the merged repository and commit');
+    }
 
-  const rows = await db.query<{
-    migration_id: string;
-    finding_id: string;
-    pull_request_id: string;
-    merge_sha: string;
-    baseline_sha: string | null;
-    change_id: string;
-    lifecycle_state: string | null;
-  }>(`
-    SELECT m.id AS migration_id, m.finding_id, pr.id AS pull_request_id,
-      pr.merge_sha, m.baseline_sha, f.change_id, f.lifecycle_state
-    FROM migrations m
-    JOIN pull_requests pr ON pr.migration_id = m.id
-    JOIN findings f ON f.id = m.finding_id AND f.repository_id = m.repository_id
-    WHERE m.repository_id = ?
-      AND pr.repository_id = ?
-      AND pr.state = 'merged'
-      AND pr.merge_sha = ?
-  `, [params.repositoryId, params.repositoryId, params.mergeSha]);
-  const protectedFindingIds = new Set(
-    rows
-      .filter((row) => !params.activeFindingIds.includes(row.finding_id) && params.activeChangeIds.has(row.change_id))
-      .map((row) => row.finding_id),
-  );
+    const rows = await tx.query<{
+      migration_id: string;
+      finding_id: string;
+      pull_request_id: string;
+      merge_sha: string;
+      baseline_sha: string | null;
+      change_id: string;
+      lifecycle_state: string | null;
+    }>(`
+      SELECT m.id AS migration_id, m.finding_id, pr.id AS pull_request_id,
+        pr.merge_sha, m.baseline_sha, f.change_id, f.lifecycle_state
+      FROM migrations m
+      JOIN pull_requests pr ON pr.migration_id = m.id
+      JOIN findings f ON f.id = m.finding_id AND f.repository_id = m.repository_id
+      WHERE m.repository_id = ?
+        AND pr.repository_id = ?
+        AND pr.state = 'merged'
+        AND pr.merge_sha = ?
+    `, [params.repositoryId, params.repositoryId, params.mergeSha]);
+    const protectedFindingIds = new Set(
+      rows
+        .filter((row) => !params.activeFindingIds.includes(row.finding_id) && params.activeChangeIds.has(row.change_id))
+        .map((row) => row.finding_id),
+    );
 
-  const excludedFindingIds = [...new Set([...params.activeFindingIds, ...protectedFindingIds])];
-  const placeholders = excludedFindingIds.map(() => '?').join(', ');
-  const absentFindings = await db.query<{ id: string; lifecycle_state: string | null }>(`
-    SELECT id, lifecycle_state FROM findings
-    WHERE repository_id = ?
-      AND COALESCE(lifecycle_state, 'open') IN ('open', 'acknowledged', 'remediating', 'reopened', 'fixed_pending_verification')
-      ${excludedFindingIds.length > 0 ? `AND id NOT IN (${placeholders})` : ''}
-  `, [params.repositoryId, ...excludedFindingIds]);
-  for (const finding of absentFindings) {
-    await transitionFinding(db, {
-      findingId: finding.id,
-      workspaceId: params.workspaceId,
-      toState: 'verified_resolved',
-      reason: 'finding_absent_from_completed_scan',
-      idempotencyKey: `finding:${finding.id}:scan:${params.scanId}:verified-resolved`,
-      evidence: { scanId: params.scanId, baselineSha: params.mergeSha },
-    });
-  }
+    const excludedFindingIds = [...new Set([...params.activeFindingIds, ...protectedFindingIds])];
+    const placeholders = excludedFindingIds.map(() => '?').join(', ');
+    const absentFindings = await tx.query<{ id: string; lifecycle_state: string | null }>(`
+      SELECT id, lifecycle_state FROM findings
+      WHERE repository_id = ?
+        AND COALESCE(lifecycle_state, 'open') IN ('open', 'acknowledged', 'remediating', 'reopened', 'fixed_pending_verification')
+        ${excludedFindingIds.length > 0 ? `AND id NOT IN (${placeholders})` : ''}
+    `, [params.repositoryId, ...excludedFindingIds]);
+    for (const finding of absentFindings) {
+      await transitionFinding(tx, {
+        findingId: finding.id,
+        workspaceId: params.workspaceId,
+        toState: 'verified_resolved',
+        reason: 'finding_absent_from_completed_scan',
+        idempotencyKey: `finding:${finding.id}:scan:${params.scanId}:verified-resolved`,
+        evidence: { scanId: params.scanId, baselineSha: params.mergeSha },
+      });
+    }
 
-  for (const row of rows) {
-    const findingPresent = params.activeFindingIds.includes(row.finding_id);
-    const conflictingActiveChange = protectedFindingIds.has(row.finding_id);
-    const previousState = params.findingPreviousStates.get(row.finding_id) ?? row.lifecycle_state;
-    const classification = classifyMergedFinding({
-      scanCompleted: true,
-      findingPresent,
-      previousState,
-      conflictingActiveChange,
-    });
-    await recordFindingResolutionVerification(db, {
-      workspaceId: params.workspaceId,
-      repositoryId: params.repositoryId,
-      findingId: row.finding_id,
-      migrationId: row.migration_id,
-      pullRequestId: row.pull_request_id,
-      mergeSha: row.merge_sha,
-      scanId: params.scanId,
-      classification,
-      evidence: {
-        baselineSha: row.baseline_sha,
+    for (const row of rows) {
+      const findingPresent = params.activeFindingIds.includes(row.finding_id);
+      const conflictingActiveChange = protectedFindingIds.has(row.finding_id);
+      const previousState = params.findingPreviousStates.get(row.finding_id) ?? row.lifecycle_state;
+      const classification = classifyMergedFinding({
+        scanCompleted: true,
+        findingPresent,
+        previousState,
+        conflictingActiveChange,
+      });
+      await recordFindingResolutionVerification(tx, {
+        workspaceId: params.workspaceId,
+        repositoryId: params.repositoryId,
+        findingId: row.finding_id,
+        migrationId: row.migration_id,
+        pullRequestId: row.pull_request_id,
         mergeSha: row.merge_sha,
         scanId: params.scanId,
-        findingPresent,
-        conflictingActiveChange,
-        previousState,
-        currentFindingIds: params.activeFindingIds,
-      },
-    });
-  }
+        classification,
+        evidence: {
+          baselineSha: row.baseline_sha,
+          mergeSha: row.merge_sha,
+          scanId: params.scanId,
+          findingPresent,
+          conflictingActiveChange,
+          previousState,
+          currentFindingIds: params.activeFindingIds,
+        },
+      });
+    }
+  });
 }
