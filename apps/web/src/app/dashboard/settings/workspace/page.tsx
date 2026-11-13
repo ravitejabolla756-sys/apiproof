@@ -18,8 +18,8 @@ type Member = MemberProjection;
 type Invitation = InvitationProjection;
 type AuditEvent = AuditEventProjection;
 
-async function readJson<T>(response: Response): Promise<T & { error?: string }> {
-  return response.json() as Promise<T & { error?: string }>;
+async function readJson(response: Response): Promise<unknown> {
+  return response.json();
 }
 
 export default function WorkspaceSettingsPage() {
@@ -106,7 +106,7 @@ export default function WorkspaceSettingsPage() {
     setAuditError(null);
     try {
       const response = await fetch(`/api/workspace/audit?cursor=${encodeURIComponent(auditCursor)}`);
-      const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseAuditPage(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load more audit events.'));
       const mergedAudit = mergeAuditEvents(audit, data.events);
@@ -125,7 +125,7 @@ export default function WorkspaceSettingsPage() {
     setRetryingAudit(true);
     try {
       const response = await fetch('/api/workspace/audit');
-      const rawData = await readJson<{ events?: unknown; nextCursor?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseAuditPage(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load administrative audit events.'));
       setAudit(data.events);
@@ -142,7 +142,7 @@ export default function WorkspaceSettingsPage() {
     setRetryingMembers(true);
     try {
       const response = await fetch('/api/workspace/members');
-      const rawData = await readJson<{ members?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseMemberCollection(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load workspace members.'));
       setMembers(data);
@@ -158,7 +158,7 @@ export default function WorkspaceSettingsPage() {
     setRetryingInvitations(true);
     try {
       const response = await fetch('/api/workspace/invitations');
-      const rawData = await readJson<{ invitations?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseInvitationCollection(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to load workspace invitations.'));
       setInvitations(data);
@@ -175,7 +175,7 @@ export default function WorkspaceSettingsPage() {
     setSaving(true); setActionStatus('Saving workspace settings…'); setError(null); setMessage(null);
     try {
       const response = await fetch('/api/workspace/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, slug }) });
-      const rawData = await readJson<{ workspace?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseWorkspaceSettings(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to save workspace settings.'));
       setWorkspace(data); setMessage('Workspace settings updated.');
@@ -189,7 +189,7 @@ export default function WorkspaceSettingsPage() {
     setInviting(true); setActionStatus('Creating invitation link…'); setError(null); setMessage(null); setInviteUrl(null);
     try {
       const response = await fetch('/api/workspace/invitations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: inviteEmail, role: 'member' }) });
-      const rawData = await readJson<{ inviteUrl?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseCreatedInvitationResponse(rawData);
       const safeInviteUrl = toSafeInvitationUrl(data?.inviteUrl ?? null, window.location.origin);
       if (!response.ok || !safeInviteUrl) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to create invitation.'));
@@ -204,7 +204,7 @@ export default function WorkspaceSettingsPage() {
     setMemberAction(member.id); setActionStatus(`Updating role for ${member.email}…`); setError(null); setMessage(null);
     try {
       const response = await fetch('/api/workspace/members', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, role }) });
-      const rawData = await readJson<{ members?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseMemberCollection(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to update member role.'));
       setMembers(data); setMessage('Member role updated.');
@@ -226,8 +226,8 @@ export default function WorkspaceSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId: workspace.id, userId: member.userId, idempotencyKey: key }),
       });
-      const rawData = await readJson<{ success?: unknown; error?: string }>(response);
-      if (!response.ok || rawData.success !== true) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to remove workspace member.'));
+      const rawData = await readJson(response);
+      if (!response.ok || !parseRevokedInvitationResponse(rawData)) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to remove workspace member.'));
       delete revocationKeysRef.current[member.userId];
       setMembers((current) => current.filter((item) => item.userId !== member.userId));
       setMessage(`${member.email} was removed from this workspace.`);
@@ -260,7 +260,7 @@ export default function WorkspaceSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invitationId: invitation.id }),
       });
-      const rawData = await readJson<{ error?: string; success?: unknown }>(response);
+      const rawData = await readJson(response);
       const data = parseRevokedInvitationResponse(rawData);
       if (!response.ok || !data) throw new Error(workspaceSettingsErrorMessage(response.status, rawData, 'Unable to cancel invitation.'));
       setInvitations((current) => current.map((item) => item.id === invitation.id
