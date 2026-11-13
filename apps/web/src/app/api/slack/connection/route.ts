@@ -5,6 +5,7 @@ import { getDatabase } from '@/lib/server/db/index.js';
 import { requireWorkspaceCapability } from '@/lib/server/workspace-service.js';
 import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
 const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -23,6 +24,8 @@ export async function DELETE(req: Request) {
   if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateHeaders });
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'provider_link');
+  if (verificationFailure) return verificationFailure;
   const workspace = await resolveWorkspaceForRequest(req, user.id);
   await requireWorkspaceCapability(user.id, workspace.id, 'integration:manage');
   const now = new Date().toISOString();
