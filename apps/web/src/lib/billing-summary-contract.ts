@@ -45,6 +45,10 @@ function normalizedText(value: unknown): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
+function validPeriod(value: string): boolean {
+  return Number.isFinite(Date.parse(value));
+}
+
 function isBillingMetric(value: unknown): value is BillingMetric {
   if (!value || typeof value !== 'object') return false;
   const metric = value as Record<string, unknown>;
@@ -78,6 +82,8 @@ export function parseBillingSummary(value: unknown): BillingSummary | null {
   const planDescription = normalizedText(planRecord.description);
   if (!planId || !subscriptionStatus || !currentPeriodStart || !currentPeriodEnd
     || !planIdValue || !planName || !planDescription
+    || !validPeriod(currentPeriodStart) || !validPeriod(currentPeriodEnd)
+    || Date.parse(currentPeriodEnd) < Date.parse(currentPeriodStart)
     || (planRecord.priceMonthly !== null && (typeof planRecord.priceMonthly !== 'number' || !Number.isFinite(planRecord.priceMonthly) || planRecord.priceMonthly < 0))
     || !isOptionalNonNegativeInteger(limitsRecord.maxRepositories)
     || !isOptionalNonNegativeInteger(limitsRecord.maxScansPerMonth)
