@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { AccountServiceError, changeAccountPassword } from '@/lib/server/account-service.js';
 import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse, validatePasswordChangeInput } from '@/lib/server/validation.js';
+import { evaluateVerifiedUserPolicy, loadVerifiedUserPolicy, verifiedUserFailure } from '@/lib/server/verified-user-policy.js';
 
 const noStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -12,6 +13,8 @@ export async function POST(req: Request) {
   const sessionId = extractSessionId(req);
   if (!user || !sessionId) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: noStore });
   try {
+    const verificationFailure = verifiedUserFailure(evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'authenticated_account')));
+    if (verificationFailure) return NextResponse.json(verificationFailure, { status: verificationFailure.status, headers: noStore });
     const validation = validatePasswordChangeInput(await req.json());
     if (!validation.valid || !validation.data) return badRequestResponse(validation.error || 'Invalid password update.');
     await changeAccountPassword(user.id, sessionId, validation.data.currentPassword, validation.data.newPassword);
