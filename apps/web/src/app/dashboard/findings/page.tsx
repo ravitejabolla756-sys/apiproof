@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -42,27 +42,34 @@ interface FindingRecord {
 export default function FindingsListPage() {
   const [findings, setFindings] = useState<FindingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [providerFilter, setProviderFilter] = useState<string>("all");
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadFindings() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/findings");
-      if (res.ok) {
-        const json = await res.json();
-        setFindings(json.findings || []);
-      }
-    } catch (err) {
-      console.error("Failed to load findings:", err);
+      if (!res.ok) throw new Error("Findings are temporarily unavailable.");
+      const json = await res.json() as { findings?: unknown };
+      if (!Array.isArray(json.findings)) throw new Error("Findings returned an invalid response.");
+      setFindings(json.findings as FindingRecord[]);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Findings are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadFindings();
+    void loadFindings();
   }, []);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const filteredFindings = findings.filter((f) => {
     const matchesSearch =
@@ -97,7 +104,10 @@ export default function FindingsListPage() {
         </div>
 
         <Button
+          type="button"
           onClick={loadFindings}
+          disabled={loading}
+          aria-busy={loading ? "true" : undefined}
           variant="outline"
           size="sm"
           icon={<RefreshCw className="w-3.5 h-3.5" />}
@@ -106,6 +116,8 @@ export default function FindingsListPage() {
           Refresh
         </Button>
       </div>
+
+      {error && <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{error} Use Refresh to try again.</div>}
 
       {/* FILTER & SEARCH */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -167,8 +179,14 @@ export default function FindingsListPage() {
       {/* FINDING ROW CARDS */}
       {loading ? (
         <div className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Querying database findings...</span>
+        </div>
+      ) : error ? (
+        <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
+          <AlertTriangle aria-hidden="true" className="w-8 h-8 text-rose-600 mx-auto" />
+          <p className="font-semibold text-base text-[#111111]">Findings cannot be displayed</p>
+          <p className="text-xs text-[#686868]">Reconnect to the workspace and use Refresh to try again.</p>
         </div>
       ) : filteredFindings.length === 0 ? (
         <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
