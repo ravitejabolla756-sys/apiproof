@@ -258,6 +258,18 @@ Verification for this milestone:
 
 This improves local browser reliability but does not resolve the unavailable Member 2 handoff or prove hosted browser/production behavior. The four previously reported Member 2 failures remain unresolved until reproduced against the synchronized source.
 
+## 2026-11-13 milestone — SEC-15 CI hardening
+
+Verified and committed the reviewed CI slice:
+
+- `.github/workflows/ci.yml` now uses least-privilege read permissions, concurrency cancellation, a bounded 30-minute job timeout, and immutable action commit pins.
+- `apps/web/scripts/release-manifest.ts` and `tests/ci-workflow-contract.test.ts` enforce those workflow requirements and reject writable permissions, `pull_request_target`, secrets usage, and mutable action references.
+- Focused CI contract test: **3 passed**.
+- The requested `tests/dependency-security.test.ts` file is not present in this integration checkout; no result was claimed for it.
+- Local commit: `fff44d05` (`ci: harden workflow validation`).
+- The unrelated `packages/shared/package.json` Zod version change remains uncommitted and was intentionally excluded because no corresponding lockfile change was present.
+- SEC-15 remains `INTEGRATED_PARTIAL` until GitHub-hosted execution, branch protection and fork/secret-boundary behavior are verified.
+
 ## Recommended first implementation task
 
 The first next action should be **Member 2 handoff synchronization followed by a read-only migration-history evidence package**. Without the missing source checkpoint and authoritative database history, integrating invitations, notifications, or colliding migrations risks silently omitting functionality or corrupting applied history. In parallel, the next independently executable code task is reproducing the four unresolved browser failures with deterministic server readiness and network diagnostics.
