@@ -162,6 +162,10 @@ export function Sidebar() {
 
         <button
           onClick={() => setCollapsed(!collapsed)}
+          type="button"
+          aria-label={collapsed ? 'Expand dashboard navigation' : 'Collapse dashboard navigation'}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Expand dashboard navigation' : 'Collapse dashboard navigation'}
           className="hidden md:block p-1.5 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-[#F6F6F4] transition-colors"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -236,7 +240,9 @@ export function Sidebar() {
             </div>
             <button
               onClick={handleLogout}
+              type="button"
               disabled={isSigningOut}
+              aria-label="Sign out"
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
               title="Sign out"
             >

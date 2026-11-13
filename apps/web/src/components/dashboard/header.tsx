@@ -35,7 +35,7 @@ export function Header({ onOpenCommandPalette, onOpenConnectModal, githubConnect
   return (
     <header className="min-h-16 h-auto bg-white/90 backdrop-blur-md border-b border-[#E8E8E5] px-4 sm:px-6 flex items-center justify-between gap-3 sticky top-0 z-30 font-sans">
       {/* Breadcrumbs */}
-      <nav className="min-w-0 shrink flex items-center gap-2 overflow-hidden text-xs">
+      <nav aria-label="Breadcrumb" className="min-w-0 shrink flex items-center gap-2 overflow-hidden text-xs">
         <Link href="/dashboard" className="text-[#686868] hover:text-[#111111] transition-colors font-medium">
           MY OWL
         </Link>
