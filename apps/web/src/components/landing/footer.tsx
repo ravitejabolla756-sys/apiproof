@@ -74,6 +74,11 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/faq" className="hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
                 <Link href="/blog" className="hover:text-white transition-colors">
                   Blog
                 </Link>
