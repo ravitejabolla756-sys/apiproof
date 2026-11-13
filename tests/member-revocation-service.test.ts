@@ -121,6 +121,7 @@ describe('ORG-10 durable member revocation', () => {
       'SELECT COUNT(*) AS count FROM workspace_security_audit_events WHERE workspace_id = ?', [workspace.id],
     )).toMatchObject({ count: 1 });
     await expect(revokeWorkspaceMember(owner.id, { ...request, userId: otherMember.id })).rejects.toThrow('REVOCATION_IDEMPOTENCY_CONFLICT');
+    await expect(revokeWorkspaceMember(owner.id, { ...request, reason: 'Different reason' })).rejects.toThrow('REVOCATION_IDEMPOTENCY_CONFLICT');
   });
 
   it('fails closed for unauthorized, cross-tenant and final-owner mutations', async () => {
