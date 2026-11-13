@@ -31,6 +31,7 @@
     "release:manifest": "tsx --conditions=apiproof-source apps/web/scripts/release-manifest.ts",
     "release:staging:dry-run": "tsx --conditions=apiproof-source apps/web/scripts/sec17-staging-dry-run.ts",
     "backup:restore:dry-run": "tsx --conditions=apiproof-source apps/web/scripts/sec10-backup-restore-dry-run.ts",
+    "security:postgres:static": "tsx --conditions=apiproof-source apps/web/scripts/postgres-security-static-preflight.ts",
     "provider:review-report": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-report.ts",
     "provider:review-pack": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-pack.ts",
     "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts all",
