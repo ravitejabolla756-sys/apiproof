@@ -139,6 +139,18 @@ suite('PostgreSQL tenant security', () => {
     await admin.query(`INSERT INTO workspace_members VALUES ('m-a', 'w-a', 'u-a', 'owner', now()::text)`);
   });
 
+  it('rejects expired and deleted sessions before protected access', async () => {
+    await admin.query(`INSERT INTO sessions VALUES ('ses-expired', 'u-a', (now() - interval '1 minute')::text, now()::text)`);
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async () => [], 'ses-expired')).rejects.toMatchObject({ code: 'TENANT_MEMBERSHIP_REQUIRED' });
+    await admin.query(`DELETE FROM sessions WHERE id = 'ses-a'`);
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async () => [], 'ses-a')).rejects.toMatchObject({ code: 'TENANT_MEMBERSHIP_REQUIRED' });
+  });
+
+  it('does not expose session identifiers or session rows to the application role', async () => {
+    await expect(app.query('SELECT id, user_id, expires_at FROM sessions')).rejects.toBeTruthy();
+    await expect(app.query(`SELECT apiproof_security.has_session_membership('ses-b', 'u-b', 'w-b') AS allowed`)).resolves.toEqual([{ allowed: true }]);
+  });
+
   it('keeps application and migrator roles separate', async () => {
     await expect(app.execute('CREATE TABLE app_must_not_create (id text)')).rejects.toBeTruthy();
     await expect(app.execute("INSERT INTO _apiproof_migrations VALUES ('x', 'x', now()::text)")).rejects.toBeTruthy();
