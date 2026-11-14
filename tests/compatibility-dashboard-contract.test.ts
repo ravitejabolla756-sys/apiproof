@@ -6,9 +6,8 @@ const dashboardSource = fs.readFileSync(path.resolve('apps/web/src/app/dashboard
 
 describe('compatibility dashboard reviewed-rule contract', () => {
   it('renders model and resource scoped reviewed rules from the proof API shape', () => {
-    expect(dashboardSource).toContain('affectedModels: string[]');
-    expect(dashboardSource).toContain('affectedResources: string[]');
-    expect(dashboardSource).toContain('affectedResponseFields: string[]');
+    expect(dashboardSource).toContain('parseCompatibilityProofResponse');
+    expect(dashboardSource).toContain('type CompatibilityProofResponse');
     expect(dashboardSource).toContain('change.affectedModels');
     expect(dashboardSource).toContain('change.affectedResources');
     expect(dashboardSource).toContain('change.affectedResponseFields');

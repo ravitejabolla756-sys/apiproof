@@ -2,17 +2,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { POST } from '../apps/web/src/app/api/provider-rules/seed/route.js';
-import { AUTH_COOKIE_NAME, createUserWithSession } from '../apps/web/src/lib/server/auth.js';
-import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { AUTH_COOKIE_NAME, createUserWithSession as createUserWithSessionBase } from '../apps/web/src/lib/server/auth.js';
+import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-provider-review-queue-route.db');
 
 describe('provider review queue bootstrap route', () => {
-  beforeEach(() => {
+  async function createUserWithSession(email: string, password: string, name: string) {
+    const result = await createUserWithSessionBase(email, password, name);
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), result.user.id]);
+    return result;
+  }
+
+  beforeEach(async () => {
     process.env.NODE_ENV = 'test';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
     initDatabase(TEST_DB_PATH);
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
   });
 
   afterEach(() => {

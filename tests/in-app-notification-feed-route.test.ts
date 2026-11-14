@@ -30,11 +30,11 @@ describe('authenticated in-app notification feed boundary', () => {
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
 
-  it('returns the authenticated schema-unavailable contract without fabricated events', async () => {
+  it('returns the authenticated projection contract without fabricated events', async () => {
     const { session } = await createUserWithSession('notifications-feed@example.test', 'OriginalPassword123!', 'Notifications Feed');
     const response = await feedRoute(new Request('https://apiproof.test/api/account/notifications/feed', { headers: { cookie: `apiproof_session=${session.id}` } }));
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toMatchObject({ notifications: [], status: 'unavailable', code: 'IN_APP_NOTIFICATIONS_SCHEMA_PENDING' });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ notifications: [], status: 'projection', readState: 'unavailable' });
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
 });

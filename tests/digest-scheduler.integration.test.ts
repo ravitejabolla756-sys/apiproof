@@ -62,7 +62,7 @@ describe('digest scheduler integration boundary', () => {
     const now = new Date('2026-11-16T09:00:00.000Z');
     await getDatabase().execute('INSERT INTO user_notification_preferences (user_id, category, channel, enabled, updated_at) VALUES (?, ?, ?, ?, ?)', [enabled.user.id, 'weekly_digest', 'email', 1, now.toISOString()]);
     await getDatabase().execute('INSERT INTO user_notification_preferences (user_id, category, channel, enabled, updated_at) VALUES (?, ?, ?, ?, ?)', [disabled.user.id, 'weekly_digest', 'email', 0, now.toISOString()]);
-    await expect(planDueDigestDispatch(now, schedule)).resolves.toEqual([{ userId: enabled.user.id, eventKey: `digest:2026-11-16:${enabled.user.id}:email`, category: 'weekly_digest', channel: 'email' }]);
+    await expect(planDueDigestDispatch(now, schedule)).resolves.toEqual([{ userId: enabled.user.id, eventKey: `digest:2026-W47:${enabled.user.id}:email`, category: 'weekly_digest', channel: 'email' }]);
     await expect(planDueDigestDispatch(new Date('2026-11-16T09:01:00.000Z'), schedule)).resolves.toEqual([]);
   });
 
@@ -95,6 +95,14 @@ describe('digest scheduler integration boundary', () => {
         PRIMARY KEY (user_id, category, channel)
       )
     `);
+    await getDatabase().execute(`
+      CREATE TABLE email_deliveries (
+        id TEXT PRIMARY KEY, event_key TEXT NOT NULL UNIQUE, template_key TEXT NOT NULL, template_version TEXT NOT NULL,
+        recipient_user_id TEXT, workspace_id TEXT, status TEXT NOT NULL, attempt_count INTEGER NOT NULL DEFAULT 0,
+        error_category TEXT, next_attempt_at TEXT, claimed_by TEXT, lease_expires_at TEXT, created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL, delivered_at TEXT
+      )
+    `);
     const enabled = await createUserWithSession('digest-route@example.test', 'OriginalPassword123!', 'Digest Route');
     const now = new Date('2026-11-16T09:00:00.000Z');
     await getDatabase().execute('INSERT INTO user_notification_preferences (user_id, category, channel, enabled, updated_at) VALUES (?, ?, ?, ?, ?)', [enabled.user.id, 'weekly_digest', 'email', 1, now.toISOString()]);
@@ -107,6 +115,6 @@ describe('digest scheduler integration boundary', () => {
     vi.setSystemTime(now);
     const response = await digestRoute(new Request('https://apiproof.test/api/internal/notification-digest', { headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } }) as never);
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({ ok: true, planned: 1, dispatches: [{ userId: enabled.user.id, channel: 'email' }] });
+    await expect(response.json()).resolves.toMatchObject({ ok: true, queued: 1 });
   });
 });

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
-import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
+import { createUserWithSession as createUserWithSessionBase } from '../apps/web/src/lib/server/auth.js';
 import {
   getDefaultWorkspaceForUser,
   createWorkspaceForUser,
@@ -41,7 +41,13 @@ const TEST_APP_ID = '4888527';
 const TEST_INSTALLATION_ID = '160401452';
 
 describe('GitHub Installation Reassociation Hardening', () => {
-  beforeEach(() => {
+  async function createUserWithSession(email: string, password: string, name: string) {
+    const result = await createUserWithSessionBase(email, password, name);
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), result.user.id]);
+    return result;
+  }
+
+  beforeEach(async () => {
     process.env.APIPROOF_SECRET = 'reassoc-test-secret-at-least-32-chars!';
     process.env.GITHUB_APP_ID = TEST_APP_ID;
     process.env.GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY_PEM;
@@ -52,6 +58,7 @@ describe('GitHub Installation Reassociation Hardening', () => {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
     }
     initDatabase(TEST_DB_PATH);
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
 
     // Mock verifyGitHubAppInstallation to return authoritative metadata
     vi.spyOn(githubModule, 'verifyGitHubAppInstallation').mockImplementation(async (instId) => {

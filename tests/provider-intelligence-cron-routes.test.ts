@@ -41,7 +41,7 @@ describe('provider intelligence cron route contracts', () => {
     const response = await providerChangelogGet(new NextRequest('http://localhost/api/internal/provider-changelog'));
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ error: 'Unauthorized' });
+    await expect(response.json()).resolves.toEqual({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
   });
 
   it('rejects an unknown provider before attempting a source fetch', async () => {
@@ -55,7 +55,7 @@ describe('provider intelligence cron route contracts', () => {
     }));
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({ error: 'UNKNOWN_PROVIDER_SOURCE' });
+    await expect(response.json()).resolves.toEqual({ error: 'Unknown provider source.', code: 'UNKNOWN_PROVIDER_SOURCE' });
   });
 
   it('runs the nightly rescan contract with an empty queue', async () => {

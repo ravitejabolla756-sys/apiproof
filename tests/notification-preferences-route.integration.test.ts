@@ -2,19 +2,20 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { GET, PATCH } from '../apps/web/src/app/api/account/notifications/route.js';
-import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
-import { closeDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { createUserWithSession as createUserWithSessionBase } from '../apps/web/src/lib/server/auth.js';
+import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 
 const TEST_DB_PATH = path.resolve(`.tmp/test-notification-route-${process.pid}.db`);
 
 describe('notification preference route safety', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.NODE_ENV = 'test';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SECRET = 'notification-route-test-secret-32-chars';
     process.env.APIPROOF_SKIP_DEFAULT_SEED = 'true';
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
     initDatabase(TEST_DB_PATH);
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
   });
 
   afterEach(async () => {
@@ -31,7 +32,8 @@ describe('notification preference route safety', () => {
   });
 
   it('fails closed when migration 025 is not installed', async () => {
-    const account = await createUserWithSession('notifications-route@example.test', 'NotifyPassword123!', 'Notify Route');
+    const account = await createUserWithSessionBase('notifications-route@example.test', 'NotifyPassword123!', 'Notify Route');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), account.user.id]);
     const headers = { cookie: `apiproof_session=${account.session.id}` };
     const read = await GET(new Request('https://apiproof.test/api/account/notifications', { headers }));
     expect(read.status).toBe(503);
@@ -47,7 +49,8 @@ describe('notification preference route safety', () => {
   });
 
   it('rejects state changes before reaching the unavailable schema boundary when CSRF is missing', async () => {
-    const account = await createUserWithSession('notifications-csrf@example.test', 'NotifyPassword123!', 'Notify CSRF');
+    const account = await createUserWithSessionBase('notifications-csrf@example.test', 'NotifyPassword123!', 'Notify CSRF');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), account.user.id]);
     const response = await PATCH(new Request('https://apiproof.test/api/account/notifications', {
       method: 'PATCH',
       headers: { 'content-type': 'application/json', cookie: `apiproof_session=${account.session.id}`, 'sec-fetch-site': 'cross-site' },

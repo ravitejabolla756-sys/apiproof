@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { FakeGitHubWriteTransport, FakeSandbox } from '@apiproof/core';
-import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUser, createSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
@@ -22,7 +22,7 @@ const TEST_DB_PATH = path.resolve('.tmp/test-proposal-recovery.db');
 describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
   let db: DatabaseSync;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SECRET = 'test-secret-32-bytes-long-for-evidence';
     delete process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE;
@@ -31,6 +31,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
     }
     db = initDatabase(TEST_DB_PATH);
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
   });
 
   afterEach(() => {
@@ -45,6 +46,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
 
   async function setupFixture() {
     const user = createUser('recovery_tester@example.com', 'Pass12345!', 'Recovery Tester');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), user.id]);
     const ws = await getDefaultWorkspaceForUser(user.id);
     await grantTestProposalEntitlement(ws.id);
     const repoId = 'repo_recovery_fixture';
