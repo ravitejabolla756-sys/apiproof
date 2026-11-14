@@ -5,7 +5,7 @@ test('authenticated account settings loads and supports profile update', async (
   await signIn(page);
   await page.goto('/dashboard/settings/account', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Account settings' })).toBeVisible();
-  await expect(page.getByLabel('Email')).toHaveValue('developer@apiproof.dev');
+  await expect(page.getByRole('textbox', { name: 'Email' })).toHaveValue('developer@apiproof.dev');
   const name = page.getByLabel('Display name');
   const updatedName = `${await name.inputValue()} Verified`;
   await name.fill(updatedName);

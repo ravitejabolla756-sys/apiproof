@@ -1,8 +1,24 @@
 import { expect } from '@playwright/test';
+import { closeDatabase, getDatabase, initDatabase } from '../../apps/web/src/lib/server/db/index.js';
 
 export default async function globalSetup() {
   const port = Number(process.env.PLAYWRIGHT_PORT ?? '3100');
   const baseUrl = `http://127.0.0.1:${port}`;
+  const databasePath = process.env.APIPROOF_E2E_DB_PATH;
+  if (!databasePath) throw new Error('APIPROOF_E2E_DB_PATH is required for the disposable Playwright fixture.');
+
+  initDatabase(databasePath);
+  try {
+    const database = getDatabase();
+    const columns = await database.query<{ name: string }>('PRAGMA table_info(users)');
+    if (!columns.some((column) => column.name === 'email_verified_at')) {
+      await database.execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+    }
+    await database.execute('UPDATE users SET email_verified_at = ? WHERE email = ?', [new Date().toISOString(), 'developer@apiproof.dev']);
+  } finally {
+    await closeDatabase();
+  }
+
   // Compile every authenticated dashboard route used by the smoke suite before
   // browser navigation begins. This removes first-navigation compilation from
   // the timing-sensitive assertions without masking API failures.

@@ -7,7 +7,7 @@ test('settings invoice history shows the authorized provider-unavailable state',
   const invoiceSection = page.locator('section[aria-labelledby="invoice-history-heading"]');
   await expect(invoiceSection).toBeVisible();
   await expect(invoiceSection.getByRole('status')).toContainText('Invoice history is unavailable in the free beta.');
-  await expect(invoiceSection.getByRole('link')).toHaveCount(0);
+  await expect(invoiceSection.getByRole('link', { name: 'Contact support' })).toBeVisible();
   await page.keyboard.press('Tab');
   await expect(page.locator('main').first()).toBeVisible();
 });
