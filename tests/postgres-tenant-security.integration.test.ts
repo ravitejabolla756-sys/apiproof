@@ -73,6 +73,7 @@ suite('PostgreSQL tenant security', () => {
       GRANT USAGE ON SCHEMA public, apiproof_security TO ${appRole};
       GRANT SELECT, INSERT, UPDATE, DELETE ON workspaces, workspace_members, repositories, github_installations, github_scan_requests, scans, findings, migrations, pull_requests, workspace_subscriptions, workspace_usage TO ${appRole};
       GRANT EXECUTE ON FUNCTION apiproof_security.has_workspace_membership() TO ${appRole};
+      GRANT EXECUTE ON FUNCTION apiproof_security.has_explicit_membership(text, text) TO ${appRole};
       GRANT EXECUTE ON FUNCTION apiproof_security.has_repository_access(text) TO ${appRole};
       GRANT SELECT, INSERT ON _apiproof_migrations TO ${migratorRole};
     `);
@@ -83,6 +84,9 @@ suite('PostgreSQL tenant security', () => {
   afterAll(async () => {
     await app?.close();
     await migrator?.close();
+    await admin?.query(`REVOKE ALL ON SCHEMA public, apiproof_security FROM ${appRole}`);
+    await admin?.query(`DROP OWNED BY ${appRole}`);
+    await admin?.query(`DROP OWNED BY ${migratorRole}`);
     await admin?.query(`DROP SCHEMA IF EXISTS apiproof_security CASCADE`);
     await admin?.query(`DROP TABLE IF EXISTS workspace_usage, workspace_subscriptions, pull_requests, migrations, findings, scans, github_scan_requests, github_installations, repositories, workspace_members, workspaces, users, _apiproof_migrations CASCADE`);
     await admin?.query(`DROP ROLE IF EXISTS ${appRole}`);
@@ -93,6 +97,21 @@ suite('PostgreSQL tenant security', () => {
   it('allows an authorized tenant operation and denies cross-tenant reads', async () => {
     await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories WHERE id = ?', ['r-a']))).resolves.toEqual([{ id: 'r-a' }]);
     await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories WHERE id = ?', ['r-b']))).resolves.toEqual([]);
+  });
+
+  it('denies cross-tenant insert, update and delete operations', async () => {
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.execute(
+      `INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ['r-cross', 'w-b', 'u-a', 'owner', 'cross', 'owner/cross', 'gh-cross', 'main', 'connected', 'connected', 'active', new Date().toISOString()],
+    ))).rejects.toBeTruthy();
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.execute(
+      'UPDATE repositories SET name = ? WHERE id = ?', ['must-not-change', 'r-b'],
+    ))).resolves.toEqual({ changes: 0 });
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.execute(
+      'DELETE FROM repositories WHERE id = ?', ['r-b'],
+    ))).resolves.toEqual({ changes: 0 });
+    await expect(admin.query<{ name: string }>("SELECT name FROM repositories WHERE id = 'r-b'")).resolves.toEqual([{ name: 'repo-b' }]);
   });
 
   it('rejects missing membership before setting a tenant context', async () => {

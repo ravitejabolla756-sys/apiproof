@@ -23,7 +23,7 @@ The integration branch now contains a schema-grounded PostgreSQL tenant-security
   - Uses the existing tenant-context helper for workspace settings writes and organization-member reads on the PostgreSQL path.
 - `tests/postgres-tenant-security.integration.test.ts`
   - Provisions disposable users, workspaces, repositories, application/migrator roles and candidate policies.
-  - Covers authorized and cross-tenant reads, missing membership, revocation, pool/concurrent isolation, forced RLS and role separation.
+  - Covers authorized and cross-tenant reads and writes, missing membership, revocation, pool/concurrent isolation, forced RLS and role separation.
   - Keeps arbitrary custom-GUC spoof resistance as an explicit TODO because PostgreSQL custom settings are not an independent identity provider.
 - `.github/workflows/ci.yml`
   - Adds a bounded PostgreSQL 17.2 service job with ephemeral test-only credentials and health checks.
@@ -43,8 +43,9 @@ Excluded pending separate review: users, sessions, password/reset/OAuth token ta
 - PostgreSQL availability: blocked locally. Docker Desktop Linux engine is not running; `psql` is unavailable; no local PostgreSQL service was found.
 - Local focused suite: 62 passed, 6 skipped, and 3 TODO across the organization/PostgreSQL regression selection; the new real-PostgreSQL file skipped because `TEST_POSTGRES_ADMIN_URL` was absent.
 - Full local Vitest: 204 files passed, 2 skipped; 1,589 tests passed, 10 skipped, 20 TODO.
-- Hosted real PostgreSQL RLS/grant tests: prepared in CI but not yet run; no hosted result is claimed.
-- Real role-separation tests: pending hosted PostgreSQL execution.
+- Hosted real PostgreSQL RLS/grant tests: GitHub Actions run [43602293119](https://github.com/ravitejabolla756-sys/apiproof/actions/runs/43602293119) started PostgreSQL 17.2 successfully and exercised the restricted roles. It reported 4 passed, 2 failed and 1 TODO. The two failures exposed an RLS bootstrap deadlock: the runtime membership preflight queried the protected membership table before a tenant context existed. Cleanup also initially failed because the application role retained schema privileges.
+- Local follow-up fixes add an owner-run explicit membership bridge, use it before setting transaction-local context, add INSERT/UPDATE/DELETE isolation coverage, and revoke/drop role-owned privileges during cleanup. Focused local typecheck, lint and web build pass; the real PostgreSQL suite remains pending a hosted rerun.
+- Real role-separation tests: hosted run exercised role separation successfully for the completed cases; acceptance remains pending the follow-up hosted rerun and trusted-identity spoof-resistance evidence.
 - Existing production/staging databases: not accessed.
 
 SQLite or mock results must not be used as PostgreSQL acceptance evidence.

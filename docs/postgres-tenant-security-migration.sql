@@ -57,7 +57,7 @@ END $$;
 -- has a fixed search_path, and must be granted only to the reviewed app role.
 CREATE SCHEMA IF NOT EXISTS apiproof_security;
 REVOKE ALL ON SCHEMA apiproof_security FROM PUBLIC;
-CREATE OR REPLACE FUNCTION apiproof_security.has_workspace_membership()
+CREATE OR REPLACE FUNCTION apiproof_security.has_explicit_membership(p_user_id text, p_workspace_id text)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -67,8 +67,22 @@ AS $$
   SELECT EXISTS (
     SELECT 1
     FROM public.workspace_members wm
-    WHERE wm.workspace_id = current_setting('app.workspace_id', true)
-      AND wm.user_id = current_setting('app.user_id', true)
+    WHERE wm.workspace_id = p_workspace_id
+      AND wm.user_id = p_user_id
+  )
+$$;
+REVOKE ALL ON FUNCTION apiproof_security.has_explicit_membership(text, text) FROM PUBLIC;
+
+CREATE OR REPLACE FUNCTION apiproof_security.has_workspace_membership()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT apiproof_security.has_explicit_membership(
+    current_setting('app.user_id', true),
+    current_setting('app.workspace_id', true)
   )
 $$;
 REVOKE ALL ON FUNCTION apiproof_security.has_workspace_membership() FROM PUBLIC;

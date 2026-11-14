@@ -27,14 +27,25 @@ export async function withPostgresTenantContext<T>(
   return db.transaction(async (tx) => {
     if (tx.engine !== 'postgres') return operation(tx);
 
-    const membership = await tx.queryOne<{ role: string }>(
-      `SELECT role
-       FROM workspace_members
-       WHERE workspace_id = ? AND user_id = ?
-       FOR SHARE`,
-      [workspaceId, userId],
+    const bridge = await tx.queryOne<{ available: boolean }>(
+      `SELECT to_regprocedure('apiproof_security.has_explicit_membership(text,text)') IS NOT NULL AS available`,
     );
-    if (!membership) throw new PostgresTenantContextError('TENANT_MEMBERSHIP_REQUIRED');
+    if (bridge?.available) {
+      const membership = await tx.queryOne<{ allowed: boolean }>(
+        `SELECT apiproof_security.has_explicit_membership(?, ?) AS allowed`,
+        [userId, workspaceId],
+      );
+      if (!membership?.allowed) throw new PostgresTenantContextError('TENANT_MEMBERSHIP_REQUIRED');
+    } else {
+      const membership = await tx.queryOne<{ role: string }>(
+        `SELECT role
+         FROM workspace_members
+         WHERE workspace_id = ? AND user_id = ?
+         FOR SHARE`,
+        [workspaceId, userId],
+      );
+      if (!membership) throw new PostgresTenantContextError('TENANT_MEMBERSHIP_REQUIRED');
+    }
 
     await tx.execute(
       `SELECT set_config('app.user_id', ?, true),
