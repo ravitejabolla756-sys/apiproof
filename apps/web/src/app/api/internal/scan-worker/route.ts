@@ -20,6 +20,7 @@ import { classifyScanWorkerHealth } from '../../../../lib/server/scan-worker-met
 import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
 import { PRIVATE_NO_STORE_HEADERS } from '../../../../lib/server/organization-route.js';
+import { parseScanWorkerRequest } from '../../../../lib/server/scan-worker-request-contract.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -72,22 +73,19 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  let batchSize: number | undefined;
-  let timeoutMs: number | undefined;
-  let metricsOnly = false;
-  let repositoryId: string | undefined;
-
+  let options: { batchSize?: number; timeoutMs?: number; metricsOnly?: boolean; repositoryId?: string } = {};
   try {
-    const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown; repositoryId?: unknown };
-    if (typeof body.batchSize === 'number') batchSize = body.batchSize;
-    if (typeof body.timeoutMs === 'number') timeoutMs = body.timeoutMs;
-    if (typeof body.metricsOnly === 'boolean') metricsOnly = body.metricsOnly;
-    if (typeof body.repositoryId === 'string' && /^[A-Za-z0-9_.-]{1,150}$/.test(body.repositoryId)) repositoryId = body.repositoryId;
+    const parsed = parseScanWorkerRequest(await request.json());
+    if (!parsed.ok) {
+      return NextResponse.json({ ok: false, error: 'Invalid scan worker request.', code: parsed.code }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
+    }
+    options = parsed.value;
   } catch {
     // No body or invalid JSON — use defaults
   }
 
   try {
+    const { batchSize, timeoutMs, metricsOnly = false, repositoryId } = options;
     if (metricsOnly) {
       const metrics = await getScanWorkerMetrics();
       return NextResponse.json({ ok: true, health: classifyScanWorkerHealth(metrics), metrics }, { headers: PRIVATE_NO_STORE_HEADERS });
