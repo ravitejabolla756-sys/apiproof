@@ -11,9 +11,10 @@ import { billingPortalAvailability } from '../apps/web/src/lib/billing-portal-co
 const TEST_DB_PATH = path.resolve(`.tmp/test-billing-provider-selection-${process.pid}.db`);
 
 describe('BILL-02 provider-neutral billing gates', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
     initDatabase(TEST_DB_PATH);
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
   });
 
   afterEach(() => {
@@ -32,6 +33,7 @@ describe('BILL-02 provider-neutral billing gates', () => {
 
   it('keeps paid checkout blocked and portal unavailable after authentication', async () => {
     const user = await createUserAsync('bill02-owner@example.test', 'OriginalPassword123!', 'Billing Owner');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), user.id]);
     const session = createSession(user.id);
     const headers = { cookie: `apiproof_session=${session.id}` };
     const checkout = await checkoutPost(new Request('http://localhost/api/billing/checkout', { method: 'POST', headers, body: JSON.stringify({ planId: 'pro' }) }));
@@ -43,8 +45,9 @@ describe('BILL-02 provider-neutral billing gates', () => {
   });
 
   it('returns a safe authorization denial for a non-billing workspace member', async () => {
-    await createUserAsync('bill02-owner-member@example.test', 'OriginalPassword123!', 'Billing Owner');
+    const owner = await createUserAsync('bill02-owner-member@example.test', 'OriginalPassword123!', 'Billing Owner');
     const member = await createUserAsync('bill02-member@example.test', 'OriginalPassword123!', 'Billing Member');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id IN (?, ?)', [new Date().toISOString(), owner.id, member.id]);
     const memberSession = createSession(member.id);
     const workspace = await getDatabase().queryOne<{ id: string }>(
       'SELECT id FROM workspaces WHERE slug LIKE ?', [`bill02-owner-member-%`],
