@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { OrganizationServiceError } from '@/lib/server/organization-service.js';
-import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
+import { getDatabase } from '@/lib/server/db/index.js';
 import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
@@ -108,7 +108,13 @@ export async function POST(req: Request) {
 
     if (validation.data.githubRepositoryId) {
       // 1. Verify workspace has a connected GitHub installation
-      const installation = await getWorkspaceGitHubInstallation(workspaceId);
+      const installation = await withPostgresTenantContext(
+        getDatabase(),
+        user.id,
+        workspaceId,
+        (tx) => getWorkspaceGitHubInstallation(workspaceId, undefined, tx),
+        extractSessionId(req),
+      );
       if (!installation) {
         return NextResponse.json({
           error: 'Workspace does not have a connected GitHub App installation. Please connect GitHub first.',
@@ -148,41 +154,27 @@ export async function POST(req: Request) {
     const now = new Date().toISOString();
 
     const db = getDatabase();
+    const sessionId = extractSessionId(req);
 
-    // GitHub repository identity is globally unique among active records. Keep
-    // the response deliberately generic so another workspace is not disclosed.
-    const activeIdentity = await db.queryOne<{ id: string; workspace_id: string }>(`
-      SELECT id, workspace_id
-      FROM repositories
-      WHERE github_repository_id = ? AND lifecycle = 'active'
-      LIMIT 1
-    `, [ghId]);
-    if (activeIdentity) {
-      const sameWorkspace = activeIdentity.workspace_id === workspaceId;
-      return NextResponse.json(
-        {
-          error: sameWorkspace ? 'Repository is already connected.' : 'Repository is already connected to another workspace.',
-          code: 'REPOSITORY_ALREADY_CONNECTED',
-          ...(sameWorkspace ? { id: activeIdentity.id } : {}),
-        },
-        { status: 409, headers: PRIVATE_NO_STORE_HEADERS }
-      );
-    }
+    // Keep all repository identity reads and writes on the same tenant-bound
+    // transaction. The GitHub network call above intentionally remains
+    // outside this transaction.
+    const duplicate = await withPostgresTenantContext(db, user.id, workspaceId, async (tx) => {
+      const activeIdentity = await tx.queryOne<{ id: string; workspace_id: string }>(`
+        SELECT id, workspace_id
+        FROM repositories
+        WHERE github_repository_id = ? AND lifecycle = 'active'
+        LIMIT 1
+      `, [ghId]);
+      if (activeIdentity) {
+        return { kind: 'identity' as const, id: activeIdentity.id, workspaceId: activeIdentity.workspace_id };
+      }
 
-    // Check if already connected within this workspace (workspace scoped IDOR protection)
-    const existing = await db.queryOne<{ id: string }>(`
-      SELECT id FROM repositories WHERE workspace_id = ? AND full_name = ?
-    `, [workspaceId, fullName]);
+      const existing = await tx.queryOne<{ id: string }>(`
+        SELECT id FROM repositories WHERE workspace_id = ? AND full_name = ?
+      `, [workspaceId, fullName]);
+      if (existing) return { kind: 'workspace' as const, id: existing.id, workspaceId };
 
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Repository is already connected.', code: 'REPOSITORY_ALREADY_CONNECTED', id: existing.id },
-        { status: 409, headers: PRIVATE_NO_STORE_HEADERS }
-      );
-    }
-
-    // Atomic transaction for repository and activity event creation
-    await db.transaction(async (tx: DatabaseAdapter) => {
       await tx.execute(`
         INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', 'connected', 'active', ?)
@@ -198,7 +190,20 @@ export async function POST(req: Request) {
         `Connected ${fullName} (${defaultBranch}) for AST compatibility analysis.`,
         now
       ]);
-    });
+      return null;
+    }, sessionId);
+
+    if (duplicate) {
+      const sameWorkspace = duplicate.workspaceId === workspaceId;
+      return NextResponse.json(
+        {
+          error: sameWorkspace ? 'Repository is already connected.' : 'Repository is already connected to another workspace.',
+          code: 'REPOSITORY_ALREADY_CONNECTED',
+          ...(sameWorkspace ? { id: duplicate.id } : {}),
+        },
+        { status: 409, headers: PRIVATE_NO_STORE_HEADERS }
+      );
+    }
 
     return NextResponse.json({
       success: true,

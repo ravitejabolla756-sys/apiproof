@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
 import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
-import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
+import { requireRepositoryAccess, requireWorkspaceCapability } from '@/lib/server/workspace-service.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
 import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 
@@ -62,15 +62,23 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   if (verificationFailure) return verificationFailure;
 
   let repo;
+  let workspace;
   try {
     const access = await requireRepositoryAccess(id, user.id);
     repo = access.repository;
+    workspace = await requireWorkspaceCapability(user.id, repo.workspace_id, 'repository:write');
   } catch {
     return NextResponse.json({ error: 'Repository not found or access denied.', code: 'NOT_FOUND' }, { status: 404 });
   }
 
   const db = getDatabase();
-  await db.execute('DELETE FROM repositories WHERE id = ?', [repo.id]);
+  await withPostgresTenantContext(
+    db,
+    user.id,
+    workspace.id,
+    (tx) => tx.execute('DELETE FROM repositories WHERE id = ? AND workspace_id = ?', [repo.id, workspace.id]),
+    extractSessionId(req),
+  );
 
   return NextResponse.json({ success: true, id: repo.id });
 }

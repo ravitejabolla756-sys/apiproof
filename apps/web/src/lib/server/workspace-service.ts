@@ -499,9 +499,10 @@ export async function requirePullRequestAccess(
  */
 export async function getWorkspaceGitHubInstallation(
   workspaceId: string,
-  options?: { includeInactive?: boolean }
+  options?: { includeInactive?: boolean },
+  runner?: DatabaseAdapter,
 ): Promise<GitHubInstallationRecord | null> {
-  const db = getDatabase();
+  const db = runner || getDatabase();
   const filterInactive = !options?.includeInactive;
   const whereClause = filterInactive
     ? "WHERE workspace_id = ? AND (status IS NULL OR status = 'active')"
