@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
-import { getCurrentUser } from '@/lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { OrganizationServiceError } from '@/lib/server/organization-service.js';
 import { getDatabase, type DatabaseAdapter } from '@/lib/server/db/index.js';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 import { fetchWorkspaceRepository } from '@/lib/server/github.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
@@ -27,16 +28,17 @@ export async function GET(req: Request) {
   try {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
     const db = getDatabase();
-    const repos = await db.query(`
-      SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
-             r.status, r.last_scan_at, r.created_at,
-             (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count,
-             (SELECT COUNT(*) FROM scans s WHERE s.repository_id = r.id) as scans_count,
-             (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
-      FROM repositories r
-      WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
-      ORDER BY r.created_at DESC
-    `, [workspace.id]);
+    const sessionId = extractSessionId(req);
+    const repos = await withPostgresTenantContext(db, user.id, workspace.id, (tx) => tx.query(`
+        SELECT r.id, r.owner, r.name, r.full_name, r.github_repository_id, r.default_branch,
+               r.status, r.last_scan_at, r.created_at,
+               (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) as findings_count,
+               (SELECT COUNT(*) FROM scans s WHERE s.repository_id = r.id) as scans_count,
+               (SELECT sha FROM scans s WHERE s.repository_id = r.id ORDER BY s.started_at DESC LIMIT 1) as last_scan_sha
+        FROM repositories r
+        WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND r.origin = 'connected'
+        ORDER BY r.created_at DESC
+      `, [workspace.id]), sessionId);
     return NextResponse.json({ repositories: repos }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     if (error instanceof OrganizationServiceError || (error instanceof Error && error.message.includes('access denied'))) {
