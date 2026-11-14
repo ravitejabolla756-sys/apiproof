@@ -25,7 +25,7 @@ function StatusIcon({ tone }: { tone: (typeof statusItems)[number]["tone"] }) {
   return <Clock3 className="h-5 w-5 text-blue-600" aria-hidden="true" />;
 }
 
-export const StatusPage = () => (
+const StatusPage = () => (
   <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
     <LandingNavbar />
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl px-4 pb-24 pt-36 sm:px-6 lg:px-8">

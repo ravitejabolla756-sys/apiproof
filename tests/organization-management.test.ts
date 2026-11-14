@@ -198,6 +198,8 @@ describe('workspace administration', () => {
 
   it('records invitation cancellation in the same transaction as revocation', async () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), owner.user.id]);
     const workspace = await getDefaultWorkspaceForUser(owner.user.id);
     const created = await createWorkspaceInvitation(owner.user.id, workspace.id, 'cancel@example.test', 'member');
 
@@ -254,6 +256,8 @@ describe('workspace administration', () => {
     const owner = await createUserWithSession('owner@example.test', 'OwnerPassword123!', 'Owner');
     const member = await createUserWithSession('member@example.test', 'MemberPassword123!', 'Member');
     const otherOwner = await createUserWithSession('other@example.test', 'OtherPassword123!', 'Other');
+    await getDatabase().execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), owner.user.id]);
     const workspace = await getDefaultWorkspaceForUser(owner.user.id);
     const otherWorkspace = await getDefaultWorkspaceForUser(otherOwner.user.id);
     await getDatabase().execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', ['wsm_member', workspace.id, member.user.id, 'member', new Date().toISOString()]);

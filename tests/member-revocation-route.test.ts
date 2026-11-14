@@ -29,6 +29,8 @@ async function fixture() {
   await memberRevocationMigrations[0]!.up(db);
   const owner = createUser('org10-owner@example.test', 'password-123', 'Owner');
   const member = createUser('org10-member@example.test', 'password-123', 'Member');
+  await db.execute('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+  await db.execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), owner.id]);
   const ownerSession = createSession(owner.id);
   const ownerMembership = await db.queryOne<{ workspace_id: string }>('SELECT workspace_id FROM workspace_members WHERE user_id = ? LIMIT 1', [owner.id]);
   if (!ownerMembership) throw new Error('fixture owner membership missing');

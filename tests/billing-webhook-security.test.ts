@@ -17,6 +17,7 @@ function sign(rawBody: string): string {
 describe('BILL-03 billing webhook safety boundary', () => {
   beforeEach(() => {
     process.env.BILLING_WEBHOOK_SECRET = SECRET;
+    process.env.BILLING_PROVIDER = 'mock';
     process.env.APIPROOF_LOCAL_SEED_PASSWORD = 'bill03-local-test-password';
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
     initDatabase(TEST_DB_PATH);
@@ -24,6 +25,7 @@ describe('BILL-03 billing webhook safety boundary', () => {
 
   afterEach(() => {
     delete process.env.BILLING_WEBHOOK_SECRET;
+    delete process.env.BILLING_PROVIDER;
     delete process.env.APIPROOF_LOCAL_SEED_PASSWORD;
     closeDatabase();
     if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);

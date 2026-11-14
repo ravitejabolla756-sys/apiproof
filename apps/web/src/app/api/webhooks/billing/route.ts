@@ -23,14 +23,15 @@ export async function POST(req: Request) {
     }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
+    const code = err && typeof err === 'object' && 'code' in err && typeof err.code === 'string' ? err.code : '';
     if (message.includes('INVALID_BILLING_SIGNATURE')) {
       return NextResponse.json({ error: 'Invalid webhook signature', code: 'INVALID_BILLING_SIGNATURE' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
     }
     if (message.includes('BILLING_WEBHOOK_UNAVAILABLE')) {
       return NextResponse.json({ error: 'Billing webhook processing is unavailable.', code: 'BILLING_WEBHOOK_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    if (message.includes('BILLING_PROVIDER_UNAVAILABLE')) {
-      return NextResponse.json({ error: 'Billing provider is unavailable.', code: 'BILLING_PROVIDER_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+    if (message.includes('BILLING_PROVIDER_UNAVAILABLE') || code === 'BILLING_PROVIDER_UNAVAILABLE') {
+      return NextResponse.json({ error: 'Billing webhook processing is unavailable.', code: 'BILLING_WEBHOOK_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
     }
     if (message.includes('MALFORMED_BILLING_EVENT')) {
       return NextResponse.json({ error: 'Malformed billing event.', code: 'MALFORMED_BILLING_EVENT' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });

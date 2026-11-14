@@ -79,7 +79,7 @@ describe('MY OWL Slack Phase 1', () => {
 
   it('binds OAuth state to the authenticated user and consumes it exactly once', async () => {
     const { userId, workspace } = await user('oauth@example.test');
-    const url = new URL(await createSlackAuthorizationUrl(userId));
+    const url = new URL(await createSlackAuthorizationUrl(userId, workspace.id));
     expect(url.origin + url.pathname).toBe('https://slack.com/oauth/v2/authorize');
     expect(url.searchParams.get('scope')).toBe('chat:write,im:write');
     expect(url.searchParams.has('user_scope')).toBe(false);
@@ -92,7 +92,7 @@ describe('MY OWL Slack Phase 1', () => {
 
   it('completes OAuth without returning or persisting plaintext credentials', async () => {
     const { user, session } = await createUserWithSession('oauth-callback@example.test', 'Pass1234!', 'Callback User');
-    const authUrl = new URL(await createSlackAuthorizationUrl(user.id));
+    const authUrl = new URL(await createSlackAuthorizationUrl(user.id, (await getDefaultWorkspaceForUser(user.id)).id));
     const state = authUrl.searchParams.get('state')!;
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
       ok: true, access_token: 'xoxb-private-token', token_type: 'bot', scope: 'chat:write,im:write',
@@ -148,8 +148,8 @@ describe('MY OWL Slack Phase 1', () => {
   });
 
   it('rejects malformed/expired OAuth state and requires encryption configuration', async () => {
-    const { userId } = await user('oauth-expired@example.test');
-    const url = new URL(await createSlackAuthorizationUrl(userId));
+    const { userId, workspace } = await user('oauth-expired@example.test');
+    const url = new URL(await createSlackAuthorizationUrl(userId, workspace.id));
     await getDatabase().execute('UPDATE slack_oauth_states SET expires_at = ? WHERE state_hash = ?',
       [new Date(Date.now() - 1000).toISOString(), crypto.createHash('sha256').update(url.searchParams.get('state')!).digest('hex')]);
     expect(await consumeSlackOAuthState(url.searchParams.get('state')!, userId)).toBeNull();

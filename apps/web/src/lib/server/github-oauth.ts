@@ -57,7 +57,12 @@ function parseGitHubTokenResponse(value: unknown): GitHubTokenResponse {
 
 function parseGitHubUserResponse(value: unknown): GitHubUserResponse | null {
   if (!record(value) || !Number.isSafeInteger(value.id) || typeof value.login !== 'string' || value.login.length === 0 || value.login.length > 255) return null;
-  return { id: Number(value.id), login: value.login, name: value.name === null || typeof value.name === 'string' ? value.name : undefined, email: value.email === null || typeof value.email === 'string' ? value.email : undefined };
+  return {
+    id: Number(value.id),
+    login: value.login,
+    ...(value.name === null || typeof value.name === 'string' ? { name: value.name } : {}),
+    ...(value.email === null || typeof value.email === 'string' ? { email: value.email } : {}),
+  };
 }
 
 function parseGitHubEmailResponse(value: unknown): GitHubEmailResponse[] | null {
