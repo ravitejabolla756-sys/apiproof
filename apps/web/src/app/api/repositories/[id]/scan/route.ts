@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
 import { runRepositoryScan } from '@/lib/server/scan-service';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service';
@@ -73,7 +73,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   }
 
   try {
-    const result = await runRepositoryScan(repo.id, user.id);
+    const result = await runRepositoryScan(repo.id, user.id, undefined, extractSessionId(req));
     await recordWorkspaceUsage(workspaceId, 'scans');
     return NextResponse.json({ success: true, result }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {

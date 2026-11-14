@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 import { requireRepositoryAccess } from '@/lib/server/workspace-service.js';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
 
@@ -18,8 +19,14 @@ export async function GET(req: Request, props: { params: Promise<{ id: string; s
     return NextResponse.json({ error: 'Repository not found' }, { status: 404, headers });
   }
   const db = getDatabase();
-  const scan = await db.queryOne<{ id: string; repository_id: string; sha: string; status: string; raw_result: string | null }>(
-    'SELECT id, repository_id, sha, status, raw_result FROM scans WHERE id = ? AND repository_id = ?', [scanId, access.repository.id],
+  const scan = await withPostgresTenantContext(
+    db,
+    user.id,
+    access.repository.workspace_id,
+    (tx) => tx.queryOne<{ id: string; repository_id: string; sha: string; status: string; raw_result: string | null }>(
+      'SELECT id, repository_id, sha, status, raw_result FROM scans WHERE id = ? AND repository_id = ?', [scanId, access.repository.id],
+    ),
+    extractSessionId(req),
   );
   if (!scan) return NextResponse.json({ error: 'Scan not found' }, { status: 404, headers });
   const raw: unknown = (() => { try { return scan.raw_result ? JSON.parse(scan.raw_result) : null; } catch { return null; } })();

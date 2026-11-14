@@ -7,6 +7,7 @@ import {
 } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
+import { withPostgresTenantContext } from './db/postgres-tenant-context.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
@@ -55,7 +56,8 @@ function extractSourceSnippet(fileContent: string, lineNumber: number, contextLi
 export async function runRepositoryScan(
   repositoryId: string,
   userId: string,
-  customProvider?: GitHubAppSourceControlProvider
+  customProvider?: GitHubAppSourceControlProvider,
+  sessionId?: string,
 ): Promise<ScanExecutionResult> {
   // Keep the live-scan boundary inside the service so alternate callers cannot
   // bypass the route-level authorization check.
@@ -73,7 +75,7 @@ export async function runRepositoryScan(
   const now = new Date().toISOString();
 
   // 2. Insert scan record in 'running' state within transaction
-  await db.transaction(async (tx) => {
+  await withPostgresTenantContext(db, userId, repo.workspace_id, async (tx) => {
     await tx.execute(`
       INSERT INTO scans (id, repository_id, sha, status, provider, started_at)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -91,7 +93,7 @@ export async function runRepositoryScan(
       `AST compatibility scan started for ${repo.full_name}.`,
       now
     ]);
-  });
+  }, sessionId);
 
   try {
     let filesMap = new Map<string, string>();
@@ -245,7 +247,7 @@ export async function runRepositoryScan(
     const observedProviderIds = productization
       ? [...productization.discoveries.map((item) => item.providerId), ...productization.usageIR.map((item) => item.providerId)]
       : [...providersToAnalyze.map((provider) => provider.id), ...collectedFindings.map((finding) => finding.provider)];
-    await db.transaction(async (tx) => {
+    await withPostgresTenantContext(db, userId, repo.workspace_id, async (tx) => {
       const activeFindingIds: string[] = [];
 
       for (const f of collectedFindings) {
@@ -354,7 +356,7 @@ export async function runRepositoryScan(
         new Date().toISOString()
       ]);
       await enqueueNewFindingNotifications(newlyCreatedFindingIds, tx);
-    });
+    }, sessionId);
 
     return {
       scanId,
