@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
+import { withPostgresTenantContext } from './db/postgres-tenant-context.js';
 import { revokeWorkspaceMember } from './member-revocation.js';
 import { requireWorkspaceMember, requireWorkspaceOwner, type WorkspaceRole, type WorkspaceWithRole } from './workspace-service.js';
 
@@ -172,7 +173,7 @@ export async function updateWorkspaceSettings(userId: string, workspaceId: strin
 
   const db = getDatabase();
   try {
-    await db.transaction(async (tx) => {
+    await withPostgresTenantContext(db, userId, workspaceId, async (tx) => {
       await requireWorkspaceOwnerInTransaction(tx, userId, workspaceId);
       await tx.execute('UPDATE workspaces SET name = ?, slug = ?, updated_at = ? WHERE id = ?', [cleanName, cleanSlug, new Date().toISOString(), workspaceId]);
       await recordAudit(tx, workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { name: cleanName, slug: cleanSlug });
@@ -186,12 +187,12 @@ export async function updateWorkspaceSettings(userId: string, workspaceId: strin
 
 export async function listOrganizationMembers(userId: string, workspaceId: string): Promise<OrganizationMember[]> {
   await requireWorkspaceMember(userId, workspaceId);
-  const rows = await getDatabase().query<{ id: string; user_id: string; email: string; name: string; role: WorkspaceRole; created_at: string }>(
-    `SELECT wm.id, wm.user_id, u.email, u.name, wm.role, wm.created_at
-     FROM workspace_members wm JOIN users u ON u.id = wm.user_id
-     WHERE wm.workspace_id = ? ORDER BY CASE wm.role WHEN 'owner' THEN 0 ELSE 1 END, u.name ASC`,
-    [workspaceId],
-  );
+  const rows = await withPostgresTenantContext(getDatabase(), userId, workspaceId, (tx) => tx.query<{ id: string; user_id: string; email: string; name: string; role: WorkspaceRole; created_at: string }>(
+      `SELECT wm.id, wm.user_id, u.email, u.name, wm.role, wm.created_at
+       FROM workspace_members wm JOIN users u ON u.id = wm.user_id
+       WHERE wm.workspace_id = ? ORDER BY CASE wm.role WHEN 'owner' THEN 0 ELSE 1 END, u.name ASC`,
+      [workspaceId],
+    ));
   return rows.map(mapMember);
 }
 

@@ -73,6 +73,28 @@ AS $$
 $$;
 REVOKE ALL ON FUNCTION apiproof_security.has_workspace_membership() FROM PUBLIC;
 
+-- Indirect repository-owned tables use this owner-run helper rather than
+-- querying workspace_members from inside a policy. Direct policy subqueries
+-- against another RLS-protected table can recurse and fail closed even for a
+-- legitimate member.
+CREATE OR REPLACE FUNCTION apiproof_security.has_repository_access(p_repository_id text)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.repositories r
+    JOIN public.workspace_members wm ON wm.workspace_id = r.workspace_id
+    WHERE r.id = p_repository_id
+      AND r.workspace_id = current_setting('app.workspace_id', true)
+      AND wm.user_id = current_setting('app.user_id', true)
+  )
+$$;
+REVOKE ALL ON FUNCTION apiproof_security.has_repository_access(text) FROM PUBLIC;
+
 -- Membership is the source of workspace authorization. These policies use the
 -- transaction-local context established by the server-side adapter helper.
 DO $$
@@ -140,20 +162,8 @@ BEGIN
       EXECUTE format($policy$
         CREATE POLICY apiproof_%1$I_member ON public.%1$I
         FOR ALL
-        USING (EXISTS (
-          SELECT 1
-          FROM public.repositories r
-          JOIN public.workspace_members wm ON wm.workspace_id = r.workspace_id
-          WHERE r.id = %1$I.repository_id
-            AND r.workspace_id = current_setting('app.workspace_id', true)
-            AND wm.user_id = current_setting('app.user_id', true)
-        ))
-        WITH CHECK (EXISTS (
-          SELECT 1
-          FROM public.repositories r
-          WHERE r.id = %1$I.repository_id
-            AND r.workspace_id = current_setting('app.workspace_id', true)
-        ))
+        USING (apiproof_security.has_repository_access(%1$I.repository_id))
+        WITH CHECK (apiproof_security.has_repository_access(%1$I.repository_id))
       $policy$, table_name);
     END IF;
   END LOOP;

@@ -23,7 +23,7 @@ Safe procedure:
 4. Only after the owner approves the tenant-context contract, add a new forward-only RLS/grants migration with a unique identity.
 5. Run role-isolation and concurrency tests against the disposable destination, then obtain review approval.
 
-Current result: **BLOCKED**. This host has no `psql` or PostgreSQL service, no database connection variables, and Docker Desktop's Linux engine is stopped. The schema-grounded tenant objects are `workspace_members`, `github_installations`, `github_scan_requests`, `repositories`, `scans`, `findings`, `migrations`, `pull_requests`, `workspace_subscriptions`, `workspace_usage`, `billing_webhook_events`, and the organization/revocation/notification extension tables. The source still does not establish the policy/context/role contract required for a safe RLS migration. No PostgreSQL test result is claimed.
+Current result: **HOSTED_TEST_READY / LOCAL_BLOCKED**. This host has no `psql` or PostgreSQL service, and Docker Desktop's Linux engine is stopped. The focused suite therefore reports 1 skipped file, 6 skipped tests, and 1 explicit TODO locally. `.github/workflows/ci.yml` now provisions an ephemeral PostgreSQL 17.2 service with test-only credentials and runs the suite under a 15-minute timeout. A hosted run is still required before any PostgreSQL acceptance claim. The schema-grounded tenant objects are `workspace_members`, `github_installations`, `github_scan_requests`, `repositories`, `scans`, `findings`, `migrations`, `pull_requests`, `workspace_subscriptions`, `workspace_usage`, `billing_webhook_events`, and the organization/revocation/notification extension tables.
 
 ## Migration reconciliation 024–027
 

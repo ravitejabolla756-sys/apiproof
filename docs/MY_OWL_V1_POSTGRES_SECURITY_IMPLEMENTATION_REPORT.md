@@ -17,7 +17,16 @@ The integration branch now contains a schema-grounded PostgreSQL tenant-security
   - Enables and forces RLS for established tenant tables.
   - Adds explicit membership-based policies for direct and repository-indirect ownership.
   - Revokes ambient `PUBLIC` table access.
+  - Uses a fixed-search-path `SECURITY DEFINER` repository-access helper to avoid recursive RLS policy joins.
   - Is not registered or executed.
+- `apps/web/src/lib/server/organization-service.ts`
+  - Uses the existing tenant-context helper for workspace settings writes and organization-member reads on the PostgreSQL path.
+- `tests/postgres-tenant-security.integration.test.ts`
+  - Provisions disposable users, workspaces, repositories, application/migrator roles and candidate policies.
+  - Covers authorized and cross-tenant reads, missing membership, revocation, pool/concurrent isolation, forced RLS and role separation.
+  - Keeps arbitrary custom-GUC spoof resistance as an explicit TODO because PostgreSQL custom settings are not an independent identity provider.
+- `.github/workflows/ci.yml`
+  - Adds a bounded PostgreSQL 17.2 service job with ephemeral test-only credentials and health checks.
 - `tests/postgres-tenant-context.test.ts`
   - Covers invalid context, missing membership, successful context boundary and SQLite compatibility.
 
@@ -31,10 +40,11 @@ Excluded pending separate review: users, sessions, password/reset/OAuth token ta
 
 ## Verification status
 
-- PostgreSQL availability: blocked. Docker Desktop Linux engine is not running; `psql` is unavailable; no local PostgreSQL service was found.
-- Real PostgreSQL RLS/grant tests: not run.
-- Real role-separation tests: not run.
-- Local tenant-context contract tests: pending execution.
+- PostgreSQL availability: blocked locally. Docker Desktop Linux engine is not running; `psql` is unavailable; no local PostgreSQL service was found.
+- Local focused suite: 62 passed, 6 skipped, and 3 TODO across the organization/PostgreSQL regression selection; the new real-PostgreSQL file skipped because `TEST_POSTGRES_ADMIN_URL` was absent.
+- Full local Vitest: 204 files passed, 2 skipped; 1,589 tests passed, 10 skipped, 20 TODO.
+- Hosted real PostgreSQL RLS/grant tests: prepared in CI but not yet run; no hosted result is claimed.
+- Real role-separation tests: pending hosted PostgreSQL execution.
 - Existing production/staging databases: not accessed.
 
 SQLite or mock results must not be used as PostgreSQL acceptance evidence.
