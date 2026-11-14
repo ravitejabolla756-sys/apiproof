@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { formatCanonicalMigrationBranch } from '@apiproof/core';
-import { getCurrentUser } from '@/lib/server/auth';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 import { getMigrationLifecycleState, hasExecutionVerifiedMigrationEvidence } from '@/lib/server/migration-lifecycle.js';
 import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
   let migrations: unknown[];
   try {
     const db = getDatabase();
-    migrations = await db.query(`
+    migrations = await withPostgresTenantContext(db, user.id, workspace.id, (tx) => tx.query(`
       SELECT m.id, m.finding_id, m.repository_id, m.plan_id, m.status, m.patch_diff, m.patch_digest, m.verification_report, m.created_at,
              f.title as finding_title, f.symbol, f.file_path, f.line_number, f.change_id,
              r.name as repo_name, r.full_name as repo_full_name,
@@ -33,7 +34,7 @@ export async function GET(req: Request) {
       JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
       WHERE wm.user_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'
       ORDER BY m.created_at DESC
-    `, [user.id, workspace.id]);
+    `, [user.id, workspace.id]), extractSessionId(req));
   } catch {
     return NextResponse.json(
       { error: 'Migration review records are temporarily unavailable.' },
