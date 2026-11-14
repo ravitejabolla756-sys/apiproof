@@ -1,7 +1,7 @@
 import type { DatabaseAdapter } from './types.js';
 
 export class PostgresTenantContextError extends Error {
-  constructor(public readonly code: 'TENANT_CONTEXT_INVALID' | 'TENANT_MEMBERSHIP_REQUIRED') {
+  constructor(public readonly code: 'TENANT_CONTEXT_INVALID' | 'TENANT_SESSION_REQUIRED' | 'TENANT_MEMBERSHIP_REQUIRED') {
     super(code);
     this.name = 'PostgresTenantContextError';
   }
@@ -19,6 +19,7 @@ export async function withPostgresTenantContext<T>(
   userId: string,
   workspaceId: string,
   operation: (tx: DatabaseAdapter) => Promise<T>,
+  sessionId?: string,
 ): Promise<T> {
   if (!userId.trim() || !workspaceId.trim()) {
     throw new PostgresTenantContextError('TENANT_CONTEXT_INVALID');
@@ -30,7 +31,17 @@ export async function withPostgresTenantContext<T>(
     const bridge = await tx.queryOne<{ available: boolean }>(
       `SELECT to_regprocedure('apiproof_security.has_explicit_membership(text,text)') IS NOT NULL AS available`,
     );
-    if (bridge?.available) {
+    const sessionBridge = await tx.queryOne<{ available: boolean }>(
+      `SELECT to_regprocedure('apiproof_security.has_session_membership(text,text,text)') IS NOT NULL AS available`,
+    );
+    if (sessionBridge?.available) {
+      if (!sessionId?.trim()) throw new PostgresTenantContextError('TENANT_SESSION_REQUIRED');
+      const membership = await tx.queryOne<{ allowed: boolean }>(
+        `SELECT apiproof_security.has_session_membership(?, ?, ?) AS allowed`,
+        [sessionId, userId, workspaceId],
+      );
+      if (!membership?.allowed) throw new PostgresTenantContextError('TENANT_MEMBERSHIP_REQUIRED');
+    } else if (bridge?.available) {
       const membership = await tx.queryOne<{ allowed: boolean }>(
         `SELECT apiproof_security.has_explicit_membership(?, ?) AS allowed`,
         [userId, workspaceId],
@@ -49,8 +60,9 @@ export async function withPostgresTenantContext<T>(
 
     await tx.execute(
       `SELECT set_config('app.user_id', ?, true),
-              set_config('app.workspace_id', ?, true)`,
-      [userId, workspaceId],
+              set_config('app.workspace_id', ?, true),
+              set_config('app.session_id', ?, true)`,
+      [userId, workspaceId, sessionId ?? ''],
     );
 
     return operation(tx);

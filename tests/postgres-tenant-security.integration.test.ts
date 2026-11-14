@@ -21,6 +21,7 @@ const appConnectionString = (base: string, role: string, password: string): stri
 
 const fixtureSchema = `
 CREATE TABLE users (id text PRIMARY KEY, email text UNIQUE NOT NULL, password_hash text NOT NULL, name text NOT NULL, created_at text NOT NULL);
+CREATE TABLE sessions (id text PRIMARY KEY, user_id text NOT NULL REFERENCES users(id), expires_at text NOT NULL, created_at text NOT NULL);
 CREATE TABLE workspaces (id text PRIMARY KEY, name text NOT NULL, slug text UNIQUE NOT NULL, created_at text NOT NULL, updated_at text NOT NULL);
 CREATE TABLE workspace_members (id text PRIMARY KEY, workspace_id text NOT NULL REFERENCES workspaces(id), user_id text NOT NULL REFERENCES users(id), role text NOT NULL, created_at text NOT NULL, UNIQUE(workspace_id, user_id));
 CREATE TABLE repositories (id text PRIMARY KEY, workspace_id text NOT NULL REFERENCES workspaces(id), user_id text REFERENCES users(id), owner text NOT NULL, name text NOT NULL, full_name text NOT NULL, github_repository_id text NOT NULL, default_branch text NOT NULL, status text NOT NULL, origin text NOT NULL, lifecycle text NOT NULL, created_at text NOT NULL);
@@ -40,6 +41,9 @@ const seed = async (client: PostgresDatabaseAdapter): Promise<void> => {
     INSERT INTO users VALUES
       ('u-a', 'a@example.test', 'hash', 'A', now()::text),
       ('u-b', 'b@example.test', 'hash', 'B', now()::text);
+    INSERT INTO sessions VALUES
+      ('ses-a', 'u-a', (now() + interval '1 hour')::text, now()::text),
+      ('ses-b', 'u-b', (now() + interval '1 hour')::text, now()::text);
     INSERT INTO workspaces VALUES
       ('w-a', 'A', 'workspace-a', now()::text, now()::text),
       ('w-b', 'B', 'workspace-b', now()::text, now()::text);
@@ -60,7 +64,7 @@ suite('PostgreSQL tenant security', () => {
   beforeAll(async () => {
     admin = new PostgresDatabaseAdapter(adminUrl ?? '');
     await admin.query(`DROP SCHEMA IF EXISTS apiproof_security CASCADE`);
-    await admin.query(`DROP TABLE IF EXISTS workspace_usage, workspace_subscriptions, pull_requests, migrations, findings, scans, github_scan_requests, github_installations, repositories, workspace_members, workspaces, users, _apiproof_migrations CASCADE`);
+    await admin.query(`DROP TABLE IF EXISTS workspace_usage, workspace_subscriptions, pull_requests, migrations, findings, scans, github_scan_requests, github_installations, repositories, workspace_members, sessions, workspaces, users, _apiproof_migrations CASCADE`);
     await admin.query(`DROP ROLE IF EXISTS ${appRole}`);
     await admin.query(`DROP ROLE IF EXISTS ${migratorRole}`);
     await admin.query(`CREATE ROLE ${appRole} LOGIN PASSWORD '${appPassword}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS`);
@@ -74,6 +78,7 @@ suite('PostgreSQL tenant security', () => {
       GRANT SELECT, INSERT, UPDATE, DELETE ON workspaces, workspace_members, repositories, github_installations, github_scan_requests, scans, findings, migrations, pull_requests, workspace_subscriptions, workspace_usage TO ${appRole};
       GRANT EXECUTE ON FUNCTION apiproof_security.has_workspace_membership() TO ${appRole};
       GRANT EXECUTE ON FUNCTION apiproof_security.has_explicit_membership(text, text) TO ${appRole};
+      GRANT EXECUTE ON FUNCTION apiproof_security.has_session_membership(text, text, text) TO ${appRole};
       GRANT EXECUTE ON FUNCTION apiproof_security.has_repository_access(text) TO ${appRole};
       GRANT SELECT, INSERT ON _apiproof_migrations TO ${migratorRole};
     `);
@@ -88,15 +93,15 @@ suite('PostgreSQL tenant security', () => {
     await admin?.query(`DROP OWNED BY ${appRole}`);
     await admin?.query(`DROP OWNED BY ${migratorRole}`);
     await admin?.query(`DROP SCHEMA IF EXISTS apiproof_security CASCADE`);
-    await admin?.query(`DROP TABLE IF EXISTS workspace_usage, workspace_subscriptions, pull_requests, migrations, findings, scans, github_scan_requests, github_installations, repositories, workspace_members, workspaces, users, _apiproof_migrations CASCADE`);
+    await admin?.query(`DROP TABLE IF EXISTS workspace_usage, workspace_subscriptions, pull_requests, migrations, findings, scans, github_scan_requests, github_installations, repositories, workspace_members, sessions, workspaces, users, _apiproof_migrations CASCADE`);
     await admin?.query(`DROP ROLE IF EXISTS ${appRole}`);
     await admin?.query(`DROP ROLE IF EXISTS ${migratorRole}`);
     await admin?.close();
   });
 
   it('allows an authorized tenant operation and denies cross-tenant reads', async () => {
-    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories WHERE id = ?', ['r-a']))).resolves.toEqual([{ id: 'r-a' }]);
-    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories WHERE id = ?', ['r-b']))).resolves.toEqual([]);
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories WHERE id = ?', ['r-a']), 'ses-a')).resolves.toEqual([{ id: 'r-a' }]);
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories WHERE id = ?', ['r-b']), 'ses-a')).resolves.toEqual([]);
   });
 
   it('denies cross-tenant insert, update and delete operations', async () => {
@@ -104,25 +109,25 @@ suite('PostgreSQL tenant security', () => {
       `INSERT INTO repositories (id, workspace_id, user_id, owner, name, full_name, github_repository_id, default_branch, status, origin, lifecycle, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ['r-cross', 'w-b', 'u-a', 'owner', 'cross', 'owner/cross', 'gh-cross', 'main', 'connected', 'connected', 'active', new Date().toISOString()],
-    ))).rejects.toBeTruthy();
+    ), 'ses-a')).rejects.toBeTruthy();
     await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.execute(
       'UPDATE repositories SET name = ? WHERE id = ?', ['must-not-change', 'r-b'],
-    ))).resolves.toEqual({ changes: 0 });
+    ), 'ses-a')).resolves.toEqual({ changes: 0 });
     await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.execute(
       'DELETE FROM repositories WHERE id = ?', ['r-b'],
-    ))).resolves.toEqual({ changes: 0 });
+    ), 'ses-a')).resolves.toEqual({ changes: 0 });
     await expect(admin.query<{ name: string }>("SELECT name FROM repositories WHERE id = 'r-b'")).resolves.toEqual([{ name: 'repo-b' }]);
   });
 
   it('rejects missing membership before setting a tenant context', async () => {
-    await expect(withPostgresTenantContext(app, 'u-a', 'w-b', async () => [])).rejects.toMatchObject({ code: 'TENANT_MEMBERSHIP_REQUIRED' });
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-b', async () => [], 'ses-a')).rejects.toMatchObject({ code: 'TENANT_MEMBERSHIP_REQUIRED' });
     await expect(app.query('SELECT id FROM repositories')).resolves.toEqual([]);
   });
 
   it('preserves isolation across pooled and concurrent transactions', async () => {
     const results = await Promise.all([
-      withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories ORDER BY id')),
-      withPostgresTenantContext(app, 'u-b', 'w-b', async (tx) => tx.query('SELECT id FROM repositories ORDER BY id')),
+      withPostgresTenantContext(app, 'u-a', 'w-a', async (tx) => tx.query('SELECT id FROM repositories ORDER BY id'), 'ses-a'),
+      withPostgresTenantContext(app, 'u-b', 'w-b', async (tx) => tx.query('SELECT id FROM repositories ORDER BY id'), 'ses-b'),
     ]);
     expect(results).toEqual([[{ id: 'r-a' }], [{ id: 'r-b' }]]);
     await expect(app.query('SELECT id FROM repositories ORDER BY id')).resolves.toEqual([]);
@@ -130,7 +135,7 @@ suite('PostgreSQL tenant security', () => {
 
   it('enforces workspace membership revocation on the next transaction', async () => {
     await admin.query(`DELETE FROM workspace_members WHERE workspace_id = 'w-a' AND user_id = 'u-a'`);
-    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async () => [])).rejects.toMatchObject({ code: 'TENANT_MEMBERSHIP_REQUIRED' });
+    await expect(withPostgresTenantContext(app, 'u-a', 'w-a', async () => [], 'ses-a')).rejects.toMatchObject({ code: 'TENANT_MEMBERSHIP_REQUIRED' });
     await admin.query(`INSERT INTO workspace_members VALUES ('m-a', 'w-a', 'u-a', 'owner', now()::text)`);
   });
 
@@ -147,5 +152,14 @@ suite('PostgreSQL tenant security', () => {
     expect(rows.every((row) => row.relforcerowsecurity)).toBe(true);
   });
 
-  it.todo('prevent arbitrary app-role SET_CONFIG tenant spoofing; a trusted identity bridge is still required beyond custom GUCs');
+  it('denies arbitrary app-role GUC spoofing and binds access to the verified session', async () => {
+    await expect(app.transaction(async (tx) => {
+      await tx.execute(`SELECT set_config('app.session_id', 'not-a-session', true), set_config('app.user_id', 'u-b', true), set_config('app.workspace_id', 'w-b', true)`);
+      return tx.query('SELECT id FROM repositories ORDER BY id');
+    })).resolves.toEqual([]);
+    await expect(app.transaction(async (tx) => {
+      await tx.execute(`SELECT set_config('app.session_id', 'ses-a', true), set_config('app.user_id', 'u-b', true), set_config('app.workspace_id', 'w-b', true)`);
+      return tx.query('SELECT id FROM repositories ORDER BY id');
+    })).resolves.toEqual([]);
+  });
 });

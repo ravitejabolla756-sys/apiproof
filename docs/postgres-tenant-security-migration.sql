@@ -9,8 +9,8 @@
 --   1. The schema has been migrated through the reviewed baseline.
 --   2. The application role cannot SET ROLE to the migration role.
 --   3. The application role is not a table owner and has no BYPASSRLS.
---   4. The application sets app.user_id/app.workspace_id only after server-side
---      authentication and membership authorization, in the same transaction.
+--   4. The application sets app.session_id/app.user_id/app.workspace_id only
+--      after server-side session authentication, in the same transaction.
 --   5. The owner has reviewed the role names and grants in this file.
 
 BEGIN;
@@ -73,6 +73,27 @@ AS $$
 $$;
 REVOKE ALL ON FUNCTION apiproof_security.has_explicit_membership(text, text) FROM PUBLIC;
 
+-- The opaque session identifier is issued by the application and verified
+-- against the current session row, expiry and membership under the function
+-- owner. Raw user/workspace GUCs are not an identity provider.
+CREATE OR REPLACE FUNCTION apiproof_security.has_session_membership(p_session_id text, p_user_id text, p_workspace_id text)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.sessions s
+    JOIN public.workspace_members wm ON wm.workspace_id = p_workspace_id AND wm.user_id = s.user_id
+    WHERE s.id = p_session_id
+      AND s.user_id = p_user_id
+      AND s.expires_at::timestamptz > CURRENT_TIMESTAMP
+  )
+$$;
+REVOKE ALL ON FUNCTION apiproof_security.has_session_membership(text, text, text) FROM PUBLIC;
+
 CREATE OR REPLACE FUNCTION apiproof_security.has_workspace_membership()
 RETURNS boolean
 LANGUAGE sql
@@ -80,7 +101,8 @@ STABLE
 SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
-  SELECT apiproof_security.has_explicit_membership(
+  SELECT apiproof_security.has_session_membership(
+    current_setting('app.session_id', true),
     current_setting('app.user_id', true),
     current_setting('app.workspace_id', true)
   )
@@ -101,10 +123,9 @@ AS $$
   SELECT EXISTS (
     SELECT 1
     FROM public.repositories r
-    JOIN public.workspace_members wm ON wm.workspace_id = r.workspace_id
     WHERE r.id = p_repository_id
       AND r.workspace_id = current_setting('app.workspace_id', true)
-      AND wm.user_id = current_setting('app.user_id', true)
+      AND apiproof_security.has_workspace_membership()
   )
 $$;
 REVOKE ALL ON FUNCTION apiproof_security.has_repository_access(text) FROM PUBLIC;
@@ -119,7 +140,8 @@ BEGIN
       FOR ALL
       USING (id = current_setting('app.workspace_id', true)
              AND apiproof_security.has_workspace_membership())
-      WITH CHECK (id = current_setting('app.workspace_id', true))
+      WITH CHECK (id = current_setting('app.workspace_id', true)
+                  AND apiproof_security.has_workspace_membership())
     $policy$;
   END IF;
 
@@ -129,7 +151,8 @@ BEGIN
       FOR ALL
       USING (workspace_id = current_setting('app.workspace_id', true)
              AND apiproof_security.has_workspace_membership())
-      WITH CHECK (workspace_id = current_setting('app.workspace_id', true))
+      WITH CHECK (workspace_id = current_setting('app.workspace_id', true)
+                  AND apiproof_security.has_workspace_membership())
     $policy$;
   END IF;
 END $$;
@@ -149,7 +172,8 @@ BEGIN
         FOR ALL
         USING (workspace_id = current_setting('app.workspace_id', true)
                AND apiproof_security.has_workspace_membership())
-        WITH CHECK (workspace_id = current_setting('app.workspace_id', true))
+        WITH CHECK (workspace_id = current_setting('app.workspace_id', true)
+                    AND apiproof_security.has_workspace_membership())
       $policy$, table_name);
     END IF;
   END LOOP;
@@ -167,7 +191,8 @@ BEGIN
       FOR ALL
       USING (workspace_id = current_setting('app.workspace_id', true)
              AND apiproof_security.has_workspace_membership())
-      WITH CHECK (workspace_id = current_setting('app.workspace_id', true))
+      WITH CHECK (workspace_id = current_setting('app.workspace_id', true)
+                  AND apiproof_security.has_workspace_membership())
     $policy$;
   END IF;
 

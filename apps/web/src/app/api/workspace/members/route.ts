@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { revokeWorkspaceMember } from '@/lib/server/member-revocation.js';
 import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest, organizationErrorResponse } from '@/lib/server/organization-route.js';
 import { listOrganizationMembers, updateMemberRole } from '@/lib/server/organization-service.js';
@@ -18,7 +18,7 @@ export async function GET(request: Request): Promise<Response> {
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   try {
     const workspace = await resolveWorkspaceForRequest(request, user.id);
-    return NextResponse.json({ workspace, members: await listOrganizationMembers(user.id, workspace.id) }, { headers: PRIVATE_NO_STORE_HEADERS });
+    return NextResponse.json({ workspace, members: await listOrganizationMembers(user.id, workspace.id, extractSessionId(request)) }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     return organizationErrorResponse(error);
   }

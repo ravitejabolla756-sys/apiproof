@@ -164,7 +164,7 @@ async function requireWorkspaceOwnerInTransaction(tx: DatabaseAdapter, userId: s
   if (!row) throw new Error('Workspace not found or access denied.');
 }
 
-export async function updateWorkspaceSettings(userId: string, workspaceId: string, name: string, slug: string): Promise<WorkspaceWithRole> {
+export async function updateWorkspaceSettings(userId: string, workspaceId: string, name: string, slug: string, sessionId?: string): Promise<WorkspaceWithRole> {
   await requireWorkspaceOwner(userId, workspaceId);
   const cleanName = name.trim();
   const cleanSlug = slug.trim().toLowerCase();
@@ -177,7 +177,7 @@ export async function updateWorkspaceSettings(userId: string, workspaceId: strin
       await requireWorkspaceOwnerInTransaction(tx, userId, workspaceId);
       await tx.execute('UPDATE workspaces SET name = ?, slug = ?, updated_at = ? WHERE id = ?', [cleanName, cleanSlug, new Date().toISOString(), workspaceId]);
       await recordAudit(tx, workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { name: cleanName, slug: cleanSlug });
-    });
+    }, sessionId);
   } catch (error) {
     if (String(error).toLowerCase().includes('unique')) throw new OrganizationServiceError('That workspace slug is already in use.', 'INVALID_WORKSPACE_SLUG');
     throw error;
@@ -185,14 +185,14 @@ export async function updateWorkspaceSettings(userId: string, workspaceId: strin
   return requireWorkspaceMember(userId, workspaceId);
 }
 
-export async function listOrganizationMembers(userId: string, workspaceId: string): Promise<OrganizationMember[]> {
+export async function listOrganizationMembers(userId: string, workspaceId: string, sessionId?: string): Promise<OrganizationMember[]> {
   await requireWorkspaceMember(userId, workspaceId);
   const rows = await withPostgresTenantContext(getDatabase(), userId, workspaceId, (tx) => tx.query<{ id: string; user_id: string; email: string; name: string; role: WorkspaceRole; created_at: string }>(
       `SELECT wm.id, wm.user_id, u.email, u.name, wm.role, wm.created_at
        FROM workspace_members wm JOIN users u ON u.id = wm.user_id
        WHERE wm.workspace_id = ? ORDER BY CASE wm.role WHEN 'owner' THEN 0 ELSE 1 END, u.name ASC`,
       [workspaceId],
-    ));
+    ), sessionId);
   return rows.map(mapMember);
 }
 

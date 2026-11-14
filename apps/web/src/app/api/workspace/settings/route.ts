@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest, organizationErrorResponse } from '@/lib/server/organization-route.js';
 import { updateWorkspaceSettings } from '@/lib/server/organization-service.js';
 import { assertCsrfProtection, badRequestResponse, forbiddenCsrfResponse } from '@/lib/server/validation.js';
@@ -26,7 +26,7 @@ export async function PATCH(req: Request) {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
     const body = await req.json() as { name?: unknown; slug?: unknown };
     if (typeof body.name !== 'string' || typeof body.slug !== 'string') return badRequestResponse('Workspace name and slug are required.');
-    return NextResponse.json({ workspace: await updateWorkspaceSettings(user.id, workspace.id, body.name, body.slug) }, { headers: PRIVATE_NO_STORE_HEADERS });
+    return NextResponse.json({ workspace: await updateWorkspaceSettings(user.id, workspace.id, body.name, body.slug, extractSessionId(req)) }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     if (error instanceof SyntaxError) return badRequestResponse('Request body must be valid JSON.');
     return organizationErrorResponse(error);
