@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
 import { resolveFindingCapability } from '@/lib/server/finding-capability.js';
 import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
@@ -67,7 +68,13 @@ export async function GET(req: Request) {
   let findings: Record<string, unknown>[];
   try {
     const db = getDatabase();
-    findings = await db.query<Record<string, unknown>>(query, params);
+    findings = await withPostgresTenantContext(
+      db,
+      user.id,
+      workspace.id,
+      (tx) => tx.query<Record<string, unknown>>(query, params),
+      extractSessionId(req),
+    );
   } catch {
     return NextResponse.json(
       { error: 'Findings are temporarily unavailable.' },
