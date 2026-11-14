@@ -1,7 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 
+let signInSequence = 0;
+
 export async function signIn(page: Page) {
-  await page.setExtraHTTPHeaders({ 'x-forwarded-for': '198.51.100.10' });
+  const forwardedIp = `198.51.100.${(signInSequence++ % 250) + 1}`;
+  await page.setExtraHTTPHeaders({ 'x-forwarded-for': forwardedIp });
   await page.goto('/login');
   await page.getByLabel('Email').fill('developer@apiproof.dev');
   await page.getByLabel('Password').fill(process.env.APIPROOF_LOCAL_SEED_PASSWORD ?? 'local-test-seed-password');
