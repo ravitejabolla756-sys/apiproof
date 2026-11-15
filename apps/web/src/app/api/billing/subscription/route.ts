@@ -5,6 +5,9 @@ import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceFo
 import { OrganizationServiceError } from '@/lib/server/organization-service.js';
 import { getWorkspaceUsageSummary } from '@/lib/server/billing/service';
 import { PLANS } from '@/lib/server/billing/plans';
+import { extractSessionId } from '@/lib/server/auth';
+import { getDatabase } from '@/lib/server/db/index.js';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -15,7 +18,13 @@ export async function GET(req: Request) {
   try {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
     await requireWorkspaceCapability(user.id, workspace.id, 'billing:manage');
-    const summary = await getWorkspaceUsageSummary(workspace.id);
+    const summary = await withPostgresTenantContext(
+      getDatabase(),
+      user.id,
+      workspace.id,
+      (tx) => getWorkspaceUsageSummary(workspace.id, tx),
+      extractSessionId(req),
+    );
     return NextResponse.json({
       subscription: summary.subscription,
       plan: summary.plan,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth.js';
 import { enqueueMigrationProposal, getMigrationProposalJobStatus } from '@/lib/server/proposal-verification-jobs.js';
 import { checkRateLimit, rateLimitResponse } from '@/lib/server/rate-limit.js';
 import {
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   const validation = validateSafeId(migrationId, 'migrationId');
   if (!validation.valid || !validation.data) return badRequestResponse(validation.error || 'migrationId is required.');
   try {
-    const job = await getMigrationProposalJobStatus(validation.data, user.id);
+    const job = await getMigrationProposalJobStatus(validation.data, user.id, extractSessionId(req));
     return NextResponse.json({ job }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch {
     return NextResponse.json({ error: 'Verification status is unavailable.', code: 'VERIFICATION_STATUS_UNAVAILABLE' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
 
     if (process.env.NODE_ENV === 'production') {
-      const job = await enqueueMigrationProposal(idValidation.data, user.id);
+      const job = await enqueueMigrationProposal(idValidation.data, user.id, extractSessionId(req));
       if (job.status === 'execution_unavailable') {
         return NextResponse.json({
           error: 'Secure verification execution is not currently available. No Draft PR was created; try again when the verification worker is online.',
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, job }, { status: 202, headers: PRIVATE_NO_STORE_HEADERS });
     }
     const { createGitHubProposal } = await import('@/lib/server/proposal-service.js');
-    const proposal = await createGitHubProposal(idValidation.data, user.id);
+    const proposal = await createGitHubProposal(idValidation.data, user.id, undefined, extractSessionId(req));
     return NextResponse.json({ success: true, proposal }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Proposal generation failed.';

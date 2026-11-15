@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '../../../../lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '../../../../lib/server/auth.js';
 import { isWorkspaceAuthorizationError, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
 import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
 import { getWorkspaceSubscription, persistWorkspaceCustomerId } from '../../../../lib/server/billing/service.js';
@@ -8,6 +8,8 @@ import { PLANS } from '../../../../lib/server/billing/plans.js';
 import { assertCsrfProtection, forbiddenCsrfResponse } from '../../../../lib/server/validation.js';
 import { verifiedUserRouteFailure } from '../../../../lib/server/verified-user-route.js';
 import { validateEnvConfig } from '../../../../lib/server/env-config.js';
+import { getDatabase } from '../../../../lib/server/db/index.js';
+import { withPostgresTenantContext } from '../../../../lib/server/db/postgres-tenant-context.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -53,7 +55,13 @@ export async function POST(req: Request) {
   let sub: Awaited<ReturnType<typeof getWorkspaceSubscription>>;
   let provider: ReturnType<typeof getBillingProvider>;
   try {
-    sub = await getWorkspaceSubscription(workspace.id);
+    sub = await withPostgresTenantContext(
+      getDatabase(),
+      user.id,
+      workspace.id,
+      (tx) => getWorkspaceSubscription(workspace.id, tx),
+      extractSessionId(req),
+    );
     provider = getBillingProvider();
   } catch {
     console.error('Billing configuration lookup failed:', { code: 'BILLING_CONFIGURATION_UNAVAILABLE' });
@@ -72,7 +80,13 @@ export async function POST(req: Request) {
     if (!customerId) {
       const res = await provider.createCustomer(workspace.id, user.email, user.name);
       customerId = res.customerId;
-      await persistWorkspaceCustomerId(workspace.id, customerId);
+      await withPostgresTenantContext(
+        getDatabase(),
+        user.id,
+        workspace.id,
+        (tx) => persistWorkspaceCustomerId(workspace.id, customerId!, tx),
+        extractSessionId(req),
+      );
     }
 
     const checkout = await provider.createCheckoutSession(workspace.id, customerId, planId, returnUrl);

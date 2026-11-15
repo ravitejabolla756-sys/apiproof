@@ -12,6 +12,7 @@ import {
   type GitHubControlledWriteTransport,
 } from '@apiproof/core';
 import { getDatabase } from './db/index.js';
+import { withPostgresTenantContext } from './db/postgres-tenant-context.js';
 import { requireMigrationAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { checkWorkspaceLimit, recordWorkspaceUsage } from './billing/service.js';
 import { validatePersistedMigrationEvidence, verifyMigrationForProposal } from './migration-verification.js';
@@ -34,22 +35,34 @@ export interface ProposalResult {
 export async function createGitHubProposal(
   migrationId: string,
   userId: string,
-  customTransport?: GitHubControlledWriteTransport
+  customTransport?: GitHubControlledWriteTransport,
+  sessionId?: string,
 ): Promise<ProposalResult> {
   const db = getDatabase();
+
+  // A queued worker must not reach this user-bound path until a database-
+  // verifiable worker identity exists. Fail before reading migration data.
+  if (process.env.NODE_ENV === 'production' && !sessionId?.trim()) {
+    throw new Error('PROPOSAL_WORKER_DATABASE_AUTH_UNAVAILABLE');
+  }
 
   // 1. Fetch migration and verify workspace access (central authorization / IDOR protection)
   const { migration: rawMigration, repository: repo, workspace } = await requireMigrationAccess(migrationId, userId);
 
+  const runTenantDb = <T>(operation: (tx: ReturnType<typeof getDatabase>) => Promise<T>) =>
+    db.engine === 'sqlite'
+      ? operation(db)
+      : withPostgresTenantContext(db, userId, workspace.id, operation, sessionId);
+
   // 1a. Billing limit check (runs after workspace authorization)
-  const limitCheck = await checkWorkspaceLimit(workspace.id, 'draft_prs');
+  const limitCheck = await runTenantDb((tx) => checkWorkspaceLimit(workspace.id, 'draft_prs', tx));
   if (!limitCheck.allowed) {
     throw new Error(limitCheck.reason);
   }
 
-  const finding = await db.queryOne<{ change_id: string; file_path: string; symbol: string; id: string; repository_id: string; usage_id: string; provider: string; confidence: number; line_number: number; reason: string; reason_codes: string; evidence: string; source_snippet: string | null; source_digest: string | null }>(`
-    SELECT id, change_id, file_path, symbol, repository_id, usage_id, provider, confidence, line_number, reason, reason_codes, evidence, source_snippet, source_digest FROM findings WHERE id = ?
-  `, [rawMigration.finding_id]);
+  const finding = await runTenantDb((tx) => tx.queryOne<{ change_id: string; file_path: string; symbol: string; id: string; repository_id: string; usage_id: string; provider: string; confidence: number; line_number: number; reason: string; reason_codes: string; evidence: string; source_snippet: string | null; source_digest: string | null }>(`
+    SELECT id, change_id, file_path, symbol, repository_id, usage_id, provider, confidence, line_number, reason, reason_codes, evidence, source_snippet, source_digest FROM findings WHERE id = ? AND repository_id = ?
+  `, [rawMigration.finding_id, repo.id]));
 
   if (!finding) {
     throw new Error('Finding for migration not found.');
@@ -71,21 +84,21 @@ export async function createGitHubProposal(
   // 1b. Resolve and validate the exact scan baseline SHA
   let baselineSha = (rawMigration.baseline_sha as string | undefined)?.trim();
   if (!baselineSha) {
-    const scanRow = await db.queryOne<{ sha: string }>(`
+    const scanRow = await runTenantDb((tx) => tx.queryOne<{ sha: string }>(`
       SELECT s.sha
       FROM findings f
       JOIN scans s ON f.scan_id = s.id
       WHERE f.id = ? AND s.repository_id = ?
-    `, [rawMigration.finding_id, repo.id]);
+    `, [rawMigration.finding_id, repo.id]));
     baselineSha = scanRow?.sha?.trim();
   }
   if (!baselineSha || !/^[a-f0-9]{40}$/i.test(baselineSha)) throw new Error('BASELINE_SHA_INVALID: Valid 40-character commit SHA required for migration proposal.');
-  const repoScan = await db.queryOne<{ id: string }>('SELECT s.id FROM scans s WHERE s.repository_id = ? AND s.sha = ? AND s.status = \'completed\'', [repo.id, baselineSha]);
+  const repoScan = await runTenantDb((tx) => tx.queryOne<{ id: string }>('SELECT s.id FROM scans s WHERE s.repository_id = ? AND s.sha = ? AND s.status = \'completed\'', [repo.id, baselineSha]));
   if (!repoScan) throw new Error(`BASELINE_SHA_REPOSITORY_MISMATCH: Baseline SHA ${baselineSha} does not belong to repository ${repo.full_name}.`);
 
   // 1c. Check if a PR already exists for this migration (idempotent proposal creation).
   // Existing PRs are only returned when their persisted evidence is still bound.
-  const existingPr = await db.queryOne<{
+  const existingPr = await runTenantDb((tx) => tx.queryOne<{
     id: string;
     number: number;
     title: string;
@@ -98,7 +111,7 @@ export async function createGitHubProposal(
     SELECT id, number, title, branch_name, base_branch, url, state, created_at
     FROM pull_requests
     WHERE migration_id = ?
-  `, [migration.id]);
+  `, [migration.id]));
 
   if (existingPr) {
     validatePersistedMigrationEvidence(rawMigration.verification_report, { repositoryId: migration.github_repository_id, baselineSha, changeId: migration.change_id, patchDigest: migration.patch_digest ?? '' });
@@ -225,7 +238,7 @@ export async function createGitHubProposal(
     const remoteHeadSha = await transport.getDefaultBranchSha(migration.default_branch);
     if (!/^[a-f0-9]{40}$/i.test(remoteHeadSha)) throw new Error('GITHUB_DEFAULT_BRANCH_UNVERIFIED: Authoritative default branch HEAD is missing or invalid.');
     if (remoteHeadSha && remoteHeadSha !== baselineSha) {
-      await db.execute('UPDATE migrations SET status = ?, patch_digest = NULL, patch_content = NULL, verification_report = NULL WHERE id = ?', ['planned', migration.id]);
+      await runTenantDb((tx) => tx.execute('UPDATE migrations SET status = ?, patch_digest = NULL, patch_content = NULL, verification_report = NULL WHERE id = ?', ['planned', migration.id]));
       throw new Error(`REPOSITORY_HEAD_DIVERGED: Target repository default branch HEAD (${remoteHeadSha.slice(0, 7)}) has moved since scan was performed (${baselineSha.slice(0, 7)}). A fresh scan is required before proposing a migration.`);
     }
   } else if (isProduction) {
@@ -275,6 +288,7 @@ ${describeMigrationProof(JSON.stringify(verified.wrapper))}
         baseBranch: migration.default_branch,
         url: remotePr.url,
         patchDigest: migration.patch_digest,
+        sessionId,
       });
     }
   }
@@ -292,7 +306,7 @@ ${describeMigrationProof(JSON.stringify(verified.wrapper))}
     });
   } catch (err: unknown) {
     // GAP 3: Check if a concurrent proposal created the PR in DB or on GitHub
-    const concurrentDbPr = await db.queryOne<{
+    const concurrentDbPr = await runTenantDb((tx) => tx.queryOne<{
       id: string;
       number: number;
       title: string;
@@ -305,7 +319,7 @@ ${describeMigrationProof(JSON.stringify(verified.wrapper))}
       SELECT id, number, title, branch_name, base_branch, url, state, created_at
       FROM pull_requests
       WHERE migration_id = ?
-    `, [migration.id]);
+    `, [migration.id]));
 
     if (concurrentDbPr) {
       return {
@@ -339,6 +353,7 @@ ${describeMigrationProof(JSON.stringify(verified.wrapper))}
           baseBranch: migration.default_branch,
           url: remotePr.url,
           patchDigest: migration.patch_digest,
+          sessionId,
         });
       }
     }
@@ -359,6 +374,7 @@ ${describeMigrationProof(JSON.stringify(verified.wrapper))}
     baseBranch: migration.default_branch,
     url: prResult.url,
     patchDigest: migration.patch_digest,
+    sessionId,
   });
 }
 
@@ -377,13 +393,15 @@ async function persistPullRequestRecord(
     baseBranch: string;
     url: string;
     patchDigest: string;
+    sessionId?: string | undefined;
   }
 ): Promise<ProposalResult> {
   const pullRequestId = `pr_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();
 
   try {
-    await db.transaction(async (tx) => {
+    await withPostgresTenantContext(db, params.userId, params.workspaceId, async (tenantTx) => {
+      const tx = tenantTx;
       await tx.execute(`
         INSERT INTO pull_requests (
           id, migration_id, repository_id, number, title, branch_name, base_branch, url, state, created_at
@@ -416,9 +434,8 @@ async function persistPullRequestRecord(
         `Opened review-only Draft PR #${params.prNumber} for ${params.changeId}.`,
         now,
       ]);
-    });
-
-    await recordWorkspaceUsage(params.workspaceId, 'draft_prs');
+      await recordWorkspaceUsage(params.workspaceId, 'draft_prs', undefined, tenantTx);
+    }, params.sessionId);
 
     return {
       pullRequestId,
@@ -434,7 +451,7 @@ async function persistPullRequestRecord(
       createdAt: now,
     };
   } catch (err: unknown) {
-    const existingPr = await db.queryOne<{
+    const existingPr = await withPostgresTenantContext(db, params.userId, params.workspaceId, (tx) => tx.queryOne<{
       id: string;
       number: number;
       title: string;
@@ -447,7 +464,7 @@ async function persistPullRequestRecord(
       SELECT id, number, title, branch_name, base_branch, url, state, created_at
       FROM pull_requests
       WHERE migration_id = ?
-    `, [params.migrationId]);
+    `, [params.migrationId]), params.sessionId);
 
     if (existingPr) {
       return {

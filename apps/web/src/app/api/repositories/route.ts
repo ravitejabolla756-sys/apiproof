@@ -89,7 +89,13 @@ export async function POST(req: Request) {
     }
 
     // Billing plan repository limit check (runs after workspace authorization)
-    const limitCheck = await checkWorkspaceLimit(workspaceId, 'repositories');
+    const limitCheck = await withPostgresTenantContext(
+      getDatabase(),
+      user.id,
+      workspaceId,
+      (tx) => checkWorkspaceLimit(workspaceId, 'repositories', tx),
+      extractSessionId(req),
+    );
     if (!limitCheck.allowed) {
       return NextResponse.json({
         error: limitCheck.reason,

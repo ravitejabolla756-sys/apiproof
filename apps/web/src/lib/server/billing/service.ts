@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { getDatabase } from '../db/index.js';
+import type { DatabaseAdapter } from '../db/types.js';
 import { getPlanDefinition, type PlanDefinition } from './plans.js';
 import { reconcileBillingEvent, type BillingWebhookEvent } from './provider.js';
 
@@ -41,8 +42,11 @@ function getDefaultPeriod(): { start: string; end: string } {
   return { start, end };
 }
 
-export async function getWorkspaceSubscription(workspaceId: string): Promise<WorkspaceSubscription> {
-  const db = getDatabase();
+export async function getWorkspaceSubscription(
+  workspaceId: string,
+  runner: DatabaseAdapter = getDatabase(),
+): Promise<WorkspaceSubscription> {
+  const db = runner;
   let row = await db.queryOne<{
     workspace_id: string;
     plan_id: string;
@@ -113,17 +117,24 @@ export async function getWorkspaceSubscription(workspaceId: string): Promise<Wor
 }
 
 /** Persist a provider customer identity once, without replacing a concurrent value. */
-export async function persistWorkspaceCustomerId(workspaceId: string, customerId: string): Promise<void> {
-  const db = getDatabase();
+export async function persistWorkspaceCustomerId(
+  workspaceId: string,
+  customerId: string,
+  runner: DatabaseAdapter = getDatabase(),
+): Promise<void> {
+  const db = runner;
   await db.execute(
     'UPDATE workspace_subscriptions SET customer_id = ?, updated_at = ? WHERE workspace_id = ? AND customer_id IS NULL',
     [customerId, new Date().toISOString(), workspaceId],
   );
 }
 
-export async function getWorkspaceUsageSummary(workspaceId: string): Promise<WorkspaceUsageSummary> {
-  const db = getDatabase();
-  const subscription = await getWorkspaceSubscription(workspaceId);
+export async function getWorkspaceUsageSummary(
+  workspaceId: string,
+  runner: DatabaseAdapter = getDatabase(),
+): Promise<WorkspaceUsageSummary> {
+  const db = runner;
+  const subscription = await getWorkspaceSubscription(workspaceId, db);
   const plan = getPlanDefinition(subscription.planId);
 
   // Repositories count
@@ -185,9 +196,10 @@ export async function getWorkspaceUsageSummary(workspaceId: string): Promise<Wor
 
 export async function checkWorkspaceLimit(
   workspaceId: string,
-  metric: 'repositories' | 'scans' | 'draft_prs'
+  metric: 'repositories' | 'scans' | 'draft_prs',
+  runner: DatabaseAdapter = getDatabase(),
 ): Promise<LimitCheckResult> {
-  const summary = await getWorkspaceUsageSummary(workspaceId);
+  const summary = await getWorkspaceUsageSummary(workspaceId, runner);
   const sub = summary.subscription;
 
   if (sub.status === 'canceled') {
@@ -247,10 +259,11 @@ export async function checkWorkspaceLimit(
 export async function recordWorkspaceUsage(
   workspaceId: string,
   metric: 'repositories' | 'scans' | 'draft_prs',
-  _resourceId?: string
+  _resourceId?: string,
+  runner: DatabaseAdapter = getDatabase(),
 ): Promise<void> {
-  const db = getDatabase();
-  const sub = await getWorkspaceSubscription(workspaceId);
+  const db = runner;
+  const sub = await getWorkspaceSubscription(workspaceId, db);
   const now = new Date().toISOString();
 
   // Upsert usage record

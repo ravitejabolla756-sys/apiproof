@@ -14,6 +14,8 @@ import { assertFounderScanAuthorization, FounderScanAuthorizationError } from '@
 import { safeFailureCode } from '@/lib/server/productization-persistence';
 import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
+import { getDatabase } from '@/lib/server/db/index.js';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
   const csrf = assertCsrfProtection(req);
@@ -61,7 +63,14 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   }
 
   // Billing plan scan limit check (runs after authorization)
-  const limitCheck = await checkWorkspaceLimit(workspaceId, 'scans');
+  const sessionId = extractSessionId(req);
+  const limitCheck = await withPostgresTenantContext(
+    getDatabase(),
+    user.id,
+    workspaceId,
+    (tx) => checkWorkspaceLimit(workspaceId, 'scans', tx),
+    sessionId,
+  );
   if (!limitCheck.allowed) {
     return NextResponse.json({
       error: limitCheck.reason,
@@ -74,7 +83,13 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
   try {
     const result = await runRepositoryScan(repo.id, user.id, undefined, extractSessionId(req));
-    await recordWorkspaceUsage(workspaceId, 'scans');
+    await withPostgresTenantContext(
+      getDatabase(),
+      user.id,
+      workspaceId,
+      (tx) => recordWorkspaceUsage(workspaceId, 'scans', undefined, tx),
+      sessionId,
+    );
     return NextResponse.json({ success: true, result }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Scan failed.';
