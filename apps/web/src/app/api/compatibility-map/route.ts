@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { evaluateRegisteredNormalizedCompatibility } from '@apiproof/analyzers';
 import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { buildCompatibilityProofSnapshot } from '@apiproof/shared';
-import { getCurrentUser } from '../../../lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '../../../lib/server/auth.js';
 import { getDatabase } from '../../../lib/server/db/index.js';
+import { withPostgresTenantContext } from '../../../lib/server/db/postgres-tenant-context.js';
 import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
 import { OrganizationServiceError } from '../../../lib/server/organization-service.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
@@ -72,7 +73,8 @@ async function loadCompatibilityMap(req: Request) {
     return NextResponse.json({ error: 'Compatibility data is temporarily unavailable.', code: 'COMPATIBILITY_WORKSPACE_UNAVAILABLE' }, { status: 503, headers: privateNoStore });
   }
   const db = getDatabase();
-  const repositories = await db.query<RepositoryRow>(`
+  return withPostgresTenantContext(db, user.id, workspace.id, async (tx) => {
+  const repositories = await tx.query<RepositoryRow>(`
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch,
       (SELECT s.status FROM scans s
        WHERE s.repository_id = r.id
@@ -100,7 +102,7 @@ async function loadCompatibilityMap(req: Request) {
     ORDER BY r.created_at DESC, r.id ASC
   `, [workspace.id]);
 
-  const findingRows = await db.query<FindingRow>(`
+  const findingRows = await tx.query<FindingRow>(`
     SELECT f.repository_id, f.id, f.provider, f.change_id, f.title, f.status,
            f.file_path, f.symbol,
            m.id AS migration_id, m.status AS migration_status,
@@ -235,4 +237,5 @@ async function loadCompatibilityMap(req: Request) {
   }));
 
   return NextResponse.json({ workspaceId: workspace.id, repositories: responseRepositories }, { headers: privateNoStore });
+  }, extractSessionId(req));
 }

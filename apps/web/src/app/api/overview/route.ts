@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
 import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { getDashboardData } from '@/lib/server/dashboard/get-dashboard-data.js';
 
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
   try {
     const workspace = await resolveWorkspaceForRequest(req, user.id);
-    const dashboard = await getDashboardData(workspace.id);
+    const dashboard = await getDashboardData(user.id, workspace.id, extractSessionId(req));
 
     return NextResponse.json({
     workspace: {
