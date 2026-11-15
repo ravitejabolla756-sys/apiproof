@@ -117,5 +117,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify PostgreSQL tenant security
-        run: pnpm exec vitest run --no-file-parallelism tests/postgres-tenant-security.integration.test.ts
+      - name: Verify PostgreSQL tenant and worker security
+        run: pnpm exec vitest run --no-file-parallelism tests/postgres-tenant-security.integration.test.ts tests/postgres-worker-authorization.integration.test.ts

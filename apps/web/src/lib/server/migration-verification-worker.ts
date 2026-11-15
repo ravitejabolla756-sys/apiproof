@@ -11,6 +11,7 @@ import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { processRepositoryRescans } from './repository-rescan-worker.js';
 import { getTelemetrySink, type TelemetrySink } from './observability.js';
 import { assertTrustedWorkerIdentity } from './worker-auth.js';
+import { assertWorkerDatabaseAuthorization } from './db/postgres-worker-authorization.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -133,6 +134,7 @@ export async function runVerificationWorker(options: { workerId: string; workerT
   if (process.env.NODE_ENV === 'production' || process.env.WORKER_AUTH_ENFORCED === 'true') {
     assertTrustedWorkerIdentity(workerId, options.workerToken);
   }
+  await assertWorkerDatabaseAuthorization(getDatabase());
   const interval = Math.max(1000, options.pollIntervalMs ?? 5000);
   let lastProbeAt = 0;
   let lastProbeError: unknown;
