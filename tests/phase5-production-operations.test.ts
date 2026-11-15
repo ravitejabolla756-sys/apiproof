@@ -30,6 +30,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----';
     process.env.GITHUB_WEBHOOK_SECRET = 'phase5-webhook-secret-32-chars-long!';
     process.env.CRON_SECRET = 'phase5-cron-secret-32-chars-long!';
+    process.env.WORKER_AUTH_SECRET = 'phase5-worker-auth-secret-32-chars-long!';
     process.env.NEXT_PUBLIC_APP_URL = 'https://apiproof.test';
 
     if (fs.existsSync(TEST_DB_PATH)) {
@@ -76,6 +77,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       GITHUB_APP_PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY-----\nMII...\n-----END RSA PRIVATE KEY-----',
       GITHUB_WEBHOOK_SECRET: 'b'.repeat(32),
       CRON_SECRET: 'c'.repeat(32),
+      WORKER_AUTH_SECRET: 'd'.repeat(32),
       NEXT_PUBLIC_APP_URL: 'https://apiproof.com',
     });
     expect(prodGoodRes.valid).toBe(true);

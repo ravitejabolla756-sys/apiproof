@@ -6,8 +6,8 @@
  *   - Internal health/test invocations
  *
  * Security model:
- *   - Requires CRON_SECRET header: "Authorization: Bearer <CRON_SECRET>"
- *   - CRON_SECRET must be set in production; without it the endpoint always 401s.
+ *   - Requires a signed worker identity in production.
+ *   - The legacy CRON_SECRET bearer contract is test-only.
  *   - This route is NOT meant to be exposed publicly.
  *
  * The route is idempotent: if there are no pending jobs, it returns immediately.
@@ -21,6 +21,7 @@ import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
 import { PRIVATE_NO_STORE_HEADERS } from '../../../../lib/server/organization-route.js';
 import { parseScanWorkerRequest } from '../../../../lib/server/scan-worker-request-contract.js';
+import { verifyInternalWorkerRequest } from '../../../../lib/server/worker-auth.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,39 +30,8 @@ export const dynamic = 'force-dynamic';
 // Authorization helper
 // ---------------------------------------------------------------------------
 
-async function isAuthorized(request: NextRequest): Promise<boolean> {
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || cronSecret.trim().length === 0) {
-    // No secret configured → always reject to prevent accidental open access
-    return false;
-  }
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return false;
-  }
-
-  if (!authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  const providedSecret = authHeader.slice('Bearer '.length);
-
-  // Timing-safe comparison to prevent timing attacks
-  if (providedSecret.length !== cronSecret.length) {
-    return false;
-  }
-
-  try {
-    const { timingSafeEqual } = await import('node:crypto');
-    return timingSafeEqual(
-      Buffer.from(providedSecret, 'utf8'),
-      Buffer.from(cronSecret, 'utf8')
-    );
-  } catch {
-    return false;
-  }
+function isAuthorized(request: NextRequest): boolean {
+  return verifyInternalWorkerRequest(request);
 }
 
 // ---------------------------------------------------------------------------
@@ -69,7 +39,7 @@ async function isAuthorized(request: NextRequest): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 async function runWorker(request: NextRequest): Promise<NextResponse> {
-  if (!(await isAuthorized(request))) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 

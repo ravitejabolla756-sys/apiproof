@@ -2,6 +2,7 @@ export type RuntimeConfiguration = {
   database: boolean;
   applicationSecret: boolean;
   cronSecret: boolean;
+  workerAuthSecret: boolean;
   githubApp: boolean;
   githubInstallation: boolean;
   githubWebhook: boolean;
@@ -43,6 +44,7 @@ export function getRuntimeConfiguration(environment: NodeJS.ProcessEnv = process
   const database = present(environment, 'DATABASE_URL') || present(environment, 'APIPROOF_DATABASE_URL');
   const applicationSecret = meetsMinimum(environment, 'APIPROOF_SECRET', 32);
   const cronSecret = meetsMinimum(environment, 'CRON_SECRET', 16);
+  const workerAuthSecret = meetsMinimum(environment, 'WORKER_AUTH_SECRET', 32);
   // Production GitHub auth is environment-backed. A filesystem key path is
   // valid only for local development and must never satisfy the live-beta
   // gate because Vercel production rejects path-based private keys.
@@ -68,6 +70,7 @@ export function getRuntimeConfiguration(environment: NodeJS.ProcessEnv = process
     database,
     applicationSecret,
     cronSecret,
+    workerAuthSecret,
     githubApp,
     githubInstallation,
     githubWebhook,
@@ -75,6 +78,6 @@ export function getRuntimeConfiguration(environment: NodeJS.ProcessEnv = process
     liveGithubEnabled,
     liveGithubWriteEnabled,
     productizationV1Enabled,
-    readyForLiveBeta: database && applicationSecret && cronSecret && githubApp && githubInstallation && githubWebhook && publicAppUrl && liveGithubEnabled && productizationV1Enabled && !liveGithubWriteEnabled,
+    readyForLiveBeta: database && applicationSecret && cronSecret && workerAuthSecret && githubApp && githubInstallation && githubWebhook && publicAppUrl && liveGithubEnabled && productizationV1Enabled && !liveGithubWriteEnabled,
   };
 }

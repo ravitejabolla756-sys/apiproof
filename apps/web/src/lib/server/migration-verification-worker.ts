@@ -10,6 +10,7 @@ import { processOneSlackProviderChangeDelivery } from './slack-provider-change-n
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { processRepositoryRescans } from './repository-rescan-worker.js';
 import { getTelemetrySink, type TelemetrySink } from './observability.js';
+import { assertTrustedWorkerIdentity } from './worker-auth.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -125,10 +126,13 @@ export async function processOneMigrationVerificationJob(workerId: string): Prom
   return true;
 }
 
-export async function runVerificationWorker(options: { workerId: string; pollIntervalMs?: number; signal?: AbortSignal; telemetry?: TelemetrySink }): Promise<void> {
+export async function runVerificationWorker(options: { workerId: string; workerToken?: string; pollIntervalMs?: number; signal?: AbortSignal; telemetry?: TelemetrySink }): Promise<void> {
   const { workerId, signal } = options;
   const telemetry = getTelemetrySink(options.telemetry);
   if (!/^[A-Za-z0-9._-]{1,100}$/.test(workerId)) throw new Error('VERIFICATION_WORKER_ID_INVALID');
+  if (process.env.NODE_ENV === 'production' || process.env.WORKER_AUTH_ENFORCED === 'true') {
+    assertTrustedWorkerIdentity(workerId, options.workerToken);
+  }
   const interval = Math.max(1000, options.pollIntervalMs ?? 5000);
   let lastProbeAt = 0;
   let lastProbeError: unknown;

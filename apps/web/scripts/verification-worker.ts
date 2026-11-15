@@ -7,4 +7,4 @@ const controller = new AbortController();
 process.once('SIGINT', () => controller.abort());
 process.once('SIGTERM', () => controller.abort());
 
-await runVerificationWorker({ workerId, signal: controller.signal });
+await runVerificationWorker({ workerId, workerToken: process.env.APIPROOF_VERIFICATION_WORKER_TOKEN, signal: controller.signal });

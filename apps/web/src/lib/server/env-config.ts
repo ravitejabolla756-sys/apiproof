@@ -19,6 +19,7 @@ export interface AppEnvConfig {
   githubAppPrivateKey: string;
   githubWebhookSecret: string;
   cronSecret: string;
+  workerAuthSecret: string;
 }
 
 export interface ValidationIssue {
@@ -52,6 +53,7 @@ export function validateEnvConfig(env: Record<string, string | undefined> = proc
   const githubAppPrivateKey = env.GITHUB_APP_PRIVATE_KEY || (isProduction ? '' : '-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----');
   const githubWebhookSecret = env.GITHUB_WEBHOOK_SECRET || (isProduction ? '' : 'test-webhook-secret-32-chars-long!');
   const cronSecret = env.CRON_SECRET || (isProduction ? '' : 'test-cron-secret-32-chars-long!');
+  const workerAuthSecret = env.WORKER_AUTH_SECRET || (isProduction ? '' : 'test-worker-auth-secret-32-chars-long!');
 
   if (isProduction) {
     if (!apiproofSecret || apiproofSecret.length < 32) {
@@ -71,6 +73,9 @@ export function validateEnvConfig(env: Record<string, string | undefined> = proc
     }
     if (!cronSecret || cronSecret.length < 16) {
       issues.push({ variable: 'CRON_SECRET', message: 'CRON_SECRET must be set and at least 16 characters long in production.' });
+    }
+    if (!workerAuthSecret || workerAuthSecret.length < 32) {
+      issues.push({ variable: 'WORKER_AUTH_SECRET', message: 'WORKER_AUTH_SECRET must be set and at least 32 characters long in production.' });
     }
     if (!appUrl || appUrl.trim().length === 0) {
       issues.push({ variable: 'NEXT_PUBLIC_APP_URL', message: 'NEXT_PUBLIC_APP_URL or APIPROOF_APP_URL must be set in production.' });
@@ -95,6 +100,7 @@ export function validateEnvConfig(env: Record<string, string | undefined> = proc
       githubAppPrivateKey,
       githubWebhookSecret,
       cronSecret,
+      workerAuthSecret,
     },
   };
 }

@@ -1,18 +1,15 @@
-import { timingSafeEqual } from 'node:crypto';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { getProviderChangeSource, refreshAllProviderChangelogs, refreshProviderChangelog } from '../../../../lib/server/provider-change-monitor.js';
 import { processRepositoryRescans } from '../../../../lib/server/repository-rescan-worker.js';
 import { PRIVATE_NO_STORE_HEADERS } from '../../../../lib/server/organization-route.js';
+import { verifyInternalWorkerRequest } from '../../../../lib/server/worker-auth.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET?.trim();
-  const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/, '');
-  if (!secret || !provided || provided.length !== secret.length) return false;
-  return timingSafeEqual(Buffer.from(provided, 'utf8'), Buffer.from(secret, 'utf8'));
+  return verifyInternalWorkerRequest(request);
 }
 
 async function run(request: NextRequest): Promise<NextResponse> {
