@@ -10,7 +10,7 @@ function adapter(rows: Array<{ available?: boolean; allowed?: boolean }>): Datab
     query: async () => [],
     queryOne: async () => rows[index++] ?? undefined,
     execute: async () => ({ changes: 0 }),
-    transaction: async (operation) => operation(adapter(rows)),
+    transaction: async (operation: (tx: DatabaseAdapter) => Promise<unknown>) => operation(adapter(rows)),
     close: async () => undefined,
   } as unknown as DatabaseAdapter;
 }
