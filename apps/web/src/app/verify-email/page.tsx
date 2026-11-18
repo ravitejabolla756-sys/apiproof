@@ -47,8 +47,6 @@ export default function VerifyEmailPage() {
     }
 
     void initialize();
-  // sendCode is stable for this page lifetime; initialization runs once.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   async function sendCode() {

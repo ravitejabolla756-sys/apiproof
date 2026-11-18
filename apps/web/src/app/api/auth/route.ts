@@ -151,7 +151,7 @@ export async function POST(req: Request) {
         try {
           await requestEmailVerificationCode(user.id);
           emailSent = true;
-        } catch (error) {
+        } catch {
           console.error('[email-verification] Signup code delivery failed.');
         }
         const cookieOptions = getAuthCookieOptions(session.expiresAt);
