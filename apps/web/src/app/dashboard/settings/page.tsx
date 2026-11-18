@@ -82,6 +82,10 @@ export default function SettingsPage() {
       const res = await fetch('/api/github/install');
       const data = await res.json();
       if (!res.ok || !data.url) {
+        if (data.code === 'EMAIL_VERIFICATION_REQUIRED') {
+          window.location.assign('/verify-email');
+          return;
+        }
         throw new Error(data.error || "Failed to generate installation URL");
       }
       window.location.href = data.url;

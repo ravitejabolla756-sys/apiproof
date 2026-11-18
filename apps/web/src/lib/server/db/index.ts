@@ -144,6 +144,7 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   db.exec(SQLITE_GOOGLE_OAUTH_SCHEMA);
   db.exec(SQLITE_GITHUB_LOGIN_SCHEMA);
   db.exec(SQLITE_PROVIDER_CHANGE_MONITOR_SCHEMA);
+  initializeEmailVerificationSqlite(db);
   initializeSlackReliabilitySqlite(db);
 
   if (!skipDefaultSeed()) seedDefaultUserAndFixtureSqlite(db);
@@ -151,6 +152,26 @@ export function initDatabase(dbPath?: string): DatabaseSync {
   rawSqliteInstance = db;
   adapterInstance = new SqliteDatabaseAdapter(db);
   return db;
+}
+
+function initializeEmailVerificationSqlite(db: DatabaseSync): void {
+  const userColumns = db.prepare('PRAGMA table_info(users)').all() as Array<{ name: string }>;
+  if (!userColumns.some((column) => column.name === 'email_verified_at')) {
+    db.exec('ALTER TABLE users ADD COLUMN email_verified_at TEXT');
+  }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS email_verification_codes (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      code_hash TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      used_at TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_email_verification_user ON email_verification_codes(user_id);
+    CREATE INDEX IF NOT EXISTS idx_email_verification_expiry ON email_verification_codes(expires_at, used_at);
+  `);
 }
 
 /**

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { getCurrentUser } from '@/lib/server/auth.js';
 import { getDatabase } from '@/lib/server/db/index.js';
+import { getEmailVerificationStatus } from '@/lib/server/email-verification.js';
 import type { DatabaseAdapter } from '@/lib/server/db/types.js';
 import {
   inspectGitHubInstallationState,
@@ -15,6 +16,20 @@ export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized: Session required for installation callback.', code: 'UNAUTHORIZED' }, { status: 401 });
+  }
+  try {
+    const verification = await getEmailVerificationStatus(user.id);
+    if (verification !== 'verified') {
+      return NextResponse.json(
+        { error: 'Verify your email before connecting GitHub.', code: 'EMAIL_VERIFICATION_REQUIRED' },
+        { status: 403 },
+      );
+    }
+  } catch {
+    return NextResponse.json(
+      { error: 'Account verification could not be checked right now.', code: 'EMAIL_VERIFICATION_CHECK_FAILED' },
+      { status: 503 },
+    );
   }
 
   const urlObj = new URL(req.url);

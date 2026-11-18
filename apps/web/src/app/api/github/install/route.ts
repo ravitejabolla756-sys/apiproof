@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getGitHubAppInstallUrl } from '@/lib/server/github';
+import { getEmailVerificationStatus, isEmailVerificationConfigured } from '@/lib/server/email-verification.js';
 import {
   getDefaultWorkspaceForUser,
   requireWorkspaceMember,
@@ -10,6 +11,27 @@ export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+  }
+
+  try {
+    const verification = await getEmailVerificationStatus(user.id);
+    if (verification !== 'verified') {
+      if (!isEmailVerificationConfigured()) {
+        return NextResponse.json(
+          { error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' },
+          { status: 503 },
+        );
+      }
+      return NextResponse.json(
+        { error: 'Verify your email before connecting GitHub.', code: 'EMAIL_VERIFICATION_REQUIRED' },
+        { status: 403 },
+      );
+    }
+  } catch {
+    return NextResponse.json(
+      { error: 'Account verification could not be checked right now.', code: 'EMAIL_VERIFICATION_CHECK_FAILED' },
+      { status: 503 },
+    );
   }
 
   const urlObj = new URL(req.url);

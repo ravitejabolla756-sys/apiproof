@@ -86,9 +86,10 @@ export default function LoginPage() {
         return;
       }
 
-      // Success: remain in loading state to prevent further clicks,
-      // and perform full navigation so the session cookie is transmitted cleanly.
-      window.location.href = '/dashboard';
+      // Signups receive a session but must verify their email before connecting GitHub.
+      window.location.href = data.verificationRequired
+        ? `/verify-email?sent=${data.emailSent ? '1' : '0'}`
+        : '/dashboard';
     } catch {
       setError('Network error. Please try again.');
       setLoading(false);

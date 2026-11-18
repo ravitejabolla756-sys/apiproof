@@ -23,6 +23,7 @@ import {
 } from '@/lib/server/validation.js';
 import { requestPasswordReset, completePasswordReset } from '@/lib/server/password-reset.js';
 import { isPasswordResetEmailConfigured } from '@/lib/server/password-reset-email.js';
+import { isEmailVerificationConfigured, requestEmailVerificationCode, verifyEmailCode } from '@/lib/server/email-verification.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -87,6 +88,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'Password reset successfully. Sign in with your new password.' });
     }
 
+    if (action === 'request_email_verification') {
+      const user = await getCurrentUser(req);
+      if (!user) return NextResponse.json({ error: 'Sign in to verify your email.', code: 'UNAUTHORIZED' }, { status: 401 });
+      if (!isEmailVerificationConfigured()) return NextResponse.json({ error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' }, { status: 503 });
+      const rate = await checkRateLimit(`auth:email-verification:${user.id}`, 3, 15 * 60 * 1000, { failClosed: true });
+      if (!rate.allowed) return rateLimitResponse(rate.resetInMs);
+      let result: 'sent' | 'already_verified';
+      try {
+        result = await requestEmailVerificationCode(user.id);
+      } catch {
+        console.error('[email-verification] Code delivery failed.');
+        return NextResponse.json(
+          { error: 'We could not send your code right now. Please try again later.', code: 'EMAIL_VERIFICATION_DELIVERY_FAILED' },
+          { status: 503 },
+        );
+      }
+      return NextResponse.json({ success: true, alreadyVerified: result === 'already_verified', message: result === 'already_verified' ? 'Your email is already verified.' : 'A verification code has been sent to your email.' }, { status: 202 });
+    }
+
+    if (action === 'verify_email') {
+      const user = await getCurrentUser(req);
+      if (!user) return NextResponse.json({ error: 'Sign in to verify your email.', code: 'UNAUTHORIZED' }, { status: 401 });
+      const code = body && typeof body.code === 'string' ? body.code.trim() : '';
+      if (!/^\d{6}$/.test(code)) return badRequestResponse('Enter the six-digit code from your email.');
+      const rate = await checkRateLimit(`auth:email-verification-check:${user.id}`, 10, 15 * 60 * 1000, { failClosed: true });
+      if (!rate.allowed) return rateLimitResponse(rate.resetInMs);
+      const verified = await verifyEmailCode(user.id, code);
+      if (!verified) return NextResponse.json({ error: 'That code is invalid or expired. Request a new code and try again.', code: 'INVALID_EMAIL_VERIFICATION_CODE' }, { status: 400 });
+      return NextResponse.json({ success: true, message: 'Email verified successfully.' });
+    }
+
     if (action === 'logout') {
       const sessionId = extractSessionId(req);
       if (sessionId) {
@@ -115,8 +147,15 @@ export async function POST(req: Request) {
 
       try {
         const { user, session } = await createUserWithSession(email, password, name);
+        let emailSent = false;
+        try {
+          await requestEmailVerificationCode(user.id);
+          emailSent = true;
+        } catch (error) {
+          console.error('[email-verification] Signup code delivery failed.');
+        }
         const cookieOptions = getAuthCookieOptions(session.expiresAt);
-        const res = NextResponse.json({ success: true, user });
+        const res = NextResponse.json({ success: true, user, verificationRequired: true, emailSent }, { status: 202 });
         res.cookies.set(AUTH_COOKIE_NAME, session.id, cookieOptions);
         return res;
       } catch (err: unknown) {
@@ -165,7 +204,7 @@ export async function POST(req: Request) {
       return res;
     }
 
-    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset.', code: 'INVALID_ACTION' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid action. Supported: login, signup, logout, request_password_reset, complete_password_reset, request_email_verification, verify_email.', code: 'INVALID_ACTION' }, { status: 400 });
   } catch {
     return NextResponse.json({ error: 'Internal server error.', code: 'INTERNAL_ERROR' }, { status: 500 });
   }

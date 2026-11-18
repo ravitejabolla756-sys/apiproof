@@ -137,12 +137,17 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
         const res = await fetch('/api/github/install', { cache: 'no-store' });
         const data = await res.json();
         if (!res.ok || !data.url) {
+          if (data.code === 'EMAIL_VERIFICATION_REQUIRED') throw new Error('EMAIL_VERIFICATION_REQUIRED');
           throw new Error(data.error || 'Failed to generate installation URL');
         }
         return data.url as string;
       }, () => window.open('about:blank', '_blank'));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to initiate GitHub connection.';
+      if (message === 'EMAIL_VERIFICATION_REQUIRED') {
+        window.location.assign('/verify-email');
+        return;
+      }
       setError(message === 'GITHUB_POPUP_BLOCKED'
         ? 'The browser blocked the GitHub sign-in tab. Allow pop-ups for MY OWL and try again.'
         : message);
