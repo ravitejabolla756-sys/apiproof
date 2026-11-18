@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server';
-import { getBillingProvider } from '@/lib/server/billing/provider';
+import { getBillingProvider, type BillingWebhookHeaders } from '@/lib/server/billing/provider';
 import { processBillingWebhookEvent } from '@/lib/server/billing/service';
 import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
-    const signature =
-      req.headers.get('x-billing-signature') ||
-      req.headers.get('stripe-signature') ||
-      '';
+    const signature = req.headers.get('x-billing-signature') || req.headers.get('stripe-signature') || '';
+    const dodoHeaders: BillingWebhookHeaders = {
+      'webhook-id': req.headers.get('webhook-id') || '',
+      'webhook-signature': req.headers.get('webhook-signature') || '',
+      'webhook-timestamp': req.headers.get('webhook-timestamp') || '',
+    };
 
     const provider = getBillingProvider();
-    const event = await provider.verifyAndParseWebhook(rawBody, signature);
+    const event = provider.name === 'dodo'
+      ? await provider.verifyAndParseWebhook(rawBody, dodoHeaders)
+      : await provider.verifyAndParseWebhook(rawBody, signature);
 
     const result = await processBillingWebhookEvent(event);
 

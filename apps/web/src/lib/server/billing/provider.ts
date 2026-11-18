@@ -13,6 +13,12 @@ export interface BillingWebhookEvent {
   rawPayload: string;
 }
 
+export interface BillingWebhookHeaders {
+  'webhook-id': string;
+  'webhook-signature': string;
+  'webhook-timestamp': string;
+}
+
 export type BillingSubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete' | 'unpaid';
 
 export interface BillingSubscriptionSnapshot {
@@ -81,7 +87,7 @@ export interface BillingProvider {
   createCustomer(workspaceId: string, email: string, name: string): Promise<{ customerId: string }>;
   createCheckoutSession(workspaceId: string, customerId: string, planId: string, returnUrl: string): Promise<{ checkoutUrl: string }>;
   createPortalSession(customerId: string, returnUrl: string): Promise<{ portalUrl: string }>;
-  verifyAndParseWebhook(rawBody: string, signature: string): Promise<BillingWebhookEvent>;
+  verifyAndParseWebhook(rawBody: string, signature: string | BillingWebhookHeaders): Promise<BillingWebhookEvent>;
 }
 
 export class BillingProviderUnavailableError extends Error {
@@ -114,6 +120,165 @@ export class UnavailableBillingProvider implements BillingProvider {
   }
 }
 
+type DodoEnvironment = 'test_mode' | 'live_mode';
+type DodoFetch = typeof fetch;
+
+function dodoWebhookKey(secret: string): Buffer {
+  const encoded = secret.startsWith('whsec_') ? secret.slice('whsec_'.length) : secret;
+  return Buffer.from(encoded, 'base64');
+}
+
+function verifyDodoWebhook(rawBody: string, headers: BillingWebhookHeaders, secret: string): void {
+  if (!headers['webhook-id'] || !headers['webhook-signature'] || !headers['webhook-timestamp']) {
+    throw new Error('INVALID_BILLING_SIGNATURE: Required Dodo webhook headers are missing');
+  }
+  const timestamp = Number(headers['webhook-timestamp']);
+  const now = Math.floor(Date.now() / 1000);
+  if (!Number.isSafeInteger(timestamp) || Math.abs(now - timestamp) > 300) {
+    throw new Error('INVALID_BILLING_SIGNATURE: Dodo webhook timestamp is outside the allowed window');
+  }
+  const expected = crypto.createHmac('sha256', dodoWebhookKey(secret))
+    .update(`${headers['webhook-id']}.${headers['webhook-timestamp']}.${rawBody}`)
+    .digest('base64');
+  const matches = headers['webhook-signature'].split(' ').some((candidate) => {
+    const [version, signature] = candidate.split(',', 2);
+    if (version !== 'v1' || !signature || signature.length !== expected.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  });
+  if (!matches) throw new Error('INVALID_BILLING_SIGNATURE: Dodo webhook signature verification failed');
+}
+
+function dodoPayloadRecord(payload: unknown): { id: string; eventType: string; data: Record<string, unknown> } {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('MALFORMED_BILLING_EVENT');
+  const record = payload as Record<string, unknown>;
+  const id = typeof record.id === 'string' ? record.id.trim() : '';
+  const eventType = typeof record.type === 'string' ? record.type.trim() : '';
+  const data = record.data && typeof record.data === 'object' && !Array.isArray(record.data)
+    ? record.data as Record<string, unknown>
+    : {};
+  if (!id || !eventType) throw new Error('MALFORMED_BILLING_EVENT');
+  return { id, eventType, data };
+}
+
+function mapDodoEventType(eventType: string): { eventType: string; status?: BillingSubscriptionStatus } {
+  switch (eventType) {
+    case 'payment.succeeded':
+    case 'subscription.renewed':
+      return { eventType: 'invoice.payment_succeeded', status: 'active' };
+    case 'payment.failed':
+      return { eventType: 'invoice.payment_failed', status: 'past_due' };
+    case 'subscription.active':
+      return { eventType: 'customer.subscription.updated', status: 'active' };
+    case 'subscription.past_due':
+      return { eventType: 'customer.subscription.updated', status: 'past_due' };
+    case 'subscription.on_hold':
+      return { eventType: 'customer.subscription.updated', status: 'unpaid' };
+    case 'subscription.cancelled':
+    case 'subscription.expired':
+      return { eventType: 'customer.subscription.deleted', status: 'canceled' };
+    case 'refund.succeeded':
+      return { eventType: 'invoice.refunded' };
+    default:
+      return { eventType };
+  }
+}
+
+/**
+ * Dodo's hosted checkout adapter is deliberately test-mode-only until the
+ * owner approves the live provider contract. Product IDs are server-owned;
+ * callers provide only the public MY OWL plan slug.
+ */
+export class DodoBillingProvider implements BillingProvider {
+  readonly name = 'dodo';
+  private readonly apiKey: string;
+  private readonly environment: DodoEnvironment;
+  private readonly products: Record<'pro' | 'team', string>;
+  private readonly fetchImpl: DodoFetch;
+
+  constructor(environment: NodeJS.ProcessEnv = process.env, fetchImpl: DodoFetch = fetch) {
+    this.apiKey = environment.DODO_PAYMENTS_API_KEY?.trim() ?? '';
+    this.environment = environment.DODO_PAYMENTS_ENVIRONMENT === 'live_mode' ? 'live_mode' : 'test_mode';
+    this.products = {
+      pro: environment.DODO_PRODUCT_PRO_ID?.trim() ?? '',
+      team: environment.DODO_PRODUCT_TEAM_ID?.trim() ?? '',
+    };
+    this.fetchImpl = fetchImpl;
+    if (!this.apiKey || !this.products.pro || !this.products.team) {
+      throw new BillingProviderUnavailableError();
+    }
+  }
+
+  private async request<T>(path: string, body: Record<string, unknown>): Promise<T> {
+    const response = await this.fetchImpl(`https://${this.environment === 'test_mode' ? 'test' : 'live'}.dodopayments.com${path}`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${this.apiKey}`, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw new Error('BILLING_PROVIDER_UNAVAILABLE: Dodo request failed');
+    return await response.json() as T;
+  }
+
+  async createCustomer(_workspaceId: string, email: string, name: string): Promise<{ customerId: string }> {
+    const response = await this.request<{ customer_id?: string }>('/customers', { email, name });
+    if (!response.customer_id) throw new Error('BILLING_PROVIDER_UNAVAILABLE: Dodo customer response was incomplete');
+    return { customerId: response.customer_id };
+  }
+
+  async createCheckoutSession(workspaceId: string, customerId: string, planId: string, returnUrl: string): Promise<{ checkoutUrl: string }> {
+    const productId = planId === 'pro' ? this.products.pro : planId === 'team' ? this.products.team : '';
+    if (!productId) throw new Error('INVALID_PLAN');
+    const response = await this.request<{ checkout_url?: string }>('/checkouts', {
+      product_cart: [{ product_id: productId, quantity: 1 }],
+      customer: { customer_id: customerId },
+      return_url: returnUrl,
+      metadata: { workspace_id: workspaceId, plan_id: planId },
+    });
+    if (!response.checkout_url) throw new Error('BILLING_PROVIDER_UNAVAILABLE: Dodo checkout response was incomplete');
+    return { checkoutUrl: response.checkout_url };
+  }
+
+  async createPortalSession(): Promise<{ portalUrl: string }> {
+    throw new Error('BILLING_PROVIDER_UNAVAILABLE: Dodo portal contract is not enabled');
+  }
+
+  async verifyAndParseWebhook(rawBody: string, headers: string | BillingWebhookHeaders): Promise<BillingWebhookEvent> {
+    const secret = process.env.DODO_PAYMENTS_WEBHOOK_KEY?.trim();
+    if (!secret) throw new Error('BILLING_WEBHOOK_UNAVAILABLE: Dodo webhook key is not configured');
+    if (typeof headers === 'string') throw new Error('INVALID_BILLING_SIGNATURE: Dodo requires Standard Webhooks headers');
+    verifyDodoWebhook(rawBody, headers, secret);
+    let parsed: unknown;
+    try { parsed = JSON.parse(rawBody); } catch { throw new Error('MALFORMED_BILLING_EVENT'); }
+    const { id, eventType: dodoEventType, data } = dodoPayloadRecord(parsed);
+    const mapped = mapDodoEventType(dodoEventType);
+    const customer = data.customer && typeof data.customer === 'object' && !Array.isArray(data.customer)
+      ? data.customer as Record<string, unknown>
+      : undefined;
+    const customerId = typeof customer?.customer_id === 'string' ? customer.customer_id : typeof data.customer_id === 'string' ? data.customer_id : undefined;
+    const subscriptionId = typeof data.subscription_id === 'string' ? data.subscription_id : undefined;
+    const status = typeof data.status === 'string' ? data.status : undefined;
+    const periodEnd = typeof data.next_billing_date === 'string' ? data.next_billing_date : undefined;
+    const metadata = data.metadata && typeof data.metadata === 'object' && !Array.isArray(data.metadata)
+      ? data.metadata as Record<string, unknown>
+      : undefined;
+    const productId = typeof data.product_id === 'string' ? data.product_id : undefined;
+    const planId = typeof metadata?.plan_id === 'string'
+      ? metadata.plan_id
+      : productId === this.products.pro ? 'pro' : productId === this.products.team ? 'team' : undefined;
+    const normalizedStatus = mapped.status ?? status;
+    return {
+      id,
+      provider: 'dodo',
+      eventType: mapped.eventType,
+      ...(customerId ? { customerId } : {}),
+      ...(subscriptionId ? { subscriptionId } : {}),
+      ...(normalizedStatus ? { status: normalizedStatus } : {}),
+      ...(planId ? { planId } : {}),
+      ...(periodEnd ? { periodEnd } : {}),
+      rawPayload: rawBody,
+    };
+  }
+}
+
 export class MockBillingProvider implements BillingProvider {
   name = 'mock';
 
@@ -134,7 +299,8 @@ export class MockBillingProvider implements BillingProvider {
     };
   }
 
-  async verifyAndParseWebhook(rawBody: string, signature: string): Promise<BillingWebhookEvent> {
+  async verifyAndParseWebhook(rawBody: string, signature: string | BillingWebhookHeaders): Promise<BillingWebhookEvent> {
+    if (typeof signature !== 'string') throw new Error('INVALID_BILLING_SIGNATURE: Mock provider expects a legacy signature');
     const secret = process.env.BILLING_WEBHOOK_SECRET;
     if (!secret) throw new Error('BILLING_WEBHOOK_UNAVAILABLE: Provider signing secret is not configured.');
     const hmac = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
@@ -192,5 +358,11 @@ export class MockBillingProvider implements BillingProvider {
 
 export function getBillingProvider(environment: NodeJS.ProcessEnv = process.env): BillingProvider {
   if (environment.NODE_ENV !== 'production' && environment.BILLING_PROVIDER === 'mock') return new MockBillingProvider();
+  if (environment.NODE_ENV !== 'production'
+    && environment.BILLING_PROVIDER === 'dodo'
+    && environment.DODO_PAYMENTS_ENVIRONMENT === 'test_mode'
+    && environment.DODO_ENABLE_TEST_CHECKOUT === 'true') {
+    try { return new DodoBillingProvider(environment); } catch { return new UnavailableBillingProvider(); }
+  }
   return new UnavailableBillingProvider();
 }

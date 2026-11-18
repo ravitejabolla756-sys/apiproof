@@ -6,6 +6,7 @@ type SqliteParam = null | number | bigint | string | Uint8Array;
 export class SqliteDatabaseAdapter implements DatabaseAdapter {
   readonly engine = 'sqlite' as const;
   private db: DatabaseSync;
+  private transactionTail: Promise<void> = Promise.resolve();
 
   constructor(db: DatabaseSync) {
     this.db = db;
@@ -43,8 +44,18 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
   }
 
   async transaction<T>(fn: (tx: DatabaseAdapter) => Promise<T>): Promise<T> {
-    this.db.exec('BEGIN TRANSACTION;');
+    // DatabaseSync exposes one connection, so concurrent async callers cannot
+    // safely issue overlapping BEGIN/COMMIT pairs on it. Queue transaction
+    // ownership while keeping ordinary read queries unchanged.
+    const previous = this.transactionTail;
+    let release!: () => void;
+    this.transactionTail = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    await previous;
     try {
+      this.db.exec('BEGIN TRANSACTION;');
       const result = await fn(this);
       this.db.exec('COMMIT;');
       return result;
@@ -55,6 +66,8 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         // ignore rollback errors if transaction already rolled back
       }
       throw error;
+    } finally {
+      release();
     }
   }
 

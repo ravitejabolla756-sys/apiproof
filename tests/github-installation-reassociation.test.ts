@@ -140,6 +140,22 @@ describe('GitHub Installation Reassociation Hardening', () => {
     expect(await getWorkspaceGitHubInstallation(ws.id)).not.toBeNull();
   });
 
+  it('redirects an HTML callback with missing state back to settings without associating an installation', async () => {
+    const { session } = await createUserWithSession('missing-state@example.com', 'Pass12345!', 'Missing State');
+    const req = new Request(`http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}`, {
+      headers: {
+        accept: 'text/html',
+        cookie: `apiproof_session=${session.id}`,
+      },
+    });
+
+    const res = await callbackGet(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBe('http://localhost/dashboard/settings?github=error&code=INVALID_CALLBACK_STATE');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await getDatabase().queryOne('SELECT id FROM github_installations WHERE installation_id = ?', [TEST_INSTALLATION_ID])).toBeFalsy();
+  });
+
   // TEST B: Same user owning both old and new workspaces can reassociate
   it('TEST B: Same user owning both old and new workspaces can reassociate', async () => {
     const { user, session } = await createUserWithSession('bob@example.com', 'Pass12345!', 'Bob');

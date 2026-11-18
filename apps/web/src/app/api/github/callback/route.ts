@@ -11,28 +11,45 @@ import {
 import { requireWorkspaceMember, requireWorkspaceOwner } from '@/lib/server/workspace-service.js';
 import { evaluateVerifiedUserPolicy, loadVerifiedUserPolicy, verifiedUserFailure } from '@/lib/server/verified-user-policy.js';
 
-export async function GET(req: Request) {
-  // 1. Authenticate APIProof session
-  const user = await getCurrentUser(req);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized: Session required for installation callback.', code: 'UNAUTHORIZED' }, { status: 401 });
+function callbackFailure(req: Request, status: number, code: string, error: string) {
+  if ((req.headers.get('accept') || '').includes('text/html')) {
+    const location = new URL('/dashboard/settings', req.url);
+    location.searchParams.set('github', 'error');
+    location.searchParams.set('code', code);
+    const response = NextResponse.redirect(location);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   }
 
-  const verification = evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'provider_link'));
-  const verificationFailure = verifiedUserFailure(verification);
-  if (verificationFailure) return NextResponse.json(verificationFailure, { status: verificationFailure.status });
+  return NextResponse.json({ error, code }, {
+    status,
+    headers: { 'Cache-Control': 'private, no-store, max-age=0' },
+  });
+}
 
-  const urlObj = new URL(req.url);
-  const installationId = urlObj.searchParams.get('installation_id');
-  const state = urlObj.searchParams.get('state');
+export async function GET(req: Request) {
+  try {
+    // 1. Authenticate APIProof session
+    const user = await getCurrentUser(req);
+    if (!user) {
+      return callbackFailure(req, 401, 'UNAUTHORIZED', 'Session required for GitHub installation callback.');
+    }
+
+    const verification = evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'provider_link'));
+    const verificationFailure = verifiedUserFailure(verification);
+    if (verificationFailure) return callbackFailure(req, verificationFailure.status, verificationFailure.code, verificationFailure.error);
+
+    const urlObj = new URL(req.url);
+    const installationId = urlObj.searchParams.get('installation_id');
+    const state = urlObj.searchParams.get('state');
 
   // 2. Validate callback parameters
   if (!installationId || !/^\d+$/.test(installationId.trim())) {
-    return NextResponse.json({ error: 'Invalid or missing installation_id parameter.', code: 'INVALID_CALLBACK' }, { status: 400 });
+    return callbackFailure(req, 400, 'INVALID_CALLBACK', 'Invalid or missing installation_id parameter.');
   }
 
   if (!state || typeof state !== 'string' || state.trim().length === 0) {
-    return NextResponse.json({ error: 'Missing state parameter.', code: 'INVALID_CALLBACK_STATE' }, { status: 400 });
+    return callbackFailure(req, 400, 'INVALID_CALLBACK_STATE', 'Missing state parameter. Start GitHub connection again from workspace settings.');
   }
 
   // 3 & 4. Validate state (bound to user and workspace, single-use, unexpired)
@@ -43,10 +60,7 @@ export async function GET(req: Request) {
     const code = stateVerification.errorCode === 'INVALID_STATE'
       ? 'INVALID_CALLBACK_STATE'
       : (stateVerification.errorCode || 'INVALID_CALLBACK_STATE');
-    return NextResponse.json({
-      error: stateVerification.error || 'Invalid callback state.',
-      code,
-    }, { status: 400 });
+    return callbackFailure(req, 400, code, stateVerification.error || 'Invalid callback state.');
   }
 
   const workspaceId = stateVerification.workspaceId;
@@ -55,7 +69,7 @@ export async function GET(req: Request) {
   try {
     await requireWorkspaceMember(user.id, workspaceId);
   } catch {
-    return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403 });
+    return callbackFailure(req, 403, 'FORBIDDEN', 'Workspace access denied.');
   }
 
   // 5 & 6. Verify GitHub installation belongs to this GitHub App and fetch authoritative metadata
@@ -65,15 +79,15 @@ export async function GET(req: Request) {
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     if (errorMsg.includes('GITHUB_INSTALLATION_APP_MISMATCH') || errorMsg.includes('GITHUB_INSTALLATION_NOT_FOUND')) {
-      return NextResponse.json({
-        error: 'Installation does not belong to the authorized APIProof GitHub App.',
-        code: 'UNKNOWN_INSTALLATION',
-      }, { status: 400 });
+      return callbackFailure(req, 400, 'UNKNOWN_INSTALLATION', 'Installation does not belong to the authorized APIProof GitHub App.');
     }
-    return NextResponse.json({
-      error: `GitHub API error validating installation: ${errorMsg}`,
+    // Do not echo provider or configuration details to the browser. They can
+    // contain deployment-specific information and are not actionable there.
+    console.error('[github-callback] installation verification failed', {
       code: 'GITHUB_API_ERROR',
-    }, { status: 502 });
+      errorType: err instanceof Error ? err.name : typeof err,
+    });
+    return callbackFailure(req, 502, 'GITHUB_API_ERROR', 'GitHub installation verification is temporarily unavailable.');
   }
 
   const cleanInstallationId = installationId.trim();
@@ -89,28 +103,19 @@ export async function GET(req: Request) {
     try {
       await requireWorkspaceOwner(user.id, workspaceId);
     } catch {
-      return NextResponse.json({
-        error: 'Action requires workspace owner privileges on target workspace.',
-        code: 'FORBIDDEN',
-      }, { status: 403 });
+      return callbackFailure(req, 403, 'FORBIDDEN', 'Action requires workspace owner privileges on target workspace.');
     }
 
     try {
       await requireWorkspaceOwner(user.id, existingRecord.workspace_id);
     } catch {
-      return NextResponse.json({
-        error: 'This GitHub installation is already associated with another workspace.',
-        code: 'INSTALLATION_OWNED_BY_ANOTHER_WORKSPACE',
-      }, { status: 409 });
+      return callbackFailure(req, 409, 'INSTALLATION_OWNED_BY_ANOTHER_WORKSPACE', 'This GitHub installation is already associated with another workspace.');
     }
   }
 
   const consumedState = await verifyAndConsumeGitHubInstallationState(state.trim(), user.id);
   if (!consumedState.valid || consumedState.workspaceId !== workspaceId) {
-    return NextResponse.json({
-      error: consumedState.error || 'Invalid callback state.',
-      code: consumedState.errorCode || 'INVALID_CALLBACK_STATE',
-    }, { status: 400 });
+    return callbackFailure(req, 400, consumedState.errorCode || 'INVALID_CALLBACK_STATE', consumedState.error || 'Invalid callback state.');
   }
 
   const now = new Date().toISOString();
@@ -178,6 +183,16 @@ export async function GET(req: Request) {
     accountLogin: installationMeta.accountLogin,
     accountType: installationMeta.accountType,
   }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  } catch (error: unknown) {
+    // Never turn a deployment/database configuration problem into a generic
+    // platform 500 page. Keep the response generic and avoid logging state,
+    // cookies, request URLs, connection strings, or provider payloads.
+    console.error('[github-callback] request failed', {
+      code: 'GITHUB_CALLBACK_UNAVAILABLE',
+      errorType: error instanceof Error ? error.name : typeof error,
+    });
+    return callbackFailure(req, 503, 'GITHUB_CALLBACK_UNAVAILABLE', 'GitHub connection is temporarily unavailable. Check the deployment configuration and try again.');
+  }
 }
 
 export async function POST(req: Request) {

@@ -44,8 +44,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  // Paid plans are intentionally display-only during the public beta.
-  if (planId === 'pro' || planId === 'team') {
+  const provider = getBillingProvider();
+  // Paid plans remain blocked unless the explicitly opt-in Dodo test adapter
+  // is configured. Production and live-mode environments stay fail-closed.
+  if ((planId === 'pro' || planId === 'team') && provider.name !== 'dodo') {
     return NextResponse.json(
       { error: 'BILLING_NOT_AVAILABLE: Paid plans are rolling out and cannot be purchased yet.' },
       { status: 403, headers: PRIVATE_NO_STORE_HEADERS },
@@ -53,7 +55,6 @@ export async function POST(req: Request) {
   }
 
   let sub: Awaited<ReturnType<typeof getWorkspaceSubscription>>;
-  let provider: ReturnType<typeof getBillingProvider>;
   try {
     sub = await withPostgresTenantContext(
       getDatabase(),
@@ -62,7 +63,6 @@ export async function POST(req: Request) {
       (tx) => getWorkspaceSubscription(workspace.id, tx),
       extractSessionId(req),
     );
-    provider = getBillingProvider();
   } catch {
     console.error('Billing configuration lookup failed:', { code: 'BILLING_CONFIGURATION_UNAVAILABLE' });
     return NextResponse.json({ error: 'Billing configuration is temporarily unavailable.', code: 'BILLING_CONFIGURATION_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });

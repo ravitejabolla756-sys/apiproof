@@ -60,6 +60,20 @@ export default function SettingsPage() {
     void loadStatus();
   }, []);
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('github') !== 'error') return;
+
+    const code = params.get('code');
+    const messages: Record<string, string> = {
+      INVALID_CALLBACK_STATE: 'GitHub setup expired or was opened outside MY OWL. Start the connection again from this page.',
+      GITHUB_API_ERROR: 'GitHub could not verify the installation. Check the GitHub App configuration and try again.',
+      GITHUB_CALLBACK_UNAVAILABLE: 'GitHub connection is temporarily unavailable. Check the deployment configuration, then try again.',
+      INSTALLATION_OWNED_BY_ANOTHER_WORKSPACE: 'That GitHub installation is already connected to another workspace.',
+      FORBIDDEN: 'You do not have permission to connect GitHub for this workspace.',
+    };
+    setError(messages[code || ''] || 'GitHub connection could not be completed. Start again from workspace settings.');
+  }, []);
+  useEffect(() => {
     if (statusError) statusErrorRef.current?.focus();
   }, [statusError]);
 
