@@ -83,6 +83,12 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         code: 'GITHUB_UNAUTHORIZED',
       }, { status: 403 });
     }
+    if (message.includes('SCAN_ALREADY_RUNNING')) {
+      return NextResponse.json({
+        error: 'A scan is already running for this repository. Refresh the page when it completes.',
+        code: 'SCAN_ALREADY_RUNNING',
+      }, { status: 409 });
+    }
     return NextResponse.json({ error: 'Scan failed. Review the repository status and try again.', code: 'SCAN_FAILED' }, { status: 500 });
   }
 }

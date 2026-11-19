@@ -96,14 +96,19 @@ export default function RepositoryDetailPage({
       const res = await fetch(`/api/repositories/${repo.id}/scan`, {
         method: "POST",
       });
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json")
+        ? await res.json() as { result?: { findingsCount?: number }; error?: string }
+        : null;
 
       if (!res.ok) {
-        throw new Error(data.error || "Scan execution failed.");
+        throw new Error(data?.error || (res.status >= 500
+          ? "The scan service is temporarily unavailable. Please retry in a moment."
+          : "Scan execution failed."));
       }
 
       setMessage({
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: `Scan complete: ${data?.result?.findingsCount ?? 0} findings recorded.`,
       });
       await loadData();
     } catch (err: unknown) {
@@ -229,7 +234,7 @@ export default function RepositoryDetailPage({
               <div className="font-semibold text-[#111111] flex items-center gap-2">
                 <span>Scan Status:</span>
                 <span className="font-mono uppercase text-[11px] text-purple-800">
-                  {scanning
+              {latestScanIsActive
                     ? "Scan in progress"
                     : scans.length === 0
                     ? "Not Scanned"
@@ -239,13 +244,13 @@ export default function RepositoryDetailPage({
                 </span>
               </div>
               <p className="text-[11px] text-[#686868]">
-                {scanning
+                {latestScanIsActive
                   ? "Running deterministic in-memory AST analysis against latest commit tree..."
                   : scans.length === 0
                   ? "No compatibility scans recorded yet. Trigger an AST scan to detect vendor breaking changes."
                   : scans[0]?.status === "failed"
                   ? "Previous scan encountered an issue fetching repository contents. Retry scan anytime."
-                  : `Analyzed commit ${scans[0]?.sha ? scans[0].sha.slice(0, 8) : 'latest'} · ${findings.length} breaking change${findings.length === 1 ? '' : 's'} recorded.`}
+                  : `Analyzed commit ${scans[0]?.sha && scans[0].sha !== 'pending' ? scans[0].sha.slice(0, 8) : 'latest'} · ${findings.length} breaking change${findings.length === 1 ? '' : 's'} recorded.`}
               </p>
             </div>
           </div>

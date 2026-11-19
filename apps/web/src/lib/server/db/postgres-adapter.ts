@@ -25,10 +25,17 @@ export function createPostgresPoolConfig(connectionString: string): pg.PoolConfi
         ...(ca ? { ca } : {}),
       };
 
+  // Vercel functions are horizontally replicated while the hosted database
+  // uses a small session pool. Keep each warm function bounded so concurrent
+  // scans cannot exhaust the database pool. Operators may raise this only
+  // after confirming the provider's connection budget.
+  const configuredMax = Number.parseInt(process.env.APIPROOF_PG_POOL_MAX ?? '2', 10);
+  const max = Number.isInteger(configuredMax) && configuredMax >= 1 && configuredMax <= 5 ? configuredMax : 2;
+
   return {
     connectionString,
-    max: 10,
-    idleTimeoutMillis: 30000,
+    max,
+    idleTimeoutMillis: 10000,
     connectionTimeoutMillis: 10000,
     ssl,
   };

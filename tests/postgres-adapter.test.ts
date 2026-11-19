@@ -82,6 +82,8 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
       const config = createPostgresPoolConfig('postgresql://user:secret@db.example.test:5432/app');
 
       expect(config.ssl).toEqual({ rejectUnauthorized: true });
+      expect(config.max).toBe(2);
+      expect(config.idleTimeoutMillis).toBe(10000);
     });
 
     it('passes the explicitly configured PostgreSQL CA certificate to the TLS client', () => {

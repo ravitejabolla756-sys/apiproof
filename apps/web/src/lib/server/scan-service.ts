@@ -65,6 +65,24 @@ export async function runRepositoryScan(
     throw new Error('REPOSITORY_NOT_ACTIVE: Historical or disconnected repositories cannot be scanned.');
   }
 
+  const activeScan = await db.queryOne<{ id: string; started_at: string }>(`
+    SELECT id, started_at FROM scans
+    WHERE repository_id = ? AND status IN ('pending', 'running')
+    ORDER BY started_at DESC
+    LIMIT 1
+  `, [repo.id]);
+  if (activeScan) {
+    const startedAt = Date.parse(activeScan.started_at);
+    if (Number.isFinite(startedAt) && Date.now() - startedAt > 15 * 60 * 1000) {
+      await db.execute(
+        `UPDATE scans SET status = 'failed', error_message = ?, completed_at = ? WHERE id = ? AND status IN ('pending', 'running')`,
+        ['SCAN_TIMEOUT_RECOVERED: previous scan exceeded the execution window.', new Date().toISOString(), activeScan.id],
+      );
+    } else {
+      throw new Error('SCAN_ALREADY_RUNNING: A scan is already running for this repository.');
+    }
+  }
+
   const scanId = `scn_${crypto.randomBytes(12).toString('hex')}`;
   const now = new Date().toISOString();
 
