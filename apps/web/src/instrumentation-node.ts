@@ -2,6 +2,7 @@ import { getDatabase } from './lib/server/db/index.js';
 import { providerChangeMonitorMigrations } from './lib/server/db/provider-change-monitor-migration.js';
 import { googleOAuthMigrations } from './lib/server/db/google-oauth-migration.js';
 import { githubLoginMigrations } from './lib/server/db/github-login-migration.js';
+import { emailVerificationMigrations } from './lib/server/db/email-verification-migration.js';
 
 /** Run the idempotent schema chain in the Node-only runtime. */
 export async function migrateProductionDatabase(): Promise<void> {
@@ -40,6 +41,22 @@ export async function migrateProductionDatabase(): Promise<void> {
     );
     if (!githubState) {
       await githubLoginMigrations[0]!.up(tx);
+    }
+
+    const emailVerificationState = await tx.queryOne<{ table_name: string }>(
+      `SELECT table_name
+       FROM information_schema.tables
+       WHERE table_schema = 'public' AND table_name = 'email_verification_codes'`
+    );
+    const emailVerifiedColumn = await tx.queryOne<{ column_name: string }>(
+      `SELECT column_name
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'users'
+         AND column_name = 'email_verified_at'`
+    );
+    if (!emailVerificationState || !emailVerifiedColumn) {
+      await emailVerificationMigrations[0]!.up(tx);
     }
   });
 }
