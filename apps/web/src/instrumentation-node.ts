@@ -3,6 +3,7 @@ import { providerChangeMonitorMigrations } from './lib/server/db/provider-change
 import { googleOAuthMigrations } from './lib/server/db/google-oauth-migration.js';
 import { githubLoginMigrations } from './lib/server/db/github-login-migration.js';
 import { emailVerificationMigrations } from './lib/server/db/email-verification-migration.js';
+import { passwordResetMigrations } from './lib/server/db/password-reset-migration.js';
 
 /** Run the idempotent schema chain in the Node-only runtime. */
 export async function migrateProductionDatabase(): Promise<void> {
@@ -57,6 +58,15 @@ export async function migrateProductionDatabase(): Promise<void> {
     );
     if (!emailVerificationState || !emailVerifiedColumn) {
       await emailVerificationMigrations[0]!.up(tx);
+    }
+
+    const passwordResetState = await tx.queryOne<{ table_name: string }>(
+      `SELECT table_name
+       FROM information_schema.tables
+       WHERE table_schema = 'public' AND table_name = 'password_reset_tokens'`
+    );
+    if (!passwordResetState) {
+      await passwordResetMigrations[0]!.up(tx);
     }
   });
 }
