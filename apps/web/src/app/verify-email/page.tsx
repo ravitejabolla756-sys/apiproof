@@ -151,7 +151,7 @@ export default function VerifyEmailPage() {
           {resending ? 'Sending code…' : 'Resend code'}
         </button>
         <div className="mt-2 text-center">
-          <Link href="/dashboard" className="text-sm text-slate-600 hover:text-slate-900">Back to MY OWL</Link>
+          <Link href="/login?from=verify-email" className="text-sm text-slate-600 hover:text-slate-900">Back to MY OWL</Link>
         </div>
       </section>
     </main>

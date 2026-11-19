@@ -18,10 +18,11 @@ export default function LoginPage() {
 
   // If already authenticated, redirect to /dashboard
   useEffect(() => {
+    const returnFromVerification = new URLSearchParams(window.location.search).get('from') === 'verify-email';
     fetch('/api/auth')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.authenticated) {
+        if (data?.authenticated && !returnFromVerification) {
           window.location.href = '/dashboard';
         }
       })
