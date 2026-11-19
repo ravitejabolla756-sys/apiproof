@@ -20,6 +20,26 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
 
   const db = getDatabase();
 
+  // A serverless instance can disappear after a scan has claimed a row but
+  // before the completion update. Recover abandoned rows when the repository
+  // workbench is opened so the UI never remains in a false infinite-running
+  // state. The scan service applies the same guard before starting a retry.
+  const staleBefore = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  await db.execute(`
+    UPDATE scans
+    SET status = 'failed',
+        error_message = ?,
+        completed_at = ?
+    WHERE repository_id = ?
+      AND status IN ('pending', 'running')
+      AND started_at < ?
+  `, [
+    'SCAN_TIMEOUT_RECOVERED: previous scan exceeded the execution window.',
+    new Date().toISOString(),
+    repo.id,
+    staleBefore,
+  ]);
+
   const findings = await db.query(`
     SELECT f.id, f.change_id, f.provider, f.title, f.description, f.severity, f.confidence,
            f.file_path, f.line_number, f.symbol, f.status, f.created_at
