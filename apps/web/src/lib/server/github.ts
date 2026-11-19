@@ -61,6 +61,22 @@ export async function createGitHubInstallationState(userId: string, workspaceId:
 }
 
 /**
+ * GitHub can omit the original state when returning from an installation
+ * update. Recover only the current user's newest still-valid pending state so
+ * that update callbacks remain bound to the initiating workspace.
+ */
+export async function getPendingGitHubInstallationState(userId: string): Promise<string | null> {
+  const row = await getDatabase().queryOne<{ state: string }>(`
+    SELECT state
+    FROM github_installation_states
+    WHERE user_id = ? AND consumed_at IS NULL AND expires_at > ?
+    ORDER BY created_at DESC
+    LIMIT 1
+  `, [userId, Date.now()]);
+  return row?.state ?? null;
+}
+
+/**
  * Verifies and atomically consumes a single-use installation callback state.
  */
 export async function verifyAndConsumeGitHubInstallationState(

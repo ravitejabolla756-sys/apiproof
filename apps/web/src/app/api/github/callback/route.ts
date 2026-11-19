@@ -5,6 +5,7 @@ import { getDatabase } from '@/lib/server/db/index.js';
 import { getEmailVerificationStatus } from '@/lib/server/email-verification.js';
 import type { DatabaseAdapter } from '@/lib/server/db/types.js';
 import {
+  getPendingGitHubInstallationState,
   inspectGitHubInstallationState,
   verifyAndConsumeGitHubInstallationState,
   verifyGitHubAppInstallation,
@@ -34,7 +35,8 @@ export async function GET(req: Request) {
 
   const urlObj = new URL(req.url);
   const installationId = urlObj.searchParams.get('installation_id');
-  const state = urlObj.searchParams.get('state');
+  const setupAction = urlObj.searchParams.get('setup_action');
+  let state = urlObj.searchParams.get('state');
 
   // 2. Validate callback parameters
   if (!installationId || !/^\d+$/.test(installationId.trim())) {
@@ -42,7 +44,17 @@ export async function GET(req: Request) {
   }
 
   if (!state || typeof state !== 'string' || state.trim().length === 0) {
-    return NextResponse.json({ error: 'Missing state parameter.', code: 'INVALID_CALLBACK_STATE' }, { status: 400 });
+    if (setupAction === 'update') {
+      state = await getPendingGitHubInstallationState(user.id);
+    }
+    if (!state || state.trim().length === 0) {
+      return NextResponse.json({
+        error: setupAction === 'update'
+          ? 'GitHub returned an installation update without a recoverable connection request. Start Connect GitHub again from MY OWL.'
+          : 'Missing state parameter.',
+        code: 'INVALID_CALLBACK_STATE',
+      }, { status: 400 });
+    }
   }
 
   // 3 & 4. Validate state (bound to user and workspace, single-use, unexpired)
