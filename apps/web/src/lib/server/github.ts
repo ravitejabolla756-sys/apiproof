@@ -291,6 +291,7 @@ export async function fetchRemoteRepositoryFiles(
 ): Promise<{ files: Map<string, string>; headSha: string; defaultBranch: string }> {
   const MAX_FILES = 2_000;
   const MAX_FILE_BYTES = 2 * 1024 * 1024;
+  const FILE_FETCH_CONCURRENCY = 12;
   const readWithRetry = async <T>(operation: () => Promise<T>, label: string): Promise<T> => {
     let lastError: unknown;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -324,16 +325,26 @@ export async function fetchRemoteRepositoryFiles(
     throw new Error(`GITHUB_SNAPSHOT_TOO_LARGE: repository contains more than ${MAX_FILES} analyzable files`);
   }
 
-  for (const filePath of filesToFetch) {
-    const content = await readWithRetry(() => provider.readFile(filePath, sha), `file:${filePath}@${sha}`);
-    const byteLength = Buffer.byteLength(content, 'utf8');
-    if (byteLength > MAX_FILE_BYTES) {
-      throw new Error(`GITHUB_FILE_TOO_LARGE:${filePath}`);
+  // GitHub Contents requests are independent once the tree and pinned SHA
+  // are known. Bounded concurrency keeps large repositories within the
+  // serverless execution window without creating an unbounded API burst.
+  for (let start = 0; start < filesToFetch.length; start += FILE_FETCH_CONCURRENCY) {
+    const batch = filesToFetch.slice(start, start + FILE_FETCH_CONCURRENCY);
+    const entries = await Promise.all(batch.map(async (filePath) => {
+      const content = await readWithRetry(() => provider.readFile(filePath, sha), `file:${filePath}@${sha}`);
+      const byteLength = Buffer.byteLength(content, 'utf8');
+      if (byteLength > MAX_FILE_BYTES) {
+        throw new Error(`GITHUB_FILE_TOO_LARGE:${filePath}`);
+      }
+      if (content.includes('\u0000')) {
+        throw new Error(`GITHUB_BINARY_FILE_UNSUPPORTED:${filePath}`);
+      }
+      return [filePath, content] as const;
+    }));
+
+    for (const [filePath, content] of entries) {
+      filesMap.set(filePath, content);
     }
-    if (content.includes('\u0000')) {
-      throw new Error(`GITHUB_BINARY_FILE_UNSUPPORTED:${filePath}`);
-    }
-    filesMap.set(filePath, content);
   }
 
   return { files: filesMap, headSha: sha, defaultBranch: head.name };

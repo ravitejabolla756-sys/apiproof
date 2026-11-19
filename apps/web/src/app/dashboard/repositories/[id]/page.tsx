@@ -193,7 +193,7 @@ export default function RepositoryDetailPage({
             <Button
               size="sm"
               variant="primary"
-              disabled={scanning}
+              disabled={scanning || latestScanIsActive}
               onClick={handleTriggerScan}
               className="gap-1.5 text-xs font-medium"
             >
@@ -259,7 +259,7 @@ export default function RepositoryDetailPage({
             <Button
               size="sm"
               variant={scans[0]?.status === "failed" || scans.length === 0 ? "primary" : "outline"}
-              disabled={scanning}
+              disabled={scanning || latestScanIsActive}
               onClick={handleTriggerScan}
               className="gap-1.5 text-xs font-medium"
             >
