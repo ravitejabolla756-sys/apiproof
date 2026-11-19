@@ -11,9 +11,8 @@ import { processPendingGitHubScans } from '../apps/web/src/lib/server/scan-worke
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
 import { POST as workerPostHandler } from '../apps/web/src/app/api/internal/scan-worker/route.js';
 import {
-  assertFounderScanAuthorization,
-  getConfiguredFounderUserId,
-} from '../apps/web/src/lib/server/founder-scan-authorization.js';
+  assertLiveScanEnabled,
+} from '../apps/web/src/lib/server/live-scan-authorization.js';
 
 const TEST_DB_PATH = path.resolve('.tmp/test-p0-live-scan-security.db');
 
@@ -21,7 +20,7 @@ describe('P0 live scan security boundary', () => {
   const originalEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    for (const key of ['APIPROOF_ENABLE_LIVE_GITHUB', 'APIPROOF_FOUNDER_USER_ID', 'APIPROOF_DB_PATH', 'CRON_SECRET']) {
+    for (const key of ['APIPROOF_ENABLE_LIVE_GITHUB', 'APIPROOF_DB_PATH', 'CRON_SECRET']) {
       originalEnv[key] = process.env[key];
     }
     process.env.NODE_ENV = 'test';
@@ -40,32 +39,20 @@ describe('P0 live scan security boundary', () => {
     }
   });
 
-  it('fails closed for missing, malformed, mismatched and valid founder IDs', () => {
-    delete process.env.APIPROOF_FOUNDER_USER_ID;
-    expect(getConfiguredFounderUserId()).toBeNull();
-    expect(() => assertFounderScanAuthorization('usr_founder')).toThrow('FOUNDER_SCAN_ID_NOT_CONFIGURED');
-
-    process.env.APIPROOF_FOUNDER_USER_ID = 'not-an-user-id';
-    expect(getConfiguredFounderUserId()).toBeNull();
-    expect(() => assertFounderScanAuthorization('usr_founder')).toThrow('FOUNDER_SCAN_ID_NOT_CONFIGURED');
-
-    process.env.APIPROOF_FOUNDER_USER_ID = 'usr_founder';
-    expect(() => assertFounderScanAuthorization('usr_other')).toThrow('FOUNDER_SCAN_NOT_AUTHORIZED');
-    expect(() => assertFounderScanAuthorization('usr_founder')).not.toThrow();
+  it('enables live scanning without a global founder identity', () => {
+    expect(() => assertLiveScanEnabled()).not.toThrow();
   });
 
-  it('blocks direct scan service calls before repository access for non-founder users', async () => {
-    process.env.APIPROOF_FOUNDER_USER_ID = 'usr_founder';
+  it('blocks direct scan service calls before repository access for users without repository access', async () => {
     await expect(runRepositoryScan('repo_not_authorized', 'usr_other'))
-      .rejects.toThrow('FOUNDER_SCAN_NOT_AUTHORIZED');
+      .rejects.toThrow('Repository not found or access denied.');
   });
 
-  it('queues push scans only for a repository in the founder-owned workspace', async () => {
+  it('queues push scans for connected repositories in every workspace', async () => {
     const { user: founder } = await createUserWithSession('founder-security@test.com', 'Pass1234!', 'Founder');
     const founderWorkspace = await getDefaultWorkspaceForUser(founder.id);
     const { user: other } = await createUserWithSession('other-security@test.com', 'Pass1234!', 'Other');
     const otherWorkspace = await getDefaultWorkspaceForUser(other.id);
-    process.env.APIPROOF_FOUNDER_USER_ID = founder.id;
     const db = getDatabase();
     const now = new Date().toISOString();
 
@@ -92,18 +79,16 @@ describe('P0 live scan security boundary', () => {
     });
 
     expect(founderResult.handled).toBe(true);
-    expect(otherResult.handled).toBe(false);
-    expect(otherResult.reason).toBe('unmatched_repository');
+    expect(otherResult.handled).toBe(true);
     expect((await db.queryOne<{ count: number }>('SELECT COUNT(*) as count FROM github_scan_requests WHERE repository_id = ?', ['repo_founder_security']))?.count).toBe(1);
-    expect((await db.queryOne<{ count: number }>('SELECT COUNT(*) as count FROM github_scan_requests WHERE repository_id = ?', ['repo_other_security']))?.count).toBe(0);
+    expect((await db.queryOne<{ count: number }>('SELECT COUNT(*) as count FROM github_scan_requests WHERE repository_id = ?', ['repo_other_security']))?.count).toBe(1);
   });
 
-  it('requires an explicit repository scope and leaves unrelated jobs pending', async () => {
+  it('processes pending jobs across workspaces and still supports exact repository scope', async () => {
     const { user: founder } = await createUserWithSession('founder-worker-security@test.com', 'Pass1234!', 'Founder');
     const founderWorkspace = await getDefaultWorkspaceForUser(founder.id);
     const { user: other } = await createUserWithSession('other-worker-security@test.com', 'Pass1234!', 'Other');
     const otherWorkspace = await getDefaultWorkspaceForUser(other.id);
-    process.env.APIPROOF_FOUNDER_USER_ID = founder.id;
     const db = getDatabase();
     const now = new Date().toISOString();
 
@@ -123,15 +108,13 @@ describe('P0 live scan security boundary', () => {
              ('req_other_worker_security', ?, 'repo_other_worker_security', ?, 'refs/heads/main', 'pending', ?)
     `, [founderWorkspace.id, 'c'.repeat(40), now, otherWorkspace.id, 'd'.repeat(40), now]);
 
-    await expect(processPendingGitHubScans({ batchSize: 10 })).rejects.toThrow('FOUNDER_SCAN_REPOSITORY_SCOPE_REQUIRED');
-    const scoped = await processPendingGitHubScans({ batchSize: 10, repositoryId: 'repo_founder_worker_security' });
-    expect(scoped.jobsClaimed).toBe(1);
-    expect((await db.queryOne<{ status: string }>('SELECT status FROM github_scan_requests WHERE id = ?', ['req_other_worker_security']))?.status).toBe('pending');
+    const result = await processPendingGitHubScans({ batchSize: 10 });
+    expect(result.jobsClaimed).toBe(2);
+    expect((await db.queryOne<{ status: string }>('SELECT status FROM github_scan_requests WHERE id = ?', ['req_other_worker_security']))?.status).toBe('failed');
     expect((await db.queryOne<{ status: string }>('SELECT status FROM github_scan_requests WHERE id = ?', ['req_founder_worker_security']))?.status).toBe('failed');
   });
 
-  it('rejects an authenticated live-worker request without an exact repository scope', async () => {
-    process.env.APIPROOF_FOUNDER_USER_ID = 'usr_founder';
+  it('allows the protected worker route to drain a bounded batch across workspaces', async () => {
     process.env.CRON_SECRET = 'local-cron-secret';
 
     const response = await workerPostHandler(new NextRequest('http://localhost/api/internal/scan-worker', {
@@ -140,13 +123,12 @@ describe('P0 live scan security boundary', () => {
         authorization: 'Bearer local-cron-secret',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ batchSize: 1 }),
+      body: JSON.stringify({ batchSize: 1, metricsOnly: true }),
     }));
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
-      ok: false,
-      code: 'REPOSITORY_SCOPE_REQUIRED',
+      ok: true,
     });
   });
 });

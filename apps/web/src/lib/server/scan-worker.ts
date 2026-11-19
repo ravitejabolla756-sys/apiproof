@@ -32,7 +32,6 @@ import { productizationFindings, type ProductizationFinding } from './productiza
 import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { extractSourceSnippet } from './scan-snippet.js';
-import { assertFounderRepositoryScope, assertFounderScanProtectionConfigured, getConfiguredFounderUserId } from './founder-scan-authorization.js';
 import { buildWorkerScope } from './scan-worker-scope.js';
 // ---------------------------------------------------------------------------
 // Public types
@@ -158,7 +157,7 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
     // PostgreSQL atomic claim using FOR UPDATE SKIP LOCKED
     return await db.transaction(async (tx) => {
       // Recover only expired leases. created_at is not a valid worker lease.
-      const recoveryScope = buildWorkerScope('postgres', options, getConfiguredFounderUserId(), 3);
+      const recoveryScope = buildWorkerScope('postgres', options, 3);
       await tx.execute(`
         UPDATE github_scan_requests
         SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
@@ -168,7 +167,7 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
         )${recoveryScope.sql}
       `, [nowIso, legacyStaleThreshold, ...recoveryScope.params]);
 
-      const selectScope = buildWorkerScope('postgres', options, getConfiguredFounderUserId(), 2);
+      const selectScope = buildWorkerScope('postgres', options, 2);
       const rows = await tx.query<PendingScanRequest>(`
         SELECT id, workspace_id, repository_id, commit_sha, ref, status, delivery_id, created_at,
                attempt_count, claimed_at, lease_expires_at
@@ -199,7 +198,7 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
 
   // SQLite: serialized write transaction — select pending IDs first, then update those exact IDs
   return await withSqliteClaimLock(() => db.transaction(async (tx) => {
-    const scope = buildWorkerScope('sqlite', options, getConfiguredFounderUserId(), 1);
+    const scope = buildWorkerScope('sqlite', options, 1);
     // Recover only expired leases. created_at is not a valid worker lease.
     await tx.execute(`
       UPDATE github_scan_requests
@@ -591,7 +590,6 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
  */
 export async function processPendingGitHubScans(options: ScanWorkerOptions = {}): Promise<ScanWorkerResult> {
   logger.info('scan_worker_runtime', workerRuntimeIdentity());
-  assertFounderScanProtectionConfigured(); assertFounderRepositoryScope(options.repositoryId);
   const batchSize = Math.min(options.batchSize ?? 5, 20); // hard cap at 20
   const timeoutMs = Math.min(options.timeoutMs ?? 50_000, 270_000); // hard cap at 270s (Vercel Pro max)
   const deadline = Date.now() + timeoutMs;

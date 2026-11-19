@@ -16,7 +16,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
-import { isLiveScanProtectionEnabled } from '../../../../lib/server/founder-scan-authorization.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
 
 export const runtime = 'nodejs';
@@ -89,13 +88,6 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
     if (metricsOnly) {
       const metrics = await getScanWorkerMetrics();
       return NextResponse.json({ ok: true, metrics });
-    }
-
-    // A live/manual worker call must be narrowed to one repository. This also
-    // makes Vercel Cron fail closed until a separately approved scoped trigger
-    // exists, so a secret cannot drain unrelated tenant jobs.
-    if (isLiveScanProtectionEnabled() && !repositoryId) {
-      return NextResponse.json({ ok: false, error: 'REPOSITORY_SCOPE_REQUIRED', code: 'REPOSITORY_SCOPE_REQUIRED' }, { status: 400 });
     }
 
     const result = await processPendingGitHubScans({ batchSize, timeoutMs, repositoryId });

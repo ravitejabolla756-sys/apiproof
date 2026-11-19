@@ -4,7 +4,6 @@ import {
   getGitHubInstallationByInstallationId,
   updateGitHubInstallationStatus,
 } from './workspace-service.js';
-import { getConfiguredFounderUserId, isLiveScanProtectionEnabled } from './founder-scan-authorization.js';
 
 export interface WebhookResult {
   received: boolean;
@@ -414,33 +413,13 @@ export async function processGitHubWebhook(params: {
     }
 
     // C. Authoritative match: must be connected to APIProof under an active GitHub installation
-    const founderOnly = isLiveScanProtectionEnabled();
-    const founderUserId = getConfiguredFounderUserId();
-    if (founderOnly && !founderUserId) {
-      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Live founder scan authorization is not configured');
-      return { received: true, handled: false, reason: 'founder_scan_not_configured' };
-    }
-
     const repo = await db.queryOne<{
       id: string;
       workspace_id: string;
       default_branch: string;
       status: string;
       full_name: string;
-    }>(founderOnly ? `
-      SELECT r.id, r.workspace_id, r.default_branch, r.status, r.full_name
-      FROM repositories r
-      JOIN github_installations gi ON gi.workspace_id = r.workspace_id
-      JOIN workspace_members owner_member
-        ON owner_member.workspace_id = r.workspace_id
-       AND owner_member.role = 'owner'
-       AND owner_member.user_id = ?
-      WHERE r.github_repository_id = ?
-        AND r.status = 'connected'
-        AND r.lifecycle = 'active'
-        AND (gi.status IS NULL OR gi.status = 'active')
-      LIMIT 1
-    ` : `
+    }>(`
       SELECT r.id, r.workspace_id, r.default_branch, r.status, r.full_name
       FROM repositories r
       JOIN github_installations gi ON gi.workspace_id = r.workspace_id
@@ -449,7 +428,7 @@ export async function processGitHubWebhook(params: {
         AND r.lifecycle = 'active'
         AND (gi.status IS NULL OR gi.status = 'active')
       LIMIT 1
-    `, founderOnly ? [founderUserId, ghRepoId] : [ghRepoId]);
+    `, [ghRepoId]);
 
     if (!repo) {
       await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Repository not connected or installation inactive');
