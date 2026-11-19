@@ -135,10 +135,18 @@ export function ConnectRepoModal({ isOpen, onClose, onSuccess }: ConnectRepoModa
     try {
       await openGitHubAuthorizationPopup(async () => {
         const res = await fetch('/api/github/install', { cache: 'no-store' });
-        const data = await res.json();
+        const body = await res.text();
+        let data: { url?: string; error?: string; code?: string } = {};
+        if (body.trim()) {
+          try {
+            data = JSON.parse(body) as typeof data;
+          } catch {
+            throw new Error(`GitHub connection returned an invalid response (${res.status}).`);
+          }
+        }
         if (!res.ok || !data.url) {
           if (data.code === 'EMAIL_VERIFICATION_REQUIRED') throw new Error('EMAIL_VERIFICATION_REQUIRED');
-          throw new Error(data.error || 'Failed to generate installation URL');
+          throw new Error(data.error || `GitHub connection failed (${res.status}).`);
         }
         return data.url as string;
       }, () => window.open('about:blank', '_blank'));

@@ -37,25 +37,24 @@ export async function GET(req: Request) {
   const urlObj = new URL(req.url);
   const requestedWorkspaceId = urlObj.searchParams.get('workspaceId');
 
-  let workspaceId: string;
-  if (requestedWorkspaceId) {
-    try {
+  try {
+    let workspaceId: string;
+    if (requestedWorkspaceId) {
       const ws = await requireWorkspaceMember(user.id, requestedWorkspaceId);
       workspaceId = ws.id;
-    } catch {
-      return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'FORBIDDEN' }, { status: 403 });
+    } else {
+      const defaultWs = await getDefaultWorkspaceForUser(user.id);
+      workspaceId = defaultWs.id;
     }
-  } else {
-    const defaultWs = await getDefaultWorkspaceForUser(user.id);
-    workspaceId = defaultWs.id;
-  }
-
-  try {
     const installUrl = await getGitHubAppInstallUrl(user.id, workspaceId);
     return NextResponse.json({ url: installUrl, workspaceId });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to generate GitHub installation URL.';
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500 });
+    const code = message.includes('Workspace') || message.includes('workspace')
+      ? 'WORKSPACE_UNAVAILABLE'
+      : 'GITHUB_INSTALL_UNAVAILABLE';
+    console.error('[github-install] Failed to prepare installation:', message);
+    return NextResponse.json({ error: 'GitHub connection is temporarily unavailable. Please try again.', code }, { status: 503 });
   }
 }
 
