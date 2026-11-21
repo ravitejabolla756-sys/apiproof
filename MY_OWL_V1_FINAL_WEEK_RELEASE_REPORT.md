@@ -145,3 +145,13 @@ Until those items are complete, treat this commit as a local release candidate o
 - Release audit: `NO_GO`, `taskCount: 53`, `acceptedTaskCount: 13`, `unresolved: 40`. Status classification is 26 `INTEGRATED_PARTIAL`, 11 `BLOCKED_EXTERNAL`, 2 `SOURCE_ONLY`, and 1 `NOT_IMPLEMENTED`. The existing scope classification remains: 14 mandatory enabled-scope/security items, 14 beta-excluded items that must remain disabled, 11 external approval/infrastructure items, and 1 post-launch/content item.
 - Staging dry-run: `blocked`; no actions taken. Blockers include disposable target, deployment/rollback execution disabled, staging approval, rollback owner, evidence location, migration evidence, authorization tests, provider approval and health path.
 - Backup/restore dry-run: `blocked`; no actions taken. Blockers include disposable restore target, backup/restore execution disabled, source/destination approval, backup manifest, migration/role/tenant-isolation evidence, rollback owner and evidence location.
+
+## Overnight local regression repair — 2026-11-22
+
+- Local scope only. No push, pull request, merge, deployment, production database change, billing activation or live Draft PR operation was performed.
+- Browser verification after repair: **PASS**, 37/37 Playwright tests in 5.4 minutes with one worker against disposable SQLite/loopback state. Six new regression tests cover compatibility failures, repository/finding 404 isolation states, login error announcement, filtered findings and failed scan styling.
+- Static checks: TypeScript **PASS**; ESLint **PASS**, zero warnings; focused role/auth/security regression **PASS**, 4 files / 48 tests.
+- Full seeded Vitest: the corrected run completed with 206 files passed, 3 skipped and two Windows permission failures. The two blocked files (`tests/contracts.test.ts` and `tests/safety.test.ts`) passed in an elevated local rerun, 11 tests total. Effective result: **208 files passed, 3 skipped; 1,618 tests passed, 17 skipped, 19 todo, 0 failures**. The earlier run without the required seed variable was invalid and is excluded.
+- Contract repair: the public-copy test no longer references the deleted unused timer-based scan simulator. The simulator remains deleted; no fabricated asynchronous product behavior was restored.
+- The preserved untracked `MY_OWL_V1_PRODUCTION_LAUNCH_CHECKLIST.md` was not modified.
+- November 28, 2026 decision remains **NO-GO**. Local tests do not replace hosted CI, real PostgreSQL security evidence, approved disposable staging, migration reconciliation, backup/restore, rollback/monitoring, live GitHub/provider verification or owner/security/legal approvals.

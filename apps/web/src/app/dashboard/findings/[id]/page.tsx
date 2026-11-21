@@ -46,6 +46,11 @@ export default function FindingDetailPage({
     setLoadError(null);
     try {
       const res = await fetch(`/api/findings/${id}`);
+      if (res.status === 404) {
+        setFinding(null);
+        setMigration(null);
+        return;
+      }
       if (!res.ok) throw new Error("Finding details are temporarily unavailable.");
       const parsed = parseFindingDetailResponse(await res.json());
       if (!parsed) throw new Error("Finding details returned an invalid response.");

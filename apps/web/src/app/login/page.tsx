@@ -231,7 +231,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+            <div role="alert" aria-live="assertive" className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
               {error}
             </div>
           )}

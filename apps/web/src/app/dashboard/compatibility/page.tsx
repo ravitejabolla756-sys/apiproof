@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink, Info, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseCompatibilityProofResponse, type CompatibilityProofResponse } from "@/lib/compatibility-proof-contract";
@@ -8,23 +8,34 @@ import { parseCompatibilityProofResponse, type CompatibilityProofResponse } from
 export default function CompatibilityPage() {
   const [data, setData] = useState<CompatibilityProofResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadCompatibility() {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/compatibility-proof", { cache: "no-store" });
       const payload: unknown = await response.json().catch(() => null);
       const parsed = parseCompatibilityProofResponse(payload);
-      if (response.ok && parsed) setData(parsed);
-      else setData({ claimsAvailable: false, reason: null, changes: [] });
+      if (!response.ok || !parsed) {
+        setData(null);
+        setError("Compatibility records are temporarily unavailable. Use Refresh to try again.");
+        return;
+      }
+      setData(parsed);
     } catch {
       setData(null);
+      setError("Compatibility records are temporarily unavailable. Use Refresh to try again.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => { void loadCompatibility(); }, []);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   return (
     <div className="max-w-[1440px] space-y-6 font-sans text-xs">
@@ -47,6 +58,13 @@ export default function CompatibilityPage() {
         <div className="py-20 text-center text-[#686868]">
           <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />
           Loading reviewed compatibility records...
+        </div>
+      ) : error ? (
+        <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="rounded-[28px] border border-rose-200 bg-rose-50 p-8 text-center text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+          <Info className="mx-auto mb-3 h-8 w-8 text-rose-600" aria-hidden="true" />
+          <h2 className="text-base font-semibold">Compatibility records cannot be displayed</h2>
+          <p className="mt-2 text-xs">{error}</p>
+          <Button type="button" variant="outline" size="sm" onClick={() => void loadCompatibility()} className="mt-4 border-rose-300 bg-white text-rose-900">Retry</Button>
         </div>
       ) : data?.claimsAvailable ? (
         <section className="space-y-4">

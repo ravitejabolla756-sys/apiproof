@@ -65,6 +65,7 @@ export default function FindingsListPage() {
     return matchesSearch && matchesSeverity && matchesProvider;
   });
   const providerOptions = ["all", ...Array.from(new Set(findings.map((finding) => finding.provider))).sort()];
+  const hasActiveFilters = searchQuery.trim().length > 0 || severityFilter !== "all" || providerFilter !== "all";
 
   return (
     <div className="space-y-6 max-w-[1440px] font-sans text-xs">
@@ -167,11 +168,22 @@ export default function FindingsListPage() {
         </div>
       ) : filteredFindings.length === 0 ? (
         <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-          <p className="font-semibold text-base text-[#111111]">No compatibility findings detected</p>
-          <p className="text-xs text-[#686868]">
-            Either all code call sites are compatible with upstream APIs, or repositories have not yet been scanned.
-          </p>
+          {hasActiveFilters ? (
+            <>
+              <Search className="w-8 h-8 text-[#686868] mx-auto" aria-hidden="true" />
+              <p className="font-semibold text-base text-[#111111]">No findings match the selected filters</p>
+              <p className="text-xs text-[#686868]">Adjust the search, severity, or provider filters to see other findings.</p>
+              <Button type="button" variant="outline" size="sm" onClick={() => { setSearchQuery(""); setSeverityFilter("all"); setProviderFilter("all"); }} className="mt-2">Clear filters</Button>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" aria-hidden="true" />
+              <p className="font-semibold text-base text-[#111111]">No compatibility findings detected</p>
+              <p className="text-xs text-[#686868]">
+                Either all code call sites are compatible with upstream APIs, or repositories have not yet been scanned.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

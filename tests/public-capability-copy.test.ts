@@ -7,7 +7,6 @@ const publicSources = [
   'apps/web/src/app/about/page.tsx',
   'apps/web/src/app/contact/page.tsx',
   'apps/web/src/app/docs/page.tsx',
-  'apps/web/src/components/dashboard/scan-progress.tsx',
   'docs/apiproof-v1-documentation.md',
 ];
 
