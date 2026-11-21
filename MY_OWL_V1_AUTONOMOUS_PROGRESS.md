@@ -7,8 +7,9 @@ Baseline commit: `267c0d7b23fb80f7861ffeeafe470984edf5293e`
 Integration source: `codex/v1-integration` at `11639a48236b88364bf95a1d8506286aeb91a2d9`
 Candidate worktree: `C:\Users\bolla\.codex\worktrees\v1-release-candidate\YC-my-owl-v1`
 Candidate branch: `codex/v1-release-candidate`
-Final candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
-Final branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
+Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
+Focused frontend correction commit: `af75a2bd`
+Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 
 ## Current status
 
@@ -52,7 +53,7 @@ The candidate is technically ready for a local release-candidate checkpoint, but
 
 ## 2026-11-21 continuation — frontend and release-gate verification
 
-The candidate was rechecked at branch HEAD `af75a2bd`; the worktree was clean after the local commit. Frontend snapshots reviewed were local `codex/v1-frontend-product` at `9460b47b40aed976917ac268dbdff575c6376a1c` and remote `origin/codex/v1-frontend-product` at `f4913d0707fae91c662813f3171a2bb9fa03bf2c`.
+The source correction was verified at `af75a2bd`, and the final evidence commits were created afterward with a clean worktree. Frontend snapshots reviewed were local `codex/v1-frontend-product` at `9460b47b40aed976917ac268dbdff575c6376a1c` and remote `origin/codex/v1-frontend-product` at `f4913d0707fae91c662813f3171a2bb9fa03bf2c`.
 
 | Frontend area | Candidate status | Integration decision |
 |---|---|---|

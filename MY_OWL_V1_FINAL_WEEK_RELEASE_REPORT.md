@@ -7,7 +7,7 @@ Decision: **NO-GO for production launch**
 
 - Branch: `codex/v1-release-candidate`
 - Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
-- Final branch/manifest commit before continuation: `c013494e04cd123da8a64ae40add294f66ecbb99`
+- Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 - Current focused-correction HEAD: `af75a2bd`
 - Base: `codex/my-owl-v1-development` at `267c0d7b23fb80f7861ffeeafe470984edf5293e`
 - Integrated source: `codex/v1-integration` at `11639a48236b88364bf95a1d8506286aeb91a2d9`

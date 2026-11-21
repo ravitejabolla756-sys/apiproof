@@ -2,8 +2,9 @@
 
 Date: 2026-11-21
 Candidate branch: `codex/v1-release-candidate`
-Final candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
-Final branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99` before the focused frontend correction commit `af75a2bd`.
+Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
+Focused frontend correction commit: `af75a2bd`.
+Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`.
 
 ## BASELINE-001 — Immutable development baseline
 
