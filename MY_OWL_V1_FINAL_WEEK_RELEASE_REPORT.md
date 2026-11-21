@@ -7,7 +7,8 @@ Decision: **NO-GO for production launch**
 
 - Branch: `codex/v1-release-candidate`
 - Application candidate commit: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
-- Current branch HEAD at this checkpoint: `e8bdd68918931d70a76bab3d456326b3b805092f`
+- Latest application-code commit at this checkpoint: `e8bdd68918931d70a76bab3d456326b3b805092f`
+- Current local branch HEAD includes the report-only commits `4adfd65c` and `1ecf2262`.
 - Current release-manifest SHA remains the prior reviewed manifest commit until the manifest is regenerated for this local code repair.
 - Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 - Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
