@@ -110,6 +110,13 @@ Until those items are complete, treat this commit as a local release candidate o
 - Current project domains and latest production targets remain unchanged. The previously read-back candidate-only Ignored Build Step rules remain the automatic Git-deployment suppression mechanism; `live: false` is not used as evidence of suppression.
 - Repository search found no independent Vercel CLI/API deployment automation. The release-manifest forbidden-token check and CI contract continue to reject `vercel --prod`; explicit external CLI/API deployment remains an operator-level risk.
 
+## Fresh local release-gate outputs — 2026-11-22
+
+- `pnpm security:release:audit`: `NO_GO`, evidence boundary `local_inventory_only`, 53 tasks, 13 accepted and 40 unresolved. Blockers remain hosted CI/staging evaluation, PostgreSQL/provider/backup/legal evidence and the unresolved task set.
+- `pnpm security:postgres:static`: `ready_for_approved_postgres`, evidence boundary `static_only`; this produced no runtime tenant-isolation, RLS, grants or worker-identity proof.
+- `pnpm release:staging:dry-run`: `blocked`; no actions taken. Required disposable target, deployment/rollback execution, approvals, migration evidence, authorization tests, provider approval and health path remain absent.
+- `pnpm backup:restore:dry-run`: `blocked`; no actions taken. Required disposable restore target, backup/restore execution, source/destination approval, manifest, migration/role/tenant evidence, rollback owner and evidence location remain absent.
+
 ## Final hosted-verification checkpoint — 2026-11-21
 
 - Publication: **NOT PUBLISHED**. GitHub has no `codex/v1-release-candidate` branch, no candidate commit `c6719536`, no workflow runs and no combined status. Vercel has zero deployments for the candidate SHA.

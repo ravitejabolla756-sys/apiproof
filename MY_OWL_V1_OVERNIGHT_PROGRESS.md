@@ -29,3 +29,5 @@ Local-only release-candidate verification. No push, pull request, merge, deploym
 
 The local candidate remains **NO-GO** for the November 28, 2026 launch. Hosted CI, executable PostgreSQL 17.2 tenant/RLS/grant/worker evidence, approved disposable staging, migration-history reconciliation, backup/restore, rollback/monitoring, live provider journeys and required owner/security/legal approvals remain outstanding.
 
+Latest gate refresh: release audit `NO_GO` with 40 unresolved tasks; PostgreSQL preflight `ready_for_approved_postgres` but static-only; staging and backup/restore dry-runs `blocked` with no actions taken.
+
