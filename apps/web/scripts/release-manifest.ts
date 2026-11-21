@@ -45,10 +45,10 @@ export type CiWorkflowContract = {
   forbidden: string[];
 };
 
-export function validateCiWorkflowContract(workflow: string, branch = 'codex/v1-integration'): CiWorkflowContract {
+export function validateCiWorkflowContract(workflow: string): CiWorkflowContract {
   const normalized = workflow.replaceAll('\r\n', '\n');
   const required = [
-    `push:\n    branches: [ main, ${branch} ]`,
+    'push:\n    branches: [ main, codex/v1-integration, codex/v1-release-candidate ]',
     'pull_request:\n    branches: [ main ]',
     'permissions:\n  contents: read',
     'run: pnpm lint',

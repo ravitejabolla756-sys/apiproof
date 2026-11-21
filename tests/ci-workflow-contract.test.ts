@@ -4,9 +4,19 @@ import { describe, expect, it } from 'vitest';
 import { validateCiWorkflowContract } from '../apps/web/scripts/release-manifest.js';
 
 describe('CI workflow contract', () => {
-  it('requires integration-branch validation with read-only permissions', () => {
+  it('requires integration and release-candidate validation with read-only permissions', () => {
     const workflow = readFileSync(path.resolve(import.meta.dirname, '../.github/workflows/ci.yml'), 'utf8');
     expect(validateCiWorkflowContract(workflow)).toEqual({ valid: true, missing: [], forbidden: [] });
+  });
+
+  it('rejects a workflow that omits the release-candidate trigger', () => {
+    const workflow = readFileSync(path.resolve(import.meta.dirname, '../.github/workflows/ci.yml'), 'utf8')
+      .replace(', codex/v1-release-candidate', '');
+    expect(validateCiWorkflowContract(workflow)).toMatchObject({
+      valid: false,
+      missing: ['push:\n    branches: [ main, codex/v1-integration, codex/v1-release-candidate ]'],
+      forbidden: [],
+    });
   });
 
   it('bounds hosted work and cancels superseded runs', () => {
