@@ -29,3 +29,7 @@ The first correctly seeded full run completed with 206 passed files, 3 skipped f
 
 No hosted GitHub Actions run exists for the candidate because publication remains unauthorized by the current owner boundary. Real PostgreSQL 17.2 tenant isolation, RLS, grants, trusted worker identity, migration reconciliation, staging, backup/restore, rollback, monitoring and live external-provider evidence remain unverified.
 
+## External-state recheck
+
+On 2026-11-22, GitHub branch search returned no candidate branch and combined-status lookups returned no checks for either `857a6ea19b1187ea0336a3e81b13e7faaf4cbc3d` or local HEAD `74650dbef26c96366a4df40ced7c8e43df302b47`. Vercel returned zero deployments for the current SHA in all three linked projects. This confirms the candidate remains unpublished and has not triggered hosted CI or Vercel deployment.
+

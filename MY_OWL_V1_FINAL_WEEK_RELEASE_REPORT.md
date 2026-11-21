@@ -102,6 +102,14 @@ Next authorized action: obtain separate owner approval for a non-production push
 
 Until those items are complete, treat this commit as a local release candidate only.
 
+## Fresh external-state read-back — 2026-11-22
+
+- Current local HEAD: `74650dbef26c96366a4df40ced7c8e43df302b47`; GitHub branch search returned no public `codex/v1-release-candidate` branch.
+- GitHub combined-status lookup returned no checks for the historical expected SHA `857a6ea19b1187ea0336a3e81b13e7faaf4cbc3d` or the current local SHA. No hosted CI URL exists because the candidate remains unpublished.
+- Vercel read-only project lookup reconfirmed all three linked projects and their repository connection to `ravitejabolla756-sys/apiproof`. Deployment lookup returned zero deployments for the current local SHA across `apiproof`, `apiproof-9ohu` and `apiproof-c2ut`.
+- Current project domains and latest production targets remain unchanged. The previously read-back candidate-only Ignored Build Step rules remain the automatic Git-deployment suppression mechanism; `live: false` is not used as evidence of suppression.
+- Repository search found no independent Vercel CLI/API deployment automation. The release-manifest forbidden-token check and CI contract continue to reject `vercel --prod`; explicit external CLI/API deployment remains an operator-level risk.
+
 ## Final hosted-verification checkpoint — 2026-11-21
 
 - Publication: **NOT PUBLISHED**. GitHub has no `codex/v1-release-candidate` branch, no candidate commit `c6719536`, no workflow runs and no combined status. Vercel has zero deployments for the candidate SHA.
