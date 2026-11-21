@@ -12,11 +12,16 @@ describe('pricing-page capability contract', () => {
     expect(source).toContain('₹14,999');
     expect(source).toContain('MY OWL Enterprise');
     expect(source).toContain('Custom');
-    expect(source).toContain('Contact Sales');
     expect(source).toContain('Organization-wide repository management');
     expect(source).toContain('Rolling out');
     expect(source).toContain('Coming soon');
-    expect(source).toContain('no checkout');
+    expect(source).toContain('Coming Soon');
+    expect(source).toContain('mailto:support@myowl.dev');
+    expect(source).toContain('disabled');
+    expect(source).not.toContain('Not available');
+    expect(source).not.toContain('Contact Sales');
+    expect(source).not.toContain('Rolling out — no checkout');
+    expect(source).not.toContain('Coming soon — no checkout');
     expect(source).not.toContain('Start Pro Plan');
     expect(source).not.toContain('Start Team Plan');
   });

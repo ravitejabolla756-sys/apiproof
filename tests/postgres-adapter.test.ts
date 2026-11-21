@@ -110,6 +110,34 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
   });
 
   describe('3. PostgreSQL Adapter & Transaction Safety Model', () => {
+    it('serializes concurrent SQLite transactions on the shared connection', async () => {
+      const testDb = new DatabaseSync(':memory:');
+      testDb.exec('CREATE TABLE events (id INTEGER PRIMARY KEY, label TEXT NOT NULL);');
+      const adapter = new SqliteDatabaseAdapter(testDb);
+      let releaseFirst!: () => void;
+      const firstStarted = new Promise<void>((resolve) => {
+        releaseFirst = resolve;
+      });
+      const first = adapter.transaction(async (tx) => {
+        await tx.execute('INSERT INTO events (label) VALUES (?)', ['first']);
+        await firstStarted;
+      });
+      await Promise.resolve();
+      const second = adapter.transaction(async (tx) => {
+        await tx.execute('INSERT INTO events (label) VALUES (?)', ['second']);
+      });
+
+      await Promise.resolve();
+      expect(await adapter.query<{ count: number }>('SELECT COUNT(*) AS count FROM events')).toEqual([{ count: 1 }]);
+      releaseFirst();
+      await Promise.all([first, second]);
+      expect(await adapter.query<{ label: string }>('SELECT label FROM events ORDER BY id')).toEqual([
+        { label: 'first' },
+        { label: 'second' },
+      ]);
+      await adapter.close();
+    });
+
     it('manages transaction commits and rollbacks deterministically', async () => {
       const executedCommands: string[] = [];
       let released = false;
@@ -284,14 +312,14 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
 
   describe('5. Deterministic Migration Runner', () => {
     it('executes migrations idempotently without re-running applied migrations', async () => {
-      const appliedSet = new Set<string>();
+      const appliedSet = new Map<string, { name: string; applied_at: string }>();
       const executedStatements: string[] = [];
 
       const mockDb: DatabaseAdapter = {
         engine: 'postgres',
         async query<T = unknown>(sql: string): Promise<T[]> {
           if (sql.includes('_apiproof_migrations')) {
-            return Array.from(appliedSet).map((id) => ({ id })) as unknown as T[];
+            return Array.from(appliedSet, ([id, record]) => ({ id, ...record })) as unknown as T[];
           }
           return [];
         },
@@ -301,7 +329,7 @@ describe('Database Adapter & PostgreSQL Production Architecture', () => {
         async execute(sql: string, params: unknown[] = []): Promise<{ changes: number }> {
           executedStatements.push(sql);
           if (sql.includes('INSERT INTO _apiproof_migrations')) {
-            appliedSet.add(params[0] as string);
+            appliedSet.set(params[0] as string, { name: params[1] as string, applied_at: params[2] as string });
           }
           return { changes: 1 };
         },

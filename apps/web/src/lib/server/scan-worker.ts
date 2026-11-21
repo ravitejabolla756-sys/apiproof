@@ -23,21 +23,31 @@ import { StripeProvider, TwilioProvider, DISCOVERY_PROVIDER_REGISTRY } from '@ap
 import type { ApiProvider } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
-import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, withSqliteClaimLock } from './scan-worker-state.js';
+import { ensureScanWorkerSchema, failScan, markScanWorkerJobFailed, revertScanWorkerJobToPending, SCAN_WORKER_MAX_ATTEMPTS, withSqliteClaimLock } from './scan-worker-state.js';
 import { logger } from './logger.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
 import { providerIntelligenceV1Enabled, workerRuntimeIdentity } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
+import { transitionFindingInTransaction } from './finding-lifecycle.js';
 import { boundedProductizationProjection, safeFailureCode } from './productization-persistence.js';
 import { replaceRepositoryProviderUsage } from './repository-provider-usage.js';
 import { extractSourceSnippet } from './scan-snippet.js';
+import { assertFounderScanProtectionConfigured } from './founder-scan-authorization.js';
 import { buildWorkerScope } from './scan-worker-scope.js';
+import { getTelemetrySink, type TelemetrySink } from './observability.js';
+export { getScanWorkerMetrics } from './scan-worker-metrics.js';
+export type { ScanWorkerMetrics } from './scan-worker-metrics.js';
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
 
-export interface ScanWorkerOptions { batchSize?: number | undefined; timeoutMs?: number | undefined; repositoryId?: string | undefined; }
+export interface ScanWorkerOptions {
+  batchSize?: number | undefined;
+  timeoutMs?: number | undefined;
+  repositoryId?: string | undefined;
+  telemetry?: TelemetrySink | undefined;
+}
 
 export interface ScanWorkerJobResult {
   scanRequestId: string;
@@ -56,53 +66,6 @@ export interface ScanWorkerResult {
   jobsSkipped: number;
   results: ScanWorkerJobResult[];
   timedOut: boolean;
-}
-
-export interface ScanWorkerMetrics {
-  pendingJobs: number;
-  processingJobs: number;
-  completedJobs: number;
-  failedJobs: number;
-  totalScanRequests: number;
-  lastProcessedAt: string | null;
-}
-
-/**
- * Returns operational aggregate queue metrics for monitoring and worker health.
- * Aggregates counters safely without exposing workspace-specific data across tenants.
- */
-export async function getScanWorkerMetrics(): Promise<ScanWorkerMetrics> {
-  const db = getDatabase();
-  const counts = await db.query<{ status: string; count: number | string }>(`
-    SELECT status, COUNT(*) as count FROM github_scan_requests GROUP BY status
-  `);
-
-  const map: Record<string, number> = {
-    pending: 0,
-    processing: 0,
-    completed: 0,
-    failed: 0,
-  };
-
-  let total = 0;
-  for (const row of counts) {
-    const c = Number(row.count);
-    map[row.status] = c;
-    total += c;
-  }
-
-  const lastJob = await db.queryOne<{ created_at: string }>(`
-    SELECT created_at FROM github_scan_requests WHERE status IN ('completed', 'failed') ORDER BY created_at DESC LIMIT 1
-  `);
-
-  return {
-    pendingJobs: map.pending ?? 0,
-    processingJobs: map.processing ?? 0,
-    completedJobs: map.completed ?? 0,
-    failedJobs: map.failed ?? 0,
-    totalScanRequests: total,
-    lastProcessedAt: lastJob?.created_at ?? null,
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -160,7 +123,9 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
       const recoveryScope = buildWorkerScope('postgres', options, 3);
       await tx.execute(`
         UPDATE github_scan_requests
-        SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
+        SET status = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+            last_error_category = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'WORKER_LEASE_EXPIRED' ELSE last_error_category END,
+            claimed_at = NULL, lease_expires_at = NULL
         WHERE status = 'processing' AND (
           (lease_expires_at IS NOT NULL AND lease_expires_at < $1) OR
           (lease_expires_at IS NULL AND created_at < $2)
@@ -202,7 +167,9 @@ async function claimPendingJobs(limit: number, options: ScanWorkerOptions): Prom
     // Recover only expired leases. created_at is not a valid worker lease.
     await tx.execute(`
       UPDATE github_scan_requests
-      SET status = 'pending', claimed_at = NULL, lease_expires_at = NULL
+      SET status = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'failed' ELSE 'pending' END,
+          last_error_category = CASE WHEN attempt_count >= ${SCAN_WORKER_MAX_ATTEMPTS} THEN 'WORKER_LEASE_EXPIRED' ELSE last_error_category END,
+          claimed_at = NULL, lease_expires_at = NULL
       WHERE status = 'processing' AND (
           (lease_expires_at IS NOT NULL AND lease_expires_at < ?) OR
           (lease_expires_at IS NULL AND created_at < ?)
@@ -495,24 +462,14 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         }
       }
 
-      // Findings are a current-snapshot view. A finding that was not observed
-      // in this complete baseline is resolved, while historical migration/PR
-      // statuses remain immutable for auditability.
-      if (activeFindingIds.length > 0) {
-        const placeholders = activeFindingIds.map(() => '?').join(', ');
-        await tx.execute(`
-          UPDATE findings
-          SET status = 'resolved'
-          WHERE repository_id = ?
-            AND status IN ('open', 'affected')
-            AND id NOT IN (${placeholders})
-        `, [repo.id, ...activeFindingIds]);
-      } else {
-        await tx.execute(`
-          UPDATE findings SET status = 'resolved'
-          WHERE repository_id = ? AND status IN ('open', 'affected')
-        `, [repo.id]);
-      }
+      const absentFindingPlaceholders = activeFindingIds.map(() => '?').join(', ');
+      const absentFindings = await tx.query<{ id: string }>(`
+        SELECT id
+        FROM findings
+        WHERE repository_id = ?
+          AND status IN ('open', 'affected')
+          ${activeFindingIds.length > 0 ? `AND id NOT IN (${absentFindingPlaceholders})` : ''}
+      `, [repo.id, ...activeFindingIds]);
 
       await tx.execute(`
         UPDATE scans
@@ -526,6 +483,17 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
         WHERE id = ?
       `, [headSha, inputDigest, totalFilesAnalyzed, activeFindingIds.length,
         JSON.stringify(persistedScanResult), completedAt, scanId]);
+
+      for (const finding of absentFindings) {
+        await transitionFindingInTransaction(tx, {
+          findingId: finding.id,
+          workspaceId: repo.workspace_id,
+          toState: 'verified_resolved',
+          reason: 'finding_absent_from_completed_scan',
+          idempotencyKey: `finding:${finding.id}:scan:${scanId}:verified-resolved`,
+          evidence: { scanId, baselineSha: headSha },
+        });
+      }
 
       await tx.execute(`
         UPDATE repositories SET status = ?, last_scan_at = ? WHERE id = ?
@@ -590,6 +558,11 @@ async function executeJob(job: PendingScanRequest): Promise<ScanWorkerJobResult>
  */
 export async function processPendingGitHubScans(options: ScanWorkerOptions = {}): Promise<ScanWorkerResult> {
   logger.info('scan_worker_runtime', workerRuntimeIdentity());
+  // The authenticated worker may drain a bounded batch across workspaces. Each
+  // claimed row is still checked against its repository's workspace and active
+  // GitHub installation before any source fetch occurs.
+  assertFounderScanProtectionConfigured();
+  const telemetry = getTelemetrySink(options.telemetry);
   const batchSize = Math.min(options.batchSize ?? 5, 20); // hard cap at 20
   const timeoutMs = Math.min(options.timeoutMs ?? 50_000, 270_000); // hard cap at 270s (Vercel Pro max)
   const deadline = Date.now() + timeoutMs;
@@ -624,6 +597,13 @@ export async function processPendingGitHubScans(options: ScanWorkerOptions = {})
     }
 
     const result = await executeJob(job);
+    const queueLagMs = Date.now() - Date.parse(job.created_at);
+    if (Number.isFinite(queueLagMs) && queueLagMs >= 0) {
+      telemetry.observe('scan_queue_lag', queueLagMs, { job_type: 'repository_scan', lag_ms: queueLagMs });
+    }
+    if (result.status === 'failed') {
+      telemetry.increment('worker_failures', 1, { job_type: 'repository_scan', reason: result.error ?? 'SCAN_FAILED' });
+    }
     results.push(result);
   }
 

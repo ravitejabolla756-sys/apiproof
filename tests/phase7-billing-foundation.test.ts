@@ -34,7 +34,7 @@ import { POST as createCheckout } from '../apps/web/src/app/api/billing/checkout
 const TEST_DB_PATH = path.resolve('.tmp/test-phase7-billing.db');
 
 describe('Phase 7 — Workspace Billing Foundation', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.BILLING_WEBHOOK_SECRET = 'test_phase7_webhook_secret_32_chars!';
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
@@ -180,6 +180,7 @@ describe('Phase 7 — Workspace Billing Foundation', () => {
 
   it('rejects paid checkout while keeping custom Enterprise on the contact path', async () => {
     const user = await createUserAsync('checkout-plans@apiproof.test', 'Pass123!#$', 'Checkout Plans');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), user.id]);
     const session = createSession(user.id);
     const request = (planId: string) => new Request('http://localhost/api/billing/checkout', {
       method: 'POST',

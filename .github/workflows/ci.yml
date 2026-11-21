@@ -2,42 +2,52 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, codex/v1-integration ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     name: Build & Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     env:
       NODE_ENV: test
       APIPROOF_SECRET: ci-test-apiproof-secret-minimum-32-chars-long
       GITHUB_APP_ID: "12345"
       GITHUB_APP_SLUG: apiproof-ci
-      GITHUB_APP_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----"
       GITHUB_WEBHOOK_SECRET: ci-test-webhook-secret-32-chars-long!
       CRON_SECRET: ci-test-cron-secret-32-chars-long!
       APIPROOF_LOCAL_SEED_PASSWORD: ci-local-seed-password-only-for-tests
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
         with:
           version: 10.30.3
 
       - name: Setup Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22.x
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Audit production dependencies
+        run: pnpm audit:prod
 
       - name: Run Linter
         run: pnpm lint
@@ -59,3 +69,53 @@ jobs:
 
       - name: Generate release manifest
         run: pnpm release:manifest
+
+  postgres-security:
+    name: PostgreSQL tenant security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17.2
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-postgres-admin-password-only
+          POSTGRES_DB: apiproof_security
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d apiproof_security"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      NODE_ENV: test
+      TEST_POSTGRES_ADMIN_URL: postgresql://postgres:ci-postgres-admin-password-only@127.0.0.1:5432/apiproof_security
+      TEST_POSTGRES_APP_ROLE: apiproof_ci_app
+      TEST_POSTGRES_APP_PASSWORD: apiproof-ci-app-password
+      TEST_POSTGRES_MIGRATOR_ROLE: apiproof_ci_migrator
+      TEST_POSTGRES_MIGRATOR_PASSWORD: apiproof-ci-migrator-password
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47 # v4.0.0
+        with:
+          version: 10.30.3
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify PostgreSQL tenant and worker security
+        run: pnpm exec vitest run --no-file-parallelism tests/postgres-tenant-security.integration.test.ts tests/postgres-worker-authorization.integration.test.ts

@@ -1,52 +1,102 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '../../../../lib/server/auth.js';
-import { getDefaultWorkspaceForUser } from '../../../../lib/server/workspace-service.js';
-import { getWorkspaceSubscription } from '../../../../lib/server/billing/service.js';
-import { getBillingProvider } from '../../../../lib/server/billing/provider.js';
+import { extractSessionId, getCurrentUser } from '../../../../lib/server/auth.js';
+import { isWorkspaceAuthorizationError, requireWorkspaceCapability } from '../../../../lib/server/workspace-service.js';
+import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '../../../../lib/server/organization-route.js';
+import { getWorkspaceSubscription, persistWorkspaceCustomerId } from '../../../../lib/server/billing/service.js';
+import { BillingProviderUnavailableError, getBillingProvider } from '../../../../lib/server/billing/provider.js';
 import { PLANS } from '../../../../lib/server/billing/plans.js';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '../../../../lib/server/validation.js';
+import { verifiedUserRouteFailure } from '../../../../lib/server/verified-user-route.js';
+import { validateEnvConfig } from '../../../../lib/server/env-config.js';
+import { getDatabase } from '../../../../lib/server/db/index.js';
+import { withPostgresTenantContext } from '../../../../lib/server/db/postgres-tenant-context.js';
 
 export async function POST(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  let workspace: Awaited<ReturnType<typeof requireWorkspaceCapability>>;
+  try {
+    const requestedWorkspace = await resolveWorkspaceForRequest(req, user.id);
+    workspace = await requireWorkspaceCapability(user.id, requestedWorkspace.id, 'billing:manage');
+  } catch (error) {
+    if (isWorkspaceAuthorizationError(error)) {
+      return NextResponse.json({ error: 'Billing access denied.', code: 'WORKSPACE_BILLING_ACCESS_DENIED' }, { status: 403, headers: PRIVATE_NO_STORE_HEADERS });
+    }
+    console.error('Billing workspace resolution failed:', { code: 'BILLING_WORKSPACE_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Billing workspace access is temporarily unavailable.', code: 'BILLING_WORKSPACE_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+  }
   const body = (await req.json().catch(() => ({}))) as { planId?: unknown };
   const planId = body.planId;
 
   if (!planId || typeof planId !== 'string') {
-    return NextResponse.json({ error: 'INVALID_PLAN: Plan ID is required.' }, { status: 400 });
+    return NextResponse.json({ error: 'INVALID_PLAN: Plan ID is required.' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   if (!Object.hasOwn(PLANS, planId) || planId === 'free' || planId === 'enterprise') {
-    return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400 });
+    return NextResponse.json({ error: 'INVALID_PLAN: Select a purchasable subscription plan.' }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  // Paid plans are intentionally display-only during the public beta.
-  if (planId === 'pro' || planId === 'team') {
+  const provider = getBillingProvider();
+  // Paid plans remain blocked unless the explicitly opt-in Dodo test adapter
+  // is configured. Production and live-mode environments stay fail-closed.
+  if ((planId === 'pro' || planId === 'team') && provider.name !== 'dodo') {
     return NextResponse.json(
       { error: 'BILLING_NOT_AVAILABLE: Paid plans are rolling out and cannot be purchased yet.' },
-      { status: 403 },
+      { status: 403, headers: PRIVATE_NO_STORE_HEADERS },
     );
   }
 
-  const sub = await getWorkspaceSubscription(workspace.id);
-  const provider = getBillingProvider();
-
-  let customerId = sub.customerId;
-  if (!customerId) {
-    const res = await provider.createCustomer(workspace.id, user.email, user.name);
-    customerId = res.customerId;
+  let sub: Awaited<ReturnType<typeof getWorkspaceSubscription>>;
+  try {
+    sub = await withPostgresTenantContext(
+      getDatabase(),
+      user.id,
+      workspace.id,
+      (tx) => getWorkspaceSubscription(workspace.id, tx),
+      extractSessionId(req),
+    );
+  } catch {
+    console.error('Billing configuration lookup failed:', { code: 'BILLING_CONFIGURATION_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Billing configuration is temporarily unavailable.', code: 'BILLING_CONFIGURATION_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+  }
+  let returnUrl: string;
+  try {
+    const configuredUrl = validateEnvConfig().config.appUrl;
+    returnUrl = `${new URL(configuredUrl).origin}/dashboard/settings`;
+  } catch {
+    return NextResponse.json({ error: 'Billing return URL is unavailable.', code: 'BILLING_RETURN_URL_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  const origin = req.headers.get('origin') || 'http://localhost:3000';
-  const returnUrl = `${origin}/dashboard/settings`;
+  try {
+    let customerId = sub.customerId;
+    if (!customerId) {
+      const res = await provider.createCustomer(workspace.id, user.email, user.name);
+      customerId = res.customerId;
+      await withPostgresTenantContext(
+        getDatabase(),
+        user.id,
+        workspace.id,
+        (tx) => persistWorkspaceCustomerId(workspace.id, customerId!, tx),
+        extractSessionId(req),
+      );
+    }
 
-  const checkout = await provider.createCheckoutSession(workspace.id, customerId, planId, returnUrl);
+    const checkout = await provider.createCheckoutSession(workspace.id, customerId, planId, returnUrl);
 
-  return NextResponse.json({
-    checkoutUrl: checkout.checkoutUrl,
-    planId,
-  });
+    return NextResponse.json({ checkoutUrl: checkout.checkoutUrl, planId }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch (error) {
+    if (error instanceof BillingProviderUnavailableError || (error instanceof Error && error.message.startsWith('BILLING_PROVIDER_UNAVAILABLE'))) {
+      return NextResponse.json({ error: 'Billing is unavailable until an approved provider is configured.', code: 'BILLING_PROVIDER_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+    }
+    console.error('Billing checkout failed:', { code: 'BILLING_CHECKOUT_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Checkout is temporarily unavailable.', code: 'BILLING_CHECKOUT_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -16,52 +16,46 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
-
-interface RepositoryRecord {
-  id: string;
-  owner: string;
-  name: string;
-  full_name: string;
-  github_repository_id: string;
-  default_branch: string;
-  status: string;
-  last_scan_at: string | null;
-  created_at: string;
-  findings_count: number;
-  scans_count: number;
-  last_scan_sha: string | null;
-}
+import { parseRepositoryListResponse, parseScanActionResponse, type RepositoryListRecord } from "@/lib/repository-contract";
 
 export default function RepositoriesTablePage() {
-  const [repositories, setRepositories] = useState<RepositoryRecord[]>([]);
+  const [repositories, setRepositories] = useState<RepositoryListRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [scanningRepoId, setScanningRepoId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "healthy" | "affected">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ id: string; text: string; error?: boolean } | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadRepositories() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/repositories");
-      if (res.ok) {
-        const json = await res.json();
-        setRepositories(json.repositories || []);
-        if (json.repositories?.length > 0 && !expandedRepo) {
-          setExpandedRepo(json.repositories[0].id);
-        }
+      if (!res.ok) throw new Error("Repository list is temporarily unavailable.");
+      const nextRepositories = parseRepositoryListResponse(await res.json());
+      if (!nextRepositories) throw new Error("Repository list returned an invalid response.");
+      setRepositories(nextRepositories);
+      const firstRepository = nextRepositories[0];
+      if (firstRepository && !expandedRepo) {
+        setExpandedRepo(firstRepository.id);
       }
-    } catch (err) {
-      console.error("Failed to load repositories:", err);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Repository list is temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadRepositories();
+    void loadRepositories();
   }, []);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   async function handleTriggerScan(repoId: string) {
     setScanningRepoId(repoId);
@@ -71,15 +65,16 @@ export default function RepositoriesTablePage() {
       const res = await fetch(`/api/repositories/${repoId}/scan`, {
         method: "POST",
       });
-      const data = await res.json();
+      const findingsCount = parseScanActionResponse(await res.json());
 
       if (!res.ok) {
-        throw new Error(data.error || "Scan execution failed.");
+        throw new Error("Scan execution failed.");
       }
+      if (findingsCount === undefined) throw new Error("Scan returned an invalid response.");
 
       setScanMessage({
         id: repoId,
-        text: `Scan complete: ${data.result.findingsCount} findings recorded.`,
+        text: `Scan complete: ${findingsCount} findings recorded.`,
       });
       await loadRepositories();
     } catch (err: unknown) {
@@ -121,7 +116,10 @@ export default function RepositoriesTablePage() {
 
         <div className="flex items-center gap-3">
           <Button
+            type="button"
             onClick={loadRepositories}
+            disabled={loading}
+            aria-busy={loading ? "true" : undefined}
             variant="outline"
             size="sm"
             icon={<RefreshCw className="w-3.5 h-3.5" />}
@@ -130,6 +128,7 @@ export default function RepositoriesTablePage() {
             Refresh
           </Button>
           <Button
+            type="button"
             onClick={() => setIsConnectOpen(true)}
             size="sm"
             icon={<Plus className="w-4 h-4" />}
@@ -143,9 +142,10 @@ export default function RepositoriesTablePage() {
       {/* Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+          <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
             type="text"
+            aria-label="Search repositories"
             placeholder="Search repositories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -158,7 +158,9 @@ export default function RepositoriesTablePage() {
           {(["all", "healthy", "affected"] as const).map((f) => (
             <button
               key={f}
+              type="button"
               onClick={() => setFilter(f)}
+              aria-pressed={filter === f}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                 filter === f
                   ? "bg-white text-[#111111] border-[#111111] shadow-2xs"
@@ -172,12 +174,13 @@ export default function RepositoriesTablePage() {
       </div>
 
       {/* Repositories Table */}
+      {error && <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{error} Use Refresh to try again.</div>}
       <div className="rounded-[24px] border border-[#E8E8E5] bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#F6F6F4] border-b border-[#E8E8E5] text-[#686868] text-[10px] font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4 w-10" />
+                <th scope="col" className="py-3 px-4 w-10"><span className="sr-only">Expand repository</span></th>
                 <th className="py-3 px-4">Repository</th>
                 <th className="py-3 px-4">Branch</th>
                 <th className="py-3 px-4 text-center">Scans</th>
@@ -191,9 +194,13 @@ export default function RepositoriesTablePage() {
               {loading ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-[#686868]">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
+                    <Loader2 aria-hidden="true" className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-700" />
                     <span>Loading repositories from database...</span>
                   </td>
+                </tr>
+              ) : error && filteredRepos.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-[#686868]">Repositories cannot be displayed until the connection is restored.</td>
                 </tr>
               ) : filteredRepos.length === 0 ? (
                 <tr>
@@ -213,7 +220,10 @@ export default function RepositoriesTablePage() {
                         <div className="flex items-center justify-between py-3.5 px-4">
                           <div className="w-10">
                             <button
+                              type="button"
                               onClick={() => setExpandedRepo(isExpanded ? null : repo.id)}
+                              aria-expanded={isExpanded}
+                              aria-label={`${isExpanded ? "Collapse" : "Expand"} ${repo.full_name}`}
                               className="p-1 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-zinc-100"
                             >
                               {isExpanded ? (

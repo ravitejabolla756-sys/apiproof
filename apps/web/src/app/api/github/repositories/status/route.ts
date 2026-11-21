@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../../lib/server/auth.js';
+import { resolveWorkspaceForRequest } from '../../../../../lib/server/organization-route.js';
 import {
-  getDefaultWorkspaceForUser,
   getWorkspaceGitHubInstallation,
   requireWorkspaceMember,
 } from '../../../../../lib/server/workspace-service.js';
@@ -21,9 +21,16 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403, headers });
     }
   } else {
-    workspaceId = (await getDefaultWorkspaceForUser(user.id)).id;
+    workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
   }
 
-  const installation = await getWorkspaceGitHubInstallation(workspaceId);
-  return NextResponse.json({ connected: Boolean(installation) }, { headers });
+  try {
+    const installation = await getWorkspaceGitHubInstallation(workspaceId);
+    return NextResponse.json({ connected: Boolean(installation) }, { headers });
+  } catch {
+    return NextResponse.json(
+      { error: 'GitHub connection status is temporarily unavailable.', code: 'GITHUB_STATUS_UNAVAILABLE' },
+      { status: 503, headers },
+    );
+  }
 }

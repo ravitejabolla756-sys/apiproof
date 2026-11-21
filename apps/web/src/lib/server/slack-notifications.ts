@@ -200,9 +200,12 @@ async function refreshSlackCredential(
     throw new SlackApiFailure(`SLACK_HTTP_${response.status}`, response.status === 429 || response.status >= 500,
       Number.isFinite(seconds) && seconds > 0 && seconds <= 31_536_000 ? seconds * 1000 : 0);
   }
-  const result = await response.json() as { ok?: boolean; access_token?: string; refresh_token?: string; expires_in?: number; error?: string };
-  if (!result.ok || typeof result.access_token !== 'string' || !/^(xoxb-|xoxe\.xoxb-)/.test(result.access_token)
-    || !result.refresh_token || !Number.isSafeInteger(result.expires_in) || !result.expires_in || result.expires_in <= 0 || result.expires_in > 31_536_000) {
+  const rawResult: unknown = await response.json().catch(() => null);
+  const result = rawResult && typeof rawResult === 'object' && !Array.isArray(rawResult)
+    ? rawResult as { ok?: unknown; access_token?: unknown; refresh_token?: unknown; expires_in?: unknown; error?: unknown }
+    : null;
+  if (!result || result.ok !== true || typeof result.access_token !== 'string' || !/^(xoxb-|xoxe\.xoxb-)/.test(result.access_token)
+    || typeof result.refresh_token !== 'string' || !result.refresh_token || typeof result.expires_in !== 'number' || !Number.isSafeInteger(result.expires_in) || !result.expires_in || result.expires_in <= 0 || result.expires_in > 31_536_000) {
     throw new Error('SLACK_TOKEN_REFRESH_INVALID');
   }
   const refreshed: SlackCredential = {
@@ -224,6 +227,7 @@ async function refreshSlackCredential(
 export type SlackMessageConnection = {
   id: string;
   workspace_id: string;
+  connected_by: string;
   team_id: string;
   installer_slack_user_id: string;
   token_ciphertext: string;

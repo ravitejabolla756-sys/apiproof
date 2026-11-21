@@ -30,6 +30,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
     process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\nMIIPlaceholder\n-----END RSA PRIVATE KEY-----';
     process.env.GITHUB_WEBHOOK_SECRET = 'phase5-webhook-secret-32-chars-long!';
     process.env.CRON_SECRET = 'phase5-cron-secret-32-chars-long!';
+    process.env.WORKER_AUTH_SECRET = 'phase5-worker-auth-secret-32-chars-long!';
     process.env.NEXT_PUBLIC_APP_URL = 'https://apiproof.test';
 
     if (fs.existsSync(TEST_DB_PATH)) {
@@ -76,6 +77,7 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
       GITHUB_APP_PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY-----\nMII...\n-----END RSA PRIVATE KEY-----',
       GITHUB_WEBHOOK_SECRET: 'b'.repeat(32),
       CRON_SECRET: 'c'.repeat(32),
+      WORKER_AUTH_SECRET: 'd'.repeat(32),
       NEXT_PUBLIC_APP_URL: 'https://apiproof.com',
     });
     expect(prodGoodRes.valid).toBe(true);
@@ -181,11 +183,13 @@ describe('Phase 5 — Production Operations, Reliability & CI', () => {
         ('sr_3', 'ws_1', 'repo_1', 'sha_3', 'main', 'processing', ?),
         ('sr_4', 'ws_1', 'repo_1', 'sha_4', 'main', 'completed', ?)
     `, [now, now, now, now]);
+    await db.execute('UPDATE github_scan_requests SET lease_expires_at = ? WHERE id = ?', ['2000-01-01T00:00:00.000Z', 'sr_3']);
 
     const metrics = await getScanWorkerMetrics();
 
     expect(metrics.pendingJobs).toBe(2);
     expect(metrics.processingJobs).toBe(1);
+    expect(metrics.stalledJobs).toBe(1);
     expect(metrics.completedJobs).toBe(1);
     expect(metrics.failedJobs).toBe(0);
     expect(metrics.totalScanRequests).toBe(4);

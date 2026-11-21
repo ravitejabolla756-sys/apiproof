@@ -123,17 +123,21 @@ function matches(change: ReviewedCompatibilityChange, usage: CompatibilityUsage)
   const modelMatch: UsageMatch = !dimensions.has('model') ? 'match'
     : usage.model && change.affectedModels.includes(usage.model) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  const resourceMatch = !dimensions.has('resource') || Boolean(usage.resource && change.affectedResources.includes(usage.resource));
-  const apiVersionMatch = !dimensions.has('api_version') || Boolean(usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion);
+  const resourceMatch: UsageMatch = !dimensions.has('resource') ? 'match'
+    : usage.resource && change.affectedResources.includes(usage.resource) ? 'match'
+      : usage.resource || usage.static && usage.confidence >= 0.8 ? 'no-match' : 'uncertain';
+  const apiVersionMatch: UsageMatch = !dimensions.has('api_version') ? 'match'
+    : usage.apiVersion && change.apiVersionMetadata?.version === usage.apiVersion ? 'match'
+      : usage.apiVersion || usage.static && usage.confidence >= 0.8 ? 'no-match' : 'uncertain';
   const authMatch: UsageMatch = !dimensions.has('auth_or_header') ? 'match'
     : usage.authOrHeader && change.authOrHeaderPatterns.includes(usage.authOrHeader) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
   const domainMatch: UsageMatch = !dimensions.has('domain') ? 'match'
     : matchesDomainPattern(usage.domain ?? usage.endpoint, change.affectedDomains ?? []) ? 'match'
       : !usage.static || usage.confidence < 0.8 ? 'uncertain' : 'no-match';
-  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || !resourceMatch || !apiVersionMatch) return 'no-match';
+  if (targetMatch === 'no-match' || domainMatch === 'no-match' || authMatch === 'no-match' || modelMatch === 'no-match' || resourceMatch === 'no-match' || apiVersionMatch === 'no-match') return 'no-match';
   if (responseFieldMatch === 'no-match' || parameterMatch === 'no-match') return 'no-match';
-  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain') return 'uncertain';
+  if (targetMatch === 'uncertain' || domainMatch === 'uncertain' || authMatch === 'uncertain' || modelMatch === 'uncertain' || responseFieldMatch === 'uncertain' || parameterMatch === 'uncertain' || resourceMatch === 'uncertain' || apiVersionMatch === 'uncertain') return 'uncertain';
   return 'match';
 }
 
@@ -174,13 +178,15 @@ export function evaluateCompatibility(input: CompatibilityInput, rawChange: unkn
     if (uncertain.some((usage) => dimensions.has('domain') && (!usage.domain && !usage.endpoint || !usage.static || usage.confidence < 0.8))) reasonCodes.push('DOMAIN_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('auth_or_header') && !usage.authOrHeader)) reasonCodes.push('AUTH_OR_HEADER_UNRESOLVED');
     if (uncertain.some((usage) => dimensions.has('response_field') && !usage.responseField)) reasonCodes.push('RESPONSE_FIELD_UNRESOLVED');
+    if (uncertain.some((usage) => dimensions.has('resource') && !usage.resource)) reasonCodes.push('RESOURCE_UNRESOLVED');
+    if (uncertain.some((usage) => dimensions.has('api_version') && !usage.apiVersion)) reasonCodes.push('API_VERSION_UNRESOLVED');
     if (uncertain.some((usage) => usage.parameter && change.parameterConditions?.some((condition) => condition.parameter === usage.parameter))) reasonCodes.push('PARAMETER_VALUE_UNRESOLVED');
-    if (matched.length === 0 && uncertain.length === 0) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');
+    if (matched.length === 0 && (!input.completeEvidence || uncertain.length === 0)) reasonCodes.push('NO_AFFIRMATIVE_USAGE_MATCH');
   }
   if (reasonCodes.length === 0) reasonCodes.push('INSUFFICIENT_STATIC_EVIDENCE');
   const versionSource = input.versionSource ?? (input.resolvedVersion ? 'lockfile' : input.declaredVersion ? 'package-json' : 'unknown');
   const versionConfidence = input.versionConfidence ?? (input.resolvedVersion ? 'exact' : input.declaredVersion ? 'declared-only' : 'unknown');
-  const primaryUsage = matched[0] ?? uncertain[0];
+  const primaryUsage = reasonCodes.includes('NO_AFFIRMATIVE_USAGE_MATCH') ? undefined : matched[0] ?? uncertain[0];
   const primaryCondition = primaryUsage?.parameter ? change.parameterConditions?.find((condition) => condition.parameter === primaryUsage.parameter) : undefined;
   const usageAssessment = status === 'AFFECTED' ? 'matched' : status === 'NOT_AFFECTED' && matched.length === 0 ? 'not-used' : status === 'NOT_AFFECTED' ? 'not-applicable' : matched.length > 0 || uncertain.length > 0 ? 'uncertain' : 'not-applicable';
   const migrationAvailable = status === 'AFFECTED' && hasExecutableMigrationTemplate(change.changeId);

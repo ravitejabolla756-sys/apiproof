@@ -14,6 +14,7 @@ export const patchWorkspaceRunsRoot = path.join(os.tmpdir(), 'apiproof', 'patch-
 const MAX_WORKSPACE_FILES = 500;
 const MAX_WORKSPACE_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_WORKSPACE_BYTES = 32 * 1024 * 1024;
+const normalizeText = (value: string): string => value.replace(/\r\n?/g, '\n');
 export interface FixtureManifest { schemaVersion: '1.0'; fixtures: Record<string, Record<string, string>> }
 export interface PatchWorkspace { readonly runId: string; readonly repositoryId: string; readonly directory: string; readonly originalDirectory: string; readonly snapshot: Readonly<Record<string, string>> }
 const issued = new WeakSet<PatchWorkspace>();
@@ -109,8 +110,9 @@ export async function createPatchWorkspace(repository: string): Promise<PatchWor
   for (const [file, digest] of Object.entries(expected)) {
     if (!allowedPatchPath(file) && !['package.json', 'package-lock.json'].includes(file)) fail('FIXTURE_MANIFEST_PATH');
     const bytes = await readFile(path.join(originalDirectory, file));
-    if (bytes.length > 1_048_576 || bytes.includes(0) || sha256(bytes) !== digest) fail('FIXTURE_DIGEST_MISMATCH');
-    snapshot[file] = bytes.toString('utf8');
+    const text = normalizeText(bytes.toString('utf8'));
+    if (bytes.length > 1_048_576 || bytes.includes(0) || sha256(text) !== digest) fail('FIXTURE_DIGEST_MISMATCH');
+    snapshot[file] = text;
   }
   // Create ancestors one at a time and validate before descending; never follow a preexisting junction.
   const parent = await ensurePatchWorkspaceRunsRoot();
@@ -136,10 +138,10 @@ export async function createSourcePatchWorkspace(repositoryId: string, files: Re
   if (!entries.length || entries.length > 500) fail('WORKSPACE_FILE_SET_INVALID');
   assertVerificationWorkspaceBounds(new Map(entries));
   const snapshot: Record<string, string> = {};
-  for (const [file, text] of entries) {
+  for (const [file, sourceText] of entries) {
     if (!assertSafeWorkspaceFile(file) || !isVerificationWorkspacePath(file)) fail('WORKSPACE_PATH_INVALID');
-    if (Buffer.byteLength(text, 'utf8') > 2_097_152 || text.includes('\0')) fail('WORKSPACE_FILE_INVALID');
-    snapshot[file] = text;
+    if (Buffer.byteLength(sourceText, 'utf8') > 2_097_152 || sourceText.includes('\0')) fail('WORKSPACE_FILE_INVALID');
+    snapshot[file] = sourceText;
   }
   const parent = await ensurePatchWorkspaceRunsRoot();
   const runId = randomUUID(); const run = path.join(parent, runId);
@@ -178,7 +180,7 @@ export async function checkWorkspace(workspace: PatchWorkspace, expected = works
   for (const [file, text] of Object.entries(expected)) {
     if (sha256(await readFile(path.join(workspace.directory, file))) !== sha256(text)) fail('SOURCE_DIGEST_MISMATCH');
     await assertPlainPath(path.join(workspace.originalDirectory, file));
-    if (sha256(await readFile(path.join(workspace.originalDirectory, file))) !== sha256(workspace.snapshot[file]!)) fail('ORIGINAL_FIXTURE_CHANGED');
+    if (sha256(normalizeText(await readFile(path.join(workspace.originalDirectory, file), 'utf8'))) !== sha256(normalizeText(workspace.snapshot[file]!))) fail('ORIGINAL_FIXTURE_CHANGED');
   }
 }
 export async function workspaceFileNames(workspace: PatchWorkspace): Promise<string[]> {

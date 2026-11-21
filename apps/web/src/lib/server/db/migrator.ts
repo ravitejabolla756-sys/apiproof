@@ -3,7 +3,6 @@ import type { DatabaseAdapter, Migration, MigrationRecord } from './types.js';
 import { POSTGRES_SCHEMA, SQLITE_SCHEMA } from './schema.js';
 import { extendedMigrations } from './extended-migrations.js';
 import { passwordResetMigrations } from './password-reset-migration.js';
-import { emailVerificationMigrations } from './email-verification-migration.js';
 import { verificationWorkerMigrations } from './verification-worker-migration.js';
 import { slackMigrations } from './slack-migration.js';
 import { slackReliabilityMigrations } from './slack-reliability-migration.js';
@@ -11,6 +10,8 @@ import { googleOAuthMigrations } from './google-oauth-migration.js';
 import { githubLoginMigrations } from './github-login-migration.js';
 import { providerChangeMonitorMigrations } from './provider-change-monitor-migration.js';
 import { skipDefaultSeed } from './seed-policy.js';
+import { validateMigrationHistory } from './migration-compatibility.js';
+import { memberRevocationMigrations } from './member-revocation-migration.js';
 
 export const migrations: Migration[] = [
   {
@@ -270,9 +271,19 @@ export const migrations: Migration[] = [
           status TEXT NOT NULL,
           received_at TEXT NOT NULL,
           processed_at TEXT NOT NULL,
-          error_message TEXT
+          error_message TEXT,
+          attempt_count INTEGER NOT NULL DEFAULT 0
         )
       `);
+
+      if (db.engine === 'postgres') {
+        await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0');
+      } else {
+        const webhookColumns = await db.query<{ name: string }>('PRAGMA table_info(github_webhook_deliveries)');
+        if (!webhookColumns.some((column) => column.name === 'attempt_count')) {
+          await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0');
+        }
+      }
 
       // 3. Create github_scan_requests
 
@@ -481,7 +492,7 @@ export const migrations: Migration[] = [
   ...providerChangeMonitorMigrations,
   ...googleOAuthMigrations,
   ...githubLoginMigrations,
-  ...emailVerificationMigrations,
+  ...memberRevocationMigrations,
 ];
 
 async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationRecord[]> {
@@ -494,7 +505,16 @@ async function runMigrationsUnlocked(db: DatabaseAdapter): Promise<MigrationReco
     )
   `);
 
-  const appliedRows = await db.query<{ id: string }>('SELECT id FROM _apiproof_migrations');
+  const appliedRows = await db.query<{ id: string; name: string; applied_at: string }>(
+    'SELECT id, name, applied_at FROM _apiproof_migrations ORDER BY id, applied_at'
+  );
+  const compatibility = validateMigrationHistory({
+    available: migrations,
+    applied: appliedRows.map((row) => ({ id: row.id, name: row.name, appliedAt: row.applied_at })),
+  });
+  if (!compatibility.compatible) {
+    throw new Error(`MIGRATION_HISTORY_INCOMPATIBLE:${compatibility.errors.join('|')}`);
+  }
   const appliedSet = new Set(appliedRows.map((r) => r.id));
 
   const newlyApplied: MigrationRecord[] = [];

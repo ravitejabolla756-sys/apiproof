@@ -35,8 +35,43 @@ export type ReleaseManifest = {
     changelogMonitor: string;
     scheduledRescan: string;
   };
+  ci: CiWorkflowContract;
   releaseEligible: boolean;
 };
+
+export type CiWorkflowContract = {
+  valid: boolean;
+  missing: string[];
+  forbidden: string[];
+};
+
+export function validateCiWorkflowContract(workflow: string, branch = 'codex/v1-integration'): CiWorkflowContract {
+  const normalized = workflow.replaceAll('\r\n', '\n');
+  const required = [
+    `push:\n    branches: [ main, ${branch} ]`,
+    'pull_request:\n    branches: [ main ]',
+    'permissions:\n  contents: read',
+    'run: pnpm lint',
+    'run: pnpm typecheck',
+    'run: pnpm providers:validate:all',
+    'run: pnpm providers:validate:multi',
+    'run: pnpm test',
+    'run: pnpm -r build',
+    'run: pnpm release:manifest',
+    'uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',
+    'uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47',
+    'uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020',
+  ];
+  const forbidden = [
+    'contents: write',
+    'actions: write',
+    'id-token: write',
+    'vercel --prod',
+    'workflow_dispatch:',
+  ].filter((entry) => normalized.includes(entry));
+  const missing = required.filter((entry) => !normalized.includes(entry));
+  return { valid: missing.length === 0 && forbidden.length === 0, missing, forbidden };
+}
 
 function runGit(repositoryRoot: string, args: string[]): string {
   try {
@@ -64,6 +99,14 @@ function cronConfig(repositoryRoot: string): ReleaseManifest['cron'] {
   }
 }
 
+function ciConfig(repositoryRoot: string): CiWorkflowContract {
+  try {
+    return validateCiWorkflowContract(readFileSync(path.join(repositoryRoot, '.github/workflows/ci.yml'), 'utf8'));
+  } catch {
+    return { valid: false, missing: ['.github/workflows/ci.yml'], forbidden: [] };
+  }
+}
+
 export function buildReleaseManifest(repositoryRoot: string): ReleaseManifest {
   const verifiedTemplateIds = loadVerifiedMigrationTemplateIds(repositoryRoot);
   const verifiedTemplateProviders = new Set(
@@ -72,6 +115,7 @@ export function buildReleaseManifest(repositoryRoot: string): ReleaseManifest {
       .map((entry) => entry.providerId),
   );
   const cron = cronConfig(repositoryRoot);
+  const ci = ciConfig(repositoryRoot);
   const commit = runGit(repositoryRoot, ['rev-parse', 'HEAD']);
   const branch = runGit(repositoryRoot, ['branch', '--show-current']);
   const clean = runGit(repositoryRoot, ['status', '--porcelain']) === '';
@@ -86,6 +130,7 @@ export function buildReleaseManifest(repositoryRoot: string): ReleaseManifest {
     && candidateIds.size >= 50
     && reviewedRuleIds.size >= 50
     && reviewedRulesHaveCandidates
+    && ci.valid
     && cron.changelogMonitor !== 'missing'
     && cron.scheduledRescan !== 'missing';
 
@@ -105,6 +150,7 @@ export function buildReleaseManifest(repositoryRoot: string): ReleaseManifest {
       verifiedTemplates: verifiedTemplateIds.size,
     },
     cron,
+    ci,
     releaseEligible,
   };
 }

@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
   status TEXT NOT NULL,
   received_at TEXT NOT NULL,
   processed_at TEXT NOT NULL,
-  error_message TEXT
+  error_message TEXT,
+  attempt_count INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS github_scan_requests (
@@ -301,7 +302,8 @@ CREATE TABLE IF NOT EXISTS github_webhook_deliveries (
   status TEXT NOT NULL,
   received_at TEXT NOT NULL,
   processed_at TEXT NOT NULL,
-  error_message TEXT
+  error_message TEXT,
+  attempt_count INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS github_scan_requests (

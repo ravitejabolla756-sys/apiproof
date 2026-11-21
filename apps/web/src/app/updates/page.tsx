@@ -60,7 +60,7 @@ export default function UpdatesPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
 
         {/* HEADER */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
@@ -77,6 +77,7 @@ export default function UpdatesPage() {
 
         {/* TIMELINE FEED */}
         <div className="space-y-16 pt-8">
+          <h2 className="sr-only">Release updates</h2>
           {updates.map((item, idx) => (
             <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
 

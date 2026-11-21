@@ -30,6 +30,13 @@ export function getGitHubAppConfig() {
   return loadGitHubAppConfig();
 }
 
+export function isSafeRepositoryTreePath(filePath: unknown): filePath is string {
+  if (typeof filePath !== 'string' || !filePath || filePath.includes('\\')) return false;
+  if (filePath.startsWith('/') || /^[A-Za-z]:/.test(filePath)) return false;
+  const segments = filePath.split('/');
+  return segments.every((segment) => segment.length > 0 && segment !== '.' && segment !== '..');
+}
+
 /**
  * Generates the official GitHub App installation URL with a cryptographically bound single-use state token.
  */
@@ -60,11 +67,7 @@ export async function createGitHubInstallationState(userId: string, workspaceId:
   return state;
 }
 
-/**
- * GitHub can omit the original state when returning from an installation
- * update. Recover only the current user's newest still-valid pending state so
- * that update callbacks remain bound to the initiating workspace.
- */
+/** Recover the current user's newest still-valid state for GitHub update callbacks. */
 export async function getPendingGitHubInstallationState(userId: string): Promise<string | null> {
   const row = await getDatabase().queryOne<{ state: string }>(`
     SELECT state
@@ -291,6 +294,7 @@ export async function fetchRemoteRepositoryFiles(
 ): Promise<{ files: Map<string, string>; headSha: string; defaultBranch: string }> {
   const MAX_FILES = 2_000;
   const MAX_FILE_BYTES = 2 * 1024 * 1024;
+  const MAX_TOTAL_FILE_BYTES = 64 * 1024 * 1024;
   const FILE_FETCH_CONCURRENCY = 12;
   const readWithRetry = async <T>(operation: () => Promise<T>, label: string): Promise<T> => {
     let lastError: unknown;
@@ -311,7 +315,12 @@ export async function fetchRemoteRepositoryFiles(
   const sha = targetSha ?? head.sha;
   const tree = await readWithRetry(() => provider.readTree(sha), `tree@${sha}`);
 
+  if (tree.some((filePath) => !isSafeRepositoryTreePath(filePath))) {
+    throw new Error('GITHUB_TREE_PATH_INVALID: repository tree contains a path outside the repository boundary');
+  }
+
   const filesMap = new Map<string, string>();
+  let totalBytes = 0;
   const filesToFetch = tree.filter((file) =>
     file === 'package.json' ||
     file === 'pnpm-lock.yaml' ||
@@ -325,9 +334,6 @@ export async function fetchRemoteRepositoryFiles(
     throw new Error(`GITHUB_SNAPSHOT_TOO_LARGE: repository contains more than ${MAX_FILES} analyzable files`);
   }
 
-  // GitHub Contents requests are independent once the tree and pinned SHA
-  // are known. Bounded concurrency keeps large repositories within the
-  // serverless execution window without creating an unbounded API burst.
   for (let start = 0; start < filesToFetch.length; start += FILE_FETCH_CONCURRENCY) {
     const batch = filesToFetch.slice(start, start + FILE_FETCH_CONCURRENCY);
     const entries = await Promise.all(batch.map(async (filePath) => {
@@ -339,12 +345,14 @@ export async function fetchRemoteRepositoryFiles(
       if (content.includes('\u0000')) {
         throw new Error(`GITHUB_BINARY_FILE_UNSUPPORTED:${filePath}`);
       }
-      return [filePath, content] as const;
+      return { filePath, content, byteLength };
     }));
-
-    for (const [filePath, content] of entries) {
-      filesMap.set(filePath, content);
+    const batchBytes = entries.reduce((sum, entry) => sum + entry.byteLength, 0);
+    if (totalBytes + batchBytes > MAX_TOTAL_FILE_BYTES) {
+      throw new Error('GITHUB_SNAPSHOT_TOO_LARGE: repository exceeds the aggregate analyzable byte limit');
     }
+    for (const entry of entries) filesMap.set(entry.filePath, entry.content);
+    totalBytes += batchBytes;
   }
 
   return { files: filesMap, headSha: sha, defaultBranch: head.name };

@@ -32,12 +32,17 @@ export async function slackApi<T>(token: string, method: string, payload: Record
   const seconds = Number(response.headers.get('Retry-After'));
   const retryAfterMs = Number.isFinite(seconds) && seconds > 0 && seconds <= 31_536_000 ? seconds * 1000 : 0;
   if (!response.ok) throw new SlackApiFailure(`SLACK_HTTP_${response.status}`, response.status === 429 || response.status >= 500, retryAfterMs);
-  let body: { ok?: boolean; error?: string } & T;
-  try { body = await response.json() as typeof body; }
+  let body: { ok?: unknown; error?: unknown } & T;
+  try {
+    const parsed: unknown = await response.json();
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('invalid response');
+    body = parsed as typeof body;
+  }
   catch { throw new SlackApiFailure('SLACK_RESPONSE_INVALID'); }
-  if (!body.ok) {
-    const category = `SLACK_API_${(body.error ?? 'UNKNOWN').replace(/[^A-Za-z0-9_]/g, '').toUpperCase().slice(0, 80)}`;
-    throw new SlackApiFailure(category, ['ratelimited', 'rate_limited', 'internal_error', 'fatal_error', 'service_unavailable'].includes(body.error ?? ''), retryAfterMs);
+  if (body.ok !== true) {
+    const providerError = typeof body.error === 'string' ? body.error : 'UNKNOWN';
+    const category = `SLACK_API_${providerError.replace(/[^A-Za-z0-9_]/g, '').toUpperCase().slice(0, 80)}`;
+    throw new SlackApiFailure(category, ['ratelimited', 'rate_limited', 'internal_error', 'fatal_error', 'service_unavailable'].includes(providerError), retryAfterMs);
   }
   return body;
 }

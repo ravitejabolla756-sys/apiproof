@@ -1,4 +1,5 @@
 import { getDatabase } from '@/lib/server/db';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 
 export interface DashboardData {
   repositoryCount: number;
@@ -75,29 +76,30 @@ export interface DashboardData {
   }>;
 }
 
-export async function getDashboardData(workspaceId: string): Promise<DashboardData> {
+export async function getDashboardData(userId: string, workspaceId: string, sessionId?: string): Promise<DashboardData> {
   const db = getDatabase();
+  return withPostgresTenantContext(db, userId, workspaceId, async (tx) => {
   const sevenDaysAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000)).toISOString();
-  const repoStats = await db.queryOne<{ count: number }>(`
+  const repoStats = await tx.queryOne<{ count: number }>(`
     SELECT COUNT(*) AS count FROM repositories WHERE workspace_id = ? AND lifecycle = 'active'
   `, [workspaceId]);
-  const scanStats = await db.queryOne<{ count: number }>(`
+  const scanStats = await tx.queryOne<{ count: number }>(`
     SELECT COUNT(*) AS count FROM scans s
     JOIN repositories r ON r.id = s.repository_id
     WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND s.status = 'completed'
   `, [workspaceId]);
-  const findingStats = await db.queryOne<{ open_count: number | null; critical_count: number | null }>(`
+  const findingStats = await tx.queryOne<{ open_count: number | null; critical_count: number | null }>(`
     SELECT SUM(CASE WHEN f.status = 'open' THEN 1 ELSE 0 END) AS open_count,
            SUM(CASE WHEN f.severity = 'critical' AND f.status = 'open' THEN 1 ELSE 0 END) AS critical_count
     FROM findings f JOIN repositories r ON r.id = f.repository_id
     WHERE r.workspace_id = ? AND r.lifecycle = 'active'
   `, [workspaceId]);
-  const prStats = await db.queryOne<{ count: number }>(`
+  const prStats = await tx.queryOne<{ count: number }>(`
     SELECT COUNT(*) AS count FROM pull_requests pr
     JOIN repositories r ON r.id = pr.repository_id
     WHERE r.workspace_id = ? AND r.lifecycle = 'active'
   `, [workspaceId]);
-  const providerStats = await db.queryOne<{
+  const providerStats = await tx.queryOne<{
     pending_rules: number; approved_rules: number; pending_rescans: number;
     processing_rescans: number; failed_rescans: number;
   }>(`
@@ -108,13 +110,13 @@ export async function getDashboardData(workspaceId: string): Promise<DashboardDa
       (SELECT COUNT(*) FROM provider_rescan_jobs j JOIN repositories r ON r.id = j.repository_id WHERE r.workspace_id = ? AND j.status = 'processing') AS processing_rescans,
       (SELECT COUNT(*) FROM provider_rescan_jobs j JOIN repositories r ON r.id = j.repository_id WHERE r.workspace_id = ? AND j.status = 'failed') AS failed_rescans
   `, [workspaceId, workspaceId, workspaceId]);
-  const repositories = await db.query<DashboardData['repositories'][number]>(`
+  const repositories = await tx.query<DashboardData['repositories'][number]>(`
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch, r.status, r.last_scan_at,
            (SELECT COUNT(*) FROM findings f WHERE f.repository_id = r.id) AS findings_count
     FROM repositories r WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY r.created_at DESC
   `, [workspaceId]);
-  const criticalFinding = await db.queryOne<NonNullable<DashboardData['criticalFinding']>>(`
+  const criticalFinding = await tx.queryOne<NonNullable<DashboardData['criticalFinding']>>(`
     SELECT f.id, f.title, f.description, f.severity, f.symbol, f.file_path, f.status,
            r.name AS repo_name, r.full_name AS repo_full_name
     FROM findings f JOIN repositories r ON r.id = f.repository_id
@@ -122,18 +124,18 @@ export async function getDashboardData(workspaceId: string): Promise<DashboardDa
     ORDER BY CASE f.severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 ELSE 3 END, f.created_at DESC
     LIMIT 1
   `, [workspaceId]);
-  const recentActivities = await db.query<DashboardData['recentActivities'][number]>(`
+  const recentActivities = await tx.query<DashboardData['recentActivities'][number]>(`
     SELECT a.id, a.type, a.title, a.description, a.created_at, r.name AS repo_name
     FROM activity_events a JOIN repositories r ON r.id = a.repository_id
     WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY a.created_at DESC LIMIT 6
   `, [workspaceId]);
-  const recentProviderChanges = await db.query<DashboardData['recentProviderChanges'][number]>(`
+  const recentProviderChanges = await tx.query<DashboardData['recentProviderChanges'][number]>(`
     SELECT id, provider_id, title, description, source_url, published_at, first_seen_at
     FROM provider_changelog_entries
     ORDER BY COALESCE(published_at, first_seen_at) DESC, id DESC LIMIT 6
   `);
-  const findingsThisWeek = await db.query<DashboardData['findingsThisWeek'][number]>(`
+  const findingsThisWeek = await tx.query<DashboardData['findingsThisWeek'][number]>(`
     SELECT date(f.created_at) AS day, COUNT(*) AS total,
            SUM(CASE WHEN f.severity = 'critical' THEN 1 ELSE 0 END) AS critical,
            SUM(CASE WHEN f.severity = 'high' THEN 1 ELSE 0 END) AS high,
@@ -142,7 +144,7 @@ export async function getDashboardData(workspaceId: string): Promise<DashboardDa
     WHERE r.workspace_id = ? AND r.lifecycle = 'active' AND f.created_at >= ?
     GROUP BY date(f.created_at) ORDER BY day ASC
   `, [workspaceId, sevenDaysAgo]);
-  const recentFixes = await db.query<DashboardData['recentFixes'][number]>(`
+  const recentFixes = await tx.query<DashboardData['recentFixes'][number]>(`
     SELECT m.id, m.status, m.created_at, f.title AS finding_title, r.name AS repo_name,
            pr.url AS pr_url, pr.state AS pr_state
     FROM migrations m JOIN findings f ON f.id = m.finding_id JOIN repositories r ON r.id = m.repository_id
@@ -150,7 +152,7 @@ export async function getDashboardData(workspaceId: string): Promise<DashboardDa
     WHERE r.workspace_id = ? AND r.lifecycle = 'active'
     ORDER BY m.created_at DESC LIMIT 6
   `, [workspaceId]);
-  const installation = await db.queryOne<{ status: string; account_login: string }>(`
+  const installation = await tx.queryOne<{ status: string; account_login: string }>(`
     SELECT status, account_login FROM github_installations WHERE workspace_id = ? ORDER BY created_at DESC LIMIT 1
   `, [workspaceId]);
   const connectedRepositories = Number(repoStats?.count ?? 0);
@@ -176,4 +178,5 @@ export async function getDashboardData(workspaceId: string): Promise<DashboardDa
     repositories, criticalFinding: criticalFinding ?? null, recentActivities,
     recentProviderChanges, findingsThisWeek, recentFixes,
   };
+  }, sessionId);
 }

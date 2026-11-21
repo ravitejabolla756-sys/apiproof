@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
@@ -14,55 +14,39 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-
-interface FindingRecord {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  status: string;
-  created_at: string;
-  repo_name: string;
-  repo_full_name: string;
-  pr_number?: number | null;
-  pr_url?: string | null;
-  pr_state?: string | null;
-  capability?: {
-    migrationAvailable: boolean;
-    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
-  } | null;
-}
+import { parseFindingListResponse, type FindingListItem } from "@/lib/finding-list-contract";
 
 export default function FindingsListPage() {
-  const [findings, setFindings] = useState<FindingRecord[]>([]);
+  const [findings, setFindings] = useState<FindingListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [providerFilter, setProviderFilter] = useState<string>("all");
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadFindings() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/findings");
-      if (res.ok) {
-        const json = await res.json();
-        setFindings(json.findings || []);
-      }
-    } catch (err) {
-      console.error("Failed to load findings:", err);
+      if (!res.ok) throw new Error("Findings are temporarily unavailable.");
+      const parsed = parseFindingListResponse(await res.json());
+      if (!parsed) throw new Error("Findings returned an invalid response.");
+      setFindings(parsed);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Findings are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadFindings();
+    void loadFindings();
   }, []);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const filteredFindings = findings.filter((f) => {
     const matchesSearch =
@@ -97,7 +81,10 @@ export default function FindingsListPage() {
         </div>
 
         <Button
+          type="button"
           onClick={loadFindings}
+          disabled={loading}
+          aria-busy={loading ? "true" : undefined}
           variant="outline"
           size="sm"
           icon={<RefreshCw className="w-3.5 h-3.5" />}
@@ -107,12 +94,15 @@ export default function FindingsListPage() {
         </Button>
       </div>
 
+      {error && <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{error} Use Refresh to try again.</div>}
+
       {/* FILTER & SEARCH */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+          <Search aria-hidden="true" className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
           <input
             type="text"
+            aria-label="Search findings"
             placeholder="Search symbol, file, or rule..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -120,12 +110,15 @@ export default function FindingsListPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-3">
+          <div role="group" aria-label="Severity filter" className="flex items-center gap-1.5">
             <span className="text-[#686868]">Severity:</span>
             {["all", "critical", "high"].map((sev) => (
               <button
                 key={sev}
+                type="button"
+                aria-pressed={severityFilter === sev}
+                aria-label={`Filter findings by ${sev} severity`}
                 onClick={() => setSeverityFilter(sev)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   severityFilter === sev
@@ -138,11 +131,14 @@ export default function FindingsListPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div role="group" aria-label="Provider filter" className="flex items-center gap-1.5">
             <span className="text-[#686868]">Provider:</span>
             {providerOptions.map((prov) => (
               <button
                 key={prov}
+                type="button"
+                aria-pressed={providerFilter === prov}
+                aria-label={`Filter findings by ${prov} provider`}
                 onClick={() => setProviderFilter(prov)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize border transition-all ${
                   providerFilter === prov
@@ -160,8 +156,14 @@ export default function FindingsListPage() {
       {/* FINDING ROW CARDS */}
       {loading ? (
         <div className="py-20 text-center text-[#686868]">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+          <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
           <span>Querying database findings...</span>
+        </div>
+      ) : error ? (
+        <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">
+          <AlertTriangle aria-hidden="true" className="w-8 h-8 text-rose-600 mx-auto" />
+          <p className="font-semibold text-base text-[#111111]">Findings cannot be displayed</p>
+          <p className="text-xs text-[#686868]">Reconnect to the workspace and use Refresh to try again.</p>
         </div>
       ) : filteredFindings.length === 0 ? (
         <div className="p-12 text-center bg-white border border-[#E8E8E5] rounded-[28px] space-y-2">

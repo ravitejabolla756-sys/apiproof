@@ -79,6 +79,41 @@ describe('generic compatibility engine', () => {
     expect(result.reasonCodes).toContain('INSUFFICIENT_STATIC_EVIDENCE');
   });
 
+  it('keeps resource and API-version scopes unresolved when the evidence is absent', () => {
+    const resourceChange = {
+      ...change(), changeId: 'resource-scope', applicabilityScope: { dimensions: ['provider', 'resource'] },
+      affectedPackages: undefined, apiOperationPatterns: [], affectedParameters: [], affectedResources: ['legacy-resource'],
+    };
+    const resourceResult = evaluateCompatibility({ providerId: 'openai', resolvedVersion: '4.2.0', usages: [usage({ resource: undefined, static: false, confidence: 0.4 })], completeEvidence: false }, resourceChange, policy);
+    expect(resourceResult.status).toBe('NEEDS_REVIEW');
+    expect(resourceResult.reasonCodes).toContain('RESOURCE_UNRESOLVED');
+
+    const apiVersionChange = {
+      ...change(), changeId: 'api-version-scope', applicabilityScope: { dimensions: ['provider', 'api_version'] },
+      affectedPackages: undefined, apiOperationPatterns: [], affectedParameters: [], apiVersionMetadata: { version: '2024-10-01' },
+    };
+    const apiVersionResult = evaluateCompatibility({ providerId: 'openai', resolvedVersion: '4.2.0', usages: [usage({ apiVersion: undefined, static: false, confidence: 0.4 })], completeEvidence: false }, apiVersionChange, policy);
+    expect(apiVersionResult.status).toBe('NEEDS_REVIEW');
+    expect(apiVersionResult.reasonCodes).toContain('API_VERSION_UNRESOLVED');
+  });
+
+  it('preserves conservative classification for renamed APIs, semantic parameter conditions, and provider isolation', () => {
+    const renamed = { ...change('twilio'), changeId: 'renamed-parameter', changeType: 'parameter_renamed' as const };
+    const renamedResult = evaluateCompatibility({ providerId: 'twilio', resolvedVersion: '4.2.0', usages: [usage({ providerId: 'twilio', packageName: 'twilio', operation: 'messages.create', parameter: 'from' })], completeEvidence: true }, renamed, policy);
+    expect(renamedResult.status).toBe('AFFECTED');
+
+    const semantic = {
+      ...change(), changeId: 'semantic-parameter', applicabilityScope: { dimensions: ['provider', 'package', 'package_version', 'operation', 'parameter'] },
+      parameterConditions: [{ parameter: 'functions', predicate: 'non-default' as const }],
+    };
+    const uncertainSemantic = evaluateCompatibility({ providerId: 'openai', resolvedVersion: '4.2.0', usages: [usage({ parameterValueStatus: 'unknown' })], completeEvidence: true }, semantic, policy);
+    expect(uncertainSemantic.status).toBe('NEEDS_REVIEW');
+    expect(uncertainSemantic.reasonCodes).toContain('PARAMETER_VALUE_UNRESOLVED');
+
+    const unrelated = evaluateCompatibility({ providerId: 'anthropic', resolvedVersion: '1.2.0', usages: [usage({ providerId: 'openai' })], completeEvidence: true }, change('anthropic'), policy);
+    expect(unrelated.status).toBe('NOT_AFFECTED');
+  });
+
   it('accepts alias/import-resolved and raw HTTP evidence without provider-specific branches', () => {
     const alias = usage({ id: 'alias', evidenceKind: 'import', operation: 'chat.completions.create' });
     const httpChange = { ...change(), changeId: 'http-parameter-removal', applicabilityScope: { dimensions: ['provider', 'endpoint'] }, affectedPackages: undefined, apiOperationPatterns: [], affectedParameters: [], affectedEndpoints: ['chat.completions.create'] };

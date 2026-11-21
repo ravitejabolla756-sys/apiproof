@@ -20,6 +20,8 @@ Thumbs.db
 .next/
 .next-*/
 next-build-*/
+test-results/
+playwright-report/
 
 .vercel
 .env*.local

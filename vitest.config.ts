@@ -14,6 +14,7 @@ export default defineConfig({
   },
   test: {
     include: ['tests/**/*.test.ts'],
+    setupFiles: ['./tests/setup.ts'],
     testTimeout: 30_000,
     // Several integration suites deliberately exercise process-level rollout
     // flags and database-path selection. Running files concurrently lets one

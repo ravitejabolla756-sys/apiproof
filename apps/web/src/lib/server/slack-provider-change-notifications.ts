@@ -69,12 +69,17 @@ async function postProviderChangeDelivery(row: ProviderChangeDelivery, workerId:
     SELECT provider_id, title, description, source_url FROM provider_changelog_entries WHERE id = ?
   `, [row.changelog_entry_id]);
   const connection = await db.queryOne<SlackMessageConnection>(`
-    SELECT id, workspace_id, team_id, installer_slack_user_id, token_ciphertext, token_iv,
+    SELECT id, workspace_id, connected_by, team_id, installer_slack_user_id, token_ciphertext, token_iv,
            token_auth_tag, updated_at, status
     FROM slack_connections WHERE id = ? AND workspace_id = ? AND status = 'active'
   `, [row.slack_connection_id, row.workspace_id]);
   if (!source) throw new Error('SLACK_PROVIDER_CHANGE_SOURCE_MISSING');
   if (!connection) throw new Error('SLACK_CONNECTION_INACTIVE');
+  const ownerMembership = await db.queryOne<{ id: string }>(
+    'SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?',
+    [connection.workspace_id, connection.connected_by],
+  );
+  if (!ownerMembership) throw new Error('SLACK_CONNECTION_OWNER_REVOKED');
 
   const intent = await db.execute(`UPDATE slack_provider_change_deliveries
     SET post_started_at = ?, lease_expires_at = ?

@@ -3,6 +3,7 @@ import { open, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { AnalysisError, EXCLUDED_DIRECTORIES } from '@apiproof/shared';
 import type { Diagnostic } from '@apiproof/shared';
+import { sanitizeMemoryFiles } from '../memory-files.js';
 
 export const LIMITS = { files: 5_000, entries: 50_000, depth: 64, fileBytes: 1_048_576, metadataBytes: 4_194_304, totalBytes: 33_554_432 } as const;
 const sourceExtension = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
@@ -11,6 +12,10 @@ export function portable(value: string): string { return value.split(path.sep).j
 export function isInside(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
   return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+}
+
+function normalizeText(value: string): string {
+  return value.replace(/\r\n?/g, '\n');
 }
 
 /** One bounded snapshot. Never loads tsconfig plugins, resolves dependencies, or invokes project scripts. */
@@ -27,12 +32,16 @@ export class RepositorySnapshot {
 
   static fromMemory(root: string, files: Map<string, string>): RepositorySnapshot {
     const snapshot = new RepositorySnapshot(root);
-    for (const [relativePath, content] of files) {
+    const sanitized = sanitizeMemoryFiles(files);
+    snapshot.diagnostics.push(...sanitized.diagnostics);
+    snapshot.skipped += sanitized.diagnostics.length;
+    for (const [relativePath, content] of sanitized.files) {
       const norm = portable(relativePath);
       if (norm === 'package.json' || norm.endsWith('/package.json')) snapshot.manifests.push(norm);
       if (sourceExtension.test(norm)) {
-        snapshot.sources.set(norm, content);
-        snapshot.hashes.set(norm, createHash('sha256').update(content).digest('hex'));
+        const normalized = normalizeText(content);
+        snapshot.sources.set(norm, normalized);
+        snapshot.hashes.set(norm, createHash('sha256').update(normalized).digest('hex'));
       }
     }
     if (!snapshot.manifests.includes('package.json')) {
@@ -92,9 +101,10 @@ export class RepositorySnapshot {
           return undefined;
         }
         this.bytes += length;
-        const content = buffer.subarray(0, length);
-        this.hashes.set(relative, createHash('sha256').update(content).digest('hex'));
-        return new TextDecoder('utf-8', { fatal: true }).decode(content);
+        const content = new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, length));
+        const normalized = normalizeText(content);
+        this.hashes.set(relative, createHash('sha256').update(normalized).digest('hex'));
+        return normalized;
       } finally { await handle.close(); }
     } catch {
       this.warn('UNREADABLE_FILE', 'File could not be read as UTF-8.', relative);

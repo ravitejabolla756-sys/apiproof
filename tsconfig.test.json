@@ -14,7 +14,10 @@
       "@/lib/server/validation": ["./apps/web/src/lib/server/validation.ts"],
       "@/lib/server/workspace-service": ["./apps/web/src/lib/server/workspace-service.ts"],
       "@/lib/server/productization-persistence": ["./apps/web/src/lib/server/productization-persistence.ts"],
+      "@/lib/server/account-deletion-plan": ["./apps/web/src/lib/server/account-deletion-plan.ts"],
       "@/lib/server/billing/service": ["./apps/web/src/lib/server/billing/service.ts"],
+      "@/lib/server/billing/plans": ["./apps/web/src/lib/server/billing/plans.ts"],
+      "@/lib/server/billing/provider": ["./apps/web/src/lib/server/billing/provider.ts"],
       "next/server": ["./apps/web/node_modules/next/server.d.ts"],
       "next/*": ["./apps/web/node_modules/next/*"]
     }

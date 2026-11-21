@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { evaluateRegisteredNormalizedCompatibility } from '@apiproof/analyzers';
 import { PRODUCTION_COMPATIBILITY_REGISTRY } from '@apiproof/providers';
 import { buildCompatibilityProofSnapshot } from '@apiproof/shared';
-import { getCurrentUser } from '../../../lib/server/auth.js';
+import { extractSessionId, getCurrentUser } from '../../../lib/server/auth.js';
 import { getDatabase } from '../../../lib/server/db/index.js';
-import { getDefaultWorkspaceForUser } from '../../../lib/server/workspace-service.js';
+import { withPostgresTenantContext } from '../../../lib/server/db/postgres-tenant-context.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '../../../lib/server/organization-route.js';
+import { OrganizationServiceError } from '../../../lib/server/organization-service.js';
 import { loadProviderRegistry } from '../../../lib/server/registry-utils.js';
 import { parseScanCompatibilityEvidence, parseScanDiscoveryEvidence, parseScanUsageIR } from '../../../lib/server/scan-compatibility-evidence.js';
 import { parseBoundedProductizationProjection } from '../../../lib/server/productization-persistence.js';
@@ -42,16 +44,37 @@ interface FindingRow {
   pull_request_created_at: string | null;
 }
 
-const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
+const privateNoStore = PRIVATE_NO_STORE_HEADERS;
 
-/** Compatibility snapshot for only the authenticated user's default workspace. */
-export async function GET(req: Request) {
+/** Compatibility snapshot for only the authenticated user's active workspace. */
+export async function GET(req: Request): Promise<Response> {
+  try {
+    return await loadCompatibilityMap(req);
+  } catch (error) {
+    console.error('Compatibility map request failed:', { code: 'COMPATIBILITY_DATA_UNAVAILABLE', cause: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json(
+      { error: 'Compatibility data is temporarily unavailable.', code: 'COMPATIBILITY_DATA_UNAVAILABLE' },
+      { status: 503, headers: privateNoStore },
+    );
+  }
+}
+
+async function loadCompatibilityMap(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: privateNoStore });
 
-  const workspace = await getDefaultWorkspaceForUser(user.id);
+  let workspace: Awaited<ReturnType<typeof resolveWorkspaceForRequest>>;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    if (error instanceof OrganizationServiceError || (error instanceof Error && error.message.includes('access denied'))) {
+      return organizationErrorResponse(error);
+    }
+    return NextResponse.json({ error: 'Compatibility data is temporarily unavailable.', code: 'COMPATIBILITY_WORKSPACE_UNAVAILABLE' }, { status: 503, headers: privateNoStore });
+  }
   const db = getDatabase();
-  const repositories = await db.query<RepositoryRow>(`
+  return withPostgresTenantContext(db, user.id, workspace.id, async (tx) => {
+  const repositories = await tx.query<RepositoryRow>(`
     SELECT r.id, r.name, r.owner, r.full_name, r.default_branch,
       (SELECT s.status FROM scans s
        WHERE s.repository_id = r.id
@@ -79,7 +102,7 @@ export async function GET(req: Request) {
     ORDER BY r.created_at DESC, r.id ASC
   `, [workspace.id]);
 
-  const findingRows = await db.query<FindingRow>(`
+  const findingRows = await tx.query<FindingRow>(`
     SELECT f.repository_id, f.id, f.provider, f.change_id, f.title, f.status,
            f.file_path, f.symbol,
            m.id AS migration_id, m.status AS migration_status,
@@ -214,4 +237,5 @@ export async function GET(req: Request) {
   }));
 
   return NextResponse.json({ workspaceId: workspace.id, repositories: responseRepositories }, { headers: privateNoStore });
+  }, extractSessionId(req));
 }

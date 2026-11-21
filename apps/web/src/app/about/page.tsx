@@ -9,7 +9,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-[#000E29] font-sans antialiased selection:bg-[#D0F100] selection:text-black">
       <LandingNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
+      <main id="main-content" tabIndex={-1} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 pb-24 space-y-16">
 
         {/* EDITORIAL HERO */}
         <div className="rounded-[32px] bg-[#EFF1F5] border border-black/[0.04] p-8 md:p-14 shadow-xs">
@@ -76,7 +76,7 @@ export default function AboutPage() {
                   We parse source code into formal Abstract Syntax Trees. We never guess with regex or simple string searches. If an API signature changes, we trace exact call expressions.
                 </p>
               </div>
-              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-700">
                 AST symbol tracing
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function AboutPage() {
                   Every proposed migration is verified against syntactic validity, TypeScript compiler diagnostics, call-site scope boundaries, and isolated dry-run test execution.
                 </p>
               </div>
-              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-700">
                 Compiler + test checks
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function AboutPage() {
                   We never commit to your default branch. We never auto-merge. Automated changes are delivered as isolated GitHub Draft Pull Requests for engineers to inspect and approve.
                 </p>
               </div>
-              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-500">
+              <div className="pt-4 border-t border-black/[0.05] text-[11px] font-mono text-slate-700">
                 Draft PR boundary
               </div>
             </div>

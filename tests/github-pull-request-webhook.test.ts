@@ -71,6 +71,7 @@ describe('GitHub pull_request webhook synchronization', () => {
     state?: 'open' | 'closed';
     draft?: boolean;
     merged?: boolean;
+    mergeCommitSha?: string;
   }) {
     return JSON.stringify({
       action: input.action,
@@ -81,6 +82,7 @@ describe('GitHub pull_request webhook synchronization', () => {
         state: input.state ?? 'open',
         draft: input.draft ?? false,
         merged: input.merged ?? false,
+        merge_commit_sha: input.mergeCommitSha,
       },
     });
   }
@@ -89,7 +91,7 @@ describe('GitHub pull_request webhook synchronization', () => {
     local: Awaited<ReturnType<typeof fixture>>,
     action: string,
     state: 'open' | 'closed',
-    options: { draft?: boolean; merged?: boolean } = {},
+    options: { draft?: boolean; merged?: boolean; mergeCommitSha?: string } = {},
   ) {
     return processGitHubWebhook({
       event: 'pull_request',
@@ -125,7 +127,18 @@ describe('GitHub pull_request webhook synchronization', () => {
 
   it('records merged as a distinct authoritative closed state', async () => {
     const local = await fixture('merged@test.invalid');
-    expect((await deliver(local, 'closed', 'closed', { merged: true })).status).toBe('merged');
+    const mergeSha = 'a'.repeat(40);
+    expect((await deliver(local, 'closed', 'closed', { merged: true, mergeCommitSha: mergeSha })).status).toBe('merged');
+    expect(await local.db.query('SELECT id FROM github_scan_requests WHERE repository_id = ? AND commit_sha = ?', [local.repositoryId, mergeSha])).toHaveLength(1);
+    expect(await local.db.query('SELECT id FROM scans WHERE repository_id = ? AND sha = ? AND triggered_by = ?', [local.repositoryId, mergeSha, 'pull_request_merge'])).toHaveLength(1);
+  });
+
+  it('fails closed when a merged event lacks the authoritative merge SHA', async () => {
+    const local = await fixture('missing-merge-sha@test.invalid');
+    const result = await deliver(local, 'closed', 'closed', { merged: true });
+    expect(result).toMatchObject({ handled: false, reason: 'missing_merge_commit_sha' });
+    expect(await local.db.query('SELECT id FROM github_scan_requests WHERE repository_id = ?', [local.repositoryId])).toHaveLength(0);
+    expect(await local.db.queryOne<{ state: string }>('SELECT state FROM pull_requests WHERE repository_id = ?', [local.repositoryId])).toEqual({ state: 'draft' });
   });
 
   it('ignores wrong installations and repositories without changing the local PR', async () => {

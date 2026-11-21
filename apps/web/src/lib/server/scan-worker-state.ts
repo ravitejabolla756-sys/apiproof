@@ -1,6 +1,9 @@
 import type { DatabaseAdapter } from './db/types.js';
 import { logger } from './logger.js';
 
+export const SCAN_WORKER_MAX_ATTEMPTS = 3;
+export const RETRYABLE_SCAN_FAILURES: ReadonlySet<string> = new Set(['GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE', 'GITHUB_NETWORK']);
+
 export interface ScanWorkerJobState {
   id: string;
   repository_id: string;
@@ -64,8 +67,7 @@ export async function markScanWorkerJobFailed(
   errorMessage: string,
   context: { repositoryFullName?: string; errorCode?: string; durationMs?: number } = {}
 ): Promise<void> {
-  const retryable = new Set(['GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE', 'GITHUB_NETWORK']);
-  const nextStatus = retryable.has(category) && job.attempt_count < 3 ? 'pending' : 'failed';
+  const nextStatus = RETRYABLE_SCAN_FAILURES.has(category) && job.attempt_count < SCAN_WORKER_MAX_ATTEMPTS ? 'pending' : 'failed';
   const safeMessage = errorMessage.replace(/[\r\n\t]+/g, ' ').slice(0, 500);
   await db.execute(`
     UPDATE github_scan_requests

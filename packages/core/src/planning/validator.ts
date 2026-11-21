@@ -23,6 +23,9 @@ export function validatePlan(plan: MigrationPlan, input: PlanningInput): Migrati
 }
 
 export function validateModelOutput(input: unknown, context: PlanningInput): ModelOutput {
+  let serialized: string | undefined;
+  try { serialized = JSON.stringify(input); } catch { throw new AnalysisError('INVALID_MODEL_OUTPUT', 'Model output could not be serialized safely.'); }
+  if (!serialized || new TextEncoder().encode(serialized).byteLength > 512 * 1024) throw new AnalysisError('INVALID_MODEL_OUTPUT', 'Model output exceeded the bounded planning response size.');
   const parsed = ModelOutputSchema.safeParse(input);
   if (!parsed.success) throw new AnalysisError('INVALID_MODEL_OUTPUT', 'Model output did not match the structured planning schema.');
   const evidence = allowedEvidence(context); const symbols = allowedSymbols(context);

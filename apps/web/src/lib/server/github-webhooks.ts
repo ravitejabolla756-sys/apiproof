@@ -1,9 +1,24 @@
 import crypto from 'node:crypto';
-import { getDatabase } from './db/index.js';
+import { getDatabase, type DatabaseAdapter } from './db/index.js';
 import {
   getGitHubInstallationByInstallationId,
   updateGitHubInstallationStatus,
 } from './workspace-service.js';
+import { enqueueMergedPullRequestScan } from './github-merge-scan.js';
+
+export const GITHUB_WEBHOOK_MAX_ATTEMPTS = 3;
+export const GITHUB_WEBHOOK_LEASE_MS = 5 * 60_000;
+
+async function ensureWebhookDeliverySchema(db: DatabaseAdapter): Promise<void> {
+  if (db.engine === 'postgres') {
+    await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0');
+    return;
+  }
+  const columns = await db.query<{ name: string }>('PRAGMA table_info(github_webhook_deliveries)');
+  if (!columns.some((column) => column.name === 'attempt_count')) {
+    await db.execute('ALTER TABLE github_webhook_deliveries ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0');
+  }
+}
 
 export interface WebhookResult {
   received: boolean;
@@ -73,17 +88,25 @@ export async function claimWebhookDelivery(
   receivedAt: string
 ): Promise<boolean> {
   const db = getDatabase();
+  await ensureWebhookDeliverySchema(db);
+  const receivedMs = Date.parse(receivedAt);
+  const leaseCutoff = Number.isFinite(receivedMs)
+    ? new Date(receivedMs - GITHUB_WEBHOOK_LEASE_MS).toISOString()
+    : new Date(Date.now() - GITHUB_WEBHOOK_LEASE_MS).toISOString();
   const result = await db.execute(`
-    INSERT INTO github_webhook_deliveries (id, event, status, received_at, processed_at)
-    VALUES (?, ?, 'processing', ?, ?)
+    INSERT INTO github_webhook_deliveries (id, event, status, received_at, processed_at, attempt_count)
+    VALUES (?, ?, 'processing', ?, ?, 1)
     ON CONFLICT (id) DO UPDATE SET
       event = excluded.event,
       status = 'processing',
       received_at = excluded.received_at,
       processed_at = excluded.processed_at,
+      attempt_count = github_webhook_deliveries.attempt_count + 1,
       error_message = NULL
-    WHERE github_webhook_deliveries.status = 'failed'
-  `, [deliveryId, event, receivedAt, receivedAt]);
+    WHERE (github_webhook_deliveries.status = 'failed'
+      OR (github_webhook_deliveries.status = 'processing' AND github_webhook_deliveries.processed_at <= ?))
+      AND github_webhook_deliveries.attempt_count < ?
+  `, [deliveryId, event, receivedAt, receivedAt, leaseCutoff, GITHUB_WEBHOOK_MAX_ATTEMPTS]);
   return result.changes === 1;
 }
 
@@ -98,6 +121,7 @@ export async function recordWebhookDelivery(
   errorMessage?: string
 ): Promise<void> {
   const db = getDatabase();
+  await ensureWebhookDeliverySchema(db);
   const processedAt = new Date().toISOString();
 
   await db.execute(`
@@ -341,6 +365,7 @@ export async function processGitHubWebhook(params: {
     const number = Number(pullRequestData?.number);
     const prState = String(pullRequestData?.state ?? '');
     const isDraft = pullRequestData?.draft === true;
+    const mergeCommitSha = String(pullRequestData?.merge_commit_sha ?? '');
 
     if (!installationId || !githubRepositoryId || !Number.isSafeInteger(number) || number <= 0) {
       await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Missing installation, repository, or pull request identity');
@@ -353,8 +378,8 @@ export async function processGitHubWebhook(params: {
       return { received: true, handled: false, reason: 'installation_not_found' };
     }
 
-    const repository = await db.queryOne<{ id: string; workspace_id: string }>(`
-      SELECT id, workspace_id FROM repositories
+    const repository = await db.queryOne<{ id: string; workspace_id: string; default_branch: string }>(`
+      SELECT id, workspace_id, default_branch FROM repositories
       WHERE github_repository_id = ? AND workspace_id = ? AND lifecycle = 'active'
     `, [githubRepositoryId, installation.workspaceId]);
     if (!repository) {
@@ -370,7 +395,12 @@ export async function processGitHubWebhook(params: {
       return { received: true, handled: false, reason: 'invalid_pull_request_state' };
     }
 
-    const result = await db.execute(`
+    if (state === 'merged' && !/^[0-9a-f]{40}$/i.test(mergeCommitSha)) {
+      await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Merged pull request is missing an authoritative merge commit SHA');
+      return { received: true, handled: false, reason: 'missing_merge_commit_sha' };
+    }
+
+    const updatePullRequest = async (connection: typeof db) => connection.execute(`
       UPDATE pull_requests
       SET state = ?
       WHERE repository_id = ? AND number = ?
@@ -385,6 +415,23 @@ export async function processGitHubWebhook(params: {
             AND (gi.status IS NULL OR gi.status = 'active')
         )
     `, [state, repository.id, number, installation.workspaceId, githubRepositoryId, installationId]);
+
+    const result = state === 'merged'
+      ? await db.transaction(async (tx) => {
+        const updated = await updatePullRequest(tx);
+        if (updated.changes === 1) {
+          await enqueueMergedPullRequestScan(tx, {
+            deliveryId,
+            repositoryId: repository.id,
+            workspaceId: installation.workspaceId,
+            defaultBranch: repository.default_branch,
+            commitSha: mergeCommitSha,
+            now,
+          });
+        }
+        return updated;
+      })
+      : await updatePullRequest(db);
 
     if (result.changes === 0) {
       await recordWebhookDelivery(deliveryId, event, 'ignored', now, 'Pull request is not mapped to a local proposal');
@@ -412,7 +459,9 @@ export async function processGitHubWebhook(params: {
       return { received: true, handled: false, reason: 'missing_repository_id' };
     }
 
-    // C. Authoritative match: must be connected to APIProof under an active GitHub installation
+    // C. Authoritative match: must be connected to APIProof under an active GitHub installation.
+    // Tenant authorization is enforced by the repository/installation relationship; no
+    // global founder identity is required for live scans.
     const repo = await db.queryOne<{
       id: string;
       workspace_id: string;

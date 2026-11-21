@@ -22,8 +22,8 @@ export function LandingFooter() {
           </div>
 
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>All systems operational · Read-only AST safety</span>
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
+            <Link href="/status" className="hover:text-white transition-colors">Product status · Release-gated services are labeled</Link>
           </div>
         </div>
 
@@ -74,6 +74,11 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/faq" className="hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
                 <Link href="/blog" className="hover:text-white transition-colors">
                   Blog
                 </Link>
@@ -81,6 +86,11 @@ export function LandingFooter() {
               <li>
                 <Link href="/updates" className="hover:text-white transition-colors">
                   Updates
+                </Link>
+              </li>
+              <li>
+                <Link href="/status" className="hover:text-white transition-colors">
+                  Status
                 </Link>
               </li>
               <li>

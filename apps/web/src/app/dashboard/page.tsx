@@ -1,93 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { CompatibilityMap } from "@/components/dashboard/compatibility-map";
 import { ArrowUpRight, AlertTriangle, GitBranch, ArrowRight, CheckCircle2, RefreshCw, Plus, Loader2, ShieldCheck, ScanLine, ExternalLink } from "lucide-react";
 import { ConnectRepoModal } from "@/components/dashboard/connect-repo-modal";
-
-interface OverviewData {
-  workspace?: {
-    id: string;
-    name: string;
-    slug: string;
-    role: string;
-    repositoryCount: number;
-    scanCount: number;
-    openFindingCount: number;
-    hasGitHubInstallation?: boolean;
-    installationStatus?: string;
-    installationAccount?: string | null;
-  };
-  stats: {
-    connectedRepositories: number;
-    scansCompleted: number;
-    openFindings: number;
-    criticalFindings: number;
-    draftPrsCount: number;
-    providerRulesPending: number;
-    providerRulesApproved: number;
-    rescansPending: number;
-    rescansProcessing: number;
-    rescansFailed: number;
-  };
-  repositories: Array<{
-    id: string;
-    name: string;
-    owner: string;
-    full_name: string;
-    default_branch: string;
-    status: string;
-    last_scan_at: string | null;
-    findings_count: number;
-  }>;
-  criticalFinding: {
-    id: string;
-    title: string;
-    description: string;
-    severity: string;
-    symbol: string;
-    file_path: string;
-    status: string;
-    repo_name: string;
-    repo_full_name: string;
-  } | null;
-  recentActivities: Array<{
-    id: string;
-    type: string;
-    title: string;
-    description: string;
-    created_at: string;
-    repo_name: string | null;
-  }>;
-  recentProviderChanges: Array<{
-    id: string;
-    provider_id: string;
-    title: string;
-    description: string;
-    source_url: string;
-    published_at: string | null;
-    first_seen_at: string;
-  }>;
-  findingsThisWeek: Array<{
-    day: string;
-    total: number;
-    critical: number;
-    high: number;
-    warning: number;
-  }>;
-  recentFixes: Array<{
-    id: string;
-    status: string;
-    created_at: string;
-    finding_title: string;
-    repo_name: string;
-    pr_url: string | null;
-    pr_state: string | null;
-  }>;
-}
+import { parseOverviewResponse, type OverviewData } from "@/lib/dashboard-overview-contract";
 
 export default function DashboardOverviewPage() {
   const [data, setData] = useState<OverviewData | null>(null);
@@ -96,6 +16,7 @@ export default function DashboardOverviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const loadOverview = useCallback(async () => {
     setRefreshing(true);
@@ -104,8 +25,11 @@ export default function DashboardOverviewPage() {
       if (!res.ok) {
         throw new Error(`Overview request failed (${res.status})`);
       }
-      const json = await res.json() as OverviewData;
-      setData(json);
+      const parsed = parseOverviewResponse(await res.json());
+      if (!parsed) {
+        throw new Error("Overview returned an invalid response.");
+      }
+      setData(parsed);
       setError(null);
       setLastUpdatedAt(new Date());
     } catch (err) {
@@ -122,6 +46,9 @@ export default function DashboardOverviewPage() {
     const interval = window.setInterval(loadOverview, 30_000);
     return () => window.clearInterval(interval);
   }, [loadOverview]);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const stats = data?.stats ?? {
     connectedRepositories: 0,
@@ -139,7 +66,7 @@ export default function DashboardOverviewPage() {
   if (loading) {
     return (
       <div className="py-24 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>
 
@@ -155,9 +82,9 @@ export default function DashboardOverviewPage() {
       />
 
       {error && (
-        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+        <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between">
           <span>{error}</span>
-          <Button size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} className="border-rose-300 bg-white text-rose-900">
+          <Button type="button" size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} className="border-rose-300 bg-white text-rose-900">
             {refreshing ? "Retrying..." : "Retry"}
           </Button>
         </div>
@@ -180,6 +107,7 @@ export default function DashboardOverviewPage() {
 
           <div className="flex items-center gap-3">
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={loadOverview}
@@ -201,6 +129,7 @@ export default function DashboardOverviewPage() {
               </Link>
             ) : (
               <Button
+                type="button"
                 size="sm"
                 onClick={() => setIsConnectOpen(true)}
                 icon={<Plus className="w-3.5 h-3.5" />}
@@ -363,7 +292,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Connect GitHub App</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Authorize the MY OWL GitHub App with restricted repository access for read-only scans.
               </p>
@@ -383,7 +312,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Choose Repository</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Choose Repository</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Select target repositories to monitor for breaking vendor API changes.
               </p>
@@ -403,7 +332,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Run Initial AST Scan</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Run Initial AST Scan</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Scan target repo commits using deterministic AST pattern matchers.
               </p>
@@ -423,7 +352,7 @@ export default function DashboardOverviewPage() {
                   <span className="text-[10px] text-purple-300 font-medium">Pending</span>
                 )}
               </div>
-              <h4 className="font-semibold text-white text-xs mb-1">Review findings</h4>
+              <h3 className="font-semibold text-white text-xs mb-1">Review findings</h3>
               <p className="text-purple-200 text-[11px] leading-relaxed">
                 Inspect findings, verify the official evidence, and decide the next engineering action.
               </p>

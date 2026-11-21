@@ -4,8 +4,19 @@ import { useState, useRef, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { ApiProofLogo } from '@/components/ui/logo';
+import { parseAuthenticatedSession, parseAuthMutationError, parseAuthMutationSuccess } from '@/lib/auth-response-contract';
 
 type AuthMode = 'login' | 'signup';
+
+function safeNextPath(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/dashboard';
+  try {
+    const parsed = new URL(value, window.location.origin);
+    return parsed.origin === window.location.origin ? `${parsed.pathname}${parsed.search}${parsed.hash}` : '/dashboard';
+  } catch {
+    return '/dashboard';
+  }
+}
 
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -18,16 +29,19 @@ export default function LoginPage() {
 
   // If already authenticated, redirect to /dashboard
   useEffect(() => {
-    const returnFromVerification = new URLSearchParams(window.location.search).get('from') === 'verify-email';
     fetch('/api/auth')
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.authenticated && !returnFromVerification) {
+      .then((data: unknown) => {
+        if (parseAuthenticatedSession(data)) {
           window.location.href = '/dashboard';
         }
       })
       .catch(() => {});
   }, []);
+
+  function nextPath(): string {
+    return safeNextPath(new URLSearchParams(window.location.search).get('next'));
+  }
 
   useEffect(() => {
     const googleError = new URLSearchParams(window.location.search).get('google');
@@ -78,19 +92,24 @@ export default function LoginPage() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data: unknown = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Authentication failed.');
+        setError(parseAuthMutationError(data, 'Authentication failed.'));
+        setLoading(false);
+        isSubmitting.current = false;
+        return;
+      }
+      if (!parseAuthMutationSuccess(data)) {
+        setError('Authentication returned an invalid response.');
         setLoading(false);
         isSubmitting.current = false;
         return;
       }
 
-      // Signups receive a session but must verify their email before connecting GitHub.
-      window.location.href = data.verificationRequired
-        ? `/verify-email?sent=${data.emailSent ? '1' : '0'}`
-        : '/dashboard';
+      // Success: remain in loading state to prevent further clicks,
+      // and perform full navigation so the session cookie is transmitted cleanly.
+      window.location.href = nextPath();
     } catch {
       setError('Network error. Please try again.');
       setLoading(false);
@@ -142,7 +161,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={loading}
-            onClick={() => { window.location.href = '/api/auth/google/start?next=/dashboard'; }}
+            onClick={() => { window.location.href = `/api/auth/google/start?next=${encodeURIComponent(nextPath())}`; }}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#D8DCE5] bg-white py-3.5 text-sm font-semibold text-[#0F172A] transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
@@ -156,7 +175,7 @@ export default function LoginPage() {
           <button
             type="button"
             disabled={loading}
-            onClick={() => { window.location.href = '/api/auth/github/start?next=/dashboard'; }}
+            onClick={() => { window.location.href = `/api/auth/github/start?next=${encodeURIComponent(nextPath())}`; }}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#D8DCE5] bg-[#0F172A] py-3.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">

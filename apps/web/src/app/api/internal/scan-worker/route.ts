@@ -6,8 +6,8 @@
  *   - Internal health/test invocations
  *
  * Security model:
- *   - Requires CRON_SECRET header: "Authorization: Bearer <CRON_SECRET>"
- *   - CRON_SECRET must be set in production; without it the endpoint always 401s.
+ *   - Requires a signed worker identity in production.
+ *   - The legacy CRON_SECRET bearer contract is test-only.
  *   - This route is NOT meant to be exposed publicly.
  *
  * The route is idempotent: if there are no pending jobs, it returns immediately.
@@ -16,7 +16,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { processPendingGitHubScans, getScanWorkerMetrics } from '../../../../lib/server/scan-worker.js';
+import { classifyScanWorkerHealth } from '../../../../lib/server/scan-worker-metrics.js';
 import { safeFailureCode } from '../../../../lib/server/productization-persistence.js';
+import { PRIVATE_NO_STORE_HEADERS } from '../../../../lib/server/organization-route.js';
+import { parseScanWorkerRequest } from '../../../../lib/server/scan-worker-request-contract.js';
+import { verifyInternalWorkerRequest } from '../../../../lib/server/worker-auth.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,39 +29,8 @@ export const dynamic = 'force-dynamic';
 // Authorization helper
 // ---------------------------------------------------------------------------
 
-async function isAuthorized(request: NextRequest): Promise<boolean> {
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || cronSecret.trim().length === 0) {
-    // No secret configured → always reject to prevent accidental open access
-    return false;
-  }
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return false;
-  }
-
-  if (!authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  const providedSecret = authHeader.slice('Bearer '.length);
-
-  // Timing-safe comparison to prevent timing attacks
-  if (providedSecret.length !== cronSecret.length) {
-    return false;
-  }
-
-  try {
-    const { timingSafeEqual } = await import('node:crypto');
-    return timingSafeEqual(
-      Buffer.from(providedSecret, 'utf8'),
-      Buffer.from(cronSecret, 'utf8')
-    );
-  } catch {
-    return false;
-  }
+function isAuthorized(request: NextRequest): boolean {
+  return verifyInternalWorkerRequest(request);
 }
 
 // ---------------------------------------------------------------------------
@@ -65,29 +38,26 @@ async function isAuthorized(request: NextRequest): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 async function runWorker(request: NextRequest): Promise<NextResponse> {
-  if (!(await isAuthorized(request))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  let batchSize: number | undefined;
-  let timeoutMs: number | undefined;
-  let metricsOnly = false;
-  let repositoryId: string | undefined;
-
+  let options: { batchSize?: number; timeoutMs?: number; metricsOnly?: boolean; repositoryId?: string } = {};
   try {
-    const body = (await request.json()) as { batchSize?: unknown; timeoutMs?: unknown; metricsOnly?: unknown; repositoryId?: unknown };
-    if (typeof body.batchSize === 'number') batchSize = body.batchSize;
-    if (typeof body.timeoutMs === 'number') timeoutMs = body.timeoutMs;
-    if (typeof body.metricsOnly === 'boolean') metricsOnly = body.metricsOnly;
-    if (typeof body.repositoryId === 'string' && /^[A-Za-z0-9_.-]{1,150}$/.test(body.repositoryId)) repositoryId = body.repositoryId;
+    const parsed = parseScanWorkerRequest(await request.json());
+    if (!parsed.ok) {
+      return NextResponse.json({ ok: false, error: 'Invalid scan worker request.', code: parsed.code }, { status: 400, headers: PRIVATE_NO_STORE_HEADERS });
+    }
+    options = parsed.value;
   } catch {
     // No body or invalid JSON — use defaults
   }
 
   try {
+    const { batchSize, timeoutMs, metricsOnly = false, repositoryId } = options;
     if (metricsOnly) {
       const metrics = await getScanWorkerMetrics();
-      return NextResponse.json({ ok: true, metrics });
+      return NextResponse.json({ ok: true, health: classifyScanWorkerHealth(metrics), metrics }, { headers: PRIVATE_NO_STORE_HEADERS });
     }
 
     const result = await processPendingGitHubScans({ batchSize, timeoutMs, repositoryId });
@@ -95,6 +65,7 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({
       ok: true,
+      health: classifyScanWorkerHealth(metrics),
       jobsClaimed: result.jobsClaimed,
       jobsCompleted: result.jobsCompleted,
       jobsFailed: result.jobsFailed,
@@ -102,10 +73,10 @@ async function runWorker(request: NextRequest): Promise<NextResponse> {
       timedOut: result.timedOut,
       metrics,
       results: result.results,
-    });
+    }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     console.error('[scan-worker-route] Unhandled error', { code: safeFailureCode(error, 'SCAN_WORKER_FAILED') });
-    return NextResponse.json({ ok: false, error: 'SCAN_WORKER_FAILED' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Scan worker is temporarily unavailable.', code: 'SCAN_WORKER_FAILED' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
 
@@ -117,10 +88,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 // execution contract so scheduled production scans cannot silently 405.
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // Keep direct/unit callers that do not provide an HTTP request fail-closed.
-  if (!request) return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  if (!request) return NextResponse.json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, { status: 405, headers: PRIVATE_NO_STORE_HEADERS });
   return runWorker(request);
 }
 
 export async function DELETE(_request: NextRequest): Promise<NextResponse> {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'GET, POST' } });
+  return NextResponse.json({ error: 'Method not allowed', code: 'METHOD_NOT_ALLOWED' }, { status: 405, headers: { ...PRIVATE_NO_STORE_HEADERS, Allow: 'GET, POST' } });
 }

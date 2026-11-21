@@ -7,12 +7,14 @@ import {
 } from '@apiproof/core';
 import type { NormalizedUsageIR, ScanResult } from '@apiproof/shared';
 import { getDatabase } from './db/index.js';
+import { withPostgresTenantContext } from './db/postgres-tenant-context.js';
 import { enqueueNewFindingNotifications } from './slack-notifications.js';
 import { createWorkspaceGitHubSourceControlProvider, fetchRemoteRepositoryFiles } from './github.js';
 import { loadActiveProductionRegistry, loadProviderRegistry } from './registry-utils.js';
 import { requireRepositoryAccess, getWorkspaceGitHubInstallation } from './workspace-service.js';
 import { summarizeScanCompatibility } from './scan-compatibility-evidence.js';
 import { scanResultWithDiscovery } from './scan-discovery-evidence.js';
+import { assertFounderScanAuthorization } from './founder-scan-authorization.js';
 import { providerIntelligenceV1Enabled } from './provider-intelligence-feature.js';
 import { productizationFindings, type ProductizationFinding } from './productization-worker.js';
 import { boundedProductizationProjection } from './productization-persistence.js';
@@ -54,8 +56,12 @@ function extractSourceSnippet(fileContent: string, lineNumber: number, contextLi
 export async function runRepositoryScan(
   repositoryId: string,
   userId: string,
-  customProvider?: GitHubAppSourceControlProvider
+  customProvider?: GitHubAppSourceControlProvider,
+  sessionId?: string,
 ): Promise<ScanExecutionResult> {
+  // Keep the live-scan boundary inside the service so alternate callers cannot
+  // bypass the route-level authorization check.
+  assertFounderScanAuthorization(userId);
   const db = getDatabase();
   
   // 1. Verify workspace repository access (central authorization / IDOR protection)
@@ -74,10 +80,12 @@ export async function runRepositoryScan(
   if (activeScan) {
     const startedAt = Date.parse(activeScan.started_at);
     if (Number.isFinite(startedAt) && Date.now() - startedAt > 15 * 60 * 1000) {
-      await db.execute(
-        `UPDATE scans SET status = 'failed', error_message = ?, completed_at = ? WHERE id = ? AND status IN ('pending', 'running')`,
-        ['SCAN_TIMEOUT_RECOVERED: previous scan exceeded the execution window.', new Date().toISOString(), activeScan.id],
-      );
+      await withPostgresTenantContext(db, userId, repo.workspace_id, async (tx) => {
+        await tx.execute(
+          `UPDATE scans SET status = 'failed', error_message = ?, completed_at = ? WHERE id = ? AND status IN ('pending', 'running')`,
+          ['SCAN_TIMEOUT_RECOVERED: previous scan exceeded the execution window.', new Date().toISOString(), activeScan.id],
+        );
+      }, sessionId);
     } else {
       throw new Error('SCAN_ALREADY_RUNNING: A scan is already running for this repository.');
     }
@@ -87,7 +95,7 @@ export async function runRepositoryScan(
   const now = new Date().toISOString();
 
   // 2. Insert scan record in 'running' state within transaction
-  await db.transaction(async (tx) => {
+  await withPostgresTenantContext(db, userId, repo.workspace_id, async (tx) => {
     await tx.execute(`
       INSERT INTO scans (id, repository_id, sha, status, provider, started_at)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -105,7 +113,7 @@ export async function runRepositoryScan(
       `AST compatibility scan started for ${repo.full_name}.`,
       now
     ]);
-  });
+  }, sessionId);
 
   try {
     let filesMap = new Map<string, string>();
@@ -147,8 +155,6 @@ export async function runRepositoryScan(
       }
       // Local development/test fixture fallback ONLY for offline test fixture
       if (repo.name === 'apiproof-github-fixture' || repo.owner === 'ravitejabolla756-sys') {
-        // Keep offline tests deterministic and self-contained. Never read an
-        // arbitrary external checkout that can change the analyzed source.
         filesMap = createSyntheticTestFixtureFiles(repo.name);
         headSha = 'b1be45b401f41106ecfd489bbbb1fff71639c763';
       } else {
@@ -261,7 +267,7 @@ export async function runRepositoryScan(
     const observedProviderIds = productization
       ? [...productization.discoveries.map((item) => item.providerId), ...productization.usageIR.map((item) => item.providerId)]
       : [...providersToAnalyze.map((provider) => provider.id), ...collectedFindings.map((finding) => finding.provider)];
-    await db.transaction(async (tx) => {
+    await withPostgresTenantContext(db, userId, repo.workspace_id, async (tx) => {
       const activeFindingIds: string[] = [];
 
       for (const f of collectedFindings) {
@@ -370,7 +376,7 @@ export async function runRepositoryScan(
         new Date().toISOString()
       ]);
       await enqueueNewFindingNotifications(newlyCreatedFindingIds, tx);
-    });
+    }, sessionId);
 
     return {
       scanId,

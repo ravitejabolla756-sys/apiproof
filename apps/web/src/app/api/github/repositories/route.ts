@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import type { GitHubRepoItem } from '@apiproof/core';
 import { getCurrentUser } from '@/lib/server/auth';
 import { fetchWorkspaceRepositories } from '@/lib/server/github';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import {
-  getDefaultWorkspaceForUser,
   requireWorkspaceMember,
 } from '@/lib/server/workspace-service';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const noStoreHeaders = { 'Cache-Control': 'private, no-store, max-age=0' };
@@ -26,8 +27,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Workspace access denied.', code: 'FORBIDDEN' }, { status: 403, headers: noStoreHeaders });
     }
   } else {
-    const defaultWs = await getDefaultWorkspaceForUser(user.id);
-    workspaceId = defaultWs.id;
+    workspaceId = (await resolveWorkspaceForRequest(req, user.id)).id;
   }
 
   try {
@@ -62,13 +62,14 @@ export async function GET(req: Request) {
       totalCount: sanitizedRepositories.length,
     }, { headers: noStoreHeaders });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch repositories from GitHub.';
+    const message = error instanceof Error ? error.message : '';
     if (message.includes('GITHUB_AUTHENTICATION_FAILED')) {
       return NextResponse.json({
         error: 'GitHub authentication failed. Installation access may have been revoked.',
         code: 'GITHUB_AUTH_FAILED',
       }, { status: 502, headers: noStoreHeaders });
     }
-    return NextResponse.json({ error: message, code: 'INTERNAL_ERROR' }, { status: 500, headers: noStoreHeaders });
+    console.error('GitHub repository request failed:', { code: 'GITHUB_REPOSITORIES_UNAVAILABLE' });
+    return NextResponse.json({ error: 'GitHub repositories are temporarily unavailable.', code: 'GITHUB_REPOSITORIES_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }

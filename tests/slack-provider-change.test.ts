@@ -64,4 +64,28 @@ describe('Slack provider-change notifications', () => {
     await refreshProviderChangelog('openai', options);
     expect(await db.queryOne<{ count: number }>('SELECT COUNT(*) AS count FROM slack_provider_change_deliveries')).toEqual({ count: 1 });
   });
+
+  it('marks exhausted provider-change deliveries terminal without calling Slack', async () => {
+    const fixture = await slackFixture('provider-change-exhausted');
+    const db = getDatabase();
+    const now = timestamp();
+    const scan = await db.queryOne<{ id: string }>('SELECT id FROM scans WHERE repository_id = ?', [fixture.repoId]);
+    await db.execute(`INSERT INTO repository_provider_usage
+      (repository_id, workspace_id, provider_id, last_scan_id, last_seen_at, created_at, updated_at)
+      VALUES (?, ?, 'openai', ?, ?, ?, ?)`, [fixture.repoId, fixture.workspaceId, scan!.id, now, now, now]);
+    await db.execute(`INSERT INTO provider_change_sources
+      (id, provider_id, source_url, source_type, adapter_id, created_at, updated_at)
+      VALUES (?, 'openai', 'https://developers.openai.com/api/docs/deprecations', 'deprecation-notice', 'openai', ?, ?)`, ['pcs_exhausted', now, now]);
+    await db.execute(`INSERT INTO provider_changelog_entries
+      (id, source_id, provider_id, entry_key, title, description, source_locator, source_url, content_hash, evidence_json, first_seen_at, last_seen_at)
+      VALUES (?, 'pcs_exhausted', 'openai', 'exhausted', 'Exhausted change', 'Review-only change.', 'test', 'https://developers.openai.com/api/docs/deprecations', ?, '{}', ?, ?)`, ['pce_exhausted', 'b'.repeat(64), now, now]);
+    await enqueueProviderChangeSlackNotifications(['pce_exhausted']);
+    await db.execute("UPDATE slack_provider_change_deliveries SET attempt_count = 5 WHERE changelog_entry_id = 'pce_exhausted'");
+
+    const slack = mockSlackSuccess();
+    await expect(processOneSlackProviderChangeDelivery('provider-change-worker')).resolves.toBe(false);
+    expect(slack.calls).toHaveLength(0);
+    expect(await db.queryOne<{ status: string; error_category: string }>("SELECT status, error_category FROM slack_provider_change_deliveries WHERE changelog_entry_id = 'pce_exhausted'"))
+      .toEqual({ status: 'failed', error_category: 'SLACK_ATTEMPTS_EXHAUSTED' });
+  });
 });

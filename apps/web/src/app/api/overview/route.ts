@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
-import { getDefaultWorkspaceForUser } from '@/lib/server/workspace-service';
-import { getDashboardData } from '@/lib/server/dashboard/get-dashboard-data';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
+import { getDashboardData } from '@/lib/server/dashboard/get-dashboard-data.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  // Resolve user's active/default workspace
-  const workspace = await getDefaultWorkspaceForUser(user.id);
-  const dashboard = await getDashboardData(workspace.id);
+  try {
+    const workspace = await resolveWorkspaceForRequest(req, user.id);
+    const dashboard = await getDashboardData(user.id, workspace.id, extractSessionId(req));
 
-  return NextResponse.json({
+    return NextResponse.json({
     workspace: {
       id: workspace.id,
       name: workspace.name,
@@ -38,5 +38,8 @@ export async function GET(req: Request) {
     recentProviderChanges: dashboard.recentProviderChanges,
     findingsThisWeek: dashboard.findingsThisWeek,
     recentFixes: dashboard.recentFixes,
-  });
+    }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch (error) {
+    return organizationErrorResponse(error);
+  }
 }

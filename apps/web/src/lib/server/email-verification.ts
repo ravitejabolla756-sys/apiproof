@@ -1,115 +1,144 @@
 import crypto from 'node:crypto';
-import nodemailer from 'nodemailer';
 import { getDatabase } from './db/index.js';
+import { EmailDeliveryUnavailableError } from './email-delivery-state.js';
+import { getSmtpConfiguration, sendTransactionalEmail } from './email-delivery.js';
 
-export const EMAIL_VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000;
-const MAX_CODE_ATTEMPTS = 5;
-const OTP_PATTERN = /^\d{6}$/;
+export const EMAIL_VERIFICATION_DEFAULT_TTL_MS = 60 * 60 * 1000;
+export const EMAIL_VERIFICATION_MIN_TTL_MS = 5 * 60 * 1000;
+export const EMAIL_VERIFICATION_MAX_TTL_MS = 24 * 60 * 60 * 1000;
 
-function codeDigest(userId: string, code: string): string {
-  const pepper = process.env.APIPROOF_SECRET?.trim();
-  if (!pepper) throw new Error('EMAIL_VERIFICATION_SECRET_UNAVAILABLE');
-  return crypto.createHmac('sha256', pepper).update(`${userId}:${code}`).digest('hex');
+export type EmailVerificationResult = 'verified' | 'already_verified' | 'invalid';
+
+export interface EmailVerificationMessage {
+  email: string;
+  name: string;
+  token: string;
 }
 
-function getMailConfig() {
-  const host = process.env.SMTP_HOST?.trim();
-  const port = Number(process.env.SMTP_PORT || '587');
-  const user = process.env.SMTP_USER;
-  const password = process.env.SMTP_PASSWORD;
-  const from = process.env.PASSWORD_RESET_FROM?.trim();
-  if (!host || !Number.isInteger(port) || port < 1 || port > 65535 || !user || !password || !from) return null;
-  return { host, port, user, password, from, secure: process.env.SMTP_SECURE === 'true' || port === 465 };
+function getEmailVerificationTtlMs(environment: NodeJS.ProcessEnv = process.env): number {
+  const configuredMinutes = Number(environment.EMAIL_VERIFICATION_TTL_MINUTES || '60');
+  if (!Number.isInteger(configuredMinutes)) return EMAIL_VERIFICATION_DEFAULT_TTL_MS;
+  const configuredMs = configuredMinutes * 60 * 1000;
+  return Math.min(EMAIL_VERIFICATION_MAX_TTL_MS, Math.max(EMAIL_VERIFICATION_MIN_TTL_MS, configuredMs));
 }
 
-export function isEmailVerificationConfigured(): boolean {
-  return Boolean(getMailConfig() && process.env.APIPROOF_SECRET?.trim());
-}
-
-async function sendCode(email: string, name: string, code: string): Promise<void> {
-  const config = getMailConfig();
-  if (!config) throw new Error('EMAIL_VERIFICATION_DELIVERY_UNAVAILABLE');
-  const transporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    requireTLS: !config.secure,
-    auth: { user: config.user, pass: config.password },
-  });
-  try {
-    await transporter.sendMail({
-      from: config.from,
-      to: email,
-      subject: 'Your MY OWL verification code',
-      text: `Hello ${name},\n\nYour MY OWL verification code is ${code}. It expires in 10 minutes. If you did not request it, you can ignore this email.`,
-      html: `<p>Hello ${escapeHtml(name)},</p><p>Your MY OWL verification code is:</p><p style="font-size:28px;font-weight:700;letter-spacing:8px">${code}</p><p>It expires in 10 minutes. If you did not request it, you can ignore this email.</p>`,
-    });
-  } finally {
-    transporter.close();
-  }
+function digestToken(token: string): string {
+  return crypto.createHash('sha256').update(token, 'utf8').digest('hex');
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!);
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[character]!);
 }
 
-export async function requestEmailVerificationCode(userId: string): Promise<'sent' | 'already_verified'> {
+export function isValidEmailVerificationToken(token: unknown): token is string {
+  return typeof token === 'string' && /^[A-Za-z0-9_-]{43}$/.test(token);
+}
+
+export function buildEmailVerificationMessage(message: EmailVerificationMessage) {
+  const config = getSmtpConfiguration();
+  if (!config) throw new Error('EMAIL_VERIFICATION_EMAIL_NOT_CONFIGURED');
+
+  const link = new URL('/verify-email', config.appUrl);
+  link.hash = `token=${encodeURIComponent(message.token)}`;
+  const safeName = escapeHtml(message.name);
+  const safeLink = escapeHtml(link.toString());
+
+  return {
+    from: config.from,
+    to: message.email,
+    subject: 'Verify your MY OWL email address',
+    text: `Hello ${message.name},\n\nVerify your MY OWL email address using this link. It expires in ${Math.round(getEmailVerificationTtlMs() / 60000)} minutes and can be used once:\n${link}\n\nIf you did not create this account, you can ignore this email.`,
+    html: `<p>Hello ${safeName},</p><p>Verify your MY OWL email address using the link below. It expires in ${Math.round(getEmailVerificationTtlMs() / 60000)} minutes and can be used once.</p><p><a href="${safeLink}">Verify email address</a></p><p>If you did not create this account, you can ignore this email.</p>`,
+  };
+}
+
+async function sendDefaultEmail(message: EmailVerificationMessage): Promise<void> {
+  await sendTransactionalEmail(buildEmailVerificationMessage(message));
+}
+
+export async function requestEmailVerification(
+  userId: string,
+  sendEmail: (message: EmailVerificationMessage) => Promise<void> = sendDefaultEmail,
+  options: { allowUnconfiguredTransport?: boolean } = {},
+): Promise<'sent' | 'already_verified' | 'unavailable'> {
   const db = getDatabase();
   const user = await db.queryOne<{ email: string; name: string; email_verified_at: string | null }>(
     'SELECT email, name, email_verified_at FROM users WHERE id = ?', [userId],
   );
-  if (!user) throw new Error('EMAIL_VERIFICATION_USER_NOT_FOUND');
+  if (!user) return 'unavailable';
   if (user.email_verified_at) return 'already_verified';
-  if (!isEmailVerificationConfigured()) throw new Error('EMAIL_VERIFICATION_DELIVERY_UNAVAILABLE');
+  if (!options.allowUnconfiguredTransport && !getSmtpConfiguration()) return 'unavailable';
 
-  const code = crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
+  const token = crypto.randomBytes(32).toString('base64url');
+  const tokenHash = digestToken(token);
   const now = new Date();
   const createdAt = now.toISOString();
-  const id = `evc_${crypto.randomBytes(16).toString('hex')}`;
-  await db.transaction(async (tx) => {
-    await tx.execute('DELETE FROM email_verification_codes WHERE user_id = ?', [userId]);
-    await tx.execute(`INSERT INTO email_verification_codes (id, user_id, code_hash, expires_at, attempts, used_at, created_at)
-      VALUES (?, ?, ?, ?, 0, NULL, ?)`, [id, userId, codeDigest(userId, code), new Date(now.getTime() + EMAIL_VERIFICATION_CODE_TTL_MS).toISOString(), createdAt]);
+  const expiresAt = new Date(now.getTime() + getEmailVerificationTtlMs()).toISOString();
+  const id = `evt_${crypto.randomBytes(16).toString('hex')}`;
+
+  const reservation = await db.transaction(async (tx) => {
+    const currentUser = await tx.queryOne<{ email: string; name: string; email_verified_at: string | null }>(
+      `SELECT email, name, email_verified_at FROM users WHERE id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
+      [userId],
+    );
+    if (!currentUser) return { status: 'unavailable' as const };
+    if (currentUser.email_verified_at) return { status: 'already_verified' as const };
+    await tx.execute('DELETE FROM email_verification_tokens WHERE user_id = ?', [userId]);
+    await tx.execute(`
+      INSERT INTO email_verification_tokens (id, user_id, token_hash, expires_at, used_at, created_at)
+      VALUES (?, ?, ?, ?, NULL, ?)
+    `, [id, userId, tokenHash, expiresAt, createdAt]);
+    return { status: 'reserved' as const, user: currentUser };
   });
+  if (reservation.status !== 'reserved') return reservation.status;
+
   try {
-    await sendCode(user.email, user.name, code);
-  } catch {
-    await db.execute('DELETE FROM email_verification_codes WHERE id = ?', [id]);
-    throw new Error('EMAIL_VERIFICATION_DELIVERY_FAILED');
+    await sendEmail({ email: reservation.user.email, name: reservation.user.name, token });
+  } catch (error) {
+    await db.execute('DELETE FROM email_verification_tokens WHERE id = ? AND token_hash = ?', [id, tokenHash]);
+    if (error instanceof EmailDeliveryUnavailableError) throw error;
+    throw new Error('EMAIL_VERIFICATION_DELIVERY_FAILED', { cause: error });
   }
   return 'sent';
 }
 
-export async function verifyEmailCode(userId: string, code: string): Promise<boolean> {
-  if (!OTP_PATTERN.test(code)) return false;
+export async function verifyEmail(token: string): Promise<EmailVerificationResult> {
+  if (!isValidEmailVerificationToken(token)) return 'invalid';
   const db = getDatabase();
-  const now = new Date().toISOString();
-  const digest = codeDigest(userId, code);
-  return db.transaction(async (tx) => {
-    const record = await tx.queryOne<{ id: string; code_hash: string; attempts: number }>(
-      `SELECT id, code_hash, attempts FROM email_verification_codes
-       WHERE user_id = ? AND used_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
-      [userId, now],
-    );
-    if (!record || record.attempts >= MAX_CODE_ATTEMPTS) return false;
-    const expected = Buffer.from(record.code_hash, 'hex');
-    const supplied = Buffer.from(digest, 'hex');
-    const matches = expected.length === supplied.length && crypto.timingSafeEqual(expected, supplied);
-    if (!matches) {
-      await tx.execute('UPDATE email_verification_codes SET attempts = attempts + 1 WHERE id = ?', [record.id]);
-      return false;
-    }
-    const used = await tx.execute('UPDATE email_verification_codes SET used_at = ? WHERE id = ? AND used_at IS NULL', [now, record.id]);
-    if (used.changes !== 1) return false;
-    const updated = await tx.execute('UPDATE users SET email_verified_at = ? WHERE id = ? AND email_verified_at IS NULL', [now, userId]);
-    return updated.changes === 1;
-  });
-}
+  const tokenHash = digestToken(token);
 
-export async function getEmailVerificationStatus(userId: string): Promise<'verified' | 'unverified'> {
-  const user = await getDatabase().queryOne<{ email_verified_at: string | null }>(
-    'SELECT email_verified_at FROM users WHERE id = ?', [userId],
-  );
-  if (!user) throw new Error('EMAIL_VERIFICATION_USER_NOT_FOUND');
-  return user.email_verified_at ? 'verified' : 'unverified';
+  return db.transaction(async (tx) => {
+    const candidate = await tx.queryOne<{ user_id: string }>(
+      'SELECT user_id FROM email_verification_tokens WHERE token_hash = ?', [tokenHash],
+    );
+    if (!candidate) return 'invalid';
+    const user = await tx.queryOne<{ id: string }>(
+      `SELECT id FROM users WHERE id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}`,
+      [candidate.user_id],
+    );
+    if (!user) return 'invalid';
+
+    const now = new Date().toISOString();
+    const row = await tx.queryOne<{ id: string; user_id: string }>(`
+      SELECT id, user_id FROM email_verification_tokens
+      WHERE token_hash = ? AND user_id = ? AND used_at IS NULL AND expires_at > ?
+    `, [tokenHash, candidate.user_id, now]);
+    if (!row) return 'invalid';
+    const consumed = await tx.execute(`
+      UPDATE email_verification_tokens SET used_at = ?
+      WHERE id = ? AND used_at IS NULL AND expires_at > ?
+    `, [now, row.id, now]);
+    if (consumed.changes !== 1) return 'invalid';
+    const updated = await tx.execute(
+      'UPDATE users SET email_verified_at = ? WHERE id = ? AND email_verified_at IS NULL',
+      [now, row.user_id],
+    );
+    return updated.changes === 1 ? 'verified' : 'already_verified';
+  });
 }

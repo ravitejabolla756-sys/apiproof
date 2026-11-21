@@ -10,7 +10,7 @@ import {
   type InstallationTokenProvider,
   type GitHubReadTransport,
 } from '@apiproof/core';
-import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUser, createSession } from '../apps/web/src/lib/server/auth.js';
 import { generateMigrationForFinding } from '../apps/web/src/lib/server/planning-service.js';
 import * as proposalService from '../apps/web/src/lib/server/proposal-service.js';
@@ -24,7 +24,7 @@ const TEST_DB_PATH = path.resolve('.tmp/test-proposal-baseline.db');
 describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   let db: DatabaseSync;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SECRET = 'test-secret-32-bytes-long-for-evidence';
     delete process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE;
@@ -368,6 +368,7 @@ describe('Proposal Baseline SHA & Consistency Safety Suite', () => {
   // =========================================================================
   it('8B: proposal route maps GITHUB_REPOSITORY_EMPTY to HTTP 422 with sanitized actionable message', async () => {
     const user = createUser('empty_route@example.com', 'Pass12345!', 'Empty Route Tester');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), user.id]);
     const ws = await getProposalWorkspaceForUser(user.id);
     const session = createSession(user.id);
 

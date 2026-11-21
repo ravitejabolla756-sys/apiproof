@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import { getDatabase } from '../db/index.js';
+import type { DatabaseAdapter } from '../db/types.js';
 import { getPlanDefinition, type PlanDefinition } from './plans.js';
-import type { BillingWebhookEvent } from './provider.ts';
+import { reconcileBillingEvent, type BillingWebhookEvent } from './provider.js';
 
 export interface WorkspaceSubscription {
   workspaceId: string;
@@ -41,8 +42,11 @@ function getDefaultPeriod(): { start: string; end: string } {
   return { start, end };
 }
 
-export async function getWorkspaceSubscription(workspaceId: string): Promise<WorkspaceSubscription> {
-  const db = getDatabase();
+export async function getWorkspaceSubscription(
+  workspaceId: string,
+  runner: DatabaseAdapter = getDatabase(),
+): Promise<WorkspaceSubscription> {
+  const db = runner;
   let row = await db.queryOne<{
     workspace_id: string;
     plan_id: string;
@@ -112,9 +116,25 @@ export async function getWorkspaceSubscription(workspaceId: string): Promise<Wor
   };
 }
 
-export async function getWorkspaceUsageSummary(workspaceId: string): Promise<WorkspaceUsageSummary> {
-  const db = getDatabase();
-  const subscription = await getWorkspaceSubscription(workspaceId);
+/** Persist a provider customer identity once, without replacing a concurrent value. */
+export async function persistWorkspaceCustomerId(
+  workspaceId: string,
+  customerId: string,
+  runner: DatabaseAdapter = getDatabase(),
+): Promise<void> {
+  const db = runner;
+  await db.execute(
+    'UPDATE workspace_subscriptions SET customer_id = ?, updated_at = ? WHERE workspace_id = ? AND customer_id IS NULL',
+    [customerId, new Date().toISOString(), workspaceId],
+  );
+}
+
+export async function getWorkspaceUsageSummary(
+  workspaceId: string,
+  runner: DatabaseAdapter = getDatabase(),
+): Promise<WorkspaceUsageSummary> {
+  const db = runner;
+  const subscription = await getWorkspaceSubscription(workspaceId, db);
   const plan = getPlanDefinition(subscription.planId);
 
   // Repositories count
@@ -176,9 +196,10 @@ export async function getWorkspaceUsageSummary(workspaceId: string): Promise<Wor
 
 export async function checkWorkspaceLimit(
   workspaceId: string,
-  metric: 'repositories' | 'scans' | 'draft_prs'
+  metric: 'repositories' | 'scans' | 'draft_prs',
+  runner: DatabaseAdapter = getDatabase(),
 ): Promise<LimitCheckResult> {
-  const summary = await getWorkspaceUsageSummary(workspaceId);
+  const summary = await getWorkspaceUsageSummary(workspaceId, runner);
   const sub = summary.subscription;
 
   if (sub.status === 'canceled') {
@@ -214,6 +235,19 @@ export async function checkWorkspaceLimit(
     };
   }
 
+  // Unknown/incomplete subscription states must never fall through as an
+  // entitlement grant. The billing policy remains provider-neutral and
+  // fail-closed until an owner-approved lifecycle policy is active.
+  if (!target.allowed) {
+    return {
+      allowed: false,
+      metric,
+      limit: target.limit,
+      current: target.current,
+      reason: 'BILLING_POLICY_UNAVAILABLE: Workspace entitlements are unavailable until subscription state is reconciled.',
+    };
+  }
+
   return {
     allowed: true,
     metric,
@@ -225,10 +259,11 @@ export async function checkWorkspaceLimit(
 export async function recordWorkspaceUsage(
   workspaceId: string,
   metric: 'repositories' | 'scans' | 'draft_prs',
-  _resourceId?: string
+  _resourceId?: string,
+  runner: DatabaseAdapter = getDatabase(),
 ): Promise<void> {
-  const db = getDatabase();
-  const sub = await getWorkspaceSubscription(workspaceId);
+  const db = runner;
+  const sub = await getWorkspaceSubscription(workspaceId, db);
   const now = new Date().toISOString();
 
   // Upsert usage record
@@ -251,54 +286,59 @@ export async function recordWorkspaceUsage(
 }
 
 export async function processBillingWebhookEvent(event: BillingWebhookEvent): Promise<{ success: boolean; duplicate: boolean }> {
+  if (!event.id.trim() || !event.provider.trim() || !event.eventType.trim() || !event.rawPayload) {
+    throw new Error('INVALID_BILLING_EVENT_IDENTITY');
+  }
   const db = getDatabase();
   const payloadHash = crypto.createHash('sha256').update(event.rawPayload).digest('hex');
   const now = new Date().toISOString();
-
-  // Replay check
-  const existingEvent = await db.queryOne<{ id: string }>(`
-    SELECT id FROM billing_webhook_events WHERE provider = ? AND payload_hash = ?
-  `, [event.provider, payloadHash]);
-
-  if (existingEvent) {
-    return { success: true, duplicate: true };
-  }
-
-  // Record webhook delivery idempotently
-  await db.execute(`
-    INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
-
-  // Update subscription state based on event
-  if (event.customerId) {
-    const sub = await db.queryOne<{ workspace_id: string }>(`
-      SELECT workspace_id FROM workspace_subscriptions WHERE customer_id = ?
-    `, [event.customerId]);
-
-    if (sub) {
-      let newStatus = event.status || 'active';
-      let planId = event.planId;
-
-      if (event.eventType === 'customer.subscription.deleted') {
-        newStatus = 'canceled';
-        planId = 'free';
-      } else if (event.eventType === 'invoice.payment_failed') {
-        newStatus = 'past_due';
-      }
-
-      await db.execute(`
-        UPDATE workspace_subscriptions
-        SET status = ?,
-            plan_id = COALESCE(?, plan_id),
-            subscription_id = COALESCE(?, subscription_id),
-            current_period_start = COALESCE(?, current_period_start),
-            current_period_end = COALESCE(?, current_period_end),
-            updated_at = ?
-        WHERE workspace_id = ?
-      `, [newStatus, planId || null, event.subscriptionId || null, event.periodStart || null, event.periodEnd || null, now, sub.workspace_id]);
+  return db.transaction(async (tx) => {
+    // Insert first inside the same transaction as the subscription update. A
+    // unique provider/hash conflict is the authoritative duplicate decision,
+    // which remains safe when two deliveries arrive concurrently.
+    const inserted = await tx.execute(`
+      INSERT INTO billing_webhook_events (id, provider, event_type, payload_hash, processed_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT DO NOTHING
+    `, [event.id, event.provider, event.eventType, payloadHash, now, now]);
+    if (inserted.changes !== 1) {
+      const existing = await tx.queryOne<{ provider: string; payload_hash: string }>(`
+        SELECT provider, payload_hash FROM billing_webhook_events
+        WHERE id = ? OR (provider = ? AND payload_hash = ?)
+        LIMIT 1
+      `, [event.id, event.provider, payloadHash]);
+      if (existing?.provider === event.provider && existing.payload_hash === payloadHash) return { success: true, duplicate: true };
+      throw new Error('BILLING_WEBHOOK_ID_CONFLICT');
     }
-  }
 
-  return { success: true, duplicate: false };
+    if (event.customerId) {
+      const sub = await tx.queryOne<{
+        workspace_id: string;
+        status: WorkspaceSubscription['status'];
+        plan_id: string;
+        current_period_end: string;
+      }>(`
+        SELECT workspace_id, status, plan_id, current_period_end
+        FROM workspace_subscriptions WHERE customer_id = ?${tx.engine === 'postgres' ? ' FOR UPDATE' : ''}
+      `, [event.customerId]);
+
+      if (sub) {
+        const decision = reconcileBillingEvent(event, { status: sub.status, planId: sub.plan_id, currentPeriodEnd: sub.current_period_end });
+        if (decision.action === 'apply') {
+          await tx.execute(`
+            UPDATE workspace_subscriptions
+            SET status = ?,
+                plan_id = COALESCE(?, plan_id),
+                subscription_id = COALESCE(?, subscription_id),
+                current_period_start = COALESCE(?, current_period_start),
+                current_period_end = COALESCE(?, current_period_end),
+                updated_at = ?
+            WHERE workspace_id = ?
+          `, [decision.status, decision.planId || null, decision.subscriptionId || null, decision.periodStart || null, decision.periodEnd || null, now, sub.workspace_id]);
+        }
+      }
+    }
+
+    return { success: true, duplicate: false };
+  });
 }

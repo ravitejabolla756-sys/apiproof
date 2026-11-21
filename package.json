@@ -4,6 +4,14 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "overrides": {
+      "brace-expansion": "5.0.12",
+      "minimatch": "11.0.1",
+      "postcss": "8.5.28",
+      "source-map-js": "1.2.2"
+    }
+  },
   "engines": {
     "node": ">=22.14.0",
     "pnpm": ">=10 <11"
@@ -11,14 +19,20 @@
   "scripts": {
     "apiproof": "tsx --conditions=apiproof-source apps/cli/src/index.ts",
     "build": "pnpm -r build",
+    "audit:prod": "pnpm audit --prod --audit-level=high",
     "typecheck": "pnpm -r typecheck && tsc -p tsconfig.test.json",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
     "beta:readiness": "tsx --conditions=apiproof-source apps/web/scripts/beta-readiness.ts",
     "beta:live-preflight": "tsx --conditions=apiproof-source apps/web/scripts/beta-live-preflight.ts",
     "beta:capture-evidence": "tsx --conditions=apiproof-source apps/web/scripts/beta-capture-evidence.ts",
     "release:manifest": "tsx --conditions=apiproof-source apps/web/scripts/release-manifest.ts",
+    "release:staging:dry-run": "tsx --conditions=apiproof-source apps/web/scripts/sec17-staging-dry-run.ts",
+    "backup:restore:dry-run": "tsx --conditions=apiproof-source apps/web/scripts/sec10-backup-restore-dry-run.ts",
+    "security:postgres:static": "tsx --conditions=apiproof-source apps/web/scripts/postgres-security-static-preflight.ts",
+    "security:release:audit": "tsx --conditions=apiproof-source apps/web/scripts/sec20-release-audit.ts",
     "provider:review-report": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-report.ts",
     "provider:review-pack": "tsx --conditions=apiproof-source apps/web/scripts/provider-review-pack.ts",
     "providers:validate:all": "tsx --conditions=apiproof-source apps/web/scripts/provider-validation.ts all",
@@ -33,7 +47,9 @@
     "@apiproof/core": "workspace:*",
     "@apiproof/providers": "workspace:*",
     "@apiproof/shared": "workspace:*",
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
     "@types/node": "^22.18.0",
     "@types/semver": "^7.7.1",
     "eslint": "^10.10.0",

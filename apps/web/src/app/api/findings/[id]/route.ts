@@ -1,17 +1,31 @@
 import { NextResponse } from 'next/server';
 import { formatCanonicalMigrationBranch } from '@apiproof/core';
-import { getCurrentUser } from '@/lib/server/auth';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
 import { requireFindingAccess } from '@/lib/server/workspace-service';
 import { getMigrationLifecycleState } from '@/lib/server/migration-lifecycle';
 import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
 import { resolveFindingCapability } from '@/lib/server/finding-capability';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
-export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, props: { params: Promise<{ id: string }> }): Promise<Response> {
+  try {
+    return await loadFindingDetail(req, props);
+  } catch (error) {
+    console.error('Finding detail request failed:', { code: 'FINDING_DATA_UNAVAILABLE', cause: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json(
+      { error: 'Finding details are temporarily unavailable.', code: 'FINDING_DATA_UNAVAILABLE' },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
+    );
+  }
+}
+
+async function loadFindingDetail(req: Request, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   let finding;
@@ -21,15 +35,41 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     finding = access.finding;
     repository = access.repository;
   } catch {
-    return NextResponse.json({ error: 'Finding not found or access denied.' }, { status: 404 });
+    return NextResponse.json({ error: 'Finding not found or access denied.', code: 'FINDING_NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
   const db = getDatabase();
 
-  const scan = await db.queryOne<{ raw_result: string | null }>(
-    `SELECT raw_result FROM scans WHERE id = ? AND repository_id = ? AND status = 'completed' LIMIT 1`,
-    [finding.scan_id, repository.id],
-  );
+  const protectedData = await withPostgresTenantContext(db, user.id, repository.workspace_id, async (tx) => {
+    const currentFinding = await tx.queryOne<{ id: string }>(
+      `SELECT f.id
+       FROM findings f
+       JOIN repositories r ON r.id = f.repository_id
+       WHERE f.id = ? AND f.repository_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'`,
+      [finding.id, repository.id, repository.workspace_id],
+    );
+    if (!currentFinding) throw new Error('FINDING_NOT_FOUND');
+
+    const scan = await tx.queryOne<{ raw_result: string | null }>(
+      `SELECT raw_result FROM scans WHERE id = ? AND repository_id = ? AND status = 'completed' LIMIT 1`,
+      [finding.scan_id, repository.id],
+    );
+
+    const migration = await tx.queryOne<MigrationRow>(`
+      SELECT m.*, pr.number as pr_number, pr.url as pr_url, pr.branch_name, pr.state as pr_state,
+        vj.id AS verification_job_id, vj.status AS verification_job_status
+      FROM migrations m
+      LEFT JOIN pull_requests pr ON pr.migration_id = m.id
+      LEFT JOIN migration_verification_jobs vj ON vj.migration_id = m.id
+      WHERE m.finding_id = ? AND m.repository_id = ?
+      ORDER BY m.created_at DESC
+      LIMIT 1
+    `, [finding.id, repository.id]);
+
+    return { scan, migration };
+  }, extractSessionId(req));
+
+  const scan = protectedData.scan;
   const productization = parseBoundedProductizationProjection((() => {
     try { return scan?.raw_result ? JSON.parse(scan.raw_result) : null; } catch { return null; }
   })());
@@ -63,16 +103,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
   }
 
   // Check if a migration plan exists for this finding
-  const migration = await db.queryOne<MigrationRow>(`
-    SELECT m.*, pr.number as pr_number, pr.url as pr_url, pr.branch_name, pr.state as pr_state,
-      vj.id AS verification_job_id, vj.status AS verification_job_status
-    FROM migrations m
-    LEFT JOIN pull_requests pr ON pr.migration_id = m.id
-    LEFT JOIN migration_verification_jobs vj ON vj.migration_id = m.id
-    WHERE m.finding_id = ?
-    ORDER BY m.created_at DESC
-    LIMIT 1
-  `, [finding.id]);
+  const migration = protectedData.migration;
 
   let planJson: unknown = null;
   if (migration?.plan_json) {
@@ -111,5 +142,5 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       branch_name: canonicalBranch,
       plan: planJson,
     } : null,
-  }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
+  }, { headers: PRIVATE_NO_STORE_HEADERS });
 }

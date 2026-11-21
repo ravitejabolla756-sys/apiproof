@@ -9,6 +9,9 @@ import { processOneSlackNotificationDelivery } from './slack-notifications.js';
 import { processOneSlackProviderChangeDelivery } from './slack-provider-change-notifications.js';
 import { safelyReconcileSlackTerminalOutcomes } from './slack-outcomes.js';
 import { processRepositoryRescans } from './repository-rescan-worker.js';
+import { getTelemetrySink, type TelemetrySink } from './observability.js';
+import { assertTrustedWorkerIdentity } from './worker-auth.js';
+import { assertWorkerDatabaseAuthorization } from './db/postgres-worker-authorization.js';
 
 const JOB_LEASE_MS = 15 * 60_000;
 const RETRYABLE = new Set(['GITHUB_NETWORK', 'GITHUB_RATE_LIMIT', 'GITHUB_UNAVAILABLE']);
@@ -85,22 +88,31 @@ async function runClaimedJob(job: VerificationJob, workerId: string): Promise<vo
     if (!current || !current.finding_id || current.workspace_id !== job.workspace_id || current.repository_id !== job.repository_id || current.finding_repository_id !== job.repository_id || current.scan_status !== 'completed' || currentBaseline !== job.baseline_sha || current.scan_sha !== job.baseline_sha) {
       throw new Error('VERIFICATION_JOB_IDENTITY_MISMATCH');
     }
+    const requesterMembership = await db.queryOne<{ id: string }>(
+      'SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?',
+      [job.workspace_id, job.requested_by],
+    );
+    if (!requesterMembership) throw new Error('WORKSPACE_MEMBER_REVOKED');
     const result = await createGitHubProposal(job.migration_id, job.requested_by);
-    await db.execute(`UPDATE migration_verification_jobs SET status = 'completed', result_json = ?, error_category = NULL,
-      error_message = NULL, claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
-    [JSON.stringify(result), now, job.id, workerId]);
+    await db.transaction(async (tx) => {
+      await tx.execute(`UPDATE migration_verification_jobs SET status = 'completed', result_json = ?, error_category = NULL,
+        error_message = NULL, claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
+      [JSON.stringify(result), now, job.id, workerId]);
+    });
   } catch (error) {
     const category = failureCategory(error);
     const rawMessage = error instanceof Error ? error.message : String(error);
     const message = rawMessage.replace(/[\r\n\t]+/g, ' ').slice(0, 500);
     const isUnavailable = category === 'EXECUTION_UNAVAILABLE';
     const canRetry = RETRYABLE.has(category) && job.attempt_count < 3;
-    if (isUnavailable) {
-      await db.execute("UPDATE migrations SET status = 'verification_unavailable' WHERE id = ? AND status <> 'pr_created'", [job.migration_id]);
-    }
-    await db.execute(`UPDATE migration_verification_jobs SET status = ?, error_category = ?, error_message = ?,
-      claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
-    [isUnavailable ? 'execution_unavailable' : canRetry ? 'pending' : 'failed', category, message, new Date().toISOString(), job.id, workerId]);
+    await db.transaction(async (tx) => {
+      if (isUnavailable) {
+        await tx.execute("UPDATE migrations SET status = 'verification_unavailable' WHERE id = ? AND status <> 'pr_created'", [job.migration_id]);
+      }
+      await tx.execute(`UPDATE migration_verification_jobs SET status = ?, error_category = ?, error_message = ?,
+        claimed_by = NULL, lease_expires_at = NULL, updated_at = ? WHERE id = ? AND claimed_by = ?`,
+      [isUnavailable ? 'execution_unavailable' : canRetry ? 'pending' : 'failed', category, message, new Date().toISOString(), job.id, workerId]);
+    });
     logger.error('migration_verification_job_failed', { jobId: job.id, migrationId: job.migration_id, attempt: job.attempt_count, category, status: isUnavailable ? 'execution_unavailable' : canRetry ? 'pending' : 'failed' });
   } finally {
     clearInterval(leaseHeartbeat);
@@ -115,9 +127,14 @@ export async function processOneMigrationVerificationJob(workerId: string): Prom
   return true;
 }
 
-export async function runVerificationWorker(options: { workerId: string; pollIntervalMs?: number; signal?: AbortSignal }): Promise<void> {
+export async function runVerificationWorker(options: { workerId: string; workerToken?: string; pollIntervalMs?: number; signal?: AbortSignal; telemetry?: TelemetrySink }): Promise<void> {
   const { workerId, signal } = options;
+  const telemetry = getTelemetrySink(options.telemetry);
   if (!/^[A-Za-z0-9._-]{1,100}$/.test(workerId)) throw new Error('VERIFICATION_WORKER_ID_INVALID');
+  if (process.env.NODE_ENV === 'production' || process.env.WORKER_AUTH_ENFORCED === 'true') {
+    assertTrustedWorkerIdentity(workerId, options.workerToken);
+  }
+  await assertWorkerDatabaseAuthorization(getDatabase());
   const interval = Math.max(1000, options.pollIntervalMs ?? 5000);
   let lastProbeAt = 0;
   let lastProbeError: unknown;
@@ -165,6 +182,7 @@ export async function runVerificationWorker(options: { workerId: string; pollInt
       if (!processed) await new Promise((resolve) => setTimeout(resolve, interval));
     } catch (error) {
       const category = failureCategory(error);
+      telemetry.increment('worker_failures', 1, { job_type: 'migration_verification', reason: category });
       await publishVerificationWorkerHeartbeat(workerId, false, category).catch(() => undefined);
       logger.error('migration_verification_worker_unavailable', { workerId, category });
       await new Promise((resolve) => setTimeout(resolve, interval));

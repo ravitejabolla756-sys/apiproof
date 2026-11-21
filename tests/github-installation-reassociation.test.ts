@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
-import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
+import { createUserWithSession as createUserWithSessionBase } from '../apps/web/src/lib/server/auth.js';
 import {
   getDefaultWorkspaceForUser,
   createWorkspaceForUser,
@@ -41,7 +41,13 @@ const TEST_APP_ID = '4888527';
 const TEST_INSTALLATION_ID = '160401452';
 
 describe('GitHub Installation Reassociation Hardening', () => {
-  beforeEach(() => {
+  async function createUserWithSession(email: string, password: string, name: string) {
+    const result = await createUserWithSessionBase(email, password, name);
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), result.user.id]);
+    return result;
+  }
+
+  beforeEach(async () => {
     process.env.APIPROOF_SECRET = 'reassoc-test-secret-at-least-32-chars!';
     process.env.GITHUB_APP_ID = TEST_APP_ID;
     process.env.GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY_PEM;
@@ -52,7 +58,6 @@ describe('GitHub Installation Reassociation Hardening', () => {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }
     }
     initDatabase(TEST_DB_PATH);
-
     // Mock verifyGitHubAppInstallation to return authoritative metadata
     vi.spyOn(githubModule, 'verifyGitHubAppInstallation').mockImplementation(async (instId) => {
       return {
@@ -131,6 +136,22 @@ describe('GitHub Installation Reassociation Hardening', () => {
     expect(res.headers.get('location')).toBe('http://localhost/dashboard/settings?github=connected');
     expect(res.headers.get('cache-control')).toBe('no-store');
     expect(await getWorkspaceGitHubInstallation(ws.id)).not.toBeNull();
+  });
+
+  it('redirects an HTML callback with missing state back to settings without associating an installation', async () => {
+    const { session } = await createUserWithSession('missing-state@example.com', 'Pass12345!', 'Missing State');
+    const req = new Request(`http://localhost/api/github/callback?installation_id=${TEST_INSTALLATION_ID}`, {
+      headers: {
+        accept: 'text/html',
+        cookie: `apiproof_session=${session.id}`,
+      },
+    });
+
+    const res = await callbackGet(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBe('http://localhost/dashboard/settings?github=error&code=INVALID_CALLBACK_STATE');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await getDatabase().queryOne('SELECT id FROM github_installations WHERE installation_id = ?', [TEST_INSTALLATION_ID])).toBeFalsy();
   });
 
   // TEST B: Same user owning both old and new workspaces can reassociate

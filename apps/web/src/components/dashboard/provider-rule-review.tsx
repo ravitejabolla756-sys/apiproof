@@ -2,50 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Check, Edit3, ExternalLink, Loader2, RefreshCw, X } from "lucide-react";
-
-type Candidate = {
-  id: string;
-  providerId: string;
-  title: string;
-  description: string;
-  status: string;
-  severity: string;
-  payload: Record<string, unknown> | null;
-  source: { url: string; type: string };
-  createdAt: string;
-  reviewNotes: string | null;
-  coverage: {
-    priority: "P0" | "P1" | "P2";
-    reviewBlockers: string[];
-    evidenceClaims: number;
-    hasExecutableTemplate: boolean;
-    nextAction: "human-review" | "fixture-and-review" | "already-reviewed";
-  } | null;
-  reviewPack: {
-    source: { claims: Array<{ key: string; value: string }>; locator?: string; fingerprint: string };
-    facts: string[];
-    unknowns: string[];
-    fixturePlan: { detectorTokens: string[]; requiredOutcomes: string[] };
-    reviewChecklist: string[];
-    template: { status: string; limitation: string };
-    reviewOnlyTemplateProposal?: {
-      templateId: string;
-      mode: "transform" | "manual-guidance";
-      limitation: string;
-      transformation?: { kind: string };
-      guidance?: { summary: string; steps: string[]; validation: string[] };
-    };
-  } | null;
-};
-
-type CoverageSummary = {
-  candidates: number;
-  pendingCandidates: number;
-  reviewedCandidates: number;
-  reviewedProviders: number;
-  providersMissingReviewedRules: string[];
-  providersWithExecutableTemplates: string[];
-};
+import { providerRuleErrorMessage, readProviderRuleErrorCode } from "@/lib/provider-rule-error-contract";
+import { parseProviderRuleListResponse, parseProviderRuleTestResponse, type ProviderRuleCandidate as Candidate, type ProviderRuleCoverageSummary as CoverageSummary } from "@/lib/provider-rule-contract";
 
 const priorityStyles: Record<"P0" | "P1" | "P2", string> = {
   P0: "bg-rose-50 text-rose-700",
@@ -90,10 +48,11 @@ export function ProviderRuleReview() {
     setError(null);
     try {
       const response = await fetch("/api/provider-rules", { cache: "no-store" });
-      const body = await response.json() as { candidates?: Candidate[]; coverageSummary?: CoverageSummary; error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Unable to load provider rules.");
-      setCandidates(body.candidates ?? []);
-      setCoverageSummary(body.coverageSummary ?? null);
+      const body = await response.json();
+      const parsed = parseProviderRuleListResponse(body);
+      if (!response.ok || !parsed) throw new Error(providerRuleErrorMessage(response.status, readProviderRuleErrorCode(body), "Unable to load provider rules."));
+      setCandidates(parsed.candidates);
+      setCoverageSummary(parsed.coverageSummary);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load provider rules.");
     } finally {
@@ -108,8 +67,8 @@ export function ProviderRuleReview() {
     setError(null);
     try {
       const response = await fetch('/api/provider-rules/seed', { method: 'POST' });
-      const body = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(body.error ?? 'Unable to populate provider review queue.');
+      const body: unknown = await response.json();
+      if (!response.ok) throw new Error(providerRuleErrorMessage(response.status, readProviderRuleErrorCode(body), 'Unable to populate provider review queue.'));
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to populate provider review queue.');
@@ -151,8 +110,8 @@ export function ProviderRuleReview() {
           } } : {}),
         }),
       });
-      const body = await response.json() as { error?: string; code?: string };
-      if (!response.ok) throw new Error(body.code ? `${body.error ?? "Rule review failed."} (${body.code})` : (body.error ?? "Rule review failed."));
+      const body: unknown = await response.json();
+      if (!response.ok) throw new Error(providerRuleErrorMessage(response.status, readProviderRuleErrorCode(body), "Rule review failed."));
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Rule review failed.");
@@ -175,9 +134,10 @@ export function ProviderRuleReview() {
     setError(null);
     try {
       const response = await fetch(`/api/provider-rules/${encodeURIComponent(candidate.id)}/test`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, filePath: "sample.ts" }) });
-      const body = await response.json() as { matches?: Array<{ token: string; line: number; snippet: string }>; error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Rule test failed.");
-      setTestResults((current) => ({ ...current, [candidate.id]: { matches: body.matches ?? [] } }));
+      const body = await response.json();
+      const parsed = parseProviderRuleTestResponse(body);
+      if (!response.ok || !parsed) throw new Error(providerRuleErrorMessage(response.status, readProviderRuleErrorCode(body), "Rule test failed."));
+      setTestResults((current) => ({ ...current, [candidate.id]: parsed }));
     } catch (err) { setError(err instanceof Error ? err.message : "Rule test failed."); }
     finally { setBusy(null); }
   }
@@ -221,8 +181,8 @@ export function ProviderRuleReview() {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: value.title, description: value.description, apiOperationPatterns: value.patterns.split(/\r?\n/).map((item) => item.trim()).filter(Boolean), ...(replacement === undefined ? {} : { replacement }), ...(migrationTemplate === undefined ? {} : { migrationTemplate }), notes: value.notes }),
       });
-      const body = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Rule edit failed.");
+      const body: unknown = await response.json();
+      if (!response.ok) throw new Error(providerRuleErrorMessage(response.status, readProviderRuleErrorCode(body), "Rule edit failed."));
       setEditing((current) => ({ ...current, [candidate.id]: false }));
       await load();
     } catch (err) { setError(err instanceof Error ? err.message : "Rule edit failed."); }

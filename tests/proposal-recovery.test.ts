@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { FakeGitHubWriteTransport, FakeSandbox } from '@apiproof/core';
-import { initDatabase, closeDatabase } from '../apps/web/src/lib/server/db/index.js';
+import { initDatabase, closeDatabase, getDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { createUser, createSession } from '../apps/web/src/lib/server/auth.js';
 import { getDefaultWorkspaceForUser } from '../apps/web/src/lib/server/workspace-service.js';
 import { runRepositoryScan } from '../apps/web/src/lib/server/scan-service.js';
@@ -22,7 +22,7 @@ const TEST_DB_PATH = path.resolve('.tmp/test-proposal-recovery.db');
 describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
   let db: DatabaseSync;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.APIPROOF_SECRET = 'test-secret-32-bytes-long-for-evidence';
     delete process.env.APIPROOF_ENABLE_LIVE_GITHUB_WRITE;
@@ -45,6 +45,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
 
   async function setupFixture() {
     const user = createUser('recovery_tester@example.com', 'Pass12345!', 'Recovery Tester');
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), user.id]);
     const ws = await getDefaultWorkspaceForUser(user.id);
     await grantTestProposalEntitlement(ws.id);
     const repoId = 'repo_recovery_fixture';
@@ -277,7 +278,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}` },
+          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}`, origin: 'http://localhost:3000', host: 'localhost:3000' },
           body: JSON.stringify({ migrationId: migration.id }),
         });
         const response = await proposeRoutePost(request);
@@ -308,7 +309,7 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         const request = new Request('http://localhost:3000/api/migrations/propose', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}` },
+          headers: { 'content-type': 'application/json', cookie: `apiproof_session=${session.id}`, origin: 'http://localhost:3000', host: 'localhost:3000' },
           body: JSON.stringify({ migrationId: migration.id }),
         });
         const response = await proposeRoutePost(request);
@@ -499,6 +500,22 @@ describe('Proposal Recovery & Failure-Safety Suite (Gaps 1, 2, 3)', () => {
       try {
         await expect(processOneMigrationVerificationJob('test-docker-worker')).resolves.toBe(true);
         expect(db.prepare('SELECT status, error_category FROM migration_verification_jobs WHERE migration_id = ?').get(migration.id)).toEqual({ status: 'failed', error_category: 'VERIFICATION_JOB_IDENTITY_MISMATCH' });
+        expect(db.prepare('SELECT COUNT(*) AS c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
+        expect(sandboxRun).not.toHaveBeenCalled();
+      } finally {
+        sandboxRun.mockRestore();
+      }
+    });
+
+    it('rejects a user-authorized queued job after workspace membership is revoked', async () => {
+      const { user, ws, migration } = await setupFixture();
+      await markWorkerReady();
+      await enqueueMigrationProposal(migration.id, user.id);
+      db.prepare('DELETE FROM workspace_members WHERE workspace_id = ? AND user_id = ?').run(ws.id, user.id);
+      const sandboxRun = vi.spyOn(FakeSandbox.prototype, 'run');
+      try {
+        await expect(processOneMigrationVerificationJob('test-docker-worker')).resolves.toBe(true);
+        expect(db.prepare('SELECT status, error_category FROM migration_verification_jobs WHERE migration_id = ?').get(migration.id)).toEqual({ status: 'failed', error_category: 'WORKSPACE_MEMBER_REVOKED' });
         expect(db.prepare('SELECT COUNT(*) AS c FROM pull_requests WHERE migration_id = ?').get(migration.id)).toEqual({ c: 0 });
         expect(sandboxRun).not.toHaveBeenCalled();
       } finally {

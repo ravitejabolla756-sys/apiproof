@@ -1,9 +1,10 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
+import { parseRepositoryDetailResponse, parseScanActionResponse, type FindingRecord, type RepositoryDetail, type ScanRecord } from "@/lib/repository-contract";
 import {
   GitBranch,
   AlertTriangle,
@@ -16,44 +17,6 @@ import {
   FileCode,
 } from "lucide-react";
 
-interface RepositoryDetail {
-  id: string;
-  owner: string;
-  name: string;
-  full_name: string;
-  github_repository_id: string;
-  default_branch: string;
-  status: string;
-  last_scan_at: string | null;
-  created_at: string;
-}
-
-interface ScanRecord {
-  id: string;
-  sha: string;
-  status: string;
-  total_files: number;
-  analyzed_files: number;
-  findings_count: number;
-  started_at: string;
-  completed_at: string | null;
-}
-
-interface FindingRecord {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  status: string;
-  created_at: string;
-}
-
 export default function RepositoryDetailPage({
   params,
 }: {
@@ -64,28 +27,36 @@ export default function RepositoryDetailPage({
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [findings, setFindings] = useState<FindingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const loadErrorRef = useRef<HTMLDivElement>(null);
 
   async function loadData() {
+    setLoadError(null);
     try {
       const res = await fetch(`/api/repositories/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        setRepo(json.repository);
-        setScans(json.scans || []);
-        setFindings(json.findings || []);
+      if (!res.ok) throw new Error("Repository details are temporarily unavailable.");
+      const parsed = parseRepositoryDetailResponse(await res.json());
+      if (!parsed) {
+        throw new Error("Repository details returned an invalid response.");
       }
-    } catch (err) {
-      console.error("Failed to load repository detail:", err);
+      setRepo(parsed.repository);
+      setScans(parsed.scans);
+      setFindings(parsed.findings);
+    } catch (loadErrorValue) {
+      setLoadError(loadErrorValue instanceof Error ? loadErrorValue.message : "Repository details are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [id]);
+  useEffect(() => {
+    if (loadError) loadErrorRef.current?.focus();
+  }, [loadError]);
 
   async function handleTriggerScan() {
     if (!repo) return;
@@ -96,19 +67,15 @@ export default function RepositoryDetailPage({
       const res = await fetch(`/api/repositories/${repo.id}/scan`, {
         method: "POST",
       });
-      const contentType = res.headers.get("content-type") ?? "";
-      const data = contentType.includes("application/json")
-        ? await res.json() as { result?: { findingsCount?: number }; error?: string }
-        : null;
+      const findingsCount = parseScanActionResponse(await res.json());
 
       if (!res.ok) {
-        throw new Error(data?.error || (res.status >= 500
-          ? "The scan service is temporarily unavailable. Please retry in a moment."
-          : "Scan execution failed."));
+        throw new Error("Scan execution failed.");
       }
+      if (findingsCount === undefined) throw new Error("Scan returned an invalid response.");
 
       setMessage({
-        text: `Scan complete: ${data?.result?.findingsCount ?? 0} findings recorded.`,
+        text: `Scan complete: ${findingsCount} findings recorded.`,
       });
       await loadData();
     } catch (err: unknown) {
@@ -121,7 +88,7 @@ export default function RepositoryDetailPage({
   if (loading) {
     return (
       <div className="py-20 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading repository details...</span>
       </div>
     );
@@ -133,9 +100,16 @@ export default function RepositoryDetailPage({
         <Link href="/dashboard/repositories" className="text-zinc-500 hover:text-black flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Repositories
         </Link>
-        <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
-          Repository not found or access denied.
-        </div>
+        {loadError ? (
+          <div ref={loadErrorRef} role="alert" aria-live="assertive" tabIndex={-1} className="p-8 text-center bg-rose-50 border border-rose-200 rounded-[24px] outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+            <p className="text-rose-900">{loadError}</p>
+            <Button type="button" size="sm" variant="outline" onClick={loadData} className="mt-4 border-rose-300 bg-white text-rose-900">Retry</Button>
+          </div>
+        ) : (
+          <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
+            Repository not found or access denied.
+          </div>
+        )}
       </div>
     );
   }
@@ -182,25 +156,28 @@ export default function RepositoryDetailPage({
 
           <div className="flex items-center gap-3">
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={loadData}
+              aria-busy={loading ? "true" : undefined}
               icon={<RefreshCw className="w-3.5 h-3.5" />}
               className="text-xs font-medium"
             >
               Refresh
             </Button>
             <Button
+              type="button"
               size="sm"
               variant="primary"
-              disabled={scanning || latestScanIsActive}
+              disabled={scanning}
               onClick={handleTriggerScan}
               className="gap-1.5 text-xs font-medium"
             >
               {scanning ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 aria-hidden="true" className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Play className="w-3.5 h-3.5" />
+                <Play aria-hidden="true" className="w-3.5 h-3.5" />
               )}
               <span>{scanning ? "Analyzing AST..." : "Run AST Scan"}</span>
             </Button>
@@ -234,7 +211,7 @@ export default function RepositoryDetailPage({
               <div className="font-semibold text-[#111111] flex items-center gap-2">
                 <span>Scan Status:</span>
                 <span className="font-mono uppercase text-[11px] text-purple-800">
-              {latestScanIsActive
+                  {scanning
                     ? "Scan in progress"
                     : scans.length === 0
                     ? "Not Scanned"
@@ -244,13 +221,13 @@ export default function RepositoryDetailPage({
                 </span>
               </div>
               <p className="text-[11px] text-[#686868]">
-                {latestScanIsActive
+                {scanning
                   ? "Running deterministic in-memory AST analysis against latest commit tree..."
                   : scans.length === 0
                   ? "No compatibility scans recorded yet. Trigger an AST scan to detect vendor breaking changes."
                   : scans[0]?.status === "failed"
                   ? "Previous scan encountered an issue fetching repository contents. Retry scan anytime."
-                  : `Analyzed commit ${scans[0]?.sha && scans[0].sha !== 'pending' ? scans[0].sha.slice(0, 8) : 'latest'} · ${findings.length} breaking change${findings.length === 1 ? '' : 's'} recorded.`}
+                  : `Analyzed commit ${scans[0]?.sha ? scans[0].sha.slice(0, 8) : 'latest'} · ${findings.length} breaking change${findings.length === 1 ? '' : 's'} recorded.`}
               </p>
             </div>
           </div>
@@ -259,7 +236,7 @@ export default function RepositoryDetailPage({
             <Button
               size="sm"
               variant={scans[0]?.status === "failed" || scans.length === 0 ? "primary" : "outline"}
-              disabled={scanning || latestScanIsActive}
+              disabled={scanning}
               onClick={handleTriggerScan}
               className="gap-1.5 text-xs font-medium"
             >
@@ -424,7 +401,7 @@ export default function RepositoryDetailPage({
                       </span>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      {s.analyzed_files} / {s.total_files}
+                      {s.files_analyzed}
                     </td>
                     <td className="py-2.5 px-3 font-mono font-semibold">
                       {s.findings_count}

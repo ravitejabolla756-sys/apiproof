@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/auth';
+import { extractSessionId, getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
-import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence';
-import { resolveFindingCapability } from '@/lib/server/finding-capability';
+import { withPostgresTenantContext } from '@/lib/server/db/postgres-tenant-context.js';
+import { parseBoundedProductizationProjection } from '@/lib/server/productization-persistence.js';
+import { resolveFindingCapability } from '@/lib/server/finding-capability.js';
+import { organizationErrorResponse, PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
+  }
+
+  let workspace;
+  try {
+    workspace = await resolveWorkspaceForRequest(req, user.id);
+  } catch (error) {
+    return organizationErrorResponse(error);
   }
 
   const { searchParams } = new URL(req.url);
@@ -16,8 +25,6 @@ export async function GET(req: Request) {
   const status = searchParams.get('status');
   const repositoryId = searchParams.get('repositoryId');
   const search = searchParams.get('search');
-
-  const db = getDatabase();
 
   let query = `
     SELECT f.id, f.scan_id, f.repository_id, f.change_id, f.provider, f.title, f.description,
@@ -30,9 +37,9 @@ export async function GET(req: Request) {
     JOIN scans s ON s.id = f.scan_id AND s.status = 'completed'
     JOIN repositories r ON r.id = f.repository_id
     JOIN workspace_members wm ON wm.workspace_id = r.workspace_id
-    WHERE wm.user_id = ? AND r.lifecycle = 'active'
+    WHERE wm.user_id = ? AND r.workspace_id = ? AND r.lifecycle = 'active'
   `;
-  const params: unknown[] = [user.id];
+  const params: unknown[] = [user.id, workspace.id];
 
   if (provider && provider !== 'all') {
     query += ' AND f.provider = ?';
@@ -58,7 +65,22 @@ export async function GET(req: Request) {
 
   query += ' ORDER BY CASE f.severity WHEN \'critical\' THEN 1 WHEN \'high\' THEN 2 ELSE 3 END, f.created_at DESC';
 
-  const findings = await db.query<Record<string, unknown>>(query, params);
+  let findings: Record<string, unknown>[];
+  try {
+    const db = getDatabase();
+    findings = await withPostgresTenantContext(
+      db,
+      user.id,
+      workspace.id,
+      (tx) => tx.query<Record<string, unknown>>(query, params),
+      extractSessionId(req),
+    );
+  } catch {
+    return NextResponse.json(
+      { error: 'Findings are temporarily unavailable.' },
+      { status: 503, headers: PRIVATE_NO_STORE_HEADERS },
+    );
+  }
 
   const response = findings.map((finding) => {
     const raw = typeof finding.scan_raw_result === 'string'
@@ -77,5 +99,7 @@ export async function GET(req: Request) {
     return { ...publicFinding, capability };
   });
 
-  return NextResponse.json({ findings: response });
+  return NextResponse.json({ findings: response }, {
+    headers: PRIVATE_NO_STORE_HEADERS,
+  });
 }

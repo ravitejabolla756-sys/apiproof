@@ -223,3 +223,19 @@ fails closed rather than becoming an affected or unaffected claim.
 Candidate review bundles use a stable schema-versioned JSON export/import format
 for local handoff. Import always recompiles the candidate registry and never
 loads records into the production compatibility registry.
+
+## PROV-05 local verification boundary
+
+The provider-intelligence path has been verified locally with deterministic
+fixtures for the 19 monitored providers, provider-specific identifier
+profiles, structured and review-only parser outcomes, source-health freshness,
+provenance changes, candidate promotion boundaries, and bounded source-fetch
+behavior. Source fetching rejects non-HTTPS/off-catalog redirects, private DNS
+answers (including IPv4-mapped IPv6 loopback forms), unsupported content types,
+oversized bodies, and unbounded retry behavior.
+
+This evidence proves source-compatible local behavior only. It does not prove
+current provider documentation, hosted scheduler execution, live crawler
+availability, PostgreSQL persistence compatibility, or production-approved
+compatibility rules. Those remain gated on an owner-approved source refresh,
+reviewed provenance, migration evidence, and hosted/provider acceptance.

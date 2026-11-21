@@ -6,6 +6,11 @@ import { usePathname } from "next/navigation";
 import { ApiProofLogo } from "@/components/ui/logo";
 import { signOutSession } from "@/lib/session-logout";
 import {
+  parseWorkspaceContextSelection,
+  readWorkspaceContextError,
+  workspaceContextErrorMessage,
+} from "@/lib/workspace-context-contract";
+import {
   LayoutDashboard,
   GitBranch,
   Boxes,
@@ -20,6 +25,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  UserRound,
+  Bell,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -28,6 +35,10 @@ export function Sidebar() {
   const [openFindingsCount, setOpenFindingsCount] = useState<number | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [workspaceName, setWorkspaceName] = useState<string>('');
+  const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string; role: string }>>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('');
+  const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const logoutPending = useRef(false);
@@ -35,18 +46,28 @@ export function Sidebar() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const res = await fetch('/api/overview');
-        if (res.ok) {
-          const data = await res.json();
-          if (typeof data.stats?.openFindings === 'number') {
-            setOpenFindingsCount(data.stats.openFindings);
+        const [overviewResponse, workspacesResponse] = await Promise.all([
+          fetch('/api/overview', { cache: 'no-store' }),
+          fetch('/api/workspaces', { cache: 'no-store' }),
+        ]);
+        if (overviewResponse.ok) {
+          const data = await overviewResponse.json();
+          if (typeof data.stats?.openFindings === 'number') setOpenFindingsCount(data.stats.openFindings);
+          if (data.workspace?.name) setWorkspaceName(data.workspace.name);
+          if (data.user?.email) setUserEmail(data.user.email);
+        }
+        if (workspacesResponse.ok) {
+          const data = await workspacesResponse.json() as { workspaces?: unknown; activeWorkspaceId?: unknown };
+          if (Array.isArray(data.workspaces)) {
+            const available = data.workspaces.filter((workspace): workspace is { id: string; name: string; role: string } => (
+              typeof workspace === 'object' && workspace !== null
+              && typeof (workspace as { id?: unknown }).id === 'string'
+              && typeof (workspace as { name?: unknown }).name === 'string'
+              && typeof (workspace as { role?: unknown }).role === 'string'
+            ));
+            setWorkspaces(available);
           }
-          if (data.workspace?.name) {
-            setWorkspaceName(data.workspace.name);
-          }
-          if (data.user?.email) {
-            setUserEmail(data.user.email);
-          }
+          if (typeof data.activeWorkspaceId === 'string') setActiveWorkspaceId(data.activeWorkspaceId);
         }
       } catch {
         // Ignore background stat fetch errors
@@ -54,6 +75,31 @@ export function Sidebar() {
     }
     loadStats();
   }, [pathname]);
+
+  async function switchWorkspace(workspaceId: string) {
+    if (!workspaceId || workspaceId === activeWorkspaceId || switchingWorkspace) return;
+    setSwitchingWorkspace(true);
+    setWorkspaceError(null);
+    try {
+      const response = await fetch('/api/workspace/context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const data: unknown = await response.json();
+      const selection = parseWorkspaceContextSelection(data);
+      if (!response.ok || !selection) {
+        const error = readWorkspaceContextError(data);
+        throw new Error(workspaceContextErrorMessage(response.status, error?.code ?? null));
+      }
+      setActiveWorkspaceId(selection.workspace.id);
+      setWorkspaceName(selection.workspace.name);
+      window.location.reload();
+    } catch (error) {
+      setWorkspaceError(error instanceof Error ? error.message : 'Workspace could not be selected.');
+      setSwitchingWorkspace(false);
+    }
+  }
 
   const mainNav = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -75,7 +121,9 @@ export function Sidebar() {
 
   const secondaryNav = [
     { name: "Activity", href: "/dashboard/activity", icon: Activity },
+    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
     { name: "Settings", href: "/dashboard/settings", icon: Sliders },
+    { name: "Account", href: "/dashboard/settings/account", icon: UserRound },
   ];
 
   async function handleLogout() {
@@ -121,6 +169,10 @@ export function Sidebar() {
 
         <button
           onClick={() => setCollapsed(!collapsed)}
+          type="button"
+          aria-label={collapsed ? 'Expand dashboard navigation' : 'Collapse dashboard navigation'}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Expand dashboard navigation' : 'Collapse dashboard navigation'}
           className="hidden md:block p-1.5 rounded-lg text-zinc-400 hover:text-[#111111] hover:bg-[#F6F6F4] transition-colors"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -195,7 +247,9 @@ export function Sidebar() {
             </div>
             <button
               onClick={handleLogout}
+              type="button"
               disabled={isSigningOut}
+              aria-label="Sign out"
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[#686868] hover:text-rose-700 hover:bg-rose-50 transition-colors text-[11px] font-medium"
               title="Sign out"
             >
@@ -203,6 +257,22 @@ export function Sidebar() {
               <span className={collapsed ? "md:hidden" : ""}>{isSigningOut ? 'Signing out…' : 'Sign Out'}</span>
             </button>
         </div>
+        {!collapsed && workspaces.length > 1 && (
+          <div className="mt-3 space-y-1">
+            <label htmlFor="workspace-switcher" className="sr-only">Active workspace</label>
+            <select
+              id="workspace-switcher"
+              value={activeWorkspaceId}
+              disabled={switchingWorkspace}
+              aria-busy={switchingWorkspace ? 'true' : undefined}
+              onChange={(event) => void switchWorkspace(event.target.value)}
+              className="min-h-10 w-full min-w-0 rounded-lg border border-[#D9D9D4] bg-white px-2 text-xs text-[#333333] outline-none focus-visible:ring-2 focus-visible:ring-[#0050F8]"
+            >
+              {workspaces.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name} · {workspace.role}</option>)}
+            </select>
+            {workspaceError && <p role="alert" className="break-words text-[11px] text-rose-700">{workspaceError}</p>}
+          </div>
+        )}
         {logoutError && <p role="alert" className="mt-2 text-[11px] text-rose-700">{logoutError}</p>}
       </div>
     </aside>

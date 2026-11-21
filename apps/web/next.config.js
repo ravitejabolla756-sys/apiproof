@@ -1,7 +1,17 @@
 /* global process */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const configDirectory = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = path.resolve(configDirectory, '../..');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Keep tracing inside this repository when a parent directory contains an
+  // unrelated lockfile. This is required for deterministic local builds and
+  // prevents Next from walking user-level temporary directories.
+  outputFileTracingRoot: workspaceRoot,
   // Windows can return EPERM when multiple Next build workers create the
   // same nested App Router output directory concurrently. Use one isolated
   // worker on Windows for every production build; Linux/Vercel keeps the

@@ -50,8 +50,8 @@ interface GoogleIdTokenClaims {
   exp?: number;
   iat?: number;
 }
-interface GoogleJsonWebKey { kty?: string; kid?: string; alg?: string; use?: string; n?: string; e?: string }
-interface GoogleJwksResponse { keys?: GoogleJsonWebKey[] }
+interface GoogleJsonWebKey { kty: string; kid: string; alg?: string; use?: string; n: string; e: string }
+interface GoogleJwksResponse { keys: GoogleJsonWebKey[] }
 interface GoogleTokenResponse { id_token?: string; error?: string }
 interface GoogleStateRow {
   return_to: string;
@@ -59,6 +59,29 @@ interface GoogleStateRow {
   nonce: string;
   expires_at: string;
   consumed_at: string | null;
+}
+
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseGoogleJwksResponse(value: unknown): GoogleJwksResponse | null {
+  if (!record(value) || !Array.isArray(value.keys) || value.keys.length > 256) return null;
+  const keys = value.keys.map((entry) => {
+    if (!record(entry) || typeof entry.kty !== 'string' || typeof entry.kid !== 'string' || typeof entry.n !== 'string' || typeof entry.e !== 'string'
+      || entry.kty.length > 32 || entry.kid.length > 512 || entry.n.length > 8192 || entry.e.length > 128
+      || (entry.alg !== undefined && typeof entry.alg !== 'string') || (entry.use !== undefined && typeof entry.use !== 'string')) return null;
+    return { kty: entry.kty, kid: entry.kid, n: entry.n, e: entry.e, ...(entry.alg === undefined ? {} : { alg: entry.alg }), ...(entry.use === undefined ? {} : { use: entry.use }) };
+  });
+  return keys.every((key): key is GoogleJsonWebKey => key !== null) ? { keys } : null;
+}
+
+function parseGoogleTokenResponse(value: unknown): GoogleTokenResponse {
+  if (!record(value)) return {};
+  return {
+    ...(typeof value.id_token === 'string' && value.id_token.length <= 16_384 ? { id_token: value.id_token } : {}),
+    ...(typeof value.error === 'string' && value.error.length <= 256 ? { error: value.error } : {}),
+  };
 }
 
 let googleJwksCache: { keys: GoogleJsonWebKey[]; expiresAt: number } | null = null;
@@ -171,8 +194,9 @@ async function fetchGoogleJwks(forceRefresh = false): Promise<GoogleJsonWebKey[]
   if (!forceRefresh && googleJwksCache && googleJwksCache.expiresAt > Date.now()) return googleJwksCache.keys;
   const response = await fetch(GOOGLE_JWKS_ENDPOINT, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(5_000) });
   if (!response.ok) throw new Error('GOOGLE_JWKS_UNAVAILABLE');
-  const payload = await response.json() as GoogleJwksResponse;
-  const keys = (payload.keys || []).filter((key) => key.kty === 'RSA' && key.kid && key.n && key.e && (!key.alg || key.alg === 'RS256'));
+  const payload = parseGoogleJwksResponse(await response.json().catch(() => null));
+  if (!payload) throw new Error('GOOGLE_JWKS_INVALID');
+  const keys = payload.keys.filter((key) => key.kty === 'RSA' && key.kid && key.n && key.e && (!key.alg || key.alg === 'RS256'));
   if (keys.length === 0) throw new Error('GOOGLE_JWKS_INVALID');
   googleJwksCache = { keys, expiresAt: Date.now() + parseCacheMaxAge(response.headers.get('cache-control')) * 1000 };
   return keys;
@@ -233,7 +257,7 @@ async function exchangeGoogleAuthorizationCode(config: GoogleOAuthConfig, code: 
     body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, code, code_verifier: codeVerifier, grant_type: 'authorization_code', redirect_uri: config.redirectUri }),
     signal: AbortSignal.timeout(10_000),
   });
-  const payload = await response.json().catch(() => ({})) as GoogleTokenResponse;
+  const payload = parseGoogleTokenResponse(await response.json().catch(() => null));
   if (!response.ok || !payload.id_token) throw new Error(payload.error === 'access_denied' ? 'GOOGLE_OAUTH_DENIED' : 'GOOGLE_OAUTH_TOKEN_EXCHANGE_FAILED');
   return payload.id_token;
 }
@@ -256,7 +280,7 @@ export async function authenticateGoogleOAuth(config: GoogleOAuthConfig, code: s
 
     // A matching email is not proof that the caller owns the existing account.
     // Explicit account linking must happen later from an authenticated session.
-    const existingEmail = await tx.queryOne<{ id: string }>('SELECT id FROM users WHERE email = ?', [identity.email]);
+    const existingEmail = await tx.queryOne<{ id: string }>('SELECT id FROM users WHERE lower(email) = lower(?)', [identity.email]);
     if (existingEmail) return { kind: 'account_exists' };
 
     const now = new Date().toISOString();

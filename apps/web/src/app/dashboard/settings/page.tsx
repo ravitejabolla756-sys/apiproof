@@ -1,50 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Sparkles, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Sliders, Github, CheckCircle2, AlertCircle, Loader2, ExternalLink, CreditCard, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackConnectionCard } from "@/components/dashboard/slack-connection-card";
-
-interface GitHubInstallationInfo {
-  id: string;
-  accountLogin: string;
-  accountType: string;
-}
-
-interface BillingSummary {
-  subscription: {
-    planId: string;
-    status: string;
-    currentPeriodStart: string;
-    currentPeriodEnd: string;
-  };
-  plan: {
-    id: string;
-    name: string;
-    description: string;
-    priceMonthly: number | null;
-    limits: {
-      maxRepositories: number | null;
-      maxScansPerMonth: number | null;
-      maxDraftPrsPerMonth: number | null;
-    };
-  };
-  metrics: {
-    repositories: { current: number; limit: number | null; allowed: boolean };
-    scans: { current: number; limit: number | null; allowed: boolean };
-    draftPrs: { current: number; limit: number | null; allowed: boolean };
-  };
-}
+import { InvoiceHistoryPanel } from "@/components/dashboard/invoice-history-panel";
+import { billingUsagePercent, parseBillingSummary, type BillingSummary } from "@/lib/billing-summary-contract";
+import { parseGitHubInstallRedirect, parseGitHubInstallationResponse, type GitHubInstallationInfo } from "@/lib/github-installation-contract";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
   const [installation, setInstallation] = useState<GitHubInstallationInfo | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
+  const [billingError, setBillingError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const statusErrorRef = useRef<HTMLDivElement>(null);
 
   async function loadStatus() {
+    setLoading(true);
+    setStatusError(null);
     try {
       const [repoRes, billingRes] = await Promise.all([
         fetch('/api/github/repositories'),
@@ -52,84 +29,67 @@ export default function SettingsPage() {
       ]);
 
       if (repoRes.ok) {
-        const repoData = await repoRes.json();
-        if (repoData.connected && repoData.installation) {
-          setInstallation(repoData.installation);
-        } else {
-          setInstallation(null);
-        }
+        const installation = parseGitHubInstallationResponse(await repoRes.json());
+        if (installation === undefined) throw new Error("GitHub installation returned an invalid response.");
+        setInstallation(installation);
       }
 
       if (billingRes.ok) {
-        const billingData = await billingRes.json();
-        setBilling(billingData);
+        const billingData: unknown = await billingRes.json();
+        const parsedBilling = parseBillingSummary(billingData);
+        if (!parsedBilling) {
+          setBilling(null);
+          setBillingError('Billing summary is temporarily unavailable for this workspace.');
+        } else {
+          setBilling(parsedBilling);
+          setBillingError(null);
+        }
+      } else {
+        await billingRes.json().catch(() => ({}));
+        setBilling(null);
+        setBillingError('Billing summary is unavailable for this workspace.');
       }
-    } catch (err: unknown) {
-      console.error("Failed to load settings data:", err);
+    } catch (loadError) {
+      setStatusError(loadError instanceof Error ? loadError.message : "Workspace settings are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadStatus();
+    void loadStatus();
   }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('github') !== 'error') return;
+
+    const code = params.get('code');
+    const messages: Record<string, string> = {
+      INVALID_CALLBACK_STATE: 'GitHub setup expired or was opened outside MY OWL. Start the connection again from this page.',
+      GITHUB_API_ERROR: 'GitHub could not verify the installation. Check the GitHub App configuration and try again.',
+      GITHUB_CALLBACK_UNAVAILABLE: 'GitHub connection is temporarily unavailable. Check the deployment configuration, then try again.',
+      INSTALLATION_OWNED_BY_ANOTHER_WORKSPACE: 'That GitHub installation is already connected to another workspace.',
+      FORBIDDEN: 'You do not have permission to connect GitHub for this workspace.',
+    };
+    setError(messages[code || ''] || 'GitHub connection could not be completed. Start again from workspace settings.');
+  }, []);
+  useEffect(() => {
+    if (statusError) statusErrorRef.current?.focus();
+  }, [statusError]);
 
   async function handleConnectGitHub() {
     setConnecting(true);
     setError(null);
     try {
       const res = await fetch('/api/github/install');
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        if (data.code === 'EMAIL_VERIFICATION_REQUIRED') {
-          window.location.assign('/verify-email');
-          return;
-        }
-        throw new Error(data.error || "Failed to generate installation URL");
+      const installUrl = parseGitHubInstallRedirect(await res.json());
+      if (!res.ok || !installUrl) {
+        throw new Error("GitHub installation is temporarily unavailable.");
       }
-      window.location.href = data.url;
+      window.location.href = installUrl;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initiate GitHub connection.");
       setConnecting(false);
-    }
-  }
-
-  async function handleCheckout(planId: string) {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error || "Failed to initiate checkout session");
-      }
-      window.location.href = data.checkoutUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate checkout URL.");
-      setUpgrading(false);
-    }
-  }
-
-  async function handlePortal() {
-    setUpgrading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/portal', {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (!res.ok || !data.portalUrl) {
-        throw new Error(data.error || "Failed to generate portal session");
-      }
-      window.location.href = data.portalUrl;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to generate portal URL.");
-      setUpgrading(false);
     }
   }
 
@@ -144,11 +104,24 @@ export default function SettingsPage() {
         <p className="text-xs text-[#686868]">
           Manage workspace subscriptions, usage quotas, safety policies, and GitHub App integrations.
         </p>
+        <Link
+          href="/dashboard/settings/workspace"
+          className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-[#E8E8E5] bg-white px-3 text-xs font-medium text-[#111111] hover:bg-[#F6F6F4]"
+        >
+          Manage members, invitations, and audit history
+        </Link>
       </div>
 
+      {statusError && (
+        <div ref={statusErrorRef} role="alert" aria-live="assertive" tabIndex={-1} className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex flex-wrap items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+          <span>{statusError}</span>
+          <Button type="button" size="sm" variant="outline" onClick={() => void loadStatus()} disabled={loading} aria-busy={loading ? "true" : undefined} className="border-rose-300 bg-white text-rose-900">{loading ? "Retrying..." : "Retry"}</Button>
+        </div>
+      )}
+
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div role="alert" className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-xs flex items-center gap-2">
+          <AlertCircle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -160,10 +133,10 @@ export default function SettingsPage() {
           {/* BILLING & PLAN OVERVIEW */}
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+              <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-purple-700" />
                 Subscription & Usage Quotas
-              </h3>
+              </h2>
               {billing && (
                 <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-semibold uppercase tracking-wider">
                   {billing.plan.name} Plan ({billing.subscription.status})
@@ -191,7 +164,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-purple-700 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.repositories.current / billing.metrics.repositories.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.repositories.current, billing.metrics.repositories.limit)}%`,
                         }}
                       />
                     </div>}
@@ -209,7 +182,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-emerald-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.scans.current / billing.metrics.scans.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.scans.current, billing.metrics.scans.limit)}%`,
                         }}
                       />
                     </div>}
@@ -227,7 +200,7 @@ export default function SettingsPage() {
                       <div
                         className="h-full bg-indigo-600 rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, (billing.metrics.draftPrs.current / billing.metrics.draftPrs.limit) * 100)}%`,
+                          width: `${billingUsagePercent(billing.metrics.draftPrs.current, billing.metrics.draftPrs.limit)}%`,
                         }}
                       />
                     </div>}
@@ -243,41 +216,36 @@ export default function SettingsPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     {billing.plan.id === 'free' ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCheckout('pro')}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                        <span>Pro is planned after the invite-only beta</span>
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <span role="status" className="text-[11px] text-[#686868]">Paid plans are unavailable during the invite-only beta.</span>
+                        <Link href="/contact" className="inline-flex min-h-10 items-center rounded-lg border border-[#D9D9D4] bg-white px-3 text-[11px] font-medium text-[#111111] hover:bg-[#F6F6F4]">Contact support</Link>
+                      </div>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handlePortal}
-                        disabled={upgrading}
-                        className="gap-1.5 font-medium"
-                      >
-                        {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                        <span>Manage Customer Portal</span>
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <span role="status" className="text-[11px] text-[#686868]">Customer portal is unavailable until billing is configured.</span>
+                        <Link href="/contact" className="inline-flex min-h-10 items-center rounded-lg border border-[#D9D9D4] bg-white px-3 text-[11px] font-medium text-[#111111] hover:bg-[#F6F6F4]">Contact support</Link>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
+            ) : billingError ? (
+              <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+                {billingError}
+              </div>
             ) : null}
           </div>
+
+          <InvoiceHistoryPanel />
 
           {/* GITHUB APP SETTINGS */}
           <SlackConnectionCard />
           <div className="rounded-[28px] bg-white border border-[#E8E8E5] p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111111] flex items-center gap-2">
+              <h2 className="text-base font-semibold text-[#111111] flex items-center gap-2">
                 <Github className="w-4 h-4 text-[#111111]" />
                 GitHub App Integration
-              </h3>
+              </h2>
               {installation && (
                 <span className="px-2.5 py-1 rounded-full bg-[#EEF7F2] text-emerald-800 border border-[#D1EBE0] text-[11px] font-medium flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -335,7 +303,7 @@ export default function SettingsPage() {
             )}
 
             <div className="pt-2 border-t border-[#E8E8E5] space-y-4">
-              <h4 className="font-semibold text-xs text-[#111111]">Safety Policies</h4>
+              <h3 className="font-semibold text-xs text-[#111111]">Safety Policies</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E8E8E5]">
                   <div>
@@ -360,7 +328,7 @@ export default function SettingsPage() {
         {/* WORKSPACE PROFILE */}
         <div className="lg:col-span-4 space-y-6">
           <div className="rounded-[24px] bg-white border border-[#E8E8E5] p-6 space-y-4 shadow-xs">
-            <h3 className="text-base font-semibold text-[#111111]">Workspace Profile</h3>
+            <h2 className="text-base font-semibold text-[#111111]">Workspace Profile</h2>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
                 <span className="text-[#686868]">Workspace:</span>
@@ -369,12 +337,12 @@ export default function SettingsPage() {
               <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
                 <span className="text-[#686868]">Subscription:</span>
                 <span className="font-semibold text-emerald-700 capitalize">
-                  {billing?.subscription.status || 'Active'}
+                  {billing?.subscription.status || 'Unavailable'}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-[#E8E8E5]">
                 <span className="text-[#686868]">Provider Boundary:</span>
-                <span className="font-mono text-[#111111]">Mock / Stripe (Configurable)</span>
+                <span className="font-mono text-[#111111]">Disabled during beta</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span className="text-[#686868]">AST Engine Version:</span>

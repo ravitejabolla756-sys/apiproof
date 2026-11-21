@@ -3,35 +3,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, Info, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-type ReviewedChange = {
-  providerId: string;
-  changeId: string;
-  title: string;
-  changeType: string;
-  officialSourceUrl: string;
-  publishedAt: string | null;
-  effectiveAt: string | null;
-  removalAt: string | null;
-  severity: string;
-  applicabilityScope: { dimensions: string[] };
-  affectedModels: string[];
-  affectedResources: string[];
-  affectedResponseFields: string[];
-  affectedEndpoints: string[];
-  affectedDomains: string[];
-  authOrHeaderPatterns: string[];
-  affectedParameters: string[];
-  replacement?: { model?: string; endpoint?: string; domain?: string; authOrHeader?: string; parameter?: string; resources?: string[] } | null;
-  reviewer: string;
-  reviewedAt: string;
-};
-
-type CompatibilityProofResponse = {
-  claimsAvailable: boolean;
-  reason: string | null;
-  changes: ReviewedChange[];
-};
+import { parseCompatibilityProofResponse, type CompatibilityProofResponse } from "@/lib/compatibility-proof-contract";
 
 export default function CompatibilityPage() {
   const [data, setData] = useState<CompatibilityProofResponse | null>(null);
@@ -41,8 +13,10 @@ export default function CompatibilityPage() {
     setLoading(true);
     try {
       const response = await fetch("/api/compatibility-proof", { cache: "no-store" });
-      if (response.ok) setData(await response.json() as CompatibilityProofResponse);
-      else setData(null);
+      const payload: unknown = await response.json().catch(() => null);
+      const parsed = parseCompatibilityProofResponse(payload);
+      if (response.ok && parsed) setData(parsed);
+      else setData({ claimsAvailable: false, reason: null, changes: [] });
     } catch {
       setData(null);
     } finally {
@@ -127,7 +101,6 @@ export default function CompatibilityPage() {
           <p className="mx-auto mt-2 max-w-xl leading-relaxed text-[#686868]">
             MY OWL will show a provider, version, upstream change, and code location here only after an official change record has been reviewed. Discovery evidence alone does not create a compatibility claim.
           </p>
-          {data?.reason && <p className="mt-3 font-mono text-[10px] text-[#686868]">{data.reason}</p>}
         </section>
       )}
     </div>

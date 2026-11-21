@@ -8,6 +8,8 @@ import {
   badRequestResponse,
   forbiddenCsrfResponse,
 } from '@/lib/server/validation';
+import { verifiedUserRouteFailure } from '@/lib/server/verified-user-route.js';
+import { PRIVATE_NO_STORE_HEADERS } from '@/lib/server/organization-route.js';
 
 export async function POST(req: Request) {
   const csrf = assertCsrfProtection(req);
@@ -17,8 +19,10 @@ export async function POST(req: Request) {
 
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
+  const verificationFailure = await verifiedUserRouteFailure(user.id, 'workspace');
+  if (verificationFailure) return verificationFailure;
 
   // Rate limit: 20 migration plans per 5 minutes per user
   const rateCheck = await checkRateLimit(`plan:${user.id}`, 20, 5 * 60 * 1000);
@@ -34,13 +38,13 @@ export async function POST(req: Request) {
     }
 
     const migration = await generateMigrationForFinding(idValidation.data, user.id);
-    return NextResponse.json({ success: true, migration });
+    return NextResponse.json({ success: true, migration }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Migration planning failed.';
     if (message.includes('not found') || message.includes('access denied')) {
-      return NextResponse.json({ error: message, code: 'NOT_FOUND' }, { status: 404 });
+      return NextResponse.json({ error: 'Migration finding was not found or is not accessible.', code: 'NOT_FOUND' }, { status: 404, headers: PRIVATE_NO_STORE_HEADERS });
     }
-    console.error('Migration planning failed:', error);
-    return NextResponse.json({ error: message, code: 'PLANNING_FAILED' }, { status: 500 });
+    console.error('Migration planning failed:', { code: 'PLANNING_UNAVAILABLE' });
+    return NextResponse.json({ error: 'Migration planning is temporarily unavailable.', code: 'PLANNING_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }

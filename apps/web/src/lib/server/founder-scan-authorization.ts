@@ -1,4 +1,6 @@
-/** @deprecated Use live-scan-authorization.ts. */
+import { assertLiveScanEnabled } from './live-scan-authorization.js';
+
+/** Compatibility names retained while live scans use tenant authorization. */
 export {
   assertLiveScanEnabled as assertFounderScanProtectionConfigured,
   assertRepositoryScope as assertFounderRepositoryScope,
@@ -6,8 +8,13 @@ export {
   LiveScanAuthorizationError as FounderScanAuthorizationError,
 } from './live-scan-authorization.js';
 
-/** @deprecated Workspace membership replaced the founder-only rollout gate. */
-export function assertFounderScanAuthorization(): void {
-  // Authorization is enforced by requireRepositoryAccess in the scan route
-  // and service, so every permitted workspace member can scan.
+export function getConfiguredFounderUserId(): null {
+  return null;
+}
+
+export function assertFounderScanAuthorization(
+  _userId: string,
+  env: Record<string, string | undefined> = process.env,
+): void {
+  assertLiveScanEnabled(env);
 }

@@ -2,14 +2,20 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { GET, POST } from '../apps/web/src/app/api/repositories/route.js';
-import { createUserWithSession } from '../apps/web/src/lib/server/auth.js';
+import { createUserWithSession as createUserWithSessionBase } from '../apps/web/src/lib/server/auth.js';
 import { closeDatabase, getDatabase, initDatabase } from '../apps/web/src/lib/server/db/index.js';
 import { getDefaultWorkspaceForUser, requireRepositoryAccess } from '../apps/web/src/lib/server/workspace-service.js';
 
 const DB_PATH = path.resolve('.tmp/repositories-list-route.db');
 
 describe('GET /api/repositories', () => {
-  beforeEach(() => {
+  async function createUserWithSession(email: string, password: string, name: string) {
+    const result = await createUserWithSessionBase(email, password, name);
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), result.user.id]);
+    return result;
+  }
+
+  beforeEach(async () => {
     process.env.APIPROOF_SECRET = 'repositories-list-test-secret-at-least-32-chars';
     process.env.APIPROOF_DB_PATH = DB_PATH;
     if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);

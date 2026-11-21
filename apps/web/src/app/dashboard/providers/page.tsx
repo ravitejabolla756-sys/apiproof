@@ -4,56 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ExternalLink, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
-type ProviderCoverage = {
-  providerId: string;
-  providerName: string;
-  sourceUrl: string;
-  sourceType: string;
-  discoveryAvailable: boolean;
-  candidateCount: number;
-  reviewedRuleCount: number;
-  scannerCoverage: 'reviewed-rules' | 'no-reviewed-rules';
-  autoRescan: boolean;
-  autoFix: 'guarded-human-review';
-  migrationTemplateStatus: 'deterministic-ast' | 'review-only';
-  migrationTemplateLimitation: string;
-  migrationTemplateCount: number;
-  verifiedMigrationTemplateCount: number;
-  reviewOnlyTemplateProposalCount: number;
-  candidateCountWithoutTemplateProposal: number;
-  migrationTemplatePromotion: {
-    candidateIds: string[];
-    proposalModes: Array<'transform' | 'manual-guidance'>;
-    nextStep: string;
-  } | null;
-  sourceHealth: {
-    status: 'never-run' | 'healthy' | 'due' | 'failing' | 'disabled';
-    lastSuccessAt: string | null;
-    nextAttemptAt: string | null;
-    failureCount: number;
-    parserStatus: 'structured' | 'review-only' | 'not-run';
-  };
-};
-
-type CoverageResponse = {
-  summary: {
-    configuredSources: number;
-    discoveryProviders: number;
-    providersWithReviewedRules: number;
-    reviewedRules: number;
-    providersWithMigrationTemplates: number;
-    migrationTemplates: number;
-    providersWithVerifiedMigrationTemplates: number;
-    verifiedMigrationTemplates: number;
-    providersWithReviewOnlyTemplateProposals: number;
-    reviewOnlyTemplateProposals: number;
-    autoFixPolicy: 'guarded-human-review';
-    reviewQueue: { P0: number; P1: number; P2: number };
-    migrationTemplatePromotionQueue: Array<{ providerId: string; candidateIds: string[]; proposalModes: Array<'transform' | 'manual-guidance'>; nextStep: string }>;
-  };
-  providers: ProviderCoverage[];
-};
+import { parseProviderCoverageResponse, type ProviderCoverage, type CoverageResponse } from '@/lib/provider-coverage-contract';
 
 function CoverageBadge({ tone, children }: { tone: 'green' | 'amber' | 'slate'; children: ReactNode }) {
   const colors = {
@@ -91,7 +42,7 @@ export default function ProvidersPage() {
     setLoading(true);
     try {
       const response = await fetch('/api/provider-coverage', { cache: 'no-store' });
-      if (response.ok) setData(await response.json() as CoverageResponse);
+      if (response.ok) setData(parseProviderCoverageResponse(await response.json()) ?? null);
       else setData(null);
     } catch {
       setData(null);

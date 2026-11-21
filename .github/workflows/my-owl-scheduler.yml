@@ -31,13 +31,18 @@ jobs:
       - name: Refresh provider changelogs and process bounded rescans
         env:
           MY_OWL_APP_URL: ${{ vars.MY_OWL_APP_URL }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          WORKER_AUTH_SECRET: ${{ secrets.WORKER_AUTH_SECRET }}
+          WORKER_ID: github-actions-scheduler
         run: |
           set -euo pipefail
           test -n "$MY_OWL_APP_URL"
-          test -n "$CRON_SECRET"
+          test -n "$WORKER_AUTH_SECRET"
+          timestamp=$(date +%s%3N)
+          signature=$(printf '%s\n%s\nGET\n/api/internal/provider-changelog' "$WORKER_ID" "$timestamp" | openssl dgst -sha256 -hmac "$WORKER_AUTH_SECRET" -hex | awk '{print $NF}')
           curl --fail-with-body --silent --show-error --retry 2 --retry-delay 5 \
-            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "x-apiproof-worker-id: $WORKER_ID" \
+            -H "x-apiproof-worker-timestamp: $timestamp" \
+            -H "x-apiproof-worker-signature: $signature" \
             "$MY_OWL_APP_URL/api/internal/provider-changelog"
 
   scheduled-rescan:
@@ -48,11 +53,16 @@ jobs:
       - name: Enqueue and process nightly repository rescans
         env:
           MY_OWL_APP_URL: ${{ vars.MY_OWL_APP_URL }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          WORKER_AUTH_SECRET: ${{ secrets.WORKER_AUTH_SECRET }}
+          WORKER_ID: github-actions-scheduler
         run: |
           set -euo pipefail
           test -n "$MY_OWL_APP_URL"
-          test -n "$CRON_SECRET"
+          test -n "$WORKER_AUTH_SECRET"
+          timestamp=$(date +%s%3N)
+          signature=$(printf '%s\n%s\nGET\n/api/internal/scheduled-rescan' "$WORKER_ID" "$timestamp" | openssl dgst -sha256 -hmac "$WORKER_AUTH_SECRET" -hex | awk '{print $NF}')
           curl --fail-with-body --silent --show-error --retry 2 --retry-delay 5 \
-            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "x-apiproof-worker-id: $WORKER_ID" \
+            -H "x-apiproof-worker-timestamp: $timestamp" \
+            -H "x-apiproof-worker-signature: $signature" \
             "$MY_OWL_APP_URL/api/internal/scheduled-rescan"

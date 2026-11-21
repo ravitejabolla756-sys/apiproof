@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, FolderGit2, Boxes, AlertTriangle, FileCheck2, GitPullRequest, Settings, ShieldCheck, X, ChevronRight } from 'lucide-react';
 
@@ -28,10 +28,20 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [repositories, setRepositories] = useState<RepositoryItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (!isOpen) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+    setRepositories([]);
+    setInventory([]);
 
     async function loadSearchData() {
       try {
@@ -40,20 +50,23 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           fetch('/api/inventory'),
         ]);
 
-        if (repoRes.ok) {
-          const json = await repoRes.json();
-          setRepositories(json.repositories || []);
-        }
-        if (invRes.ok) {
-          const json = await invRes.json();
-          setInventory(json.providers || []);
-        }
+        if (!repoRes.ok || !invRes.ok) throw new Error('Search data unavailable');
+        const [repoJson, invJson] = await Promise.all([repoRes.json(), invRes.json()]);
+        if (cancelled) return;
+        setRepositories(repoJson.repositories || []);
+        setInventory(invJson.providers || []);
+        setLoadError(null);
       } catch {
-        // Suppress search data load failures
+        if (!cancelled) setLoadError('Workspace search is temporarily unavailable.');
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     loadSearchData();
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -72,6 +85,53 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    previouslyFocusedRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const focusableSelector =
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+    const focusable = () => Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector));
+    focusable()[0]?.focus();
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+
+      const elements = focusable();
+      if (elements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (!first || !last) {
+        event.preventDefault();
+        return;
+      }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', trapFocus);
+    return () => {
+      document.removeEventListener('keydown', trapFocus);
+      previouslyFocusedRef.current?.focus();
+      previouslyFocusedRef.current = null;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -100,25 +160,33 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-24 px-4 animate-in fade-in duration-150 font-sans">
-      <div className="bg-white border border-[#E8E8E5] w-full max-w-xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Dashboard command palette" className="bg-white border border-[#E8E8E5] w-full max-w-xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col">
         {/* Search Header */}
         <div className="flex items-center px-4 border-b border-[#E8E8E5] bg-[#F6F6F4]">
           <Search className="h-4 w-4 text-zinc-400 shrink-0" />
           <input
             type="text"
+            aria-label="Search dashboard commands"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command, search repositories or SDK rules..."
             className="w-full bg-transparent border-0 px-3 py-3.5 text-xs text-[#111111] placeholder:text-zinc-400 focus:outline-none"
             autoFocus
           />
-          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
-            <X className="h-4 w-4" />
+          <button type="button" onClick={onClose} aria-label="Close command palette" className="p-1 text-zinc-400 hover:text-[#111111] rounded-lg">
+            <X aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
 
         {/* Results List */}
         <div className="max-h-96 overflow-y-auto p-3 space-y-4 text-xs">
+          {isLoading && (
+            <p role="status" className="px-3 py-2 text-[#686868]">Loading workspace search…</p>
+          )}
+          {loadError && (
+            <p role="alert" className="px-3 py-2 rounded-xl bg-red-50 text-red-800">{loadError}</p>
+          )}
+
           {/* Navigation Links */}
           <div>
             <div className="px-3 py-1 text-[10px] font-semibold text-[#686868] uppercase tracking-wider">
@@ -130,6 +198,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 return (
                   <button
                     key={item.href}
+                    type="button"
                     onClick={() => navigate(item.href)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
@@ -154,6 +223,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 {filteredRepos.map((repo) => (
                   <button
                     key={repo.id}
+                    type="button"
                     onClick={() => navigate(`/dashboard/repositories/${repo.id}`)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
@@ -180,6 +250,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 {filteredInventory.map((inv) => (
                   <button
                     key={inv.id}
+                    type="button"
                     onClick={() => navigate('/dashboard/inventory')}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-[#111111] hover:bg-[#F6F6F4] transition-all text-left group font-medium"
                   >
@@ -195,6 +266,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 ))}
               </div>
             </div>
+          )}
+
+          {!isLoading && !loadError && query.trim() && filteredRepos.length === 0 && filteredInventory.length === 0 && (
+            <p role="status" className="px-3 py-2 text-[#686868]">No matching repositories or providers.</p>
           )}
         </div>
 

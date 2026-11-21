@@ -1,11 +1,20 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getPullRequestStateLabel } from "@/lib/compatibility-map-labels";
 import { isVerificationJobActive, startVerificationJobPolling } from "@/lib/verification-job-polling";
 import { Button } from "@/components/ui/button";
+import {
+  migrationActionErrorMessage,
+  parseFindingDetailResponse,
+  parseMigrationJobResponse,
+  parseMigrationPlanResponse,
+  parseMigrationProposalResponse,
+  type FindingDetail,
+  type MigrationDetail,
+} from "@/lib/finding-detail-contract";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -19,63 +28,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-interface FindingDetail {
-  id: string;
-  provider: string;
-  change_id: string;
-  title: string;
-  description: string;
-  severity: string;
-  confidence: string;
-  file_path: string;
-  line_number: number;
-  symbol: string;
-  reason: string;
-  source_snippet: string | null;
-  status: string;
-  created_at: string;
-  repo_name: string;
-  repo_full_name: string;
-  repo_owner: string;
-  default_branch: string;
-  evidence: Array<{ id: string; kind: string; label: string }>;
-  reasonCodes: string[];
-  capability?: {
-    source: 'productization';
-    baselineSha: string | null;
-    scanId: string | null;
-    recommendedNextAction: 'NO_ACTION' | 'MANUAL_REVIEW' | 'MIGRATION_AVAILABLE' | 'MIGRATION_NOT_AVAILABLE';
-    migrationAvailable: boolean;
-    verificationAvailable: boolean;
-    evidenceCoverage: 'complete' | 'partial' | 'insufficient' | null;
-    reviewStatus: 'draft' | 'reviewed' | 'verified' | null;
-    remediation: {
-      mode: 'transform' | 'manual-guidance';
-      templateId: string;
-      limitation: string;
-      summary: string;
-      steps: string[];
-      validation: string[];
-    } | null;
-  } | null;
-}
-
-interface MigrationDetail {
-  id: string;
-  plan_id: string;
-  status: string;
-  patch_diff: string;
-  patch_digest: string;
-  pr_number?: number;
-  pr_url?: string;
-  branch_name?: string;
-  target_branch?: string;
-  pr_state?: string;
-  lifecycle_state?: 'Migration Planned' | 'Verification Pending' | 'Verification Passed' | 'Verification Failed' | 'Verification Unavailable' | 'Draft PR Created' | 'Pull Request Open' | 'Pull Request Closed' | 'Pull Request Merged' | 'Pull Request State Unavailable';
-  verification_job_id?: string | null;
-  verification_job_status?: string | null;
-}
-
 export default function FindingDetailPage({
   params,
 }: {
@@ -85,19 +37,22 @@ export default function FindingDetailPage({
   const [finding, setFinding] = useState<FindingDetail | null>(null);
   const [migration, setMigration] = useState<MigrationDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'plan' | 'propose' | null>(null);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const loadErrorRef = useRef<HTMLDivElement>(null);
 
   async function loadFinding() {
+    setLoadError(null);
     try {
       const res = await fetch(`/api/findings/${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        setFinding(json.finding);
-        setMigration(json.migration);
-      }
-    } catch (err) {
-      console.error("Failed to load finding:", err);
+      if (!res.ok) throw new Error("Finding details are temporarily unavailable.");
+      const parsed = parseFindingDetailResponse(await res.json());
+      if (!parsed) throw new Error("Finding details returned an invalid response.");
+      setFinding(parsed.finding);
+      setMigration(parsed.migration);
+    } catch (loadErrorValue) {
+      setLoadError(loadErrorValue instanceof Error ? loadErrorValue.message : "Finding details are temporarily unavailable.");
     } finally {
       setLoading(false);
     }
@@ -108,6 +63,10 @@ export default function FindingDetailPage({
   }, [id]);
 
   useEffect(() => {
+    if (loadError) loadErrorRef.current?.focus();
+  }, [loadError]);
+
+  useEffect(() => {
     if (!migration?.id || !isVerificationJobActive(migration.verification_job_status)) return;
     const migrationId = migration.id;
     return startVerificationJobPolling({
@@ -115,8 +74,8 @@ export default function FindingDetailPage({
       fetchStatus: async () => {
         const response = await fetch(`/api/migrations/propose?migrationId=${encodeURIComponent(migrationId)}`, { cache: 'no-store' });
         if (!response.ok) return null;
-        const payload = await response.json();
-        return payload.job as { status?: string; errorCode?: string; proposal?: { number: number; state: string; branchName: string } } | null;
+        const payload = parseMigrationJobResponse(await response.json());
+        return payload?.job ?? null;
       },
       onStatus: (job) => {
         setMigration((current) => current?.id === migrationId ? { ...current, verification_job_status: job.status } : current);
@@ -146,9 +105,10 @@ export default function FindingDetailPage({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ findingId: finding.id }),
       });
-      const payload = await response.json() as { migration?: MigrationDetail; error?: string };
-      if (!response.ok || !payload.migration) throw new Error(payload.error ?? 'Migration planning failed.');
-      setMigration(payload.migration);
+      const payload = await response.json();
+      const parsed = parseMigrationPlanResponse(payload);
+      if (!response.ok || !parsed) throw new Error(migrationActionErrorMessage(payload, 'Migration planning failed.'));
+      setMigration(parsed.migration);
       setMessage({ text: 'Migration plan created. Review it before requesting a verified Draft PR.' });
     } catch (error) {
       setMessage({ text: error instanceof Error ? error.message : 'Migration planning failed.', error: true });
@@ -167,20 +127,17 @@ export default function FindingDetailPage({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ migrationId: migration.id }),
       });
-      const payload = await response.json() as {
-        proposal?: { number: number; state: string; branchName: string };
-        job?: { id?: string; status?: string };
-        error?: string;
-      };
-      if (!response.ok) throw new Error(payload.error ?? 'Draft PR creation failed.');
-      if (payload.proposal) {
-        setMessage({ text: `${getPullRequestStateLabel(payload.proposal.state)} #${payload.proposal.number} on branch ${payload.proposal.branchName}.` });
+      const payload = await response.json();
+      const parsed = parseMigrationProposalResponse(payload);
+      if (!response.ok || !parsed) throw new Error(migrationActionErrorMessage(payload, 'Draft PR creation failed.'));
+      if (parsed.proposal) {
+        setMessage({ text: `${getPullRequestStateLabel(parsed.proposal.state)} #${parsed.proposal.number} on branch ${parsed.proposal.branchName}.` });
         await loadFinding();
-      } else if (payload.job) {
+      } else if (parsed.job) {
         setMigration((current) => current ? {
           ...current,
-          verification_job_id: payload.job?.id ?? current.verification_job_id,
-          verification_job_status: payload.job?.status ?? 'verification_in_progress',
+          verification_job_id: parsed.job?.jobId ?? current.verification_job_id,
+          verification_job_status: parsed.job?.status ?? 'verification_in_progress',
           lifecycle_state: 'Verification Pending',
         } : current);
         setMessage({ text: 'Secure verification started. No repository change will be created until verification passes.' });
@@ -195,7 +152,7 @@ export default function FindingDetailPage({
   if (loading) {
     return (
       <div className="py-20 text-center text-xs text-[#686868] font-sans">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
+        <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading AST finding workbench...</span>
       </div>
     );
@@ -207,9 +164,16 @@ export default function FindingDetailPage({
         <Link href="/dashboard/findings" className="text-zinc-500 hover:text-black flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Findings
         </Link>
-        <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
-          Finding not found or access denied.
-        </div>
+        {loadError ? (
+          <div ref={loadErrorRef} role="alert" aria-live="assertive" tabIndex={-1} className="p-8 text-center bg-rose-50 border border-rose-200 rounded-[24px] outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">
+            <p className="text-rose-900">{loadError}</p>
+            <Button type="button" size="sm" variant="outline" onClick={loadFinding} className="mt-4 border-rose-300 bg-white text-rose-900">Retry</Button>
+          </div>
+        ) : (
+          <div className="p-8 text-center bg-white border border-[#E8E8E5] rounded-[24px]">
+            Finding not found or access denied.
+          </div>
+        )}
       </div>
     );
   }

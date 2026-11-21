@@ -164,6 +164,7 @@ function makeEmptyFilesResult(sha = 'abc000'): { files: Map<string, string>; hea
 describe('Phase 4 — Asynchronous Scan Worker', () => {
   beforeEach(() => {
     process.env.APIPROOF_SECRET = 'phase4-test-secret-minimum-32-chars-long';
+    process.env.APIPROOF_ENABLE_LIVE_GITHUB = 'true';
     process.env.APIPROOF_DB_PATH = TEST_DB_PATH;
     process.env.GITHUB_APP_ID = '12345';
     process.env.GITHUB_APP_SLUG = 'apiproof-test';
@@ -180,6 +181,7 @@ describe('Phase 4 — Asynchronous Scan Worker', () => {
 
   afterEach(() => {
     delete process.env.PROVIDER_INTELLIGENCE_V1_ENABLED;
+    delete process.env.APIPROOF_ENABLE_LIVE_GITHUB;
     try { closeDatabase(); } catch { /* ignore */ }
     if (fs.existsSync(TEST_DB_PATH)) {
       try { fs.unlinkSync(TEST_DB_PATH); } catch { /* ignore */ }

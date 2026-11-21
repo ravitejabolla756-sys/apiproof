@@ -24,8 +24,13 @@ export type SourceFetchOptions = {
 
 function isPrivateAddress(address: string): boolean {
   const normalized = address.toLowerCase();
-  if (normalized === '::1' || normalized === 'localhost' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80:')) return true;
-  const octets = normalized.split('.').map(Number);
+  if (normalized === '::' || normalized === '::1' || normalized === 'localhost' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80:')) return true;
+  const mappedIpv4 = normalized.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1]
+    ?? normalized.match(/^0:0:0:0:0:ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/)?.slice(1)
+      ?.map((part) => Number.parseInt(part, 16))
+      .flatMap((part) => [part >> 8, part & 0xff])
+      .join('.');
+  const octets = (mappedIpv4 ?? normalized).split('.').map(Number);
   if (octets.length !== 4 || octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
   const [first = -1, second = -1] = octets;
   return first === 0 || first === 10 || first === 127 || (first === 169 && second === 254)

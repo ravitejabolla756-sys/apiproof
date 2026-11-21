@@ -533,6 +533,7 @@ describe('Phase 3A — Real GitHub App Onboarding', () => {
 
   // TEST S: Existing idempotent PR behavior remains enforced
   it('TEST S: Existing idempotent PR behavior remains enforced', async () => {
+    process.env.APIPROOF_ENABLE_LIVE_GITHUB = 'true';
     const { user } = await createUserWithSession('idem@example.com', 'Pass12345!', 'Idem User');
     const ws = await getDefaultWorkspaceForUser(user.id);
     await grantTestProposalEntitlement(ws.id);

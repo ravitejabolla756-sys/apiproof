@@ -8,8 +8,9 @@ import {
 } from '@apiproof/providers';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getDatabase } from '@/lib/server/db';
+import { resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import { PROVIDER_CHANGE_SOURCES } from '@/lib/server/provider-change-monitor';
-import { getDefaultWorkspaceForUser, requireWorkspaceOwner } from '@/lib/server/workspace-service';
+import { requireWorkspaceOwner } from '@/lib/server/workspace-service';
 
 const privateNoStore = { 'Cache-Control': 'private, no-store, max-age=0' };
 
@@ -17,7 +18,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: privateNoStore });
   try {
-    const workspace = await getDefaultWorkspaceForUser(user.id);
+    const workspace = await resolveWorkspaceForRequest(request, user.id);
     await requireWorkspaceOwner(user.id, workspace.id);
     const rows = await getDatabase().query<{
       id: string;

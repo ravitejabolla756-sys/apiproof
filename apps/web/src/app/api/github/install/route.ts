@@ -1,60 +1,49 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/server/auth';
 import { getGitHubAppInstallUrl } from '@/lib/server/github';
-import { getEmailVerificationStatus, isEmailVerificationConfigured } from '@/lib/server/email-verification.js';
+import { PRIVATE_NO_STORE_HEADERS, resolveWorkspaceForRequest } from '@/lib/server/organization-route.js';
 import {
-  getDefaultWorkspaceForUser,
-  requireWorkspaceMember,
+  requireWorkspaceCapability,
 } from '@/lib/server/workspace-service';
+import { assertCsrfProtection, forbiddenCsrfResponse } from '@/lib/server/validation.js';
+import { evaluateVerifiedUserPolicy, loadVerifiedUserPolicy, verifiedUserFailure } from '@/lib/server/verified-user-policy.js';
 
 export async function GET(req: Request) {
+  const csrf = assertCsrfProtection(req);
+  if (!csrf.valid) return forbiddenCsrfResponse(csrf.error);
+
   const user = await getCurrentUser(req);
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized', code: 'UNAUTHORIZED' }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS });
   }
 
-  try {
-    const verification = await getEmailVerificationStatus(user.id);
-    if (verification !== 'verified') {
-      if (!isEmailVerificationConfigured()) {
-        return NextResponse.json(
-          { error: 'Email verification is temporarily unavailable.', code: 'EMAIL_VERIFICATION_UNAVAILABLE' },
-          { status: 503 },
-        );
-      }
-      return NextResponse.json(
-        { error: 'Verify your email before connecting GitHub.', code: 'EMAIL_VERIFICATION_REQUIRED' },
-        { status: 403 },
-      );
-    }
-  } catch {
-    return NextResponse.json(
-      { error: 'Account verification could not be checked right now.', code: 'EMAIL_VERIFICATION_CHECK_FAILED' },
-      { status: 503 },
-    );
-  }
+  const verification = evaluateVerifiedUserPolicy(await loadVerifiedUserPolicy(user.id, 'provider_link'));
+  const verificationFailure = verifiedUserFailure(verification);
+  if (verificationFailure) return NextResponse.json(verificationFailure, { status: verificationFailure.status });
 
   const urlObj = new URL(req.url);
   const requestedWorkspaceId = urlObj.searchParams.get('workspaceId');
 
-  try {
-    let workspaceId: string;
-    if (requestedWorkspaceId) {
-      const ws = await requireWorkspaceMember(user.id, requestedWorkspaceId);
+  let workspaceId: string;
+  if (requestedWorkspaceId) {
+    try {
+      const ws = await requireWorkspaceCapability(user.id, requestedWorkspaceId, 'integration:manage');
       workspaceId = ws.id;
-    } else {
-      const defaultWs = await getDefaultWorkspaceForUser(user.id);
-      workspaceId = defaultWs.id;
+    } catch {
+      return NextResponse.json({ error: 'Workspace not found or access denied.', code: 'FORBIDDEN' }, { status: 403 });
     }
+  } else {
+    const activeWorkspace = await resolveWorkspaceForRequest(req, user.id);
+    await requireWorkspaceCapability(user.id, activeWorkspace.id, 'integration:manage');
+    workspaceId = activeWorkspace.id;
+  }
+
+  try {
     const installUrl = await getGitHubAppInstallUrl(user.id, workspaceId);
-    return NextResponse.json({ url: installUrl, workspaceId });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to generate GitHub installation URL.';
-    const code = message.includes('Workspace') || message.includes('workspace')
-      ? 'WORKSPACE_UNAVAILABLE'
-      : 'GITHUB_INSTALL_UNAVAILABLE';
-    console.error('[github-install] Failed to prepare installation:', message);
-    return NextResponse.json({ error: 'GitHub connection is temporarily unavailable. Please try again.', code }, { status: 503 });
+    return NextResponse.json({ url: installUrl, workspaceId }, { headers: PRIVATE_NO_STORE_HEADERS });
+  } catch {
+    console.error('GitHub installation URL request failed:', { code: 'GITHUB_INSTALL_UNAVAILABLE' });
+    return NextResponse.json({ error: 'GitHub installation is temporarily unavailable.', code: 'GITHUB_INSTALL_UNAVAILABLE' }, { status: 503, headers: PRIVATE_NO_STORE_HEADERS });
   }
 }
 

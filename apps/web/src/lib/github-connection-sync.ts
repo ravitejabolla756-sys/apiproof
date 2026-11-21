@@ -31,7 +31,7 @@ export function resolveGitHubConnectionStatus(
   response: { ok: boolean; connected?: unknown } | null,
 ): boolean | null {
   if (!response || !response.ok) return previous;
-  return Boolean(response.connected);
+  return typeof response.connected === 'boolean' ? response.connected : previous;
 }
 
 export function publishGitHubConnectionChanged(workspaceId?: string): void {
