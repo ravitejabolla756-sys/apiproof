@@ -65,7 +65,7 @@ export default function DashboardOverviewPage() {
 
   if (loading) {
     return (
-      <div className="py-24 text-center text-xs text-[#686868] font-sans">
+      <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-24 text-center text-xs text-[#686868] font-sans">
         <Loader2 aria-hidden="true" className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-700" />
         <span>Loading workspace overview...</span>
       </div>
@@ -74,7 +74,7 @@ export default function DashboardOverviewPage() {
   }
 
   return (
-    <div className="space-y-8 font-sans">
+    <div aria-busy={refreshing ? "true" : undefined} className="space-y-8 font-sans">
       <ConnectRepoModal
         isOpen={isConnectOpen}
         onClose={() => setIsConnectOpen(false)}
@@ -82,7 +82,7 @@ export default function DashboardOverviewPage() {
       />
 
       {error && (
-        <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between">
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between">
           <span>{error}</span>
           <Button type="button" size="sm" variant="outline" onClick={loadOverview} disabled={refreshing} aria-busy={refreshing ? "true" : undefined} className="border-rose-300 bg-white text-rose-900">
             {refreshing ? "Retrying..." : "Retry"}
@@ -117,7 +117,7 @@ export default function DashboardOverviewPage() {
             >
               {refreshing ? "Refreshing..." : "Refresh"}
             </Button>
-            <span className="hidden text-[10px] text-[#686868] sm:inline" aria-live="polite">
+            <span role="status" aria-atomic="true" className="hidden text-[10px] text-[#686868] sm:inline" aria-live="polite">
               {lastUpdatedAt ? `Updated ${lastUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Not refreshed"}
             </span>
             {data?.criticalFinding ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ExternalLink, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -37,24 +37,29 @@ function ParserBadge({ status }: { status: ProviderCoverage['sourceHealth']['par
 export default function ProvidersPage() {
   const [data, setData] = useState<CoverageResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   async function loadCoverage() {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch('/api/provider-coverage', { cache: 'no-store' });
-      if (response.ok) setData(parseProviderCoverageResponse(await response.json()) ?? null);
-      else setData(null);
-    } catch {
-      setData(null);
+      const parsed = parseProviderCoverageResponse(await response.json());
+      if (!response.ok || !parsed) throw new Error('Provider coverage is temporarily unavailable.');
+      setData(parsed);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Provider coverage is temporarily unavailable.');
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => { void loadCoverage(); }, []);
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
 
   return (
-    <div className="max-w-[1440px] space-y-6 font-sans text-xs">
+    <div aria-busy={loading ? 'true' : undefined} className="max-w-[1440px] space-y-6 font-sans text-xs">
       <div className="flex flex-col justify-between gap-4 border-b border-[#E8E8E5] pb-6 sm:flex-row sm:items-center">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-medium tracking-tight text-[#111111]">
@@ -63,15 +68,16 @@ export default function ProvidersPage() {
           </h1>
           <p className="mt-1 text-xs text-[#686868]">The honest boundary between monitored sources, reviewed rules, scanner coverage, and guarded fixes.</p>
         </div>
-        <Button onClick={() => void loadCoverage()} variant="outline" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />}>Refresh</Button>
+        <Button onClick={() => void loadCoverage()} disabled={loading} aria-busy={loading ? 'true' : undefined} variant="outline" size="sm" icon={<RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />}>{loading ? 'Refreshing…' : 'Refresh'}</Button>
       </div>
 
       {loading ? (
-        <div className="py-20 text-center text-[#686868]"><Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
+        <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="py-20 text-center text-[#686868]"><Loader2 aria-hidden="true" className="mx-auto mb-2 h-6 w-6 animate-spin text-purple-700" />Loading provider coverage…</div>
       ) : !data ? (
-        <div className="rounded-[28px] border border-[#E8E8E5] bg-white p-12 text-center text-[#686868]">Provider coverage is temporarily unavailable.</div>
+        <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-col items-center gap-3 rounded-[28px] border border-rose-200 bg-rose-50 p-12 text-center text-rose-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2"><span>{error ?? 'Provider coverage is temporarily unavailable.'}</span><Button type="button" variant="outline" size="sm" onClick={() => void loadCoverage()} disabled={loading} aria-busy={loading ? 'true' : undefined} className="border-rose-300 bg-white text-rose-900">Try again</Button></div>
       ) : (
         <>
+          {error && <div ref={errorRef} role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1} className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950 outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2"><span>{error} Showing the last successful result.</span><Button type="button" variant="outline" size="sm" onClick={() => void loadCoverage()} disabled={loading} aria-busy={loading ? 'true' : undefined} className="border-amber-300 bg-white text-amber-950">Retry</Button></div>}
           <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {[
               ['Configured sources', data.summary.configuredSources, 'official URLs configured for the six-hour monitor'],
