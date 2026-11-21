@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDefaultWorkspaceForUser, requireWorkspaceMember, type WorkspaceWithRole } from './workspace-service.js';
+import { getDefaultWorkspaceForUser, isWorkspaceAuthorizationError, requireWorkspaceMember, type WorkspaceWithRole } from './workspace-service.js';
 import { OrganizationServiceError } from './organization-service.js';
 import { validateSafeId } from './validation.js';
 
@@ -42,6 +42,18 @@ export function organizationErrorResponse(error: unknown): Response {
   if (error instanceof OrganizationServiceError) {
     const status = error.code === 'ORGANIZATION_SCHEMA_UNAVAILABLE' ? 503 : error.code.endsWith('NOT_FOUND') ? 404 : 400;
     return NextResponse.json({ error: error.message, code: error.code }, { status, headers: PRIVATE_NO_STORE_HEADERS });
+  }
+  if (isWorkspaceAuthorizationError(error)) {
+    const accessDenied = error instanceof Error && (
+      error.message === 'Workspace not found or access denied.' || error.message === 'WORKSPACE_ROLE_INVALID'
+    );
+    return NextResponse.json(
+      {
+        error: accessDenied ? 'Workspace not found or access denied.' : 'You do not have permission to perform this workspace action.',
+        code: accessDenied ? 'WORKSPACE_ACCESS_DENIED' : 'WORKSPACE_CAPABILITY_DENIED',
+      },
+      { status: accessDenied ? 404 : 403, headers: PRIVATE_NO_STORE_HEADERS },
+    );
   }
   if (error instanceof Error && error.message.includes('access denied')) {
     return NextResponse.json(

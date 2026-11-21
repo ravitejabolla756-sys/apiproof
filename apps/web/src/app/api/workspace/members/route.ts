@@ -37,7 +37,7 @@ export async function PATCH(request: Request): Promise<Response> {
     const userValidation = validateSafeId(body.userId, 'userId');
     if (!workspaceValidation.valid || !workspaceValidation.data) return badRequestResponse(workspaceValidation.error || 'A valid workspaceId is required.');
     if (!userValidation.valid || !userValidation.data) return badRequestResponse(userValidation.error || 'A valid userId is required.');
-    if (body.role !== 'owner' && body.role !== 'member') return badRequestResponse('A valid role is required.');
+    if (body.role !== 'owner' && body.role !== 'admin' && body.role !== 'member') return badRequestResponse('A valid role is required.');
     const workspace = await resolveWorkspaceForRequest(request, user.id, workspaceValidation.data);
     return NextResponse.json({ members: await updateMemberRole(user.id, workspace.id, userValidation.data, body.role) }, { headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {

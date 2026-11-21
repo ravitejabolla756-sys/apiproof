@@ -269,9 +269,9 @@ export function isWorkspaceAuthorizationError(error: unknown): boolean {
 }
 
 /**
- * Central capability boundary for future role-aware routes. Existing owner-only
- * routes keep their stricter requireWorkspaceOwner contract until the shared
- * organization-management contract is approved.
+ * Central capability boundary for role-aware routes. Callers still choose the
+ * specific capability required by each operation; billing and destructive
+ * workspace operations remain owner-only unless their policy explicitly changes.
  */
 export async function requireWorkspaceCapability(
   userId: string,

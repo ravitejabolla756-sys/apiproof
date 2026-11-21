@@ -16,7 +16,7 @@ import { GET as migrationsRoute } from '../apps/web/src/app/api/migrations/route
 import { GET as auditRoute } from '../apps/web/src/app/api/workspace/audit/route.js';
 import { GET as membersGet, PATCH as updateMemberRoute, DELETE as removeMemberRoute } from '../apps/web/src/app/api/workspace/members/route.js';
 import { GET as invitationsGet, DELETE as revokeInvitationRoute } from '../apps/web/src/app/api/workspace/invitations/route.js';
-import { GET as settingsGet } from '../apps/web/src/app/api/workspace/settings/route.js';
+import { GET as settingsGet, PATCH as settingsPatch } from '../apps/web/src/app/api/workspace/settings/route.js';
 import {
   acceptWorkspaceInvitation,
   createWorkspaceInvitation,
@@ -132,6 +132,29 @@ describe('workspace administration', () => {
       expect(response.status).toBe(200);
       expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
     }
+  });
+
+  it('returns capability denials as 403 instead of 500 and preserves admin access', async () => {
+    const owner = await createUserWithSession('admin-boundary-owner@example.test', 'OwnerPassword123!', 'Boundary Owner');
+    const admin = await createUserWithSession('admin-boundary-admin@example.test', 'AdminPassword123!', 'Boundary Admin');
+    const workspace = await getDefaultWorkspaceForUser(owner.user.id);
+    await getDatabase().execute('INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', ['wsm_boundary_admin', workspace.id, admin.user.id, 'admin', new Date().toISOString()]);
+    await getDatabase().execute('UPDATE users SET email_verified_at = ? WHERE id = ?', [new Date().toISOString(), admin.user.id]);
+    const adminHeaders = { cookie: `apiproof_session=${admin.session.id}; apiproof_workspace_id=${workspace.id}`, origin: 'https://apiproof.test', host: 'apiproof.test', 'content-type': 'application/json' };
+
+    const settings = await settingsPatch(new Request('https://apiproof.test/api/workspace/settings', { method: 'PATCH', headers: adminHeaders, body: JSON.stringify({ name: 'Nope', slug: 'nope-team' }) }));
+    expect(settings.status).toBe(200);
+    expect(await settings.json()).toMatchObject({ workspace: { role: 'admin' } });
+
+    const roleUpdate = await updateMemberRoute(new Request('https://apiproof.test/api/workspace/members', {
+      method: 'PATCH', headers: adminHeaders, body: JSON.stringify({ workspaceId: workspace.id, userId: owner.user.id, role: 'owner' }),
+    }));
+    expect(roleUpdate.status).toBe(403);
+    expect(await roleUpdate.json()).toMatchObject({ code: 'WORKSPACE_CAPABILITY_DENIED' });
+
+    const invitations = await invitationsGet(new Request('https://apiproof.test/api/workspace/invitations', { headers: { cookie: adminHeaders.cookie } }));
+    expect(invitations.status).toBe(200);
+    expect(await invitations.json()).toEqual({ invitations: [] });
   });
 
   it('returns a structured unavailable response when optional organization tables are absent', async () => {

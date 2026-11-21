@@ -5,18 +5,9 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { ApiProofLogo } from '@/components/ui/logo';
 import { parseAuthenticatedSession, parseAuthMutationError, parseAuthMutationSuccess } from '@/lib/auth-response-contract';
+import { loginDestination } from '@/lib/auth-redirect-contract';
 
 type AuthMode = 'login' | 'signup';
-
-function safeNextPath(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/dashboard';
-  try {
-    const parsed = new URL(value, window.location.origin);
-    return parsed.origin === window.location.origin ? `${parsed.pathname}${parsed.search}${parsed.hash}` : '/dashboard';
-  } catch {
-    return '/dashboard';
-  }
-}
 
 export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -40,7 +31,7 @@ export default function LoginPage() {
   }, []);
 
   function nextPath(): string {
-    return safeNextPath(new URLSearchParams(window.location.search).get('next'));
+    return loginDestination(window.location.search, window.location.origin);
   }
 
   useEffect(() => {

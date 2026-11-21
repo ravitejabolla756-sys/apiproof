@@ -3,14 +3,14 @@ export type MemberProjection = {
   userId: string;
   email: string;
   name: string;
-  role: 'owner' | 'member';
+  role: 'owner' | 'admin' | 'member';
   createdAt: string;
 };
 
 export type InvitationProjection = {
   id: string;
   email: string;
-  role: 'owner' | 'member';
+  role: 'owner' | 'admin' | 'member';
   expiresAt: string;
   acceptedAt: string | null;
   revokedAt: string | null;
@@ -27,8 +27,8 @@ function normalizedText(value: unknown): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
-function isRole(value: unknown): value is 'owner' | 'member' {
-  return value === 'owner' || value === 'member';
+function isRole(value: unknown): value is 'owner' | 'admin' | 'member' {
+  return value === 'owner' || value === 'admin' || value === 'member';
 }
 
 function normalizedStringOrNull(value: unknown): string | null | undefined {

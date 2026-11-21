@@ -2,7 +2,8 @@ import crypto from 'node:crypto';
 import { getDatabase, type DatabaseAdapter } from './db/index.js';
 import { withPostgresTenantContext } from './db/postgres-tenant-context.js';
 import { revokeWorkspaceMember } from './member-revocation.js';
-import { requireWorkspaceMember, requireWorkspaceOwner, type WorkspaceRole, type WorkspaceWithRole } from './workspace-service.js';
+import { assertWorkspaceCapability, normalizeWorkspaceRole, type WorkspaceCapability } from './workspace-policy.js';
+import { requireWorkspaceCapability, requireWorkspaceMember, type WorkspaceRole, type WorkspaceWithRole } from './workspace-service.js';
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -159,13 +160,16 @@ async function recordAudit(
   );
 }
 
-async function requireWorkspaceOwnerInTransaction(tx: DatabaseAdapter, userId: string, workspaceId: string): Promise<void> {
-  const row = await tx.queryOne('SELECT 1 FROM workspace_members WHERE workspace_id = ? AND user_id = ? AND role = \'owner\'', [workspaceId, userId]);
+async function requireWorkspaceCapabilityInTransaction(tx: DatabaseAdapter, userId: string, workspaceId: string, capability: WorkspaceCapability): Promise<WorkspaceRole> {
+  const row = await tx.queryOne<{ role: string }>('SELECT role FROM workspace_members WHERE workspace_id = ? AND user_id = ?', [workspaceId, userId]);
   if (!row) throw new Error('Workspace not found or access denied.');
+  const role = normalizeWorkspaceRole(row.role);
+  assertWorkspaceCapability(role, capability);
+  return role;
 }
 
 export async function updateWorkspaceSettings(userId: string, workspaceId: string, name: string, slug: string, sessionId?: string): Promise<WorkspaceWithRole> {
-  await requireWorkspaceOwner(userId, workspaceId);
+  await requireWorkspaceCapability(userId, workspaceId, 'workspace:manage_settings');
   const cleanName = name.trim();
   const cleanSlug = slug.trim().toLowerCase();
   if (cleanName.length < 1 || cleanName.length > 100) throw new OrganizationServiceError('Workspace name must be 1-100 characters.', 'INVALID_WORKSPACE_NAME');
@@ -174,7 +178,7 @@ export async function updateWorkspaceSettings(userId: string, workspaceId: strin
   const db = getDatabase();
   try {
     await withPostgresTenantContext(db, userId, workspaceId, async (tx) => {
-      await requireWorkspaceOwnerInTransaction(tx, userId, workspaceId);
+      await requireWorkspaceCapabilityInTransaction(tx, userId, workspaceId, 'workspace:manage_settings');
       await tx.execute('UPDATE workspaces SET name = ?, slug = ?, updated_at = ? WHERE id = ?', [cleanName, cleanSlug, new Date().toISOString(), workspaceId]);
       await recordAudit(tx, workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { name: cleanName, slug: cleanSlug });
     }, sessionId);
@@ -197,10 +201,12 @@ export async function listOrganizationMembers(userId: string, workspaceId: strin
 }
 
 export async function updateMemberRole(userId: string, workspaceId: string, targetUserId: string, role: WorkspaceRole): Promise<OrganizationMember[]> {
-  await requireWorkspaceOwner(userId, workspaceId);
+  const actor = await requireWorkspaceCapability(userId, workspaceId, 'workspace:manage_members');
+  if (actor.role !== 'owner' && role === 'owner') throw new Error('WORKSPACE_CAPABILITY_DENIED');
   const db = getDatabase();
   await db.transaction(async (tx) => {
-    await requireWorkspaceOwnerInTransaction(tx, userId, workspaceId);
+    const transactionRole = await requireWorkspaceCapabilityInTransaction(tx, userId, workspaceId, 'workspace:manage_members');
+    if (transactionRole !== 'owner' && role === 'owner') throw new Error('WORKSPACE_CAPABILITY_DENIED');
     const member = await tx.queryOne<{ id: string; user_id: string; role: WorkspaceRole }>('SELECT id, user_id, role FROM workspace_members WHERE user_id = ? AND workspace_id = ?', [targetUserId, workspaceId]);
     if (!member) throw new OrganizationServiceError('Workspace member not found.', 'MEMBER_NOT_FOUND');
     const update = await tx.execute(
@@ -226,7 +232,7 @@ export async function removeOrganizationMember(userId: string, workspaceId: stri
 }
 
 export async function listWorkspaceInvitations(userId: string, workspaceId: string): Promise<WorkspaceInvitation[]> {
-  await requireWorkspaceOwner(userId, workspaceId);
+  await requireWorkspaceCapability(userId, workspaceId, 'workspace:manage_members');
   let rows: Array<WorkspaceInvitation & { workspace_id: string; expires_at: string; accepted_at: string | null; revoked_at: string | null; created_at: string }>;
   try {
     rows = await getDatabase().query<WorkspaceInvitation & { workspace_id: string; expires_at: string; accepted_at: string | null; revoked_at: string | null; created_at: string }>(
@@ -240,7 +246,7 @@ export async function listWorkspaceInvitations(userId: string, workspaceId: stri
 }
 
 export async function createWorkspaceInvitation(userId: string, workspaceId: string, email: string, role: WorkspaceRole): Promise<{ invitation: WorkspaceInvitation; token: string }> {
-  await requireWorkspaceOwner(userId, workspaceId);
+  await requireWorkspaceCapability(userId, workspaceId, 'workspace:manage_members');
   const normalizedEmail = cleanEmail(email);
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)) throw new Error('A valid invite email is required.');
   if (role !== 'member') throw new Error('Only member invitations are available.');
@@ -249,7 +255,7 @@ export async function createWorkspaceInvitation(userId: string, workspaceId: str
   const now = new Date();
   const invitation = { id: id('wsi'), workspaceId, email: normalizedEmail, role, expiresAt: new Date(now.getTime() + INVITATION_TTL_MS).toISOString(), acceptedAt: null, revokedAt: null, createdAt: now.toISOString() } satisfies WorkspaceInvitation;
   await db.transaction(async (tx) => {
-    await requireWorkspaceOwnerInTransaction(tx, userId, workspaceId);
+    await requireWorkspaceCapabilityInTransaction(tx, userId, workspaceId, 'workspace:manage_members');
     const existingMember = await tx.queryOne('SELECT wm.id FROM workspace_members wm JOIN users u ON u.id = wm.user_id WHERE wm.workspace_id = ? AND lower(u.email) = ?', [workspaceId, normalizedEmail]);
     if (existingMember) throw new OrganizationServiceError('That person is already a workspace member.', 'ALREADY_A_MEMBER');
     await tx.execute('UPDATE workspace_invitations SET revoked_at = ? WHERE workspace_id = ? AND lower(email) = ? AND accepted_at IS NULL AND revoked_at IS NULL', [now.toISOString(), workspaceId, normalizedEmail]);
@@ -264,10 +270,10 @@ export async function createWorkspaceInvitation(userId: string, workspaceId: str
 }
 
 export async function revokeWorkspaceInvitation(userId: string, workspaceId: string, invitationId: string): Promise<void> {
-  await requireWorkspaceOwner(userId, workspaceId);
+  await requireWorkspaceCapability(userId, workspaceId, 'workspace:manage_members');
   const db = getDatabase();
   await db.transaction(async (tx) => {
-    await requireWorkspaceOwnerInTransaction(tx, userId, workspaceId);
+    await requireWorkspaceCapabilityInTransaction(tx, userId, workspaceId, 'workspace:manage_members');
     const result = await tx.execute('UPDATE workspace_invitations SET revoked_at = ? WHERE id = ? AND workspace_id = ? AND accepted_at IS NULL AND revoked_at IS NULL', [new Date().toISOString(), invitationId, workspaceId]);
     if (result.changes !== 1) throw new OrganizationServiceError('Invitation not found or already closed.', 'INVITATION_NOT_FOUND');
     await recordAudit(tx, workspaceId, userId, 'invitation.revoked', 'invitation', invitationId);

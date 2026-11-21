@@ -2,7 +2,7 @@ export type WorkspaceSettingsProjection = {
   id: string;
   name: string;
   slug: string;
-  role: 'owner' | 'member';
+  role: 'owner' | 'admin' | 'member';
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -21,6 +21,6 @@ export function parseWorkspaceSettings(payload: unknown): WorkspaceSettingsProje
   const id = normalizedText(workspace.id);
   const name = normalizedText(workspace.name);
   const slug = normalizedText(workspace.slug);
-  if (!id || !name || !slug || (workspace.role !== 'owner' && workspace.role !== 'member')) return null;
+  if (!id || !name || !slug || (workspace.role !== 'owner' && workspace.role !== 'admin' && workspace.role !== 'member')) return null;
   return { id, name, slug, role: workspace.role };
 }
