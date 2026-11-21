@@ -6,7 +6,8 @@ Decision: **NO-GO for production launch**
 ## Release candidate identity
 
 - Branch: `codex/v1-release-candidate`
-- Current candidate HEAD: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
+- Application candidate commit: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
+- Current branch HEAD and manifest SHA at verification start: `c67195363a6cd5eec82a25423ab63a8de8d7964e`
 - Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 - Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 - Current focused-correction HEAD: `af75a2bd`
@@ -96,3 +97,15 @@ Next authorized action: obtain owner approval for a non-production push of candi
 - Re-run the release audit and obtain explicit owner/security/legal sign-off.
 
 Until those items are complete, treat this commit as a local release candidate only.
+
+## Final hosted-verification checkpoint — 2026-11-21
+
+- Publication: **NOT PUBLISHED**. GitHub has no `codex/v1-release-candidate` branch, no candidate commit `c6719536`, no workflow runs and no combined status. Vercel has zero deployments for the candidate SHA.
+- CI trigger: the existing CI has no `workflow_dispatch`; it runs on pushes to `main`/`codex/v1-integration` and pull requests targeting `main`. The safest exact-candidate path is an owner-authorized normal push followed by the reviewed PR/hosted-run path. No trigger adjustment, PR or push was performed.
+- CI side effects: `ci.yml` performs frozen install, dependency audit, lint, typecheck, provider validation, Vitest, build, manifest generation and disposable PostgreSQL tests. It does not deploy, migrate an existing database or activate paid/external services. The scheduler is separate and only calls the configured app URL when its schedule/manual job runs with `WORKER_AUTH_SECRET`.
+- PostgreSQL: static preflight **PASS / static-only**; executable local run unavailable. The hosted PostgreSQL job is configured with an ephemeral PostgreSQL 17.2 service and test-only roles. Migration identities `024–027` remain blocked pending authoritative ledger evidence.
+- Local browser: **PASS**, Playwright 28/28 in 6.4 minutes against disposable SQLite/loopback state. This is not hosted staging evidence.
+- Staging readiness: **BLOCKED** until disposable target approval, rollback owner, evidence location, migration ledger evidence, authorization tests, provider approval and health path are supplied. No deployment or rollback action was attempted.
+- Live GitHub journey: **NOT RUN**. No real App installation, OAuth callback, webhook, worker schedule or authorized live scan was exercised.
+- Pre-publication review: outgoing diff is 362 files / 19,249 additions / 2,132 deletions relative to `origin/main`; no matching real-secret patterns were found, and only test/example fixture values matched secret-shaped patterns. `git diff --check` reports nine existing extra blank lines at EOF in outgoing source files; no application formatting change was made.
+- November 28, 2026 launch decision: **NO-GO** until hosted CI, executable PostgreSQL security evidence, disposable staging/rollback, backup/restore, live GitHub and operational/legal approvals are complete.

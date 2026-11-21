@@ -7,7 +7,8 @@ Baseline commit: `267c0d7b23fb80f7861ffeeafe470984edf5293e`
 Integration source: `codex/v1-integration` at `11639a48236b88364bf95a1d8506286aeb91a2d9`
 Candidate worktree: `C:\Users\bolla\.codex\worktrees\v1-release-candidate\YC-my-owl-v1`
 Candidate branch: `codex/v1-release-candidate`
-Current candidate HEAD: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
+Application candidate commit: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
+Current branch HEAD and manifest SHA at verification start: `c67195363a6cd5eec82a25423ab63a8de8d7964e`
 Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 Focused frontend correction commit: `af75a2bd`
 Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
@@ -86,3 +87,11 @@ For the restricted-beta assumption, the 40 unresolved tasks classify as follows:
 ## Next safe action
 
 Hand the exact candidate SHA and this report to the owner for disposable-staging/hosted-CI execution. Do not push, deploy, run production migrations, enable paid billing, or create live Draft PRs from this candidate without the missing approvals and evidence.
+
+## 2026-11-21 final hosted-verification checkpoint
+
+- CI trigger audit: no `workflow_dispatch`; push triggers are `main` and `codex/v1-integration`, while pull requests target `main`. No workflow or Vercel deployment configuration was changed.
+- Publication: not published. GitHub has no candidate branch, commit or checks; Vercel has no deployment for the current branch head.
+- PostgreSQL: hosted ephemeral-service job is present; local executable evidence remains unavailable. Static preflight passes only.
+- Staging: dry-run remains fail-closed and blocked; no deployment, rollback, migration, secret-store or existing-database action occurred.
+- Launch target 2026-11-28: **NO-GO** pending external evidence and named approvals.

@@ -5,7 +5,8 @@ Candidate branch: `codex/v1-release-candidate`
 Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 Focused frontend correction commit: `af75a2bd`.
 Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`.
-Current candidate HEAD: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`.
+Application candidate commit: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`.
+Current branch HEAD and manifest SHA at verification start: `c67195363a6cd5eec82a25423ab63a8de8d7964e`.
 
 ## BASELINE-001 — Immutable development baseline
 
@@ -96,3 +97,9 @@ Evidence: `pnpm test:e2e` passed 28/28 tests in 6.4 minutes on loopback port `31
 Decision: Keep hosted CI and staging unevaluated until the candidate is explicitly published through the authorized non-production path.
 
 Evidence: GitHub has no remote `v1-release-candidate` branch, no candidate commit `f6f616ce`, no workflow runs and no combined status for that SHA. Vercel read-only inventory contains only older `main` deployments for the repository, not this candidate. No push, deployment or staging execution was performed.
+
+## HOSTED-014 — Final trigger and launch decision
+
+Decision: Do not publish or alter the CI trigger configuration without owner authorization; keep the November 28, 2026 launch **NO-GO**.
+
+Evidence: The existing CI has no `workflow_dispatch`; it is scoped to pushes on `main`/`codex/v1-integration` and pull requests targeting `main`. Its jobs are frozen install, audit, lint, typecheck, provider validation, Vitest, build, release manifest and disposable PostgreSQL tests, with read-only repository permissions. It has no deployment or migration step. GitHub read-only checks show no candidate branch/SHA/checks, and Vercel has no candidate deployment. Local Playwright is green, but executable PostgreSQL, staging/rollback, backup/restore, live GitHub, provider and operational/legal evidence remain open.
