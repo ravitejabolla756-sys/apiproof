@@ -5,6 +5,7 @@ Candidate branch: `codex/v1-release-candidate`
 Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 Focused frontend correction commit: `af75a2bd`.
 Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`.
+Current candidate HEAD: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`.
 
 ## BASELINE-001 — Immutable development baseline
 
@@ -54,7 +55,7 @@ Evidence: Typecheck PASS; lint PASS; focused suite PASS (10 files, 99 tests); fu
 
 ## RELEASE-007 — Production decision
 
-Decision: **NO-GO for production launch.** The local release candidate is green at `d24579471e80ee251afa23a7ce1ab23417204435`, but this is not production approval.
+Decision: **NO-GO for production launch.** The local release candidate is green at candidate HEAD `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`, but this is not production approval.
 
 Reason: The local candidate is green, but the required external gates are unverified: hosted CI, disposable staging, PostgreSQL execution/RLS/grants, backup/restore, live provider credentials, rollback/observability, legal approval, billing readiness, and real GitHub/worker/Draft PR flows. The local release audit reports `NO_GO` with 40 unresolved tasks.
 
@@ -68,12 +69,30 @@ Verification: Typecheck and lint passed; focused account/security/UX tests passe
 
 ## BROWSER-009 — Browser evidence boundary
 
-Decision: Do not claim Playwright acceptance.
+Decision: Do not claim hosted or staging Playwright acceptance from the initial sandbox attempt.
 
-Evidence: The disposable Playwright command stalled before test output because the sandbox denied local-port access. No browser journey, screenshot, trace or staging result was treated as a pass.
+Evidence: The initial disposable Playwright command stalled before test output because the sandbox denied local-port access. That evidence boundary was later re-tested with loopback access; see `BROWSER-012`.
 
 ## GATES-010 — Continuation release gates
 
 Decision: Keep production status `NO_GO` after rerunning the release gates.
 
-Evidence: Release audit remains `NO_GO` with 40 unresolved tasks; PostgreSQL is static-only; staging and backup/restore dry-runs are blocked; provider validation passes locally. The post-fix build could not complete in this environment because Next font downloads to `fonts.googleapis.com` are unavailable. No push, deployment, migration, billing activation or live Draft PR was performed.
+Evidence: Release audit remains `NO_GO` with 40 unresolved tasks; PostgreSQL is static-only; staging and backup/restore dry-runs are blocked; provider validation passes locally. No push, deployment, migration, billing activation or live Draft PR was performed.
+
+## BUILD-011 — Network-enabled production build
+
+Decision: Accept the network-enabled local production build as a local gate only.
+
+Evidence: `pnpm build` completed successfully with the configured Inter, Newsreader and JetBrains Mono fonts when run with a disposable isolated Next output directory. Next-generated `next-env.d.ts` and `tsconfig.json` metadata changes were restored; the candidate worktree is clean. This does not replace hosted CI.
+
+## BROWSER-012 — Disposable local browser verification
+
+Decision: Accept local browser verification while keeping hosted/staging acceptance open.
+
+Evidence: `pnpm test:e2e` passed 28/28 tests in 6.4 minutes on loopback port `3117` using disposable SQLite state. Coverage included authenticated account settings, dashboard navigation and responsive behavior, public-route regression and axe audits. No hosted deployment or production service was contacted.
+
+## HOSTED-013 — Publication evidence boundary
+
+Decision: Keep hosted CI and staging unevaluated until the candidate is explicitly published through the authorized non-production path.
+
+Evidence: GitHub has no remote `v1-release-candidate` branch, no candidate commit `f6f616ce`, no workflow runs and no combined status for that SHA. Vercel read-only inventory contains only older `main` deployments for the repository, not this candidate. No push, deployment or staging execution was performed.

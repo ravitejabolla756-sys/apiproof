@@ -6,6 +6,7 @@ Decision: **NO-GO for production launch**
 ## Release candidate identity
 
 - Branch: `codex/v1-release-candidate`
+- Current candidate HEAD: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
 - Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 - Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 - Current focused-correction HEAD: `af75a2bd`
@@ -17,7 +18,7 @@ Decision: **NO-GO for production launch**
 
 ## Outcome
 
-The isolated release candidate is typed and lint-clean, with the focused frontend correction verified by local tests. The candidate is **not approved for production** because browser, hosted CI, staging, PostgreSQL, provider, backup/restore, legal and deployment acceptance gates remain unverified. No push, `main` merge, deployment, production migration, paid billing activation, or live Draft PR was performed.
+The isolated release candidate is typed, lint-clean, production-buildable with network access, and locally browser-verified against disposable state. The candidate is **not approved for production** because hosted CI, staging, PostgreSQL, provider, backup/restore, legal and deployment acceptance gates remain unverified. No push, `main` merge, deployment, production migration, paid billing activation, or live Draft PR was performed.
 
 ## Local verification
 
@@ -28,7 +29,8 @@ The isolated release candidate is typed and lint-clean, with the focused fronten
 | Full Vitest | 205 files passed, 3 skipped, 2 sandbox-blocked; blocked files passed elevated rerun (2 files, 11 tests) |
 | Focused post-fix suite | PASS: 3 files, 12 tests |
 | Focused security/integration suite | PASS: 10 files, 99 tests |
-| Production build | Earlier candidate build PASS; post-fix rerun blocked by generated-dir EPERM then unavailable Google Fonts network |
+| Production build | PASS: network-enabled rerun completed with configured Inter, Newsreader and JetBrains Mono fonts; generated Next metadata was restored and the tree is clean |
+| Playwright E2E | PASS: disposable loopback run, 28/28 tests, 6.4 minutes |
 | Release manifest | PASS: clean tree, valid CI inventory, `releaseEligible: true` |
 | Provider validation | PASS: 19 monitored, 62 discovery, 50 reviewed, 50 templates; 50 foreign-provider cases |
 | PostgreSQL static preflight | PASS, static-only |
@@ -47,12 +49,10 @@ The candidate was compared with local `codex/v1-frontend-product` at `9460b47b40
 
 ## Browser, database and hosted evidence boundaries
 
-- Playwright was attempted against its disposable SQLite configuration but stalled before test output; the sandbox denied local-port access. No browser journey, trace or screenshot was claimed as passed.
-- Real PostgreSQL RLS, grants, worker identity and concurrency evidence is unavailable. The static preflight is not runtime proof.
-- Hosted GitHub Actions and branch protection are not verified.
+- Playwright passed against its disposable SQLite configuration on loopback port `3117`: 28/28 tests, including authenticated account settings, dashboard navigation/responsive checks, public-route regressions and axe audits. This is local browser evidence only.
+- Real PostgreSQL RLS, grants, worker identity and concurrency evidence is unavailable. Docker Desktop is not running, the `TEST_POSTGRES_*` and staging database variables are absent, and the two PostgreSQL integration suites skipped all 12 tests. The static preflight is not runtime proof.
+- GitHub read-only verification found no remote `v1-release-candidate` branch, no commit `f6f616ce`, no workflow runs and no combined status for that SHA. Vercel exposes only older `main` deployments for the matching repository; it does not provide candidate hosted-CI or staging evidence.
 - Disposable staging deployment, health, rollback, provider execution and backup/restore are blocked pending explicit infrastructure and owner approvals.
-- The post-fix build could not complete in this environment because Next.js attempted to fetch Inter, JetBrains Mono and Newsreader from `fonts.googleapis.com`. This is separate from the earlier successful candidate build at `d2457947`.
-
 The Next.js build initially hit a Windows permission error because it inferred `C:\Users\bolla` as the workspace root and scanned a user-level temporary directory. The candidate now sets `outputFileTracingRoot` to the repository root; the subsequent production build passed.
 
 ## Security and architecture decisions
@@ -82,9 +82,9 @@ The Next.js build initially hit a Windows permission error because it inferred `
 3. No real PostgreSQL evidence for migration history, RLS, grants, tenant context or concurrency; migration IDs `024–027` remain unresolved.
 4. No measured backup/restore rehearsal, recovery owner, observability/alerting acceptance or legal retention/deletion approval.
 5. No real GitHub App/webhook/worker execution or approved provider runtime evidence for email, Slack, Stripe/Twilio; paid billing and live Draft PR writes remain gated.
-6. Browser acceptance is unverified because the sandbox could not run the disposable local-port Playwright server.
+6. Hosted CI, branch protection, candidate Vercel deployment and disposable staging acceptance remain unverified; the local disposable Playwright suite is green but is not a substitute for those gates.
 
-Next authorized action: obtain owner approval for a non-production push of `af75a2bd`, then run hosted CI and an explicitly disposable staging evidence package. No production action is authorized by this report.
+Next authorized action: obtain owner approval for a non-production push of candidate HEAD `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`, then open the required hosted-CI path and run an explicitly disposable staging evidence package. No production action is authorized by this report.
 
 ## Required next actions before any launch decision
 

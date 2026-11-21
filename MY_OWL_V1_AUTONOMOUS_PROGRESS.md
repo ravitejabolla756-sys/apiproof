@@ -7,6 +7,7 @@ Baseline commit: `267c0d7b23fb80f7861ffeeafe470984edf5293e`
 Integration source: `codex/v1-integration` at `11639a48236b88364bf95a1d8506286aeb91a2d9`
 Candidate worktree: `C:\Users\bolla\.codex\worktrees\v1-release-candidate\YC-my-owl-v1`
 Candidate branch: `codex/v1-release-candidate`
+Current candidate HEAD: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
 Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 Focused frontend correction commit: `af75a2bd`
 Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
@@ -46,9 +47,9 @@ The candidate is technically ready for a local release-candidate checkpoint, but
 | Release audit | NO_GO | local inventory; 40 unresolved tasks and external evidence gaps |
 | Staging dry-run | BLOCKED | requires disposable staging approvals/evidence |
 | Backup/restore dry-run | BLOCKED | requires disposable restore approvals/evidence |
-| Playwright E2E | BLOCKED | disposable run stalled before test output; sandbox denied local-port access |
+| Playwright E2E | PASS | disposable loopback run on port 3117: 28/28 tests in 6.4 minutes |
 | Hosted CI | NOT VERIFIED | no CI run evidence available |
-| Production PostgreSQL/RLS/grants | NOT VERIFIED | static evidence only; no production DB access used |
+| Production PostgreSQL/RLS/grants | NOT VERIFIED | Docker Desktop unavailable locally; PostgreSQL integration suites skipped 12 tests; no production DB access used |
 | Live GitHub/Stripe/Twilio/Slack | NOT VERIFIED | local mocks/contracts only |
 
 ## 2026-11-21 continuation — frontend and release-gate verification
@@ -63,13 +64,13 @@ The source correction was verified at `af75a2bd`, and the final evidence commits
 | Provider coverage and dashboard overview | Retry, stale-result, loading, busy and live-region semantics restored without changing API calls | Fixed in `af75a2bd` |
 | Frontend branch wholesale merge | Contains useful accessibility polish but also removes tenant-context/session handling and active-scan protection from the scan service/route | Rejected |
 | Billing, notifications, deletion and invitation/audit persistence | UI/API boundaries exist but remain provider/schema gated | Keep unavailable or fail-closed |
-| Real browser journey | Not accepted | Playwright run stalled before test output; sandbox local-port access returned `socket access forbidden` |
+| Real browser journey | Local PASS; hosted/staging not accepted | Playwright completed 28/28 against disposable SQLite and loopback; this does not prove hosted staging behavior |
 
 The delegated frontend audit verified that `data-state.tsx` and several recovery/accessibility commits are frontend-ref-only and conflict with the candidate’s current contract-aware implementations. No wholesale merge or unsafe API mutation was performed.
 
-Post-fix verification: typecheck PASS; lint PASS; focused account/security/UX suite PASS (3 files, 12 tests); elevated rerun of the two sandbox-sensitive full-suite files PASS (2 files, 11 tests). The full sandbox suite reached 205 passed files, 3 skipped and 2 environment-blocked files; the blocked files were `contracts.test.ts` (loopback EACCES) and `safety.test.ts` (Windows junction EPERM), both green when rerun elevated.
+Post-fix verification: typecheck PASS; lint PASS; focused account/security/UX suite PASS (3 files, 12 tests); elevated rerun of the two sandbox-sensitive full-suite files PASS (2 files, 11 tests). The full sandbox suite reached 205 passed files, 3 skipped and 2 environment-blocked files; the blocked files were `contracts.test.ts` (loopback EACCES) and `safety.test.ts` (Windows junction EPERM), both green when rerun elevated. A network-enabled production build then passed with the configured Google Fonts, and the disposable Playwright suite passed 28/28 tests in 6.4 minutes.
 
-The release gates were rerun: release audit `NO_GO` with 40 unresolved tasks; PostgreSQL preflight `ready_for_approved_postgres` but static-only; staging and backup/restore dry-runs blocked by missing disposable infrastructure and approvals; provider validation passed for 19 monitored providers, 62 discovery providers, 50 reviewed rules and 50 multi-provider cases. The post-fix production build was blocked first by a stale generated-directory permission collision and then by unavailable `fonts.googleapis.com`; the earlier candidate build at `d2457947` remains the last successful local production build evidence.
+The release gates were rerun: release audit `NO_GO` with 40 unresolved tasks; PostgreSQL preflight `ready_for_approved_postgres` but static-only; staging and backup/restore dry-runs blocked by missing disposable infrastructure and approvals; provider validation passed for 19 monitored providers, 62 discovery providers, 50 reviewed rules and 50 multi-provider cases. GitHub read-only checks found no remote candidate branch or candidate SHA, so hosted CI and branch protection remain unevaluated. Vercel showed only older `main` deployments, not a candidate staging deployment. The network-enabled production build and local Playwright run are now green; no external deployment was performed.
 
 For the restricted-beta assumption, the 40 unresolved tasks classify as follows: mandatory enabled-scope/security work — `SEC-15`, `AUTH-10`, `ORG-10`, `SEC-13`, `UI-12`, `ORG-02`, `ORG-03`, `ORG-04`, `ORG-11`, `WEB-11`, `WEB-13`, `WEB-14`, `WEB-15`, `SEC-18`; beta-excluded and therefore required to remain disabled — `BILL-02`, `BILL-03`, `BILL-04`, `BILL-07`, `BILL-08`, `BILL-09`, `BILL-11`, `NOT-01`, `NOT-02`, `NOT-03`, `NOT-04`, `NOT-05`, `NOT-06`, `NOT-10`; external approval or infrastructure — `AUTH-05`, `MIG-01`, `BILL-10`, `SEC-01`, `SEC-02`, `SEC-10`, `SEC-11`, `SEC-17`, `SEC-19`, `AUTH-09`, `SEC-20`; post-launch/content handoff — `WEB-12`. If paid billing or outbound notification delivery enters the selected launch scope, the beta-excluded group becomes mandatory and the decision must be revisited.
 
