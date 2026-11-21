@@ -17,6 +17,7 @@ Local-only release-candidate verification. No push, pull request, merge, deploym
 
 ## Evidence
 
+- Verified local application/test repair commit: `0a19bca72aa46cdb9c10e9fbfd0a28a3f70e0dac`.
 - Playwright: 37/37 passed, 1 worker, 5.4 minutes, disposable loopback configuration.
 - TypeScript: PASS.
 - ESLint: PASS, zero warnings.

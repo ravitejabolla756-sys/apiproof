@@ -148,6 +148,7 @@ Until those items are complete, treat this commit as a local release candidate o
 
 ## Overnight local regression repair — 2026-11-22
 
+- Verified application/test repair commit: `0a19bca72aa46cdb9c10e9fbfd0a28a3f70e0dac` on `codex/v1-release-candidate`.
 - Local scope only. No push, pull request, merge, deployment, production database change, billing activation or live Draft PR operation was performed.
 - Browser verification after repair: **PASS**, 37/37 Playwright tests in 5.4 minutes with one worker against disposable SQLite/loopback state. Six new regression tests cover compatibility failures, repository/finding 404 isolation states, login error announcement, filtered findings and failed scan styling.
 - Static checks: TypeScript **PASS**; ESLint **PASS**, zero warnings; focused role/auth/security regression **PASS**, 4 files / 48 tests.
