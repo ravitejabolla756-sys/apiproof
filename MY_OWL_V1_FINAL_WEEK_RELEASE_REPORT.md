@@ -1,13 +1,13 @@
 # MY OWL V1 Final Week Release Report
 
-Date: 2026-11-21 (Asia/Calcutta)
+Date: 2026-11-22 (Asia/Calcutta)
 Decision: **NO-GO for production launch**
 
 ## Release candidate identity
 
 - Branch: `codex/v1-release-candidate`
 - Application candidate commit: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
-- Current branch HEAD and manifest SHA at verification start: `c67195363a6cd5eec82a25423ab63a8de8d7964e`
+- Current branch HEAD and manifest SHA at this checkpoint: `83f2f790efa072e9fed8f031b56d5acc14ceb215`
 - Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 - Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 - Current focused-correction HEAD: `af75a2bd`
@@ -35,6 +35,8 @@ The isolated release candidate is typed, lint-clean, production-buildable with n
 | Release manifest | PASS: clean tree, valid CI inventory, `releaseEligible: true` |
 | Provider validation | PASS: 19 monitored, 62 discovery, 50 reviewed, 50 templates; 50 foreign-provider cases |
 | PostgreSQL static preflight | PASS, static-only |
+| CI workflow contract | PASS, 5/5 tests; candidate push trigger present |
+| Candidate-only Vercel suppression | PASS, read back on all three linked projects |
 
 ## Frontend integration completeness
 
@@ -52,7 +54,7 @@ The candidate was compared with local `codex/v1-frontend-product` at `9460b47b40
 
 - Playwright passed against its disposable SQLite configuration on loopback port `3117`: 28/28 tests, including authenticated account settings, dashboard navigation/responsive checks, public-route regressions and axe audits. This is local browser evidence only.
 - Real PostgreSQL RLS, grants, worker identity and concurrency evidence is unavailable. Docker Desktop is not running, the `TEST_POSTGRES_*` and staging database variables are absent, and the two PostgreSQL integration suites skipped all 12 tests. The static preflight is not runtime proof.
-- GitHub read-only verification found no remote `v1-release-candidate` branch, no commit `f6f616ce`, no workflow runs and no combined status for that SHA. Vercel exposes only older `main` deployments for the matching repository; it does not provide candidate hosted-CI or staging evidence.
+- GitHub read-only verification found no remote `v1-release-candidate` branch, no candidate workflow runs and no combined status. Vercel exposes only older `main` deployments for the matching repository; it does not provide candidate hosted-CI or staging evidence.
 - Disposable staging deployment, health, rollback, provider execution and backup/restore are blocked pending explicit infrastructure and owner approvals.
 The Next.js build initially hit a Windows permission error because it inferred `C:\Users\bolla` as the workspace root and scanned a user-level temporary directory. The candidate now sets `outputFileTracingRoot` to the repository root; the subsequent production build passed.
 
@@ -83,9 +85,9 @@ The Next.js build initially hit a Windows permission error because it inferred `
 3. No real PostgreSQL evidence for migration history, RLS, grants, tenant context or concurrency; migration IDs `024–027` remain unresolved.
 4. No measured backup/restore rehearsal, recovery owner, observability/alerting acceptance or legal retention/deletion approval.
 5. No real GitHub App/webhook/worker execution or approved provider runtime evidence for email, Slack, Stripe/Twilio; paid billing and live Draft PR writes remain gated.
-6. Hosted CI, branch protection, candidate Vercel deployment and disposable staging acceptance remain unverified; the local disposable Playwright suite is green but is not a substitute for those gates.
+6. Hosted CI, branch protection and disposable staging acceptance remain unverified; the local disposable Playwright suite is green but is not a substitute for those gates. Candidate Git-triggered Vercel deployment suppression is now verified, but independent CLI deployment remains possible for an authorized operator.
 
-Next authorized action: obtain owner approval for a non-production push of candidate HEAD `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`, then open the required hosted-CI path and run an explicitly disposable staging evidence package. No production action is authorized by this report.
+Next authorized action: obtain separate owner approval for a non-production push of candidate HEAD `83f2f790efa072e9fed8f031b56d5acc14ceb215`, then run the reviewed hosted-CI path and an explicitly disposable staging evidence package. No production action is authorized by this report.
 
 ## Required next actions before any launch decision
 
@@ -109,3 +111,14 @@ Until those items are complete, treat this commit as a local release candidate o
 - Live GitHub journey: **NOT RUN**. No real App installation, OAuth callback, webhook, worker schedule or authorized live scan was exercised.
 - Pre-publication review: outgoing diff is 362 files / 19,249 additions / 2,132 deletions relative to `origin/main`; no matching real-secret patterns were found, and only test/example fixture values matched secret-shaped patterns. `git diff --check` reports nine existing extra blank lines at EOF in outgoing source files; no application formatting change was made.
 - November 28, 2026 launch decision: **NO-GO** until hosted CI, executable PostgreSQL security evidence, disposable staging/rollback, backup/restore, live GitHub and operational/legal approvals are complete.
+
+## Vercel deployment-safety checkpoint — 2026-11-22
+
+- Authoritative Vercel project read-back confirmed the three linked projects: `apiproof` (`prj_MpvOr7m1RibXugwIUXlwkYKgIfHV`), `apiproof-9ohu` (`prj_DWa9JtUeKFuv2gsvkZ6UPDWxL4Mx`) and `apiproof-c2ut` (`prj_ywp4ymQAsPyJdWGxNMc1WoiAA7xz`). All are linked to `ravitejabolla756-sys/apiproof`.
+- Original effective build policy was `Ignored Build Step: Automatic` for all three projects. Original roots were empty, `apps/web`, and `apps/web`, respectively. Production branch read-back was `main` for all three.
+- The only Vercel setting changed was each project's Ignored Build Step command: `if [ "${VERCEL_GIT_COMMIT_REF:-}" = "codex/v1-release-candidate" ]; then exit 0; else exit 1; fi`. Exit `0` skips the candidate build; every other ref exits `1` and retains normal build behavior.
+- Read-back after the change showed `Behavior: Custom` and the exact command on all three projects. Production domains and aliases were unchanged: the `apiproof` aliases, `apiproof-9ohu` aliases, and `www.myowl.dev`/`myowl.dev` plus `apiproof-c2ut-olive.vercel.app` remain present. Production branch remains `main`.
+- `previewDeploymentsDisabled` was not exposed by the authenticated Vercel API/UI read-back and was not changed. No blanket Preview suppression was used. `live: false` was not treated as deployment suppression.
+- No deploy hooks exist on the three Git settings pages. Repository-side CI has read-only permissions and no Vercel deploy, migration, billing or provider-activation step. The repository has no independent Vercel CLI automation; `apiproof-c2ut` does retain historical CLI-sourced deployment evidence, so a separately authorized CLI operator could still deploy outside the Git trigger path.
+- Deployment lookup returned zero deployments for both `857a6ea19b1187ea0336a3e81b13e7faaf4cbc3d` and local `83f2f790efa072e9fed8f031b56d5acc14ceb215` in all three projects.
+- Safety conclusion: a normal Git publication of `codex/v1-release-candidate` is suppressed by the three linked projects' candidate-only ignore commands, but this does not prevent an independent explicit Vercel CLI/API deployment. The candidate remains unpublished.
