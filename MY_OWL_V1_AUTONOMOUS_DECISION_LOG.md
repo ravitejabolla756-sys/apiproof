@@ -3,6 +3,7 @@
 Date: 2026-11-21
 Candidate branch: `codex/v1-release-candidate`
 Final candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
+Final branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99` before the focused frontend correction commit `af75a2bd`.
 
 ## BASELINE-001 — Immutable development baseline
 
@@ -55,3 +56,23 @@ Evidence: Typecheck PASS; lint PASS; focused suite PASS (10 files, 99 tests); fu
 Decision: **NO-GO for production launch.** The local release candidate is green at `d24579471e80ee251afa23a7ce1ab23417204435`, but this is not production approval.
 
 Reason: The local candidate is green, but the required external gates are unverified: hosted CI, disposable staging, PostgreSQL execution/RLS/grants, backup/restore, live provider credentials, rollback/observability, legal approval, billing readiness, and real GitHub/worker/Draft PR flows. The local release audit reports `NO_GO` with 40 unresolved tasks.
+
+## FRONTEND-008 — Focused frontend correction
+
+Decision: Port only four low-risk state/accessibility corrections from the frontend product snapshot and commit them as `af75a2bd`.
+
+Evidence: The frontend audit confirmed the candidate already owns the current API contracts and core screens. The frontend snapshot additionally showed that its scan service/route removed tenant-context/session handling and active-scan protection, so a wholesale merge was rejected. The focused correction makes account settings honor `hasLocalPassword`, maps verification-policy errors, restores account feedback focus, and restores provider/dashboard retry, busy and live-region semantics without changing API calls or authorization.
+
+Verification: Typecheck and lint passed; focused account/security/UX tests passed 12/12; the two environment-sensitive full-suite files passed 11/11 when rerun with elevated permissions.
+
+## BROWSER-009 — Browser evidence boundary
+
+Decision: Do not claim Playwright acceptance.
+
+Evidence: The disposable Playwright command stalled before test output because the sandbox denied local-port access. No browser journey, screenshot, trace or staging result was treated as a pass.
+
+## GATES-010 — Continuation release gates
+
+Decision: Keep production status `NO_GO` after rerunning the release gates.
+
+Evidence: Release audit remains `NO_GO` with 40 unresolved tasks; PostgreSQL is static-only; staging and backup/restore dry-runs are blocked; provider validation passes locally. The post-fix build could not complete in this environment because Next font downloads to `fonts.googleapis.com` are unavailable. No push, deployment, migration, billing activation or live Draft PR was performed.

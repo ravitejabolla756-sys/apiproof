@@ -8,6 +8,7 @@ Integration source: `codex/v1-integration` at `11639a48236b88364bf95a1d8506286ae
 Candidate worktree: `C:\Users\bolla\.codex\worktrees\v1-release-candidate\YC-my-owl-v1`
 Candidate branch: `codex/v1-release-candidate`
 Final candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
+Final branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 
 ## Current status
 
@@ -44,10 +45,32 @@ The candidate is technically ready for a local release-candidate checkpoint, but
 | Release audit | NO_GO | local inventory; 40 unresolved tasks and external evidence gaps |
 | Staging dry-run | BLOCKED | requires disposable staging approvals/evidence |
 | Backup/restore dry-run | BLOCKED | requires disposable restore approvals/evidence |
-| Playwright E2E | NOT RUN | no disposable/staging target supplied |
+| Playwright E2E | BLOCKED | disposable run stalled before test output; sandbox denied local-port access |
 | Hosted CI | NOT VERIFIED | no CI run evidence available |
 | Production PostgreSQL/RLS/grants | NOT VERIFIED | static evidence only; no production DB access used |
 | Live GitHub/Stripe/Twilio/Slack | NOT VERIFIED | local mocks/contracts only |
+
+## 2026-11-21 continuation — frontend and release-gate verification
+
+The candidate was rechecked at branch HEAD `af75a2bd`; the worktree was clean after the local commit. Frontend snapshots reviewed were local `codex/v1-frontend-product` at `9460b47b40aed976917ac268dbdff575c6376a1c` and remote `origin/codex/v1-frontend-product` at `f4913d0707fae91c662813f3171a2bb9fa03bf2c`.
+
+| Frontend area | Candidate status | Integration decision |
+|---|---|---|
+| Login, GitHub connection, repository selection, manual scan, findings, finding details, compatibility, migration-plan read-only flow | Present with candidate API contracts and local route/contract tests | Retain |
+| Dashboard, repositories, migrations, inventory, account, workspace and notification settings | Present with loading, retry, empty and unavailable-state handling | Retain |
+| Account settings | Now consumes `hasLocalPassword`, restores focusable feedback, and maps verification errors | Fixed in `af75a2bd` |
+| Provider coverage and dashboard overview | Retry, stale-result, loading, busy and live-region semantics restored without changing API calls | Fixed in `af75a2bd` |
+| Frontend branch wholesale merge | Contains useful accessibility polish but also removes tenant-context/session handling and active-scan protection from the scan service/route | Rejected |
+| Billing, notifications, deletion and invitation/audit persistence | UI/API boundaries exist but remain provider/schema gated | Keep unavailable or fail-closed |
+| Real browser journey | Not accepted | Playwright run stalled before test output; sandbox local-port access returned `socket access forbidden` |
+
+The delegated frontend audit verified that `data-state.tsx` and several recovery/accessibility commits are frontend-ref-only and conflict with the candidate’s current contract-aware implementations. No wholesale merge or unsafe API mutation was performed.
+
+Post-fix verification: typecheck PASS; lint PASS; focused account/security/UX suite PASS (3 files, 12 tests); elevated rerun of the two sandbox-sensitive full-suite files PASS (2 files, 11 tests). The full sandbox suite reached 205 passed files, 3 skipped and 2 environment-blocked files; the blocked files were `contracts.test.ts` (loopback EACCES) and `safety.test.ts` (Windows junction EPERM), both green when rerun elevated.
+
+The release gates were rerun: release audit `NO_GO` with 40 unresolved tasks; PostgreSQL preflight `ready_for_approved_postgres` but static-only; staging and backup/restore dry-runs blocked by missing disposable infrastructure and approvals; provider validation passed for 19 monitored providers, 62 discovery providers, 50 reviewed rules and 50 multi-provider cases. The post-fix production build was blocked first by a stale generated-directory permission collision and then by unavailable `fonts.googleapis.com`; the earlier candidate build at `d2457947` remains the last successful local production build evidence.
+
+For the restricted-beta assumption, the 40 unresolved tasks classify as follows: mandatory enabled-scope/security work — `SEC-15`, `AUTH-10`, `ORG-10`, `SEC-13`, `UI-12`, `ORG-02`, `ORG-03`, `ORG-04`, `ORG-11`, `WEB-11`, `WEB-13`, `WEB-14`, `WEB-15`, `SEC-18`; beta-excluded and therefore required to remain disabled — `BILL-02`, `BILL-03`, `BILL-04`, `BILL-07`, `BILL-08`, `BILL-09`, `BILL-11`, `NOT-01`, `NOT-02`, `NOT-03`, `NOT-04`, `NOT-05`, `NOT-06`, `NOT-10`; external approval or infrastructure — `AUTH-05`, `MIG-01`, `BILL-10`, `SEC-01`, `SEC-02`, `SEC-10`, `SEC-11`, `SEC-17`, `SEC-19`, `AUTH-09`, `SEC-20`; post-launch/content handoff — `WEB-12`. If paid billing or outbound notification delivery enters the selected launch scope, the beta-excluded group becomes mandatory and the decision must be revisited.
 
 ## Active blockers
 
