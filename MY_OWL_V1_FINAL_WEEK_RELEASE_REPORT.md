@@ -23,6 +23,8 @@ Decision: **NO-GO for production launch**
 
 The isolated release candidate is typed, lint-clean, production-buildable with network access, and locally browser-verified against disposable state. The candidate is **not approved for production** because hosted CI, staging, PostgreSQL, provider, backup/restore, legal and deployment acceptance gates remain unverified. No push, `main` merge, deployment, production migration, paid billing activation, or live Draft PR was performed.
 
+> **Authoritative continuation note (2026-11-22):** Earlier identity and gate tables in this report are historical checkpoints. The current local HEAD is `1696f048711193a0b8d260463884c42e4d3a2719`; the CI workflow now includes the candidate push trigger; the release manifest is valid but `releaseEligible: false` because the preserved launch checklist is untracked; and the latest effective local test evidence is recorded in the overnight reports below. No candidate has been published.
+
 ## Local verification
 
 | Gate | Result |

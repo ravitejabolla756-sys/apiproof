@@ -95,3 +95,12 @@ Hand the exact candidate SHA and this report to the owner for disposable-staging
 - PostgreSQL: hosted ephemeral-service job is present; local executable evidence remains unavailable. Static preflight passes only.
 - Staging: dry-run remains fail-closed and blocked; no deployment, rollback, migration, secret-store or existing-database action occurred.
 - Launch target 2026-11-28: **NO-GO** pending external evidence and named approvals.
+
+## 2026-11-22 authoritative continuation checkpoint
+
+- Current local HEAD: `1696f048711193a0b8d260463884c42e4d3a2719` on `codex/v1-release-candidate`; the preserved untracked production checklist remains untouched.
+- The CI workflow now includes `codex/v1-release-candidate` in its push trigger and retains read-only permissions, bounded concurrency, provider checks, full Vitest, production build, release manifest and PostgreSQL 17.2 security jobs. No push or hosted run was initiated.
+- Effective local verification: Playwright 37/37; TypeScript PASS; ESLint PASS with zero warnings; effective Vitest 208 files passed, 3 skipped, 1,618 tests passed, 17 skipped and 19 todo.
+- Fresh GitHub read-only checks found no candidate branch or status checks. Fresh Vercel read-only checks found zero deployments for the current application SHA and unchanged linked projects/domains.
+- Current release audit is `NO_GO` with 40 unresolved tasks. PostgreSQL evidence remains static-only; staging and backup/restore dry-runs remain blocked with no actions taken.
+- November 28, 2026 remains **NO-GO**.
