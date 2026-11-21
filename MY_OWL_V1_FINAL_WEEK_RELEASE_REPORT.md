@@ -7,7 +7,8 @@ Decision: **NO-GO for production launch**
 
 - Branch: `codex/v1-release-candidate`
 - Application candidate commit: `f6f616ce9333f8f5f8c2283a4f996c4feb30b30b`
-- Current branch HEAD and manifest SHA at this checkpoint: `83f2f790efa072e9fed8f031b56d5acc14ceb215`
+- Current branch HEAD at this checkpoint: `e8bdd68918931d70a76bab3d456326b3b805092f`
+- Current release-manifest SHA remains the prior reviewed manifest commit until the manifest is regenerated for this local code repair.
 - Source candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 - Pre-continuation branch/manifest commit: `c013494e04cd123da8a64ae40add294f66ecbb99`
 - Current focused-correction HEAD: `af75a2bd`
@@ -122,3 +123,23 @@ Until those items are complete, treat this commit as a local release candidate o
 - No deploy hooks exist on the three Git settings pages. Repository-side CI has read-only permissions and no Vercel deploy, migration, billing or provider-activation step. The repository has no independent Vercel CLI automation; `apiproof-c2ut` does retain historical CLI-sourced deployment evidence, so a separately authorized CLI operator could still deploy outside the Git trigger path.
 - Deployment lookup returned zero deployments for both `857a6ea19b1187ea0336a3e81b13e7faaf4cbc3d` and local `83f2f790efa072e9fed8f031b56d5acc14ceb215` in all three projects.
 - Safety conclusion: a normal Git publication of `codex/v1-release-candidate` is suppressed by the three linked projects' candidate-only ignore commands, but this does not prevent an independent explicit Vercel CLI/API deployment. The candidate remains unpublished.
+
+## Local contract-repair checkpoint — 2026-11-22
+
+- Local commit: `e8bdd68918931d70a76bab3d456326b3b805092f` (`fix: align workspace role and auth redirect contracts`). No push, PR, deployment, migration, billing activation or live Draft PR operation was performed.
+- Authentication: login now preserves the middleware's nested `from` return path as well as the existing `next` path, while rejecting cross-origin, protocol-relative and backslash-containing redirects. Contract tests: 3 passed.
+- Workspace authorization: the existing owner/admin/member capability policy is now reflected in organization projections, settings and membership routes. Administrators can use their declared settings/member-management capabilities; assigning `owner` remains owner-only. Capability denials return 403 rather than 500, and the UI no longer offers administrators an impossible Owner option.
+- Focused role/auth regression: 4 files, 48 tests passed.
+- Broader security regression: 13 files, 99 tests passed, including authentication hardening, repository/tenant access, live-scan authorization, workspace policy, and worker authorization.
+- Workspace validation after repair: TypeScript PASS; ESLint PASS with zero warnings; `git diff --check` PASS.
+- Dead UI simulator removed: `apps/web/src/components/dashboard/scan-progress.tsx` was unused and fabricated a timer-based scan result. The real repository page remains synchronous against the protected scan endpoint. A genuine asynchronous scan-status contract remains an unresolved product/architecture item and is not claimed as complete.
+- The pre-existing untracked `MY_OWL_V1_PRODUCTION_LAUNCH_CHECKLIST.md` was preserved unchanged.
+- Release decision remains **NO-GO** for November 28, 2026. Hosted CI, executable PostgreSQL 17.2 tenant/worker evidence, disposable staging, migration-history reconciliation, backup/restore, rollback/monitoring, live GitHub/provider journeys and owner/legal approvals remain outstanding. The 40-task classification remains: 14 mandatory enabled-scope/security items, 14 beta-excluded items that must stay disabled, 11 external approval/infrastructure items, and 1 post-launch/content item.
+
+## Current local release-gate rerun — 2026-11-22
+
+- Release manifest at `e8bdd68918931d70a76bab3d456326b3b805092f`: CI contract valid, provider inventory 19 monitored / 62 discovery / 50 official candidates / 50 reviewed rules, cron contracts present, but `releaseEligible: false` because the preserved launch checklist leaves the worktree non-clean. No manifest failure was attributed to application behavior.
+- PostgreSQL static preflight: `ready_for_approved_postgres`, `evidenceBoundary: static_only`; no executable tenant/RLS/grant/worker evidence was produced.
+- Release audit: `NO_GO`, `taskCount: 53`, `acceptedTaskCount: 13`, `unresolved: 40`. Status classification is 26 `INTEGRATED_PARTIAL`, 11 `BLOCKED_EXTERNAL`, 2 `SOURCE_ONLY`, and 1 `NOT_IMPLEMENTED`. The existing scope classification remains: 14 mandatory enabled-scope/security items, 14 beta-excluded items that must remain disabled, 11 external approval/infrastructure items, and 1 post-launch/content item.
+- Staging dry-run: `blocked`; no actions taken. Blockers include disposable target, deployment/rollback execution disabled, staging approval, rollback owner, evidence location, migration evidence, authorization tests, provider approval and health path.
+- Backup/restore dry-run: `blocked`; no actions taken. Blockers include disposable restore target, backup/restore execution disabled, source/destination approval, backup manifest, migration/role/tenant-isolation evidence, rollback owner and evidence location.
