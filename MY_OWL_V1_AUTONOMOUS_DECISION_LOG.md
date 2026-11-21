@@ -2,6 +2,7 @@
 
 Date: 2026-11-21
 Candidate branch: `codex/v1-release-candidate`
+Final candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 
 ## BASELINE-001 — Immutable development baseline
 
@@ -51,6 +52,6 @@ Evidence: Typecheck PASS; lint PASS; focused suite PASS (10 files, 99 tests); fu
 
 ## RELEASE-007 — Production decision
 
-Decision: **NO-GO for production launch.**
+Decision: **NO-GO for production launch.** The local release candidate is green at `d24579471e80ee251afa23a7ce1ab23417204435`, but this is not production approval.
 
 Reason: The local candidate is green, but the required external gates are unverified: hosted CI, disposable staging, PostgreSQL execution/RLS/grants, backup/restore, live provider credentials, rollback/observability, legal approval, billing readiness, and real GitHub/worker/Draft PR flows. The local release audit reports `NO_GO` with 40 unresolved tasks.

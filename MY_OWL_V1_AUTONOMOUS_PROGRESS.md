@@ -7,10 +7,11 @@ Baseline commit: `267c0d7b23fb80f7861ffeeafe470984edf5293e`
 Integration source: `codex/v1-integration` at `11639a48236b88364bf95a1d8506286aeb91a2d9`
 Candidate worktree: `C:\Users\bolla\.codex\worktrees\v1-release-candidate\YC-my-owl-v1`
 Candidate branch: `codex/v1-release-candidate`
+Final candidate commit: `d24579471e80ee251afa23a7ce1ab23417204435`
 
 ## Current status
 
-The candidate is a local, isolated merge of the integration branch onto the current development baseline. The source checkout was not modified or cleaned. The candidate has not been pushed, merged to `main`, deployed, migrated against production, or used for paid billing.
+The candidate is a committed, local, isolated merge of the integration branch onto the current development baseline. The source checkout was not modified or cleaned. The candidate has not been pushed, merged to `main`, deployed, migrated against production, or used for paid billing.
 
 The candidate is technically ready for a local release-candidate checkpoint, but the product remains **NO-GO for production launch** until hosted CI, disposable staging, PostgreSQL, provider credentials, backups/restore, legal approval, and deployment evidence are supplied.
 
@@ -33,6 +34,8 @@ The candidate is technically ready for a local release-candidate checkpoint, but
 |---|---:|---|
 | `pnpm typecheck` | PASS | local candidate |
 | `pnpm lint` | PASS | local candidate, zero warnings |
+| `pnpm build` | PASS | local candidate; Next.js tracing root constrained to repository |
+| `pnpm release:manifest` | PASS: clean tree, CI valid, `releaseEligible: true` | local candidate |
 | Focused security/integration suite | PASS: 10 files / 99 tests | local candidate |
 | Final full Vitest suite | PASS: 207 files; 1,602 passed, 3 skipped; 16 skipped tests; 19 todo | local candidate |
 | Provider validation all | PASS: 19 monitored, 62 discovery, 50 reviewed, 50 templates | local candidate |
@@ -57,4 +60,4 @@ The candidate is technically ready for a local release-candidate checkpoint, but
 
 ## Next safe action
 
-Commit this candidate locally, run the clean-tree release manifest and build checks, then hand the exact candidate SHA and this report to the owner for disposable-staging/hosted-CI execution. Do not push, deploy, run production migrations, enable paid billing, or create live Draft PRs from this candidate without the missing approvals and evidence.
+Hand the exact candidate SHA and this report to the owner for disposable-staging/hosted-CI execution. Do not push, deploy, run production migrations, enable paid billing, or create live Draft PRs from this candidate without the missing approvals and evidence.
